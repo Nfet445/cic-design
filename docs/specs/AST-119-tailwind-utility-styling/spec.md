@@ -145,22 +145,24 @@ consumer's StyleX rules carry no cascade layer and Astryx rules carry
   stylesheet to import.
 - **FR10 — The build names its candidate sources.** A package's stylesheet
   build turns off Tailwind's automatic source detection and lists the
-  directories that may contribute classes, excluding test files. Detection
-  reads every word a scanned text contains, so a comment, a test id, or a
-  property value that happens to spell a utility name adds an unrequested
-  rule; listing sources keeps the sheet a function of the components and
-  makes the same sources produce the same sheet. A rule no class map can
-  produce is a build defect, not an optimisation target.
+  class-map modules that may contribute classes. Detection reads every word
+  a scanned text contains, so a comment, a test id, or a property value that
+  happens to spell a utility name adds an unrequested rule; listing the maps
+  keeps the sheet a function of the components and makes the same sources
+  produce the same sheet. A rule no class map can produce is a build defect,
+  not an optimisation target.
 
 ## Current-state impact
 
-- `architecture:component-style-authoring` INV1–INV7 state that
-  component-owned styling lowers through the StyleX pipeline; FR1, FR3, and
-  FR5 replace that mechanism and keep its ownership rule.
+- `architecture:component-style-authoring` INV1 names StyleX as the lowering
+  path and INV3 names StyleX input as the source of a declaration; this
+  record generalises both to a maintained pipeline per family, which is the
+  amendment a reviewer accepts with FR1, FR3, and FR5.
 - `spec:AST-071` stays: FR1–FR3 of that record govern `xstyle`, `className`,
   and `style`, and the internal mechanism is free to change.
-- `spec:AST-080` gains a second stylesheet per package: its layer-order,
-  prebuilt-file, and import-contract requirements apply to both.
+- `spec:AST-080` FR1 and FR3 admit a second stylesheet while both kinds of
+  module remain, and require it to register the same layer order; its
+  prebuilt-file and import-contract requirements apply to both files.
 - `architecture:public-component-api` INV6 keeps the merging order; INV23
   still forbids a public `data-*` attribute added to feed CSS, and a
   class-backed custom property replaces the dynamic data attribute the

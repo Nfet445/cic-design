@@ -268,7 +268,9 @@ describe('AlertDialog', () => {
         'Cancel',
         'Delete',
       ]);
-      expect(getComputedStyle(footerStack).flexWrap).toBe('wrap');
+      // Stack lays itself out with utility classes, which jsdom does not
+      // resolve into declarations.
+      expect(footerStack.className).toContain('flex-wrap');
     });
 
     it('keeps long action buttons within the wide horizontal footer without changing Button sizing', () => {
@@ -292,7 +294,7 @@ describe('AlertDialog', () => {
         longCancelLabel,
         longActionLabel,
       ]);
-      expect(getComputedStyle(footerStack).flexWrap).toBe('wrap');
+      expect(footerStack.className).toContain('flex-wrap');
       for (const button of buttons) {
         const computed = getComputedStyle(button);
         expect(computed.whiteSpace).toBe('nowrap');
@@ -327,7 +329,7 @@ describe('AlertDialog', () => {
         longActionLabel,
         longCancelLabel,
       ]);
-      expect(getComputedStyle(footerStack).flexDirection).toBe('column');
+      expect(footerStack.className).toContain('flex-col');
       for (const button of buttons) {
         const computed = getComputedStyle(button);
         expect(computed.whiteSpace).toBe('nowrap');

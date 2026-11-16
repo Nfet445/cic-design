@@ -275,14 +275,20 @@ export function Stack({
   const resolvedPaddingBlockEnd = paddingBlockEnd ?? paddingBlock ?? padding;
 
   const layoutClassName = tw(
-    stackClassName({direction, crossAlign, mainAlign, gap, wrap}),
+    stackClassName({
+      direction,
+      crossAlign,
+      mainAlign,
+      gap,
+      scrollable: isScrollable,
+      wrap,
+    }),
     paddingEdgeClassName({
       paddingBlockEnd: resolvedPaddingBlockEnd,
       paddingBlockStart: resolvedPaddingBlockStart,
       paddingInlineEnd: resolvedPaddingInlineEnd,
       paddingInlineStart: resolvedPaddingInlineStart,
     }),
-    isScrollable && 'overflow-auto',
   );
 
   // Build inline style for dynamic sizing values

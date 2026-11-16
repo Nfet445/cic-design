@@ -21,6 +21,7 @@ verified_by:
   ]
 deciding_specs:
   [
+    spec:AST-119/FR1,
     spec:AST-080/DEC-4,
     spec:AST-080/DEC-5,
     spec:AST-017/DEC-26,
@@ -74,12 +75,13 @@ not evidence of conformance or violation.
 
 ## Boundaries and invariants
 
-- **INV1 — Component-local styles lower through StyleX.** Shipped,
-  component-owned style declarations use the repository's maintained StyleX
-  lowering path. Separately owned global CSS, theme-compiler output, and consumer-
+- **INV1 — Component-local styles lower through a maintained pipeline.** Shipped,
+  component-owned style declarations lower through the maintained styling pipeline
+  of their family: the StyleX build, or the Tailwind utility build `spec:AST-119`
+  defines. Separately owned global CSS, theme-compiler output, and consumer-
   authored styling remain with their named owners and are outside this invariant.
-  Component-local raw CSS remains in scope when the maintained StyleX path supports
-  the same result.
+  Component-local raw CSS remains in scope when the maintained pipeline of that
+  family supports the same result.
 - **INV2 — CSS owns CSS-resolvable presentation.** When the pinned browser and
   StyleX capability set can derive a visual state, relationship, responsive
   condition, fallback, or transition in CSS, component code does not recreate that

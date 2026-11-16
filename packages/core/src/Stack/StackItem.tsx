@@ -95,8 +95,7 @@ export function StackItem({
   ...props
 }: StackItemProps) {
   const layoutClassName = tw(
-    stackItemClassName({crossAlignSelf, size}),
-    isScrollable && 'overflow-auto',
+    stackItemClassName({crossAlignSelf, scrollable: isScrollable, size}),
   );
 
   const elementProps = {

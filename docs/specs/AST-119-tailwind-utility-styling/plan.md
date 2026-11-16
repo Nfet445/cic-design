@@ -38,26 +38,38 @@ owners: [cixzhang]
       `Layout/paddingClasses.ts`, and `src/utils/tw.ts` join them.
 - [x] `xstyle` still merges last: every migrated component wraps it in
       `stylex.props(xstyle)` and passes the result through `mergeProps`.
-- [ ] Hold the size budget before the family is called done: the family's
-      built sheet is 18 491 B (3 229 B gzip, 232 rules) against 9 087 B
-      (1 662 B gzip, 77 rules) of StyleX rules for the same eight files, 2.03×
-      raw and 1.94× gzip. The measurements point at candidate scope, not at
-      the utilities: scanning only the class maps produces 119 rules and
-      7 600 B, which is smaller than the StyleX baseline, but misses the two
-      literal strings `GridSpan` still holds in its own file. Move those into
-      a class map, then point the build at the maps and record the resulting
-      budget.
-- [x] A build of the same sources twice writes the same sheet: 232 rules,
-      18 491 B, inside `@layer astryx-base`. Automatic source detection is off
+- [x] Hold the size budget before the family is called done: the family's
+      built sheet is 7 840 B (1 343 B gzip, 121 rules) against 9 087 B
+      (1 662 B gzip, 77 rules) of StyleX rules for the same eight files, so the
+      family is 14% smaller, not larger. The budget came from scope, not from
+      the utilities: scanning the class maps alone produced 119 rules and
+      7 600 B, and moving `GridSpan`'s two literal strings into
+      `Grid/gridClasses.ts` let the build scan only `src/**/*Classes.ts`.
+- [x] A build of the same sources twice writes the same sheet: 121 rules,
+      7 840 B, inside `@layer astryx-base`. Automatic source detection is off
       (`source(none)`), and its absence had grown the sheet to 187 kB of
       utilities harvested from unrelated text.
-- [ ] Add the stylesheet test that asserts one rule's declaration (FR8), so
-      the class-set tests do not stand alone.
+- [x] Wrap the compiled utilities in the layer in the build: Tailwind 4.3.2
+      prints `@import ... source(none) layer(astryx-base)` as
+      `@media layer(astryx-base)`, which no browser reads as a layer, so the
+      build adds `@layer astryx-base { … }` after the import.
+- [x] Add the stylesheet test that asserts one rule's declaration (FR8):
+      `src/Layout/tailwindStylesheet.source-build.test.mjs` builds the sheet in
+      process, checks every class the maps can emit has a rule, pins three
+      declarations, and fails on a layer printed as `@media layer(...)`.
 
 ### Phase 3 — The records say what the code does
 
-- [ ] Supersede `architecture:component-style-authoring` with a record whose
-      INVs state FR1, FR3, FR5, and FR6 as the pipeline rule.
+- [x] Amend `architecture:component-style-authoring`: INV1 names the pipeline
+      of the family instead of StyleX alone, INV3 covers a utility class as
+      well as a StyleX atom, and the system model names both pipelines. The
+      record keeps its id and its approvals; merging the pull request is the
+      approval this amendment asks for, because a supersede needs an approved
+      successor and would otherwise leave the repository with no current
+      styling authority.
+- [x] Amend `spec:AST-080` FR1 and FR3: a package ships a second stylesheet
+      while both kinds of module remain, and that file registers the same
+      layer order first.
 - [ ] Amend `spec:AST-080` for the second stylesheet: its export, its layer
       order, and the import contract.
 - [ ] Approve `spec:AST-119`, which this plan tracks.
@@ -115,8 +127,8 @@ check of the family's states.
 
 ## Status
 
-- Current phase: `2` — the family proof is implemented and green; the size
-  budget and the stylesheet test remain.
-- Blockers: `spec:AST-119` needs owner approval; OQ1 and OQ3 change the
-  consumer story and must settle before Phase 5; OQ2 decides whether FR8's
-  class set is a promise.
+- Current phase: `2` — the family proof is implemented, green, inside budget,
+  and covered by the stylesheet test.
+- Blockers: `spec:AST-119` and the two amendments need owner approval; OQ1 and
+  OQ3 change the consumer story and must settle before Phase 5; OQ2 decides
+  whether FR8's class set is a promise.

@@ -65,6 +65,7 @@ export interface StackClassNameOptions {
   direction: StackDirection;
   gap?: SpacingStep;
   mainAlign?: StackMainAlignment;
+  scrollable?: boolean;
   wrap?: StackWrap;
 }
 
@@ -73,6 +74,7 @@ export function stackClassName({
   direction,
   gap,
   mainAlign,
+  scrollable,
   wrap,
 }: StackClassNameOptions): string {
   return tw(
@@ -82,5 +84,6 @@ export function stackClassName({
     crossAlign != null && crossAlignClasses[crossAlign],
     mainAlign != null && mainAlignClasses[mainAlign],
     wrap != null && wrapClasses[wrap],
+    scrollable === true && 'overflow-auto',
   );
 }

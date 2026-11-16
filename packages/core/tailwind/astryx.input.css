@@ -4,25 +4,36 @@
  * Build input for `dist/astryx-tailwind.css`. Consumers import the built
  * stylesheet (`@astryxdesign/core/astryx-tailwind.css`), never this file.
  *
- * The utilities land in `astryx-base` — the same cascade layer the prebuilt
- * StyleX stylesheet (`astryx.css`) uses — so a consumer loads one stylesheet
- * or the other in the same slot.
+ * The build wraps the compiled utilities in `astryx-base` — the same cascade
+ * layer the prebuilt StyleX stylesheet (`astryx.css`) uses — so a consumer
+ * loads one stylesheet or the other in the same slot. The import line cannot
+ * name the layer itself: with `source(none)` beside it, Tailwind 4.3.2 prints
+ * `@media layer(astryx-base)`.
  *
  * `source(none)` turns off automatic source detection. Without it the build
  * harvests every word its scanned text happens to contain, and a sheet of
- * about 20 kB grows to 187 kB of utilities no component uses. The `@source`
- * lines name the only directory that may contribute classes, and skip test
- * files, whose class names never render. Listing sources instead of relying
- * on detection also makes the build reproducible: the same sources produce
- * the same sheet.
+ * about 20 kB grows to 187 kB of utilities no component uses. A migrated
+ * component keeps every class string in the class-map module beside it, so
+ * the scanned set is exactly those modules — the same set FR8 asserts and no
+ * test file can contribute to.
+ *
+ * Listing sources instead of relying on detection also makes the build
+ * reproducible: the same sources produce the same sheet.
  *
  * The layer statement matches the order `tailwind-theme.css` recommends, so a
  * page that imports this stylesheet before its own Tailwind keeps the
  * consumer's `utilities` above `astryx-base`, where FR5 expects them.
  */
-@layer reset, theme, base, astryx-base, astryx-theme, components, utilities;
+@layer reset, astryx-base, astryx-theme;
 
-@import 'tailwindcss/utilities.css' source(none) layer(astryx-base);
+/*
+ * Then the slots a page needs around those three: Tailwind's own `theme` and
+ * `base` below `astryx-base`, and `components` and `utilities` above
+ * `astryx-theme`, where a consumer's utilities outrank an Astryx rule.
+ */
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/utilities.css' source(none);
 
 /*
  * Utilities resolve against Astryx tokens, not Tailwind's defaults: without a
@@ -32,6 +43,4 @@
  */
 @import '../src/tailwind-theme.css';
 
-@source '../src';
-@source not '../src/**/*.test.ts';
-@source not '../src/**/*.test.tsx';
+@source '../src/**/*Classes.ts';

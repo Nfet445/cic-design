@@ -26,6 +26,14 @@ export const gridTemplateColumnsClass =
 
 export const gridAutoRowsClass = 'auto-rows-[var(--astryx-grid-auto-rows)]';
 
+/**
+ * The span is a grid container itself, so a zero-minimum column keeps a
+ * child's min-content width from widening the cell, and the span fills the
+ * cell's height.
+ */
+export const gridSpanClassName =
+  'grid min-w-0 h-full grid-cols-[minmax(0,1fr)]';
+
 const alignClasses: Record<GridAlignment, string> = {
   start: 'items-start',
   center: 'items-center',

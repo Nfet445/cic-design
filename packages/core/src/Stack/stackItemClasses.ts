@@ -27,16 +27,19 @@ const crossAlignSelfClasses: Record<StackItemCrossAlignSelf, string> = {
 
 export interface StackItemClassNameOptions {
   crossAlignSelf?: StackItemCrossAlignSelf;
+  scrollable?: boolean;
   size?: StackItemSize;
 }
 
 export function stackItemClassName({
   crossAlignSelf,
+  scrollable,
   size,
 }: StackItemClassNameOptions = {}): string {
   return tw(
     'min-h-0 min-w-0',
     sizeClasses[size ?? 'static'],
     crossAlignSelf != null && crossAlignSelfClasses[crossAlignSelf],
+    scrollable === true && 'overflow-auto',
   );
 }

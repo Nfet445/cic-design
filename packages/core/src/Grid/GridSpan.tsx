@@ -20,13 +20,7 @@ import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
-
-/**
- * The span is a grid container itself, so a zero-minimum column keeps a
- * child's min-content width from widening the cell, and the span fills the
- * cell's height.
- */
-const spanClassName = 'grid min-w-0 h-full grid-cols-[minmax(0,1fr)]';
+import {gridSpanClassName} from './gridClasses';
 
 export interface GridSpanProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element */
@@ -88,7 +82,7 @@ export function GridSpan({
     <div
       ref={ref}
       {...mergeProps(
-        mergeProps(themeProps('grid-span'), {className: spanClassName}),
+        mergeProps(themeProps('grid-span'), {className: gridSpanClassName}),
         stylex.props(xstyle),
         className,
         {...style, ...inlineStyle},
