@@ -76,8 +76,8 @@ import {useFocusTrap} from '../hooks/useFocusTrap';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useScrollLock} from '../hooks/useScrollLock';
 import {LayerDepthProvider, useLayerDismissal} from '../Layer';
-import {layerTextReset} from '../Layer/layerTextReset.stylex';
-import {layerStructureReset} from '../Layer/layerStructureReset.stylex';
+import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
+import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
 import {useModalOutlet} from '../Layer/modalOutlet';
 import {useBackdropPress} from '../Layer/useBackdropPress';
@@ -85,6 +85,7 @@ import {layerClickBoundary} from '../Layer/layerClickBoundary';
 import {ModalAnnounceProvider} from '../hooks/ModalAnnounceProvider';
 import {composeEventHandlers, mergeProps, themeProps} from '../utils';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
+import {tw} from '../utils/tw';
 import {container, overlayPaddingReset} from '../Layout';
 import {
   containerPaddingBlockEndVarStyles,
@@ -116,7 +117,8 @@ const MOBILE_WIDTH_FULL = '100dvw';
 const styles = stylex.create({
   dialog: {
     // Reset native <dialog> defaults — the dialog element IS the panel.
-    // The layer text baseline comes from the shared `layerTextReset`, applied
+    // The layer text baseline comes from the shared `layerTextResetClassName`,
+    // applied
     // with the structural reset ahead of these styles on the root below.
     position: 'fixed',
     margin: 0,
@@ -592,8 +594,6 @@ export function Drawer({
       {...mergeProps(
         themeProps('drawer', {side: anchoredSide}),
         stylex.props(
-          layerTextReset.reset,
-          layerStructureReset.reset,
           styles.dialog,
           overlayPaddingReset.reset,
           sideStyle,
@@ -605,7 +605,7 @@ export function Drawer({
           opensSettled && styles.openSettled,
           xstyle,
         ),
-        className,
+        tw(layerTextResetClassName, layerStructureResetClassName, className),
         style,
       )}
       {...safeProps}

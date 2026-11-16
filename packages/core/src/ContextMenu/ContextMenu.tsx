@@ -951,7 +951,8 @@ export function ContextMenu({
         layer.render(<LayerDepthProvider>{renderedMenu}</LayerDepthProvider>, {
           placement: 'below',
           alignment: 'start',
-          xstyle: [popoverXstyle, layerAnimations.below],
+          xstyle: popoverXstyle,
+          className: layerAnimations.below,
         })
       )}
     </>

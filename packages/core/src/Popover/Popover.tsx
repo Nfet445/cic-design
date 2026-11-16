@@ -74,6 +74,7 @@ import {clampInlineSize, isIntrinsicInlineSize} from '../Layer/clampInlineSize';
 import {spacingVars} from '../theme/tokens.stylex';
 import {InteractiveRoleContext} from '../InteractiveRoleContext/InteractiveRoleContext';
 import type {SpacingStep} from '../utils/types';
+import {tw} from '../utils/tw';
 import {BottomSheetEscapeContext} from '../BottomSheet/bottomSheetEscape';
 import {
   PopoverBottomSheet,
@@ -588,12 +589,11 @@ export function Popover({
     xstyle: [
       styles.surfaceViewportFit,
       hasOverflow && styles.surfaceScrollable,
-      // The entrance runs on the surface: an anchored layer lays out again on
-      // each frame its own style animates.
-      layerAnimations[placement],
       xstyle,
     ],
-    className,
+    // The entrance runs on the surface: an anchored layer lays out again on
+    // each frame its own style animates.
+    className: tw(layerAnimations[placement], className),
     style,
     onShow: handlePopoverShow,
     onHide: handlePopoverHide,

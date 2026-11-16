@@ -1205,13 +1205,10 @@ export function DropdownMenuSubMenu(
           // on it; a drilled-in view sits inside the root's surface.
           mergeProps(
             themeProps('dropdown-menu', {presentation: 'popover'}),
-            stylex.props(
-              regionStyles.frame,
-              regionStyles.flyoutSurface,
-              // The entrance runs on the surface: an anchored layer lays out again on
-              // each frame its own style animates.
-              layerAnimations.end,
-            ),
+            stylex.props(regionStyles.frame, regionStyles.flyoutSurface),
+            // The entrance runs on the surface: an anchored layer lays out
+            // again on each frame its own style animates.
+            layerAnimations.end,
           )
         : stylex.props(
             regionStyles.frame,
@@ -1437,8 +1434,8 @@ export function DropdownMenuSubMenu(
                         ? flyoutStyles.touchPanYPinchZoom
                         : flyoutStyles.touchPinchZoom,
                       hasOverflow && flyoutStyles.scrollable,
-                      layerAnimations.end,
                     ),
+                    layerAnimations.end,
                   )}>
                   {nestedContent}
                 </div>

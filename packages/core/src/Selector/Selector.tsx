@@ -1444,7 +1444,7 @@ export function Selector<T extends SelectorOptionType>(
       surfaceTarget: 'selector-popup',
       // The entrance runs on the surface: an anchored layer lays out again on
       // each frame its own style animates.
-      xstyle: layerAnimations[placement ?? 'below'],
+      className: layerAnimations[placement ?? 'below'],
       // The overlay margin moves the list after the show, so the overlay
       // writes the entrance's side once it has moved.
       writesEntranceSide: shouldOverlaySelectedItem,

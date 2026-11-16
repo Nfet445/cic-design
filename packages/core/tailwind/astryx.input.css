@@ -51,6 +51,164 @@
 
 @source '../src/**/*Classes.ts';
 
+/*
+ * Layer resets. A layer root is promoted to the top layer, which does not stop
+ * DOM inheritance: content opened from inside a component inherits that
+ * component's text formatting and the structural values it scoped to its own
+ * descendants. Both classes name what they reset, because a structural channel
+ * stops at the boundary only once it is known; theme tokens and writing
+ * context keep inheriting (AST-038 FR2).
+ *
+ * The `reset` sublayer sits inside `astryx-base`, below the layer's own
+ * declarations, so a component style or a caller's className on the same
+ * element still wins. Keep both classes in step with `layerTextResetClasses.ts`
+ * and `layerStructureResetClasses.ts`.
+ */
+@layer reset {
+  .astryx-layer-text-reset {
+    font-family: var(--font-family-body);
+    font-size: var(--text-body-size);
+    font-weight: var(--text-body-weight);
+    line-height: var(--text-body-leading);
+    font-style: normal;
+    text-align: start;
+    text-align-last: auto;
+    text-indent: 0;
+    text-transform: none;
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-shadow: none;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: manual;
+  }
+
+  .astryx-layer-structure-reset {
+    /* A Stepper reads its connector gap from the nearest ancestor that sets
+       it, so a Stepper opened in a layer from one of its steps would inherit
+       the outer track's gap. `initial` hands the connector back its own 0px
+       fallback. */
+    --step-connector-gap: initial;
+    /* A container that wraps with `overflow-wrap: anywhere` passes it to the
+       Text inside it (Text and Heading FR3). `initial` makes the variable
+       invalid, so Text in the layer falls back to its own `break-word`. */
+    --_astryx-text-overflow-wrap: initial;
+  }
+}
+
+/*
+ * Layer entrance. Each keyframe travels one step: the spacing token, or the
+ * room to the trigger when the runtime writes less, both through
+ * `--_astryx-layer-enter-step` (set by the class in
+ * `src/Layer/layerAnimationsClasses.ts`). Each axis reads the step toward the
+ * trigger with its placement's own side as the fallback. The RTL arms mirror
+ * only the horizontal fallback. The scale origin stays a plain style, not a
+ * keyframe, so the entrance stays on the compositor.
+ */
+@keyframes astryxLayerEnterBelow {
+  from {
+    opacity: 0;
+    transform: translate(
+        calc(var(--_astryx-layer-enter-x, 0) * var(--_astryx-layer-enter-step)),
+        calc(var(--_astryx-layer-enter-y, -1) * var(--_astryx-layer-enter-step))
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes astryxLayerEnterAbove {
+  from {
+    opacity: 0;
+    transform: translate(
+        calc(var(--_astryx-layer-enter-x, 0) * var(--_astryx-layer-enter-step)),
+        calc(var(--_astryx-layer-enter-y, 1) * var(--_astryx-layer-enter-step))
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes astryxLayerEnterEnd {
+  from {
+    opacity: 0;
+    transform: translate(
+        calc(var(--_astryx-layer-enter-x, -1) * var(--_astryx-layer-enter-step)),
+        calc(var(--_astryx-layer-enter-y, 0) * var(--_astryx-layer-enter-step))
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes astryxLayerEnterStart {
+  from {
+    opacity: 0;
+    transform: translate(
+        calc(var(--_astryx-layer-enter-x, 1) * var(--_astryx-layer-enter-step)),
+        calc(var(--_astryx-layer-enter-y, 0) * var(--_astryx-layer-enter-step))
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes astryxLayerEnterEndRtl {
+  from {
+    opacity: 0;
+    transform: translate(
+        calc(var(--_astryx-layer-enter-x, 1) * var(--_astryx-layer-enter-step)),
+        calc(var(--_astryx-layer-enter-y, 0) * var(--_astryx-layer-enter-step))
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes astryxLayerEnterStartRtl {
+  from {
+    opacity: 0;
+    transform: translate(
+        calc(var(--_astryx-layer-enter-x, -1) * var(--_astryx-layer-enter-step)),
+        calc(var(--_astryx-layer-enter-y, 0) * var(--_astryx-layer-enter-step))
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* Reduce Motion under a finger: the entrance without its travel. The curve
+   rides in the first keyframe, so the class's timing function stays the
+   theme ease's. */
+@keyframes astryxLayerFadeIn {
+  from {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Button loading: the spinner fade-in and the content hide share one delay so
    the button never shows an empty frame in between. */
 @keyframes astryxButtonSpinnerReveal {

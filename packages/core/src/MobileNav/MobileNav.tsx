@@ -68,8 +68,9 @@ import {Heading} from '../Heading/Heading';
 import {useAppShellMobile} from '../AppShell/AppShellMobileContext';
 import {holdEntranceInput} from '../Layer/holdEntranceInput';
 import {mergeProps, composeEventHandlers} from '../utils';
-import {layerTextReset} from '../Layer/layerTextReset.stylex';
-import {layerStructureReset} from '../Layer/layerStructureReset.stylex';
+import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
+import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
+import {tw} from '../utils/tw';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
 import {layerClickBoundary} from '../Layer/layerClickBoundary';
 import {overlayPaddingReset} from '../Layout/overlayPaddingReset.stylex';
@@ -731,8 +732,6 @@ export function MobileNav({
       {...mergeProps(
         themeProps('mobile-nav', {side: resolvedSide}),
         stylex.props(
-          layerTextReset.reset,
-          layerStructureReset.reset,
           styles.dialog,
           overlayPaddingReset.reset,
           isPresentationHeld && styles.open,
@@ -740,7 +739,7 @@ export function MobileNav({
           isOpen && styles.backdropOpen,
           xstyle,
         ),
-        className,
+        tw(layerTextResetClassName, layerStructureResetClassName, className),
         style,
       )}
       {...rest}

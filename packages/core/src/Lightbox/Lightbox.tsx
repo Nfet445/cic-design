@@ -4,7 +4,7 @@
 
 /**
  * @file Lightbox.tsx
- * @input Uses React, native dialog, StyleX, IconButton, theme tokens, layerTextReset, layerStructureReset,
+ * @input Uses React, native dialog, StyleX, IconButton, theme tokens, layerTextResetClassName, layerStructureResetClassName,
  *   and isRtlElement (gallery arrow keys follow the rendered direction). The
  *   zoom uses useZoomCore and useZoomStage, a gallery pages with usePager,
  *   and the drag to dismiss fades the backdrop and controls on the animator
@@ -60,9 +60,10 @@ import {usePressTracker} from '../gestures/usePressTracker';
 import {mergeProps, rtlStyles} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {layerTextReset} from '../Layer/layerTextReset.stylex';
-import {layerStructureReset} from '../Layer/layerStructureReset.stylex';
+import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
+import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
 import {layerClickBoundary} from '../Layer/layerClickBoundary';
 import {ModalAnnounceProvider} from '../hooks/ModalAnnounceProvider';
@@ -1941,14 +1942,8 @@ export function Lightbox({
       }
       {...mergeProps(
         themeProps('lightbox'),
-        stylex.props(
-          layerTextReset.reset,
-          layerStructureReset.reset,
-          styles.dialog,
-          overlayPaddingReset.reset,
-          xstyle,
-        ),
-        className,
+        stylex.props(styles.dialog, overlayPaddingReset.reset, xstyle),
+        tw(layerTextResetClassName, layerStructureResetClassName, className),
         style,
       )}
       {...props}
