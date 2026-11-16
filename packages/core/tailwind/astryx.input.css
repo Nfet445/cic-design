@@ -18,7 +18,9 @@
  * test file can contribute to.
  *
  * Listing sources instead of relying on detection also makes the build
- * reproducible: the same sources produce the same sheet.
+ * reproducible: the same sources produce the same sheet. The build keeps one
+ * cache entry per file a pattern matches, so a build reads only the class maps
+ * that changed since the last one.
  *
  * The layer statement matches the order `tailwind-theme.css` recommends, so a
  * page that imports this stylesheet before its own Tailwind keeps the
