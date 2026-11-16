@@ -28,6 +28,7 @@ import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {stackClassName} from '../Stack/stackClasses';
 import {stackItemClassName} from '../Stack/stackItemClasses';
+import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
 import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
 import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
 import {describe, expect, it} from 'vitest';
@@ -151,6 +152,20 @@ function familyClassNames() {
   add(toggleButtonClassName({isPressed: true}));
   add(toggleButtonGroupClassName({orientation: 'vertical', tracksPress: true}));
 
+  for (const density of ['compact', 'balanced', 'spacious']) {
+    for (const hasColumnDivider of [false, true]) {
+      for (const hasContextMenu of [false, true]) {
+        add(
+          tableHeaderCellClassName({
+            density,
+            hasColumnDivider,
+            hasContextMenu,
+          }),
+        );
+      }
+    }
+  }
+
   return [...names].sort();
 }
 
@@ -173,8 +188,9 @@ describe('dist/astryx-tailwind.css declarations', () => {
 
   it('stays within the budget of its class maps', () => {
     // The layout maps and the words in their comments produce about 120
-    // rules; the Button map adds about 115. A scan that reaches component
-    // bodies or prose would add hundreds more.
+    // rules; the Button map adds about 115 and the Table header cell map
+    // about 30. A scan that reaches component bodies or prose would add
+    // hundreds more.
     expect(stylesheet.rules.size).toBeLessThan(320);
     // A Tailwind palette colour or a default font stack belongs to no map:
     // its presence means the build read text no map produced.
@@ -192,12 +208,34 @@ describe('dist/astryx-tailwind.css declarations', () => {
 
   it('declares token-dependent utilities against the theme variables', () => {
     expect(stylesheet.ruleFor('gap-2')).toBe('gap:calc(var(--spacing-1)*2);');
+    expect(stylesheet.ruleFor('py-2')).toBe(
+      'padding-block:calc(var(--spacing-1)*2);',
+    );
     expect(stylesheet.ruleFor('[padding-block-start:var(--spacing-2)]')).toBe(
       'padding-block-start:var(--spacing-2);',
     );
     expect(
       stylesheet.ruleFor('grid-cols-[var(--astryx-grid-template-columns)]'),
     ).toBe('grid-template-columns:var(--astryx-grid-template-columns);');
+  });
+
+  it('draws the header divider and publishes its width', () => {
+    // The pinned-column plugin reads the width back to continue the line over
+    // the scrolled area, so the cell must declare it, not only draw it.
+    expect(
+      stylesheet.ruleFor('[--_table-row-divider-width:var(--border-width)]'),
+    ).toBe('--_table-row-divider-width:var(--border-width);');
+    expect(
+      stylesheet.ruleFor('[border-bottom-width:var(--border-width)]'),
+    ).toBe('border-bottom-width:var(--border-width);');
+  });
+
+  it('zeroes the column divider only on the last cell of a row', () => {
+    // The base and the override are separate classes in the same layer, so the
+    // `last:` variant has to win on specificity rather than on sheet order.
+    expect(stylesheet.blockOf('last:[border-inline-end-width:0]')).toContain(
+      '&:last-child{border-inline-end-width:0;}',
+    );
   });
 
   it('keeps a state class later than the base declaration it overrides', () => {
