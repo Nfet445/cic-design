@@ -18,6 +18,7 @@ import {renderToString} from 'react-dom/server';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {defineTheme} from './defineTheme';
 import {Theme} from './Theme';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import type * as ThemeMotion from './themeMotion';
 
 type ThemeMotionModule = typeof ThemeMotion;
@@ -73,7 +74,15 @@ describe('the reduced-motion mark', () => {
         <p>content</p>
       </Theme>,
     );
-    expect(wrapperOf(container, ALWAYS_NAME)?.hasAttribute(MARK)).toBe(true);
+    const wrapper = wrapperOf(container, ALWAYS_NAME);
+    expect(wrapper?.hasAttribute(MARK)).toBe(true);
+    if (wrapper == null) {
+      throw new Error('Theme rendered no wrapper');
+    }
+    // The class publishes the property every element under the mark inherits.
+    expectClassSet(wrapper, {
+      includes: ['[--_astryx-reduced-motion:1]'],
+    });
     expect(document.documentElement.hasAttribute(MARK)).toBe(true);
     expect(document.documentElement.style.getPropertyValue(PROPERTY)).toBe('1');
     unmount();

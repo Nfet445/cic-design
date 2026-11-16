@@ -42,9 +42,7 @@
 
 import React, {use, useId, useInsertionEffect, useMemo, useState} from 'react';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
-import * as stylex from '@stylexjs/stylex';
 import type {ThemeMode} from './types';
-import {colorVars, typographyVars} from './tokens.stylex';
 import {generateThemeCSS, type DefinedTheme} from './defineTheme';
 import {registerTheme} from './themeRegistry';
 import {dataAttr} from '../naming';
@@ -57,6 +55,7 @@ import {
   setRootReducedMotionMark,
 } from '../privateAttributes/reducedMotion.stylex';
 import {createSharedContext} from '../utils/sharedContext';
+import {themeWrapperClassName} from './themeClasses';
 
 /**
  * Theme provider props
@@ -69,31 +68,6 @@ interface ThemeProps {
   /** Children to render */
   children: React.ReactNode;
 }
-
-/**
- * Styles for the theme wrapper
- */
-const wrapperStyles = stylex.create({
-  base: {
-    display: 'contents',
-    color: colorVars['--color-text-primary'],
-    fontFamily: typographyVars['--font-family-body'],
-  },
-  light: {
-    colorScheme: 'light',
-  },
-  dark: {
-    colorScheme: 'dark',
-  },
-  system: {
-    colorScheme: 'light dark',
-  },
-  // The mark's custom property (REDUCED_MOTION_PROPERTY), which every element
-  // under the mark inherits.
-  reducedMotion: {
-    '--_astryx-reduced-motion': '1',
-  },
-});
 
 // =============================================================================
 // Nesting context — detect root vs nested Theme
@@ -371,14 +345,6 @@ export function Theme({
   useRootThemeSync(isNested, mode, theme.name, reducesMotion);
   useRootTextSizeSync(isNested);
 
-  // Get color-scheme style
-  const colorSchemeStyle =
-    mode === 'dark'
-      ? wrapperStyles.dark
-      : mode === 'light'
-        ? wrapperStyles.light
-        : wrapperStyles.system;
-
   // Memoize the context value to prevent unnecessary re-renders
   const ctxValue = useMemo(() => ({theme, mode}), [theme, mode]);
 
@@ -386,11 +352,7 @@ export function Theme({
     <ThemeContext value={ctxValue}>
       <ThemeNestingContext value={true}>
         <div
-          {...stylex.props(
-            wrapperStyles.base,
-            colorSchemeStyle,
-            reducesMotion && wrapperStyles.reducedMotion,
-          )}
+          className={themeWrapperClassName({mode, reducesMotion})}
           data-astryx-theme={theme.name}
           {...reducedMotionMarkProps(reducesMotion)}
           data-theme={mode === 'system' ? undefined : mode}>
