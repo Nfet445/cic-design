@@ -34,6 +34,10 @@ import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {stackClassName} from '../Stack/stackClasses';
 import {stackItemClassName} from '../Stack/stackItemClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
+import {
+  textClassName,
+  truncationTooltipContentClassName,
+} from '../Text/textClasses';
 import {themeWrapperClassName} from '../theme/themeClasses';
 import {mediaThemeClassName} from '../theme/mediaThemeClasses';
 import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
@@ -65,6 +69,67 @@ function familyClassNames() {
       }
     }
   };
+
+  // Text answers five axes plus the type scale, so the map is walked axis by
+  // axis rather than over its cross product.
+  const textBase = {
+    color: 'primary',
+    display: 'inline',
+    justify: 'start',
+    maxLines: 0,
+    type: 'body',
+    wordBreak: 'break-word',
+  };
+  const textAxes = {
+    type: [
+      'body',
+      'large',
+      'label',
+      'code',
+      'supporting',
+      'display-1',
+      'display-2',
+      'display-3',
+      'inherit',
+    ],
+    color: ['secondary', 'disabled', 'placeholder', 'accent', 'inherit'],
+    size: [
+      '4xs',
+      '3xs',
+      '2xs',
+      'xsm',
+      'sm',
+      'base',
+      'lg',
+      'xl',
+      '2xl',
+      '3xl',
+      '4xl',
+    ],
+    weight: ['normal', 'medium', 'semibold', 'bold'],
+    display: ['block'],
+    justify: ['center', 'end'],
+    textWrap: ['wrap', 'nowrap', 'balance', 'pretty'],
+  };
+  for (const [axis, values] of Object.entries(textAxes)) {
+    for (const value of values) {
+      add(textClassName({...textBase, [axis]: value}));
+    }
+  }
+  for (const maxLines of [1, 3]) {
+    for (const wordBreak of ['break-word', 'break-all']) {
+      add(textClassName({...textBase, maxLines, wordBreak}));
+    }
+  }
+  add(
+    textClassName({
+      ...textBase,
+      hasCapsize: true,
+      hasStrikethrough: true,
+      hasTabularNumbers: true,
+    }),
+  );
+  add(truncationTooltipContentClassName);
 
   for (const direction of ['horizontal', 'vertical']) {
     for (const wrap of ['nowrap', 'wrap', 'wrap-reverse']) {
@@ -209,16 +274,41 @@ describe('dist/astryx-tailwind.css declarations', () => {
 
   it('stays within the budget of its class maps', () => {
     // The layout maps and the words in their comments produce about 120
-    // rules; the Button map adds about 115 and the Table header cell map
-    // about 30. A scan that reaches component bodies or prose would add
-    // hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(320);
+    // rules; the Button map adds about 115, the Table header cell map about
+    // 30 and the Text map about 65. A scan that reaches component bodies or
+    // prose would add hundreds more.
+    expect(stylesheet.rules.size).toBeLessThan(420);
     // A Tailwind palette colour or a default font stack belongs to no map:
     // its presence means the build read text no map produced.
     expect(stylesheet.compact).not.toMatch(
       /\.(bg|text|border|ring|fill|stroke)-(red|blue|green|gray|slate|zinc|neutral|stone|amber|lime|emerald|teal|cyan|sky|indigo|violet|purple|fuchsia|pink|rose|white|black)-/,
     );
-    expect(stylesheet.compact).not.toMatch(/font-(sans|serif|mono)\b/);
+    expect(stylesheet.compact).not.toMatch(/font-(sans|serif)\b/);
+    // The one named family utility, because the theme maps it to a token: a
+    // `code` Text reads the code family, never a Tailwind default stack.
+    expect(stylesheet.ruleFor('font-mono')).toBe(
+      'font-family:var(--font-family-code);',
+    );
+  });
+
+  it('prints the Text type scale, clamp and wrap tokens', () => {
+    expect(stylesheet.ruleFor('text-[length:var(--text-body-size)]')).toBe(
+      'font-size:var(--text-body-size);',
+    );
+    expect(stylesheet.ruleFor('[line-height:var(--text-code-leading)]')).toBe(
+      'line-height:var(--text-code-leading);',
+    );
+    expect(stylesheet.ruleFor('[font-weight:var(--text-body-weight)]')).toBe(
+      'font-weight:var(--text-body-weight);',
+    );
+    expect(
+      stylesheet.ruleFor('[-webkit-line-clamp:var(--astryx-text-line-clamp)]'),
+    ).toBe('-webkit-line-clamp:var(--astryx-text-line-clamp);');
+    expect(
+      stylesheet.ruleFor(
+        '[overflow-wrap:var(--_astryx-text-overflow-wrap,break-word)]',
+      ),
+    ).toBe('overflow-wrap:var(--_astryx-text-overflow-wrap,break-word);');
   });
 
   it('keeps token utilities inside the astryx-base layer', () => {
