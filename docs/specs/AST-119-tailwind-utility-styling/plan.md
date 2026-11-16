@@ -84,6 +84,17 @@ check of the family's states.
       AppShell regions).
 - [ ] Wave 2: `family:buttons` and `family:action-groups`, the first states
       with hover, press, and focus.
+  - [x] `Button` renders from `Button/buttonClasses.ts`: layout, variant,
+        elevation, icon-only shape, group radius and border, press scale,
+        forced-colors edge, and the loading keyframes. The shared modules it
+        borrows (focus ring, interaction overlay, press layers, touch band)
+        still lower through StyleX, so `xstyle` keeps its place in the merge.
+        The button's own rules are 15 465 B (2 830 B gzip) against 13 926 B
+        (2 767 B gzip) of StyleX rules for the same five files — 11% larger
+        raw, 2% larger gzipped, because Tailwind prints one escaped selector
+        per corner, side, and step where StyleX printed an atomic class.
+  - [ ] `ButtonGroup`, `IconButton`, `ToggleButton`, and `ToggleButtonGroup`
+        render from class maps.
 - [ ] Wave 3: `family:input-fields` and the selection controls, the first
       form-control markers and `data-*` targets.
 - [ ] Wave 4: `family:navigation-destinations` and `family:overlay-dismissal`,
@@ -114,21 +125,23 @@ check of the family's states.
 
 ## Verification
 
-| Phase | Contract                                | Evidence                                                                                           |
-| ----- | --------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| 1     | `spec:AST-119/FR1`, `spec:AST-080/FR3`  | `node packages/core/scripts/build-css-tailwind.mjs` writes a file whose rules sit in `astryx-base` |
-| 2     | `spec:AST-119/FR3`, `FR5`, `FR7`, `FR8` | `vitest run packages/core/src/Stack packages/core/src/Grid packages/core/src/Center` — 118 tests   |
-| 2     | `spec:AST-119/FR5`                      | A consumer `xstyle` and an `@media` rule override `width` and the track template in the browser    |
-| 2     | Size budget                             | The family's built bytes and gzip bytes next to its StyleX bytes, in the pull request              |
-| 3     | `pnpm check:knowledge`                  | Every amended record validates; the superseded one names its replacement                           |
-| 4     | `spec:AST-119/FR4`, `FR6`               | Light and dark theme screenshots per family; hover under a fine and a coarse pointer               |
-| 5     | `spec:AST-119/FR9`                      | A generated template renders styled from the stylesheet alone                                      |
-| 6     | `spec:AST-119/FR1`                      | `pnpm install` with no `@stylexjs` dependency and a green `pnpm build`                             |
+| Phase | Contract                                | Evidence                                                                                                    |
+| ----- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 1     | `spec:AST-119/FR1`, `spec:AST-080/FR3`  | `node packages/core/scripts/build-css-tailwind.mjs` writes a file whose rules sit in `astryx-base`          |
+| 2     | `spec:AST-119/FR3`, `FR5`, `FR7`, `FR8` | `vitest run packages/core/src/Stack packages/core/src/Grid packages/core/src/Center` — 118 tests            |
+| 2     | `spec:AST-119/FR5`                      | A consumer `xstyle` and an `@media` rule override `width` and the track template in the browser             |
+| 2     | Size budget                             | The family's built bytes and gzip bytes next to its StyleX bytes, in the pull request                       |
+| 3     | `pnpm check:knowledge`                  | Every amended record validates; the superseded one names its replacement                                    |
+| 4     | `spec:AST-119/FR4`, `FR6`               | Light and dark theme screenshots per family; hover under a fine and a coarse pointer                        |
+| 4     | Size budget                             | `Button`'s built rules next to its StyleX rules: 15 465 B against 13 926 B, 2 830 B against 2 767 B gzipped |
+| 5     | `spec:AST-119/FR9`                      | A generated template renders styled from the stylesheet alone                                               |
+| 6     | `spec:AST-119/FR1`                      | `pnpm install` with no `@stylexjs` dependency and a green `pnpm build`                                      |
 
 ## Status
 
-- Current phase: `2` — the family proof is implemented, green, inside budget,
-  and covered by the stylesheet test.
+- Current phase: `4` — wave 2 is open. The layout family proved the contract;
+  `Button` migrated at a size the family budget covers, and the rest of
+  `family:buttons` follows.
 - Blockers: `spec:AST-119` and the two amendments need owner approval; OQ1 and
   OQ3 change the consumer story and must settle before Phase 5; OQ2 decides
   whether FR8's class set is a promise.

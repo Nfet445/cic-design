@@ -34,7 +34,11 @@ const BANNER =
 
 /**
  * Move every rule Tailwind printed into the `astryx-base` layer, leaving the
- * layer statement that fixes the cascade order in place.
+ * layer statements that fix the cascade order in place.
+ *
+ * Tailwind also declares an empty top-level `properties` layer before those
+ * statements. Its reset block lands inside `astryx-base`, so the declaration
+ * is a leftover; the package must begin with its own order registration.
  */
 const intoLayer = {
   postcssPlugin: 'astryx-wrap-utilities-in-layer',
@@ -42,6 +46,9 @@ const intoLayer = {
     const layer = postcss.atRule({name: 'layer', params: LAYER});
     for (const node of [...root.nodes]) {
       if (node.type === 'atrule' && node.name === 'layer' && node.nodes == null) {
+        if (node.params === 'properties') {
+          node.remove();
+        }
         continue;
       }
       layer.append(node.clone());

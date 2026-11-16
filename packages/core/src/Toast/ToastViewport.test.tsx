@@ -217,12 +217,10 @@ describe('Toast responsive layout', () => {
     expect(getComputedStyle(endArea).height).toBe(
       'calc(var(--text-body-size) * var(--text-body-leading))',
     );
-    expect(getComputedStyle(actionControl).height).toBe(
-      'max(var(--size-element-lg),1lh)',
+    expect(actionControl.className).toContain(
+      'h-[max(var(--size-element-lg),1lh)]',
     );
-    expect(getComputedStyle(dismissControl).height).toBe(
-      'var(--size-element-sm)',
-    );
+    expect(dismissControl.className).toContain('h-[var(--size-element-sm)]');
   });
 
   it('uses the viewport as the inline constraint for edge placements', () => {

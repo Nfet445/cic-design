@@ -117,13 +117,17 @@ describe('dist/astryx-tailwind.css', () => {
     expect(missing).toEqual([]);
   });
 
-  it('stays within the budget of a family stylesheet', () => {
-    // The maps, and the words in their comments, produce about 120 rules. A
-    // scan that reaches component bodies or prose pushes this past 200.
-    expect(rules.size).toBeLessThan(140);
-    // Colour and typography utilities belong to components this stylesheet
-    // does not style: their presence means the scan widened.
-    expect(compact).not.toMatch(/\.(bg|text|font)-(?!\[)/);
+  it('stays within the budget of its class maps', () => {
+    // The layout maps and the words in their comments produce about 120
+    // rules; the Button map adds about 115. A scan that reaches component
+    // bodies or prose would add hundreds more.
+    expect(rules.size).toBeLessThan(320);
+    // A Tailwind palette colour or a default font stack belongs to no map:
+    // its presence means the build read text no map produced.
+    expect(compact).not.toMatch(
+      /\.(bg|text|border|ring|fill|stroke)-(red|blue|green|gray|slate|zinc|neutral|stone|amber|lime|emerald|teal|cyan|sky|indigo|violet|purple|fuchsia|pink|rose|white|black)-/,
+    );
+    expect(compact).not.toMatch(/font-(sans|serif|mono)\b/);
   });
 
   it('keeps the rules in the astryx-base layer', () => {
@@ -132,6 +136,8 @@ describe('dist/astryx-tailwind.css', () => {
     expect(compact.startsWith(
       '/*AstryxCorePre-compiledTailwindCSS—layoutprimitives*//*Auto-generated.Donoteditmanually.*/@layerreset,astryx-base,astryx-theme;',
     )).toBe(true);
+    // Tailwind's empty `properties` declaration must not precede it.
+    expect(compact).not.toContain('@layerproperties;');
     expect(compact).toContain('@layertheme,base,components,utilities;');
     const layerStart = compact.indexOf('@layerastryx-base{');
     expect(layerStart).toBeGreaterThan(-1);

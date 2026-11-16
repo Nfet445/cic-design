@@ -296,10 +296,11 @@ describe('AlertDialog', () => {
       ]);
       expect(footerStack.className).toContain('flex-wrap');
       for (const button of buttons) {
-        const computed = getComputedStyle(button);
-        expect(computed.whiteSpace).toBe('nowrap');
-        expect(computed.height).toBe('max(var(--size-element-md),1lh)');
-        expect(computed.maxWidth).toBe('100%');
+        expect(button.className).toContain('whitespace-nowrap');
+        expect(button.className).toContain(
+          'h-[max(var(--size-element-md),1lh)]',
+        );
+        expect(getComputedStyle(button).maxWidth).toBe('100%');
       }
     });
 
@@ -331,10 +332,9 @@ describe('AlertDialog', () => {
       ]);
       expect(footerStack.className).toContain('flex-col');
       for (const button of buttons) {
-        const computed = getComputedStyle(button);
-        expect(computed.whiteSpace).toBe('nowrap');
-        expect(computed.width).toBe('100%');
-        expect(computed.maxWidth).toBe('100%');
+        expect(button.className).toContain('whitespace-nowrap');
+        expect(getComputedStyle(button).width).toBe('100%');
+        expect(getComputedStyle(button).maxWidth).toBe('100%');
       }
     });
 
@@ -364,9 +364,9 @@ describe('AlertDialog', () => {
         'Permanently delete workspace',
         'Keep this workspace',
       ]);
-      expect(getComputedStyle(buttons[0]).whiteSpace).toBe('nowrap');
+      expect(buttons[0].className).toContain('whitespace-nowrap');
       expect(getComputedStyle(buttons[0]).width).toBe('100%');
-      expect(getComputedStyle(buttons[1]).whiteSpace).toBe('nowrap');
+      expect(buttons[1].className).toContain('whitespace-nowrap');
       expect(getComputedStyle(buttons[1]).width).toBe('100%');
     });
 

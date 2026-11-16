@@ -31,19 +31,6 @@ import type {BaseProps} from '../BaseProps';
 import type {Elevation, SizeValue} from '../utils/types';
 import * as stylex from '@stylexjs/stylex';
 import {useTooltip} from '../Tooltip/useTooltip';
-import {
-  colorVars,
-  sizeVars,
-  spacingVars,
-  radiusVars,
-  borderVars,
-  durationVars,
-  easeVars,
-  fontWeightVars,
-  typeScaleVars,
-  shadowVars,
-  focusVars,
-} from '../theme/tokens.stylex';
 import {Spinner} from '../Spinner/Spinner';
 import {Icon} from '../Icon/Icon';
 import {VisuallyHidden} from '../VisuallyHidden/VisuallyHidden';
@@ -87,269 +74,34 @@ import {
 } from '../i18n/useComponentTranslator';
 import english from '../i18n/generated-english/Button/Button.generated';
 import {isRenderable} from '../utils/isRenderable';
+import {
+  buttonClassName,
+  buttonContentClassName,
+  buttonEndContentClassName,
+  buttonForcedColorsEdgeClassName,
+  buttonHiddenContentClassName,
+  buttonHiddenContentDelayedClassName,
+  buttonIconWrapperClassName,
+  buttonLabelClassName,
+  buttonLinkClassName,
+  buttonPressClassName,
+  buttonSpinnerDelayedClassName,
+  buttonSpinnerOverlayClassName,
+  buttonTrackedOverlayClassName,
+  buttonTrackedPressClassName,
+  buttonWidthClassName,
+  buttonWidthVar,
+} from './buttonClasses';
+import {tw} from '../utils/tw';
 
 registerEnglishFallback(english);
 
-/**
- * Written by the press controller or a group's tracker while a press is
- * believed. Typed `string`, so StyleX reads it as a computed key.
- */
-const PRESSED_ON: string = '[data-astryx-press="on"]';
-
-/**
- * The button's own popup is open. A press does not scale it then, so the
- * popup anchors to the button at rest. A disclosure button, with no popup,
- * keeps its press.
- */
-const POPUP_OPEN: string =
-  '[aria-expanded="true"][aria-haspopup]:not([aria-haspopup="false"])';
+/** Inline variable that carries a consumer's width; the class reads it. */
+type WidthStyle = React.CSSProperties &
+  Partial<Record<typeof buttonWidthVar, string>>;
 
 /** `aria-haspopup` values of a trigger that keeps its own press and opening. */
 const MENU_POPUPS: ReadonlySet<string> = new Set(['true', 'menu', 'listbox']);
-
-/**
- * Base button styles
- * Pseudo-classes are nested within properties per StyleX recommendation:
- * https://stylexjs.com/docs/learn/styling-ui/defining-styles#pseudo-classes
- */
-const styles = stylex.create({
-  base: {
-    // Kept as a public themeable var (documented in Button.doc.mjs) even though
-    // it now defaults to the shared token: removing it would break any theme
-    // setting it, for no gain. It overrides the shared offset, so a theme can
-    // still tune the ring distance on buttons specifically.
-    '--button-focus-offset': focusVars['--focus-outline-offset'],
-    outlineOffset: {
-      default: '0',
-      ':focus-visible': 'var(--button-focus-offset)',
-    },
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    borderWidth: 0,
-    borderStyle: 'none',
-
-    borderRadius: `var(--_button-radius, ${radiusVars['--radius-element']})`,
-    fontFamily: 'inherit',
-    fontSize: typeScaleVars['--text-label-size'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    whiteSpace: 'nowrap',
-    // One line by construction, so a label wider than the space available
-    // has to truncate. As a flex item the automatic minimum size would hold
-    // the button at its full label width (and `nowrap` lets an inline button
-    // run past its container), so the label's ellipsis never engaged. These
-    // let a row shrink the button and cap it at its container.
-    minWidth: 0,
-    maxWidth: '100%',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the popup opens.
-      [POPUP_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  pressable: {
-    transform: {
-      default: 'scale(1)',
-      // A mouse press. Under a coarse pointer `:active` is not a press (it
-      // paints on the touch and outlives a scroll), so the touch press model
-      // writes `data-astryx-press` instead; see interactionOverlay.stylex.ts.
-      [`:active:where(:not(:disabled,[aria-disabled="true"],${POPUP_OPEN}))`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-        // Under reduced motion a press never scales the button. The overlay
-        // alone shows the press.
-        '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-          'scale(1)',
-        '@media (prefers-reduced-motion: reduce) and (not (pointer: coarse))':
-          'scale(1)',
-      },
-      [`${PRESSED_ON}:not(${POPUP_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-          'scale(1)',
-        '@media (prefers-reduced-motion: reduce) and (not (pointer: coarse))':
-          'scale(1)',
-      },
-    },
-  },
-  // A tracked action's own `:active` image paints nothing: the tracker paints
-  // the action under the pointer, which need not be the one pressed first.
-  trackedOverlay: {
-    backgroundSize: {default: null, [`:active:not(${PRESSED_ON})`]: '0 0'},
-  },
-  // A tracked action's press is painted by its group's tracker alone.
-  pressableTracked: {
-    transform: {
-      default: 'scale(1)',
-      [`${PRESSED_ON}:not(${POPUP_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-          'scale(1)',
-        '@media (prefers-reduced-motion: reduce) and (not (pointer: coarse))':
-          'scale(1)',
-      },
-    },
-  },
-  inactive: {
-    cursor: 'default',
-    backgroundImage: 'none',
-    transform: {
-      default: 'none',
-      ':active': 'none',
-      [PRESSED_ON]: 'none',
-    },
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  ariaDisabled: {
-    // The variants' hover treatment already steps aside for
-    // `[aria-disabled]`; `:active` still matches a press on an aria-disabled
-    // button, so that one is suppressed here.
-    backgroundImage: {
-      default: 'none',
-      ':active': 'none',
-      [PRESSED_ON]: 'none',
-    },
-  },
-  iconOnly: {
-    '--button-icon-only-aspect': '1 / 1',
-    aspectRatio: 'var(--button-icon-only-aspect)',
-    paddingInline: 0,
-    paddingBlock: 0,
-    // An icon-only button has no label to truncate: keep it square rather
-    // than letting a crowded row squeeze it.
-    flexShrink: 0,
-    maxWidth: 'none',
-  },
-  endContentWrapper: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    color: 'inherit',
-  },
-  iconWrapper: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  // A real box, not `display: contents`: WebKit before macOS 15 drops an
-  // accessible name computed through a `display: contents` element, so
-  // VoiceOver read a labelled Button as unnamed. The box takes the Button's
-  // own layout (it is the only in-flow child; the spinner overlay and the
-  // live region are absolutely positioned), so the content sits as before.
-  contentWrapper: {
-    display: 'flex',
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 'auto',
-    alignSelf: 'stretch',
-    flexDirection: 'inherit',
-    flexWrap: 'inherit',
-    alignItems: 'inherit',
-    justifyContent: 'inherit',
-    gap: 'inherit',
-    // Lets a narrow row shrink the box, so the label inside still truncates.
-    minWidth: 0,
-  },
-  labelText: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    minWidth: 0,
-  },
-  link: {
-    textDecoration: 'none',
-  },
-});
-
-// Dynamic style for the consumer-controlled button width. Numbers are treated
-// as pixels by StyleX; strings (e.g. '100%') are used as-is.
-const dynamicStyles = stylex.create({
-  width: (width: SizeValue | null) => ({width}),
-});
-
-// At the default text size one label line is shorter than the element size,
-// so a caller's height still replaces this one. A larger text size makes the
-// line taller, and the button grows with its label.
-const sizeStyles = stylex.create({
-  sm: {height: `max(${sizeVars['--size-element-sm']}, 1lh)`},
-  md: {height: `max(${sizeVars['--size-element-md']}, 1lh)`},
-  lg: {height: `max(${sizeVars['--size-element-lg']}, 1lh)`},
-});
-
-// An icon-only button holds its glyph, which does not grow with the text, so
-// it keeps a fixed square size.
-const iconOnlySizeStyles = stylex.create({
-  sm: {height: sizeVars['--size-element-sm']},
-  md: {height: sizeVars['--size-element-md']},
-  lg: {height: sizeVars['--size-element-lg']},
-});
-
-/**
- * Resting elevation for floating buttons (e.g. a FAB). `none` is the default
- * flat button; `low`/`med`/`high` map to the shadow token scale. 'none' stays
- * a literal so it never conflicts with a variant's background layering.
- */
-const elevationStyles = stylex.create({
-  none: {boxShadow: 'none'},
-  low: {boxShadow: shadowVars['--shadow-low']},
-  med: {boxShadow: shadowVars['--shadow-med']},
-  high: {boxShadow: shadowVars['--shadow-high']},
-});
-
-/**
- * Variant styles using backgroundImage for layered colors
- * Pseudo-classes are nested within properties per StyleX recommendation
- * Overlay is stacked on top of base color using multiple linear-gradients
- * Focus outline is shared across variants for consistent keyboard affordance.
- */
-const variants = stylex.create({
-  primary: {
-    backgroundColor: colorVars['--color-accent'],
-    color: colorVars['--color-on-accent'],
-  },
-  secondary: {
-    backgroundColor: colorVars['--color-neutral'],
-    color: colorVars['--color-text-primary'],
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-    color: colorVars['--color-text-primary'],
-  },
-  destructive: {
-    backgroundColor: colorVars['--color-error'],
-    color: colorVars['--color-on-error'],
-    // Forced colors replace the fill with ButtonFace; the solid-variant edge
-    // (`forcedColorsEdge`) keeps the destructive fill's shape visible
-    // (architecture:theme-tokens INV11), in this color. A border, not an
-    // outline, leaves the shared focus ring intact.
-    borderColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    // The ring matches the variant it rings: an accent-colored outline on a
-    // red button reads as another control's focus. Only the color differs —
-    // width, style and offset come from the shared outline.
-    outlineColor: {
-      default: null,
-      ':focus-visible': colorVars['--color-error'],
-    },
-  },
-});
 
 /**
  * Button variant type derived from ButtonVariantMap.
@@ -357,10 +109,7 @@ const variants = stylex.create({
  */
 export type ButtonVariant = keyof ButtonVariantMap;
 
-/**
- * Button size type derived from the sizeStyles StyleX object
- */
-export type ButtonSize = keyof typeof sizeStyles;
+export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const iconSizeByButtonSize = {
   sm: 'sm',
@@ -488,60 +237,6 @@ export interface ButtonProps extends BaseProps<HTMLButtonElement> {
   rel?: string;
 }
 
-const spinnerReveal = stylex.keyframes({
-  from: {opacity: 0},
-  to: {opacity: 1},
-});
-
-const contentHide = stylex.keyframes({
-  from: {color: 'inherit'},
-  to: {color: 'transparent'},
-});
-
-// Hold the loading swap for a short delay so a fast action (e.g. clickAction)
-// that settles within the delay never flashes a spinner. The spinner fade-in
-// and the content hide share the same delay so the button never shows an empty
-// frame in between. Reduced motion is instant.
-const SPINNER_DELAY = durationVars['--duration-medium-min'];
-
-const loadingStyles = stylex.create({
-  // Hide the button's own content while the spinner overlay is shown. Applied
-  // to the content wrapper (not the button) so the button keeps its variant
-  // foreground color, which the spinner inherits via shade="inherit" (#2717).
-  hiddenContent: {
-    color: 'transparent',
-  },
-  // Delayed variant: keep content visible, then hide it in lockstep with the
-  // spinner reveal once the delay elapses.
-  hiddenContentDelayed: {
-    animationName: contentHide,
-    animationDuration: '1ms',
-    animationFillMode: 'forwards',
-    animationDelay: {
-      default: SPINNER_DELAY,
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-  },
-  spinnerOverlay: {
-    position: 'absolute',
-    top: 0,
-    insetInlineStart: 0,
-    insetInlineEnd: 0,
-    bottom: 0,
-    display: 'grid',
-    placeItems: 'center',
-  },
-  spinnerDelayed: {
-    animationName: spinnerReveal,
-    animationDuration: durationVars['--duration-fast'],
-    animationFillMode: 'backwards',
-    animationDelay: {
-      default: SPINNER_DELAY,
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-  },
-});
-
 /**
  * "I am the last member of the group" — the trailing end cap.
  *
@@ -578,181 +273,6 @@ const loadingStyles = stylex.create({
  * The leading edge still uses `:first-child` — a member's button always precedes
  * its own layer, so the first button is genuinely `:first-child`.
  */
-const IS_LAST_ITEM =
-  ':nth-last-child(1 of :not([popover]):not(template):not(dialog))';
-
-const groupStyles = stylex.create({
-  horizontal: {
-    borderStartStartRadius: {
-      default: 0,
-      ':first-child': radiusVars['--radius-element'],
-    },
-    borderEndStartRadius: {
-      default: 0,
-      ':first-child': radiusVars['--radius-element'],
-    },
-    borderStartEndRadius: {
-      default: 0,
-      [IS_LAST_ITEM]: radiusVars['--radius-element'],
-    },
-    borderEndEndRadius: {
-      default: 0,
-      [IS_LAST_ITEM]: radiusVars['--radius-element'],
-    },
-    borderInlineStartWidth: {
-      default: borderVars['--border-width'],
-      ':first-child': 0,
-    },
-    borderInlineStartStyle: {
-      default: 'solid' as const,
-      ':first-child': 'none' as const,
-    },
-    borderInlineStartColor: colorVars['--color-border'],
-  },
-  vertical: {
-    borderStartStartRadius: {
-      default: 0,
-      ':first-child': radiusVars['--radius-element'],
-    },
-    borderStartEndRadius: {
-      default: 0,
-      ':first-child': radiusVars['--radius-element'],
-    },
-    borderEndStartRadius: {
-      default: 0,
-      [IS_LAST_ITEM]: radiusVars['--radius-element'],
-    },
-    borderEndEndRadius: {
-      default: 0,
-      [IS_LAST_ITEM]: radiusVars['--radius-element'],
-    },
-    borderBlockStartWidth: {
-      default: borderVars['--border-width'],
-      ':first-child': 0,
-    },
-    borderBlockStartStyle: {
-      default: 'solid' as const,
-      ':first-child': 'none' as const,
-    },
-    borderBlockStartColor: colorVars['--color-border'],
-  },
-  onSolidHorizontal: {
-    borderInlineStartColor: colorVars['--color-on-accent'],
-  },
-  onSolidVertical: {
-    borderBlockStartColor: colorVars['--color-on-accent'],
-  },
-});
-
-/**
- * A solid variant's edge in forced colors. These variants separate themselves
- * from the page with a fill alone and have no border; forced colors discards
- * the fill, which would leave plain text with no perceivable boundary
- * (WCAG 1.4.11). `ButtonText` is the platform's own button edge. `ghost` is
- * flat by design and keeps none.
- *
- * Outside forced colors a standalone button keeps the base's borderless
- * values, and a grouped button's longhands are `null`, so the group's own
- * values stay. A grouped button gets only the longhands its group does not own: the group's
- * dividers stay where they are under both StyleX style resolutions, and the
- * group's first and last buttons close its outer edge.
- */
-const FORCED_COLORS = '@media (forced-colors: active)';
-
-const forcedColorsEdge = stylex.create({
-  standalone: {
-    // Repeats the base's 0 and none: these keys replace the base's own.
-    borderWidth: {default: 0, [FORCED_COLORS]: '1px'},
-    borderStyle: {default: 'none', [FORCED_COLORS]: 'solid'},
-    borderColor: {default: null, [FORCED_COLORS]: 'ButtonText'},
-  },
-  groupHorizontal: {
-    borderBlockStartWidth: {default: null, [FORCED_COLORS]: '1px'},
-    borderBlockStartStyle: {default: null, [FORCED_COLORS]: 'solid'},
-    borderBlockEndWidth: {default: null, [FORCED_COLORS]: '1px'},
-    borderBlockEndStyle: {default: null, [FORCED_COLORS]: 'solid'},
-    // Repeats the group's divider and gives the first button a leading edge.
-    borderInlineStartWidth: {
-      default: borderVars['--border-width'],
-      ':first-child': {default: 0, [FORCED_COLORS]: '1px'},
-    },
-    borderInlineStartStyle: {
-      default: 'solid',
-      ':first-child': {default: 'none', [FORCED_COLORS]: 'solid'},
-    },
-    borderInlineEndWidth: {
-      default: null,
-      [IS_LAST_ITEM]: {default: null, [FORCED_COLORS]: '1px'},
-    },
-    borderInlineEndStyle: {
-      default: null,
-      [IS_LAST_ITEM]: {default: null, [FORCED_COLORS]: 'solid'},
-    },
-  },
-  groupVertical: {
-    borderInlineStartWidth: {default: null, [FORCED_COLORS]: '1px'},
-    borderInlineStartStyle: {default: null, [FORCED_COLORS]: 'solid'},
-    borderInlineEndWidth: {default: null, [FORCED_COLORS]: '1px'},
-    borderInlineEndStyle: {default: null, [FORCED_COLORS]: 'solid'},
-    // Repeats the group's divider and gives the first button a leading edge.
-    borderBlockStartWidth: {
-      default: borderVars['--border-width'],
-      ':first-child': {default: 0, [FORCED_COLORS]: '1px'},
-    },
-    borderBlockStartStyle: {
-      default: 'solid',
-      ':first-child': {default: 'none', [FORCED_COLORS]: 'solid'},
-    },
-    borderBlockEndWidth: {
-      default: null,
-      [IS_LAST_ITEM]: {default: null, [FORCED_COLORS]: '1px'},
-    },
-    borderBlockEndStyle: {
-      default: null,
-      [IS_LAST_ITEM]: {default: null, [FORCED_COLORS]: 'solid'},
-    },
-  },
-});
-
-// The color of a grouped button's forced-colors edge: `destructive` takes
-// `CanvasText`, the others `ButtonText`. These are the same longhands the
-// edge sets, so the color holds whichever order a build puts shorthands and
-// longhands in.
-const forcedColorsEdgeColor = stylex.create({
-  horizontal: {
-    borderBlockStartColor: {default: null, [FORCED_COLORS]: 'ButtonText'},
-    borderBlockEndColor: {default: null, [FORCED_COLORS]: 'ButtonText'},
-    borderInlineEndColor: {
-      default: null,
-      [IS_LAST_ITEM]: {default: null, [FORCED_COLORS]: 'ButtonText'},
-    },
-  },
-  horizontalOnError: {
-    borderBlockStartColor: {default: null, [FORCED_COLORS]: 'CanvasText'},
-    borderBlockEndColor: {default: null, [FORCED_COLORS]: 'CanvasText'},
-    borderInlineEndColor: {
-      default: null,
-      [IS_LAST_ITEM]: {default: null, [FORCED_COLORS]: 'CanvasText'},
-    },
-  },
-  vertical: {
-    borderInlineStartColor: {default: null, [FORCED_COLORS]: 'ButtonText'},
-    borderInlineEndColor: {default: null, [FORCED_COLORS]: 'ButtonText'},
-    borderBlockEndColor: {
-      default: null,
-      [IS_LAST_ITEM]: {default: null, [FORCED_COLORS]: 'ButtonText'},
-    },
-  },
-  verticalOnError: {
-    borderInlineStartColor: {default: null, [FORCED_COLORS]: 'CanvasText'},
-    borderInlineEndColor: {default: null, [FORCED_COLORS]: 'CanvasText'},
-    borderBlockEndColor: {
-      default: null,
-      [IS_LAST_ITEM]: {default: null, [FORCED_COLORS]: 'CanvasText'},
-    },
-  },
-});
-
 /**
  * Whether `node` adds nothing to a content name: nothing renders, or an Icon
  * with no label. Any other node can add text.
@@ -958,112 +478,113 @@ export function Button({
   const isFlat = variant === 'ghost';
   const edgeCompAttr = isFlat ? {[EDGE_COMP_ATTR]: ''} : null;
 
-  // Shared StyleX props for both button and link rendering
+  // The button's own layout comes from utility classes. The shared modules it
+  // borrows — focus ring, interaction overlay, press layers, touch band — still
+  // lower through StyleX until they migrate themselves.
+  const layoutClassName = tw(
+    buttonClassName({
+      variant,
+      size,
+      elevation,
+      isIconOnly,
+      isInactive: buttonDisabled,
+      isTrulyDisabled: isTrueDisabled,
+      isGrouped: buttonGroup != null,
+      orientation: buttonGroup?.orientation ?? 'horizontal',
+    }),
+    isGroupTracked && buttonTrackedOverlayClassName(),
+    renderAsLink && buttonLinkClassName,
+    !buttonGroup &&
+      (isGroupTracked ? buttonTrackedPressClassName() : buttonPressClassName()),
+    width != null && buttonWidthClassName(),
+    buttonForcedColorsEdgeClassName({
+      isSolid: isSolidVariant,
+      isGrouped: buttonGroup != null,
+      orientation: buttonGroup?.orientation ?? 'horizontal',
+      isError: variant === 'destructive',
+    }),
+  );
+
+  const widthStyle: WidthStyle | null =
+    width == null
+      ? null
+      : {[buttonWidthVar]: typeof width === 'number' ? `${width}px` : width};
+
+  // Shared StyleX props for both button and link rendering. `xstyle` stays last
+  // so a consumer style still lands after the component's own atoms.
   const sharedStylexProps = focusOutlineProps.focusVisible(
-    styles.base,
-    isIconOnly ? iconOnlySizeStyles[size] : sizeStyles[size],
-    isIconOnly && styles.iconOnly,
     interactionOverlayStyles.backgroundImage,
     // The press the controller writes, on a layer under the label whose
     // release runs on the compositor.
     rowPressLayerStyles.cell,
     rowPressLayerStyles.cellOnImage,
     controlPressLayerStyles.control,
-    isGroupTracked && styles.trackedOverlay,
-    buttonDisabled && styles.inactive,
-    isTrueDisabled && styles.disabled,
-    buttonDisabled && styles.ariaDisabled,
-    renderAsLink && styles.link,
-    !buttonGroup &&
-      (isGroupTracked ? styles.pressableTracked : styles.pressable),
-    buttonGroup &&
-      (buttonGroup.orientation === 'horizontal'
-        ? groupStyles.horizontal
-        : groupStyles.vertical),
     inputGroup != null && buttonGroup == null && inputGroupStyles.buttonAddon,
-    buttonGroup &&
-      (variant === 'primary' || variant === 'destructive') &&
-      (buttonGroup.orientation === 'horizontal'
-        ? groupStyles.onSolidHorizontal
-        : groupStyles.onSolidVertical), // Standalone floating buttons only — a grouped button's elevation is owned
-    // by the ButtonGroup so the shared surface lifts as one unit.
-    !buttonGroup && elevationStyles[elevation],
-    width != null && dynamicStyles.width(width),
-    isSolidVariant &&
-      (buttonGroup == null
-        ? forcedColorsEdge.standalone
-        : buttonGroup.orientation === 'horizontal'
-          ? forcedColorsEdge.groupHorizontal
-          : forcedColorsEdge.groupVertical),
-    isSolidVariant &&
-      buttonGroup != null &&
-      (buttonGroup.orientation === 'horizontal'
-        ? variant === 'destructive'
-          ? forcedColorsEdgeColor.horizontalOnError
-          : forcedColorsEdgeColor.horizontal
-        : variant === 'destructive'
-          ? forcedColorsEdgeColor.verticalOnError
-          : forcedColorsEdgeColor.vertical),
-    // AFTER the shared focus outline: the outline supplies width/style/offset
-    // for every variant, and `destructive` re-colors just the ring to match
-    // its own surface. Ordering is the mechanism — StyleX is last-wins.
-    variants[variant],
     xstyle,
   );
 
   const sharedMergedProps = mergeProps(
     // Inside a group the group owns the surface's elevation, so the button
     // reflects the tier it actually paints rather than the prop it was handed.
-    themeProps('button', {
-      variant,
-      size,
-      elevation: buttonGroup ? 'none' : elevation,
-    }),
-    sharedStylexProps,
+    mergeProps(
+      themeProps('button', {
+        variant,
+        size,
+        elevation: buttonGroup ? 'none' : elevation,
+      }),
+      sharedStylexProps,
+    ),
+    {className: layoutClassName, style: widthStyle ?? undefined},
     className,
     style,
   );
 
   const iconSize = iconSizeByButtonSize[size];
+  const hitAreaClassName = hasHitArea
+    ? stylex.props(touchHitAreaStyles.layer).className
+    : undefined;
 
   const buttonContent = (
     <>
       {isLoadingState && (
         <span
-          {...stylex.props(
-            loadingStyles.spinnerOverlay,
-            delaySpinner && loadingStyles.spinnerDelayed,
+          className={tw(
+            buttonSpinnerOverlayClassName,
+            delaySpinner && buttonSpinnerDelayedClassName(),
           )}
           aria-hidden="true">
           <Spinner size="sm" shade="inherit" />
         </span>
       )}
       <span
-        {...stylex.props(
-          styles.contentWrapper,
+        className={tw(
+          buttonContentClassName(),
           // The content wrapper's `::after` carries the touch band, so the
           // button's own `::before` (the touch press) and `::after` (a
           // caller's decoration) stay as they are.
-          hasHitArea && touchHitAreaStyles.layer,
+          hitAreaClassName,
           isLoadingState &&
             (delaySpinner
-              ? loadingStyles.hiddenContentDelayed
-              : loadingStyles.hiddenContent),
+              ? buttonHiddenContentDelayedClassName()
+              : buttonHiddenContentClassName),
         )}
         aria-hidden={isLoadingState || undefined}>
         {isRenderable(icon) && (
           <span
-            {...stylex.props(styles.iconWrapper, iconBoxSizeStyles[iconSize])}>
+            className={tw(
+              buttonIconWrapperClassName,
+              stylex.props(iconBoxSizeStyles[iconSize]).className,
+            )}>
             <IconDefaultSizeProvider value={iconSize}>
               {icon}
             </IconDefaultSizeProvider>
           </span>
         )}
         {isIconOnly ? null : (
-          <span {...stylex.props(styles.labelText)}>{children ?? label}</span>
+          <span className={buttonLabelClassName}>{children ?? label}</span>
         )}
         {!isIconOnly && isRenderable(endContent) && (
-          <span {...stylex.props(styles.endContentWrapper)}>{endContent}</span>
+          <span className={buttonEndContentClassName}>{endContent}</span>
         )}
       </span>
       {/* Live region for loading state announcements */}

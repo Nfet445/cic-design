@@ -100,7 +100,8 @@ consumer's StyleX rules carry no cascade layer and Astryx rules carry
   is assembled from fragments, no conditional fragment is interpolated into a
   larger name, and no class is derived from a runtime value. A dynamic value
   reaches a declaration as a CSS variable (FR5), never as part of a class
-  name.
+  name. An interpolated fragment fails silently: the scanner compiles the
+  text it reads, so the class reaches the DOM and no rule exists for it.
 - **FR4 — A token is a theme variable.** A utility that names a design token
   reads a `--color-*`, `--spacing-*`, `--radius-*`, `--text-*`, or `--shadow-*`
   variable the theme declares, by the name `packages/core/src/tailwind-theme.css`
@@ -243,6 +244,18 @@ into a declaration. Splitting the contract — class set in the component
 test, declaration in a stylesheet test — keeps both observable, keeps the
 component test fast, and stops a test from asserting a declaration it cannot
 see.
+
+### DEC-7 — A press scales `transform`, not the `scale` property
+
+Tailwind's `scale-*` utility writes the `scale` property, which a
+`transition-property` list naming `transform` does not animate, and it
+registers `--tw-scale-*` with an `@property` block and a
+`@layer properties` reset that would land outside `astryx-base`. A press
+written as `[transform:scale(var(--button-press-scale))]` keeps the
+transition list a component already declares, keeps the transition on the
+compositor path, and adds no global registration. The scale factor stays a
+variable so a coarse pointer and a reduced-motion preference neutralise it
+without a second selector.
 
 ## Open questions
 

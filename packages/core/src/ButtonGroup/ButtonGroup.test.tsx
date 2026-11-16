@@ -2,11 +2,10 @@
 
 /**
  * @file ButtonGroup.test.tsx
- * @input Uses vitest, @testing-library/react, @babel/core + @stylexjs/babel-plugin,
- *   ButtonGroup and Button components
- * @output Unit tests for ButtonGroup, incl. the compiled-CSS contract for the
- *   trailing radius (#2508): compiled selector shape and membership; corners
- *   in ButtonGroupCorners.interaction.browser.spec.ts
+ * @input Uses vitest, @testing-library/react, ButtonGroup and Button
+ * @output Unit tests for ButtonGroup, incl. the class contract for the trailing
+ *   radius (#2508): selector shape and membership; corners in
+ *   ButtonGroupCorners.interaction.browser.spec.ts
  * @position Testing; validates ButtonGroup component implementation
  *
  * SYNC: When ButtonGroup component changes, update tests to match new behavior
@@ -16,11 +15,6 @@ import {describe, it, expect} from 'vitest';
 import type {ReactNode} from 'react';
 import {render, screen, fireEvent} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {transformSync} from '@babel/core';
-import stylexBabelPlugin from '@stylexjs/babel-plugin';
-import {readFileSync} from 'node:fs';
-import {createRequire} from 'node:module';
-import path from 'node:path';
 import {ButtonGroup} from './ButtonGroup';
 import {Button} from '../Button';
 import {IconButton} from '../IconButton';
@@ -240,88 +234,7 @@ describe('ButtonGroup', () => {
     const isLastMember = (group: HTMLElement, el: Element): boolean =>
       items(group).at(-1) === el;
 
-    // -- Compiled CSS, read from the source -----------------------------------
-
-    /** One atomic StyleX rule, parsed out of the plugin's emitted CSS. */
-    type CompiledRule = {
-      /** Atomic class name, e.g. `xp0wexf`. */
-      className: string;
-      /** Selector text after the class, e.g. `:first-child`. '' if unconditional. */
-      condition: string;
-      /** CSS property, e.g. `border-start-end-radius`. */
-      property: string;
-      /** CSS value, e.g. `var(--radius-element)`. */
-      value: string;
-      /** The full compiled selector, e.g. `.xp0wexf:nth-last-child(1 of …)`. */
-      selector: string;
-    };
-
-    /**
-     * Compiles Button.tsx with the real StyleX babel plugin and returns its
-     * atomic rules. This is the CSS the browser actually gets — the whole point
-     * is that the trailing-radius predicate comes from the SOURCE, never from a
-     * string retyped in this file.
-     */
-    function compileButtonRules(): CompiledRule[] {
-      const repoRoot = path.resolve(__dirname, '../../../..');
-      const buttonSrc = path.resolve(__dirname, '../Button/Button.tsx');
-      // Babel looks bare preset names up from the cwd, the repo root, which
-      // does not declare them. Resolve them from this package, which does.
-      const require = createRequire(__filename);
-
-      const result = transformSync(readFileSync(buttonSrc, 'utf8'), {
-        babelrc: false,
-        configFile: false,
-        filename: buttonSrc,
-        presets: [
-          [
-            require.resolve('@babel/preset-typescript'),
-            {isTSX: true, allExtensions: true},
-          ],
-          [require.resolve('@babel/preset-react'), {runtime: 'automatic'}],
-        ],
-        plugins: [
-          [
-            stylexBabelPlugin,
-            {
-              dev: false,
-              runtimeInjection: false,
-              genConditionalClasses: true,
-              treeshakeCompensation: true,
-              unstable_moduleResolution: {type: 'commonJS', rootDir: repoRoot},
-            },
-          ],
-        ],
-      });
-
-      const rules =
-        (result?.metadata as {stylex?: [string, {ltr: string}, number][]})
-          ?.stylex ?? [];
-
-      return rules.flatMap(([, {ltr}]) => {
-        // Plain atomic rules only: `.cls<condition>{prop:value}`. @media-wrapped
-        // rules are irrelevant to the radius contract.
-        const parsed = /^\.([\w-]+)([^{]*)\{([\w-]+):(.+)\}$/.exec(ltr);
-        if (!parsed) {
-          return [];
-        }
-        const [, className, condition, property, value] = parsed;
-        return [
-          {
-            className,
-            condition,
-            property,
-            value,
-            selector: `.${className}${condition}`,
-          },
-        ];
-      });
-    }
-
-    const COMPILED = compileButtonRules();
-
-    /** A rounded (non-zero) corner is exactly this value in the compiled CSS. */
-    const ROUNDED = 'var(--radius-element)';
+    // -- The class contract ---------------------------------------------------
 
     /** The two corners on the group's trailing edge — pure geometry. */
     const TRAILING_CORNERS = {
@@ -335,45 +248,60 @@ describe('ButtonGroup', () => {
       vertical: ['border-start-end-radius', 'border-start-start-radius'],
     } as const;
 
+    /**
+     * Tailwind reads class text, so the layer-skipping predicate lives in the
+     * class name verbatim. `:last-child` was the bug (#2508): an inline layer
+     * element steals the slot.
+     */
+    const TRAILING_PREFIX =
+      '[&:nth-last-child(1_of_:not([popover]):not(template):not(dialog))]:';
+
+    const CORNER_TOKEN = {
+      'border-start-start-radius': 'ss',
+      'border-start-end-radius': 'se',
+      'border-end-start-radius': 'es',
+      'border-end-end-radius': 'ee',
+    } as const;
+
+    type Corner = keyof typeof CORNER_TOKEN;
     type Orientation = keyof typeof TRAILING_CORNERS;
 
-    /**
-     * The compiled rules that ROUND `corners` and are actually applied to `el`
-     * (its class list carries them). StyleX emits the `default: 0` class and the
-     * conditional class on every member, so this returns the same rules for any
-     * member of the group — which rule *wins* is decided by the selector, and
-     * that is what the tests below assert against the DOM.
-     */
-    const roundingRules = (
-      el: Element,
-      corners: ReadonlyArray<string>,
-    ): CompiledRule[] =>
-      COMPILED.filter(
-        rule =>
-          corners.includes(rule.property) &&
-          rule.value === ROUNDED &&
-          el.classList.contains(rule.className),
-      );
+    const classesOf = (el: Element): string[] =>
+      el.className.split(/\s+/).filter(Boolean);
 
-    /** The compiled selectors that round `el`'s trailing corners. */
-    const trailingRoundingSelectors = (
+    /** The classes that round `corners` on the group's trailing edge. */
+    const trailingRoundingClasses = (
       el: Element,
       orientation: Orientation,
     ): string[] => {
-      const rules = roundingRules(el, TRAILING_CORNERS[orientation]);
-      // Guard against a vacuous pass: both trailing corners must be accounted
-      // for, or the assertions below would be quantifying over an empty set.
-      expect(rules.map(rule => rule.property).sort()).toEqual([
-        ...TRAILING_CORNERS[orientation],
-      ]);
-      return rules.map(rule => rule.selector);
+      const wanted = TRAILING_CORNERS[orientation].map(
+        (corner: Corner) =>
+          `rounded-${CORNER_TOKEN[corner]}-[var(--radius-element)]`,
+      );
+      return classesOf(el).filter(
+        cls =>
+          cls.startsWith(TRAILING_PREFIX) &&
+          wanted.some(suffix => cls.endsWith(suffix)),
+      );
     };
 
-    /** `el` carries both trailing-corner rounding rules (StyleX classes). */
+    /** The classes that round `corners` on the group's leading edge. */
+    const leadingRoundingClasses = (
+      el: Element,
+      orientation: Orientation,
+    ): string[] => {
+      const wanted = LEADING_CORNERS[orientation].map(
+        (corner: Corner) =>
+          `first:rounded-${CORNER_TOKEN[corner]}-[var(--radius-element)]`,
+      );
+      return classesOf(el).filter(cls => wanted.includes(cls));
+    };
+
+    /** `el` carries both trailing-corner rounding classes. */
     const carriesTrailingRule = (
       el: Element,
       orientation: Orientation = 'horizontal',
-    ): boolean => trailingRoundingSelectors(el, orientation).length === 2;
+    ): boolean => trailingRoundingClasses(el, orientation).length === 2;
 
     // -- The compiled CSS contract --------------------------------------------
 
@@ -387,22 +315,22 @@ describe('ButtonGroup', () => {
         );
 
         const save = screen.getByRole('button', {name: 'Save'});
-        const selectors = trailingRoundingSelectors(save, orientation);
+        const classes = trailingRoundingClasses(save, orientation);
 
-        for (const selector of selectors) {
+        expect(classes).toHaveLength(2);
+        for (const cls of classes) {
           // `:last-child` is the bug: an inline layer element steals the slot.
-          expect(selector).not.toMatch(/:last-child/);
+          expect(cls).not.toMatch(/:last-child/);
           // The last sibling that is not a layer piece, written so WebKit
           // does not re-evaluate it per sibling on every insertion (#9281).
-          expect(selector).toContain(':nth-last-child(1 of ');
-          expect(selector).not.toContain(':has(');
-          // `[popover]` must survive compilation *verbatim*. StyleX only
-          // statically evaluates a selector key from a same-file const; from a
-          // .stylex.ts file it compiles to a mangled selector like `[x13pbwiz]`
-          // that matches nothing in the DOM.
-          expect(selector).toContain('[popover]');
-          expect(selector).toContain('template');
-          expect(selector).toContain('dialog');
+          // Tailwind turns the `_` back into a space in the emitted selector.
+          expect(cls).toContain(':nth-last-child(1_of_');
+          expect(cls).not.toContain(':has(');
+          // `[popover]` must survive *verbatim*: the class scanner reads the
+          // text, so a compiled alias would match nothing in the DOM.
+          expect(cls).toContain('[popover]');
+          expect(cls).toContain('template');
+          expect(cls).toContain('dialog');
         }
       },
     );
@@ -419,17 +347,15 @@ describe('ButtonGroup', () => {
 
         const save = screen.getByRole('button', {name: 'Save'});
         const more = screen.getByRole('button', {name: 'More'});
-        const rules = roundingRules(save, LEADING_CORNERS[orientation]);
+        const classes = leadingRoundingClasses(save, orientation);
 
-        expect(rules.map(rule => rule.property).sort()).toEqual([
-          ...LEADING_CORNERS[orientation],
-        ]);
-        for (const {condition, selector} of rules) {
+        expect(classes).toHaveLength(2);
+        for (const cls of classes) {
+          expect(cls.startsWith('first:rounded-')).toBe(true);
           // The leading edge is genuinely safe on :first-child — a member's
           // button always precedes its own layer.
-          expect(condition).toBe(':first-child');
-          expect(save.matches(selector)).toBe(true);
-          expect(more.matches(selector)).toBe(false);
+          expect(save.matches(':first-child')).toBe(true);
+          expect(more.matches(':first-child')).toBe(false);
         }
       },
     );

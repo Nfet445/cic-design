@@ -44,3 +44,23 @@
 @import '../src/tailwind-theme.css';
 
 @source '../src/**/*Classes.ts';
+
+/* Button loading: the spinner fade-in and the content hide share one delay so
+   the button never shows an empty frame in between. */
+@keyframes astryxButtonSpinnerReveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes astryxButtonContentHide {
+  from {
+    color: inherit;
+  }
+  to {
+    color: transparent;
+  }
+}
