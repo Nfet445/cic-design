@@ -417,6 +417,56 @@ describe('dist/astryx-tailwind.css declarations', () => {
     ).toBe('border-bottom-width:var(--border-width);');
   });
 
+  it('draws the section divider on one border width', () => {
+    expect(
+      stylesheet.ruleFor('[border-top:1px_solid_var(--color-border)]'),
+    ).toBe('border-top:1pxsolidvar(--color-border);');
+    expect(
+      stylesheet.ruleFor('[border-inline-start:1px_solid_var(--color-border)]'),
+    ).toBe('border-inline-start:1pxsolidvar(--color-border);');
+  });
+
+  it('reads the section size from its inline variable', () => {
+    expect(stylesheet.ruleFor('w-[var(--astryx-section-width)]')).toBe(
+      'width:var(--astryx-section-width);',
+    );
+    expect(stylesheet.ruleFor('h-[var(--astryx-section-height)]')).toBe(
+      'height:var(--astryx-section-height);',
+    );
+  });
+
+  it('pulls a nested section out by the container padding it reads', () => {
+    expect(
+      stylesheet.ruleFor(
+        'ms-[calc(-1*var(--container-padding-inline-start,0px))]',
+      ),
+    ).toBe(
+      'margin-inline-start:calc(-1*var(--container-padding-inline-start,0px));',
+    );
+  });
+
+  it('gives the compensated toolbar lane a basis only in the states that need it', () => {
+    const basis = stylesheet.blockOf(
+      '[&:has(>_[data-astryx-edge-comp]:first-child)]:[flex-basis:var(--astryx-toolbar-lane-inset)]',
+    );
+    expect(basis).toContain(
+      '&:has(>[data-astryx-edge-comp]:first-child){flex-basis:var(--astryx-toolbar-lane-inset);}',
+    );
+    expect(stylesheet.ruleFor('[flex-basis:0px]')).toBe('flex-basis:0px;');
+    const both = stylesheet.blockOf(
+      '[&:has(>_[data-astryx-edge-comp]:first-child):has(>_[data-astryx-edge-comp]:last-child)]:[flex-basis:calc(2*var(--astryx-toolbar-lane-inset))]',
+    );
+    expect(both).toContain(
+      'flex-basis:calc(2*var(--astryx-toolbar-lane-inset));',
+    );
+  });
+
+  it('sizes the toolbar row to one element height', () => {
+    expect(stylesheet.ruleFor('min-h-[var(--size-element-sm)]')).toBe(
+      'min-height:var(--size-element-sm);',
+    );
+  });
+
   it('zeroes the column divider only on the last cell of a row', () => {
     // The base and the override are separate classes in the same layer, so the
     // `last:` variant has to win on specificity rather than on sheet order.

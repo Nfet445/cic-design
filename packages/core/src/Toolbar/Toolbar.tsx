@@ -48,6 +48,10 @@ import {
   toolbarTabIndicatorClassName,
 } from './toolbarClasses';
 
+/** The inline lane inset the compensated basis classes read. */
+type ToolbarInsetStyle = React.CSSProperties &
+  Partial<Record<typeof toolbarLaneInsetVar, string>>;
+
 /**
  * Default block padding per toolbar size. Inline padding comes from the
  * parent container (Card, Section, LayoutHeader) via the Section's
@@ -271,7 +275,7 @@ export function Toolbar({
   // basis reads the amount from a custom property, so the offset never lands
   // as an inline declaration.
   const laneInset = edgeCompInsetForSize[size];
-  const laneInsetStyle: React.CSSProperties = {
+  const laneInsetStyle: ToolbarInsetStyle = {
     [toolbarLaneInsetVar]: laneInset,
   };
   const laneCompensationProps = mergeProps(
