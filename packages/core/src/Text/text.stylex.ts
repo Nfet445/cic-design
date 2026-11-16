@@ -3,8 +3,13 @@
 /**
  * @file text.stylex.ts
  * @input Uses StyleX, theme tokens
- * @output Exports StyleX styles for Text and Heading props
- * @position Styles module; consumed by Text.tsx, Heading.tsx
+ * @output Exports StyleX styles for Heading and the lab LineClamp
+ * @position Styles module; still public as `@astryxdesign/core/Text/text.stylex`
+ *
+ * @deprecated Styles that a component still reads live here; the others stay
+ * only because this module is a public subpath. Text reads `textClasses.ts`.
+ * Every export keeps its name and its StyleX namespace until this subpath is
+ * removed.
  *
  * SYNC: When modified, update:
  * - /packages/core/src/Text/Text.doc.mjs

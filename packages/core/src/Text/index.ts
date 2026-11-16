@@ -9,8 +9,8 @@
  * Extensible map of text color variants for Text/Heading.
  *
  * Themes add custom colors via component overrides in defineTheme; a custom
- * color renders with the `primary` baseline color from StyleX and receives its
- * actual color from theme CSS (`.astryx-text.<color>` / `.astryx-heading.<color>`),
+ * color renders with the `primary` baseline color and receives its actual
+ * color from theme CSS (`.astryx-text.<color>` / `.astryx-heading.<color>`),
  * exactly like custom text `type`s.
  *
  * To add type-safe custom colors, use module augmentation — the same technique
