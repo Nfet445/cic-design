@@ -1,6 +1,6 @@
 # indicator
 
-Status: ready-for-agent
+Status: done
 Blocked by: 5
 Wave: 3
 Ticket: 10
@@ -23,6 +23,8 @@ Migrate `Indicator/` (8 `stylex.create`) including its press and marker hooks.
 - `pnpm exec vitest run packages/core/src/Indicator`
 
 ## Notes
+
+- The hover tint stays on StyleX in `Indicator/indicatorHover.stylex.ts`: it reads the ancestor marker, and its repeated class selector has to outrank the rest-state fill whatever the sheet order is.
 
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.

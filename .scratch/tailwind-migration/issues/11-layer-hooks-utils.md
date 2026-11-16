@@ -1,6 +1,6 @@
 # layer hooks utils
 
-Status: ready-for-agent
+Status: done
 Blocked by: 5
 Wave: 3
 Ticket: 11
@@ -29,6 +29,8 @@ Migrate `Layer/` (5), `hooks/` (6) and `utils/` (6) — the anchored-layer and f
 - `node packages/core/scripts/build-css-tailwind.mjs`
 
 ## Notes
+
+- The layer modules (animations, text reset, structure reset) moved to class maps; the hover traps keep their `useHoverCard`/`useTooltip` logic and only swap the paint.
 
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.

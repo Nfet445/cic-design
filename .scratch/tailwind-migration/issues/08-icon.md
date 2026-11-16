@@ -1,6 +1,6 @@
 # icon
 
-Status: ready-for-agent
+Status: done
 Blocked by: 5
 Wave: 3
 Ticket: 08
@@ -26,6 +26,8 @@ Migrate `Icon/` and its size contract to class maps, keeping `IconSize` a public
 - `node packages/core/scripts/build-css-tailwind.mjs`
 
 ## Notes
+
+- Icon classes live in `Icon/iconClasses.ts`, the scale in `Icon/IconSize.ts`; `IconSize.stylex.ts` stays as a deprecated shim for `Button` and `Table`, which size their own icon boxes through it.
 
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.

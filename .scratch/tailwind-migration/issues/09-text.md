@@ -1,6 +1,6 @@
 # text
 
-Status: ready-for-agent
+Status: done
 Blocked by: 5
 Wave: 3
 Ticket: 09
@@ -25,6 +25,8 @@ Migrate `Text/` (19 `stylex.create`) — the typography vocabulary every family 
 - `node packages/core/scripts/build-css-tailwind.mjs`
 
 ## Notes
+
+- The text map covers selection, link, code and muted axes; the size scale still arrives as `--astryx-text-*` variables from the style prop, so a consumer theme keeps winning where it sets them.
 
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.
