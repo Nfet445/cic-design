@@ -4,6 +4,7 @@ Status: ready-for-agent
 Blocked by: 22,29
 Wave: 8
 Ticket: 30
+Parent: `00-epic-stylex-to-tailwind-4`
 
 ## What
 

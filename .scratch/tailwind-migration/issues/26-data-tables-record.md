@@ -5,6 +5,7 @@ Blocked by: —
 Wave: 8
 Family: `family:data-tables`
 Ticket: 26
+Parent: `00-epic-stylex-to-tailwind-4`
 
 ## What
 

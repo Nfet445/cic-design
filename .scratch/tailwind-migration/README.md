@@ -1,5 +1,8 @@
 # Tailwind migration: ticket rules
 
+The umbrella is `issues/00-epic-stylex-to-tailwind-4.md`; it lists the 36
+children and their progress. The rules below apply to every child.
+
 These rules are decisions, not suggestions. A ticket that breaks one is not
 ready for review, and a pull request that breaks one is not merged.
 

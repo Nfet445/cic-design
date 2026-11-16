@@ -1,7 +1,11 @@
 # StyleX → Tailwind 4: migration map
 
-One row per ticket. The ticket file is the source of truth for its status; this
-table repeats it so a reader sees the whole run without opening 36 files.
+One umbrella ticket carries the work:
+`issues/00-epic-stylex-to-tailwind-4.md`. It lists the 36 children, and it is
+the only file a reader needs to open to see what is left.
+
+One row per child ticket. The ticket file is the source of truth for its status;
+this table repeats it so a reader sees the whole run without opening 36 files.
 Contract: `docs/specs/AST-119-tailwind-utility-styling/spec.md`. Phase map:
 `docs/specs/AST-119-tailwind-utility-styling/plan.md`.
 
@@ -32,6 +36,7 @@ overlay layer.
 
 | #   | Ticket                           | Wave | Family                           | Blocked by |
 | --- | -------------------------------- | ---- | -------------------------------- | ---------- |
+| 00  | `00-epic-stylex-to-tailwind-4`   | all  | —                                | —          |
 | 01  | `01-stylesheet-build-cache`      | 0    | —                                | —          |
 | 02  | `02-test-harness`                | 0    | —                                | —          |
 | 03  | `03-browser-check-pages`         | 0    | —                                | —          |

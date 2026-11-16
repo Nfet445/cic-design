@@ -5,6 +5,7 @@ Blocked by: 5,9
 Wave: 3
 Family: `family:layout-regions`
 Ticket: 12
+Parent: `00-epic-stylex-to-tailwind-4`
 
 ## What
 
