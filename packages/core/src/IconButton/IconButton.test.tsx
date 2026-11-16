@@ -12,8 +12,9 @@
 import {describe, it, expect, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {unthemedLength} from '../__tests__/unthemedLength';
+import {expectVariable} from '../__tests__/classNameAssertions';
 import {Icon} from '../Icon/Icon';
+import {iconSizeVar} from '../Icon/iconClasses';
 import {IconButton} from './IconButton';
 
 describe('IconButton', () => {
@@ -114,10 +115,10 @@ describe('IconButton', () => {
       expect(wrapper).not.toBeNull();
 
       expect(icon).toHaveAttribute('data-size', iconSize);
-      // The glyph reads the theme's size vars; with no theme it falls back to
-      // the size's own rem value, which the wrapper declares directly.
-      expect(unthemedLength(getComputedStyle(icon).width)).toBe(renderedSize);
-      expect(unthemedLength(getComputedStyle(icon).height)).toBe(renderedSize);
+      // The glyph takes its size from the class plus the inline variable, so
+      // the wrapper's box and the glyph agree without either reading the
+      // other's rendered size.
+      expectVariable(icon, iconSizeVar, renderedSize);
       expect(getComputedStyle(wrapper!).width).toBe(renderedSize);
       expect(getComputedStyle(wrapper!).height).toBe(renderedSize);
     },

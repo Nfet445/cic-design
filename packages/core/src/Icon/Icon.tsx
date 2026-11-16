@@ -17,10 +17,11 @@
  *   A function registry entry receives `{size, variant}`: the size resolved by
  *   ORD1 and the requested variant when the entry can receive it.
  *
- * Both modes size the glyph from the `icon` target's private size vars
- * (`iconSizeStyles` in IconSize.stylex.ts, `registrySizeStyles` below), so a
- * theme's `width` and `height` on that target's size selector set the size's
- * glyph dimension, including the font size 1em-based registry artwork follows.
+ * Both modes size the glyph through `iconClasses.ts` and the `icon` target's
+ * private size vars, so a theme's `width` and `height` on that target's size
+ * selector set the size's glyph dimension, including the font size 1em-based
+ * registry artwork follows. The size step itself reaches the glyph as an inline
+ * `--astryx-icon-size` custom property, never an inline `width`.
  *
  * SYNC: When modified, update these files to stay in sync:
  * - /packages/core/src/Icon/Icon.doc.mjs (props table, features, implementation notes)
@@ -33,7 +34,6 @@
 import React, {useCallback, type ComponentType, type SVGProps} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import {useThemeDefinition} from '../theme/useTheme';
 import {resolveIcon} from './globalIconRegistry';
 import type {IconName, NamespacedIconName} from './globalIconRegistry';
@@ -42,126 +42,36 @@ import {mergeProps} from '../utils/mergeProps';
 import {mergeRefs} from '../utils/mergeRefs';
 import {themeProps} from '../utils/themeProps';
 import {useIconSize} from './IconDefaultSizeContext';
-import {iconSizeStyles, type IconSize} from './IconSize.stylex';
+import {iconSizeValues, type IconSize} from './IconSize';
+import {
+  iconGlyphClassName,
+  iconRegistryClassName,
+  iconSizeVar,
+  type IconColor,
+} from './iconClasses';
 
-export type {IconSize} from './IconSize.stylex';
+export type {IconColor} from './iconClasses';
+export type {IconSize} from './IconSize';
 
 // =============================================================================
 // Styles
 // =============================================================================
 
-const styles = stylex.create({
-  root: {
-    flexShrink: 0,
-  },
-  /** Wrapper for string-based (registry) icons */
-  span: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-});
+/** The inline size custom property the glyph's classes read. */
+type IconSizeStyle = React.CSSProperties &
+  Partial<Record<typeof iconSizeVar, string>>;
 
 /**
- * Size styles for string-based registry icons: the glyph dimensions
- * `iconSizeStyles` reads from the `icon` target's private vars, plus a
- * `fontSize`, because registry artwork is 1em-based. `fontSize` is the smaller
- * side, which fits square artwork into a non-square box the way an SVG viewBox
- * does.
+ * The size step reaches the glyph as an inline custom property: a consumer
+ * class can still set the dimensions, and a theme's private vars still win.
  */
-const registrySizeStyles = stylex.create({
-  xsm: {
-    width: 'var(--_icon-width, 0.75rem)',
-    height: 'var(--_icon-height, 0.75rem)',
-    fontSize: 'min(var(--_icon-width, 0.75rem), var(--_icon-height, 0.75rem))',
-  },
-  sm: {
-    width: 'var(--_icon-width, 1rem)',
-    height: 'var(--_icon-height, 1rem)',
-    fontSize: 'min(var(--_icon-width, 1rem), var(--_icon-height, 1rem))',
-  },
-  md: {
-    width: 'var(--_icon-width, 1.25rem)',
-    height: 'var(--_icon-height, 1.25rem)',
-    fontSize: 'min(var(--_icon-width, 1.25rem), var(--_icon-height, 1.25rem))',
-  },
-  lg: {
-    width: 'var(--_icon-width, 1.5rem)',
-    height: 'var(--_icon-height, 1.5rem)',
-    fontSize: 'min(var(--_icon-width, 1.5rem), var(--_icon-height, 1.5rem))',
-  },
-});
-
-const colorStyles = stylex.create({
-  primary: {
-    color: colorVars['--color-icon-primary'],
-  },
-  secondary: {
-    color: colorVars['--color-icon-secondary'],
-  },
-  tertiary: {
-    color: colorVars['--color-icon-secondary'],
-  },
-  disabled: {
-    color: colorVars['--color-icon-disabled'],
-  },
-  accent: {
-    color: colorVars['--color-accent'],
-  },
-  info: {
-    color: colorVars['--color-icon-info'],
-  },
-  success: {
-    color: colorVars['--color-icon-success'],
-  },
-  error: {
-    color: colorVars['--color-icon-error'],
-  },
-  warning: {
-    color: colorVars['--color-icon-warning'],
-  },
-  inherit: {
-    color: 'inherit',
-  },
-  // Non-semantic colors
-  blue: {
-    color: colorVars['--color-icon-blue'],
-  },
-  red: {
-    color: colorVars['--color-icon-red'],
-  },
-  green: {
-    color: colorVars['--color-icon-green'],
-  },
-  gray: {
-    color: colorVars['--color-icon-gray'],
-  },
-  cyan: {
-    color: colorVars['--color-icon-cyan'],
-  },
-  teal: {
-    color: colorVars['--color-icon-teal'],
-  },
-  yellow: {
-    color: colorVars['--color-icon-yellow'],
-  },
-  orange: {
-    color: colorVars['--color-icon-orange'],
-  },
-  pink: {
-    color: colorVars['--color-icon-pink'],
-  },
-  purple: {
-    color: colorVars['--color-icon-purple'],
-  },
-});
+function iconSizeStyle(size: IconSize): IconSizeStyle {
+  return {[iconSizeVar]: iconSizeValues[size]};
+}
 
 // =============================================================================
 // Types
 // =============================================================================
-
-export type IconColor = keyof typeof colorStyles;
 
 /**
  * Type for icon components that can be passed to Icon.
@@ -258,10 +168,9 @@ export interface IconProps extends Omit<
    */
   label?: string;
   /**
-   * StyleX styles created via `stylex.create()`. Folded into the icon's own
-   * `stylex.props()` call (as the last argument) so it merges with the base
-   * color/size styles for optimal deduplication, matching how other Astryx
-   * components accept `xstyle`.
+   * StyleX styles created via `stylex.create()`. Stays unlayered, so a
+   * consumer rule still wins over the icon's own utilities, and it merges
+   * before `className` and `style`.
    *
    * @example
    * ```
@@ -358,14 +267,12 @@ export function Icon({
       // mergeProps. The remaining rest props keep their prior last-spread
       // precedence as escape hatches.
       {...mergeProps(
-        themeProps('icon', {size, color}),
-        stylex.props(
-          styles.root,
-          colorStyles[color],
-          iconSizeStyles[size],
-          xstyle,
-        ),
-        className ?? undefined,
+        mergeProps(themeProps('icon', {size, color}), {
+          className: iconGlyphClassName(color),
+          style: iconSizeStyle(size),
+        }),
+        stylex.props(xstyle),
+        className,
         style,
       )}
       {...props}
@@ -428,8 +335,8 @@ function IconFromRegistry({
   }
 
   // The styling props (className, style, xstyle) are handled here so they
-  // COMPOSE with the internal astryx-icon + StyleX classes/styles instead of
-  // being shadowed by the later spread: xstyle folds into stylex.props, and
+  // COMPOSE with the internal astryx-icon class and the glyph classes instead
+  // of being shadowed by the later spread: xstyle folds into stylex.props, and
   // className/style merge via mergeProps. Other span props keep their prior
   // precedence (spread before the internal merge).
   const restSpanProps =
@@ -445,14 +352,12 @@ function IconFromRegistry({
       {...a11yProps}
       {...restSpanProps}
       {...mergeProps(
-        themeProps('icon', {size, color}),
-        stylex.props(
-          styles.span,
-          colorStyles[color],
-          registrySizeStyles[size],
-          xstyle,
-        ),
-        className ?? undefined,
+        mergeProps(themeProps('icon', {size, color}), {
+          className: iconRegistryClassName(color),
+          style: iconSizeStyle(size),
+        }),
+        stylex.props(xstyle),
+        className,
         style,
       )}>
       {resolvedIcon}
