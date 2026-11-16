@@ -626,6 +626,9 @@ importers:
         specifier: ^12.1.0
         version: 12.1.0
     devDependencies:
+      '@astryxdesign/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@radix-ui/react-avatar':
         specifier: ^1.2.0
         version: 1.2.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
