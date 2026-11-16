@@ -38,19 +38,9 @@
 
 import * as React from 'react';
 import {useRef} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from './tokens.stylex';
 import {dataAttr} from '../naming';
 import {useAutoMediaMode} from '../hooks/useAutoMediaMode';
-
-const styles = stylex.create({
-  root: {
-    display: 'contents',
-  },
-  active: {
-    color: colorVars['--color-text-primary'],
-  },
-});
+import {mediaThemeClassName} from './mediaThemeClasses';
 
 /** Surface luminance context, or `"off"` for no media context at all. */
 export type MediaThemeMode = 'dark' | 'light' | 'auto' | 'off';
@@ -106,7 +96,7 @@ export function MediaTheme({
     <div
       ref={ref}
       {...(resolved === 'off' ? null : {[dataAttr('media')]: resolved})}
-      {...stylex.props(styles.root, resolved !== 'off' && styles.active)}>
+      className={mediaThemeClassName({isActive: resolved !== 'off'})}>
       {children}
     </div>
   );

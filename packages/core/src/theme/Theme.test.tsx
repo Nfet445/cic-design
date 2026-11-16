@@ -10,6 +10,7 @@ import {defineTheme} from './defineTheme';
 import type * as DefineThemeModule from './defineTheme';
 import {dynamicTypeScaleRule} from './dynamicType';
 import {__resetDevWarnings} from '../utils/devWarning';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 const {generateThemeCSSSpy} = vi.hoisted(() => ({
   generateThemeCSSSpy: vi.fn(),
@@ -98,6 +99,66 @@ describe('Theme', () => {
     );
     const wrapper = container.querySelector('[data-astryx-theme="test"]');
     expect(wrapper).toBeTruthy();
+  });
+
+  // =========================================================================
+  // Wrapper classes — the sheet carries their declarations
+  // =========================================================================
+
+  const COLOR_SCHEME_CLASSES = [
+    '[color-scheme:light]',
+    '[color-scheme:dark]',
+    '[color-scheme:light_dark]',
+  ];
+
+  function wrapperOf(container: HTMLElement): Element {
+    const wrapper = container.querySelector('[data-astryx-theme="test"]');
+    if (wrapper == null) {
+      throw new Error('Theme rendered no wrapper');
+    }
+    return wrapper;
+  }
+
+  it('leaves the layout to its children and hands them the text treatment', () => {
+    const {container} = render(
+      <Theme theme={testTheme}>
+        <span>child</span>
+      </Theme>,
+    );
+    expectClassSet(wrapperOf(container), {
+      includes: [
+        'contents',
+        '[color:var(--color-text-primary)]',
+        '[font-family:var(--font-family-body)]',
+      ],
+    });
+  });
+
+  it.each([
+    ['light', '[color-scheme:light]'],
+    ['dark', '[color-scheme:dark]'],
+    ['system', '[color-scheme:light_dark]'],
+  ] as const)('hands color-scheme %s to the browser', (mode, expected) => {
+    const {container} = render(
+      <Theme theme={testTheme} mode={mode}>
+        <span>child</span>
+      </Theme>,
+    );
+    expectClassSet(wrapperOf(container), {
+      includes: [expected],
+      excludes: COLOR_SCHEME_CLASSES.filter(name => name !== expected),
+    });
+  });
+
+  it('marks nothing for motion until the theme reduces it', () => {
+    const {container} = render(
+      <Theme theme={testTheme}>
+        <span>child</span>
+      </Theme>,
+    );
+    expectClassSet(wrapperOf(container), {
+      excludes: ['[--_astryx-reduced-motion:1]'],
+    });
   });
 
   // =========================================================================

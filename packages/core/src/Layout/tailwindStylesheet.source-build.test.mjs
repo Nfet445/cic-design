@@ -33,6 +33,8 @@ import {
   textClassName,
   truncationTooltipContentClassName,
 } from '../Text/textClasses';
+import {themeWrapperClassName} from '../theme/themeClasses';
+import {mediaThemeClassName} from '../theme/mediaThemeClasses';
 import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
 import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
 import {describe, expect, it} from 'vitest';
@@ -231,6 +233,16 @@ function familyClassNames() {
     }
   }
 
+  // The theme wrapper styles the provider itself, so the modules that style
+  // themselves share this sheet and its cover.
+  for (const mode of ['light', 'dark', 'system']) {
+    for (const reducesMotion of [false, true]) {
+      add(themeWrapperClassName({mode, reducesMotion}));
+    }
+  }
+  add(mediaThemeClassName({isActive: true}));
+  add(mediaThemeClassName({isActive: false}));
+
   return [...names].sort();
 }
 
@@ -349,6 +361,30 @@ describe('dist/astryx-tailwind.css declarations', () => {
     );
     expect(pressed).toContain('&[aria-pressed="true"]');
     expect(pressed).toContain('background-color:var(--color-overlay-pressed)');
+  });
+
+  it('hands the theme wrappers their color scheme and text treatment', () => {
+    // `ruleFor` drops whitespace, so the two-value scheme is read from the
+    // raw sheet as well.
+    expect(stylesheet.ruleFor('[color-scheme:light_dark]')).toBe(
+      'color-scheme:lightdark;',
+    );
+    expect(stylesheet.css).toContain('color-scheme: light dark;');
+    expect(stylesheet.ruleFor('[color-scheme:light]')).toBe(
+      'color-scheme:light;',
+    );
+    expect(stylesheet.ruleFor('[color-scheme:dark]')).toBe(
+      'color-scheme:dark;',
+    );
+    expect(stylesheet.ruleFor('[--_astryx-reduced-motion:1]')).toBe(
+      '--_astryx-reduced-motion:1;',
+    );
+    expect(stylesheet.ruleFor('[color:var(--color-text-primary)]')).toBe(
+      'color:var(--color-text-primary);',
+    );
+    expect(stylesheet.ruleFor('[font-family:var(--font-family-body)]')).toBe(
+      'font-family:var(--font-family-body);',
+    );
   });
 
   it('declares no theme variable of its own', () => {

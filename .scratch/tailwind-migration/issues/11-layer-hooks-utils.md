@@ -1,7 +1,7 @@
 # layer hooks utils
 
 Status: ready-for-agent
-Blocked by: 5,7
+Blocked by: 5
 Wave: 3
 Ticket: 11
 Parent: `00-epic-stylex-to-tailwind-4`

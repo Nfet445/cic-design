@@ -19,6 +19,7 @@ import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {MediaTheme} from './MediaTheme';
 import type {MediaThemeMode} from './MediaTheme';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 function renderMode(mode: MediaThemeMode, fallback?: 'dark' | 'light') {
   render(
@@ -43,6 +44,27 @@ describe('MediaTheme', () => {
 
   it('still renders its element for mode="off" so children never remount', () => {
     expect(renderMode('off')?.tagName).toBe('DIV');
+  });
+
+  it('takes the surface text colour when it resolves a mode', () => {
+    const wrapper = renderMode('dark');
+    if (wrapper == null) {
+      throw new Error('MediaTheme rendered no wrapper');
+    }
+    expectClassSet(wrapper, {
+      includes: ['contents', '[color:var(--color-text-primary)]'],
+    });
+  });
+
+  it('keeps the ambient text colour for mode="off"', () => {
+    const wrapper = renderMode('off');
+    if (wrapper == null) {
+      throw new Error('MediaTheme rendered no wrapper');
+    }
+    expectClassSet(wrapper, {
+      includes: ['contents'],
+      excludes: ['[color:var(--color-text-primary)]'],
+    });
   });
 
   it('falls back to dark for an unmeasurable auto surface', () => {

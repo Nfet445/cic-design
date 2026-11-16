@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 7 of 37 done, 2 waves done before the tickets existed.
+Progress: 8 of 38 done, 2 waves done before the tickets existed.
 
 ### Wave 0 — the harness
 
@@ -50,7 +50,7 @@ Progress: 7 of 37 done, 2 waves done before the tickets existed.
 ### Wave 3 — shared infrastructure and `family:layout-regions`
 
 - [x] `05-tokens` — 18 `defineVars` become `tokens.css` plus a shim, 251 importers follow
-- [ ] `06-theme-modules` — data tokens, derived registry, `defineTheme`, colour modes
+- [x] `06-theme-modules` — data tokens, derived registry, `defineTheme`, colour modes
 - [ ] `07-private-attributes` — markers and variables, 26 `.stylex.ts` files
 - [ ] `08-icon` — `Icon/` and the `IconSize` contract
 - [ ] `09-text` — the typography vocabulary every family reads
