@@ -44,12 +44,27 @@ import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {stackClassName} from '../Stack/stackClasses';
 import {stackItemClassName} from '../Stack/stackItemClasses';
+import {
+  sectionInnerClassName,
+  sectionOuterClassName,
+} from '../Section/sectionClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
 import {
   textClassName,
   truncationTooltipContentClassName,
 } from '../Text/textClasses';
 import {themeWrapperClassName} from '../theme/themeClasses';
+import {
+  toolbarCenterSlotClassName,
+  toolbarEndSlotClassName,
+  toolbarGapClassName,
+  toolbarLoneEndSlotClassName,
+  toolbarLoneStartSlotClassName,
+  toolbarRowClassName,
+  toolbarSideLaneClassName,
+  toolbarStartSlotClassName,
+  toolbarTabIndicatorClassName,
+} from '../Toolbar/toolbarClasses';
 import {mediaThemeClassName} from '../theme/mediaThemeClasses';
 import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
 import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
@@ -186,6 +201,37 @@ function familyClassNames() {
     }),
   );
 
+  for (const variant of ['section', 'transparent', 'muted']) {
+    for (const dividers of [[], ['top'], ['bottom'], ['start'], ['end']]) {
+      add(sectionInnerClassName({dividers, variant}));
+    }
+  }
+  add(sectionOuterClassName({}));
+  add(
+    sectionOuterClassName({
+      height: 200,
+      maxWidth: '64rem',
+      minHeight: 40,
+      width: '100%',
+    }),
+  );
+  for (const gap of [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10]) {
+    for (const hasCenterContent of [false, true]) {
+      for (const isVertical of [false, true]) {
+        add(toolbarRowClassName({gap, hasCenterContent, isVertical}));
+      }
+    }
+    add(toolbarGapClassName(gap));
+    add(toolbarSideLaneClassName({end: false, gap}));
+    add(toolbarSideLaneClassName({end: true, gap}));
+  }
+  add(toolbarCenterSlotClassName());
+  add(toolbarStartSlotClassName());
+  add(toolbarEndSlotClassName());
+  add(toolbarLoneStartSlotClassName());
+  add(toolbarLoneEndSlotClassName());
+  add(toolbarTabIndicatorClassName());
+
   for (const variant of ['primary', 'secondary', 'ghost', 'destructive']) {
     for (const size of ['sm', 'md', 'lg']) {
       for (const elevation of ['none', 'low', 'med', 'high']) {
@@ -304,9 +350,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
   it('stays within the budget of its class maps', () => {
     // The layout maps and the words in their comments produce about 120
     // rules; the Button map adds about 115, the Table header cell map about
-    // 30 and the Text map about 65. A scan that reaches component bodies or
-    // prose would add hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(420);
+    // 30 and the Text map about 65. The Section and Toolbar maps add about
+    // 40 more. A scan that reaches component bodies or prose would add
+    // hundreds more.
+    expect(stylesheet.rules.size).toBeLessThan(460);
     // A Tailwind palette colour or a default font stack belongs to no map:
     // its presence means the build read text no map produced.
     expect(stylesheet.compact).not.toMatch(
