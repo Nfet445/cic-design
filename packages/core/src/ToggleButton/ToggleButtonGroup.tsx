@@ -4,8 +4,9 @@
 
 /**
  * @file ToggleButtonGroup.tsx
- * @input Layer-scoped React context, ToggleButton children, and the shared
- *   group press tracking (hooks/useGroupPressTracking)
+ * @input Layer-scoped React context, ToggleButton children, Tailwind utility
+ *   classes (toggleButtonGroupClasses.ts), and the shared group press tracking
+ *   (hooks/useGroupPressTracking)
  * @output Exports ToggleButtonGroup component and types
  * @position Groups toggle buttons for single or multi-select behavior
  *
@@ -29,7 +30,6 @@ import {
 } from 'react';
 import {createLayerScopedContext} from '../Layer/layerScopedContext';
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 import type {ButtonSize} from '../Button';
 import type {BaseProps} from '../BaseProps';
 import {PressGroupContext} from '../hooks/pressGroupContext';
@@ -37,7 +37,9 @@ import {useTouchPresentation} from '../utils/touchPresentation';
 import {useGroupPressTracking} from '../hooks/useGroupPressTracking';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {toggleButtonGroupClassName} from './toggleButtonGroupClasses';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import type {StyleXStyles} from '@stylexjs/stylex';
 import {themeProps} from '../utils/themeProps';
 
@@ -73,27 +75,6 @@ ToggleButtonGroupContext.displayName = 'ToggleButtonGroupContext';
 export function useToggleButtonGroup(): ToggleButtonGroupContextValue | null {
   return use(ToggleButtonGroupContext);
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  group: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  vertical: {
-    flexDirection: 'column',
-    alignItems: 'stretch',
-  },
-  // While the group tracks presses, its hit layer is the root's `::before`,
-  // below its toggles, so the root is the layer's containing block.
-  tracking: {
-    position: 'relative',
-  },
-});
 
 // =============================================================================
 // Props — Discriminated Union
@@ -274,6 +255,14 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): ReactNode {
   ).ref;
   const mergedRef = useMergedRefs(callerRef, groupRef, hitAreaRef);
 
+  // The group's own layout comes from utility classes. The touch hit band is a
+  // shared StyleX module that has not migrated, so its class joins them.
+  const layoutClassName = tw(
+    toggleButtonGroupClassName({orientation, tracksPress}),
+    tracksPress &&
+      stylex.props(touchHitAreaStyles.layerBelowChildren).className,
+  );
+
   return (
     <ToggleButtonGroupContext value={contextValue}>
       <div
@@ -283,14 +272,10 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): ReactNode {
         aria-label={label}
         data-testid={testId}
         {...mergeProps(
-          themeProps('toggle-button-group'),
-          stylex.props(
-            styles.group,
-            tracksPress && styles.tracking,
-            tracksPress && touchHitAreaStyles.layerBelowChildren,
-            orientation === 'vertical' && styles.vertical,
-            xstyle,
-          ),
+          mergeProps(themeProps('toggle-button-group'), {
+            className: layoutClassName,
+          }),
+          stylex.props(xstyle),
           className,
           style,
         )}>

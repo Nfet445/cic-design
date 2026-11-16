@@ -11,11 +11,19 @@
  */
 
 import {buildAstryxTailwindCss} from '../../scripts/build-css-tailwind.mjs';
+import {
+  buttonClassName,
+  buttonForcedColorsEdgeClassName,
+  buttonPressClassName,
+} from '../Button/buttonClasses';
+import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {stackClassName} from '../Stack/stackClasses';
 import {stackItemClassName} from '../Stack/stackItemClasses';
+import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
+import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
 import {describe, expect, it} from 'vitest';
 
 const sheet = await buildAstryxTailwindCss();
@@ -38,15 +46,42 @@ function rulesOf(css) {
 
 const rules = rulesOf(sheet);
 const compact = sheet.replace(/\s+/g, '');
+const flat = sheet.replace(/\\/g, '').replace(/\s+/g, '');
 
 /** The declaration of this utility, whichever way Tailwind writes the selector. */
 function ruleFor(className) {
   return rules.get(`.${className}`) ?? rules.get(className);
 }
 
+/**
+ * The whole block of this class, nested variant blocks included. A variant
+ * class prints as `.name { &[attr] { … } }`, which a flat rule map cannot
+ * hold, so the block is read by counting braces from the selector.
+ */
+function blockOf(className) {
+  const needle = `.${className}{`;
+  const at = flat.indexOf(needle);
+  if (at < 0) {
+    return undefined;
+  }
+  const start = at + needle.length;
+  let depth = 1;
+  for (let index = start; index < flat.length; index += 1) {
+    if (flat[index] === '{') {
+      depth += 1;
+    } else if (flat[index] === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return flat.slice(start, index);
+      }
+    }
+  }
+  return undefined;
+}
+
 /** True when the sheet carries a rule for this utility class name. */
 function hasRule(className) {
-  return ruleFor(className) != null;
+  return ruleFor(className) != null || blockOf(className) != null;
 }
 
 /**
@@ -106,6 +141,49 @@ function familyClassNames() {
     }),
   );
 
+  for (const variant of ['primary', 'secondary', 'ghost', 'destructive']) {
+    for (const size of ['sm', 'md', 'lg']) {
+      for (const elevation of ['none', 'low', 'med', 'high']) {
+        add(
+          buttonClassName({
+            elevation,
+            isGrouped: false,
+            isIconOnly: false,
+            isInactive: false,
+            isTrulyDisabled: false,
+            orientation: 'horizontal',
+            size,
+            variant,
+          }),
+        );
+      }
+    }
+    add(
+      buttonForcedColorsEdgeClassName({
+        isError: variant === 'destructive',
+        isGrouped: true,
+        isSolid: variant === 'primary' || variant === 'destructive',
+        orientation: 'vertical',
+      }),
+    );
+  }
+  add(buttonPressClassName());
+  add(
+    buttonClassName({
+      elevation: 'none',
+      isGrouped: true,
+      isIconOnly: true,
+      isInactive: true,
+      isTrulyDisabled: true,
+      orientation: 'vertical',
+      size: 'lg',
+      variant: 'ghost',
+    }),
+  );
+  add(buttonGroupClassName({elevation: 'med', orientation: 'vertical', tracksPress: true}));
+  add(toggleButtonClassName({isPressed: true}));
+  add(toggleButtonGroupClassName({orientation: 'vertical', tracksPress: true}));
+
   return [...names].sort();
 }
 
@@ -154,6 +232,24 @@ describe('dist/astryx-tailwind.css', () => {
     expect(ruleFor('grid-cols-[var(--astryx-grid-template-columns)]')).toBe(
       'grid-template-columns:var(--astryx-grid-template-columns);',
     );
+  });
+
+  it('keeps a state class later than the base declaration it overrides', () => {
+    // `ToggleButton` shifts its label to semibold over Button's medium. Both
+    // are arbitrary-property classes in the same layer, so the sheet order,
+    // not the class attribute, decides: the shift must come after.
+    expect(compact.indexOf('font-weight:var(--font-weight-semibold)'))
+      .toBeGreaterThan(compact.indexOf('font-weight:var(--font-weight-medium)'));
+  });
+
+  it('lets a pressed toggle outrank the ghost surface it overrides', () => {
+    // The ghost Button paints `bg-transparent`; the pressed overlay is a
+    // different class in the same layer, so it carries the `aria-pressed`
+    // variant to win on specificity. Without the variant the sheet order
+    // decides, and the overlay loses in a browser.
+    const pressed = blockOf('aria-pressed:bg-[var(--color-overlay-pressed)]');
+    expect(pressed).toContain('&[aria-pressed="true"]');
+    expect(pressed).toContain('background-color:var(--color-overlay-pressed)');
   });
 
   it('declares no theme variable of its own', () => {

@@ -537,22 +537,40 @@ describe('ButtonGroup', () => {
 
   describe('elevation', () => {
     it('renders a distinct class on the group for each elevation level', () => {
-      const classFor = (elevation: 'none' | 'low' | 'med' | 'high') => {
-        const {container} = render(
+      const classesFor = (elevation: 'none' | 'low' | 'med' | 'high') => {
+        const {container, unmount} = render(
           <ButtonGroup label="Actions" elevation={elevation}>
             <Button label="One" />
             <Button label="Two" />
           </ButtonGroup>,
         );
-        return container.querySelector('[role="group"]')!.className;
+        const classes = [
+          ...container.querySelector('[role="group"]')!.classList,
+        ];
+        unmount();
+        return classes;
       };
-      const classes = new Set([
-        classFor('none'),
-        classFor('low'),
-        classFor('med'),
-        classFor('high'),
+
+      expect(classesFor('none')).toContain('shadow-none');
+      // The wrapper takes the element radius with the shadow, so the shadow
+      // follows the group's rounded outer corners.
+      for (const [elevation, token] of [
+        ['low', '--shadow-low'],
+        ['med', '--shadow-med'],
+        ['high', '--shadow-high'],
+      ] as const) {
+        const classes = classesFor(elevation);
+        expect(classes).toContain(`shadow-[var(${token})]`);
+        expect(classes).toContain('rounded-[var(--radius-element)]');
+      }
+
+      const distinct = new Set([
+        classesFor('none').join(' '),
+        classesFor('low').join(' '),
+        classesFor('med').join(' '),
+        classesFor('high').join(' '),
       ]);
-      expect(classes.size).toBe(4);
+      expect(distinct.size).toBe(4);
     });
 
     it('defaults to flat (elevation none)', () => {

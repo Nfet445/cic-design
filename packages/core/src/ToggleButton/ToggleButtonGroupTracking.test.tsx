@@ -240,12 +240,16 @@ describe('ToggleButtonGroup tracks a held pointer across its toggles (family:act
     expect(layer.filter(name => coarse.group.classList.contains(name))).toEqual(
       layer,
     );
+    // The band is the root's absolutely positioned `::before`, so the root has
+    // to be its containing block.
+    expect(coarse.group).toHaveClass('relative');
     coarse.unmount();
     finePrimaryPointer();
     const fine = mount();
     expect(layer.filter(name => fine.group.classList.contains(name))).toEqual(
       [],
     );
+    expect(fine.group).not.toHaveClass('relative');
   });
 
   it('a finger slid from Bold across Italic to Underline toggles only Underline (FR4)', () => {

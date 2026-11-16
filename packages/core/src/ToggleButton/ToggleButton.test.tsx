@@ -15,10 +15,7 @@ import userEvent from '@testing-library/user-event';
 import {useState, type MouseEvent} from 'react';
 import {ToggleButton} from './ToggleButton';
 import {ToggleButtonGroup} from './ToggleButtonGroup';
-import {
-  getAllInjectedCss,
-  getForcedColorsRules,
-} from '../__tests__/forcedColors';
+import {toggleButtonLabelPressedClassName} from './toggleButtonClasses';
 
 // =============================================================================
 // ToggleButton — Standalone
@@ -607,6 +604,42 @@ describe('ToggleButtonGroup (single)', () => {
     expect(screen.getByRole('group', {name: 'View mode'})).toBeInTheDocument();
   });
 
+  // The group's layout is a class set (`spec:AST-119` FR8): no unit test
+  // resolves a stylesheet, so the orientation and the spacing step stay
+  // observable as the classes that name them.
+  it('lays the toggles out in a row that centers them, or a column that stretches them', () => {
+    const classesFor = (orientation: 'horizontal' | 'vertical') => {
+      const {container, unmount} = render(
+        <ToggleButtonGroup
+          value={null}
+          onChange={() => {}}
+          label="View mode"
+          orientation={orientation}>
+          <ToggleButton value="list" label="List" />
+        </ToggleButtonGroup>,
+      );
+      const classes = [...container.querySelector('[role="group"]')!.classList];
+      unmount();
+      return classes;
+    };
+
+    const horizontal = classesFor('horizontal');
+    expect(horizontal).toContain('inline-flex');
+    expect(horizontal).toContain('gap-1');
+    expect(horizontal).toContain('flex-row');
+    expect(horizontal).toContain('items-center');
+    expect(horizontal).not.toContain('flex-col');
+    expect(horizontal).not.toContain('items-stretch');
+
+    const vertical = classesFor('vertical');
+    expect(vertical).toContain('inline-flex');
+    expect(vertical).toContain('gap-1');
+    expect(vertical).toContain('flex-col');
+    expect(vertical).toContain('items-stretch');
+    expect(vertical).not.toContain('flex-row');
+    expect(vertical).not.toContain('items-center');
+  });
+
   it('marks the selected button as pressed', () => {
     render(<SingleGroup />);
     expect(screen.getByRole('button', {name: 'List'})).toHaveAttribute(
@@ -1041,22 +1074,79 @@ describe('disabled state', () => {
   });
 });
 
-// jsdom cannot emulate forced-colors rendering, so these assert that the
-// compiled output includes the forced-colors rules; visual behavior needs
-// manual verification under Windows High Contrast.
+// jsdom cannot emulate forced-colors rendering, so these assert the class set
+// the pressed surface carries; the build emits one rule per class, and visual
+// behavior needs manual verification under Windows High Contrast.
 describe('forced colors (WCAG 1.4.11)', () => {
-  it('compiles forced-colors overrides so the pressed state survives Windows High Contrast', () => {
-    render(<ToggleButton label="Bold" isPressed onPressedChange={() => {}} />);
-    const css = getForcedColorsRules();
+  const classesOf = (isPressed: boolean) => {
+    const {container, unmount} = render(
+      <ToggleButton
+        label="Bold"
+        isPressed={isPressed}
+        onPressedChange={() => {}}
+      />,
+    );
+    const classes = [...container.querySelector('button')!.classList];
+    unmount();
+    return classes;
+  };
+
+  it('marks the pressed surface so the pressed state survives Windows High Contrast', () => {
+    const classes = classesOf(true);
     // The painted pressed overlay is stripped; Highlight/HighlightText marks
     // the pressed toggle (critical for icon-only toggles, which otherwise
     // lose all pressed indication).
-    expect(css).toContain('background-color: highlight;');
-    expect(css).toContain('color: highlighttext;');
+    // Both carry the `aria-pressed` variant: the pressed surface has to beat
+    // the ghost Button's `bg-transparent` inside the same cascade layer, where
+    // specificity decides and the class attribute order does not.
+    expect(classes).toContain(
+      'aria-pressed:forced-colors:bg-[color:Highlight]',
+    );
+    expect(classes).toContain(
+      'aria-pressed:forced-colors:text-[color:HighlightText]',
+    );
     // ToggleButton renders a <button>; without opting out of UA remapping it
     // keeps the native ButtonFace surface and ignores the Highlight fill,
     // leaving HighlightText text on a white surface. forced-color-adjust: none
     // makes both render as authored.
-    expect(getAllInjectedCss()).toContain('forced-color-adjust: none;');
+    expect(classes).toContain('[forced-color-adjust:none]');
+    // The authored fill those overrides replace on the pressed surface.
+    expect(classes).toContain('aria-pressed:bg-[var(--color-overlay-pressed)]');
+  });
+
+  it('leaves the unpressed surface to the ghost Button', () => {
+    const classes = classesOf(false);
+    expect(classes).not.toContain(
+      'aria-pressed:bg-[var(--color-overlay-pressed)]',
+    );
+    expect(classes).not.toContain(
+      'aria-pressed:forced-colors:bg-[color:Highlight]',
+    );
+  });
+});
+
+describe('pressed label', () => {
+  it('shifts the visible label to semibold over the reserved width', () => {
+    const labelOf = (isPressed: boolean) => {
+      const {container, unmount} = render(
+        <ToggleButton
+          label="Bold"
+          isPressed={isPressed}
+          onPressedChange={() => {}}
+        />,
+      );
+      const label = [...container.querySelectorAll('span')].find(
+        span =>
+          span.children.length === 0 &&
+          span.textContent === 'Bold' &&
+          span.getAttribute('aria-hidden') !== 'true',
+      )!;
+      const classes = [...label.classList];
+      unmount();
+      return classes;
+    };
+
+    expect(labelOf(true)).toContain(toggleButtonLabelPressedClassName);
+    expect(labelOf(false)).not.toContain(toggleButtonLabelPressedClassName);
   });
 });

@@ -4,7 +4,7 @@
 
 /**
  * @file ToggleButton.tsx
- * @input Uses Button, React, StyleX, theme tokens
+ * @input Uses Button, React, theme props
  * @output Exports ToggleButton component and types
  * @position Thin wrapper over Button; adds controlled toggle pattern
  *
@@ -15,6 +15,8 @@
  * - Font weight shift on press with width reservation to prevent layout shift
  * - Group integration via ToggleButtonGroupContext
  *
+ * Its class strings live in `toggleButtonClasses.ts`.
+ *
  * SYNC: When modified, update these files to stay in sync:
  * - /packages/core/src/ToggleButton/index.ts (exports if types change)
  * - /apps/storybook/stories/ToggleButton.stories.tsx
@@ -22,8 +24,6 @@
  */
 
 import React, {use, useOptimistic, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars, fontWeightVars} from '../theme/tokens.stylex';
 
 import {Button, type ButtonSize} from '../Button';
 import {
@@ -33,62 +33,15 @@ import {
 import {GROUP_PRESS_POINTERS} from '../hooks/useGroupPressTracking';
 import type {Elevation} from '../utils/types';
 import {useToggleButtonGroup} from './ToggleButtonGroup';
+import {
+  toggleButtonClassName,
+  toggleButtonLabelClassName,
+  toggleButtonLabelPressedClassName,
+  toggleButtonLabelReservationClassName,
+} from './toggleButtonClasses';
 import type {BaseProps} from '../BaseProps';
 import {themeDataAttributes, themeProps} from '../utils/themeProps';
 import {mergeProps} from '../utils/mergeProps';
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-/**
- * Font weight shift on press with width reservation trick.
- * A hidden span renders the same text at semibold weight to reserve
- * the wider width, preventing layout shift when toggling.
- */
-const pressedStyles = stylex.create({
-  background: {
-    // forced-color-adjust must be `none` here: ToggleButton renders a <button>,
-    // and the UA keeps native form-control colors (ButtonFace surface) for it
-    // under forced colors, ignoring the authored Highlight fill — the label kept
-    // its HighlightText color, giving white text on a white surface. Opting the
-    // pressed button out of UA remapping makes both the Highlight surface and
-    // the HighlightText label render as authored, restoring figure-ground.
-    forcedColorAdjust: 'none',
-    backgroundColor: {
-      default: colorVars['--color-overlay-pressed'],
-      // Forced colors (Windows High Contrast) strips the painted pressed
-      // overlay, which would leave icon-only toggles with no pressed
-      // indication at all. Highlight/HighlightText is the platform convention
-      // for a selected/pressed control (WCAG 1.4.11).
-      '@media (forced-colors: active)': 'Highlight',
-    },
-    color: {
-      default: null,
-      '@media (forced-colors: active)': 'HighlightText',
-    },
-  },
-});
-
-const labelStyles = stylex.create({
-  wrapper: {
-    display: 'inline-flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pressed: {
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  widthReservation: {
-    display: 'block',
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    height: 0,
-    overflow: 'hidden',
-    visibility: 'hidden',
-    pointerEvents: 'none',
-  },
-});
 
 // =============================================================================
 // Props
@@ -326,21 +279,25 @@ export function ToggleButton({
   const labelContent =
     // eslint-disable-next-line @astryx/no-nullish-jsx-guard -- switching to isRenderable would show `label` for children of '', false or true, a visible change that needs a decision
     children != null ? (
-      <span {...stylex.props(labelStyles.wrapper)}>
-        <span {...stylex.props(isPressed && labelStyles.pressed)}>
+      <span className={toggleButtonLabelClassName}>
+        <span
+          className={isPressed ? toggleButtonLabelPressedClassName : undefined}>
           {children}
         </span>
         <span
-          {...stylex.props(labelStyles.widthReservation)}
+          className={toggleButtonLabelReservationClassName}
           aria-hidden="true">
           {children}
         </span>
       </span>
     ) : !isIconOnly ? (
-      <span {...stylex.props(labelStyles.wrapper)}>
-        <span {...stylex.props(isPressed && labelStyles.pressed)}>{label}</span>
+      <span className={toggleButtonLabelClassName}>
         <span
-          {...stylex.props(labelStyles.widthReservation)}
+          className={isPressed ? toggleButtonLabelPressedClassName : undefined}>
+          {label}
+        </span>
+        <span
+          className={toggleButtonLabelReservationClassName}
           aria-hidden="true">
           {label}
         </span>
@@ -359,6 +316,10 @@ export function ToggleButton({
 
   // The group's hit layer is the touch band of each toggle it tracks.
   const isInGroupBand = group != null && groupPointers != null;
+
+  // The toggle's own surface classes follow the theme class and precede a
+  // caller's class, so a caller's utility still wins the cascade.
+  const surfaceClassName = toggleButtonClassName({isPressed});
 
   return (
     <PressGroupContext value={groupPointers}>
@@ -380,9 +341,10 @@ export function ToggleButton({
               isPressed: isPressed ? 'true' : 'false',
               elevation,
             }),
+            {className: surfaceClassName},
             className,
           )}
-          xstyle={[isPressed ? pressedStyles.background : undefined, xstyle]}
+          xstyle={xstyle}
           style={style}
           onClick={handleClick}
           clickAction={clickAction}

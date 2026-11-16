@@ -93,8 +93,24 @@ check of the family's states.
         (2 767 B gzip) of StyleX rules for the same five files — 11% larger
         raw, 2% larger gzipped, because Tailwind prints one escaped selector
         per corner, side, and step where StyleX printed an atomic class.
-  - [ ] `ButtonGroup`, `IconButton`, `ToggleButton`, and `ToggleButtonGroup`
-        render from class maps.
+  - [x] `ButtonGroup`, `ToggleButton`, and `ToggleButtonGroup` render from
+        class maps (`buttonGroupClasses.ts`, `toggleButtonClasses.ts`,
+        `toggleButtonGroupClasses.ts`). `IconButton` needed no change: it is a
+        composition wrapper with no declaration of its own, and its size test
+        reads the icon slot, which still lowers through StyleX.
+  - [x] A state class that overrides a base declaration from another map uses
+        a variant with specificity of its own (`aria-pressed:bg-…`) rather
+        than a plain utility: both land in `astryx-base`, where the sheet
+        order decides and Tailwind sorts `bg-[…]` before `bg-transparent`. The
+        stylesheet test pins the one remaining order dependency, the label's
+        semibold weight.
+  - [x] A per-side border style utility does not exist (`border-s-solid`
+        emits nothing), and none is needed: the base sets `border-solid`,
+        which feeds `--tw-border-style`, and the side utilities read it. The
+        coverage case in the stylesheet test found the dead classes; the
+        grouped edge now carries width and colour only.
+  - The whole sheet after wave 2: 25 273 B (4 072 B gzip), 251 selector
+    rules.
 - [ ] Wave 3: `family:input-fields` and the selection controls, the first
       form-control markers and `data-*` targets.
 - [ ] Wave 4: `family:navigation-destinations` and `family:overlay-dismissal`,

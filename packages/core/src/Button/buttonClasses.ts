@@ -179,7 +179,9 @@ export const buttonLabelClassName = 'overflow-hidden text-ellipsis min-w-0';
 export const buttonLinkClassName = 'no-underline';
 
 /**
- * A solid variant's edge in forced colors. These variants separate themselves
+ * A solid variant's edge in forced colors. The base already sets
+ * `border-solid`, so a group member only needs the width and colour on the
+ * sides that face its neighbours. These variants separate themselves
  * from the page with a fill alone and have no border; forced colors discards
  * the fill, so an edge keeps the shape visible.
  */
@@ -208,12 +210,12 @@ export function buttonForcedColorsEdgeClassName({
   }
   if (orientation === 'horizontal') {
     return isError
-      ? 'forced-colors:border-t-[1px] forced-colors:border-b-[1px] forced-colors:border-t-solid forced-colors:border-b-solid forced-colors:border-t-[color:CanvasText] forced-colors:border-b-[color:CanvasText]'
-      : 'forced-colors:border-t-[1px] forced-colors:border-b-[1px] forced-colors:border-t-solid forced-colors:border-b-solid forced-colors:border-t-[color:ButtonText] forced-colors:border-b-[color:ButtonText]';
+      ? 'forced-colors:border-t-[1px] forced-colors:border-b-[1px] forced-colors:border-t-[color:CanvasText] forced-colors:border-b-[color:CanvasText]'
+      : 'forced-colors:border-t-[1px] forced-colors:border-b-[1px] forced-colors:border-t-[color:ButtonText] forced-colors:border-b-[color:ButtonText]';
   }
   return isError
-    ? 'forced-colors:border-s-[1px] forced-colors:border-e-[1px] forced-colors:border-s-solid forced-colors:border-e-solid forced-colors:border-s-[color:CanvasText] forced-colors:border-e-[color:CanvasText]'
-    : 'forced-colors:border-s-[1px] forced-colors:border-e-[1px] forced-colors:border-s-solid forced-colors:border-e-solid forced-colors:border-s-[color:ButtonText] forced-colors:border-e-[color:ButtonText]';
+    ? 'forced-colors:border-s-[1px] forced-colors:border-e-[1px] forced-colors:border-s-[color:CanvasText] forced-colors:border-e-[color:CanvasText]'
+    : 'forced-colors:border-s-[1px] forced-colors:border-e-[1px] forced-colors:border-s-[color:ButtonText] forced-colors:border-e-[color:ButtonText]';
 }
 
 /** The leading edge of a group is square; the trailing edge keeps the radius. */
