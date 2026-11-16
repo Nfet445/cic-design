@@ -23,14 +23,13 @@ const spanStyles = stylex.create({
 });
 
 /**
- * The track template is applied via a StyleX dynamic style: the element
- * carries an inline CSS variable while the `grid-template-columns`
- * declaration lives in a class (so consumer xstyle/@media overrides can
- * win). `--x-gridTemplateColumns` is the debug-mode variable name emitted
- * by the StyleX transform in tests.
+ * The track template is applied via a class-backed CSS variable: the element
+ * carries an inline `--astryx-grid-template-columns` while the
+ * `grid-template-columns` declaration lives in a Tailwind class (so consumer
+ * xstyle/@media overrides can win).
  */
 function templateColumns(el: HTMLElement): string {
-  return el.style.getPropertyValue('--x-gridTemplateColumns');
+  return el.style.getPropertyValue('--astryx-grid-template-columns');
 }
 
 describe('Grid', () => {
@@ -59,7 +58,13 @@ describe('Grid', () => {
     expect(grid.style.gridTemplateColumns).toBe('');
     expect(grid.style.gridAutoRows).toBe('');
     expect(templateColumns(grid)).toBe('repeat(3, 1fr)');
-    expect(grid.style.getPropertyValue('--x-gridAutoRows')).toBe('80px');
+    expect(grid.style.getPropertyValue('--astryx-grid-auto-rows')).toBe('80px');
+    expect(grid.className).toContain(
+      'grid-cols-[var(--astryx-grid-template-columns)]',
+    );
+    expect(grid.className).toContain(
+      'auto-rows-[var(--astryx-grid-auto-rows)]',
+    );
   });
 
   it('renders with columns object (auto-fill default)', () => {

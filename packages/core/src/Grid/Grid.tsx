@@ -2,7 +2,7 @@
 
 /**
  * @file Grid.tsx
- * @input Uses React, stylex, spacing tokens
+ * @input Uses React, Tailwind utilities, spacing tokens
  * @output Exports Grid component, GridProps, and GridColumns
  * @position Grid component; provides CSS Grid-based layout
  *
@@ -16,11 +16,21 @@
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 import type {SpacingStep} from '../utils/types';
 import type {SizeValue} from '../utils/types';
+import {
+  gridAutoRowsClass,
+  gridClassName,
+  gridTemplateColumnsClass,
+  gridTrackVars,
+} from './gridClasses';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+
+/** The inline track custom properties the track classes read. */
+type TrackStyle = React.CSSProperties &
+  Partial<Record<(typeof gridTrackVars)[keyof typeof gridTrackVars], string>>;
 
 /**
  * Grid alignment options for align-items and justify-items.
@@ -148,163 +158,6 @@ export interface GridProps extends BaseProps<HTMLDivElement> {
   children?: ReactNode;
 }
 
-const baseStyles = stylex.create({
-  grid: {
-    display: 'grid',
-  },
-});
-
-// Dynamic track values compile to CSS variables + a class-level declaration
-// (grid-template-columns: var(--x)) instead of a raw inline style, so
-// consumer `xstyle` overrides — including ones inside @media queries — can
-// still win. A raw inline `grid-template-columns` would beat any class.
-const dynamicStyles = stylex.create({
-  templateColumns: (value: string) => ({
-    gridTemplateColumns: value,
-  }),
-  autoRows: (value: number) => ({
-    gridAutoRows: `${value}px`,
-  }),
-});
-
-const alignStyles = stylex.create({
-  start: {
-    alignItems: 'start',
-  },
-  center: {
-    alignItems: 'center',
-  },
-  end: {
-    alignItems: 'end',
-  },
-  stretch: {
-    alignItems: 'stretch',
-  },
-});
-
-const justifyStyles = stylex.create({
-  start: {
-    justifyItems: 'start',
-  },
-  center: {
-    justifyItems: 'center',
-  },
-  end: {
-    justifyItems: 'end',
-  },
-  stretch: {
-    justifyItems: 'stretch',
-  },
-});
-
-const gapStyles = stylex.create({
-  0: {
-    gap: spacingVars['--spacing-0'],
-  },
-  0.5: {
-    gap: spacingVars['--spacing-0-5'],
-  },
-  1: {
-    gap: spacingVars['--spacing-1'],
-  },
-  1.5: {
-    gap: spacingVars['--spacing-1-5'],
-  },
-  2: {
-    gap: spacingVars['--spacing-2'],
-  },
-  3: {
-    gap: spacingVars['--spacing-3'],
-  },
-  4: {
-    gap: spacingVars['--spacing-4'],
-  },
-  5: {
-    gap: spacingVars['--spacing-5'],
-  },
-  6: {
-    gap: spacingVars['--spacing-6'],
-  },
-  8: {
-    gap: spacingVars['--spacing-8'],
-  },
-  10: {
-    gap: spacingVars['--spacing-10'],
-  },
-});
-
-const rowGapStyles = stylex.create({
-  0: {
-    rowGap: spacingVars['--spacing-0'],
-  },
-  0.5: {
-    rowGap: spacingVars['--spacing-0-5'],
-  },
-  1: {
-    rowGap: spacingVars['--spacing-1'],
-  },
-  1.5: {
-    rowGap: spacingVars['--spacing-1-5'],
-  },
-  2: {
-    rowGap: spacingVars['--spacing-2'],
-  },
-  3: {
-    rowGap: spacingVars['--spacing-3'],
-  },
-  4: {
-    rowGap: spacingVars['--spacing-4'],
-  },
-  5: {
-    rowGap: spacingVars['--spacing-5'],
-  },
-  6: {
-    rowGap: spacingVars['--spacing-6'],
-  },
-  8: {
-    rowGap: spacingVars['--spacing-8'],
-  },
-  10: {
-    rowGap: spacingVars['--spacing-10'],
-  },
-});
-
-const columnGapStyles = stylex.create({
-  0: {
-    columnGap: spacingVars['--spacing-0'],
-  },
-  0.5: {
-    columnGap: spacingVars['--spacing-0-5'],
-  },
-  1: {
-    columnGap: spacingVars['--spacing-1'],
-  },
-  1.5: {
-    columnGap: spacingVars['--spacing-1-5'],
-  },
-  2: {
-    columnGap: spacingVars['--spacing-2'],
-  },
-  3: {
-    columnGap: spacingVars['--spacing-3'],
-  },
-  4: {
-    columnGap: spacingVars['--spacing-4'],
-  },
-  5: {
-    columnGap: spacingVars['--spacing-5'],
-  },
-  6: {
-    columnGap: spacingVars['--spacing-6'],
-  },
-  8: {
-    columnGap: spacingVars['--spacing-8'],
-  },
-  10: {
-    columnGap: spacingVars['--spacing-10'],
-  },
-});
-
 /**
  * Spacing token CSS var names for gap calculation in track-max expressions.
  */
@@ -429,9 +282,14 @@ export function Grid({
     gridTemplateColumns = '1fr';
   }
 
-  // Build inline style for dynamic values. Track templates go through
-  // dynamicStyles (CSS-var indirection) so xstyle/@media overrides work;
-  // width/height stay inline as explicit caller-set dimensions.
+  // Track templates go through CSS variables rather than inline declarations,
+  // so a consumer rule — including one inside a media query — can override
+  // them; width and height stay inline as explicit caller-set dimensions.
+  const trackStyle: TrackStyle = {
+    [gridTrackVars.templateColumns]: gridTemplateColumns,
+    ...(rowHeight != null && {[gridTrackVars.autoRows]: `${rowHeight}px`}),
+  };
+
   const inlineStyle: React.CSSProperties = {
     ...(width != null && {
       width: typeof width === 'number' ? `${width}px` : width,
@@ -460,18 +318,18 @@ export function Grid({
       ref={ref}
       {...props}
       {...mergeProps(
-        themeProps('grid', {columns: columnsVariant, gap, align, justify}),
-        stylex.props(
-          baseStyles.grid,
-          dynamicStyles.templateColumns(gridTemplateColumns),
-          rowHeight != null && dynamicStyles.autoRows(rowHeight),
-          gap != null && gapStyles[gap],
-          rowGap != null && rowGapStyles[rowGap],
-          columnGap != null && columnGapStyles[columnGap],
-          align != null && alignStyles[align],
-          justify != null && justifyStyles[justify],
-          xstyle,
+        mergeProps(
+          themeProps('grid', {columns: columnsVariant, gap, align, justify}),
+          {
+            className: tw(
+              gridClassName({align, columnGap, gap, justify, rowGap}),
+              gridTemplateColumnsClass,
+              rowHeight != null && gridAutoRowsClass,
+            ),
+            style: trackStyle,
+          },
         ),
+        stylex.props(xstyle),
         className,
         {...style, ...inlineStyle},
       )}>

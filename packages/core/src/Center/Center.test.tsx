@@ -30,6 +30,10 @@ function classSet(el: HTMLElement): Set<string> {
   );
 }
 
+function classesOf(el: HTMLElement): string[] {
+  return [...classSet(el)];
+}
+
 describe('Center', () => {
   it('renders and centers children (both axes by default)', () => {
     render(
@@ -40,11 +44,9 @@ describe('Center', () => {
     const element = screen.getByTestId('center');
     expect(screen.getByText('Centered Content')).toBeInTheDocument();
     expect(element).toBeInTheDocument();
-    expect(element).toHaveStyle({
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    });
+    expect(classesOf(element)).toEqual(
+      expect.arrayContaining(['flex', 'items-center', 'justify-center']),
+    );
   });
 
   it('centers horizontally only', () => {
@@ -55,11 +57,10 @@ describe('Center', () => {
     );
     const element = screen.getByTestId('center');
     expect(screen.getByText('Horizontal Center')).toBeInTheDocument();
-    expect(element).toHaveStyle({
-      display: 'flex',
-      justifyContent: 'center',
-    });
-    expect(element).not.toHaveStyle({alignItems: 'center'});
+    expect(classesOf(element)).toEqual(
+      expect.arrayContaining(['flex', 'justify-center']),
+    );
+    expect(classesOf(element)).not.toContain('items-center');
   });
 
   it('centers vertically only', () => {
@@ -70,11 +71,10 @@ describe('Center', () => {
     );
     const element = screen.getByTestId('center');
     expect(screen.getByText('Vertical Center')).toBeInTheDocument();
-    expect(element).toHaveStyle({
-      display: 'flex',
-      alignItems: 'center',
-    });
-    expect(element).not.toHaveStyle({justifyContent: 'center'});
+    expect(classesOf(element)).toEqual(
+      expect.arrayContaining(['flex', 'items-center']),
+    );
+    expect(classesOf(element)).not.toContain('justify-center');
   });
 
   it('applies height prop', () => {
@@ -84,8 +84,10 @@ describe('Center', () => {
       </Center>,
     );
     const element = screen.getByTestId('center');
-    // Height is applied via StyleX dynamic styles
-    expect(element).toBeInTheDocument();
+    // Size lands in a class-backed CSS variable, so consumer `style` still wins
+    expect(element.style.getPropertyValue('--astryx-center-height')).toBe(
+      '100%',
+    );
   });
 
   it('applies width prop', () => {
@@ -95,8 +97,9 @@ describe('Center', () => {
       </Center>,
     );
     const element = screen.getByTestId('center');
-    // Width is applied via StyleX dynamic styles
-    expect(element).toBeInTheDocument();
+    expect(element.style.getPropertyValue('--astryx-center-width')).toBe(
+      '300px',
+    );
   });
 
   it('applies both width and height props', () => {
@@ -106,8 +109,10 @@ describe('Center', () => {
       </Center>,
     );
     const element = screen.getByTestId('center');
-    // Width and height are applied via StyleX dynamic styles
-    expect(element).toBeInTheDocument();
+    expect(element.style.getPropertyValue('--astryx-center-width')).toBe('50%');
+    expect(element.style.getPropertyValue('--astryx-center-height')).toBe(
+      '200px',
+    );
   });
 
   it('applies a class when padding is set', () => {
@@ -192,7 +197,7 @@ describe('Center', () => {
       </Center>,
     );
     const element = screen.getByTestId('center');
-    expect(element).toHaveStyle({display: 'inline-flex'});
+    expect(classesOf(element)).toContain('inline-flex');
   });
 
   it('forwards ref correctly', () => {

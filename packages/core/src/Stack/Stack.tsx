@@ -4,7 +4,8 @@
  * @file Stack.tsx
  * @input Uses React, ElementType, stack utility
  * @output Exports Stack polymorphic component and StackProps
- * @position Layout/Stack component; uses stack.stylex.ts
+ * @position Layout/Stack component; uses stackClasses.ts for its layout and
+ *   stack.stylex.ts for the public `stack()` utility
  *
  * SYNC: When modified, update these files to stay in sync:
  * - /packages/core/src/Stack/Stack.doc.mjs
@@ -15,29 +16,19 @@
 import {createElement, type ElementType, type ReactNode, type Ref} from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import {
-  stack,
-  type StackCrossAlignment,
-  type StackDirection,
-  type StackMainAlignment,
-  type StackWrap,
-  type SpacingStep,
+import type {
+  SpacingStep,
+  StackCrossAlignment,
+  StackDirection,
+  StackMainAlignment,
+  StackWrap,
 } from './stack.stylex';
+import {stackClassName} from './stackClasses';
 import type {SizeValue} from '../utils/types';
-import {
-  paddingInlineStartStyles,
-  paddingInlineEndStyles,
-  paddingBlockStartStyles,
-  paddingBlockEndStyles,
-} from '../Layout/padding.stylex';
+import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
-
-const overflowStyles = stylex.create({
-  scrollable: {
-    overflow: 'auto',
-  },
-});
+import {tw} from '../utils/tw';
 
 /**
  * Alignment values accepted by Stack.
@@ -283,24 +274,15 @@ export function Stack({
     paddingBlockStart ?? paddingBlock ?? padding;
   const resolvedPaddingBlockEnd = paddingBlockEnd ?? paddingBlock ?? padding;
 
-  const stylexProps = stylex.props(
-    ...stack({
-      direction,
-      crossAlign,
-      mainAlign,
-      gap,
-      wrap,
+  const layoutClassName = tw(
+    stackClassName({direction, crossAlign, mainAlign, gap, wrap}),
+    paddingEdgeClassName({
+      paddingBlockEnd: resolvedPaddingBlockEnd,
+      paddingBlockStart: resolvedPaddingBlockStart,
+      paddingInlineEnd: resolvedPaddingInlineEnd,
+      paddingInlineStart: resolvedPaddingInlineStart,
     }),
-    resolvedPaddingInlineStart != null &&
-      paddingInlineStartStyles[resolvedPaddingInlineStart],
-    resolvedPaddingInlineEnd != null &&
-      paddingInlineEndStyles[resolvedPaddingInlineEnd],
-    resolvedPaddingBlockStart != null &&
-      paddingBlockStartStyles[resolvedPaddingBlockStart],
-    resolvedPaddingBlockEnd != null &&
-      paddingBlockEndStyles[resolvedPaddingBlockEnd],
-    isScrollable && overflowStyles.scrollable,
-    xstyle,
+    isScrollable && 'overflow-auto',
   );
 
   // Build inline style for dynamic sizing values
@@ -324,8 +306,10 @@ export function Stack({
     {
       ref: ref as Ref<Element>,
       ...mergeProps(
-        themeProps('stack', {direction, gap, wrap}),
-        stylexProps,
+        mergeProps(themeProps('stack', {direction, gap, wrap}), {
+          className: layoutClassName,
+        }),
+        stylex.props(xstyle),
         className,
         {...style, ...sizingStyle},
       ),
