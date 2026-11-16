@@ -7,6 +7,11 @@
  * @position Testing; validates the `<th>` contract, the standalone (no
  *   TableContext) plain render, and the context-driven density/divider styling
  *
+ * The cell's own styles are Tailwind utilities, whose declarations jsdom does
+ * not resolve, so a test here asserts the class set the cell computed. The
+ * built sheet asserts the declarations those classes carry
+ * (Layout/tailwindStylesheet.source-build.test.mjs).
+ *
  * SYNC: When TableHeaderCell.tsx changes, update tests to match
  */
 
@@ -16,6 +21,7 @@ import * as stylex from '@stylexjs/stylex';
 import {Table} from './Table';
 import {TableHeaderCell} from './TableHeaderCell';
 import type {TableColumn} from './types';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 
 // =============================================================================
 // Test Data
@@ -33,49 +39,65 @@ const columns: TableColumn<User>[] = [
   {key: 'age', header: 'Age'},
 ];
 
+type Density = 'compact' | 'balanced' | 'spacious';
+
+/** The density padding and container-edge classes each step owns. */
+const DENSITY_CLASSES: Record<Density, {padding: string[]; edge: string[]}> = {
+  compact: {
+    padding: ['py-1', 'px-2'],
+    edge: [
+      'first:ps-[max(var(--container-padding-inline-start,var(--spacing-2)),var(--spacing-2))]',
+      'last:pe-[max(var(--container-padding-inline-end,var(--spacing-2)),var(--spacing-2))]',
+    ],
+  },
+  balanced: {
+    padding: ['py-2', 'px-3'],
+    edge: [
+      'first:ps-[max(var(--container-padding-inline-start,var(--spacing-3)),var(--spacing-2))]',
+      'last:pe-[max(var(--container-padding-inline-end,var(--spacing-3)),var(--spacing-2))]',
+    ],
+  },
+  spacious: {
+    padding: ['py-3', 'px-4'],
+    edge: [
+      'first:ps-[max(var(--container-padding-inline-start,var(--spacing-4)),var(--spacing-2))]',
+      'last:pe-[max(var(--container-padding-inline-end,var(--spacing-4)),var(--spacing-2))]',
+    ],
+  },
+};
+
+/** The label treatment every header cell carries inside a table. */
+const HEADER_LABEL_CLASSES = [
+  'text-start',
+  '[font-weight:var(--font-weight-semibold)]',
+  '[color:var(--color-text-secondary)]',
+  'text-[length:var(--text-label-size)]',
+  'box-border',
+  'max-w-0',
+  'overflow-hidden',
+  'text-ellipsis',
+  'whitespace-nowrap',
+];
+
+/** The divider between the header row and the body. */
+const HEADER_DIVIDER_CLASSES = [
+  '[--_table-row-divider-width:var(--border-width)]',
+  '[border-bottom-width:var(--border-width)]',
+  '[border-bottom-style:solid]',
+  '[border-bottom-color:var(--color-border)]',
+];
+
+/** The divider a header cell draws between columns, zeroed on the last cell. */
+const COLUMN_DIVIDER_CLASSES = [
+  '[border-inline-end-width:var(--border-width)]',
+  '[border-inline-end-style:solid]',
+  '[border-inline-end-color:var(--color-border)]',
+  'last:[border-inline-end-width:0]',
+];
+
 // =============================================================================
 // Helpers
 // =============================================================================
-
-/**
- * Read back the CSS declarations that actually apply to an element's classes.
- * StyleX runs with `runtimeInjection` under vitest, so the real rules live in
- * `document.styleSheets` — this keeps the assertions on declarations instead
- * of on hashed class names.
- *
- * Conditional rules keep their pseudo-class prefix, e.g.
- * `:last-child border-inline-end-width: 0`.
- */
-function cssDeclarationsOf(el: Element): string[] {
-  const classes = new Set(
-    (el as HTMLElement).className.split(/\s+/).filter(Boolean),
-  );
-  const declarations: string[] = [];
-
-  for (const sheet of Array.from(document.styleSheets)) {
-    for (const rule of Array.from(sheet.cssRules)) {
-      const text = rule.cssText;
-      const brace = text.indexOf('{');
-      if (brace === -1) {
-        continue;
-      }
-      // Strip StyleX's `:not(#\#)` specificity padding from the selector.
-      const selector = text.slice(0, brace).replaceAll(':not(#\\#)', '').trim();
-      const match = /^\.([\w-]+)(.*)$/.exec(selector);
-      if (!match || !classes.has(match[1])) {
-        continue;
-      }
-      const body = text
-        .slice(brace + 1, text.lastIndexOf('}'))
-        .trim()
-        .replace(/;$/, '');
-      const condition = match[2].trim();
-      declarations.push(condition ? `${condition} ${body}` : body);
-    }
-  }
-
-  return declarations;
-}
 
 /** Render a lone header cell with no Table around it. */
 function renderStandalone(cell: React.ReactNode) {
@@ -88,11 +110,11 @@ function renderStandalone(cell: React.ReactNode) {
   );
 }
 
-/** Declarations applying to the first header cell of a rendered Table. */
-function headerCellDeclarations(container: HTMLElement): string[] {
+/** The first header cell of a rendered Table. */
+function firstHeaderCell(container: HTMLElement): HTMLElement {
   const th = container.querySelector('thead th');
   expect(th).not.toBeNull();
-  return cssDeclarationsOf(th as Element);
+  return th as HTMLElement;
 }
 
 // =============================================================================
@@ -125,102 +147,138 @@ describe('TableHeaderCell', () => {
   });
 
   it('renders unstyled when used outside a Table', () => {
-    const {container} = renderStandalone(
+    const th = renderStandalone(
       <TableHeaderCell>Name</TableHeaderCell>,
-    );
-    const th = container.querySelector('th') as HTMLElement;
+    ).container.querySelector('th') as HTMLElement;
     // No table context — no density, divider or overflow styling at all.
-    expect(cssDeclarationsOf(th)).toEqual([]);
-    expect(th).toHaveClass('astryx-table-header-cell');
+    expect(classesOf(th)).toEqual(['astryx-table-header-cell']);
+    expect(th).not.toHaveAttribute('data-density');
   });
 
   it('takes the balanced density padding from the table by default', () => {
     const {container} = render(<Table data={users} columns={columns} />);
-    const declarations = headerCellDeclarations(container);
-    expect(declarations).toContain('padding-block: var(--spacing-2)');
-    expect(declarations).toContain('padding-inline: var(--spacing-3)');
+    const th = firstHeaderCell(container);
+    expectClassSet(th, {
+      includes: [
+        ...DENSITY_CLASSES.balanced.padding,
+        ...DENSITY_CLASSES.balanced.edge,
+      ],
+      excludes: [
+        ...DENSITY_CLASSES.compact.padding,
+        ...DENSITY_CLASSES.spacious.padding,
+      ],
+    });
+    expect(th).toHaveAttribute('data-density', 'balanced');
   });
 
   it('takes the compact density padding from the table', () => {
     const {container} = render(
       <Table data={users} columns={columns} density="compact" />,
     );
-    const declarations = headerCellDeclarations(container);
-    expect(declarations).toContain('padding-block: var(--spacing-1)');
-    expect(declarations).toContain('padding-inline: var(--spacing-2)');
+    const th = firstHeaderCell(container);
+    expectClassSet(th, {
+      includes: [
+        ...DENSITY_CLASSES.compact.padding,
+        ...DENSITY_CLASSES.compact.edge,
+      ],
+      excludes: DENSITY_CLASSES.balanced.padding,
+    });
+    expect(th).toHaveAttribute('data-density', 'compact');
   });
 
   it('takes the spacious density padding from the table', () => {
     const {container} = render(
       <Table data={users} columns={columns} density="spacious" />,
     );
-    const declarations = headerCellDeclarations(container);
-    expect(declarations).toContain('padding-block: var(--spacing-3)');
-    expect(declarations).toContain('padding-inline: var(--spacing-4)');
+    const th = firstHeaderCell(container);
+    expectClassSet(th, {
+      includes: [
+        ...DENSITY_CLASSES.spacious.padding,
+        ...DENSITY_CLASSES.spacious.edge,
+      ],
+      excludes: DENSITY_CLASSES.balanced.padding,
+    });
   });
 
-  it('applies the header font weight and color inside a table', () => {
+  it('applies the header label treatment inside a table', () => {
     const {container} = render(<Table data={users} columns={columns} />);
-    const declarations = headerCellDeclarations(container);
-    expect(declarations).toContain('font-weight: var(--font-weight-semibold)');
-    expect(declarations).toContain('color: var(--color-text-secondary)');
+    expectClassSet(firstHeaderCell(container), {
+      includes: HEADER_LABEL_CLASSES,
+    });
+  });
+
+  it('publishes the divider width a pinned header cell reads', () => {
+    const {container} = render(<Table data={users} columns={columns} />);
+    expectClassSet(firstHeaderCell(container), {
+      includes: ['[--_table-row-divider-width:var(--border-width)]'],
+    });
   });
 
   it('draws the bottom divider even when the table has dividers off', () => {
     const {container} = render(
       <Table data={users} columns={columns} dividers="none" />,
     );
-    const declarations = headerCellDeclarations(container);
     // The header/body separator is unconditional inside a table.
-    expect(declarations).toContain('border-bottom-width: var(--border-width)');
-    expect(declarations).toContain('border-bottom-style: solid');
-    expect(declarations).toContain('border-bottom-color: var(--color-border)');
-    // …but the column divider is not.
-    expect(declarations.filter(d => d.includes('border-inline-end'))).toEqual(
-      [],
-    );
+    expectClassSet(firstHeaderCell(container), {
+      includes: HEADER_DIVIDER_CLASSES,
+      excludes: COLUMN_DIVIDER_CLASSES,
+    });
   });
 
   it('draws no column divider when the table divides rows only', () => {
     const {container} = render(
       <Table data={users} columns={columns} dividers="rows" />,
     );
-    expect(
-      headerCellDeclarations(container).filter(d =>
-        d.includes('border-inline-end'),
-      ),
-    ).toEqual([]);
+    expectClassSet(firstHeaderCell(container), {
+      excludes: COLUMN_DIVIDER_CLASSES,
+    });
   });
 
-  // StyleX packs the default and the `:last-child` override into one atomic
-  // class, so this reads the rules the header cells carry rather than
-  // comparing two cells — both carry byte-identical classes. The divider sits
-  // on the logical inline-end edge so it mirrors under RTL.
+  // The divider sits on the logical inline-end edge so it mirrors under RTL,
+  // and the `last:` variant rides in the class name, so the override lands on
+  // whichever cell ends the row.
   it('draws a column divider that the last header cell zeroes out', () => {
     const {container} = render(
       <Table data={users} columns={columns} dividers="columns" />,
     );
-    const declarations = headerCellDeclarations(container);
-    expect(declarations).toContain(
-      'border-inline-end-width: var(--border-width)',
-    );
-    expect(declarations).toContain('border-inline-end-style: solid');
-    expect(declarations).toContain(
-      'border-inline-end-color: var(--color-border)',
-    );
-    expect(declarations).toContain(':last-child border-inline-end-width: 0');
+    expectClassSet(firstHeaderCell(container), {
+      includes: COLUMN_DIVIDER_CLASSES,
+    });
   });
 
   it('draws a column divider when the table divides on a grid', () => {
     const {container} = render(
       <Table data={users} columns={columns} dividers="grid" />,
     );
-    expect(headerCellDeclarations(container)).toContain(
-      'border-inline-end-width: var(--border-width)',
-    );
+    expectClassSet(firstHeaderCell(container), {
+      includes: COLUMN_DIVIDER_CLASSES,
+    });
   });
 
-  it('lets consumer xstyle win over the context header styling', () => {
+  it('anchors a context menu on the cell', () => {
+    const {container} = render(
+      <Table>
+        <thead>
+          <tr>
+            <TableHeaderCell
+              contextMenuActions={[
+                {id: 'copy', label: 'Copy', onSelect: vi.fn()},
+              ]}>
+              Name
+            </TableHeaderCell>
+          </tr>
+        </thead>
+      </Table>,
+    );
+    expectClassSet(firstHeaderCell(container), {includes: ['relative']});
+  });
+
+  it('leaves the cell unpositioned with no context menu', () => {
+    const {container} = render(<Table data={users} columns={columns} />);
+    expectClassSet(firstHeaderCell(container), {excludes: ['relative']});
+  });
+
+  it('lets consumer xstyle merge on top of the context header styling', () => {
     const custom = stylex.create({trailing: {textAlign: 'end'}});
     const {container} = render(
       <Table>
@@ -231,12 +289,16 @@ describe('TableHeaderCell', () => {
         </thead>
       </Table>,
     );
-    const declarations = headerCellDeclarations(container);
-    // The context sets `text-align: start`; xstyle merges on top of it.
-    expect(declarations).toContain('text-align: end');
-    expect(declarations).not.toContain('text-align: start');
-    // The rest of the context styling survives the override.
-    expect(declarations).toContain('padding-inline: var(--spacing-3)');
+    const th = firstHeaderCell(container);
+    // The family class stays; the StyleX atom ships unlayered, above it.
+    expectClassSet(th, {
+      includes: ['text-start', ...DENSITY_CLASSES.balanced.padding],
+    });
+    for (const token of (stylex.props(custom.trailing).className ?? '')
+      .split(/\s+/)
+      .filter(Boolean)) {
+      expect(th).toHaveClass(token);
+    }
   });
 
   it('accepts an array of xstyle values', () => {
@@ -244,16 +306,18 @@ describe('TableHeaderCell', () => {
       caps: {textTransform: 'uppercase'},
       spaced: {letterSpacing: '2px'},
     });
-    const {container} = renderStandalone(
+    const th = renderStandalone(
       <TableHeaderCell xstyle={[custom.caps, custom.spaced]}>
         Name
       </TableHeaderCell>,
-    );
-    const th = container.querySelector('th') as HTMLElement;
-    expect(cssDeclarationsOf(th).sort()).toEqual([
-      'letter-spacing: 2px',
-      'text-transform: uppercase',
-    ]);
+    ).container.querySelector('th') as HTMLElement;
+    for (const style of [custom.caps, custom.spaced]) {
+      for (const token of (stylex.props(style).className ?? '')
+        .split(/\s+/)
+        .filter(Boolean)) {
+        expect(th).toHaveClass(token);
+      }
+    }
   });
 
   it('forwards the ref to the th element', () => {

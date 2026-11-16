@@ -4,7 +4,7 @@
 
 /**
  * @file TableHeaderCell.tsx
- * @input React, StyleX, TableContext, theme tokens, useTableCellStyles
+ * @input React, StyleX, TableContext, tableHeaderCellClasses
  * @output Exports TableHeaderCell component, TableHeaderCellProps
  * @position Sub-component; used inside Table for header cells
  *
@@ -17,17 +17,10 @@
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  fontWeightVars,
-  typeScaleVars,
-  borderVars,
-} from '../theme/tokens.stylex';
 import type {StyleXStyles} from '../theme/types';
 import type {TableContextActions} from './types';
-import {overflowStyles, containerEdgeStyles} from './table.stylex';
-import {useTableContext, mergeXStyle} from './useTableCellStyles';
+import {useTableContext} from './useTableCellStyles';
+import {tableHeaderCellClassName} from './tableHeaderCellClasses';
 import {
   hasTableContextActions,
   wrapInTableContextMenu,
@@ -55,68 +48,11 @@ export interface TableHeaderCellProps extends BaseProps<HTMLTableCellElement> {
   contextMenuActions?: TableContextActions;
 }
 
-const densityStyles = stylex.create({
-  compact: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-    fontSize: typeScaleVars['--text-label-size'],
-    boxSizing: 'border-box',
-  },
-  balanced: {
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    fontSize: typeScaleVars['--text-label-size'],
-    boxSizing: 'border-box',
-  },
-  spacious: {
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-    fontSize: typeScaleVars['--text-label-size'],
-    boxSizing: 'border-box',
-  },
-});
-
-const headerStyles = stylex.create({
-  cell: {
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    color: colorVars['--color-text-secondary'],
-    textAlign: 'start',
-  },
-});
-
-const headerDividerStyles = stylex.create({
-  cell: {
-    // For a pinned header cell's own divider to match (plugins/stickyColumns).
-    '--_table-row-divider-width': borderVars['--border-width'],
-    borderBottomWidth: borderVars['--border-width'],
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-});
-
+// The context menu trigger stays on StyleX until ContextMenu itself carries
+// class names: `triggerXstyle` only accepts a StyleX style.
 const headerTriggerStyles = stylex.create({
   unpositioned: {
     position: 'static',
-  },
-});
-
-// Holds the context menu's cursor anchor in place of its unpositioned
-// trigger, so the menu still scrolls with the table. A plugin's own position,
-// such as a sticky column, wins.
-const headerMenuCellStyles = stylex.create({
-  cell: {
-    position: 'relative',
-  },
-});
-
-const dividerColumnStyles = stylex.create({
-  cell: {
-    borderInlineEndWidth: {
-      default: borderVars['--border-width'],
-      ':last-child': '0',
-    },
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
   },
 });
 
@@ -154,23 +90,16 @@ export function TableHeaderCell({
   // When used standalone (no table context) the cell renders plain, with no
   // density/divider styles.
   const hasContextMenu = hasTableContextActions(contextMenuActions);
-  const cellStyles: StyleXStyles[] = [];
-  if (ctx) {
-    cellStyles.push(
-      headerStyles.cell,
-      densityStyles[ctx.density],
-      headerDividerStyles.cell,
-      overflowStyles.cell,
-      containerEdgeStyles[ctx.density],
-    );
-    // Column dividers come from the shared builder (column axis only).
-    if (ctx.dividers === 'columns' || ctx.dividers === 'grid') {
-      cellStyles.push(dividerColumnStyles.cell);
-    }
-    if (hasContextMenu) {
-      cellStyles.push(headerMenuCellStyles.cell);
-    }
-  }
+  const cellClassName = ctx
+    ? tableHeaderCellClassName({
+        density: ctx.density,
+        hasColumnDivider: ctx.dividers === 'columns' || ctx.dividers === 'grid',
+        // Holds the context menu's cursor anchor in place of its unpositioned
+        // trigger, so the menu still scrolls with the table. A plugin's own
+        // position, such as a sticky column, wins.
+        hasContextMenu,
+      })
+    : undefined;
 
   // The cell owns the context-menu wrapper so it controls how the menu
   // interacts with its padding / content. No-op when no actions. Inside a
@@ -187,8 +116,10 @@ export function TableHeaderCell({
       ref={ref}
       {...props}
       {...mergeProps(
-        themeProps('table-header-cell', {density: ctx?.density}),
-        stylex.props(...mergeXStyle(cellStyles, xstyle)),
+        mergeProps(themeProps('table-header-cell', {density: ctx?.density}), {
+          className: cellClassName,
+        }),
+        stylex.props(xstyle),
         incomingClassName,
         incomingStyle,
       )}>
