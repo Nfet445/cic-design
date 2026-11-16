@@ -1,6 +1,6 @@
 # theme modules
 
-Status: ready-for-agent
+Status: done
 Blocked by: 5
 Wave: 3
 Ticket: 06
@@ -31,6 +31,8 @@ Migrate the remaining theme modules that style themselves: data tokens, the deri
 
 ## Notes
 
+- `theme/` held 2 `stylex.create`, not 12: `Theme.tsx` and `MediaTheme.tsx`. Both are class maps now. `derivedVarRegistry.ts`, `defineTheme.ts` and `colorModeBlocks.test.ts` carried no StyleX and kept their shape.
+- `dataTokens.stylex.ts` is left as it is: its 56 declarations are `defineVars`, not `stylex.create`, and moving them needs the build and generator scripts. A follow-up ticket owns it, and must keep the 56 declarations reaching `dist/astryx.css` and `scripts/generate-data-tokens.mjs` producing `theme/domainTokens/dataTokens.ts`.
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.
 - Manual Windows High Contrast check is part of this ticket's checklist when the component draws a border, an outline or a focus ring.
