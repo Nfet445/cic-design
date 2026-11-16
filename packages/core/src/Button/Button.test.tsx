@@ -30,6 +30,11 @@ import {
   releasesOnLayer,
   showsLayerPress,
 } from '../__tests__/pressState';
+import {
+  classesOf,
+  expectClassSet,
+  expectVariable,
+} from '../__tests__/classNameAssertions';
 import {PRESS_FADE_MS} from '../utils/pressGesture';
 import {Badge} from '../Badge/Badge';
 import {ButtonGroup} from '../ButtonGroup';
@@ -141,8 +146,10 @@ describe('Button', () => {
     // Busy is aria-disabled (focusable), not native disabled — see #4871.
     expect(button).not.toBeDisabled();
     expect(button).toHaveAttribute('aria-disabled', 'true');
-    expect(button.className).toContain('cursor-default');
-    expect(button.className).not.toContain('opacity-50');
+    expectClassSet(button, {
+      excludes: ['opacity-50'],
+      includes: ['cursor-default'],
+    });
   });
 
   it('keeps the dimmed treatment for explicitly disabled buttons', () => {
@@ -150,8 +157,7 @@ describe('Button', () => {
     const button = screen.getByRole('button');
     expect(button).not.toHaveAttribute('disabled');
     expect(button).toHaveAttribute('aria-disabled', 'true');
-    expect(button.className).toContain('cursor-default');
-    expect(button.className).toContain('opacity-50');
+    expectClassSet(button, {includes: ['cursor-default', 'opacity-50']});
   });
 
   it('keeps a caller-supplied aria-disabled and aria-busy', () => {
@@ -343,7 +349,7 @@ describe('Button', () => {
   it('renders astryx-* classes and data attributes for theme targeting', () => {
     render(<Button label="Test" variant="secondary" size="sm" />);
     const button = screen.getByRole('button');
-    expect(button.className).toContain('astryx-button');
+    expectClassSet(button, {includes: ['astryx-button']});
     expect(button).toHaveAttribute('data-variant', 'secondary');
     expect(button).toHaveAttribute('data-size', 'sm');
   });
@@ -352,29 +358,35 @@ describe('Button', () => {
     render(<Button label="Sign in" width="100%" />);
     const button = screen.getByRole('button');
     // The width travels as an inline custom property the class reads.
-    expect(button.getAttribute('style')).toContain(
-      '--astryx-button-width: 100%',
-    );
-    expect(button.className).toContain('w-[var(--astryx-button-width)]');
+    expectVariable(button, '--astryx-button-width', '100%');
+    expectClassSet(button, {includes: ['w-[var(--astryx-button-width)]']});
   });
 
   it('applies numeric width as pixels', () => {
     render(<Button label="Sign in" width={240} />);
-    expect(screen.getByRole('button').getAttribute('style')).toContain('240');
+    expectVariable(
+      screen.getByRole('button'),
+      '--astryx-button-width',
+      '240px',
+    );
   });
 
   it('omits width styling when the prop is not provided', () => {
     render(<Button label="Sign in" />);
-    expect(screen.getByRole('button').className).not.toContain(
-      'dynamicStyles.width',
-    );
+    const button = screen.getByRole('button');
+    expectClassSet(button, {
+      excludes: ['w-[var(--astryx-button-width)]'],
+    });
+    expectVariable(button, '--astryx-button-width', '');
   });
 
   it('applies width when rendered as a link via href', () => {
     render(<Button label="Sign in" href="https://example.com" width="100%" />);
-    expect(
-      screen.getByRole('link', {name: 'Sign in'}).getAttribute('style'),
-    ).toContain('100%');
+    expectVariable(
+      screen.getByRole('link', {name: 'Sign in'}),
+      '--astryx-button-width',
+      '100%',
+    );
   });
 
   // P0: onClick fires before clickAction, clickAction respects preventDefault
@@ -851,7 +863,7 @@ describe('Button', () => {
     it('pads a labelled button by its block padding, as before', () => {
       render(<Button label="Save" size="sm" />);
       const button = screen.getByRole('button', {name: 'Save'});
-      expect(button.className).toContain('py-[var(--spacing-2)]');
+      expectClassSet(button, {includes: ['py-[var(--spacing-2)]']});
     });
   });
 
@@ -861,13 +873,11 @@ describe('Button', () => {
     it('lets a labelled button shrink so its label truncates', () => {
       render(<Button label="A very long button label that should truncate" />);
       const button = screen.getByRole('button');
-      expect(button.className).toContain('min-w-0');
-      expect(button.className).toContain('max-w-full');
+      expectClassSet(button, {includes: ['min-w-0', 'max-w-full']});
       const label = screen.getByText(
         'A very long button label that should truncate',
       );
-      expect(label.className).toContain('text-ellipsis');
-      expect(label.className).toContain('overflow-hidden');
+      expectClassSet(label, {includes: ['text-ellipsis', 'overflow-hidden']});
     });
 
     it('lets the content box shrink too, so the label inside it truncates', () => {
@@ -875,47 +885,46 @@ describe('Button', () => {
       const box = screen.getByText(
         'A very long button label that should truncate',
       ).parentElement!;
-      expect(box.className).toContain('min-w-0');
-      expect(box.className).toContain('shrink');
+      expectClassSet(box, {includes: ['min-w-0', 'shrink']});
     });
 
     it('keeps the default flex-shrink so a row can shrink the button', () => {
       render(<Button label="Save" icon={<span>+</span>} />);
       // No opt-out: a labelled button (with or without an icon) shrinks.
-      expect(screen.getByRole('button').className).not.toContain('shrink-0');
+      expectClassSet(screen.getByRole('button'), {excludes: ['shrink-0']});
     });
 
     it('keeps an icon-only button square instead of shrinking it', () => {
       render(<Button label="Settings" icon={<span>⚙</span>} isIconOnly />);
-      const className = screen.getByRole('button').className;
-      expect(className).toContain('shrink-0');
-      expect(className).toContain('max-w-none');
-      expect(className).toContain('aspect-[var(--button-icon-only-aspect)]');
+      expectClassSet(screen.getByRole('button'), {
+        includes: [
+          'shrink-0',
+          'max-w-none',
+          'aspect-[var(--button-icon-only-aspect)]',
+        ],
+      });
     });
 
     it('keeps IconButton square too, since it renders the icon-only mode', () => {
       render(<IconButton label="More actions" icon={<span>⋯</span>} />);
-      const className = screen.getByRole('button', {
-        name: 'More actions',
-      }).className;
-      expect(className).toContain('shrink-0');
-      expect(className).toContain('max-w-none');
+      expectClassSet(screen.getByRole('button', {name: 'More actions'}), {
+        includes: ['shrink-0', 'max-w-none'],
+      });
     });
 
     it('caps an explicit width at the container instead of dropping it', () => {
       render(<Button label="Sign in" width={240} />);
       const button = screen.getByRole('button');
-      expect(button.getAttribute('style')).toContain('240px');
-      expect(button.className).toContain('max-w-full');
+      expectVariable(button, '--astryx-button-width', '240px');
+      expectClassSet(button, {includes: ['max-w-full']});
     });
 
     it('applies the same cap in link mode', () => {
       render(<Button label="Read the full release notes" href="#notes" />);
-      const className = screen.getByRole('link', {
-        name: 'Read the full release notes',
-      }).className;
-      expect(className).toContain('min-w-0');
-      expect(className).toContain('max-w-full');
+      expectClassSet(
+        screen.getByRole('link', {name: 'Read the full release notes'}),
+        {includes: ['min-w-0', 'max-w-full']},
+      );
     });
 
     it('shrinks inside a ButtonGroup like a standalone button', () => {
@@ -925,11 +934,10 @@ describe('Button', () => {
           <Button label="Discard" />
         </ButtonGroup>,
       );
-      const className = screen.getByRole('button', {
-        name: 'Save changes to draft',
-      }).className;
-      expect(className).toContain('min-w-0');
-      expect(className).toContain('max-w-full');
+      expectClassSet(
+        screen.getByRole('button', {name: 'Save changes to draft'}),
+        {includes: ['min-w-0', 'max-w-full']},
+      );
     });
 
     it('lets xstyle restore a rigid button', () => {
@@ -961,7 +969,7 @@ describe('Button', () => {
         const {container} = render(
           <Button label="Save" elevation={elevation} />,
         );
-        return container.querySelector('button')!.className;
+        return classesOf(container.querySelector('button')!).join(' ');
       };
       const classes = new Set([
         classFor('none'),
@@ -979,7 +987,9 @@ describe('Button', () => {
       const {container: none} = render(
         <Button label="Save" elevation="none" />,
       );
-      expect(button.className).toBe(none.querySelector('button')!.className);
+      expect(classesOf(button)).toEqual(
+        classesOf(none.querySelector('button')!),
+      );
     });
   });
 

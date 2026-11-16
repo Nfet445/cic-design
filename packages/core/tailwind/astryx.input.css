@@ -23,6 +23,10 @@
  * The layer statement matches the order `tailwind-theme.css` recommends, so a
  * page that imports this stylesheet before its own Tailwind keeps the
  * consumer's `utilities` above `astryx-base`, where FR5 expects them.
+ *
+ * Size gate: the built sheet may not exceed 1.15× the gzip size of the
+ * StyleX sheet built at `f35022021` (42 331 B). The constant and the check
+ * live in `src/Layout/tailwindStylesheet.source-build.test.mjs`.
  */
 @layer reset, astryx-base, astryx-theme;
 
