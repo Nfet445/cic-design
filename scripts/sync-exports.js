@@ -55,8 +55,12 @@ const STATIC_EXPORTS = {
     default: './src/reset.css',
   },
   './astryx.css': {
-    types: './src/astryx.css.d.ts',
+    types: './dist/astryx.css.d.ts',
     default: './dist/astryx.css',
+  },
+  './astryx-tailwind.css': {
+    types: './dist/astryx-tailwind.css.d.ts',
+    default: './dist/astryx-tailwind.css',
   },
   './tailwind-theme.css': {
     types: './src/tailwind-theme.css.d.ts',
