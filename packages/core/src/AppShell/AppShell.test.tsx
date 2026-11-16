@@ -1300,7 +1300,9 @@ describe('AppShell main keyboard access', () => {
       }),
     );
     vi.stubGlobal('cancelAnimationFrame', vi.fn());
-    // jsdom does not expand LayoutContent's `overflow` into its longhands.
+    // jsdom does not expand LayoutContent's `overflow` into its longhands,
+    // and it never loads the utility class that sets it. The class set is the
+    // declaration: `overflow-auto` is the scroll region LayoutContent makes.
     const nativeGetComputedStyle = window.getComputedStyle.bind(window);
     vi.spyOn(window, 'getComputedStyle').mockImplementation(
       (element, pseudo) => {
@@ -1309,7 +1311,12 @@ describe('AppShell main keyboard access', () => {
           // eslint-disable-next-line @typescript-eslint/promise-function-async -- Proxy traps must remain synchronous
           get(target, property) {
             if (property === 'overflowX' || property === 'overflowY') {
-              return target.overflow || 'visible';
+              return (
+                target.overflow ||
+                (element.classList.contains('overflow-auto')
+                  ? 'auto'
+                  : 'visible')
+              );
             }
             return Reflect.get(target, property, target);
           },

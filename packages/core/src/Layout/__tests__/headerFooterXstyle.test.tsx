@@ -7,9 +7,11 @@
  * @position Layout tests; pins the xstyle merge order of LayoutHeader and
  *   LayoutFooter
  *
- * jsdom keeps physical declarations such as height and flex-shrink but not
- * logical ones, so these tests override physical properties. The browser spec
- * LayoutHeaderFooterEdges.a11y.browser.spec.ts checks insets and lines.
+ * jsdom keeps the physical declarations StyleX emits, so the xstyle override
+ * is readable from a computed height. The region's own shrink is a utility
+ * class, which jsdom never loads, so that half reads the class set. The
+ * browser spec LayoutHeaderFooterEdges.a11y.browser.spec.ts checks insets,
+ * shrink, and lines.
  */
 
 import {describe, expect, it} from 'vitest';
@@ -19,6 +21,7 @@ import {Layout} from '../Layout';
 import {LayoutContent} from '../LayoutContent';
 import {LayoutFooter} from '../LayoutFooter';
 import {LayoutHeader} from '../LayoutHeader';
+import {expectClassSet} from '../../__tests__/classNameAssertions';
 
 const overrides = stylex.create({
   tall: {height: '96px'},
@@ -60,7 +63,7 @@ describe.each([
 
   it('keeps the own styles that xstyle does not set', () => {
     const region = renderRegion({xstyle: overrides.tall, children: 'Title'});
-    expect(getComputedStyle(region).flexShrink).toBe('0');
+    expectClassSet(region, {includes: ['shrink-0']});
     expect(getComputedStyle(region).height).toBe('96px');
   });
 });

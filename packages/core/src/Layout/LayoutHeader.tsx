@@ -4,7 +4,7 @@
 
 /**
  * @file LayoutHeader.tsx
- * @input Uses React StyleX
+ * @input Uses React, StyleX padding styles, layout class map
  * @output Exports LayoutHeader component and LayoutHeaderProps
  * @position Top bar / header area for Layout. Use for page titles, app bars,
  *   toolbar areas, or any fixed-height content at the top of a layout.
@@ -20,10 +20,15 @@ import type {AriaRole, ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import {use} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {layoutHeaderMarker} from './layoutEdges.stylex';
 import {LayoutDividerContext} from './LayoutDividerContext';
-import {colorVars, spacingVars} from '../theme/tokens.stylex';
+import {
+  layoutHeaderDividerClassName,
+  layoutHeaderInnerClassName,
+  layoutRegionHeightClassName,
+} from './layoutClasses';
+import type {LayoutInstanceStyle} from './layoutClasses';
 import {mergeProps} from '../utils/mergeProps';
+import {tw} from '../utils/tw';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
 import {
@@ -33,51 +38,6 @@ import {
   containerPaddingBlockStartVarStyles,
   containerPaddingBlockEndVarStyles,
 } from './padding.stylex';
-
-const styles = stylex.create({
-  // Outer shell: owns border/divider and sizing. No padding — that lives on inner.
-  header: {
-    flexShrink: 0,
-  },
-  // Inner wrapper: owns padding and optional content-width constraint.
-  // When --layout-content-width is not set, maxWidth defaults to 'none' (inert).
-  inner: {
-    boxSizing: 'border-box',
-    maxWidth: 'var(--layout-content-width, none)',
-    marginInline: 'auto',
-    // Default: outer padding on edges that touch container, inner on interior edges
-    paddingInlineStart: `var(--layout-padding-own-outer-x, var(--layout-padding-outer-x, ${spacingVars['--spacing-4']}))`,
-    paddingInlineEnd: `var(--layout-padding-own-outer-x, var(--layout-padding-outer-x, ${spacingVars['--spacing-4']}))`,
-    paddingBlockStart: `var(--layout-padding-own-outer-y, var(--layout-padding-outer-y, ${spacingVars['--spacing-4']}))`,
-    paddingBlockEnd: `var(--layout-padding-inner-y, ${spacingVars['--spacing-4']})`,
-    '--container-padding-inline-start': `var(--layout-padding-own-outer-x, var(--layout-padding-outer-x, ${spacingVars['--spacing-4']}))`,
-    '--container-padding-inline-end': `var(--layout-padding-own-outer-x, var(--layout-padding-outer-x, ${spacingVars['--spacing-4']}))`,
-    '--container-padding-block-start': `var(--layout-padding-own-outer-y, var(--layout-padding-outer-y, ${spacingVars['--spacing-4']}))`,
-    '--container-padding-block-end': `var(--layout-padding-inner-y, ${spacingVars['--spacing-4']})`,
-  },
-  fullBleed: {
-    paddingInlineStart: 0,
-    paddingInlineEnd: 0,
-    paddingBlockStart: 0,
-    paddingBlockEnd: 0,
-    '--container-padding-inline-start': '0px',
-    '--container-padding-inline-end': '0px',
-    '--container-padding-block-start': '0px',
-    '--container-padding-block-end': '0px',
-  },
-  divider: {
-    borderBlockEndWidth: 1,
-    borderBlockEndStyle: 'solid',
-    borderBlockEndColor: colorVars['--color-border'],
-  },
-});
-
-// Dynamic styles for sizing props
-const dynamicStyles = stylex.create({
-  sizing: (height: SizeValue | null) => ({
-    height,
-  }),
-});
 
 export interface LayoutHeaderProps extends BaseProps<HTMLDivElement> {
   ref?: React.Ref<HTMLDivElement>;
@@ -163,7 +123,15 @@ export function LayoutHeader({
   const dividerCtx = use(LayoutDividerContext);
   const resolvedHasDivider =
     hasDivider ?? dividerCtx?.defaultHasDividers ?? false;
-  const isZeroPadding = padding === 0;
+  // A region's own height is a value, not a variant: the class reads it from a
+  // variable this element writes, so a consumer `xstyle` still overrides it.
+  const sizingStyle: LayoutInstanceStyle | undefined =
+    height != null
+      ? {
+          '--astryx-layout-region-height':
+            typeof height === 'number' ? `${height}px` : height,
+        }
+      : undefined;
 
   return (
     <div
@@ -171,34 +139,34 @@ export function LayoutHeader({
       role={role}
       aria-label={label}
       {...mergeProps(
-        themeProps('layout-header'),
-        stylex.props(
-          layoutHeaderMarker,
-          styles.header,
-          dynamicStyles.sizing(height ?? null),
-
-          resolvedHasDivider && styles.divider,
-          xstyle,
-        ),
+        mergeProps(themeProps('layout-header'), {
+          className: tw(
+            'shrink-0',
+            height != null && layoutRegionHeightClassName,
+            resolvedHasDivider && layoutHeaderDividerClassName,
+          ),
+        }),
+        stylex.props(xstyle),
         className,
-        style,
+        {...style, ...sizingStyle},
       )}
       {...props}
       data-divider={resolvedHasDivider || undefined}>
       <div
-        {...stylex.props(
-          styles.inner,
-          isZeroPadding && styles.fullBleed,
-          padding != null && paddingStyles[padding],
-          padding != null && containerPaddingInlineVarStyles[padding],
-          padding != null && containerPaddingBlockStartVarStyles[padding],
-          padding != null && containerPaddingBlockEndVarStyles[padding],
-          // Per-edge override last so it wins over `padding` on its own edge.
-          // The container var moves with it so bleed children compensate
-          // against the padding actually applied, not the one asked for.
-          paddingBlockEnd != null && paddingBlockEndStyles[paddingBlockEnd],
-          paddingBlockEnd != null &&
-            containerPaddingBlockEndVarStyles[paddingBlockEnd],
+        {...mergeProps(
+          {className: layoutHeaderInnerClassName},
+          stylex.props(
+            padding != null && paddingStyles[padding],
+            padding != null && containerPaddingInlineVarStyles[padding],
+            padding != null && containerPaddingBlockStartVarStyles[padding],
+            padding != null && containerPaddingBlockEndVarStyles[padding],
+            // Per-edge override last so it wins over `padding` on its own edge.
+            // The container var moves with it so bleed children compensate
+            // against the padding actually applied, not the one asked for.
+            paddingBlockEnd != null && paddingBlockEndStyles[paddingBlockEnd],
+            paddingBlockEnd != null &&
+              containerPaddingBlockEndVarStyles[paddingBlockEnd],
+          ),
         )}>
         {children}
       </div>

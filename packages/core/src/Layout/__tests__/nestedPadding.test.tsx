@@ -58,6 +58,23 @@ function declarationsByClass(): Map<string, Map<string, string>> {
   return byClass;
 }
 
+/**
+ * The custom properties one class carries. A Tailwind arbitrary-property class
+ * names its declaration in the class text; a StyleX atomic class names it in
+ * an injected rule. jsdom never sees the compiled Tailwind sheet, so the class
+ * text is the only record of it in this environment.
+ */
+function declarationsOf(
+  cls: string,
+  byClass: Map<string, Map<string, string>>,
+): Map<string, string> | undefined {
+  const arbitrary = /^\[(--[\w-]+):(.+)\]$/.exec(cls);
+  if (arbitrary != null) {
+    return new Map([[arbitrary[1], arbitrary[2].replace(/_/g, ' ')]]);
+  }
+  return byClass.get(cls);
+}
+
 /** Splits `var(--name, fallback)` args at the first top-level comma. */
 function splitVarArgs(args: string): [string, string | undefined] {
   let depth = 0;
@@ -123,11 +140,20 @@ function lookup(
   let depth = 0;
   for (let node: HTMLElement | null = el; node; node = node.parentElement) {
     depth++;
-    for (const cls of Array.from(node.classList)) {
-      const declared = byClass.get(cls)?.get(name);
-      if (declared == null) {
-        continue;
-      }
+    const inline = node.style.getPropertyValue(name).trim();
+    if (inline !== '') {
+      return inline;
+    }
+    // An unlayered StyleX declaration beats a layered utility, whatever the
+    // class order in the attribute, so it wins on the element that carries
+    // both: the utility publishes a default, the StyleX class overrides it.
+    const classes = Array.from(node.classList);
+    const declaring = [
+      ...classes.filter(cls => byClass.get(cls)?.has(name)),
+      ...classes.filter(cls => declarationsOf(cls, byClass)?.has(name)),
+    ];
+    for (const cls of declaring) {
+      const declared = declarationsOf(cls, byClass)!.get(name)!;
       const key = `${name}@${depth}:${cls}`;
       if (declared === 'initial' || resolving.has(key)) {
         return undefined;

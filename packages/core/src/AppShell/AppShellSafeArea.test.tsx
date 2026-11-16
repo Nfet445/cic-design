@@ -56,10 +56,29 @@ beforeEach(() => {
   stubMatchMedia(false);
 });
 
-/** The declarations `el`'s classes make, from the raw rules, by property. */
+/**
+ * The declarations `el`'s classes make, by property. A StyleX class names a
+ * raw inserted rule; a Tailwind arbitrary-property class names its own
+ * declaration in its class text, because jsdom never loads the compiled
+ * sheet. The layout content publishes its insets the second way.
+ */
 function rawDeclarations(el: Element, pseudo = ''): Map<string, string> {
   const declarations = new Map<string, string>();
   for (const className of Array.from(el.classList)) {
+    const arbitrary = /^\[(--[\w-]+):(.+)\]$/.exec(className);
+    if (arbitrary != null && pseudo === '') {
+      declarations.set(arbitrary[1], arbitrary[2].replace(/_/g, ' '));
+      continue;
+    }
+    if (className === 'box-border' && pseudo === '') {
+      declarations.set('box-sizing', 'border-box');
+      continue;
+    }
+    // A utility class is not a selector here: its `[` and `(` would become
+    // regex syntax, and it never had a StyleX rule.
+    if (className.includes('[')) {
+      continue;
+    }
     for (const rule of rawRules) {
       const match = new RegExp(
         `^\\.${className}(?::not\\(#\\\\#\\))*${pseudo}\\{([^}]*)\\}$`,
@@ -213,7 +232,9 @@ describe('AppShell safe area', () => {
     // zero, so the block-end padding is the bottom inset alone.
     const published = declarations.get('--container-padding-block-end');
     expect(published).toBeTruthy();
-    expect(published).toBe(declarations.get('padding-top'));
+    // The inset main publishes is the block-start padding's value, so a bleed
+    // child subtracts only the content padding.
+    expect(published).toBe(declarations.get('--container-padding-block-start'));
     expect(published).not.toContain('env(');
     expect(declarations.get('padding-bottom')).toBe(MAIN_END);
     // Padding, not a spacer: main is border-box, so a child that fills it
@@ -234,7 +255,7 @@ describe('AppShell safe area', () => {
     // padding's value, so a bleed child subtracts only `contentPadding`.
     const published = declarations.get('--container-padding-block-end');
     expect(published).toBeTruthy();
-    expect(published).toBe(declarations.get('padding-top'));
+    expect(published).toBe(declarations.get('--container-padding-block-start'));
     expect(published).not.toContain('env(');
   });
 });
