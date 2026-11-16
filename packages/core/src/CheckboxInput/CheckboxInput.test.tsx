@@ -27,7 +27,7 @@ import {CheckboxInput} from './CheckboxInput';
 import * as publicMarkers from '../Indicator/indicator.markers.stylex';
 import {Theme} from '../theme/Theme';
 import {defineTheme} from '../theme/defineTheme';
-import {getForcedColorsRules} from '../__tests__/forcedColors';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {FOCUS_OUTLINE_PARTS} from '../utils/focusOutline.stylex';
 
@@ -905,21 +905,29 @@ describe('CheckboxInput', () => {
 // compiled output includes the forced-colors rule; visual behavior needs
 // manual verification under Windows High Contrast.
 describe('forced colors (WCAG 1.4.11)', () => {
-  it('compiles a forced-colors fill so the indeterminate mark survives Windows High Contrast', () => {
-    render(
+  it('carries a forced-colors fill so the indeterminate mark survives Windows High Contrast', () => {
+    const {container} = render(
       <CheckboxInput label="All" value="indeterminate" onChange={() => {}} />,
     );
     // The painted indeterminate bar would be stripped to Canvas (invisible);
-    // CanvasText keeps it perceivable.
-    expect(getForcedColorsRules()).toContain('background-color: canvastext;');
+    // the indicator's class map moves it to CanvasText there.
+    expectClassSet(
+      container.querySelector('.astryx-checkbox-indicator-dash') as Element,
+      {includes: ['forced-colors:bg-[color:CanvasText]']},
+    );
   });
 
-  it('compiles a forced-colors color so the checkmark survives Windows High Contrast', () => {
-    render(<CheckboxInput label="Accept" value={true} onChange={() => {}} />);
+  it('carries a forced-colors color so the checkmark survives Windows High Contrast', () => {
+    const {container} = render(
+      <CheckboxInput label="Accept" value={true} onChange={() => {}} />,
+    );
     // The check strokes with currentColor; forced colors leaves it the same
-    // white as the flattened box, so it needs its own CanvasText color to stay
-    // perceivable on the Canvas box.
-    expect(getForcedColorsRules()).toContain('color: canvastext;');
+    // white as the flattened box, so the indicator's class map moves the
+    // stroke to CanvasText to stay perceivable on the Canvas box.
+    expectClassSet(
+      container.querySelector('.astryx-checkbox-indicator-check') as Element,
+      {includes: ['forced-colors:text-[color:CanvasText]']},
+    );
   });
 });
 
