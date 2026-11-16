@@ -50,9 +50,10 @@ import {
 } from '../theme/tokens.stylex';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {layerTextReset} from '../Layer/layerTextReset.stylex';
-import {layerStructureReset} from '../Layer/layerStructureReset.stylex';
+import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
+import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
 import {container} from '../Layout/container.stylex';
 import type {SpacingToken} from '../Layout/container.stylex';
@@ -1268,8 +1269,6 @@ export function BottomSheetPanel({
       {...mergeProps(
         themeProps('bottom-sheet'),
         stylex.props(
-          layerTextReset.reset,
-          layerStructureReset.reset,
           styles.sheet,
           overlayPaddingReset.reset,
           height === 'hug' ? styles.hugHeight : styles.budget,
@@ -1280,7 +1279,7 @@ export function BottomSheetPanel({
           isEntrySettled && styles.sheetSettled,
           xstyle,
         ),
-        className,
+        tw(layerTextResetClassName, layerStructureResetClassName, className),
         {
           ['--_sheet-budget' as string]: budget,
           ['--_sheet-reserve' as string]: `${reserve}px`,

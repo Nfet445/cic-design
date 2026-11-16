@@ -43,6 +43,9 @@ import {
 import {preserveAnimations} from './preserveAnimations';
 import {getAnchorClearFallbacks} from './layerSlideRules';
 import {typeScaleVars} from '../theme/tokens.stylex';
+import {layerTextResetClassName} from './layerTextResetClasses';
+import {layerStructureResetClassName} from './layerStructureResetClasses';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import type {
   LayerPlacement,
   LayerAlignment,
@@ -2775,23 +2778,25 @@ describe('typography baseline', () => {
     const {container, getByRole} = render(ui);
     await user.click(getByRole('button', {name: 'trigger'}));
     const el = container.querySelector('[popover]') as HTMLElement;
-    const computed = window.getComputedStyle(el);
-    return {fontSize: computed.fontSize, lineHeight: computed.lineHeight};
+    return {
+      el,
+      fontSize: window.getComputedStyle(el).fontSize,
+      lineHeight: window.getComputedStyle(el).lineHeight,
+    };
   }
 
-  // jsdom resolves no var() indirection, so the token reference is what the
-  // assertion can see — the point is that a declaration exists at all, since
-  // an absent one is exactly what let the ambient size through.
+  // The baseline is a class the Tailwind sheet carries, so jsdom (which loads
+  // no sheet) can only see that the class is on the root; the declarations
+  // are asserted by the stylesheet test (FR8). An absent baseline is exactly
+  // what let the ambient size through.
   it.each(['13px', '20px'])(
     'takes the body role rather than the surrounding %s',
     async ambientFontSize => {
-      expect(
-        await openAndGetType(
-          <TypographyHarness ambientFontSize={ambientFontSize} />,
-        ),
-      ).toEqual({
-        fontSize: 'var(--text-body-size)',
-        lineHeight: 'var(--text-body-leading)',
+      const {el} = await openAndGetType(
+        <TypographyHarness ambientFontSize={ambientFontSize} />,
+      );
+      expectClassSet(el, {
+        includes: [layerTextResetClassName, layerStructureResetClassName],
       });
     },
   );

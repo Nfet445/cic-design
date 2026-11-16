@@ -44,6 +44,7 @@ import {registerLayerSurface} from '../Layer/layerSurfacePress';
 import {noteOutsideDismissal} from '../Layer/outsidePress';
 import {useLayerDismissal} from '../Layer/useLayerDismissal';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
 import {
   colorVars,
   radiusVars,
@@ -957,8 +958,11 @@ export function useTooltip(options: TooltipOptions = {}): TooltipReturn {
         alignment: props?.alignment ?? alignment,
         offset: spacingVars['--spacing-1'],
         role: 'tooltip',
-        xstyle: [popoverXstyle, layerAnimations[renderPlacement]],
-        className: themeProps('tooltip').className,
+        xstyle: popoverXstyle,
+        className: tw(
+          themeProps('tooltip').className,
+          layerAnimations[renderPlacement],
+        ),
         // Keep the tooltip open while the pointer is over the surface itself
         // (WCAG 1.4.13 hoverable). These sit on the layer container — the
         // element the user actually hovers — not the inner content div, since

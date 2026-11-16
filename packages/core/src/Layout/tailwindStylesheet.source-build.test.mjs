@@ -39,6 +39,9 @@ import {
   radioDotClassName,
 } from '../Indicator/indicatorClasses';
 import {paddingEdgeClassName} from '../Layout/paddingClasses';
+import {layerAnimations} from '../Layer/layerAnimationsClasses';
+import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
+import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {stackClassName} from '../Stack/stackClasses';
 import {stackItemClassName} from '../Stack/stackItemClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
@@ -272,6 +275,11 @@ function familyClassNames() {
     add(iconGlyphClassName(color));
     add(iconRegistryClassName(color));
   }
+  for (const placement of ['above', 'below', 'start', 'end']) {
+    add(layerAnimations[placement]);
+  }
+  add(layerTextResetClassName);
+  add(layerStructureResetClassName);
 
   return [...names].sort();
 }
@@ -473,5 +481,72 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // `reference` keeps the declarations with the consumer's theme.
     expect(stylesheet.compact).not.toContain(':root{');
     expect(stylesheet.compact).not.toMatch(/--spacing-1:/);
+  });
+});
+
+describe('dist/astryx-tailwind.css layer rules', () => {
+  it('carries the layer resets below every astryx-base rule', () => {
+    // A layer root is promoted, not detached: content opened from inside a
+    // component still inherits its text formatting and structural values. The
+    // reset therefore sits in a `reset` sublayer of `astryx-base`, where any
+    // component rule or caller className on the same element outranks it.
+    expect(stylesheet.compact).toContain(
+      '@layerreset{.astryx-layer-text-reset{',
+    );
+    expect(stylesheet.ruleFor(layerTextResetClassName)).toBe(
+      'font-family:var(--font-family-body);font-size:var(--text-body-size);font-weight:var(--text-body-weight);line-height:var(--text-body-leading);font-style:normal;text-align:start;text-align-last:auto;text-indent:0;text-transform:none;letter-spacing:normal;word-spacing:normal;text-shadow:none;white-space:normal;word-break:normal;overflow-wrap:normal;hyphens:manual;',
+    );
+    expect(stylesheet.ruleFor(layerStructureResetClassName)).toBe(
+      '--step-connector-gap:initial;--_astryx-text-overflow-wrap:initial;',
+    );
+  });
+
+  it('carries every entrance keyframe the class map names', () => {
+    for (const keyframe of [
+      'astryxLayerEnterBelow',
+      'astryxLayerEnterAbove',
+      'astryxLayerEnterEnd',
+      'astryxLayerEnterStart',
+      'astryxLayerEnterEndRtl',
+      'astryxLayerEnterStartRtl',
+      'astryxLayerFadeIn',
+    ]) {
+      expect(stylesheet.compact, keyframe).toContain(`@keyframes${keyframe}{`);
+    }
+  });
+
+  it('keeps the entrance arm under the Reduce Motion arms', () => {
+    // The arm reaches `animation-name` through a variable, so the Reduce
+    // Motion arms only have to come after the declaration that reads it. A
+    // direct `animation-name` arm would also have to come after the `rtl:`
+    // variant that mirrors it, and the sheet sorts direction variants last.
+    const readsTheVariable = stylesheet.compact.indexOf(
+      'animation-name:var(--_astryx-layer-enter-animation)',
+    );
+    expect(readsTheVariable).toBeGreaterThan(-1);
+    expect(stylesheet.compact.indexOf('animation-name:none;')).toBeGreaterThan(
+      readsTheVariable,
+    );
+  });
+
+  it('keeps the coarse-pointer fade after the instant arm', () => {
+    // Both arms are Reduce Motion matches; only the pointer splits them, so
+    // the later one in the sheet wins.
+    expect(
+      stylesheet.compact.indexOf('animation-name:astryxLayerFadeIn;'),
+    ).toBeGreaterThan(stylesheet.compact.indexOf('animation-name:none;'));
+  });
+
+  it('mirrors only the horizontal entrance under RTL', () => {
+    expect(
+      stylesheet.compact.indexOf(
+        '--_astryx-layer-enter-animation:astryxLayerEnterEndRtl;',
+      ),
+    ).toBeGreaterThan(
+      stylesheet.compact.indexOf(
+        '--_astryx-layer-enter-animation:astryxLayerEnterEnd;',
+      ),
+    );
+    expect(stylesheet.compact).not.toContain('astryxLayerEnterBelowRtl');
   });
 });

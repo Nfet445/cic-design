@@ -4,8 +4,8 @@
 
 /**
  * @file Dialog.tsx
- * @input Uses React, DialogHTMLAttributes, ReactNode, container (Layout), DialogContext, layerTextReset,
- *   layerStructureReset, modalOutlet, interactionModality, chainEventHandlers, holdEntranceInput
+ * @input Uses React, DialogHTMLAttributes, ReactNode, container (Layout), DialogContext, layerTextResetClassName,
+ *   layerStructureResetClassName, modalOutlet, interactionModality, chainEventHandlers, holdEntranceInput
  * @output Exports Dialog component, DialogProps, DialogVariant, DialogPurpose types
  * @position Core implementation; consumed by index.ts, tested by Dialog.test.tsx
  *
@@ -50,8 +50,9 @@ import {useSettledOpen} from '../hooks/useSettledOpen';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
 import {useScrollLock} from '../hooks/useScrollLock';
-import {layerTextReset} from '../Layer/layerTextReset.stylex';
-import {layerStructureReset} from '../Layer/layerStructureReset.stylex';
+import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
+import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
+import {tw} from '../utils/tw';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
 import {layerClickBoundary} from '../Layer/layerClickBoundary';
 import {LayerDepthProvider} from '../Layer/LayerDepthContext';
@@ -884,8 +885,6 @@ export function Dialog({
         {...mergeProps(
           themeProps('dialog', {variant}),
           stylex.props(
-            layerTextReset.reset,
-            layerStructureReset.reset,
             styles.inlineWrapper,
             overlayPaddingReset.reset,
             standardSizing &&
@@ -897,7 +896,7 @@ export function Dialog({
             isFullscreen && styles.fullscreen,
             xstyle,
           ),
-          className,
+          tw(layerTextResetClassName, layerStructureResetClassName, className),
           style,
         )}
         data-testid={
@@ -920,8 +919,6 @@ export function Dialog({
       {...mergeProps(
         themeProps('dialog', {variant}),
         focusOutlineProps.focusVisible(
-          layerTextReset.reset,
-          layerStructureReset.reset,
           styles.dialog,
           overlayPaddingReset.reset,
           isOpen && styles.open,
@@ -947,7 +944,7 @@ export function Dialog({
           opensSettled && styles.openSettled,
           xstyle,
         ),
-        className,
+        tw(layerTextResetClassName, layerStructureResetClassName, className),
         style,
       )}
       // Presses inside the dialog do not reach handlers around where it is

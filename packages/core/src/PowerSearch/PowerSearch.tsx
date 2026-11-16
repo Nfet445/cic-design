@@ -798,7 +798,7 @@ export function PowerSearch({
         : undefined,
     // The entrance runs on the surface: an anchored layer lays out again on
     // each frame its own style animates.
-    xstyle: layerAnimations.below,
+    className: layerAnimations.below,
   });
 
   // A presentation swap removes the focused control, so the other

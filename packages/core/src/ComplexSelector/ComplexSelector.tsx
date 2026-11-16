@@ -709,7 +709,7 @@ export function ComplexSelector<Value>({
     onHide: handlePopoverHide,
     // The entrance runs on the surface: an anchored layer lays out again on
     // each frame its own style animates.
-    xstyle: layerAnimations[placement],
+    className: layerAnimations[placement],
   });
   popupContentRef.current = popover.contentRef.current;
 

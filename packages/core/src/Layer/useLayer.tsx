@@ -40,8 +40,9 @@ import {
   isReleaseInFlight,
 } from './gestureCounter';
 import {resolveLayerPortalTarget} from './layerHost';
-import {layerTextReset} from './layerTextReset.stylex';
-import {layerStructureReset} from './layerStructureReset.stylex';
+import {layerTextResetClassName} from './layerTextResetClasses';
+import {layerStructureResetClassName} from './layerStructureResetClasses';
+import {tw} from '../utils/tw';
 import {layerViewportInset} from './layerViewportInset.stylex';
 import {keyboardLiftStyle, useLayerKeyboardClearance} from './LayerTouch';
 import {
@@ -2509,8 +2510,6 @@ function useLayerImplementation(
           : null;
 
       const stylexResult = stylex.props(
-        layerTextReset.reset,
-        layerStructureReset.reset,
         styles.base,
         overlayPaddingReset.reset,
         styles.keyboardCap(
@@ -2523,9 +2522,12 @@ function useLayerImplementation(
         offsetStyle,
         xstyle,
       );
-      const combinedClassName = extraClassName
-        ? `${extraClassName} ${stylexResult.className ?? ''}`
-        : stylexResult.className;
+      const combinedClassName = tw(
+        layerTextResetClassName,
+        layerStructureResetClassName,
+        extraClassName,
+        stylexResult.className,
+      );
 
       // The marker gives us the actual JSX parent without mounting arbitrary
       // children there. Safe positions preserve the existing DOM order and
@@ -2605,8 +2607,6 @@ function useLayerImplementation(
       };
 
       const stylexResult = stylex.props(
-        layerTextReset.reset,
-        layerStructureReset.reset,
         styles.base,
         overlayPaddingReset.reset,
         // A fixed layer is never capped; it still sets its own limit so it is
@@ -2615,9 +2615,12 @@ function useLayerImplementation(
         styles.fixed,
         xstyle,
       );
-      const combinedClassName = extraClassName
-        ? `${extraClassName} ${stylexResult.className ?? ''}`
-        : stylexResult.className;
+      const combinedClassName = tw(
+        layerTextResetClassName,
+        layerStructureResetClassName,
+        extraClassName,
+        stylexResult.className,
+      );
 
       return (
         <div

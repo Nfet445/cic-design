@@ -46,8 +46,9 @@ import {
   type AnnounceFn,
   type AnnouncePoliteness,
 } from '../hooks/useAnnounce';
-import {layerTextReset} from '../Layer/layerTextReset.stylex';
-import {layerStructureReset} from '../Layer/layerStructureReset.stylex';
+import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
+import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
+import {tw} from '../utils/tw';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
 import {layerClickBoundary} from '../Layer/layerClickBoundary';
 import {
@@ -994,14 +995,13 @@ export function ToastViewport({
       popover={isTopLayer ? 'manual' : undefined}
       {...mergeProps(
         stylex.props(
-          layerTextReset.reset,
-          layerStructureReset.reset,
           styles.viewport,
           styles.viewportInlineSpan,
           posStyle,
           !hasToasts && styles.viewportEmpty,
         ),
         {
+          className: tw(layerTextResetClassName, layerStructureResetClassName),
           style: Object.keys(insetStyle).length > 0 ? insetStyle : undefined,
         },
       )}

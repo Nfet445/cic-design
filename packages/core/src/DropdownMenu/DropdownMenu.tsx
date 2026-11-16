@@ -1164,7 +1164,7 @@ function DropdownMenuPopover({
       : undefined,
     // The entrance runs on the surface: an anchored layer lays out again on
     // each frame its own style animates.
-    xstyle: layerAnimations[placement],
+    className: layerAnimations[placement],
     onOpenPendingChange: handleOpenPendingChange,
   });
 

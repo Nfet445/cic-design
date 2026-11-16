@@ -41,8 +41,6 @@ import * as interactionOverlay from '@astryxdesign/core/utils/interactionOverlay
 type XstyleNamespaces = {
   iconBoxSizeStyles: typeof iconSize.iconBoxSizeStyles;
   iconSizeStyles: typeof iconSize.iconSizeStyles;
-  layerAnimations: typeof layerAnimations.layerAnimations;
-  layerTextReset: typeof layerTextReset.layerTextReset;
   edgeCompSlot: typeof edgeCompensation.edgeCompSlot;
   paddingBlockEndStyles: typeof padding.paddingBlockEndStyles;
   paddingBlockStartStyles: typeof padding.paddingBlockStartStyles;
@@ -148,8 +146,8 @@ const styleNamespacesBySubpath = {
   './DateInput/tokens.stylex': [],
   './Icon/IconSize.stylex': ['iconBoxSizeStyles', 'iconSizeStyles'],
   './Indicator/indicator.markers.stylex': [],
-  './Layer/layerAnimations.stylex': ['layerAnimations'],
-  './Layer/layerTextReset.stylex': ['layerTextReset'],
+  './Layer/layerAnimations.stylex': [],
+  './Layer/layerTextReset.stylex': [],
   './Layer/layerViewportInset.stylex': [],
   './Layout/container.stylex': [],
   './Layout/edgeCompensation.stylex': ['edgeCompSlot'],

@@ -26,8 +26,9 @@ import {DrawerHeader} from './DrawerHeader';
 import {Button} from '../Button';
 import {ButtonGroup} from '../ButtonGroup';
 import {Tooltip} from '../Tooltip/Tooltip';
-import {layerTextReset} from '../Layer/layerTextReset.stylex';
-import {layerStructureReset} from '../Layer/layerStructureReset.stylex';
+import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
+import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 // Mock dialog methods since they're not fully implemented in jsdom
 beforeEach(() => {
@@ -556,20 +557,10 @@ describe('Drawer', () => {
         </Drawer>,
       );
       const dialog = screen.getByRole('dialog');
-      const classes = dialog.className.split(' ');
       // The shared resets, not a local copy, supply the layer baseline.
-      for (const cls of (stylex.props(layerTextReset.reset).className ?? '')
-        .split(' ')
-        .filter(Boolean)) {
-        expect(classes).toContain(cls);
-      }
-      for (const cls of (
-        stylex.props(layerStructureReset.reset).className ?? ''
-      )
-        .split(' ')
-        .filter(Boolean)) {
-        expect(classes).toContain(cls);
-      }
+      expectClassSet(dialog, {
+        includes: [layerTextResetClassName, layerStructureResetClassName],
+      });
       // The baseline resolves on the root itself, not from the page.
       expect(getComputedStyle(dialog).textAlign).toBe('start');
     });

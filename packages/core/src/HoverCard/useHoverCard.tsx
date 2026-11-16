@@ -42,6 +42,7 @@ import {
   spacingVars,
 } from '../theme/tokens.stylex';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
 
 const styles = stylex.create({
   // Base container styles passed to useLayer
@@ -681,14 +682,12 @@ export function useHoverCard(options: HoverCardOptions = {}): HoverCardReturn {
         // themed surface (bg/radius/shadow) where the theme class lives — so
         // customizing the card targets the same element as the theme. The inner
         // div keeps `styles.content` for padding.
-        xstyle: [
-          popoverXstyle,
+        xstyle: [popoverXstyle, props?.xstyle],
+        className: tw(
+          themeClassName,
+          props?.className,
           layerAnimations[renderPlacement],
-          props?.xstyle,
-        ],
-        className: props?.className
-          ? `${themeClassName} ${props.className}`
-          : themeClassName,
+        ),
         style: props?.style,
         // useLayer mounts only after it has verified or corrected the parent,
         // so rich HoverCard content can use block-safe markup.
