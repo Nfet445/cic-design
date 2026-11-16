@@ -33,9 +33,9 @@
 import * as stylex from '@stylexjs/stylex';
 import type {SVGProps} from 'react';
 import {Icon} from '../Icon/Icon';
-import {colorVars} from '../theme/tokens.stylex';
 import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
+import {checkSlotClassName} from './indicatorClasses';
 import type {IndicatorProps} from './types';
 
 /** The check glyph matches the control sizes the indicator families share. */
@@ -43,27 +43,6 @@ const iconSizeForIndicator = {
   sm: 'sm',
   md: 'sm',
 } as const;
-
-const styles = stylex.create({
-  // The children slot stands where the glyph would, so swapping a Spinner in
-  // for the mark does not move the row. 1rem is Icon's `sm` box, which is what
-  // `iconSizeForIndicator` resolves to at both indicator sizes.
-  slot: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: '1rem',
-    height: '1rem',
-  },
-  // Foreground for an inherit-shade Spinner, matching what the glyph would
-  // have painted. The sibling indicators set `color` on their chrome for the
-  // same reason.
-  enabled: {color: colorVars['--color-accent']},
-  // The same token Icon's `color="disabled"` resolves to, so the busy and the
-  // glyph paths read identically when the owner is disabled.
-  disabled: {color: colorVars['--color-icon-disabled']},
-});
 
 /**
  * The default single-selection mark: a checkmark when chosen, nothing when not.
@@ -122,11 +101,10 @@ export function CheckIndicator({
         ref={ref}
         aria-hidden="true"
         {...mergeProps(
-          stylex.props(
-            styles.slot,
-            isDisabled ? styles.disabled : styles.enabled,
-            xstyle,
-          ),
+          // The slot stands where the glyph would, so swapping a Spinner in for
+          // the mark does not move the row.
+          {className: checkSlotClassName({isDisabled})},
+          stylex.props(xstyle),
           className,
           style,
         )}>

@@ -23,7 +23,7 @@ import {
 } from '../__tests__/pressState';
 import {RadioList} from './RadioList';
 import {RadioListItem} from './RadioListItem';
-import {getForcedColorsRules} from '../__tests__/forcedColors';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 
 // Mock showPopover/hidePopover (not implemented in jsdom) so the tooltip layer
@@ -1134,15 +1134,19 @@ describe('RadioList', () => {
 // compiled output includes the forced-colors rule; visual behavior needs
 // manual verification under Windows High Contrast.
 describe('forced colors (WCAG 1.4.11)', () => {
-  it('compiles a forced-colors fill so the selected dot survives Windows High Contrast', () => {
-    render(
+  it('carries a forced-colors fill so the selected dot survives Windows High Contrast', () => {
+    const {container} = render(
       <RadioList label="Preference" value="a" onChange={() => {}}>
         <RadioListItem label="Option A" value="a" />
       </RadioList>,
     );
     // The painted inner dot would be stripped to Canvas (invisible), making
-    // checked and unchecked radios identical; CanvasText keeps it perceivable.
-    expect(getForcedColorsRules()).toContain('background-color: canvastext;');
+    // checked and unchecked radios identical; the indicator's class map moves
+    // it to CanvasText there.
+    expectClassSet(
+      container.querySelector('.astryx-radio-indicator-dot') as Element,
+      {includes: ['forced-colors:bg-[color:CanvasText]']},
+    );
   });
 });
 

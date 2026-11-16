@@ -25,6 +25,14 @@ import {
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
+import {
+  checkboxBoxClassName,
+  checkboxCheckmarkClassName,
+  checkboxIndeterminateClassName,
+  checkSlotClassName,
+  radioCircleClassName,
+  radioDotClassName,
+} from '../Indicator/indicatorClasses';
 import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {stackClassName} from '../Stack/stackClasses';
 import {stackItemClassName} from '../Stack/stackItemClasses';
@@ -152,6 +160,19 @@ function familyClassNames() {
   add(toggleButtonClassName({isPressed: true}));
   add(toggleButtonGroupClassName({orientation: 'vertical', tracksPress: true}));
 
+  for (const size of ['sm', 'md']) {
+    for (const isDisabled of [false, true]) {
+      for (const isChecked of [false, true]) {
+        add(checkboxBoxClassName({isChecked, isDisabled, size}));
+        add(checkboxCheckmarkClassName({isVisible: isChecked, size}));
+        add(checkboxIndeterminateClassName({isVisible: isChecked, size}));
+        add(radioCircleClassName({isChecked, isDisabled, size}));
+        add(checkSlotClassName({isDisabled}));
+      }
+    }
+    add(radioDotClassName({size}));
+  }
+
   for (const density of ['compact', 'balanced', 'spacious']) {
     for (const hasColumnDivider of [false, true]) {
       for (const hasContextMenu of [false, true]) {
@@ -188,9 +209,9 @@ describe('dist/astryx-tailwind.css declarations', () => {
 
   it('stays within the budget of its class maps', () => {
     // The layout maps and the words in their comments produce about 120
-    // rules; the Button map adds about 115 and the Table header cell map
-    // about 30. A scan that reaches component bodies or prose would add
-    // hundreds more.
+    // rules; the Button map adds about 115, the Table header cell map about
+    // 30, and the Indicator maps about 18. A scan that reaches component
+    // bodies or prose would add hundreds more.
     expect(stylesheet.rules.size).toBeLessThan(320);
     // A Tailwind palette colour or a default font stack belongs to no map:
     // its presence means the build read text no map produced.
@@ -259,6 +280,32 @@ describe('dist/astryx-tailwind.css declarations', () => {
     );
     expect(pressed).toContain('&[aria-pressed="true"]');
     expect(pressed).toContain('background-color:var(--color-overlay-pressed)');
+  });
+
+  it('draws the indicator box on the spacing step, round by its own radius', () => {
+    // The 20 px and 24 px boxes ride the spacing step, so a consumer's
+    // `--spacing-1` moves them with the rest of the layout.
+    expect(stylesheet.ruleFor('size-5')).toBe(
+      'width:calc(var(--spacing-1)*5);height:calc(var(--spacing-1)*5);',
+    );
+    expect(stylesheet.ruleFor('size-3')).toBe(
+      'width:calc(var(--spacing-1)*3);height:calc(var(--spacing-1)*3);',
+    );
+    expect(stylesheet.ruleFor('rounded-[50%]')).toBe('border-radius:50%;');
+    expect(stylesheet.ruleFor('border-[length:var(--border-width)]')).toBe(
+      'border-style:var(--tw-border-style);border-width:var(--border-width);',
+    );
+  });
+
+  it('keeps the indicator marks perceivable under forced colors', () => {
+    // A flat Canvas box would hide a painted check or bar, so each mark moves
+    // to CanvasText inside the forced palette (WCAG 1.4.11).
+    const text = stylesheet.blockOf('forced-colors:text-[color:CanvasText]');
+    expect(text).toContain('@media(forced-colors:active)');
+    expect(text).toContain('color:CanvasText');
+    const bar = stylesheet.blockOf('forced-colors:bg-[color:CanvasText]');
+    expect(bar).toContain('@media(forced-colors:active)');
+    expect(bar).toContain('background-color:CanvasText');
   });
 
   it('declares no theme variable of its own', () => {

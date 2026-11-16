@@ -4,12 +4,14 @@
  * @file RadioIndicator.circle.source-build.test.mjs
  * @input Uses Babel and the StyleX plugin as the package stylesheet compiles
  *   it, and the RadioIndicator and RadioListItem sources
- * @output Verifies the radio's circle, its dot and the pressed layer over the
- *   circle are drawn at 50%, never with the --radius-full pill token
+ * @output Verifies the radio's StyleX remainder declares no corner radius, so
+ *   the circle's 50% is the class map's, and the pressed layer over the circle
+ *   stays at 50% rather than the --radius-full pill token
  * @position Regression test for the compiled CSS of the radio marks
  *
  * A circle marks a radio; it is no corner. A theme that squares its pills
- * through --radius-full keeps round radios.
+ * through --radius-full keeps round radios: the circle is drawn at 50% of its
+ * box (indicatorClasses.ts), which no radius token can reach.
  */
 
 import fs from 'node:fs/promises';
@@ -64,10 +66,14 @@ const radii = css =>
   [...css.matchAll(/border-radius:\s*([^;}]+)/g)].map(m => m[1].trim());
 
 describe('the radio marks', () => {
-  it('draw the circle and the dot at 50%, never with the pill token', async () => {
-    const css = await compiledCss('RadioIndicator.tsx');
-    expect(radii(css).length).toBeGreaterThanOrEqual(1);
-    expect(radii(css).every(v => v === '50%')).toBe(true);
+  it('leaves the circle radius to the class map, with no radius on StyleX', async () => {
+    // The rules this file compiles are Indicator's own StyleX remainder; the
+    // box, the circle's 50%, the dot and the states all paint from
+    // indicatorClasses.ts, and Indicator.classes.test.tsx holds that map to
+    // 50%.
+    const css = await compiledCss('indicatorHover.stylex.ts');
+    expect(css).toMatch(/border-color/);
+    expect(radii(css)).toEqual([]);
     expect(css).not.toMatch(/radius-full/);
   });
 
