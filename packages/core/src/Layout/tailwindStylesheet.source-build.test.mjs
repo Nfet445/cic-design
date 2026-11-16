@@ -44,12 +44,27 @@ import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {stackClassName} from '../Stack/stackClasses';
 import {stackItemClassName} from '../Stack/stackItemClasses';
+import {
+  sectionInnerClassName,
+  sectionOuterClassName,
+} from '../Section/sectionClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
 import {
   textClassName,
   truncationTooltipContentClassName,
 } from '../Text/textClasses';
 import {themeWrapperClassName} from '../theme/themeClasses';
+import {
+  toolbarCenterSlotClassName,
+  toolbarEndSlotClassName,
+  toolbarGapClassName,
+  toolbarLoneEndSlotClassName,
+  toolbarLoneStartSlotClassName,
+  toolbarRowClassName,
+  toolbarSideLaneClassName,
+  toolbarStartSlotClassName,
+  toolbarTabIndicatorClassName,
+} from '../Toolbar/toolbarClasses';
 import {mediaThemeClassName} from '../theme/mediaThemeClasses';
 import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
 import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
@@ -186,6 +201,37 @@ function familyClassNames() {
     }),
   );
 
+  for (const variant of ['section', 'transparent', 'muted']) {
+    for (const dividers of [[], ['top'], ['bottom'], ['start'], ['end']]) {
+      add(sectionInnerClassName({dividers, variant}));
+    }
+  }
+  add(sectionOuterClassName({}));
+  add(
+    sectionOuterClassName({
+      height: 200,
+      maxWidth: '64rem',
+      minHeight: 40,
+      width: '100%',
+    }),
+  );
+  for (const gap of [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10]) {
+    for (const hasCenterContent of [false, true]) {
+      for (const isVertical of [false, true]) {
+        add(toolbarRowClassName({gap, hasCenterContent, isVertical}));
+      }
+    }
+    add(toolbarGapClassName(gap));
+    add(toolbarSideLaneClassName({end: false, gap}));
+    add(toolbarSideLaneClassName({end: true, gap}));
+  }
+  add(toolbarCenterSlotClassName());
+  add(toolbarStartSlotClassName());
+  add(toolbarEndSlotClassName());
+  add(toolbarLoneStartSlotClassName());
+  add(toolbarLoneEndSlotClassName());
+  add(toolbarTabIndicatorClassName());
+
   for (const variant of ['primary', 'secondary', 'ghost', 'destructive']) {
     for (const size of ['sm', 'md', 'lg']) {
       for (const elevation of ['none', 'low', 'med', 'high']) {
@@ -304,9 +350,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
   it('stays within the budget of its class maps', () => {
     // The layout maps and the words in their comments produce about 120
     // rules; the Button map adds about 115, the Table header cell map about
-    // 30 and the Text map about 65. A scan that reaches component bodies or
-    // prose would add hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(420);
+    // 30 and the Text map about 65. The Section and Toolbar maps add about
+    // 40 more. A scan that reaches component bodies or prose would add
+    // hundreds more.
+    expect(stylesheet.rules.size).toBeLessThan(460);
     // A Tailwind palette colour or a default font stack belongs to no map:
     // its presence means the build read text no map produced.
     expect(stylesheet.compact).not.toMatch(
@@ -368,6 +415,56 @@ describe('dist/astryx-tailwind.css declarations', () => {
     expect(
       stylesheet.ruleFor('[border-bottom-width:var(--border-width)]'),
     ).toBe('border-bottom-width:var(--border-width);');
+  });
+
+  it('draws the section divider on one border width', () => {
+    expect(
+      stylesheet.ruleFor('[border-top:1px_solid_var(--color-border)]'),
+    ).toBe('border-top:1pxsolidvar(--color-border);');
+    expect(
+      stylesheet.ruleFor('[border-inline-start:1px_solid_var(--color-border)]'),
+    ).toBe('border-inline-start:1pxsolidvar(--color-border);');
+  });
+
+  it('reads the section size from its inline variable', () => {
+    expect(stylesheet.ruleFor('w-[var(--astryx-section-width)]')).toBe(
+      'width:var(--astryx-section-width);',
+    );
+    expect(stylesheet.ruleFor('h-[var(--astryx-section-height)]')).toBe(
+      'height:var(--astryx-section-height);',
+    );
+  });
+
+  it('pulls a nested section out by the container padding it reads', () => {
+    expect(
+      stylesheet.ruleFor(
+        'ms-[calc(-1*var(--container-padding-inline-start,0px))]',
+      ),
+    ).toBe(
+      'margin-inline-start:calc(-1*var(--container-padding-inline-start,0px));',
+    );
+  });
+
+  it('gives the compensated toolbar lane a basis only in the states that need it', () => {
+    const basis = stylesheet.blockOf(
+      '[&:has(>_[data-astryx-edge-comp]:first-child)]:[flex-basis:var(--astryx-toolbar-lane-inset)]',
+    );
+    expect(basis).toContain(
+      '&:has(>[data-astryx-edge-comp]:first-child){flex-basis:var(--astryx-toolbar-lane-inset);}',
+    );
+    expect(stylesheet.ruleFor('[flex-basis:0px]')).toBe('flex-basis:0px;');
+    const both = stylesheet.blockOf(
+      '[&:has(>_[data-astryx-edge-comp]:first-child):has(>_[data-astryx-edge-comp]:last-child)]:[flex-basis:calc(2*var(--astryx-toolbar-lane-inset))]',
+    );
+    expect(both).toContain(
+      'flex-basis:calc(2*var(--astryx-toolbar-lane-inset));',
+    );
+  });
+
+  it('sizes the toolbar row to one element height', () => {
+    expect(stylesheet.ruleFor('min-h-[var(--size-element-sm)]')).toBe(
+      'min-height:var(--size-element-sm);',
+    );
   });
 
   it('zeroes the column divider only on the last cell of a row', () => {

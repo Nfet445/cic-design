@@ -4,7 +4,8 @@
 
 /**
  * @file Toolbar.tsx
- * @input Uses Section, SizeContext, useListFocus, useKeyboardHint, StyleX, spacingVars, sizeVars
+ * @input Uses Section, SizeContext, useListFocus, useKeyboardHint, StyleX,
+ *   spacingVars
  * @output Exports Toolbar component and ToolbarProps
  * @position Core implementation; consumed by index.ts. Owns toolbar focus and
  *   keyboard navigation, excluding nested toolbars and popover contents.
@@ -23,7 +24,7 @@ import type {SectionVariant} from '../Section/Section';
 import type {SpacingStep} from '../utils/types';
 import type {ElementSize} from '../SizeContext/SizeContext';
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars, sizeVars} from '../theme/tokens.stylex';
+import {spacingVars} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
 import {Section} from '../Section/Section';
 import {oneTabStopAmong, useInternalListFocus} from '../hooks/useListFocus';
@@ -33,125 +34,23 @@ import {edgeCompSlot} from '../Layout/edgeCompensation.stylex';
 import {themeProps} from '../utils/themeProps';
 import {observeResize} from '../utils/sharedResizeObserver';
 import {useAttachment} from '../hooks/useAttachment';
+import {tw} from '../utils/tw';
+import {
+  toolbarCenterSlotClassName,
+  toolbarEndSlotClassName,
+  toolbarGapClassName,
+  toolbarLaneInsetVar,
+  toolbarLoneEndSlotClassName,
+  toolbarLoneStartSlotClassName,
+  toolbarRowClassName,
+  toolbarSideLaneClassName,
+  toolbarStartSlotClassName,
+  toolbarTabIndicatorClassName,
+} from './toolbarClasses';
 
-/**
- * Map SpacingStep values to spacingVars keys.
- */
-const spacingStepToVar: Record<SpacingStep, keyof typeof spacingVars> = {
-  0: '--spacing-0',
-  0.5: '--spacing-0-5',
-  1: '--spacing-1',
-  1.5: '--spacing-1-5',
-  2: '--spacing-2',
-  3: '--spacing-3',
-  4: '--spacing-4',
-  5: '--spacing-5',
-  6: '--spacing-6',
-  8: '--spacing-8',
-  10: '--spacing-10',
-};
-
-const styles = stylex.create({
-  // Two-slot layout (no centerContent): flex row, space-between
-  baseFlex: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  // Three-lane layout. The side lanes share the width the center leaves
-  // equally, so the center stays at the middle while each fits its half. When
-  // the lanes do not fit, the row wraps. The end lane moves to a following
-  // line. The center lane moves too when it does not fit beside the start lane.
-  baseThreeLane: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-  },
-  // Lanes stay side by side in a vertical toolbar too; only the cross-axis
-  // alignment follows the orientation.
-  verticalThreeLane: {
-    alignItems: 'stretch',
-  },
-  // Vertical orientation
-  vertical: {
-    flexDirection: 'column',
-    alignItems: 'stretch',
-  },
-  // Slot containers
-  startSlot: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  // The center basis is its minimum width, so the row wraps before its text
-  // overlaps a side lane. Alone on a line narrower than its content, the lane
-  // shrinks, so a TabList scrolls. The slot does not clip, because clipping
-  // cuts off the focus ring and shadow of its outer children.
-  centerSlot: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexGrow: 1000,
-    flexShrink: 1,
-    flexBasis: 'min-content',
-    minWidth: 0,
-    maxWidth: 'max-content',
-  },
-  // The side lanes share the width the center leaves. A lane keeps its
-  // controls on one line, so the row wraps first. Only a lane wider than the
-  // toolbar wraps its own controls.
-  sideLane: {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexWrap: 'wrap',
-    // `fit-content` is the lane's full row, capped at the toolbar's width.
-    minWidth: stylex.firstThatWorks('fit-content', '-webkit-fit-content'),
-  },
-  endSlot: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  // When only startContent is present, let it fill
-  startOnly: {
-    flex: '1 1 0%',
-  },
-  // When only endContent, push to end
-  endOnly: {
-    marginInlineStart: 'auto',
-  },
-});
-
-const sizeStyles = stylex.create({
-  base: {
-    minHeight: sizeVars['--size-element-sm'],
-  },
-});
-
-// Dynamic styles for configurable gap and tab indicator offset
-// Edge compensation's marker (edgeCompensation.stylex.ts), restated here:
-// StyleX resolves a style's keys within its own file.
-const FIRST_EDGE_COMP = ':has(> [data-astryx-edge-comp]:first-child)';
-const LAST_EDGE_COMP = ':has(> [data-astryx-edge-comp]:last-child)';
-
-const dynamicStyles = stylex.create({
-  gap: (gapValue: string) => ({
-    gap: gapValue,
-  }),
-  // Edge compensation pulls a side lane out by a negative margin, which flex
-  // counts toward the lane's share of the row. This basis gives that width
-  // back, so the lane's share excludes it and the center stays at the middle.
-  sideLaneBasis: (amount: string) => ({
-    flexBasis: {
-      default: '0px',
-      [FIRST_EDGE_COMP]: amount,
-      [LAST_EDGE_COMP]: amount,
-      [`${FIRST_EDGE_COMP}${LAST_EDGE_COMP}`]: `calc(2 * ${amount})`,
-    },
-  }),
-  tabIndicatorBottom: (offset: string) => ({
-    '--_tab-indicator-bottom': offset,
-  }),
-});
+/** The inline lane inset the compensated basis classes read. */
+type ToolbarInsetStyle = React.CSSProperties &
+  Partial<Record<typeof toolbarLaneInsetVar, string>>;
 
 /**
  * Default block padding per toolbar size. Inline padding comes from the
@@ -180,12 +79,6 @@ function lanesHaveWrapped(row: Element): boolean {
       Math.min(...boxes.map(box => box.bottom))
   );
 }
-
-const blockPaddingVarForSize: Record<ElementSize, string> = {
-  sm: spacingVars['--spacing-2'],
-  md: spacingVars['--spacing-2'],
-  lg: spacingVars['--spacing-2'],
-};
 
 /**
  * Edge compensation inset amount per toolbar size.
@@ -309,8 +202,6 @@ export function Toolbar({
   const hasEndContent = endContent != null;
   const hasBottomDivider = dividers?.includes('bottom') ?? false;
 
-  const gapVar = spacingVars[spacingStepToVar[gap]] as string;
-
   const {listRef, handleKeyDown, handleFocus} =
     useInternalListFocus<HTMLDivElement>({
       itemSelector: TOOLBAR_ITEMS,
@@ -380,6 +271,18 @@ export function Toolbar({
     [onBlurProp, onHintBlur],
   );
 
+  // Edge compensation pulls a lane out by a negative margin; the lane's flex
+  // basis reads the amount from a custom property, so the offset never lands
+  // as an inline declaration.
+  const laneInset = edgeCompInsetForSize[size];
+  const laneInsetStyle: ToolbarInsetStyle = {
+    [toolbarLaneInsetVar]: laneInset,
+  };
+  const laneCompensationProps = mergeProps(
+    stylex.props(edgeCompSlot.inset(laneInset)),
+    {style: laneInsetStyle},
+  );
+
   return (
     <SizeProvider value={size}>
       <Section
@@ -398,51 +301,44 @@ export function Toolbar({
           onKeyDown={handleToolbarKeyDown}
           onFocus={handleToolbarFocus}
           onBlur={handleToolbarBlur}
-          {...mergeProps(
-            themeProps('toolbar', {size}),
-            stylex.props(
-              hasCenterContent ? styles.baseThreeLane : styles.baseFlex,
-              orientation === 'vertical' &&
-                (hasCenterContent ? styles.verticalThreeLane : styles.vertical),
-              sizeStyles.base,
-              dynamicStyles.gap(gapVar),
+          {...mergeProps(themeProps('toolbar', {size}), {
+            className: tw(
+              toolbarRowClassName({
+                gap,
+                hasCenterContent,
+                isVertical: orientation === 'vertical',
+              }),
               // Only drop the tab indicator through the toolbar's block padding
               // onto the rail when a bottom divider is actually present.
               // Without a divider, leave `--_tab-indicator-bottom` unset so a
               // nested TabList's indicator keeps its own default (hugging the
               // tab) instead of floating down into the toolbar's padding.
-              dropsIndicatorOnRail &&
-                dynamicStyles.tabIndicatorBottom(
-                  `calc(-1 * (${blockPaddingVarForSize[size]} + 1px))`,
-                ),
+              dropsIndicatorOnRail && toolbarTabIndicatorClassName(),
             ),
-          )}
+          })}
           {...props}>
           {hasCenterContent ? (
             // Three-slot layout
             <>
               <div
-                {...stylex.props(
-                  styles.startSlot,
-                  styles.sideLane,
-                  dynamicStyles.sideLaneBasis(edgeCompInsetForSize[size]),
-                  edgeCompSlot.inset(edgeCompInsetForSize[size]),
-                  dynamicStyles.gap(gapVar),
-                )}>
+                {...mergeProps(laneCompensationProps, {
+                  className: toolbarSideLaneClassName({end: false, gap}),
+                })}>
                 {startContent}
               </div>
               <div
-                {...stylex.props(styles.centerSlot, dynamicStyles.gap(gapVar))}>
+                {...mergeProps({
+                  className: tw(
+                    toolbarCenterSlotClassName(),
+                    toolbarGapClassName(gap),
+                  ),
+                })}>
                 {centerContent}
               </div>
               <div
-                {...stylex.props(
-                  styles.endSlot,
-                  styles.sideLane,
-                  dynamicStyles.sideLaneBasis(edgeCompInsetForSize[size]),
-                  edgeCompSlot.inset(edgeCompInsetForSize[size]),
-                  dynamicStyles.gap(gapVar),
-                )}>
+                {...mergeProps(laneCompensationProps, {
+                  className: toolbarSideLaneClassName({end: true, gap}),
+                })}>
                 {endContent}
               </div>
             </>
@@ -451,22 +347,32 @@ export function Toolbar({
             <>
               {hasStartContent && (
                 <div
-                  {...stylex.props(
-                    styles.startSlot,
-                    !hasEndContent && styles.startOnly,
-                    edgeCompSlot.inset(edgeCompInsetForSize[size]),
-                    dynamicStyles.gap(gapVar),
+                  {...mergeProps(
+                    {
+                      className: tw(
+                        hasEndContent
+                          ? toolbarStartSlotClassName()
+                          : toolbarLoneStartSlotClassName(),
+                        toolbarGapClassName(gap),
+                      ),
+                    },
+                    laneCompensationProps,
                   )}>
                   {startContent}
                 </div>
               )}
               {hasEndContent && (
                 <div
-                  {...stylex.props(
-                    styles.endSlot,
-                    !hasStartContent && styles.endOnly,
-                    edgeCompSlot.inset(edgeCompInsetForSize[size]),
-                    dynamicStyles.gap(gapVar),
+                  {...mergeProps(
+                    {
+                      className: tw(
+                        hasStartContent
+                          ? toolbarEndSlotClassName()
+                          : toolbarLoneEndSlotClassName(),
+                        toolbarGapClassName(gap),
+                      ),
+                    },
+                    laneCompensationProps,
                   )}>
                   {endContent}
                 </div>

@@ -1,6 +1,6 @@
 # section toolbar
 
-Status: ready-for-agent
+Status: done
 Blocked by: 12
 Wave: 3
 Family: `family:layout-regions`

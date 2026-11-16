@@ -3,6 +3,7 @@
 import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {Section} from './Section';
+import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
 
 /**
  * The functional class output, as an order-insensitive set. StyleX's dev
@@ -160,6 +161,41 @@ describe('Section', () => {
     expect(inner.tagName).toBe('DIV');
     // Children are inside the inner div
     expect(inner.textContent).toBe('Content');
+  });
+
+  it('paints its variant surface, dividers and container reset as classes', () => {
+    render(
+      <Section data-testid="custom-section" dividers={['top']} variant="muted">
+        Content
+      </Section>,
+    );
+    expectClassSet(screen.getByTestId('custom-section'), {
+      includes: [
+        'first:mt-[calc(-1*var(--container-padding-block-start,0px))]',
+      ],
+    });
+    expectClassSet(
+      screen.getByTestId('custom-section').firstElementChild as HTMLElement,
+      {
+        includes: [
+          'bg-[var(--color-background-muted)]',
+          '[border-top:1px_solid_var(--color-border)]',
+          '[--container-padding-inline-start:0px]',
+        ],
+        excludes: ['bg-[var(--color-background-surface)]'],
+      },
+    );
+  });
+
+  it('reads a size prop from its inline variable', () => {
+    render(
+      <Section data-testid="sized" width={320}>
+        Content
+      </Section>,
+    );
+    const section = screen.getByTestId('sized');
+    expectClassSet(section, {includes: ['w-[var(--astryx-section-width)]']});
+    expectVariable(section, '--astryx-section-width', '320px');
   });
 
   it('spreads additional props', () => {
