@@ -1,7 +1,7 @@
 # shared stylex modules
 
 Status: ready-for-agent
-Blocked by: 7,11
+Blocked by: 11
 Wave: 5
 Ticket: 17
 Parent: `00-epic-stylex-to-tailwind-4`
@@ -11,6 +11,8 @@ Parent: `00-epic-stylex-to-tailwind-4`
 Retire the last modules that still hand a StyleX style object to components: focus outline, interaction overlay, row and control press layers, the touch band, icon box sizing, input-group addons, the nav item styles and the selector presentation.
 
 ## Files
+
+- `packages/core/src/privateAttributes/**` (ten `stylex.create`, two `stylex.keyframes`, two `defineMarker` scopes — moved here from ticket 07, which keeps only the markers)
 
 - `packages/core/src/utils/focusOutline*`
 - `packages/core/src/utils/interactionOverlay*`
