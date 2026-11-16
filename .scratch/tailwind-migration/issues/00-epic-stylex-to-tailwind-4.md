@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 12 of 38 done, 2 waves done before the tickets existed.
+Progress: 14 of 39 done, 2 waves done before the tickets existed.
 
 ### Wave 0 — the harness
 
@@ -56,8 +56,8 @@ Progress: 12 of 38 done, 2 waves done before the tickets existed.
 - [x] `09-text` — the typography vocabulary every family reads
 - [x] `10-indicator` — indicator states over the new marker path
 - [x] `11-layer-hooks-utils` — layer plumbing, hooks, focus ring, interaction overlay
-- [ ] `12-layout-regions` — `Layout/`, its regions and `AppShell`
-- [ ] `13-section-toolbar` — `Section/`, `Toolbar/`, family closed
+- [x] `12-layout-regions` — `Layout/`, its regions and `AppShell`
+- [x] `13-section-toolbar` — `Section/`, `Toolbar/`, family closed
 
 ### Wave 4 — `family:input-fields` in three pull requests
 

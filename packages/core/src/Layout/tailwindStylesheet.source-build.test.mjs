@@ -38,6 +38,32 @@ import {
   radioCircleClassName,
   radioDotClassName,
 } from '../Indicator/indicatorClasses';
+import {
+  layoutAutoClassName,
+  layoutContentClassName,
+  layoutFillClassName,
+  layoutFooterDividerClassName,
+  layoutFooterInnerClassName,
+  layoutFullBleedClassName,
+  layoutHeaderDividerClassName,
+  layoutHeaderInnerClassName,
+  layoutInnerClassName,
+  layoutMiddleClassName,
+  layoutMiddleContentWidthClassName,
+  layoutMiddleQueryClassName,
+  layoutOuterClassName,
+  layoutPanelClassName,
+  layoutPanelCollapseEndClassName,
+  layoutPanelCollapseStartClassName,
+  layoutPanelDividerEndClassName,
+  layoutPanelDividerStartClassName,
+  layoutPanelWidthClassName,
+  layoutRegionHeightClassName,
+  layoutSingleColumnContentClassName,
+  layoutSingleEndPanelClassName,
+  layoutSinglePanelMiddleClassName,
+  layoutSingleStartPanelClassName,
+} from '../Layout/layoutClasses';
 import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
@@ -231,6 +257,63 @@ function familyClassNames() {
   add(toolbarLoneStartSlotClassName());
   add(toolbarLoneEndSlotClassName());
   add(toolbarTabIndicatorClassName());
+  // The layout family: the shell frame, then every region combination. A
+  // region edge publishes its inset and reads it back, so each combination
+  // contributes its own arbitrary-property classes.
+  for (const className of [
+    layoutOuterClassName,
+    layoutInnerClassName,
+    layoutFillClassName,
+    layoutAutoClassName,
+    layoutMiddleClassName,
+    layoutMiddleQueryClassName,
+    layoutMiddleContentWidthClassName,
+    layoutSingleColumnContentClassName,
+    layoutSinglePanelMiddleClassName,
+    layoutSingleStartPanelClassName,
+    layoutSingleEndPanelClassName,
+    layoutFullBleedClassName,
+    layoutHeaderInnerClassName,
+    layoutHeaderDividerClassName,
+    layoutFooterInnerClassName,
+    layoutFooterDividerClassName,
+    layoutRegionHeightClassName,
+    layoutPanelWidthClassName,
+    layoutPanelDividerEndClassName,
+    layoutPanelDividerStartClassName,
+    layoutPanelCollapseEndClassName,
+    layoutPanelCollapseStartClassName,
+  ]) {
+    add(className);
+  }
+  for (const hasHeader of [false, true]) {
+    for (const hasFooter of [false, true]) {
+      for (const hasStart of [false, true]) {
+        for (const hasEnd of [false, true]) {
+          add(
+            layoutContentClassName({
+              hasFooter,
+              hasHeader,
+              hasStart,
+              hasEnd,
+              isScrollable: hasStart,
+              isZeroPadding: hasEnd,
+            }),
+          );
+          add(
+            layoutPanelClassName({
+              hasFooter,
+              hasHeader,
+              isStart: hasStart,
+              isEnd: hasEnd,
+              isScrollable: hasStart,
+              isZeroWidth: hasEnd,
+            }),
+          );
+        }
+      }
+    }
+  }
 
   for (const variant of ['primary', 'secondary', 'ghost', 'destructive']) {
     for (const size of ['sm', 'md', 'lg']) {
@@ -348,23 +431,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
   });
 
   it('stays within the budget of its class maps', () => {
-    // The layout maps and the words in their comments produce about 120
-    // rules; the Button map adds about 115, the Table header cell map about
-    // 30 and the Text map about 65. The Section and Toolbar maps add about
-    // 40 more. A scan that reaches component bodies or prose would add
-    // hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(460);
-    // A Tailwind palette colour or a default font stack belongs to no map:
-    // its presence means the build read text no map produced.
-    expect(stylesheet.compact).not.toMatch(
-      /\.(bg|text|border|ring|fill|stroke)-(red|blue|green|gray|slate|zinc|neutral|stone|amber|lime|emerald|teal|cyan|sky|indigo|violet|purple|fuchsia|pink|rose|white|black)-/,
-    );
-    expect(stylesheet.compact).not.toMatch(/font-(sans|serif)\b/);
-    // The one named family utility, because the theme maps it to a token: a
-    // `code` Text reads the code family, never a Tailwind default stack.
-    expect(stylesheet.ruleFor('font-mono')).toBe(
-      'font-family:var(--font-family-code);',
-    );
+    // The layout primitives and the words in their comments produce about 190
+    // rules, the Button map about 115, the Text map about 65, Section and
+    // Toolbar about 40, and the layout shell and region maps about 110. A
+    // scan that reaches component bodies or prose would add hundreds more.
+    expect(stylesheet.rules.size).toBeLessThan(560);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

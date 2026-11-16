@@ -8,6 +8,7 @@
 
 import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
+import {expectClassSet} from '../../__tests__/classNameAssertions';
 import {Layout} from '../Layout';
 import {LayoutHeader} from '../LayoutHeader';
 import {LayoutFooter} from '../LayoutFooter';
@@ -34,7 +35,7 @@ describe('Layout contentWidth', () => {
       const constrainedLaneClassName = contentLane.className;
       const constrainedContentClassName = contentRegion.className;
 
-      expect(getComputedStyle(contentRegion).overflow).toBe('auto');
+      expectClassSet(contentRegion, {includes: ['overflow-auto']});
       expect(screen.getByTestId('body').parentElement).toBe(contentRegion);
       expect(middleRow.getAttribute('style') ?? '').not.toContain('640px');
 
@@ -61,17 +62,17 @@ describe('Layout contentWidth', () => {
         name: 'start',
         start: <LayoutPanel>Navigation</LayoutPanel>,
         end: undefined,
-        openPadding: 'paddingInlineEnd',
+        openEdge: 'padding-inline-end',
       },
       {
         name: 'end',
         start: undefined,
         end: <LayoutPanel>Details</LayoutPanel>,
-        openPadding: 'paddingInlineStart',
+        openEdge: 'padding-inline-start',
       },
     ] as const)(
       'lets $name-only content span to the opposite open edge',
-      ({start, end, openPadding}) => {
+      ({start, end, openEdge}) => {
         render(
           <Layout
             contentWidth={640}
@@ -86,11 +87,10 @@ describe('Layout contentWidth', () => {
         const contentRegion = screen.getByTestId('content-region');
         const middleRow = contentRegion.parentElement!.parentElement!;
 
-        expect(getComputedStyle(contentRegion).overflow).toBe('auto');
+        expectClassSet(contentRegion, {includes: ['overflow-auto']});
         expect(middleRow.getAttribute('style') ?? '').not.toContain('640px');
-        expect(getComputedStyle(contentRegion)[openPadding]).toContain(
-          '100cqi',
-        );
+        expect(contentRegion.className).toContain(openEdge);
+        expect(contentRegion.className).toContain('100cqi');
       },
     );
 
@@ -109,8 +109,15 @@ describe('Layout contentWidth', () => {
       const contentRegion = screen.getByTestId('content-region');
       const middleRow = contentRegion.parentElement!.parentElement!;
 
-      expect(getComputedStyle(contentRegion).overflow).toBe('auto');
-      expect(middleRow.getAttribute('style') ?? '').toContain('640px');
+      expectClassSet(contentRegion, {includes: ['overflow-auto']});
+      expect(middleRow.className).toContain(
+        'max-w-[var(--astryx-layout-content-width)]',
+      );
+      expect(
+        middleRow.parentElement!.style.getPropertyValue(
+          '--astryx-layout-content-width',
+        ),
+      ).toBe('640px');
     });
 
     it('keeps zero padding full-bleed with arithmetic contentWidth', () => {
@@ -126,12 +133,12 @@ describe('Layout contentWidth', () => {
       );
 
       const contentRegion = screen.getByTestId('content-region');
-      expect(getComputedStyle(contentRegion).paddingInlineStart).toContain(
-        '--spacing-0',
-      );
-      expect(getComputedStyle(contentRegion).paddingInlineEnd).toContain(
-        '--spacing-0',
-      );
+      expectClassSet(contentRegion, {
+        includes: [
+          '[--container-padding-inline-start:0px]',
+          '[--container-padding-inline-end:0px]',
+        ],
+      });
     });
 
     it.each([
@@ -186,10 +193,11 @@ describe('Layout contentWidth', () => {
         .closest('.astryx-layout') as HTMLElement;
       const nestedInner = nestedRoot.firstElementChild as HTMLElement;
       expect(
-        getComputedStyle(nestedInner).getPropertyValue(
-          '--layout-content-width',
-        ),
-      ).toBe('initial');
+        nestedInner.style.getPropertyValue('--astryx-layout-content-width'),
+      ).toBe('');
+      expect(nestedInner.className).toContain(
+        '[--astryx-layout-content-width:initial]',
+      );
       expect(container).toHaveTextContent('Nested');
     });
 

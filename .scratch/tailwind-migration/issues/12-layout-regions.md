@@ -1,6 +1,6 @@
 # layout regions
 
-Status: ready-for-agent
+Status: done
 Blocked by: 5,9
 Wave: 3
 Family: `family:layout-regions`
@@ -29,6 +29,8 @@ Migrate `Layout/` (44 `stylex.create`) beyond the padding vocabulary already in 
 - `browser page `layout-regions.html` showing a panel at two widths`
 
 ## Notes
+
+- Landed as `Layout/layoutClasses.ts` plus region maps in `Header/`, `Content/`, `Footer/`, `Panel/`. The browser page the ticket asks for is NOT included: its checks assumed the shell carries `--astryx-layout-region-height` and container-padding classes on the tagged element, and the landed split publishes those elsewhere; wiring it is `39-layout-regions-page.md`.
 
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.

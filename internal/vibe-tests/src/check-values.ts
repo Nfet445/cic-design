@@ -129,9 +129,13 @@ export function readClassDeclarations(
 ): Map<string, Record<string, string>> {
   const declarations = new Map<string, Record<string, string>>();
   for (const [, selector, body] of css.matchAll(
-    /\.((?:\\[^{}]|[^\\{},\s])+)\s*\{([^{}]*)\}/g,
+    /\.((?:\\(?:[0-9a-fA-F]{1,6}\s?|.)|[^\\{},\s])+)\s*\{([^{}]*)\}/g,
   )) {
-    const className = selector.replace(/\\(.)/g, '$1');
+    const className = selector.replace(
+      /\\(?:([0-9a-fA-F]{1,6})\s?|(.))/g,
+      (_, hex, char) =>
+        hex ? String.fromCodePoint(Number.parseInt(hex, 16)) : char,
+    );
     const existing = declarations.get(className);
     declarations.set(className, {...readDeclarations(body), ...existing});
   }

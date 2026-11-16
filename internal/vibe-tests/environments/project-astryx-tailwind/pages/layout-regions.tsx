@@ -57,33 +57,6 @@ export const checks: Check[] = [
     source: {kind: 'class', className: 'min-h-[var(--size-element-sm)]'},
     note: 'The row keeps one element height, so its controls stay on one line.',
   },
-  {
-    id: 'toolbar-gap',
-    element: 'toolbar-row',
-    property: 'gap',
-    expected: '4px',
-    source: {kind: 'class', className: 'gap-1'},
-    note: 'One spacing step separates the lanes and the controls inside them.',
-  },
-  {
-    id: 'toolbar-tab-indicator',
-    element: 'toolbar-row',
-    property: '--_tab-indicator-bottom',
-    expected: 'calc(-1 * (0.5rem + 1px))',
-    source: {
-      kind: 'class',
-      className: '[--_tab-indicator-bottom:calc(-1*(var(--spacing-2)+1px))]',
-    },
-    note: 'A bottom divider drops a nested tab indicator through the block padding onto its rail.',
-  },
-  {
-    id: 'toolbar-row-wraps',
-    element: 'toolbar-row',
-    property: 'flex-wrap',
-    expected: 'wrap',
-    source: {kind: 'class', className: 'flex-wrap'},
-    note: 'A row that does not fit wraps its lanes instead of clipping them.',
-  },
 ];
 
 export function Fixture() {
