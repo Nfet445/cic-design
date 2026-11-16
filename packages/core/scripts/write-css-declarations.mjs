@@ -22,23 +22,35 @@ import {fileURLToPath} from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.resolve(ROOT, 'dist');
 
-/** Every exported stylesheet, with the declaration authored beside its source. */
+/**
+ * Every exported stylesheet, with the declaration authored beside its source.
+ * `source` copies the sheet itself, for a sheet that is hand-generated into
+ * `src` rather than written into `dist` by a build step.
+ */
 export const CSS_DECLARATIONS = [
   {stylesheet: 'astryx.css', declaration: 'src/astryx.css.d.ts'},
   {
     stylesheet: 'astryx-tailwind.css',
     declaration: 'tailwind/astryx-tailwind.css.d.ts',
   },
+  {
+    stylesheet: 'tokens.css',
+    declaration: 'src/theme/tokens.css.d.ts',
+    source: 'src/theme/tokens.css',
+  },
 ];
 
 /** Copy each stylesheet's declaration into `dist`, named after its stylesheet. */
 export async function writeCssDeclarations(dist = DIST) {
   await mkdir(dist, {recursive: true});
-  for (const {stylesheet, declaration} of CSS_DECLARATIONS) {
+  for (const {stylesheet, declaration, source} of CSS_DECLARATIONS) {
     await copyFile(
       path.resolve(ROOT, declaration),
       path.join(dist, `${stylesheet}.d.ts`),
     );
+    if (source !== undefined) {
+      await copyFile(path.resolve(ROOT, source), path.join(dist, stylesheet));
+    }
   }
 }
 

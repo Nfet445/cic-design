@@ -38,18 +38,18 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 4 of 36 done, 2 waves done before the tickets existed.
+Progress: 7 of 37 done, 2 waves done before the tickets existed.
 
 ### Wave 0 — the harness
 
 - [x] `01-stylesheet-build-cache` — cache the sheet build per class map
 - [x] `02-test-harness` — shared class assertions, per-package sheet test, gzip gate
-- [ ] `03-browser-check-pages` — checked-in pages and fixtures per family
+- [x] `03-browser-check-pages` — checked-in pages and fixtures per family
 - [x] `04-css-export-types` — a declaration the stylesheet itself carries
 
 ### Wave 3 — shared infrastructure and `family:layout-regions`
 
-- [ ] `05-tokens` — 18 `defineVars` become `tokens.css` plus a shim, 251 importers follow
+- [x] `05-tokens` — 18 `defineVars` become `tokens.css` plus a shim, 251 importers follow
 - [ ] `06-theme-modules` — data tokens, derived registry, `defineTheme`, colour modes
 - [ ] `07-private-attributes` — markers and variables, 26 `.stylex.ts` files
 - [ ] `08-icon` — `Icon/` and the `IconSize` contract
@@ -86,7 +86,7 @@ Progress: 4 of 36 done, 2 waves done before the tickets existed.
 ### Wave 8 — the data surfaces
 
 - [x] `26-data-tables-record` — write `docs/families/data-tables.md` first
-- [ ] `27-table-structure` — header, rows, cells
+- [x] `27-table-structure` — header, rows, cells
 - [ ] `28-table-behaviour` — sorting, filtering, selection, virtualised body
 - [ ] `29-charts-and-richtext` — two packages get their own sheets
 - [ ] `30-lab` — 58 creations in two halves

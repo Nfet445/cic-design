@@ -188,7 +188,7 @@ describe('reset.css pseudo-element rules', () => {
     // repeats the token's own default, so that page shows the placeholder an
     // Astryx page does, at the contrast the token was chosen for.
     const tokens = fs.readFileSync(
-      path.resolve(__dirname, './theme/tokens.stylex.ts'),
+      path.resolve(__dirname, './theme/tokenVars.ts'),
       'utf-8',
     );
     const tokenDefault = tokens.match(

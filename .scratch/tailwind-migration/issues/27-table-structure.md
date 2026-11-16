@@ -1,6 +1,6 @@
 # table structure
 
-Status: ready-for-agent
+Status: done
 Blocked by: 26
 Wave: 8
 Family: `family:data-tables`

@@ -63,6 +63,11 @@ export const TARGETS = {
     // Dist consumers cannot retain its defineVars call, so astryx.css provides
     // this group even without a Core component import (spec:AST-066 FR3).
     stylexEntries: STYLEX_ENTRIES['@astryxdesign/core'],
+    // The token defaults used to reach this sheet as StyleX defineVars
+    // declarations. They now live in a generated tokens.css (spec:AST-119 FR4),
+    // and this sheet still carries them so a page that loads only astryx.css
+    // keeps every default.
+    extraCss: path.resolve(CORE_SRC, 'theme/tokens.css'),
   },
   lab: {
     src: path.resolve(ROOT, 'packages/lab/src'),
@@ -167,8 +172,14 @@ export const ASTRYX_LAYER_ORDER = LAYER_ORDER;
  * Wrap a package's compiled StyleX rules as its prebuilt stylesheet: a banner,
  * the layer-order registration, then every rule inside `@layer astryx-base`.
  */
-export function composePackageStylesheet(banner, css) {
-  return `/* ${banner} */\n/* Auto-generated. Do not edit manually. */\n\n${layerBlock(css)}`;
+export function composePackageStylesheet(banner, css, extraCss = '') {
+  const body = extraCss === '' ? css : `${css}\n\n${extraCss}`;
+  return `/* ${banner} */\n/* Auto-generated. Do not edit manually. */\n\n${layerBlock(body)}`;
+}
+
+/** A generated sheet without its banner, ready to join another rule block. */
+function withoutBanner(css) {
+  return css.replace(/^(?:\/\*[^*]*\*\/[ \t]*\n)+/, '').trim();
 }
 
 /**
@@ -266,9 +277,12 @@ async function main() {
   }
 
   const outPath = path.resolve(target.dist, target.outFile);
+  const extraCss = target.extraCss
+    ? withoutBanner(await fs.readFile(target.extraCss, 'utf8'))
+    : '';
   await fs.writeFile(
     outPath,
-    composePackageStylesheet(target.banner, combinedCSS),
+    composePackageStylesheet(target.banner, combinedCSS, extraCss),
     'utf8',
   );
   console.log(
