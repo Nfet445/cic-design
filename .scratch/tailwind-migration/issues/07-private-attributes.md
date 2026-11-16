@@ -30,6 +30,9 @@ Turn the two `defineMarker()` scopes into private attributes. A marker cannot fl
 
 ## Notes
 
+- The compiler refuses an attribute selector as an ancestor condition: `Attribute selector must end with "]"`, and the marker argument must be a `defineMarker()` value. That is the whole reason this ticket waits.
+- Scope consumers after wave 5: `Indicator/{CheckboxIndicator,RadioIndicator}.tsx` (six `when.ancestor` calls each), `CheckboxInput/CheckboxInput.tsx:516` and `:125`, `RadioList/RadioListItem.tsx:402`, `privateAttributes/press.stylex.ts:453/:469-470`, plus the re-export `Indicator/index.ts:32`.
+
 - The ten `stylex.create` calls that used to sit in this ticket moved to `17-shared-stylex-modules.md`: they are the shared press and overlay seam, and fifteen components compose them, so they belong with the other shared modules.
 - Verified facts from the wave-3 investigation: the compiler error above; the consumers are `Button`, `Item`, `ListItem`, `ListReorderHandle`, `RadioListItem`, `CheckboxInput`, `CheckboxListItem`, `TreeListItem`, `DropdownMenu{Item,CheckboxItem,RadioItem,SubMenu}`, `Selector`, `Token`, `Carousel`.
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`.
