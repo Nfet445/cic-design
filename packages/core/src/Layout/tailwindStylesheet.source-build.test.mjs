@@ -25,6 +25,11 @@ import {
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
+import {
+  iconColorClassName,
+  iconGlyphClassName,
+  iconRegistryClassName,
+} from '../Icon/iconClasses';
 import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {stackClassName} from '../Stack/stackClasses';
 import {stackItemClassName} from '../Stack/stackItemClasses';
@@ -177,6 +182,10 @@ function familyClassNames() {
   }
   add(mediaThemeClassName({isActive: true}));
   add(mediaThemeClassName({isActive: false}));
+  for (const color of Object.keys(iconColorClassName)) {
+    add(iconGlyphClassName(color));
+    add(iconRegistryClassName(color));
+  }
 
   return [...names].sort();
 }
@@ -294,6 +303,32 @@ describe('dist/astryx-tailwind.css declarations', () => {
     );
     expect(stylesheet.ruleFor('[font-family:var(--font-family-body)]')).toBe(
       'font-family:var(--font-family-body);',
+    );
+  });
+
+  it('declares the icon size and colour classes', () => {
+    // The size step is an inline `--astryx-icon-size` value, and the class
+    // reads it as the fallback, so a theme's vars win where a theme sets them.
+    expect(
+      stylesheet.ruleFor('[width:var(--_icon-width,var(--astryx-icon-size))]'),
+    ).toBe('width:var(--_icon-width,var(--astryx-icon-size));');
+    expect(
+      stylesheet.ruleFor(
+        '[height:var(--_icon-height,var(--astryx-icon-size))]',
+      ),
+    ).toBe('height:var(--_icon-height,var(--astryx-icon-size));');
+    expect(
+      stylesheet.ruleFor(
+        '[font-size:min(var(--_icon-width,var(--astryx-icon-size)),var(--_icon-height,var(--astryx-icon-size)))]',
+      ),
+    ).toBe(
+      'font-size:min(var(--_icon-width,var(--astryx-icon-size)),var(--_icon-height,var(--astryx-icon-size)));',
+    );
+    expect(stylesheet.ruleFor(iconColorClassName.primary)).toBe(
+      'color:var(--color-icon-primary);',
+    );
+    expect(stylesheet.ruleFor(iconColorClassName.inherit)).toBe(
+      'color:inherit;',
     );
   });
 

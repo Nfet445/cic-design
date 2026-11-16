@@ -16,12 +16,17 @@ import {render, screen} from '@testing-library/react';
 import * as stylex from '@stylexjs/stylex';
 import {CheckCircleIcon} from '@heroicons/react/24/outline';
 import {TestIcon} from '../__tests__/TestIcon';
-import {unthemedLength} from '../__tests__/unthemedLength';
+import {
+  classesOf,
+  expectClassSet,
+  expectVariable,
+} from '../__tests__/classNameAssertions';
 import {Theme} from '../theme/Theme';
 import {defineTheme} from '../theme/defineTheme';
 import {resetThemes} from '../theme/themeRegistry';
 import {Icon} from './Icon';
 import {IconDefaultSizeProvider} from './IconDefaultSizeContext';
+import {iconColorClassName, iconSizeVar} from './iconClasses';
 import {
   registerIcons,
   resetIcons,
@@ -37,9 +42,17 @@ declare module './index' {
   }
 }
 
-/** The custom properties a declaration value reads, in order. */
-function varsRead(value: string): string[] {
-  return [...value.matchAll(/var\(\s*(--[\w-]+)/g)].map(match => match[1]);
+/**
+ * The custom properties the element's classes read through `var()`.
+ *
+ * jsdom resolves neither `var()` nor a layer, so a test reads the classes and
+ * the inline custom properties, and the built stylesheet carries the
+ * declarations.
+ */
+function varsInClasses(element: Element): string[] {
+  return classesOf(element).flatMap(className =>
+    [...className.matchAll(/var\(\s*(--[\w-]+)/g)].map(match => match[1]),
+  );
 }
 
 describe('Icon', () => {
@@ -92,6 +105,7 @@ describe('Icon', () => {
         const icon = screen.getByTestId('icon');
         expect(icon).toHaveClass('astryx-icon');
         expect(icon).toHaveAttribute('data-color', color);
+        expectClassSet(icon, {includes: [iconColorClassName[color]]});
         unmount();
       }
     });
@@ -104,6 +118,7 @@ describe('Icon', () => {
         const icon = screen.getByTestId('icon');
         expect(icon).toHaveClass('astryx-icon');
         expect(icon).toHaveAttribute('data-color', color);
+        expectClassSet(icon, {includes: [iconColorClassName[color]]});
         unmount();
       }
     });
@@ -146,7 +161,7 @@ describe('Icon', () => {
     });
   });
 
-  it('sizes component-mode icons in rem so they scale with root font-size', () => {
+  it('sizes component-mode icons from the class and the size variable', () => {
     const sizes = {
       xsm: '0.75rem',
       sm: '1rem',
@@ -161,14 +176,21 @@ describe('Icon', () => {
           data-testid="icon"
         />,
       );
-      const style = getComputedStyle(screen.getByTestId('icon'));
-      expect(unthemedLength(style.width)).toBe(expected);
-      expect(unthemedLength(style.height)).toBe(expected);
+      const icon = screen.getByTestId('icon');
+      expectVariable(icon, iconSizeVar, expected);
+      // The size step reaches the glyph through the class, so a consumer class
+      // still sets the dimensions and a theme's vars still win.
+      expectClassSet(icon, {
+        includes: [
+          '[width:var(--_icon-width,var(--astryx-icon-size))]',
+          '[height:var(--_icon-height,var(--astryx-icon-size))]',
+        ],
+      });
       unmount();
     }
   });
 
-  it('sizes registry (string-mode) icons in rem, including fontSize', () => {
+  it('sizes registry (string-mode) icons through the same class, plus fontSize', () => {
     const sizes = {
       xsm: '0.75rem',
       sm: '1rem',
@@ -183,11 +205,20 @@ describe('Icon', () => {
           data-testid="icon"
         />,
       );
-      const style = getComputedStyle(screen.getByTestId('icon'));
-      expect(unthemedLength(style.width)).toBe(expected);
-      expect(unthemedLength(style.height)).toBe(expected);
-      // fontSize is expressed in rem so 1em-based registry icons scale too.
-      expect(unthemedLength(style.fontSize)).toBe(expected);
+      const icon = screen.getByTestId('icon');
+      expectVariable(icon, iconSizeVar, expected);
+      expectClassSet(icon, {
+        includes: [
+          'inline-flex',
+          'items-center',
+          'justify-center',
+          'shrink-0',
+          '[width:var(--_icon-width,var(--astryx-icon-size))]',
+          '[height:var(--_icon-height,var(--astryx-icon-size))]',
+          // 1em-based registry artwork follows the box's smaller side.
+          '[font-size:min(var(--_icon-width,var(--astryx-icon-size)),var(--_icon-height,var(--astryx-icon-size)))]',
+        ],
+      });
       unmount();
     }
   });
@@ -305,8 +336,8 @@ describe('Icon', () => {
 
     const icon = screen.getByTestId('icon');
     expect(icon).toHaveAttribute('data-size', 'md');
-    expect(unthemedLength(getComputedStyle(icon).width)).toBe('1.25rem');
-    expect(unthemedLength(getComputedStyle(icon).height)).toBe('1.25rem');
+    expectVariable(icon, iconSizeVar, '1.25rem');
+    expectClassSet(icon, {includes: [iconColorClassName.inherit]});
   });
 
   describe('theme size dimensions', () => {
@@ -315,7 +346,8 @@ describe('Icon', () => {
     // and a size the theme leaves alone keeps its own. jsdom resolves neither
     // `var()` nor the theme's scoped layer, so this checks the two halves that
     // meet in the browser: the rule the provider mounts writes the dimension
-    // into exactly the vars the glyph's own size styles read.
+    // into the vars, and the glyph's classes read those vars with the size
+    // step's own value as the fallback.
     const sizes = {
       xsm: '0.75rem',
       sm: '1rem',
@@ -381,32 +413,45 @@ describe('Icon', () => {
         const mounted = mountedSizeRule(themeName, styled);
         expect(mounted).not.toBeNull();
         const declared = mounted ?? {};
+        const declaredVars = Object.keys(declared);
         // Raw width/height would lose to an unlayered StyleX build, so the
         // rule carries the dimension only through the glyph's vars.
-        expect(Object.keys(declared)).not.toContain('width');
-        expect(Object.keys(declared)).not.toContain('height');
+        expect(declaredVars).not.toContain('width');
+        expect(declaredVars).not.toContain('height');
+        expect(declaredVars).toHaveLength(2);
 
         for (const size of Object.keys(sizes) as Size[]) {
           for (const mode of ['direct', 'registry']) {
-            const style = getComputedStyle(
-              screen.getByTestId(`${mode}-${size}`),
-            );
+            const element = screen.getByTestId(`${mode}-${size}`);
+            // The size step always reaches the glyph as an inline custom
+            // property, so the glyph keeps its own value where the theme
+            // sets none.
+            expectVariable(element, iconSizeVar, sizes[size]);
+            const read = varsInClasses(element);
+            expect(read, `${mode} ${size}`).toContain(iconSizeVar);
+            for (const declaredVar of declaredVars) {
+              expect(read, `${mode} ${size}`).toContain(declaredVar);
+            }
             if (size !== styled) {
               expect(mountedSizeRule(themeName, size)).toBeNull();
-              expect(unthemedLength(style.width)).toBe(sizes[size]);
-              expect(unthemedLength(style.height)).toBe(sizes[size]);
               continue;
             }
-            const [widthVar] = varsRead(style.width);
-            const [heightVar] = varsRead(style.height);
-            expect(declared[widthVar], `${mode} width`).toBe('18px');
-            expect(declared[heightVar], `${mode} height`).toBe('22px');
+            expect(declared[declaredVars[0]], `${mode} width`).toBeDefined();
+            expect(Object.values(declared).sort(), `${mode} size`).toEqual([
+              '18px',
+              '22px',
+            ]);
             if (mode === 'registry') {
               // 1em registry artwork follows the font size: the smaller side.
-              expect(style.fontSize).toMatch(/^min\(/);
-              expect(varsRead(style.fontSize).sort()).toEqual(
-                [widthVar, heightVar].sort(),
+              const fontSizeClass = classesOf(element).find(className =>
+                className.startsWith('[font-size:'),
               );
+              expect(fontSizeClass).toContain('min(');
+              for (const declaredVar of declaredVars) {
+                expect(fontSizeClass, `${mode} font size`).toContain(
+                  declaredVar,
+                );
+              }
             }
           }
         }
