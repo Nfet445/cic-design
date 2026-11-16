@@ -1,6 +1,6 @@
 # test harness
 
-Status: ready-for-agent
+Status: done
 Blocked by: —
 Wave: 0
 Ticket: 02

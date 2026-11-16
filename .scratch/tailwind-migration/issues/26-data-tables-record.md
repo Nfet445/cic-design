@@ -1,6 +1,6 @@
 # data tables record
 
-Status: ready-for-agent
+Status: done
 Blocked by: —
 Wave: 8
 Family: `family:data-tables`

@@ -38,14 +38,14 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 0 of 36 done, 2 waves done before the tickets existed.
+Progress: 4 of 36 done, 2 waves done before the tickets existed.
 
 ### Wave 0 — the harness
 
-- [ ] `01-stylesheet-build-cache` — cache the sheet build per class map
-- [ ] `02-test-harness` — shared class assertions, per-package sheet test, gzip gate
+- [x] `01-stylesheet-build-cache` — cache the sheet build per class map
+- [x] `02-test-harness` — shared class assertions, per-package sheet test, gzip gate
 - [ ] `03-browser-check-pages` — checked-in pages and fixtures per family
-- [ ] `04-css-export-types` — a declaration the stylesheet itself carries
+- [x] `04-css-export-types` — a declaration the stylesheet itself carries
 
 ### Wave 3 — shared infrastructure and `family:layout-regions`
 
@@ -85,7 +85,7 @@ Progress: 0 of 36 done, 2 waves done before the tickets existed.
 
 ### Wave 8 — the data surfaces
 
-- [ ] `26-data-tables-record` — write `docs/families/data-tables.md` first
+- [x] `26-data-tables-record` — write `docs/families/data-tables.md` first
 - [ ] `27-table-structure` — header, rows, cells
 - [ ] `28-table-behaviour` — sorting, filtering, selection, virtualised body
 - [ ] `29-charts-and-richtext` — two packages get their own sheets
