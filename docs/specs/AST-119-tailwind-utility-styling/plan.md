@@ -155,9 +155,10 @@ check of the family's states.
 
 ## Status
 
-- Current phase: `4` — wave 2 is open. The layout family proved the contract;
-  `Button` migrated at a size the family budget covers, and the rest of
-  `family:buttons` follows.
+- Current phase: `4` — wave 2 is done, wave 3 is next. The layout family
+  proved the contract; all five of `family:buttons` are settled, four of them
+  migrated, and the whole sheet still fits the budget the stylesheet test
+  enforces.
 - Blockers: `spec:AST-119` and the two amendments need owner approval; OQ1 and
   OQ3 change the consumer story and must settle before Phase 5; OQ2 decides
   whether FR8's class set is a promise.
