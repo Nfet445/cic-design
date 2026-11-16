@@ -1,0 +1,35 @@
+# field and text inputs
+
+Status: ready-for-agent
+Blocked by: 5,9,11
+Wave: 4
+Family: `family:input-fields`
+Ticket: 14
+
+## What
+
+First form slice: `Field/` (13), `TextInput/`, `TextArea/`, `NumberInput/` and `FileInput/`.
+
+## Files
+
+- `packages/core/src/Field/**`
+- `packages/core/src/TextInput/**`
+- `packages/core/src/TextArea/**`
+- `packages/core/src/NumberInput/**`
+- `packages/core/src/FileInput/**`
+
+## Done when
+
+- `invalid`, `disabled` and focus ring states come from variants with their own specificity.
+- The label, description and error slots keep their ids and ordering.
+- The family page shows every state at both pointer types.
+
+## Verification
+
+- `pnpm exec vitest run packages/core/src/Field packages/core/src/TextInput packages/core/src/TextArea packages/core/src/NumberInput packages/core/src/FileInput`
+
+## Notes
+
+- Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
+- Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.
+- Manual Windows High Contrast check is part of this ticket's checklist when the component draws a border, an outline or a focus ring.

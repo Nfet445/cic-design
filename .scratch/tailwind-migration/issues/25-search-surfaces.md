@@ -1,0 +1,33 @@
+# search surfaces
+
+Status: ready-for-agent
+Blocked by: 23
+Wave: 7
+Family: `family:overlay-dismissal`
+Ticket: 25
+
+## What
+
+Migrate `CommandPalette/` (8), `PowerSearch/` (9) and the remaining input popovers (`Tokenizer/` (10), `ChatComposerInput/`, `PowerSearchEditPopover/`).
+
+## Files
+
+- `packages/core/src/CommandPalette/**`
+- `packages/core/src/PowerSearch/**`
+- `packages/core/src/Tokenizer/**`
+- `packages/core/src/Chat/** (composer input only)`
+
+## Done when
+
+- The palette grid and the anchored edit popover style from maps.
+- Typing state and empty state keep their measured heights.
+
+## Verification
+
+- `pnpm exec vitest run packages/core/src/CommandPalette packages/core/src/PowerSearch packages/core/src/Tokenizer`
+
+## Notes
+
+- Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
+- Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.
+- Manual Windows High Contrast check is part of this ticket's checklist when the component draws a border, an outline or a focus ring.

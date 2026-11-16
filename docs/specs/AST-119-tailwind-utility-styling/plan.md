@@ -26,9 +26,10 @@ owners: [cixzhang]
 - [x] `packages/core/package.json` exports `./astryx-tailwind.css` and runs the
       Tailwind build after the StyleX build in `build:css`.
 - [ ] Point the `./astryx-tailwind.css` export's `types` at a declaration the
-      file itself carries, rather than a neighbouring stub.
+      file itself carries, rather than a neighbouring stub (ticket 04).
 - [ ] Cache the stylesheet build per component file, as the StyleX build
-      caches per module, so a full build does not rescan 1202 files.
+      caches per module, so a full build does not rescan 1202 files
+      (ticket 01).
 
 ### Phase 2 — One family proves the contract
 
@@ -70,8 +71,10 @@ owners: [cixzhang]
 - [x] Amend `spec:AST-080` FR1 and FR3: a package ships a second stylesheet
       while both kinds of module remain, and that file registers the same
       layer order first.
-- [ ] Amend `spec:AST-080` for the second stylesheet: its export, its layer
-      order, and the import contract.
+- [x] Amend `spec:AST-080` for the second stylesheet: its export, its layer
+      order, and the import contract. FR1 names the pair and the moment it
+      ends; FR3 puts the migration sheet in `astryx-base` and requires it to
+      register the same three layers first, then the consumer slots.
 - [ ] Approve `spec:AST-119`, which this plan tracks.
 
 ### Phase 4 — Family waves
@@ -79,11 +82,8 @@ owners: [cixzhang]
 Each wave is one pull request per family, with its own tests and a browser
 check of the family's states.
 
-- [ ] Wave 1: `family:layout-regions` and `family:layout-primitives` siblings
-      that read the same padding and gap vocabulary (Layout, LayoutPanel,
-      AppShell regions).
-- [ ] Wave 2: `family:buttons` and `family:action-groups`, the first states
-      with hover, press, and focus.
+- [x] Waves 1-2: `family:layout-primitives`, the padding and gap vocabulary,
+      then `family:buttons`, the first states with hover, press and focus.
   - [x] `Button` renders from `Button/buttonClasses.ts`: layout, variant,
         elevation, icon-only shape, group radius and border, press scale,
         forced-colors edge, and the loading keyframes. The shared modules it
@@ -111,33 +111,50 @@ check of the family's states.
         grouped edge now carries width and colour only.
   - The whole sheet after wave 2: 25 273 B (4 072 B gzip), 251 selector
     rules.
-- [ ] Wave 3: `family:input-fields` and the selection controls, the first
-      form-control markers and `data-*` targets.
-- [ ] Wave 4: `family:navigation-destinations` and `family:overlay-dismissal`,
-      the first portal and layer-root styling.
-- [ ] Wave 5: `packages/charts` and `packages/richtext`, then `packages/lab`.
-- [ ] Wave 6: `packages/themes`, which keeps its build and only renames the
-      bridge it exports.
+    The remaining work is cut into tickets. The wave order, the size gate, the
+    definition of done and the release and rollback rules live with them:
+    [`map.md`](../../../.scratch/tailwind-migration/map.md) lists the 36 tickets and
+    [`README.md`](../../../.scratch/tailwind-migration/README.md) states the rules a
+    ticket must satisfy. A wave is one release, a ticket is one pull request.
+
+- [ ] Wave 0 - the harness: build cache, shared class assertions, browser check
+      pages, export declaration (tickets 01-04).
+- [ ] Wave 3 - shared infrastructure (tokens, markers, `Icon`, `Text`,
+      `Indicator`, `Layer`, hooks, utils) and `family:layout-regions`, which
+      reads the vocabulary wave 1 proved (tickets 05-13).
+- [ ] Wave 4 - `family:input-fields` in three pull requests: field and text
+      inputs, choice inputs, date inputs (tickets 14-16).
+- [ ] Wave 5 - the shared style modules that still hand StyleX objects to
+      components, so `xstyle` becomes the only StyleX input left (ticket 17).
+- [ ] Wave 6 - `family:navigation-destinations`: links and rows, tabs, side
+      nav, top nav (tickets 18-21).
+- [ ] Wave 7 - `family:overlay-dismissal` and `family:action-groups`, whose
+      members are menus over the same layer (tickets 22-25).
+- [ ] Wave 8 - `family:data-tables`, whose record is written first, then
+      `packages/charts`, `packages/richtext` and `packages/lab`
+      (tickets 26-30).
+- [ ] Wave 9 - `packages/themes`, the consumer surfaces, the deprecated
+      subpaths and the removal of StyleX (tickets 31-36).
 
 ### Phase 5 — The consumer surface follows
 
 - [ ] `packages/cli` templates, blocks, and `assets/docs` emit utility classes
-      and document `astryx-tailwind.css`.
+      and document `astryx-tailwind.css` (ticket 32).
 - [ ] `apps/storybook` loads the Tailwind stylesheet, so a story shows the
-      class-backed declarations.
+      class-backed declarations (ticket 33).
 - [ ] `internal/vibe-tests` reads the migrated components from the Tailwind
-      environment, which already loads the stylesheet.
+      environment, which already loads the stylesheet (ticket 33).
 - [ ] `astryx swizzle` output states which stylesheet a swizzled component
-      needs (OQ4).
+      needs (OQ4, ticket 34).
 
 ### Phase 6 — StyleX leaves
 
 - [ ] `@stylexjs/*` leaves `packages/core`, `packages/lab`, `packages/charts`,
-      `packages/richtext`, and `packages/build`.
+      `packages/richtext`, and `packages/build` (ticket 36).
 - [ ] `scripts/build-css.mjs` and the StyleX transform retire for a migrated
-      package.
+      package (ticket 36).
 - [ ] `astryx.css` retires or stays per OQ1, and every import of it in the
-      repository changes.
+      repository changes (ticket 36).
 
 ## Verification
 
@@ -155,10 +172,16 @@ check of the family's states.
 
 ## Status
 
-- Current phase: `4` — wave 2 is done, wave 3 is next. The layout family
-  proved the contract; all five of `family:buttons` are settled, four of them
-  migrated, and the whole sheet still fits the budget the stylesheet test
-  enforces.
-- Blockers: `spec:AST-119` and the two amendments need owner approval; OQ1 and
-  OQ3 change the consumer story and must settle before Phase 5; OQ2 decides
-  whether FR8's class set is a promise.
+- Current phase: `4` — waves 1 and 2 are done and pushed, wave 0 is the next
+  ticket. The layout family proved the contract; all five members of
+  `family:buttons` are settled, four of them migrated, and the whole sheet
+  still fits the budget the stylesheet test enforces.
+- The remaining work is scheduled: 36 tickets over waves 0 and 3-9, each with
+  its files, its `Blocked by:` line and its verification, in
+  [`.scratch/tailwind-migration/`](../../../.scratch/tailwind-migration/map.md).
+  `packages/native` and `packages/vega` are out of scope: neither imports
+  StyleX, and Tailwind CSS does not apply to React Native.
+- Blockers: `spec:AST-119` and the two amendments need owner approval, which
+  every wave pull request carries; OQ1 and OQ3 change the consumer story and
+  must settle before Phase 5; OQ2 decides whether FR8's class set is a promise.
+  OQ3 is answered for this plan: the consumer's `xstyle` stays unlayered.
