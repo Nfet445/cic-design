@@ -31,6 +31,7 @@ import * as lineClampClasses from './LineClamp/lineClampClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
 import * as scheduleClasses from './Schedule/scheduleClasses';
+import * as statClasses from './Stat/statClasses';
 import * as transferListClasses from './TransferList/transferListClasses';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -67,11 +68,16 @@ function labClassNames() {
     listInputClasses,
     loadingMessageClasses,
     scheduleClasses,
+    statClasses,
     transferListClasses,
   ]) {
     for (const [name, value] of Object.entries(map)) {
       if (name.endsWith('ClassName')) {
         add(value);
+      } else if (name.endsWith('ClassNames')) {
+        for (const variant of Object.values(value)) {
+          add(variant);
+        }
       }
     }
   }
