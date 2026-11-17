@@ -16,8 +16,8 @@
  *
  * Stays in StyleX, and the reason is ownership, not layering: the two values
  * face no unlayered rule, so the class form works. Each caller passes the pair
- * to `stylex.props()` beside its own state styles, and seven of the eight
- * callers are other components (`SideNav`, `TopNav`, `TabList`, `Breadcrumbs`,
+ * to `stylex.props()` beside its own state styles, and six of the seven callers
+ * are other components (`SideNav`, `TopNav` twice, `TabList`, `Breadcrumbs`,
  * `NavMenu`). Converting this module rewrites those components too, so it
  * belongs to one commit that owns all of them. The class strings already exist
  * in `dropdownMenuSubMenuClasses.ts` (`[touch-action:pinch-zoom]`,
