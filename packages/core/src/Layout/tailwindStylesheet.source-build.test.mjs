@@ -104,6 +104,13 @@ import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses'
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {stackClassName} from '../Stack/stackClasses';
+import {
+  tokenClassName,
+  tokenInvisibleButtonClassName,
+  tokenLabelClassName,
+  tokenLabelHiddenClassName,
+  tokenRemoveButtonClassName,
+} from '../Token/tokenClasses';
 import {stackItemClassName} from '../Stack/stackItemClasses';
 import {
   sectionInnerClassName,
@@ -704,6 +711,34 @@ function familyClassNames() {
   add(breadcrumbSeparatorClassName);
   add(breadcrumbChevronClassName);
 
+  for (const size of ['sm', 'md', 'lg']) {
+    for (const color of [
+      'default',
+      'red',
+      'orange',
+      'yellow',
+      'green',
+      'teal',
+      'cyan',
+      'blue',
+      'purple',
+      'pink',
+      'gray',
+    ]) {
+      add(
+        tokenClassName({size, color, isInteractive: true, isDisabled: false}),
+      );
+      add(tokenClassName({size, color, isInteractive: true, isDisabled: true}));
+      add(
+        tokenClassName({size, color, isInteractive: false, isDisabled: false}),
+      );
+    }
+  }
+  add(tokenInvisibleButtonClassName);
+  add(tokenLabelClassName);
+  add(tokenLabelHiddenClassName);
+  add(tokenRemoveButtonClassName);
+
   add(citationIconWrapClassName);
   add(citationIconClassName);
   add(citationLabelTextClassName);
@@ -732,10 +767,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // The layout primitives and the words in their comments produce about 190
     // rules, the Button map about 115, the Text map about 65, Section and
     // Toolbar about 40, the layout shell and region maps about 110, the input
-    // field family about 60, and Table's sorting, filtering and selection maps
-    // about 60. A scan that reaches component bodies or prose would add
-    // hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(620);
+    // field family about 60, Table's sorting, filtering and selection maps
+    // about 60, and the link-and-item family about 100. A scan that reaches
+    // component bodies or prose would add hundreds more.
+    expect(stylesheet.rules.size).toBeLessThan(760);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
