@@ -21,6 +21,8 @@ import * as chatReactionBarClasses from './Chat/chatReactionBarClasses';
 import * as chatReasoningClasses from './ChatReasoning/chatReasoningClasses';
 import * as chatTypingIndicatorClasses from './Chat/chatTypingIndicatorClasses';
 import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
+import * as chatVirtualizerClasses from './Chat/chatVirtualizerClasses';
+import * as codeEditorClasses from './CodeEditor/codeEditorClasses';
 import * as commentActionsClasses from './Comments/commentActionsClasses';
 import * as commentMarkdownClasses from './Comments/commentMarkdownClasses';
 import * as commentPartsClasses from './Comments/commentPartsClasses';
@@ -33,6 +35,7 @@ import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
 import * as scheduleClasses from './Schedule/scheduleClasses';
 import * as pageControlClasses from './PageControl/pageControlClasses';
+import * as radialChartClasses from './Radial/radialChartClasses';
 import * as selectableCardGroupClasses from './SelectableCardGroup/selectableCardGroupClasses';
 import * as statClasses from './Stat/statClasses';
 import * as transferListClasses from './TransferList/transferListClasses';
@@ -61,6 +64,8 @@ function labClassNames() {
     chatReasoningClasses,
     chatTypingIndicatorClasses,
     chatUnreadDividerClasses,
+    chatVirtualizerClasses,
+    codeEditorClasses,
     commentActionsClasses,
     commentMarkdownClasses,
     commentPartsClasses,
@@ -72,6 +77,7 @@ function labClassNames() {
     listInputClasses,
     loadingMessageClasses,
     pageControlClasses,
+    radialChartClasses,
     scheduleClasses,
     statClasses,
     transferListClasses,

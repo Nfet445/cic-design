@@ -121,8 +121,11 @@ describe('CheckboxInput under a finger', () => {
       screen.getByRole('checkbox', {name: 'Accept terms'}),
       '[data-astryx-pressable]',
     );
-    expect(valueOf(row, 'min-height', TOUCH)).toBeUndefined();
-    expect(valueOf(row, 'min-height', null)).toBeUndefined();
+    // The row's own height is the row's, never the band's: the band is a
+    // pseudo-element, so no min-height utility appears at either pointer.
+    expect(
+      Array.from(row.classList).filter(name => name.includes('min-h-')),
+    ).toEqual([]);
     expect(hasHitLayer(row)).toBe(true);
     // The row holds the band only under a finger; a mouse sees no change.
     const rowClass = checkboxInputRowClassName({
