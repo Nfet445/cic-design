@@ -138,6 +138,24 @@ function getDialog(label: string): HTMLDialogElement {
   )!;
 }
 
+/**
+ * Presses a button inside a non-modal layer. `showPopover()` does not set the
+ * `open` attribute, so a browser's `dialog:not([open])` rule keeps the layer's
+ * subtree out of the accessibility tree that role queries walk. The component
+ * paints the presented state from its stylesheet instead, so the button is
+ * there to press.
+ */
+function clickInLayer(label: string, name: string): void {
+  const layer = getDialog(label);
+  const button = Array.from(layer.querySelectorAll('button')).find(
+    candidate => candidate.textContent?.trim() === name,
+  );
+  if (!button) {
+    throw new Error(`No "${name}" button inside the ${label} layer.`);
+  }
+  fireEvent.click(button);
+}
+
 function getViewport(): HTMLElement {
   // A non-modal BottomSheet is a manual popover too; the viewport is the one
   // that is not a dialog.
@@ -418,9 +436,7 @@ describe('ToastViewport modal hosting', () => {
     expect(screen.getByText('Saved')).toBeInTheDocument();
 
     // A toast raised while the sheet is open lands in the same viewport.
-    fireEvent.click(
-      screen.getByRole('button', {name: 'Show toast in Filters'}),
-    );
+    clickInLayer('Filters', 'Show toast in Filters');
     expect(screen.getAllByText('Saved')).toHaveLength(2);
 
     // Closing the sheet moves nothing and re-enters nothing.
@@ -918,7 +934,7 @@ describe('ToastViewport above a Drawer', () => {
     expect(getActiveModalOutlet()).toBeNull();
 
     // Closing the drawer moves nothing and re-enters nothing.
-    fireEvent.click(screen.getByRole('button', {name: 'Close Candidate'}));
+    clickInLayer('Candidate', 'Close Candidate');
     expect(onViewport(hidePopover)).toBe(1);
     expect(onViewport(showPopover)).toBe(2);
   });
