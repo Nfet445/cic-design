@@ -216,6 +216,27 @@ export const docs = {
         default: 'var(--radius-container)',
         private: true,
       },
+      {
+        name: '--astryx-popover-max-inline-size',
+        description:
+          'Longest inline size the painted surface takes; the layer viewport fit sets it on the anchored layer',
+        default: 'none',
+        private: true,
+      },
+      {
+        name: '--astryx-popover-max-block-size',
+        description:
+          'Tallest block size the painted surface takes; the layer viewport fit sets it on the anchored layer',
+        default: 'none',
+        private: true,
+      },
+      {
+        name: '--astryx-popover-width',
+        description:
+          'Width the surface renders at, written from the width prop so one class serves every value',
+        default: 'none',
+        private: true,
+      },
     ],
     derived: [{property: 'borderRadius', vars: ['--_popover-radius']}],
   },
@@ -432,6 +453,27 @@ export const docsZh = {
         name: '--_popover-radius',
         description: 'Border radius of the popover surface',
         default: 'var(--radius-container)',
+        private: true,
+      },
+      {
+        name: '--astryx-popover-max-inline-size',
+        description:
+          'Longest inline size the painted surface takes; the layer viewport fit sets it on the anchored layer',
+        default: 'none',
+        private: true,
+      },
+      {
+        name: '--astryx-popover-max-block-size',
+        description:
+          'Tallest block size the painted surface takes; the layer viewport fit sets it on the anchored layer',
+        default: 'none',
+        private: true,
+      },
+      {
+        name: '--astryx-popover-width',
+        description:
+          'Width the surface renders at, written from the width prop so one class serves every value',
+        default: 'none',
         private: true,
       },
     ],
