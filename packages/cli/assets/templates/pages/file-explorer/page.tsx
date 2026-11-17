@@ -8,7 +8,6 @@ import {Toolbar} from '@astryxdesign/core/Toolbar';
 import {List, ListItem} from '@astryxdesign/core/List';
 import {HStack, VStack} from '@astryxdesign/core/Layout';
 import {StackItem} from '@astryxdesign/core/Stack';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {Text} from '@astryxdesign/core/Text';
 import {Icon} from '@astryxdesign/core/Icon';
 import {IconButton} from '@astryxdesign/core/IconButton';
@@ -364,7 +363,7 @@ export default function FileExplorerPage() {
                   <Icon
                     icon={ChevronLeftIcon}
                     size="sm"
-                    xstyle={rtlStyles.mirror}
+                    className="rtl:[transform:scaleX(-1)]"
                   />
                 }
                 onClick={() => {
@@ -382,7 +381,7 @@ export default function FileExplorerPage() {
                   <Icon
                     icon={ChevronRightIcon}
                     size="sm"
-                    xstyle={rtlStyles.mirror}
+                    className="rtl:[transform:scaleX(-1)]"
                   />
                 }
                 isDisabled
@@ -519,7 +518,7 @@ export default function FileExplorerPage() {
                                   icon={ChevronRightIcon}
                                   size="xsm"
                                   color="secondary"
-                                  xstyle={rtlStyles.mirror}
+                                  className="rtl:[transform:scaleX(-1)]"
                                 />
                               ) : undefined
                             }

@@ -2,13 +2,11 @@
 
 'use client';
 
-import * as stylex from '@stylexjs/stylex';
 import {Breadcrumbs, BreadcrumbItem} from '@astryxdesign/core/Breadcrumbs';
 import {Stack} from '@astryxdesign/core/Layout';
 import {Text} from '@astryxdesign/core/Text';
-import {rtlStyles} from '@astryxdesign/core/utils';
 
-// Only a glyph the bidi algorithm does not already flip needs rtlStyles.mirror.
+// Only a glyph the bidi algorithm does not already flip needs the mirror class.
 // U+203A has Unicode Bidi_Mirrored=Yes, so the browser mirrors it under RTL on
 // its own and a second flip would point it back the wrong way; U+2192 has
 // Bidi_Mirrored=No and stays pointing left-to-right unless we mirror it.
@@ -29,7 +27,7 @@ export default function BreadcrumbsCustomSeparator() {
           <Breadcrumbs
             separator={
               needsRtlMirror ? (
-                <span {...stylex.props(rtlStyles.mirror)}>{char}</span>
+                <span className="rtl:[transform:scaleX(-1)]">{char}</span>
               ) : (
                 char
               )
