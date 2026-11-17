@@ -280,6 +280,8 @@ import {
   fieldHorizontalLabelAlignClassName,
   fieldHorizontalLabelsClassName,
   fieldInputStatusWrapperClassName,
+  fieldInputWrapperClassName,
+  fieldStatusBorderClassName,
 } from '../Field/fieldClasses';
 import {
   fieldDescriptionClassName,
@@ -1986,6 +1988,8 @@ function familyClassNames() {
     fieldHorizontalLabelAlignClassName,
     fieldInputStatusWrapperClassName,
     fieldAttachedStatusLayerClassName,
+    fieldInputWrapperClassName(),
+    ...Object.values(fieldStatusBorderClassName),
     fieldScreenReaderOnlyClassName,
     fieldLabelStatusClassName,
     inputClearButtonClassName,

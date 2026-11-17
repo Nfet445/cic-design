@@ -2,11 +2,15 @@
 
 /**
  * @file fieldClasses.ts
- * @input Uses the theme's spacing, border and element-size variables
+ * @input Uses the theme's spacing, border and element-size variables, and the
+ *   input status type
  * @output The utility class strings Field's root, its horizontal label cell and
- *   its input/status wrapper carry, plus the custom property Field's width class
- *   reads
- * @position Internal to Field; the Tailwind build scans it for class names
+ *   its input/status wrapper carry, the custom property Field's width class
+ *   reads, and the input box a consumer paints for itself
+ * @position Internal to Field, except `fieldInputWrapperClassName` and
+ *   `fieldStatusBorderClassName`, which `@astryxdesign/core/Field` publishes
+ *   for a consumer that draws an input box of its own; the Tailwind build scans
+ *   this module for class names
  *
  * SYNC: When modified, update:
  * - /packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
@@ -14,6 +18,7 @@
 
 import type {CSSProperties} from 'react';
 import type {SizeValue} from '../utils/types';
+import type {InputStatusType} from './types';
 import {tw} from '../utils/tw';
 
 /**
@@ -99,3 +104,63 @@ export const fieldInputStatusWrapperClassName = tw(
  * controls. The isolated wrapper contains this negative stacking layer.
  */
 export const fieldAttachedStatusLayerClassName = tw('relative', '[z-index:-1]');
+
+/**
+ * The status border colours, published for a consumer that paints its own box.
+ * Apply one of these instead of the wrapper's own `border-color`, never beside
+ * it: two classes setting one property are decided by the sheet order.
+ */
+export const fieldStatusBorderClassName: Record<InputStatusType, string> = {
+  warning: 'border-[color:var(--color-border-warning)]',
+  error: 'border-[color:var(--color-border-error)]',
+  success: 'border-[color:var(--color-border-success)]',
+};
+
+const FIELD_INPUT_BOX_CLASS = tw(
+  'box-border',
+  'relative',
+  'z-1',
+  'flex',
+  'items-center',
+  'gap-[var(--spacing-2)]',
+  'py-[var(--spacing-1)]',
+  'px-[var(--spacing-2)]',
+  'border-[length:var(--border-width)]',
+  'border-solid',
+  'focus-within:border-[color:var(--color-accent)]',
+  'forced-colors:focus-within:border-[color:Highlight]',
+  '[--_field-radius:var(--radius-element)]',
+  'rounded-[var(--_field-radius)]',
+  'bg-[var(--color-background-surface)]',
+  // A text field applies the coarse-pointer timing too: a tap on one raises the
+  // keyboard, and a fade repaints the field on each frame of that rise.
+  'transition-[border-color,box-shadow]',
+  'duration-[var(--duration-fast)]',
+  'ease-[var(--ease-standard)]',
+  'motion-reduce:duration-0',
+  'pointer-coarse:duration-0',
+  'shadow-none',
+  'pointer-fine:not-disabled:not-focus-within:hover:shadow-[inset_0_0_0_2px_color-mix(in_srgb,var(--color-border-emphasized)_30%,transparent)]',
+  'focus-within:shadow-[inset_0_0_0_2px_var(--color-accent-muted)]',
+  'outline-none',
+);
+
+/**
+ * The box an input sits in, as `inputWrapperStyles.base` and `.textField` draw
+ * it: the border, the surface, the hover ring and the focus ring.
+ *
+ * `status` replaces the resting border colour; it is the only class that
+ * changes it, so a status border and the resting one never compete. Padding,
+ * alignment and growth stay the caller's, as they are for every input
+ * component that composes the box.
+ */
+export function fieldInputWrapperClassName({
+  status,
+}: {status?: InputStatusType} = {}): string {
+  return tw(
+    FIELD_INPUT_BOX_CLASS,
+    status
+      ? fieldStatusBorderClassName[status]
+      : 'border-[color:var(--color-border-emphasized)]',
+  );
+}
