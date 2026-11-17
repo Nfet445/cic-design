@@ -6,6 +6,13 @@ import {useState} from 'react';
 import {Table} from '../../Table';
 import type {TableColumn} from '../../types';
 import {useTableRowExpansion} from './useTableRowExpansion';
+import {
+  ROW_EXPANSION_CLICKABLE_ROW_CLASS,
+  ROW_EXPANSION_GLYPH_STATE_CLASS,
+  ROW_EXPANSION_PANEL_MUTED_CLASS,
+  rowExpansionPanelIndentClassName,
+} from './rowExpansionClasses';
+import {expectClassSet} from '../../../__tests__/classNameAssertions';
 import {InternationalizationProvider} from '../../../i18n';
 import type {ComponentIconMap} from '../../../Icon/index';
 import {defineTheme} from '../../../theme/defineTheme';
@@ -360,8 +367,9 @@ describe('useTableRowExpansion (detail panel)', () => {
     // The glyph's box, the button's first child, turns with the glyph in it.
     const glyph = button.querySelector<HTMLElement>(':scope > *');
     expect(glyph?.querySelector('svg')).not.toBeNull();
-    expect(glyph).toHaveStyle({transform: 'rotate(90deg)'});
-    expect(button).not.toHaveStyle({transform: 'rotate(90deg)'});
+    const expandedGlyph = ROW_EXPANSION_GLYPH_STATE_CLASS.expanded.split(' ');
+    expectClassSet(glyph!, {includes: expandedGlyph});
+    expectClassSet(button, {excludes: expandedGlyph});
   });
 
   it('starts the panel at the first column, not at the row edge', () => {
@@ -369,15 +377,15 @@ describe('useTableRowExpansion (detail panel)', () => {
     // of every label it describes. It should start where the first column's
     // content does: the chevron column's width plus a cell's own padding.
     render(<Harness initialExpanded={new Set(['a'])} />);
-    expect(screen.getByTestId('panel').closest('td')).toHaveStyle({
-      paddingInlineStart: 'calc(40px + var(--spacing-3))',
+    expectClassSet(screen.getByTestId('panel').closest('td')!, {
+      includes: rowExpansionPanelIndentClassName('balanced').split(' '),
     });
   });
 
   it('tracks the table density it is rendered at', () => {
     render(<Harness initialExpanded={new Set(['a'])} density="spacious" />);
-    expect(screen.getByTestId('panel').closest('td')).toHaveStyle({
-      paddingInlineStart: 'calc(40px + var(--spacing-4))',
+    expectClassSet(screen.getByTestId('panel').closest('td')!, {
+      includes: rowExpansionPanelIndentClassName('spacious').split(' '),
     });
   });
 
@@ -389,12 +397,11 @@ describe('useTableRowExpansion (detail panel)', () => {
     render(<Harness initialExpanded={new Set(['a'])} />);
     const chevronHeader = screen.getAllByRole('columnheader')[0];
     const columnWidth = getComputedStyle(chevronHeader).width;
-    const panelCell = screen
-      .getByTestId('panel')
-      .closest('td') as HTMLTableCellElement;
     expect(columnWidth).toBe('40px');
-    expect(getComputedStyle(panelCell).paddingInlineStart).toMatch(
-      new RegExp(`^calc\\(${columnWidth} \\+ `),
+    // The indent class spells the same pixels, in a `calc` the spacing scale
+    // still finishes.
+    expect(rowExpansionPanelIndentClassName('balanced')).toContain(
+      `calc(${columnWidth}`,
     );
   });
 
@@ -545,22 +552,25 @@ describe('useTableRowExpansion (detail panel)', () => {
       screen.getByTestId('panel').closest('tr') as HTMLTableRowElement;
     const panelCell = () =>
       screen.getByTestId('panel').closest('td') as HTMLTableCellElement;
-    const wash = {backgroundColor: 'var(--color-background-muted)'};
 
     it('leaves the panel on the surface behind the table by default', () => {
       // The panel is the row's continuation, not a surface of its own: it
       // takes whatever the table sits on, the way the row does.
       render(<Harness initialExpanded={new Set(['a'])} />);
-      expect(panelRow()).not.toHaveStyle(wash);
-      expect(panelCell()).not.toHaveStyle(wash);
+      expectClassSet(panelRow(), {excludes: [ROW_EXPANSION_PANEL_MUTED_CLASS]});
+      expectClassSet(panelCell(), {
+        excludes: [ROW_EXPANSION_PANEL_MUTED_CLASS],
+      });
     });
 
     it('washes the panel cell, not its row, when muted is asked for', () => {
       // A row that paints its own box keeps a moving clip as the panel plays
       // in. The cell slides in with the content instead.
       render(<Harness initialExpanded={new Set(['a'])} panelVariant="muted" />);
-      expect(panelCell()).toHaveStyle(wash);
-      expect(panelRow()).not.toHaveStyle(wash);
+      expectClassSet(panelCell(), {
+        includes: [ROW_EXPANSION_PANEL_MUTED_CLASS],
+      });
+      expectClassSet(panelRow(), {excludes: [ROW_EXPANSION_PANEL_MUTED_CLASS]});
     });
   });
 
@@ -802,10 +812,11 @@ describe('useTableRowExpansion (detail panel)', () => {
 
     it('marks the row as interactive only when the click is wired up', () => {
       const {unmount} = render(<Harness hasRowClickExpansion />);
-      expect(rowFor('Ada')).toHaveStyle({cursor: 'pointer'});
+      const clickable = ROW_EXPANSION_CLICKABLE_ROW_CLASS.split(' ');
+      expectClassSet(rowFor('Ada'), {includes: clickable});
       unmount();
       render(<Harness />);
-      expect(rowFor('Ada')).not.toHaveStyle({cursor: 'pointer'});
+      expectClassSet(rowFor('Ada'), {excludes: clickable});
     });
   });
 

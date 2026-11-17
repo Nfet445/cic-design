@@ -28,14 +28,6 @@ import {
   type RefObject,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  spacingVars,
-  colorVars,
-  radiusVars,
-  borderVars,
-  durationVars,
-  easeVars,
-} from '../../../theme/tokens.stylex';
 import {tableRowMarker} from '../../table.stylex';
 import {panelDividerFor} from '../../rowDivider';
 import {useTheme, useThemeName} from '../../../theme/useTheme';
@@ -46,7 +38,20 @@ import {tw} from '../../../utils/tw';
 import {VisuallyHidden} from '../../../VisuallyHidden';
 import {resolveContextActions} from '../../tableContextMenu';
 import {useTableContext} from '../../useTableCellStyles';
-import {rtlStyles} from '../../../utils';
+import {mergeProps, rtlStyles} from '../../../utils';
+import {
+  ROW_EXPANSION_CHEVRON_BUTTON_CLASS,
+  ROW_EXPANSION_CLICKABLE_ROW_CLASS,
+  ROW_EXPANSION_GLYPH_BOX_CLASS,
+  ROW_EXPANSION_GLYPH_CENTER_CLASS,
+  ROW_EXPANSION_GLYPH_CLASS,
+  ROW_EXPANSION_GLYPH_STATE_CLASS,
+  ROW_EXPANSION_PANEL_CLASS,
+  ROW_EXPANSION_PANEL_MUTED_CLASS,
+  rowExpansionChevronOffsetClassName,
+  rowExpansionPanelIndentClassName,
+} from './rowExpansionClasses';
+import {rowExpansionOverrideStyles} from './rowExpansionOverrides.stylex';
 import {
   hasInteractiveAncestor,
   hasTextSelection,
@@ -180,101 +185,10 @@ export interface UseTableRowExpansionConfig<T extends Record<string, unknown>> {
  */
 const EXPANSION_COLUMN_WIDTH_PX = 40;
 const EXPANSION_COLUMN_KEY = '__expansion';
-/** The chevron button: the spacing step, never wider than its column. */
-const CHEVRON_SIZE = `min(${spacingVars['--spacing-6']}, ${EXPANSION_COLUMN_WIDTH_PX}px)`;
 const EXPANSION_COLUMN_WIDTH = {
   type: 'pixel' as const,
   value: EXPANSION_COLUMN_WIDTH_PX,
 };
-
-const expansionStyles = stylex.create({
-  chevronButton: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: CHEVRON_SIZE,
-    height: CHEVRON_SIZE,
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    borderRadius: radiusVars['--radius-inner'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    color: colorVars['--color-icon-secondary'],
-    // Colour only. The rotation belongs to the glyph, not to the button: the
-    // button is the hit target and carries the hover chip, and turning that
-    // swings the rounded rectangle and its highlight around with the arrow.
-    transitionProperty: 'color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    padding: 0,
-    // Match IconButton ghost hover: subtle overlay background.
-    backgroundImage: {
-      default: null,
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': `linear-gradient(${colorVars['--color-overlay-hover']}, ${colorVars['--color-overlay-hover']})`,
-      },
-    },
-    ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-      color: colorVars['--color-icon-primary'],
-    },
-  },
-  // The button takes its baseline from this fixed box. A theme's glyph size
-  // or a hidden glyph then keeps the row height. The box is the toggle's
-  // first child, which the glide gives its spring, so it carries the turn.
-  glyphBox: {
-    display: 'inline-block',
-    position: 'relative',
-    flexShrink: 0,
-  },
-  glyphCenter: {
-    position: 'absolute',
-    inset: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chevron: {
-    transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  // The RTL mirror is folded into each state's transform rather than living
-  // on a parent span, matching TreeListItem's chevron (both are `transform`,
-  // so on one element the later value would win).
-  chevronExpanded: {
-    transform: {
-      default: 'rotate(90deg)',
-      ':is([dir="rtl"] *)': 'scaleX(-1) rotate(90deg)',
-    },
-  },
-  chevronCollapsed: {
-    transform: {
-      default: 'rotate(0deg)',
-      ':is([dir="rtl"] *)': 'scaleX(-1) rotate(0deg)',
-    },
-  },
-  // The wash goes on the panel's cell, not on its row. A row that paints its
-  // own box plays in under a clip that moves with its edge. On iOS that clip
-  // can trail the rows that glide below it. The cell slides in with the
-  // panel's content.
-  mutedPanel: {
-    backgroundColor: colorVars['--color-background-muted'],
-  },
-  expandedCell: {
-    paddingBlock: spacingVars['--spacing-4'],
-    paddingInlineEnd: spacingVars['--spacing-5'],
-  },
-  /** Whole-row-click expansion: signal the row is interactive. */
-  clickableRow: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-});
 
 /**
  * An expanded row and its panel are one unit, so the row divider belongs after
@@ -286,31 +200,6 @@ const expansionStyles = stylex.create({
  * row dividers the suppression is a no-op (there was no border to remove) and
  * the panel's is never applied, so neither needs to consult the divider mode.
  */
-const dividerStyles = stylex.create({
-  expandedRowCell: {
-    '--_table-row-divider-width': '0px',
-    borderBottomWidth: 0,
-  },
-  // The row's divider, carried down: its row's themed or app-set border
-  // reaches the panel through `--_table-panel-divider-*` on the panel's cell
-  // (set after each commit, see ExpansionPanelCell), the tokens otherwise.
-  panelCell: {
-    // The width this divider draws, for its stand-in during a glide.
-    '--_table-row-divider-width': {
-      default: `var(--_table-panel-divider-width, ${borderVars['--border-width']})`,
-      [stylex.when.ancestor(':last-child', tableRowMarker)]: '0px',
-    },
-    borderBottomWidth: {
-      default: `var(--_table-panel-divider-width, ${borderVars['--border-width']})`,
-      // Same rule TableCell uses: no trailing line under the last row of the
-      // table. Scoped to the marker so <tbody>, also a :last-child, does not
-      // match and suppress every panel's border.
-      [stylex.when.ancestor(':last-child', tableRowMarker)]: '0',
-    },
-    borderBottomStyle: 'var(--_table-panel-divider-style, solid)',
-    borderBottomColor: `var(--_table-panel-divider-color, ${colorVars['--color-border']})`,
-  },
-});
 
 /**
  * Start inset for the detail panel, one per density.
@@ -324,17 +213,6 @@ const dividerStyles = stylex.create({
  * Written as a logical property so RTL mirrors it, and kept in `calc` so the
  * padding half still tracks the spacing scale, as the cell's own padding does.
  */
-const panelIndentStyles = stylex.create({
-  compact: {
-    paddingInlineStart: `calc(${EXPANSION_COLUMN_WIDTH_PX}px + ${spacingVars['--spacing-2']})`,
-  },
-  balanced: {
-    paddingInlineStart: `calc(${EXPANSION_COLUMN_WIDTH_PX}px + ${spacingVars['--spacing-3']})`,
-  },
-  spacious: {
-    paddingInlineStart: `calc(${EXPANSION_COLUMN_WIDTH_PX}px + ${spacingVars['--spacing-4']})`,
-  },
-});
 
 /**
  * The chevron sits centered in its column, as the selection checkbox does.
@@ -350,30 +228,6 @@ const panelIndentStyles = stylex.create({
  * the trigger's padding (the same density step the panel indent uses) and
  * centers itself.
  */
-const chevronHeaderCellStyles = stylex.create({
-  cell: {
-    paddingInlineStart: 0,
-    paddingInlineEnd: 0,
-  },
-});
-
-const chevronCellStyles = stylex.create({
-  cell: {
-    paddingInlineStart: 0,
-  },
-});
-
-const chevronOffsetStyles = stylex.create({
-  compact: {
-    marginInlineStart: `calc((${EXPANSION_COLUMN_WIDTH_PX}px - ${CHEVRON_SIZE}) / 2 - ${spacingVars['--spacing-2']})`,
-  },
-  balanced: {
-    marginInlineStart: `calc((${EXPANSION_COLUMN_WIDTH_PX}px - ${CHEVRON_SIZE}) / 2 - ${spacingVars['--spacing-3']})`,
-  },
-  spacious: {
-    marginInlineStart: `calc((${EXPANSION_COLUMN_WIDTH_PX}px - ${CHEVRON_SIZE}) / 2 - ${spacingVars['--spacing-4']})`,
-  },
-});
 
 // =============================================================================
 // Chevron Cell
@@ -399,20 +253,20 @@ function ExpansionChevron({
   const ctx = useTableContext();
   // The chevron's box is sized by the icon box's step, so a themed glyph size
   // or a hidden glyph keeps the row height.
-  const chevronProps = stylex.props(
-    expansionStyles.glyphBox,
-    expansionStyles.chevron,
+  const glyphClassName = tw(
+    ROW_EXPANSION_GLYPH_BOX_CLASS,
+    ROW_EXPANSION_GLYPH_CLASS,
     isExpanded
-      ? expansionStyles.chevronExpanded
-      : expansionStyles.chevronCollapsed,
+      ? ROW_EXPANSION_GLYPH_STATE_CLASS.expanded
+      : ROW_EXPANSION_GLYPH_STATE_CLASS.collapsed,
   );
   return (
     <button
       type="button"
       data-expansion-toggle=""
-      {...stylex.props(
-        expansionStyles.chevronButton,
-        chevronOffsetStyles[ctx?.density ?? 'balanced'],
+      className={tw(
+        ROW_EXPANSION_CHEVRON_BUTTON_CLASS,
+        rowExpansionChevronOffsetClassName(ctx?.density ?? 'balanced'),
       )}
       onClick={e => {
         e.stopPropagation();
@@ -420,10 +274,9 @@ function ExpansionChevron({
       }}
       aria-label={ariaLabel}
       aria-expanded={isExpanded}>
-      <span
-        {...chevronProps}
-        className={tw(iconBoxClassName.xsm, chevronProps.className)}>
-        <span {...stylex.props(expansionStyles.glyphCenter)}>
+      <span className={tw(iconBoxClassName.xsm, glyphClassName)}>
+        {/* eslint-disable-next-line @astryx/no-style-only-wrapper -- the span is the glyph's centring box; the rule reads StyleX objects, not class text. */}
+        <span className={ROW_EXPANSION_GLYPH_CENTER_CLASS}>
           <ComponentIcon
             slot="table-row-expand"
             state={{expanded: isExpanded}}
@@ -567,13 +420,17 @@ function ExpansionPanelCell({
     <td
       ref={cellRef}
       colSpan={colSpan}
-      {...stylex.props(
-        expansionStyles.expandedCell,
-        isMuted && expansionStyles.mutedPanel,
-        panelIndentStyles[ctx?.density ?? 'balanced'],
-        hasRowDividers && dividerStyles.panelCell,
-        glidingDividerStyles.cell,
-        hasRowDividers && glidingDividerStyles.panelCell,
+      {...mergeProps(
+        tw(
+          ROW_EXPANSION_PANEL_CLASS,
+          rowExpansionPanelIndentClassName(ctx?.density ?? 'balanced'),
+          isMuted && ROW_EXPANSION_PANEL_MUTED_CLASS,
+        ),
+        stylex.props(
+          hasRowDividers && rowExpansionOverrideStyles.panelCell,
+          glidingDividerStyles.cell,
+          hasRowDividers && glidingDividerStyles.panelCell,
+        ),
       )}>
       {children}
     </td>
@@ -937,7 +794,13 @@ export function useTableRowExpansion<T extends Record<string, unknown>>(
       ): HeaderCellRenderProps {
         // Keep the chevron column at its fixed width (chevronCellStyles).
         return column.key === EXPANSION_COLUMN_KEY
-          ? {...props, xstyle: [...props.xstyle, chevronHeaderCellStyles.cell]}
+          ? {
+              ...props,
+              xstyle: [
+                ...props.xstyle,
+                rowExpansionOverrideStyles.chevronHeaderCell,
+              ],
+            }
           : props;
       },
 
@@ -962,11 +825,11 @@ export function useTableRowExpansion<T extends Record<string, unknown>>(
             ...props.xstyle,
             // The chevron centers itself in its column (chevronCellStyles).
             ...(column.key === EXPANSION_COLUMN_KEY
-              ? [chevronCellStyles.cell]
+              ? [rowExpansionOverrideStyles.chevronCell]
               : []),
             // Hand the row divider to the panel below, so the line closes the
             // row-plus-panel pair instead of splitting it.
-            ...(isExpanded ? [dividerStyles.expandedRowCell] : []),
+            ...(isExpanded ? [rowExpansionOverrideStyles.expandedRowCell] : []),
           ],
           contextMenuActions: () => [
             ...resolveContextActions(props.contextMenuActions),
@@ -1095,8 +958,11 @@ export function useTableRowExpansion<T extends Record<string, unknown>>(
                   keyed.htmlProps.onClick?.(event);
                   onToggle(key);
                 },
+                className: tw(
+                  keyed.htmlProps.className,
+                  ROW_EXPANSION_CLICKABLE_ROW_CLASS,
+                ),
               },
-              xstyle: [...keyed.xstyle, expansionStyles.clickableRow],
             }
           : keyed;
 

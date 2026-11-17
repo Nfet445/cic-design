@@ -684,6 +684,18 @@ import {
   INFINITE_SCROLL_VIEWPORT_CLASS,
 } from '../Table/plugins/infiniteScroll/infiniteScrollClasses';
 import {
+  ROW_EXPANSION_CHEVRON_BUTTON_CLASS,
+  ROW_EXPANSION_CLICKABLE_ROW_CLASS,
+  ROW_EXPANSION_GLYPH_BOX_CLASS,
+  ROW_EXPANSION_GLYPH_CENTER_CLASS,
+  ROW_EXPANSION_GLYPH_CLASS,
+  ROW_EXPANSION_GLYPH_STATE_CLASS,
+  ROW_EXPANSION_PANEL_CLASS,
+  ROW_EXPANSION_PANEL_MUTED_CLASS,
+  rowExpansionChevronOffsetClassName,
+  rowExpansionPanelIndentClassName,
+} from '../Table/plugins/rowExpansion/rowExpansionClasses';
+import {
   SORT_INDICATOR_CLASS,
   SORT_INDICATOR_UNSORTED_CLASS,
   SORT_RANK_CLASS,
@@ -3427,6 +3439,22 @@ function familyClassNames() {
   add(INFINITE_SCROLL_COMMAND_CLASS);
   add(INFINITE_SCROLL_SURFACE_CLASS);
   add(INFINITE_SCROLL_SENTINEL_CLASS);
+
+  // The row-expansion chevron, its box and rotation, and the detail panel at
+  // each density and variant.
+  add(ROW_EXPANSION_CHEVRON_BUTTON_CLASS);
+  add(ROW_EXPANSION_GLYPH_BOX_CLASS);
+  add(ROW_EXPANSION_GLYPH_CENTER_CLASS);
+  add(ROW_EXPANSION_GLYPH_CLASS);
+  add(ROW_EXPANSION_GLYPH_STATE_CLASS.expanded);
+  add(ROW_EXPANSION_GLYPH_STATE_CLASS.collapsed);
+  add(ROW_EXPANSION_PANEL_CLASS);
+  add(ROW_EXPANSION_PANEL_MUTED_CLASS);
+  add(ROW_EXPANSION_CLICKABLE_ROW_CLASS);
+  for (const density of ['compact', 'balanced', 'spacious']) {
+    add(rowExpansionChevronOffsetClassName(density));
+    add(rowExpansionPanelIndentClassName(density));
+  }
 
   return [...names].sort();
 }
