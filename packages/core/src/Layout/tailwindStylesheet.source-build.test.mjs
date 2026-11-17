@@ -213,6 +213,32 @@ import {
   dateRangeInputTriggerClassName,
 } from '../DateRangeInput/dateRangeInputClasses';
 import {
+  dateTimeInputControlClassName,
+  dateTimeInputIconButtonClassName,
+  dateTimeInputNativeRowClassName,
+  dateTimeInputRowClassName,
+  dateTimeInputSegmentClassName,
+  dateTimeInputSizeClassName,
+  dateTimeTouchArrowClassName,
+  dateTimeTouchArrowIconClassName,
+  dateTimeTouchFooterClassName,
+  dateTimeTouchHeaderActionsClassName,
+  dateTimeTouchHeaderClassName,
+  dateTimeTouchHiddenClassName,
+  dateTimeTouchInputClassName,
+  dateTimeTouchPanelClassName,
+  dateTimeTouchResetButtonClassName,
+  dateTimeTouchSheetBodyClassName,
+  dateTimeTouchStackClassName,
+  dateTimeTouchSurfaceClassName,
+  dateTimeTouchTitleClassName,
+  dateTimeTouchTitleTextClassName,
+  dateTimeTouchUnavailableClassName,
+  dateTimeTouchWeekdayClassName,
+  dateTimeTouchWeekdaysClassName,
+  dateTimeTouchWheelSpacerClassName,
+} from '../DateTimeInput/dateTimeInputClasses';
+import {
   timeInputClassName,
   timeInputIconClassName,
   timeInputSizeClassName,
@@ -1330,6 +1356,42 @@ function familyClassNames() {
   add(textInputClassName({isDisabled: true}));
   for (const size of ['sm', 'md', 'lg']) {
     add(textAreaSizeClassName(size));
+  }
+  // The date-time field: two segments, the typed and touch halves of each
+  // control, and the sheet's stacked panels.
+  for (const size of ['sm', 'md', 'lg']) {
+    add(dateTimeInputSizeClassName({size}));
+  }
+  for (const isDisabled of [false, true]) {
+    add(dateTimeInputIconButtonClassName({isDisabled}));
+    add(dateTimeTouchInputClassName({isDisabled}));
+    for (const isRejected of [false, true]) {
+      add(dateTimeInputControlClassName({isDisabled, isRejected}));
+    }
+  }
+  for (const className of [
+    dateTimeInputRowClassName,
+    dateTimeInputNativeRowClassName,
+    dateTimeInputSegmentClassName,
+    dateTimeTouchSheetBodyClassName,
+    dateTimeTouchSurfaceClassName,
+    dateTimeTouchStackClassName,
+    dateTimeTouchPanelClassName,
+    dateTimeTouchHiddenClassName,
+    dateTimeTouchHeaderClassName,
+    dateTimeTouchTitleClassName,
+    dateTimeTouchTitleTextClassName,
+    dateTimeTouchHeaderActionsClassName,
+    dateTimeTouchArrowClassName,
+    dateTimeTouchUnavailableClassName,
+    dateTimeTouchArrowIconClassName,
+    dateTimeTouchResetButtonClassName,
+    dateTimeTouchWeekdaysClassName,
+    dateTimeTouchWeekdayClassName,
+    dateTimeTouchWheelSpacerClassName,
+    dateTimeTouchFooterClassName,
+  ]) {
+    add(className);
   }
   // The date range field: the closed trigger, its calendar button, the
   // popover body and the preset column.
