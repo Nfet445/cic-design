@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 45 of 50 tickets done, plus two waves (layout primitives,
+Progress: 45 of 51 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -144,3 +144,4 @@ buttons) that landed before the tickets were written.
 - OQ1 (the fate of `astryx.css`), OQ2 (whether the class set is a promise) and
   OQ4 (swizzle) stay open on `spec:AST-119`; OQ3 is answered: the consumer's
   `xstyle` stays unlayered.
+- [ ] `51-consumer-assertions` — tests that still read what only StyleX injected
