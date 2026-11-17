@@ -4,8 +4,8 @@
 
 /**
  * @file SwipeActionsLayer.tsx
- * @input The swipe entries per side, the behavior; useSwipeAction,
- *   theme tokens
+ * @input The swipe entries per side, the behavior; useSwipeAction, the class
+ *   map
  * @output Exports SwipeActionsLayer (default): the panels of a row's swipe
  *   actions and the gesture that uncovers them
  * @position Brought by createSwipe.ts, which hands it to a row the swipe
@@ -16,205 +16,28 @@
  */
 
 import {useEffect, useRef} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  fontWeightVars,
-  typographyVars,
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils/mergeProps';
+import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
 import {disabledInteractionProps} from '../utils/disabledInteraction';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {isSwipeOpen, useSwipeAction, type SwipeSide} from './useSwipeAction';
 import type {SwipeEntry, SwipeLayerProps} from './swipeHost';
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-/** The travel the gesture writes on the root, physical px (useSwipeAction.ts). */
-const SWIPE_TRAVEL = 'var(--_item-swipe-travel, 0px)';
-/** How far a full swipe has confirmed, 0 to 1 (useSwipeAction.ts). */
-const SWIPE_CONFIRM = 'var(--_item-swipe-confirm, 0)';
-// The side's geometry the gesture writes on its window (useSwipeAction.ts):
-// the pin, its physical sign, its open width and the outermost entry's slide.
-const SWIPE_PIN = 'var(--_item-swipe-pin, 0px)';
-const SWIPE_SIGN = 'var(--_item-swipe-sign, 1)';
-const SWIPE_OPEN = 'var(--_item-swipe-open, 0px)';
-const SWIPE_SLIDE = 'var(--_item-swipe-slide, 0px)';
-/**
- * Where the entries sit against the track. They move back by the travel the
- * track moves, so they stay pinned at the outer edge. That holds until the row
- * has uncovered them all, at the open width; past it they ride the row.
- */
-const SWIPE_ENTRIES_X = `calc(${SWIPE_PIN} - ${SWIPE_SIGN} * min(${SWIPE_SIGN} * ${SWIPE_TRAVEL}, ${SWIPE_OPEN}))`;
-
-const styles = stylex.create({
-  // A side's window: the row's resting box. It is translated back by the
-  // travel, so it stays where the row rests, and clips the track to that box
-  // and its corners. Transparent and not hit: only the entries take touches.
-  swipePanel: {
-    position: 'absolute',
-    insetBlock: 0,
-    insetInline: 0,
-    overflow: 'clip',
-    borderRadius: 'inherit',
-    pointerEvents: 'none',
-    transform: `translate3d(calc(-1 * ${SWIPE_TRAVEL}), 0, 0)`,
-  },
-  // The track: beside the window at rest, so not a pixel of it shows. It moves
-  // with the row, so the part inside the window is exactly the space the row
-  // vacates. The entries show only there. Twice the row's width covers every
-  // travel, the slide-out included. The entries run in a row from its edge next
-  // to the row. Each is translated back, so it stays pinned at the row's outer
-  // edge until the row has uncovered them all. Then they ride the row. They sit
-  // on the surface the track paints: the neutral variant is translucent and
-  // shows what is under it. Its `::before` is the cover fill: the covering
-  // entry's colour, shown only while that entry covers the panel
-  // (swipeTrackFillStyles).
-  swipeTrack: {
-    position: 'absolute',
-    insetBlock: 0,
-    width: '200%',
-    overflow: 'clip',
-    borderRadius: 'inherit',
-    display: 'flex',
-    isolation: 'isolate',
-    backgroundColor: colorVars['--color-background-surface'],
-    transform: `translate3d(${SWIPE_TRAVEL}, 0, 0)`,
-    '::before': {
-      content: '""',
-      position: 'absolute',
-      inset: 0,
-      zIndex: -1,
-      opacity: 0,
-      pointerEvents: 'none',
-    },
-  },
-  swipeTrackCovered: {
-    '::before': {opacity: 1},
-  },
-  // The outermost entry is the last, at the outer edge. On the leading side
-  // that is the inline start, so the entries run in reverse from the track's
-  // inline end.
-  swipeTrackLeading: {
-    insetInlineEnd: '100%',
-    flexDirection: 'row-reverse',
-  },
-  swipeTrackTrailing: {
-    insetInlineStart: '100%',
-  },
-  swipeEntry: {
-    transform: `translate3d(${SWIPE_ENTRIES_X}, 0, 0)`,
-    flexShrink: 0,
-    pointerEvents: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacingVars['--spacing-1'],
-    minWidth: 72,
-    height: '100%',
-    paddingInline: spacingVars['--spacing-3'],
-    boxSizing: 'border-box',
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    appearance: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    whiteSpace: 'nowrap',
-  },
-  // An entry that another entry covers. It hides at once, with no fade, so
-  // its colour never mixes with the covering entry's.
-  swipeEntryCovered: {
-    opacity: 0,
-  },
-  // Half strength as a filter, so the entry's own opacity stays free for the
-  // cover.
-  swipeEntryDisabled: {
-    filter: 'opacity(0.5)',
-  },
-  // The outermost entry: its colour is painted beside it out to the row's outer
-  // edge. It fills whatever the row uncovers past the open width, so the entry
-  // stretches. A slide-out fills the row with it. Decoration only, on a
-  // pseudo-element; the entry's own fill, theme included. On a confirmed full
-  // swipe it slides to the row's edge with the entries' pin.
-  swipeOuterEntry: {
-    position: 'relative',
-    transform: `translate3d(calc(${SWIPE_ENTRIES_X} + ${SWIPE_SLIDE} * ${SWIPE_CONFIRM}), 0, 0)`,
-  },
-  swipeOuterEntryLeading: {
-    '::after': {
-      content: '""',
-      position: 'absolute',
-      insetBlock: 0,
-      insetInlineEnd: '100%',
-      width: '100vw',
-      backgroundColor: 'inherit',
-      pointerEvents: 'none',
-    },
-  },
-  swipeOuterEntryTrailing: {
-    '::after': {
-      content: '""',
-      position: 'absolute',
-      insetBlock: 0,
-      insetInlineStart: '100%',
-      width: '100vw',
-      backgroundColor: 'inherit',
-      pointerEvents: 'none',
-    },
-  },
-});
-
-// A verb's colour: ordinary, the one you mean, the dangerous one. The
-// outermost entry's fills the row on a slide-out (swipeOuterEntry).
-const swipeVariantStyles = stylex.create({
-  neutral: {
-    backgroundColor: colorVars['--color-neutral'],
-    color: colorVars['--color-text-primary'],
-  },
-  accent: {
-    backgroundColor: colorVars['--color-accent'],
-    color: colorVars['--color-on-accent'],
-  },
-  destructive: {
-    backgroundColor: colorVars['--color-error'],
-    color: colorVars['--color-on-error'],
-    // Forced colors replace the fill with Canvas; a border keeps the
-    // destructive fill's shape visible. A
-    // border, not an outline, leaves the shared focus ring intact.
-    borderWidth: {default: 0, '@media (forced-colors: active)': '1px'},
-    borderStyle: {default: 'none', '@media (forced-colors: active)': 'solid'},
-    borderColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-  },
-});
-
-// The track's cover fill: the covering entry's colour.
-const swipeTrackFillStyles = stylex.create({
-  neutral: {
-    '::before': {backgroundColor: colorVars['--color-neutral']},
-  },
-  accent: {
-    '::before': {backgroundColor: colorVars['--color-accent']},
-  },
-  destructive: {
-    '::before': {backgroundColor: colorVars['--color-error']},
-  },
-});
+import {
+  swipeEntryClassName,
+  swipeEntryCoveredClassName,
+  swipeEntryDisabledClassName,
+  swipeEntryVariantClassName,
+  swipeOuterEntryClassName,
+  swipeOuterEntryLeadingClassName,
+  swipeOuterEntryTrailingClassName,
+  swipePanelClassName,
+  swipeTrackClassName,
+  swipeTrackCoveredClassName,
+  swipeTrackFillClassName,
+  swipeTrackLeadingClassName,
+  swipeTrackTrailingClassName,
+} from './swipeActionsLayerClasses';
 
 // =============================================================================
 // Component
@@ -345,26 +168,27 @@ export default function SwipeActionsLayer({
           <span>{entry.label}</span>
         </>
       );
-      const entryStyles = [
-        styles.swipeEntry,
-        swipeVariantStyles[variant],
-        entry.isDisabled === true && styles.swipeEntryDisabled,
-        coverIndex != null && index !== coverIndex && styles.swipeEntryCovered,
-        isOuter && styles.swipeOuterEntry,
+      const entryClassName = tw(
+        swipeEntryClassName,
+        swipeEntryVariantClassName[variant],
+        entry.isDisabled === true && swipeEntryDisabledClassName,
+        coverIndex != null &&
+          index !== coverIndex &&
+          swipeEntryCoveredClassName,
+        isOuter && swipeOuterEntryClassName,
         isOuter &&
           (side === 'leading'
-            ? styles.swipeOuterEntryLeading
-            : styles.swipeOuterEntryTrailing),
-      ];
+            ? swipeOuterEntryLeadingClassName
+            : swipeOuterEntryTrailingClassName),
+      );
       if (isCommit) {
         return (
           <span
             key={key}
             ref={ref}
-            {...mergeProps(
-              themeProps('item-swipe-action', {variant}),
-              stylex.props(...entryStyles),
-            )}>
+            {...mergeProps(themeProps('item-swipe-action', {variant}), {
+              className: entryClassName,
+            })}>
             {content}
           </span>
         );
@@ -392,7 +216,8 @@ export default function SwipeActionsLayer({
             : null)}
           {...mergeProps(
             themeProps('item-swipe-action', {variant}),
-            focusOutlineProps.focusVisible(...entryStyles),
+            focusOutlineProps.focusVisible(),
+            entryClassName,
           )}>
           {content}
         </button>
@@ -405,22 +230,21 @@ export default function SwipeActionsLayer({
         data-swipe-panel={side}
         inert={isLive ? undefined : true}
         aria-hidden={isCommit ? true : undefined}
-        {...stylex.props(styles.swipePanel)}>
+        className={swipePanelClassName}>
         <div
-          {...mergeProps(
-            themeProps('item-swipe-panel', {side}),
-            stylex.props(
-              styles.swipeTrack,
+          {...mergeProps(themeProps('item-swipe-panel', {side}), {
+            className: tw(
+              swipeTrackClassName,
               side === 'leading'
-                ? styles.swipeTrackLeading
-                : styles.swipeTrackTrailing,
-              coverIndex != null && styles.swipeTrackCovered,
-              swipeTrackFillStyles[
+                ? swipeTrackLeadingClassName
+                : swipeTrackTrailingClassName,
+              coverIndex != null && swipeTrackCoveredClassName,
+              swipeTrackFillClassName[
                 (coverIndex != null ? entries[coverIndex] : outer).variant ??
                   'accent'
               ],
             ),
-          )}>
+          })}>
           {entries.map((entry, index) => renderEntry(entry, index))}
         </div>
       </div>

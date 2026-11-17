@@ -326,6 +326,21 @@ import {
   overflowListMeasureIndicatorClassName,
 } from '../OverflowList/overflowListClasses';
 import {
+  swipeEntryClassName,
+  swipeEntryCoveredClassName,
+  swipeEntryDisabledClassName,
+  swipeEntryVariantClassName,
+  swipeOuterEntryClassName,
+  swipeOuterEntryLeadingClassName,
+  swipeOuterEntryTrailingClassName,
+  swipePanelClassName,
+  swipeTrackClassName,
+  swipeTrackCoveredClassName,
+  swipeTrackFillClassName,
+  swipeTrackLeadingClassName,
+  swipeTrackTrailingClassName,
+} from '../Swipe/swipeActionsLayerClasses';
+import {
   SELECTOR_OPTION_EMBEDDED_CLASS,
   SELECTOR_ROW_CONTENT_CLASS,
   SELECTOR_ROW_MARK_COLUMN_CLASS,
@@ -890,6 +905,23 @@ function familyClassNames() {
   add(overflowListMaxHeightClassName);
   add(overflowListMeasureContainerClassName);
   add(overflowListMeasureIndicatorClassName);
+  // Swipe: both sides' windows, tracks and outermost entries, an entry in each
+  // variant, and the cover and disabled states.
+  add(swipePanelClassName);
+  add(swipeTrackClassName);
+  add(swipeTrackLeadingClassName);
+  add(swipeTrackTrailingClassName);
+  add(swipeTrackCoveredClassName);
+  add(swipeEntryClassName);
+  add(swipeEntryCoveredClassName);
+  add(swipeEntryDisabledClassName);
+  add(swipeOuterEntryClassName);
+  add(swipeOuterEntryLeadingClassName);
+  add(swipeOuterEntryTrailingClassName);
+  for (const variant of ['neutral', 'accent', 'destructive']) {
+    add(swipeEntryVariantClassName[variant]);
+    add(swipeTrackFillClassName[variant]);
+  }
   add(sectionOuterClassName({}));
   add(
     sectionOuterClassName({
