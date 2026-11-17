@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 49 of 53 tickets done, plus two waves (layout primitives,
+Progress: 50 of 53 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -147,4 +147,4 @@ buttons) that landed before the tickets were written.
   OQ4 (swizzle) stay open on `spec:AST-119`; OQ3 is answered: the consumer's
   `xstyle` stays unlayered.
 - [x] `51-consumer-assertions` — tests that still read what only StyleX injected
-- [ ] `52-published-class-seams` — publish the class seams templates and markers still reach through StyleX
+- [x] `52-published-class-seams` — publish the class seams templates and markers still reach through StyleX
