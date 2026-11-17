@@ -47,6 +47,10 @@ import {
   avatarGroupDynamicStyles,
   avatarGroupStyles,
 } from './avatarGroupRing.stylex';
+
+/** A per-instance value reaches CSS as one of the avatar's own variables. */
+type AvatarInstanceStyle = React.CSSProperties &
+  Partial<Record<(typeof avatarVars)[keyof typeof avatarVars], string>>;
 import {tw} from '../utils/tw';
 import {AvatarSizeContext} from './AvatarSizeContext';
 import {
@@ -677,7 +681,7 @@ export function Avatar({
                   numericSize * INITIALS_FONT_SIZE_RATIO
                 }px`,
                 [avatarVars.initials]: cssString(initials),
-              },
+              } as AvatarInstanceStyle,
             )}
           />
         )}
@@ -706,11 +710,11 @@ export function Avatar({
           )}
           style={
             resolvedShape === 'circle'
-              ? {
+              ? ({
                   [avatarVars.statusInset]: `${
                     numericSize * CIRCLE_EDGE_OFFSET_RATIO
                   }px`,
-                }
+                } as AvatarInstanceStyle)
               : undefined
           }>
           {status}
@@ -739,7 +743,7 @@ export function Avatar({
     ),
     // A resolved size is a per-instance number, so it reaches CSS as the
     // variable the sizing classes read; a caller's `style` still wins.
-    {[avatarVars.size]: `${numericSize}px`, ...style},
+    {[avatarVars.size]: `${numericSize}px`, ...style} as AvatarInstanceStyle,
   );
 
   let rootElement: ReactNode;
