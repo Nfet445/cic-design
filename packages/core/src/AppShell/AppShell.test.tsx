@@ -892,9 +892,10 @@ describe('AppShell', () => {
     // attached-status wrapper, so the Field root must own the boundary.
     const fieldRoot = inputWrapper.parentElement!;
     expect(inputWrapper).toBeTruthy();
-    expect(getComputedStyle(header).position).toBe('sticky');
     // The header stays at its normal local stacking level — no escalation.
-    expect(Number(getComputedStyle(header).zIndex)).toBe(1);
+    expectClassSet(header, {includes: ['sticky', 'z-[1]']});
+    // The wrapper's `position: relative` still comes from the unlayered
+    // `Field/inputStyles.stylex.ts`, so a computed read stays here.
     expect(getComputedStyle(inputWrapper).position).toBe('relative');
     // Field's local layers cannot escape into page-level stacking: the root's
     // `isolate` class is the isolation boundary around the input wrapper's

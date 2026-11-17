@@ -25,6 +25,7 @@ import {InputGroup} from '../InputGroup';
 import {InputGroupText} from '../InputGroup/InputGroupText';
 import {InternationalizationProvider} from '../i18n';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {
   NumberInput,
   type NumberInputEntryError,
@@ -33,6 +34,10 @@ import {
 } from './NumberInput';
 
 const MESSAGE = 'Invalid number';
+
+/** The entry's text colour in a rejected and an accepted state. */
+const INVALID_TEXT_CLASS = 'text-[color:var(--color-text-secondary)]';
+const VALID_TEXT_CLASS = 'text-[color:var(--color-text-primary)]';
 
 const cleanups: (() => void)[] = [];
 afterEach(() => {
@@ -881,7 +886,11 @@ describe('NumberInput entryErrorBehavior', () => {
       const onEntryErrorChange = vi.fn();
       const {container} = render(renderField({onEntryErrorChange}));
       const input = getInput();
-      const isStyledInvalid = () => /\.inputInvalid\b/.test(input.className);
+      // The rejected entry's secondary colour is a utility now, so the class
+      // set is what tells the state; StyleX debug names are gone with it.
+      const isStyledInvalid = () =>
+        classesOf(input).includes(INVALID_TEXT_CLASS) &&
+        !classesOf(input).includes(VALID_TEXT_CLASS);
       fireEvent.focus(input);
       typeEach(input, '1a', () => {
         expect(input).not.toHaveAttribute('aria-invalid');

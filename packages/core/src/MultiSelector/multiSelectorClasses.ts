@@ -33,3 +33,121 @@ export const multiSelectorListWrapperClassName = tw(
 
 /** The grid or listbox inside that wrapper: a focus ring draws its own edge. */
 export const multiSelectorOptionsClassName = 'outline-none';
+
+/**
+ * The trigger button: it fills the container and draws nothing of its own, so
+ * the container's padding, border and focus ring are the whole visible box.
+ * Its cursor is one of two classes rather than a base class plus an override,
+ * because two utilities of the same property are ordered by the sheet, not by
+ * their order here.
+ */
+export function multiSelectorTriggerClassName({
+  isReadOnly,
+}: {
+  isReadOnly: boolean;
+}): string {
+  return tw(
+    'flex',
+    'items-center',
+    'justify-between',
+    'gap-[var(--spacing-4)]',
+    'grow',
+    'shrink',
+    'basis-0',
+    'min-w-0',
+    'p-0',
+    'm-0',
+    '[border-width:0]',
+    '[border-style:none]',
+    'bg-transparent',
+    '[font-family:inherit]',
+    '[font-size:inherit]',
+    '[line-height:inherit]',
+    '[color:inherit]',
+    isReadOnly ? 'cursor-default' : 'cursor-pointer',
+    'disabled:cursor-default',
+    'aria-disabled:cursor-default',
+    'outline-none',
+    'rounded-[var(--radius-element)]',
+  );
+}
+
+/** The value row inside the button: chips and text share one clipped line. */
+export const MULTI_SELECTOR_TRIGGER_CONTENT_CLASS = tw(
+  'flex',
+  'items-center',
+  'gap-[var(--spacing-4)]',
+  'grow',
+  'shrink',
+  'basis-0',
+  'min-w-0',
+  'overflow-hidden',
+);
+
+/** The single-line value, ellipsized rather than widening the trigger. */
+export const MULTI_SELECTOR_TRIGGER_TEXT_CLASS = tw(
+  'overflow-hidden',
+  'text-ellipsis',
+  'whitespace-nowrap',
+);
+
+/** The selected chips wrap onto another line when the row runs out of room. */
+export const MULTI_SELECTOR_TRIGGER_BADGES_CLASS = tw(
+  'flex',
+  'flex-wrap',
+  'gap-[var(--spacing-4)]',
+  'items-center',
+);
+
+/** The `+N` tail of a clipped chip row, in supporting weight. */
+export const MULTI_SELECTOR_TRIGGER_OVERFLOW_CLASS = tw(
+  'shrink-0',
+  'text-[length:var(--text-label-size)]',
+  'text-[color:var(--color-text-secondary)]',
+  'font-medium',
+);
+
+/**
+ * The status glyph's button: it takes no padding or border of its own, so the
+ * glyph box inside it is the target, and it inherits the trigger's color.
+ */
+export const MULTI_SELECTOR_STATUS_BUTTON_CLASS = tw(
+  'flex',
+  'items-center',
+  'justify-center',
+  'p-0',
+  'm-0',
+  '[border-width:0]',
+  '[border-style:none]',
+  'bg-transparent',
+  '[color:inherit]',
+  'cursor-pointer',
+  'disabled:cursor-default',
+  'aria-disabled:cursor-default',
+  'rounded-[var(--radius-element)]',
+);
+
+/**
+ * Only what Icon does not already provide: `size="sm"` gives the 16px box and
+ * the color, but the glyph still must not shrink in the flex row.
+ */
+export const MULTI_SELECTOR_TRIGGER_ICON_CLASS = tw('shrink-0');
+
+/**
+ * The chevron turns in place on the glyph itself, so the
+ * `multi-selector-indicator-icon` theme target and the rotation sit on one
+ * element.
+ */
+export const MULTI_SELECTOR_TRIGGER_ICON_ROTATION_CLASS = tw(
+  'transition-[transform]',
+  'duration-[var(--duration-fast)]',
+  'ease-[var(--ease-standard)]',
+  'origin-center',
+);
+
+/**
+ * The `rotate` property would not ride the transform transition, so the open
+ * state writes the same `transform` the StyleX rule did.
+ */
+export const MULTI_SELECTOR_TRIGGER_ICON_OPEN_CLASS =
+  '[transform:rotate(180deg)]';

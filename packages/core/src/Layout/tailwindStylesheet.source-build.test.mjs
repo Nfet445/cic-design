@@ -429,6 +429,25 @@ import {
   inputGroupTextClassName,
 } from '../InputGroup/inputGroupClasses';
 import {
+  COMPLEX_SELECTOR_CONTENT_CLASS,
+  COMPLEX_SELECTOR_STATUS_TIP_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_ICON_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS,
+  complexSelectorHeightClassName,
+} from '../ComplexSelector/complexSelectorClasses';
+import {
+  NUMBER_INPUT_DECREMENT_CLASS,
+  NUMBER_INPUT_INCREMENT_ICON_CLASS,
+  NUMBER_INPUT_STEPPER_COLUMN_CLASS,
+  NUMBER_INPUT_UNITS_CLASS,
+  numberInputEntryClassName,
+  numberInputHeightClassName,
+  numberInputStepperButtonClassName,
+} from '../NumberInput/numberInputClasses';
+import {
   panelSearchInputFieldClassName,
   panelSearchInputIconClassName,
   panelSearchInputInputClassName,
@@ -594,8 +613,17 @@ import {
   multiSelectorOptionRowClassName,
 } from '../MultiSelector/multiSelectorOptionClasses';
 import {
+  MULTI_SELECTOR_STATUS_BUTTON_CLASS,
+  MULTI_SELECTOR_TRIGGER_BADGES_CLASS,
+  MULTI_SELECTOR_TRIGGER_CONTENT_CLASS,
+  MULTI_SELECTOR_TRIGGER_ICON_CLASS,
+  MULTI_SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+  MULTI_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+  MULTI_SELECTOR_TRIGGER_OVERFLOW_CLASS,
+  MULTI_SELECTOR_TRIGGER_TEXT_CLASS,
   multiSelectorListWrapperClassName,
   multiSelectorOptionsClassName,
+  multiSelectorTriggerClassName,
 } from '../MultiSelector/multiSelectorClasses';
 import {
   TYPEAHEAD_DEFAULT_ITEM_CLASS,
@@ -2075,6 +2103,19 @@ function familyClassNames() {
   }
   add(multiSelectorListWrapperClassName);
   add(multiSelectorOptionsClassName);
+  // MultiSelector trigger: the button in both cursor states, the value row,
+  // the chip row with its overflow tail, the status button and the chevron.
+  for (const isReadOnly of [false, true]) {
+    add(multiSelectorTriggerClassName({isReadOnly}));
+  }
+  add(MULTI_SELECTOR_TRIGGER_CONTENT_CLASS);
+  add(MULTI_SELECTOR_TRIGGER_TEXT_CLASS);
+  add(MULTI_SELECTOR_TRIGGER_BADGES_CLASS);
+  add(MULTI_SELECTOR_TRIGGER_OVERFLOW_CLASS);
+  add(MULTI_SELECTOR_STATUS_BUTTON_CLASS);
+  add(MULTI_SELECTOR_TRIGGER_ICON_CLASS);
+  add(MULTI_SELECTOR_TRIGGER_ICON_ROTATION_CLASS);
+  add(MULTI_SELECTOR_TRIGGER_ICON_OPEN_CLASS);
   add(MULTI_SELECTOR_ROW_LABEL_CLASS);
   add(MULTI_SELECTOR_CHECKBOX_CLASS);
   add(MULTI_SELECTOR_CHECKBOX_END_CLASS);
@@ -3143,6 +3184,33 @@ function familyClassNames() {
     add(inputGroupSizeClassName[size]);
   }
   add(inputGroupTextClassName);
+  // ComplexSelector: the trigger button, its text, status and chevron slots,
+  // the popup content box and one height per size.
+  add(COMPLEX_SELECTOR_TRIGGER_CLASS);
+  add(COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS);
+  add(COMPLEX_SELECTOR_STATUS_TIP_CLASS);
+  add(COMPLEX_SELECTOR_TRIGGER_ICON_CLASS);
+  add(COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS);
+  add(COMPLEX_SELECTOR_TRIGGER_ICON_OPEN_CLASS);
+  add(COMPLEX_SELECTOR_CONTENT_CLASS);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(complexSelectorHeightClassName({size}));
+  }
+  // NumberInput: the entry in every size and state, the unit, the stepper
+  // column and both buttons.
+  for (const size of ['sm', 'md', 'lg']) {
+    add(numberInputHeightClassName({size}));
+  }
+  for (const isDisabled of [false, true]) {
+    for (const isInvalid of [false, true]) {
+      add(numberInputEntryClassName({isDisabled, isInvalid}));
+      add(numberInputStepperButtonClassName({isDisabled}));
+    }
+  }
+  add(NUMBER_INPUT_UNITS_CLASS);
+  add(NUMBER_INPUT_STEPPER_COLUMN_CLASS);
+  add(NUMBER_INPUT_DECREMENT_CLASS);
+  add(NUMBER_INPUT_INCREMENT_ICON_CLASS);
   // FieldStatus: the message box in both placements, the detached content row
   // and glyph, and one fill per status type.
   add(fieldStatusBaseClassName);
