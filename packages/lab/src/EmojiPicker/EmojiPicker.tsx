@@ -36,14 +36,6 @@ import {
   type Ref,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  durationVars,
-  easeVars,
-  radiusVars,
-  spacingVars,
-  typeScaleVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import type {BaseProps, SizeValue} from '@astryxdesign/core';
 import {useGridFocus} from '@astryxdesign/core/hooks';
 import {useTranslator} from '@astryxdesign/core/i18n';
@@ -60,6 +52,14 @@ import {ScrollableArea} from '@astryxdesign/core/ScrollableArea';
 import {Text} from '@astryxdesign/core/Text';
 import {TextInput} from '@astryxdesign/core/TextInput';
 import {LoadingMessage} from '../LoadingMessage';
+import {
+  emojiPickerCategoryLabelClassName,
+  emojiPickerCellClassName,
+  emojiPickerGridCellClassName,
+  emojiPickerPreviewClassName,
+  emojiPickerPreviewEmojiClassName,
+  emojiPickerRowClassName,
+} from './emojiPickerClasses';
 import {useStatusAnnouncement} from '../useStatusAnnouncement';
 
 export interface EmojiOption {
@@ -243,65 +243,6 @@ function toRows(emojis: readonly EmojiOption[]): (EmojiOption | null)[][] {
   return rows;
 }
 
-/* A group's heading stays at the top of the list while its emoji scroll
-   under it, on the popover surface the picker usually sits on. */
-const styles = stylex.create({
-  categoryLabel: {
-    position: 'sticky',
-    insetBlockStart: 0,
-    zIndex: 1,
-    backgroundColor: colorVars['--color-background-popover'],
-  },
-  row: {
-    display: 'grid',
-    gridTemplateColumns: `repeat(${COLUMNS}, minmax(0, 1fr))`,
-    columnGap: spacingVars['--spacing-0-5'],
-  },
-  gridCell: {
-    display: 'flex',
-    minWidth: 0,
-  },
-  cell: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    aspectRatio: '1',
-    padding: 0,
-    borderStyle: 'none',
-    borderRadius: radiusVars['--radius-inner'],
-    backgroundColor: {
-      default: 'transparent',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        default: 'transparent',
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    fontSize: typeScaleVars['--text-large-size'],
-    lineHeight: 1,
-    // Inset: the cells sit edge to edge, so an outset ring would overlap
-    // their neighbors.
-    outlineOffset: {default: '0', ':focus-visible': '-2px'},
-    transitionProperty: 'background-color',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  preview: {
-    minHeight: spacingVars['--spacing-8'],
-  },
-  previewEmoji: {
-    fontSize: typeScaleVars['--text-large-size'],
-    lineHeight: 1,
-  },
-});
-
 const DEFAULT_LIST_HEIGHT = 'calc(var(--spacing-8) * 10)';
 
 /**
@@ -440,7 +381,7 @@ export function EmojiPicker({
         <HStack
           paddingInline={3}
           paddingBlock={1}
-          xstyle={styles.categoryLabel}>
+          className={emojiPickerCategoryLabelClassName}>
           <Text type="label" id={labelId}>
             {section.label}
           </Text>
@@ -452,19 +393,19 @@ export function EmojiPicker({
           width="100%"
           paddingInline={3}>
           {toRows(section.emojis).map((row, rowIndex) => (
-            <div key={rowIndex} role="row" {...stylex.props(styles.row)}>
+            <div key={rowIndex} role="row" className={emojiPickerRowClassName}>
               {row.map((option, column) => (
                 <div
                   key={option?.emoji ?? `empty-${column}`}
                   role="gridcell"
-                  {...stylex.props(styles.gridCell)}>
+                  className={emojiPickerGridCellClassName}>
                   {option != null && (
                     <button
                       type="button"
                       aria-label={option.name}
-                      {...stylex.props(
-                        focusOutlineStyles.focusVisible,
-                        styles.cell,
+                      {...mergeProps(
+                        stylex.props(focusOutlineStyles.focusVisible),
+                        emojiPickerCellClassName,
                       )}
                       onClick={() => pick(option)}
                       onFocus={() => setPreview(option)}
@@ -566,12 +507,14 @@ export function EmojiPicker({
         align="center"
         paddingInline={3}
         paddingBlockEnd={2}
-        xstyle={styles.preview}
+        className={emojiPickerPreviewClassName}
         // The cell's own name already reaches assistive tech.
         aria-hidden="true">
         {preview != null ? (
           <>
-            <span {...stylex.props(styles.previewEmoji)}>{preview.emoji}</span>
+            <span className={emojiPickerPreviewEmojiClassName}>
+              {preview.emoji}
+            </span>
             <Text type="supporting" color="secondary" maxLines={1}>
               {preview.name}
             </Text>

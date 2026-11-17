@@ -40,6 +40,7 @@ import {
 import * as commentsClasses from './Comments/commentsClasses';
 import * as dialogHeroHeaderClasses from './DialogHeroHeader/dialogHeroHeaderClasses';
 import * as diffViewerClasses from './DiffViewer/diffViewerClasses';
+import * as emojiPickerClasses from './EmojiPicker/emojiPickerClasses';
 import * as lineClampClasses from './LineClamp/lineClampClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
@@ -90,6 +91,7 @@ function labClassNames() {
     commentsClasses,
     dialogHeroHeaderClasses,
     diffViewerClasses,
+    emojiPickerClasses,
     lineClampClasses,
     listInputClasses,
     loadingMessageClasses,
