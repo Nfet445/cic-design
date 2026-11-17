@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 29 of 50 tickets done, plus two waves (layout primitives,
+Progress: 30 of 50 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -79,7 +79,7 @@ buttons) that landed before the tickets were written.
 
 ### Wave 7 — `family:overlay-dismissal` and `family:action-groups`
 
-- [ ] `22-dialogs-and-sheets` — `Dialog`, `AlertDialog`, `Drawer`, `BottomSheet`, `MobileNav`, `Lightbox`
+- [x] `22-dialogs-and-sheets` — `Dialog`, `AlertDialog`, `Drawer`, `BottomSheet`, `MobileNav`, `Lightbox`
 - [ ] `23-menus` — `DropdownMenu`, `ContextMenu`, `MoreMenu`, option menus
 - [ ] `49-overflow-and-gesture` — scroll shadows, overflow measurement, swipe, resize
 - [ ] `50-bottom-sheet-host` — the `BottomSheet` host and `Lightbox`, split out of ticket 22 because their tests own about twenty computed-style reads
@@ -105,7 +105,7 @@ buttons) that landed before the tickets were written.
 - [ ] `33-storybook-and-vibe-tests` — both load the sheet
 - [ ] `34-swizzle-and-render-pipeline` — ejected source states its stylesheet
 - [ ] `35-deprecate-stylex-subpaths` — 80 export entries, one release
-- [ ] `37-table-row-and-cell` — row and body cell
+- [x] `37-table-row-and-cell` — row and body cell
 - [x] `38-data-token-sheet` — 56 data tokens get their own sheet
 - [x] `39-layout-regions-page` — a check page that does not contradict the classes
 - [x] `40-integration-regressions` — repair the wave's merged failures

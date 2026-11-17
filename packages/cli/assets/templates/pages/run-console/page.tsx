@@ -47,7 +47,6 @@ import {Timestamp} from '@astryxdesign/core/Timestamp';
 import {useToast} from '@astryxdesign/core/Toast';
 import {Token} from '@astryxdesign/core/Token';
 import {useMediaQuery} from '@astryxdesign/core/hooks';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
@@ -611,7 +610,11 @@ function RunView({
           variant="ghost"
           size="sm"
           icon={
-            <Icon icon={ArrowLeftIcon} size="sm" xstyle={rtlStyles.mirror} />
+            <Icon
+              icon={ArrowLeftIcon}
+              size="sm"
+              className="rtl:[transform:scaleX(-1)]"
+            />
           }
           onClick={onBack}
         />

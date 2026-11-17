@@ -2,68 +2,48 @@
 
 /**
  * @file spinnerRotor.test.tsx
- * @input Uses vitest, @testing-library/react, StyleX, spinnerRotor
+ * @input Uses vitest, @testing-library/react, the rotor's class map and the
+ *   built package stylesheet
  * @output Pins the shared rotor's timing: turns per iteration and both
  *   durations, the reduced-motion one included
  * @position Testing; validates spinnerRotor.ts, which Spinner and Lab's
  *   indeterminate CircularProgress share
  *
- * SYNC: When spinnerRotor.ts changes, update tests to match new behavior
+ * SYNC: When spinnerRotor.ts or spinnerClasses.ts changes, update tests to
+ * match new behavior
  */
 
-import {describe, expect, it} from 'vitest';
+import {beforeAll, describe, expect, it} from 'vitest';
 import {render, screen} from '@testing-library/react';
-import * as stylex from '@stylexjs/stylex';
-import {spinnerRotorStyles} from './spinnerRotor';
-import {getAllInjectedCss} from '../__tests__/forcedColors';
-import {declaredValue} from '../__tests__/stylexDeclarations';
+import {spinnerRotorTurnClassName} from './spinnerRotor';
+import {classesOf} from '../__tests__/classNameAssertions';
+import {type Stylesheet, stylesheetOf} from '../__tests__/classNameAssertions';
+import {buildAstryxTailwindCss} from '../../scripts/build-css-tailwind.mjs';
 
-const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
+let sheet: Stylesheet;
 
-/**
- * The value the element's StyleX classes declare for `property` inside
- * `@media <query>`. `declaredValue` reads only the unconditional rules.
- */
-function declaredInMedia(
-  el: Element,
-  query: string,
-  property: string,
-): string | null {
-  const classes = new Set(Array.from(el.classList));
-  let value: string | null = null;
-  for (const sheet of Array.from(document.styleSheets)) {
-    for (const rule of Array.from(sheet.cssRules)) {
-      if (!(rule instanceof CSSMediaRule) || rule.media.mediaText !== query) {
-        continue;
-      }
-      for (const inner of Array.from(rule.cssRules)) {
-        if (!(inner instanceof CSSStyleRule)) {
-          continue;
-        }
-        const owner = /^\.([\w-]+)/.exec(inner.selectorText)?.[1];
-        if (owner == null || !classes.has(owner)) {
-          continue;
-        }
-        const declared = inner.style.getPropertyValue(property);
-        if (declared !== '') {
-          value = declared;
-        }
-      }
+beforeAll(async () => {
+  sheet = stylesheetOf(await buildAstryxTailwindCss());
+});
+
+/** The `animation` shorthand the rotor's class declaring `needle` carries. */
+function animationShorthand(needle: string): string {
+  for (const className of spinnerRotorTurnClassName.split(' ')) {
+    const block = sheet.blockOf(className);
+    if (block != null && /\banimation:/.test(block) && block.includes(needle)) {
+      return block;
     }
   }
-  return value;
+  expect.fail(`the rotor declares no animation with ${needle}`);
 }
 
-/**
- * Seconds in a declared duration. StyleX folds `calc(3s * 100)` into
- * `calc(300s)`, so both forms are read.
- */
-function seconds(value: string | null): number {
-  const product = /^calc\(([\d.]+)s \* ([\d.]+)\)$/.exec(value ?? '');
+/** Seconds in a `calc(3s*100)` product, as the shorthand prints it. */
+function seconds(value: string): number {
+  const product = /calc\(([\d.]+)s\s*\*\s*([\d.]+)\)/.exec(value);
   if (product != null) {
     return Number(product[1]) * Number(product[2]);
   }
-  const plain = /^(?:calc\()?([\d.]+)s\)?$/.exec(value ?? '');
+  const plain = /^([\d.]+)s$/.exec(value);
   return plain == null ? Number.NaN : Number(plain[1]);
 }
 
@@ -72,24 +52,34 @@ describe('spinnerRotor', () => {
   // listens for `animationiteration`. So one iteration holds 100 turns. Each
   // duration is 100 periods, so one turn still takes one period.
   it('turns 100 times in one iteration, over 100 periods, with reduced motion too', () => {
-    render(
-      <span data-testid="rotor" {...stylex.props(spinnerRotorStyles.turn)} />,
-    );
+    render(<span data-testid="rotor" className={spinnerRotorTurnClassName} />);
     const rotor = screen.getByTestId('rotor');
-    const name = declaredValue(rotor, 'animation-name');
-    expect(name).toBeTruthy();
-    // jsdom's CSSOM lowercases the name in the rule but not in the at-rule.
+    expect(classesOf(rotor)).toEqual(
+      expect.arrayContaining(spinnerRotorTurnClassName.split(' ')),
+    );
+
+    // The frames live in the package sheet, named by the class.
     const keyframes =
-      new RegExp(`@keyframes ${name}\\s*\\{([\\s\\S]*?\\})\\s*\\}`, 'i').exec(
-        getAllInjectedCss(),
+      /@keyframes astryxSpinnerRotor\s*\{([\s\S]*?)\}\s*\}/i.exec(
+        sheet.css,
       )?.[1] ?? '';
     expect(keyframes).toMatch(/rotate\(0deg\)/);
     expect(keyframes).toMatch(/rotate\(36000deg\)/);
-    expect(declaredValue(rotor, 'animation-duration')).toMatch(
-      /^calc\(var\(--_astryx-pre-tempo-duration-slow-min,.*\) \* 100\)$/,
+    expect(keyframes).not.toMatch(/stroke|width|height|top|left/);
+
+    // The printed shorthand drops its spaces, so the assertions do too.
+    const flat = (value: string) => value.replace(/\s+/g, '');
+    const base = flat(
+      animationShorthand('--_astryx-pre-tempo-duration-slow-min'),
     );
+    expect(base).toContain(
+      'calc(var(--_astryx-pre-tempo-duration-slow-min,var(--duration-slow-min))*100)',
+    );
+    expect(base).toContain('linear');
+    expect(base).toContain('infinite');
+    // Reduced motion slows the turn; it never stops it.
     expect(
-      seconds(declaredInMedia(rotor, REDUCED_MOTION, 'animation-duration')),
-    ).toBe(3 * 100);
+      seconds(flat(animationShorthand('3s')).replace(/3s\*100/, '3s*100')),
+    ).toBe(300);
   });
 });
