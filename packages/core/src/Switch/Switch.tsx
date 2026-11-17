@@ -54,6 +54,8 @@ import {
   switchLabelWrapperClassName,
   switchSizeStyle,
   switchStatusClassName,
+  switchThumbBoxClassName,
+  switchTrackBoxClassName,
   switchWrapperClassName,
 } from './switchClasses';
 import {themeProps} from '../utils/themeProps';
@@ -81,7 +83,7 @@ import {watchHitArea, writeHitInsets} from '../utils/hitArea';
 /**
  * The track box of each size, px (width × height), for the touch
  * presentation's thumb geometry.
- * SYNC: switchClasses.ts (the wrapper's size box) and trackSizeStyles below.
+ * SYNC: switchClasses.ts (the wrapper's and the track's box).
  */
 const TRACK_SIZE = {sm: [32, 20], md: [40, 24]} as const;
 
@@ -115,90 +117,6 @@ const HIT_RIGHT = 'var(--astryx-hit-inset-right, 0px)';
 const HIT_BOTTOM = 'var(--astryx-hit-inset-bottom, 0px)';
 const HIT_LEFT = 'var(--astryx-hit-inset-left, 0px)';
 
-// Every touch value sits in the same property as the mouse value, as a
-// nested condition, never in a later style. A later style that names a
-// property replaces all of it, mouse value included.
-const trackSizeStyles = stylex.create({
-  sm: {
-    width: 32,
-    height: 20,
-    padding: 2,
-  },
-  md: {
-    width: 40,
-    height: 24,
-    padding: 4,
-  },
-});
-
-// The thumb is one circle under any pointer, at each state's size. Under a
-// finger it rests by insets instead of a transform, centered in the track's
-// height at each end. So the compositor moves and lifts it with translate and
-// scale alone; useSwitchTouch measures the box it renders.
-const thumbOffSizeStyles = stylex.create({
-  sm: {
-    width: 14,
-    height: 14,
-    insetInlineStart: {default: null, [TOUCH]: 3},
-    transform: {
-      default: 'translateX(0)',
-      [TOUCH]: 'none',
-    },
-  },
-  md: {
-    width: 16,
-    height: 16,
-    insetInlineStart: {default: null, [TOUCH]: 4},
-    transform: {
-      default: 'translateX(0)',
-      [TOUCH]: 'none',
-    },
-  },
-});
-
-const thumbOnSizeStyles = stylex.create({
-  sm: {
-    width: 16,
-    height: 16,
-    insetInlineStart: {default: null, [TOUCH]: 'auto'},
-    insetInlineEnd: {default: null, [TOUCH]: 2},
-    // The thumb rests at the inline-start edge (flex-start, which flexbox
-    // already mirrors under RTL). The on-state travel toward the inline-end
-    // edge is a physical translateX, so it must flip sign under RTL — right
-    // in LTR, left in RTL — so the switch mirrors per convention (Material,
-    // iOS): off-thumb on the reading-start side, on-thumb on the reading-end.
-    transform: {
-      default: 'translateX(12px)',
-      ':is([dir="rtl"] *)': {
-        default: 'translateX(-12px)',
-        [TOUCH]: 'none',
-      },
-      [TOUCH]: 'none',
-    },
-  },
-  md: {
-    width: 20,
-    height: 20,
-    insetInlineStart: {default: null, [TOUCH]: 'auto'},
-    insetInlineEnd: {default: null, [TOUCH]: 2},
-    transform: {
-      default: 'translateX(14px)',
-      ':is([dir="rtl"] *)': {
-        default: 'translateX(-14px)',
-        [TOUCH]: 'none',
-      },
-      [TOUCH]: 'none',
-    },
-  },
-});
-
-// The pressed overlay, painted as a gradient layer OVER the track's and
-// thumb's own fills so it composes with the on/off colors and the hover tint
-// instead of replacing them. Same token Button's overlay paints with. The
-// switch is a two-part control whose focusable input sits beside the track,
-// so the press is read off the shared scope marker (the row), the way the
-// hover tint already is: pressing the input, the track or the label all
-// activate the row.
 const pressedImage = `linear-gradient(${colorVars['--color-overlay-pressed']}, ${colorVars['--color-overlay-pressed']})`;
 
 /** The touch press's release on the press layer: opacity 1 → 0. */
@@ -610,8 +528,8 @@ const styles = stylex.create({
   },
   // The thumb fill lives on the on/off styles (not the shared thumb style)
   // because forced colors needs a per-state system color: CanvasText on the
-  // empty off track, HighlightText on the Highlight on track. Sizing stays in
-  // thumbOffSizeStyles/thumbOnSizeStyles; only the fill is state-dependent.
+  // empty off track, HighlightText on the Highlight on track. The box and its
+  // travel are classes (switchClasses.ts); only the fill is state-dependent.
   thumbOff: {
     backgroundColor: {
       default: colorVars['--color-background-surface'],
@@ -899,12 +817,12 @@ export function Switch({
       }),
       stylex.props(
         styles.track,
-        trackSizeStyles[size],
         on ? styles.trackOn : styles.trackOff,
         styles.trackFocus,
         isDisabled && styles.trackDisabled,
         isDisabled && !on && styles.trackDisabledOff,
       ),
+      tw(switchTrackBoxClassName({size})),
     );
   // Syncs the hit area's insets with the layout around the switch, through
   // utils/hitArea's observers. Under a coarse pointer they grow toward 44 px,
@@ -990,11 +908,8 @@ export function Switch({
               checked: isOn ? 'checked' : null,
               size,
             }),
-            stylex.props(
-              styles.thumb,
-              isOn ? thumbOnSizeStyles[size] : thumbOffSizeStyles[size],
-              isOn ? styles.thumbOn : styles.thumbOff,
-            ),
+            stylex.props(styles.thumb, isOn ? styles.thumbOn : styles.thumbOff),
+            tw(switchThumbBoxClassName({size, isOn})),
           )}>
           {isBusy && <Spinner size="sm" />}
         </div>

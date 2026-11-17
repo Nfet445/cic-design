@@ -28,7 +28,7 @@ import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {act, render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {Switch} from './Switch';
-import {classesOf} from '../__tests__/classNameAssertions';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {
   getAllInjectedCss,
   getForcedColorsRules,
@@ -1027,54 +1027,35 @@ describe('Switch', () => {
   });
 
   describe('RTL thumb travel direction', () => {
-    // StyleX injects atomic rules into the document; scan them so we can assert
-    // the direction-aware transform without relying on jsdom to resolve the
-    // `:is([dir="rtl"] *)` descendant selector against computed style.
-    function injectedCss(): string {
-      let out = '';
-      for (const sheet of Array.from(document.styleSheets)) {
-        try {
-          for (const rule of Array.from(sheet.cssRules)) {
-            out += rule.cssText + '\n';
-          }
-        } catch {
-          // ignore cross-origin sheets
-        }
-      }
-      out += Array.from(document.querySelectorAll('style'))
-        .map(s => s.textContent || '')
-        .join('\n');
-      return out;
-    }
-
-    it('applies a distinct thumb style when on vs off (on-travel is wired)', () => {
+    // The travel is a class, not a computed transform: jsdom resolves neither
+    // a `@media` arm nor a `[dir]` descendant selector, and the built sheet is
+    // where the declaration is checked (tailwindStylesheet.source-build.test).
+    it('applies a distinct thumb box when on vs off', () => {
       const on = render(<Switch label="On" value={true} onChange={() => {}} />);
       const off = render(
         <Switch label="Off" value={false} onChange={() => {}} />,
       );
-      const onThumb = on.container.querySelector(
-        '[class*="thumbOnSizeStyles"]',
-      );
-      const offThumb = off.container.querySelector(
-        '[class*="thumbOffSizeStyles"]',
-      );
+      const onThumb = on.container.querySelector('.astryx-switch-thumb');
+      const offThumb = off.container.querySelector('.astryx-switch-thumb');
       expect(onThumb).not.toBeNull();
       expect(offThumb).not.toBeNull();
-      expect(onThumb!.getAttribute('class')).not.toBe(
-        offThumb!.getAttribute('class'),
-      );
+      expect(classesOf(onThumb!)).not.toEqual(classesOf(offThumb!));
     });
 
-    it('mirrors the on-state thumb travel under RTL (negative translateX)', () => {
-      render(<Switch label="Toggle" value={true} onChange={() => {}} />);
-      const css = injectedCss();
-      // LTR on-travel moves the thumb toward the physical right (positive px).
-      expect(css).toMatch(/transform:\s*translateX\(1[24]px\)/);
-      // RTL mirrors it: the on-thumb lands on the inline-end (physical left)
-      // side, so the travel flips sign, scoped to `[dir="rtl"]`.
-      expect(css).toMatch(
-        /:is\(\[dir="rtl"\][^)]*\)[^{]*\{\s*transform:\s*translateX\(-1[24]px\)/,
+    it('mirrors the on-state thumb travel under RTL', () => {
+      const {container} = render(
+        <Switch label="Toggle" value={true} onChange={() => {}} />,
       );
+      // LTR on-travel moves the thumb toward the physical right. RTL mirrors
+      // it: the on-thumb lands on the inline-end (physical left) side, so the
+      // travel flips sign. A finger moves the thumb by its insets instead.
+      expectClassSet(container.querySelector('.astryx-switch-thumb')!, {
+        includes: [
+          '[transform:translateX(14px)]',
+          'rtl:[transform:translateX(-14px)]',
+          'pointer-coarse:[transform:none]',
+        ],
+      });
     });
   });
 
@@ -1383,16 +1364,15 @@ describe('Switch', () => {
       const t = getComputedStyle(track);
       const h = getComputedStyle(thumb);
       return {
+        track,
+        thumb,
         fill: t.backgroundColor,
-        padding: t.paddingTop,
         fade: [t.transitionProperty, t.transitionDuration],
-        size: [h.width, h.height],
         slide: [h.transitionProperty.replace(/\s/g, ''), h.transitionDuration],
-        travel: h.transform,
       };
     };
 
-    it('keeps the track fill, padding and colour fade, and the thumb size and slide', () => {
+    it('keeps the track fill and colour fade, and the thumb slide', () => {
       // A fine pointer: the desktop switch.
       expect(window.matchMedia('(pointer: coarse)').matches).toBe(false);
       const {container, rerender} = render(
@@ -1400,18 +1380,19 @@ describe('Switch', () => {
       );
       const off = look(container);
       expect(off.fill).toContain('--color-background-gray');
-      expect(off.padding).toBe('4px');
       expect(off.fade[0]).toBe('background-color');
       expect(off.fade[1]).not.toMatch(/^(0s)?$/);
-      expect(off.size).toEqual(['16px', '16px']);
       expect(off.slide[0]).toBe('transform,width,height');
       expect(off.slide[1]).not.toMatch(/^(0s)?$/);
+      expectClassSet(off.track, {includes: ['p-1']});
+      expectClassSet(off.thumb, {includes: ['h-4', 'w-4']});
 
       rerender(<Switch label="Wi-Fi" value onChange={() => {}} />);
       const on = look(container);
       expect(on.fill).toContain('--color-accent');
-      expect(on.size).toEqual(['20px', '20px']);
-      expect(on.travel).toBe('translateX(14px)');
+      expectClassSet(on.thumb, {
+        includes: ['h-5', 'w-5', '[transform:translateX(14px)]'],
+      });
     });
 
     it('adds no element: the thumb is the track’s only child, under a finger too', () => {
@@ -1432,8 +1413,8 @@ describe('Switch', () => {
         <Switch label="Wi-Fi" size="sm" value={false} onChange={() => {}} />,
       );
       const off = look(container);
-      expect(off.padding).toBe('2px');
-      expect(off.size).toEqual(['14px', '14px']);
+      expectClassSet(off.track, {includes: ['p-0.5']});
+      expectClassSet(off.thumb, {includes: ['h-3.5', 'w-3.5']});
     });
   });
 
