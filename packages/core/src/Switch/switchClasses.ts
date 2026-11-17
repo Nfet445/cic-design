@@ -10,8 +10,8 @@
  * @position Internal to Switch; the Tailwind build scans it for class names
  *
  * What reads the `switchScope` marker or the `switchFocusInput` marker (the
- * hover tint, the press layers, the focus ring) and the input's transform —
- * which replaces `rtlStyles.centerInline`'s — stay in
+ * hover tint, the press layers, the focus ring) and the input's box, whose
+ * `transform` extends the shared centering class, stay in
  * switchHoverPress.stylex.ts. Everything without a marker is a class here.
  *
  * SYNC: When modified, update
@@ -149,8 +149,8 @@ export function switchTrackBoxClassName({size}: {size: 'sm' | 'md'}): string {
 /**
  * The native input: it covers the track, so a click anywhere on the track
  * toggles, and it is invisible. Its box and the hit area it grows to under a
- * finger stay in switchHoverPress.stylex.ts, where they can replace
- * `rtlStyles.centerInline`'s transform.
+ * finger stay in switchHoverPress.stylex.ts, where its `transform` composes
+ * with the shared centering class.
  */
 export function switchInputClassName({isBusy}: {isBusy: boolean}): string {
   return tw(

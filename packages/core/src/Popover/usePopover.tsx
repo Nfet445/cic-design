@@ -18,7 +18,6 @@
  */
 
 import React, {useCallback, useEffect, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {useLayerInternal, type ContextRenderProps} from '../Layer/useLayer';
 import {watchOutsidePans} from '../Layer/outsidePanClaim';
 import {useFocusTrapInternal} from '../hooks/useFocusTrap';
@@ -30,7 +29,10 @@ import {
   isDisabledWithin,
   preferTabStops,
 } from '../hooks/focusableSelector';
-import {rtlStyles} from '../utils';
+import {
+  rtlCenterInlineBlockOffsetClassName,
+  rtlCenterInlineClassName,
+} from '../utils/rtlClasses';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {mergeProps} from '../utils/mergeProps';
@@ -661,11 +663,11 @@ function usePopoverImplementation(
               <div
                 data-astryx-popover-fallback-close=""
                 {...mergeProps(
-                  stylex.props(rtlStyles.centerInline('100%')),
-                  // Inline-axis centering (+ the translateY(100%) that drops it
-                  // below the surface) comes from rtlStyles.centerInline, which
-                  // centers correctly in LTR and RTL.
-                  tw(popoverCloseButtonWrapperClassName),
+                  tw(
+                    rtlCenterInlineClassName,
+                    rtlCenterInlineBlockOffsetClassName.full,
+                    popoverCloseButtonWrapperClassName,
+                  ),
                 )}>
                 <Button
                   variant="secondary"

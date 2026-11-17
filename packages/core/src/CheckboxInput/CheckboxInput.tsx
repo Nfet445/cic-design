@@ -41,7 +41,10 @@ import {Spinner} from '../Spinner/Spinner';
 import {useTooltip} from '../Tooltip/useTooltip';
 import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
-import {rtlStyles} from '../utils/rtlStyles';
+import {
+  rtlCenterInlineBlockOffsetClassName,
+  rtlCenterInlineClassName,
+} from '../utils/rtlClasses';
 import {withholdCallerHandlers} from '../utils/disabledInteraction';
 import {indicatorScope} from '../Indicator/indicator.markers.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
@@ -509,7 +512,10 @@ export function CheckboxInput({
             aria-busy={isBusy || undefined}
             {...mergeProps(
               {className: checkboxInputNativeClassName({size})},
-              stylex.props(rtlStyles.centerInline('-50%')),
+              tw(
+                rtlCenterInlineClassName,
+                rtlCenterInlineBlockOffsetClassName.half,
+              ),
             )}
           />
           {/*

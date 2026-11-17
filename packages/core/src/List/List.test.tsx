@@ -35,6 +35,7 @@ import {
   listItemMarkerSquareClassName,
 } from './listItemClasses';
 import {listRowEdgeOf} from '../privateAttributes/listRow.stylex';
+import {travellingRaisedSwipeRowClassName} from '../privateAttributes/travellingClasses';
 import {swipeLayerLoaded} from '../Item/__tests__/swipeLayerLoaded';
 
 /**
@@ -1335,6 +1336,7 @@ describe('List and swipe actions', () => {
   });
 
   it('under a finger, raises a swipeable interactive row above the rows after it: it is a stacking context, so its touch band’s own z-index orders only inside it', () => {
+    const RAISED_SWIPE_ROW = 'pointer-coarse:z-[1]';
     render(
       <List>
         <ListItem
@@ -1360,34 +1362,29 @@ describe('List and swipe actions', () => {
       </List>,
     );
     const row = (text: string) => screen.getByText(text).closest('li')!;
-    const rowZ = (el: Element) => {
-      const {touch, other} = touchGatedRules(el);
-      const own = (rules: string[]) =>
-        rules.filter(
-          rule =>
-            !rule.slice(0, rule.indexOf('{')).includes('::') &&
-            rule.includes('z-index:'),
-        );
-      return {touch: own(touch), other: own(other)};
-    };
-    const swipeable = rowZ(row('Swipeable'));
-    expect(swipeable.touch.join('\n')).toMatch(/z-index: 1/);
+    // Every z-index the row states, whether unconditional or behind a media or
+    // attribute gate: the band's raise is a class, the travelling raise too.
+    const zClasses = (el: Element) =>
+      classesOf(el).filter(name => /z-\[|z-index/.test(name));
+    const swipeable = zClasses(row('Swipeable'));
+    expect(swipeable).toContain(RAISED_SWIPE_ROW);
     // With a mouse there is no band: the row's only z-index is an update's
     // travelling raise, while it slides across other rows.
-    for (const rule of swipeable.other) {
-      expect(rule.slice(0, rule.indexOf('{'))).toContain(
-        '[data-astryx-travelling]',
-      );
+    for (const name of swipeable) {
+      if (name === RAISED_SWIPE_ROW || name === LIST_ITEM_BAND_RAISED) {
+        continue;
+      }
+      expect(name).toContain('[data-astryx-travelling]');
     }
     // A row that is no stacking context needs no raise (its band's own
     // z-index orders it), and a swipeable row with no band gets none.
-    expect(rowZ(row('Pressable')).touch).toEqual([]);
-    expect(rowZ(row('Static')).touch).toEqual([]);
+    expect(zClasses(row('Pressable'))).not.toContain(RAISED_SWIPE_ROW);
+    expect(zClasses(row('Static'))).not.toContain(RAISED_SWIPE_ROW);
     // Item serves no swipe actions on a row with no entry on either side. Nor
     // does it on a row whose press goes to a control inside it. Neither row is
     // a stacking context, so neither is raised.
-    expect(rowZ(row('Empty sides')).touch).toEqual([]);
-    expect(rowZ(row('Delegate')).touch).toEqual([]);
+    expect(zClasses(row('Empty sides'))).not.toContain(RAISED_SWIPE_ROW);
+    expect(zClasses(row('Delegate'))).not.toContain(RAISED_SWIPE_ROW);
   });
 
   it('raises nothing in a ListItem outside a List, where nothing isolates it: its touch band and a swipeable row take no z-index', () => {

@@ -55,7 +55,10 @@ import {useMergedRefs} from '../hooks/useMergedRefs';
 import {isReportedRow, keepPresentation} from './listLayoutUpdates';
 import {itemKeyProps} from '../privateAttributes/itemKey.stylex';
 import {listRowProps} from '../privateAttributes/listRow.stylex';
-import {travellingStyles} from '../privateAttributes/travelling.stylex';
+import {
+  travellingRaisedSwipeRowClassName,
+  travellingRowClassName,
+} from '../privateAttributes/travelling.stylex';
 import {useTouchHitArea} from '../utils/touchHitArea';
 import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 import {tw} from '../utils/tw';
@@ -409,10 +412,8 @@ export function ListItem({
       density={density}
       xstyle={
         [
-          travellingStyles.row,
           hasDividers && isTouchTarget && rowPressLayerStyles.overDividers,
           isTouchTarget && touchHitAreaStyles.layer,
-          isRaisedSwipeRow && travellingStyles.raisedSwipeRow,
           // A focused handle rings itself; the row's focus-within ring stays
           // off for it (two rings, and the list clips the row's sides).
           reorderHandle && reorder?.session.rowStyle,
@@ -429,6 +430,8 @@ export function ListItem({
             usesNumberColumns,
             spansNumberColumns: listStyle === 'decimal' && !usesNumberColumns,
           }),
+          travellingRowClassName,
+          isRaisedSwipeRow && travellingRaisedSwipeRowClassName,
           className,
         ),
         style,
