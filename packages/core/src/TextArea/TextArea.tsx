@@ -30,8 +30,8 @@ import {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 import type {TextAreaSize} from './textAreaClasses';
+import {wrapperStyles} from './textAreaWrapper.stylex';
 import {
   textAreaClassName,
   textAreaCounterClassName,
@@ -54,7 +54,6 @@ import {useTooltip} from '../Tooltip';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {joinAriaIDs} from '../utils/inputAria';
-import type {BaseProps} from '../BaseProps';
 import {
   type FieldInputBaseProps,
   useFieldInputStyling,
@@ -84,29 +83,6 @@ import english from '../i18n/generated-english/TextArea/TextArea.generated';
 
 registerEnglishFallback(english);
 const COUNTER_WARNING_THRESHOLD = 0.8;
-
-const styles = stylex.create({
-  // The wrapper is a bare positioning context. The <textarea> spans the full
-  // container and carries its own internal padding; icons, status/spinner, and
-  // the character counter are absolutely-positioned overlays anchored to the
-  // container corners. This keeps the native resize grip in the true
-  // bottom-right corner and lets the scrollbar represent the full input area.
-  //
-  // The shared input wrapper's inset is zeroed with matching longhands, not the
-  // `padding` shorthand: StyleX ranks longhands above shorthands regardless of
-  // merge order. This arm stays StyleX because a class lives in a layer and an
-  // unlayered StyleX declaration always wins over it.
-  wrapper: {
-    zIndex: 1,
-    display: 'block',
-    paddingBlock: 0,
-    paddingInline: 0,
-    // Internal inline padding for the textarea's text. Defined on the wrapper
-    // so the counter (a sibling overlay) inherits the same value and stays
-    // aligned with the text edge.
-    '--_textarea-inline-padding': spacingVars['--spacing-2'],
-  },
-});
 
 export type TextAreaStatusType = 'warning' | 'error' | 'success';
 
@@ -546,7 +522,7 @@ export function TextArea({
           stylex.props(
             inputWrapperStyles.base,
             inputWrapperStyles.textField,
-            styles.wrapper,
+            wrapperStyles.root,
             isDisabled && inputWrapperStyles.disabled,
             isDisabled && inputDisabledFocusStyles.ring,
             status && inputStatusBorderStyles[status.type],
