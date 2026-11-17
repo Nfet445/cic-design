@@ -400,9 +400,7 @@ describe('useTableFiltering — layout classes', () => {
     });
     unmount();
 
-    render(
-      <FilterTable initialFilters={{name: {type: 'text', value: 'Ali'}}} />,
-    );
+    render(<FilterTable initialFilters={{name: 'Ali'}} />);
     expectClassSet(screen.getByRole('button', {name: 'Filter Name'}), {
       includes: ['opacity-100'],
       excludes: ['opacity-[0.35]'],

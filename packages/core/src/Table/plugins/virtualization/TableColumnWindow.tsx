@@ -11,8 +11,8 @@
  *   hook carries none of it.
  */
 import {useMemo, type ReactElement, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {useDevWarningPerMessage} from '../../../hooks/useDevWarning';
+import {tableGapCellClassName, tableGapStyle} from '../../tableClasses';
 import {
   resolveColumnFloorWidths,
   resolveColumnWidths,
@@ -28,16 +28,6 @@ import type {
 } from '../../tableColumnWindowing';
 import {useTableColumnWindow} from './useTableColumnWindow';
 
-const styles = stylex.create({
-  spacer: (width: number) => ({
-    width,
-    minWidth: width,
-    maxWidth: width,
-    padding: 0,
-    borderWidth: 0,
-  }),
-});
-
 /**
  * An inaccessible native cell that keeps the place of unmounted columns. The
  * header row and every body row render the same spacers, so columns align.
@@ -49,7 +39,8 @@ function renderColumnSpacer(
     <td
       key={`\u0000spacer:${segment.start}`}
       aria-hidden="true"
-      {...stylex.props(styles.spacer(segment.width))}
+      className={tableGapCellClassName({isInline: true})}
+      style={tableGapStyle({inlineSize: segment.width})}
     />
   );
 }

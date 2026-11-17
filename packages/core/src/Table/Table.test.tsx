@@ -30,6 +30,7 @@ import {
   DEFAULT_MIN_COLUMN_WIDTH,
 } from './columnUtils';
 import type {TablePlugin, TableColumn, ProportionalWidth} from './types';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 // =============================================================================
 // Test Data
@@ -1096,13 +1097,19 @@ describe('Table', () => {
       </Table>,
     );
     const table = container.querySelector('table');
-    expect(table).toHaveStyle({tableLayout: 'auto'});
+    expectClassSet(table as Element, {
+      includes: ['table-auto'],
+      excludes: ['table-fixed'],
+    });
   });
 
   it('uses table-layout: fixed in data-driven mode', () => {
     const {container} = render(<Table data={users} columns={columns} />);
     const table = container.querySelector('table');
-    expect(table).toHaveStyle({tableLayout: 'fixed'});
+    expectClassSet(table as Element, {
+      includes: ['table-fixed', 'w-full', 'border-collapse'],
+      excludes: ['table-auto'],
+    });
   });
 
   it('renders all data values', () => {
@@ -1237,21 +1244,23 @@ describe('Table', () => {
     expect(screen.getByTestId('custom-plugin')).toBeInTheDocument();
   });
 
-  it('runs user plugins after XDS styling plugin', () => {
+  it('lands a user plugin table transform on the table element', () => {
+    // The table's own classes are written by BaseTable, not handed through the
+    // plugin pipeline, so a plugin's transform adds to the element beside them.
     const userPlugin: TablePlugin<User> = {
-      transformTable: props => {
-        // XDS plugin should have already added styles
-        expect(props.xstyle.length).toBeGreaterThan(1);
-        return {
-          ...props,
-          htmlProps: {...props.htmlProps, 'data-testid': 'after-xds'},
-        };
-      },
+      transformTable: props => ({
+        ...props,
+        htmlProps: {...props.htmlProps, 'data-testid': 'after-xds'},
+      }),
     };
     render(
       <Table data={users} columns={columns} plugins={{custom: userPlugin}} />,
     );
-    expect(screen.getByTestId('after-xds')).toBeInTheDocument();
+    const table = screen.getByTestId('after-xds');
+    expect(table.tagName).toBe('TABLE');
+    expectClassSet(table, {
+      includes: ['w-full', 'border-collapse', 'table-fixed'],
+    });
   });
 
   it('renders children mode with TableRow and TableCell', () => {

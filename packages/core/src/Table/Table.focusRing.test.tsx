@@ -15,7 +15,6 @@ import {describe, it, expect} from 'vitest';
 import {render, screen, within} from '@testing-library/react';
 import * as stylex from '@stylexjs/stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {borderVars, focusVars} from '../theme/tokens.stylex';
 import {Table} from './Table';
 import type {TableColumn} from './types';
 import {useTableTreeData} from './plugins/tree/useTableTreeData';
@@ -26,20 +25,11 @@ const sharedFocusRingClasses = stylex
   .className!.split(' ');
 
 // The scroll wrapper keeps the shared ring but sits it inside its own box,
-// because it bleeds to a clipping container's edges.
-const inset = stylex.create({
-  ring: {
-    outlineOffset: {
-      default: null,
-      ':focus-visible': `calc(-1 * (${focusVars['--focus-outline-width']} + ${borderVars['--border-width']}))`,
-    },
-  },
-});
-const insetFocusRingClasses = stylex
-  .props(focusOutlineStyles.focusVisible, inset.ring)
-  .className!.split(' ')
-  // Debug class names name their source file; only the atoms matter.
-  .filter(c => !c.includes('__'));
+// because it bleeds to a clipping container's edges. The inset is a class in
+// the table's own map, so the assertion names it there rather than compiling
+// a twin of it here.
+const INSET_OFFSET_CLASS =
+  'focus-visible:[outline-offset:calc(-1_*_(var(--focus-outline-width)_+_var(--border-width)))]';
 
 function expectSharedFocusRing(el: Element) {
   const classes = el.className.split(' ');
@@ -84,9 +74,10 @@ describe('Table: its own tab stops draw the shared focus ring', () => {
     const wrapper = container.querySelector('.astryx-table-scroll-wrapper');
     expect(wrapper).not.toBeNull();
     const classes = wrapper!.className.split(' ');
-    for (const c of insetFocusRingClasses) {
+    for (const c of sharedFocusRingClasses.filter(c => !c.includes('__'))) {
       expect(classes).toContain(c);
     }
+    expect(classes).toContain(INSET_OFFSET_CLASS);
   });
 
   it('the tree row expander', () => {

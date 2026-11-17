@@ -86,6 +86,14 @@ import {
 } from '../Table/plugins/filtering/filterClasses';
 import {SELECTION_CELL_CLASS} from '../Table/plugins/selection/selectionClasses';
 import {
+  TABLE_HEADER_LABEL_ROW_CLASS,
+  TABLE_SCROLL_WRAPPER_BLOCK_VIEWPORT_CLASS,
+  TABLE_SCROLL_WRAPPER_CLASS,
+  TABLE_SCROLL_WRAPPER_RING_INSET_CLASS,
+  tableClassName,
+  tableGapCellClassName,
+} from '../Table/tableClasses';
+import {
   SORT_INDICATOR_CLASS,
   SORT_INDICATOR_UNSORTED_CLASS,
   SORT_RANK_CLASS,
@@ -423,6 +431,14 @@ function familyClassNames() {
   add(FILTER_POPOVER_ACTIONS_SPACER_CLASS);
   add(FILTER_INLINE_SLOT_CLASS);
   add(SELECTION_CELL_CLASS);
+  add(tableClassName({isAutoLayout: true}));
+  add(tableClassName({isAutoLayout: false}));
+  add(tableGapCellClassName({isInline: true}));
+  add(tableGapCellClassName({isInline: false}));
+  add(TABLE_HEADER_LABEL_ROW_CLASS);
+  add(TABLE_SCROLL_WRAPPER_CLASS);
+  add(TABLE_SCROLL_WRAPPER_RING_INSET_CLASS);
+  add(TABLE_SCROLL_WRAPPER_BLOCK_VIEWPORT_CLASS);
 
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
@@ -528,6 +544,17 @@ describe('dist/astryx-tailwind.css declarations', () => {
     expect(stylesheet.blockOf('pointer-coarse:[min-width:44px]')).toContain(
       '@media(pointer:coarse)',
     );
+  });
+
+  it('sizes a windowed gap cell from its inline variable', () => {
+    // A windowed body keeps the place of the rows it unmounts, and the size
+    // it keeps is the one value no class can carry.
+    expect(
+      stylesheet.ruleFor('[block-size:var(--_table-gap-block-size)]'),
+    ).toBe('block-size:var(--_table-gap-block-size);');
+    expect(
+      stylesheet.ruleFor('[inline-size:var(--_table-gap-inline-size)]'),
+    ).toBe('inline-size:var(--_table-gap-inline-size);');
   });
 
   it('dims an unused header control until its header is hovered', () => {
