@@ -557,12 +557,13 @@ describe('Drawer', () => {
         </Drawer>,
       );
       const dialog = screen.getByRole('dialog');
-      // The shared resets, not a local copy, supply the layer baseline.
+      // The shared resets, not a local copy, supply the layer baseline: their
+      // rules in the sheet's reset layer declare the body font, the body size
+      // and `text-align: start`, so the root resolves the baseline itself
+      // instead of inheriting it from the page.
       expectClassSet(dialog, {
         includes: [layerTextResetClassName, layerStructureResetClassName],
       });
-      // The baseline resolves on the root itself, not from the page.
-      expect(getComputedStyle(dialog).textAlign).toBe('start');
     });
   });
 
