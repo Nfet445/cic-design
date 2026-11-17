@@ -113,6 +113,8 @@ import {
   easeVars,
 } from '../theme/tokens.stylex';
 import {isRenderable, mergeProps, rtlStyles} from '../utils';
+import {tw} from '../utils/tw';
+import {dropdownMenuSheetClassName} from './dropdownMenuClasses';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {
@@ -267,33 +269,6 @@ const dynamicStyles = stylex.create({
   popoverViewportMaxBlockSize: (maxHeight: string) => ({
     maxBlockSize: `min(${maxHeight}, ${layerViewportInset.maxBlockSize})`,
   }),
-});
-
-const bottomSheetStyles = stylex.create({
-  content: {
-    width: '100%',
-  },
-  header: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    marginBottom: spacingVars['--spacing-2'],
-  },
-  rootHeading: {
-    // Match the content edge of a spacious ListItem. Icon-bearing rows place
-    // their icon here; rows without an icon place their label here.
-    marginInlineStart: spacingVars['--spacing-3'],
-  },
-  viewHeading: {
-    outline: 'none',
-  },
-  // Caller content above or below the action list, inset to the list's
-  // content edge.
-  region: {
-    paddingInline: spacingVars['--spacing-3'],
-    paddingBlock: spacingVars['--spacing-2'],
-  },
 });
 
 // =============================================================================
@@ -776,13 +751,15 @@ function DropdownMenuBottomSheet({
       ref={viewHeadingRef}
       level={3}
       tabIndex={-1}
-      xstyle={[
-        bottomSheetStyles.viewHeading,
-        submenuPath.length === 0 && [
-          bottomSheetStyles.rootHeading,
-          menuBottomSheetStyles.headingAlone,
-        ],
-      ]}>
+      className={tw(
+        dropdownMenuSheetClassName.viewHeading,
+        submenuPath.length === 0 && dropdownMenuSheetClassName.rootHeading,
+      )}
+      xstyle={
+        submenuPath.length === 0
+          ? menuBottomSheetStyles.headingAlone
+          : undefined
+      }>
       {currentTitle}
     </Heading>
   );
@@ -852,16 +829,14 @@ function DropdownMenuBottomSheet({
           {...rest}
           {...mergeProps(
             themeProps('dropdown-menu', {presentation: 'bottom-sheet'}),
-            stylex.props(
-              bottomSheetStyles.content,
-              menuBottomSheetStyles.content,
-              xstyle,
-            ),
-            className,
-            style,
+            stylex.props(menuBottomSheetStyles.content, xstyle),
+            {
+              className: tw(dropdownMenuSheetClassName.content, className),
+              style,
+            },
           )}>
           {submenuPath.length > 0 ? (
-            <div {...stylex.props(bottomSheetStyles.header)}>
+            <div className={dropdownMenuSheetClassName.header}>
               <Button
                 label={backLabel}
                 variant="ghost"
@@ -885,7 +860,7 @@ function DropdownMenuBottomSheet({
             viewHeading
           )}
           {isRenderable(header) && (
-            <div {...stylex.props(bottomSheetStyles.region)}>{header}</div>
+            <div className={dropdownMenuSheetClassName.region}>{header}</div>
           )}
           <MenuBottomSheetActionList
             items={currentItems}
@@ -896,7 +871,7 @@ function DropdownMenuBottomSheet({
             }}
           />
           {isRenderable(footer) && (
-            <div {...stylex.props(bottomSheetStyles.region)}>{footer}</div>
+            <div className={dropdownMenuSheetClassName.region}>{footer}</div>
           )}
         </div>
       </MenuBottomSheet>
