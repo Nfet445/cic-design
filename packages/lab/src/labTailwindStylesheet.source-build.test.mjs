@@ -16,6 +16,7 @@ import {fileURLToPath} from 'node:url';
 
 import {buildTailwindStylesheet} from '../../build/src/tailwind-stylesheet.mjs';
 import {describeTailwindStylesheet} from '../../core/src/__tests__/classNameAssertions';
+import * as chatReasoningClasses from './ChatReasoning/chatReasoningClasses';
 import * as chatTypingIndicatorClasses from './Chat/chatTypingIndicatorClasses';
 import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
@@ -41,6 +42,7 @@ function labClassNames() {
     }
   };
   for (const map of [
+    chatReasoningClasses,
     chatTypingIndicatorClasses,
     chatUnreadDividerClasses,
     listInputClasses,

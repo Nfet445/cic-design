@@ -62,3 +62,12 @@
     opacity: 0.35;
   }
 }
+
+@keyframes astryxChatReasoningShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
