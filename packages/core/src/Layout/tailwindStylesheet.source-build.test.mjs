@@ -66,6 +66,16 @@ import {
 } from '../Drawer/drawerClasses';
 import {bottomSheetEdgeTintClassName} from '../BottomSheet/bottomSheetEdgeTintClasses';
 import {
+  popoverAnchorWrapperClassName,
+  popoverCloseButtonWrapperClassName,
+  popoverContentWrapperClassName,
+  popoverExplicitWidthClassName,
+  popoverMatchTriggerClassName,
+  popoverSheetFallbackCloseClassName,
+  popoverSurfaceClassName,
+  popoverViewportFitClassName,
+} from '../Popover/popoverClasses';
+import {
   mobileNavContentClassName,
   mobileNavDialogClassName,
   mobileNavDrawerClassName,
@@ -842,6 +852,20 @@ function familyClassNames() {
   // The bottom sheet's edge tint: the strip WebKit samples for the iOS toolbar
   // colour.
   add(bottomSheetEdgeTintClassName);
+
+  // The popover: its surface and content wrapper, the anchor wrapper, both
+  // viewport-fit states, the two sizing classes and both hidden close
+  // wrappers.
+  add(popoverAnchorWrapperClassName);
+  add(popoverSurfaceClassName);
+  add(popoverContentWrapperClassName);
+  for (const isScrollable of [false, true]) {
+    add(popoverViewportFitClassName({isScrollable}));
+  }
+  add(popoverExplicitWidthClassName);
+  add(popoverMatchTriggerClassName);
+  add(popoverCloseButtonWrapperClassName);
+  add(popoverSheetFallbackCloseClassName);
 
   // The mobile nav: the dialog in its two display states, the scrim, both
   // drawer edges in both motion states, the header row and its content area.
@@ -2083,7 +2107,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // row's three radius parts already spelled elsewhere. Skeleton's map added
     // 25 — the placeholder, the pulse, the two classes that read the props'
     // variables, and one per radius. With every family above the sheet sits at
-    // 1212, so the ceiling follows the sum rather than one side.
+    // 1212, and the windows merged since — the menu surface, EmptyState,
+    // Timestamp — carried it further. The popover's map then moved from StyleX
+    // to literal classes: its surface, both viewport-fit states, the two sizing
+    // classes, the anchor wrapper and both hidden close wrappers. The sheet
+    // measures 1254, so the ceiling follows the sum rather than one side.
     expect(stylesheet.rules.size).toBeLessThan(1260);
   });
 
