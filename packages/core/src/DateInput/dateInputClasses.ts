@@ -390,6 +390,131 @@ export function dateInputToggleClassName({
   );
 }
 
+/** The closed field's row: the calendar toggle, the control and the overlay. */
+export const nativeDateFieldWrapperClassName = 'gap-2';
+
+/**
+ * The calendar toggle beside the native control. Its disabled cursor keys off
+ * the attribute: the field never renders native `disabled`.
+ */
+export const nativeDateFieldIconButtonClassName = tw(
+  'flex',
+  'items-center',
+  'justify-center',
+  'p-0',
+  'm-0',
+  'border-0',
+  'bg-transparent',
+  'cursor-pointer',
+  '[&:is(:disabled,[aria-disabled=true])]:cursor-default',
+  'rounded-[var(--radius-element)]',
+);
+
+/** The placeholder the empty overlay draws. */
+export const nativeDateFieldOverlayPlaceholderClassName =
+  'text-[color:var(--color-text-secondary)]';
+
+/** A rejected value: the secondary colour, the same one a placeholder reads. */
+export const nativeDateFieldInvalidTextClassName =
+  'text-[color:var(--color-text-secondary)]';
+
+/** The value the overlay draws. */
+export const nativeDateFieldOverlayValueClassName =
+  'text-[color:var(--color-text-primary)]';
+
+/**
+ * The native date control. It carries no border, padding or background of its
+ * own: the field wrapper draws those.
+ *
+ * Below 16px iOS zooms the page when the control takes focus. Only iOS WebKit
+ * implements `-webkit-touch-callout`, so the coarse-pointer floor is keyed to
+ * iOS alone.
+ *
+ * A native date control sizes from its internal edit fields, not from
+ * `line-height`, so the box is pinned to one text line. `1lh` tracks the font
+ * for free; a browser without it falls back to the same calculation.
+ *
+ * A rejected value reads as secondary text, so the typed date reads as one the
+ * control did not accept.
+ */
+export function nativeDateFieldInputClassName({
+  isDisabled,
+  isHidden,
+  isInvalid,
+}: {
+  isDisabled: boolean;
+  isHidden: boolean;
+  isInvalid: boolean;
+}): string {
+  return tw(
+    'block',
+    'flex-1',
+    'min-w-0',
+    'border-0',
+    'p-0',
+    'font-[family-name:var(--font-family-body)]',
+    'text-[length:var(--text-body-size)]',
+    'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
+    'leading-[var(--text-body-leading)]',
+    // The colour is stated once, not layered as two utilities of one property:
+    // the sheet orders those, not the class attribute.
+    isInvalid
+      ? nativeDateFieldInvalidTextClassName
+      : 'text-[color:var(--color-text-primary)]',
+    'bg-transparent',
+    'outline-none',
+    '[height:1lh]',
+    '[@supports_not_(height:1lh)]:[height:calc(var(--text-body-size)_*_var(--text-body-leading))]',
+    'pointer-coarse:[@supports(-webkit-touch-callout:none)]:[height:calc(max(1rem,var(--text-body-size))_*_var(--text-body-leading))]',
+    'appearance-none',
+    // Chromium paints a second calendar glyph inside the control; this surface
+    // ships a toggle of its own. iOS gives the control its own chrome, which
+    // no reset of ours reaches.
+    '[&::-webkit-calendar-picker-indicator]:hidden',
+    '[&::-webkit-date-and-time-value]:[text-align:start]',
+    '[&::-webkit-date-and-time-value]:m-0',
+    '[&::-webkit-date-and-time-value]:p-0',
+    '[&::-webkit-date-and-time-value]:leading-[inherit]',
+    '[&::-webkit-date-and-time-value]:min-h-0',
+    '[&::-webkit-datetime-edit]:p-0',
+    '[&::-webkit-datetime-edit]:leading-[inherit]',
+    // WebKit paints the value into one run the UA stylesheet gives no colour,
+    // so the overlay's own text takes that space.
+    isHidden && 'text-transparent [-webkit-text-fill-color:transparent]',
+    isDisabled && 'cursor-default',
+  );
+}
+
+/** The box the control and its overlay share. */
+export const nativeDateFieldSlotClassName = tw(
+  'relative',
+  'flex',
+  'items-center',
+  'flex-1',
+  '[min-inline-size:0]',
+);
+
+/**
+ * The formatted value over the native control. It repeats the control's font
+ * so the two baselines match, and takes no pointer events: a tap has to reach
+ * the control underneath, which is what raises the OS picker.
+ *
+ * Both insets bound it to the slot; an end inset less block would let a long
+ * date paint over the clear button.
+ */
+export const nativeDateFieldOverlayClassName = tw(
+  'absolute',
+  'inset-0',
+  'block',
+  'text-[length:var(--text-body-size)]',
+  'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
+  'leading-[var(--text-body-leading)]',
+  'pointer-events-none',
+  'overflow-hidden',
+  'whitespace-nowrap',
+  'text-ellipsis',
+);
+
 export type DateInputSize = 'sm' | 'md' | 'lg';
 
 /** The wrapper's block size for a size, and the narrowest it may render. */

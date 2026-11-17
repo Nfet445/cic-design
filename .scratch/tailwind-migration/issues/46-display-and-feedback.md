@@ -172,36 +172,105 @@ astryxStatusDotPulse` sits in `packages/core/tailwind/astryx.input.css` and
 - The sheet ceiling moved 1160 → 1180 for the four maps above: they added about
   45 rules and the sheet sits at 1159. The reason is in the test's comment.
 
+- `Skeleton` paints with Tailwind classes (`Skeleton/skeletonClasses.ts`): the
+  placeholder with its `contrast-more` composite and both forced-colors arms
+  (GrayText fill, `opacity: 1`), the pulse, one class per radius, and the two
+  utility classes that read the props' variables. No `stylex.create` is left in
+  the directory; `stylex.props(xstyle)` is the only remaining StyleX call.
+- The pulse's keyframes moved to `packages/core/tailwind/astryx.input.css` as
+  `@keyframes astryxSkeletonFade`, and one class spells the whole shorthand:
+  `animate-[astryxSkeletonFade_var(--_astryx-pre-tempo-duration-medium-max,var(--duration-medium-max))_linear_infinite_alternate]`
+  plus `motion-reduce:animate-none`. The build emits it whole — the comma
+  inside the `var()` fallback survives, and the class a test reads is the same
+  string the map holds.
+- Width, height and the stagger delay are a class plus an inline variable
+  (`--_skeleton-width`, `--_skeleton-height`, `--_skeleton-delay`, set as
+  computed keys, not a cast). The variables brought three follow-ups a
+  migrating component must expect: they are documented in
+  `Skeleton/Skeleton.doc.mjs` (`theming.vars[]` and `theming.derived[]`), mapped
+  in `theme/derivedVarRegistry.ts` under `skeleton`, and listed in
+  `DIR_TO_REGISTRY_KEY` of `derivedVarRegistry.test.ts`.
+- `Skeleton/Skeleton.test.tsx` no longer reads an injected StyleX sheet. The
+  `pulse` helper reads `buildAstryxTailwindCss()` through `stylesheetOf`, the
+  keyframe assertions run against `@keyframes astryxSkeletonFade` in that
+  sheet, and the timing/direction/iteration assertions read the one class that
+  spells the shorthand. The forced-colors test reads `blockOf` over the two
+  `forced-colors:` classes.
+- Two source guards moved with the code, not around it: `themeMotion.test.ts`
+  reads `Skeleton/skeletonClasses.ts` for the literal
+  `var(--_astryx-pre-tempo-duration-medium-max,var(--duration-medium-max))`
+  (a class string cannot hold the StyleX form), and the `Skeleton.radius`
+  exception in `themingTargets.test.ts` is gone — the radius is a class now, so
+  the axis no longer paints without reaching `themeProps()`.
+- `skeletonClassName` and its siblings are registered in `familyClassNames()`
+  of `packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`.
+
+- `EmptyState` paints with Tailwind classes (`EmptyState/emptyStateClasses.ts`):
+  the centered container and its compact arm, the text column, the title and
+  description with their compact sizes, and the action row with its stacked
+  arm. The compact classes override only what the compact layout changes, so
+  they stay joined after the base. No test moved: `EmptyState.test.tsx` reads
+  only the consumer-`xstyle` class, which is still StyleX.
+- `Timestamp` paints with Tailwind classes (`Timestamp/timestampClasses.ts`):
+  the `<time>` element's inherited-property reset. `TimestampHoverCard`
+  paints with `Timestamp/timestampHoverCardClasses.ts`: the definition-list
+  grid with its two gaps, the `contents` row, the label and value cells in
+  supporting and body type, the value cell that spans both tracks (`flex`,
+  with a `supports-[grid-template-columns:subgrid]:grid` arm), the action
+  cell, and the four grid templates as one string-valued map. No test moved;
+  `Timestamp.test.tsx` reads no computed style for these nodes.
+- `Timestamp.test.tsx` fails 5 ICU cases ("Timestamp calendar systems",
+  `chinese` calendar) on `main` too; the count is unchanged.
+
 ## Left
 
-`Card`, `Divider`, `Banner`, `Badge`, `Code`, `Blockquote` and `StatusDot` are
-done. The rest of the ticket's files still carry their `stylex.create` maps:
+`Card`, `Divider`, `Banner`, `Badge`, `Code`, `Blockquote`, `StatusDot`,
+`Skeleton`, `EmptyState` and `Timestamp`/`TimestampHoverCard` are done. The
+rest of the ticket's files still carry their `stylex.create` maps:
 
 - `CodeBlock` (3), `Spinner` (4) plus `Spinner/spinnerRotor.ts` (1),
-  `ProgressBar` (4), `Skeleton` (3), `EmptyState` (1), `Outline` (3),
+  `ProgressBar` (4), `Outline` (3),
   `AspectRatio` (2), `Thumbnail` (1), `MetadataList`/`MetadataListItem` (3),
   `Timer` (1), `Timestamp`/`TimestampHoverCard` (3), `Toast`/`ToastViewport` (2),
   `Carousel` (3), `Markdown` (5) plus `Markdown/plugins/HeadingLinksRenderer.tsx`
   (2).
-- Two keyframes are still inside `.ts` files and must move to
-  `packages/core/tailwind/astryx.input.css` before their component converts:
+- One keyframe is still inside a `.ts` file:
   `Spinner/spinnerRotor.ts` (`rotation`, 100 turns per iteration, so
-  `@keyframes astryxSpinnerRotor`) and `Skeleton.tsx` (`skeletonFade`, the ten
-  stepped holds that climb 0.25 → 0.925 and alternate). `StatusDot` is the
-  worked example: `@keyframes astryxStatusDotPulse` in the input sheet, the
-  class `animate-[astryxStatusDotPulse_2s_ease-in-out_infinite]` plus
-  `motion-reduce:animate-none`. `animate-[…]` is one class string, so the
-  rotor's duration, which reads
-  `--_astryx-pre-tempo-duration-slow-min` times 100, will need care: it is a
-  `calc()` over a token, so the arbitrary value has to be spelled out in the
-  class (an interpolated value would emit nothing).
-- `Skeleton`'s tests are the heaviest in this ticket. `pulse` reads
-  `declarationsOf` over `getAllInjectedCss()` and parses the keyframes out of
-  that sheet to check the ten opacity steps, the `linear` timing and the
-  absence of `steps()`; all of it has to be rewritten against the built
-  stylesheet (`stylesheetOf`/`buildAstryxTailwindCss`, as
-  `Layout/tailwindStylesheet.source-build.test.mjs` does) or the class set.
-  Its forced-colors read has to move to classes, as Banner's and Badge's did.
+  `@keyframes astryxSpinnerRotor`). Skeleton is the worked example of the
+  shape: the frames in `packages/core/tailwind/astryx.input.css`, one class
+  that spells the whole shorthand, `motion-reduce:` arm for the slower turn
+  (the rotor must never stop, so `motion-reduce:animate-none` is wrong there:
+  it needs `animate-[astryxSpinnerRotor_calc(3s*100)_linear_infinite]`).
+- `Spinner/spinnerRotor.ts` cannot convert alone: `spinnerRotorStyles.turn` is
+  imported by `packages/lab/src/CircularProgress/CircularProgress.tsx` and its
+  test reads `stylex.props(spinnerRotorStyles.turn).className`. The rotor export
+  changes with the lab caller or not at all, so either the same window owns
+  both or the rotor keeps one named `stylex.create` until CircularProgress
+  migrates.
+- `CodeBlock` needs one named `stylex.create` exception, like Card's
+  `cardBorder.stylex.ts`: `CodeBlock.focusRing.test.tsx` asserts the shared
+  inset ring through `__tests__/insetFocusRing.ts`, which reads the StyleX
+  atoms of `focusOutlineStyles.focusVisible` on the viewport. Keep the ring as
+  `focusOutlineProps.focusVisible(inset)` and make the inset offset the StyleX
+  map; the other ~40 keys convert. Its line/diff groups also stack stateful
+  classes on one property (`code` vs `codeWrapped`, `line` vs `lineNumbered` vs
+  the two diff arms vs the highlight tint), so each group needs one function
+  that returns a complete class string per state rather than two classes that
+  paint the same declaration.
+- `CodeBlock/CodeBlock.tsx:76-489` holds the four maps and the keyframes: the
+  card and section frames, the prop-driven `width`/`gutterWidth` functions
+  (line 97), the `chevronReveal` keyframes (line 116, which has to become
+  `@keyframes astryxChevronReveal` in `tailwind/astryx.input.css`), and about
+  40 keys in `styles` with `::before`/`::after` content, four property groups
+  whose state arms paint the same declaration (`code`/`codeWrapped` at 268 and
+  282, `line`/`lineNumbered`/the two diff arms/the highlight tint at 312-404),
+  and the collapse grid transition. It is a window of its own.
+- `ToastViewport.tsx:79-260` carries about 17 keys, not one: the outlet's
+  `display: contents`, the viewport reset with its safe-area paddings (a
+  `pointer: coarse` block arm and both RTL inline arms), the four placement
+  arms, and eight wrapper keys with `@starting-style` entries and a
+  `:last-child`/`:first-child` gap arm. `Toast/Toast.tsx:83-150` is smaller but
+  paints the swipe transform from three `--_toast-swipe-*` private vars.
 - `ProgressBar` computes its fill width and its mark position from props, so
   those go through a class plus an inline `--astryx-*` variable, and its test
   reads computed geometry.
@@ -212,8 +281,8 @@ done. The rest of the ticket's files still carry their `stylex.create` maps:
   as unreachable.
 - Card's remaining test `getComputedStyle` read is the consumer-`xstyle` one
   named above.
-- The manual Windows High Contrast check for Card, Divider, Banner, Badge and
-  StatusDot is not done. All five carry their boundary as a `forced-colors:`
+- The manual Windows High Contrast check for Card, Divider, Banner, Badge,
+  StatusDot and Skeleton is not done. All five carry their boundary as a `forced-colors:`
   outline class and their tests assert the class rather than the compiled
   rule, so the manual check is the only place the boundary is seen. Divider
   draws a border-width line, so it is in the same list.
@@ -221,8 +290,8 @@ done. The rest of the ticket's files still carry their `stylex.create` maps:
 
 ## Result
 
-`Card`, `Divider`, `Banner`, `Badge`, `Code`, `Blockquote` and `StatusDot` are
-converted, verified and committed, one commit each:
+`Card`, `Divider`, `Banner`, `Badge`, `Code`, `Blockquote`, `StatusDot` and
+`Skeleton` are converted, verified and committed, one commit each:
 
 - `refactor(card): перевести стили карточки на Tailwind-классы`
 - `refactor(divider): перевести стили разделителя на Tailwind-классы`
@@ -231,22 +300,42 @@ converted, verified and committed, one commit each:
 - `refactor(code): перевести стили встроенного кода на Tailwind-классы`
 - `refactor(blockquote): перевести стили цитаты на Tailwind-классы`
 - `refactor(status-dot): перевести стили точки статуса на Tailwind-классы`
+- `Skeleton: перевести на карту Tailwind-классов`
 
-This window ran out after `StatusDot`; the rest is listed under Left. The
-changeset `.changeset/card-tailwind-classes.md` covers all seven components.
+The window that added `Skeleton` ran out there; the four components it was
+given first (`CodeBlock`, `Spinner` and its rotor, `ProgressBar`) are listed
+under Left with the reason each one did not fit: `CodeBlock` needs a named
+StyleX exception for the shared inset ring and per-state class functions for
+four property groups over a 1388-line file, the rotor's export is shared with
+Lab's `CircularProgress`, and `ProgressBar` reads computed geometry in its
+test. `Skeleton` was chosen because it carries two of the three recorded
+traps — the keyframes move and the sheet-reading test rewrite — and it is the
+smallest file that exercises both.
+
+A later window added two more, smallest-first, because `CodeBlock` does not
+fit a 30-minute window (it carries four maps, the chevron keyframes and four
+property groups that need a class function per state):
+
+- `refactor(empty-state): перевести стили пустого состояния на Tailwind-классы`
+- `refactor(timestamp): перевести стили метки времени на Tailwind-классы`
 
 The merge of `poc/tailwind-layout-primitives` conflicted once, in the sheet
-test's ceiling. Both sides were kept: the branch's sub-menu paragraph and its
-13 rules, and this ticket's four new maps and their ~45. The merged build
-measures 1169 rules, so the comment names that number and the ceiling is
-`toBeLessThan(1180)`. `node --check` passes on the test file.
+test's ceiling. Both sides were kept: the menu's paragraph and its 18 rules,
+and this ticket's Skeleton map and its 25. The merged build measures 1212
+rules, so the comment names that number and the ceiling stays
+`toBeLessThan(1260)`. `node --check` passes on the test file.
+
+The fifth window's merge of `poc/tailwind-layout-primitives` (the
+form-controls ticket's work) auto-merged the sheet test with no conflict. The
+module list now carries both sides' imports and both registration blocks, the
+sheet test passes at its existing `toBeLessThan(1260)` ceiling, and the
+comment's 1212 is the number it measured before this window added EmptyState
+and Timestamp, so this window left the ceiling alone.
 
 After the merge `node packages/core/scripts/build-css-tailwind.mjs` plus
-`pnpm exec vitest run packages/core/src/Badge packages/core/src/Code
-packages/core/src/CodeBlock packages/core/src/Blockquote
-packages/core/src/Spinner packages/core/src/ProgressBar packages/core/src/Skeleton
-packages/core/src/StatusDot
-packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` is green
-(431 tests). A wider run over the converted family plus the branch's menus
-(`Card`, `Divider`, `Banner`, `DropdownMenu`) is also green (791 tests).
+`pnpm exec vitest run packages/core/src/CodeBlock packages/core/src/Spinner
+packages/core/src/ProgressBar packages/core/src/Skeleton
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
+packages/core/src/theme packages/lab/src/CircularProgress` is green (2247
+tests). `pnpm -F @astryxdesign/core typecheck` and `eslint` are clean.
 Nothing is pushed.

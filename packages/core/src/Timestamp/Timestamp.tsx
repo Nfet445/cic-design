@@ -26,7 +26,6 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Text} from '../Text';
 import type {TextType, TextSize, TextColor, TextWeight} from '../theme/types';
 import {mergeProps} from '../utils';
@@ -34,6 +33,7 @@ import {useDevWarning} from '../hooks/useDevWarning';
 import {useLocale} from '../i18n/useLocale';
 import {useCalendarSystem} from '../i18n/useCalendarSystem';
 import type {BaseProps} from '../BaseProps';
+import {timestampClassName} from './timestampClasses';
 import {themeProps} from '../utils/themeProps';
 import {
   ROLELESS_TRIGGER,
@@ -200,19 +200,6 @@ export interface TimestampProps extends BaseProps<HTMLTimeElement> {
 // =============================================================================
 // Styles
 // =============================================================================
-
-const styles = stylex.create({
-  time: {
-    display: 'inline',
-    fontFamily: 'inherit',
-    fontStyle: 'normal',
-    // Reset <time> element defaults
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-    color: 'inherit',
-    fontWeight: 'inherit',
-  },
-});
 
 // =============================================================================
 // Formatting utilities
@@ -481,7 +468,7 @@ export function Timestamp({
       ref={mergedTimeRef}
       dateTime={isoString}
       data-testid={testId}
-      {...stylex.props(styles.time)}
+      className={timestampClassName}
       {...rest}
       // `ariaLabelText` is '' only for an invalid date, which bails out
       // before rendering — but keep the guard local: an empty aria-label

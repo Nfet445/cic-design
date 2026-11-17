@@ -84,3 +84,64 @@ survivor unless the reason is now gone.
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`.
 - Manual Windows High Contrast check applies to Switch, Checkbox, Radio,
   Stepper and Collapsible.
+
+## Window log
+
+### 2026-11-17, window 1
+
+Group A only; Group B not started. The plan's file order (Switch first) did
+not survive contact with the files: Switch alone is a window, so the supervisor
+approved smallest-first inside Group A.
+
+Done and committed, one file per commit:
+
+- `CheckboxListItem` — `checkboxListItemClasses.ts`; the checked row's fill is
+  Item's own `itemSelectedClassName`, reused instead of duplicated, so a theme
+  restyles both from one record. No new `--astryx-*` variable.
+- `RadioList` — `radioListClasses.ts`; one class per orientation, each owning
+  its axis and its gap.
+
+Both are covered in the sheet test's `familyClassNames()`, and neither had a
+test that read a computed style or a StyleX debug name, so no assertion moved
+for them.
+
+Changeset: `.changeset/ticket-47-form-controls-tailwind.md`.
+
+Left to measure, so the next window sizes itself instead of re-reading:
+
+- `Switch/Switch.tsx` 1004 lines, 8 `stylex.create` calls, ~40 style keys;
+  `Switch.test.tsx` 1820 lines full of `getComputedStyle`,
+  `document.styleSheets` and injected-CSS assertions; plus
+  `Switch.focusRing.source-build.test.mjs` (88 lines), which compiles the source
+  through the StyleX babel plugin — it must be converted, not deleted.
+  Supervisor's decision for that window: the three marker-scoped paints (hover
+  tint, press layers, focus ring) stay in one
+  `Switch/switchHoverPress.stylex.ts` following
+  `Indicator/indicatorHover.stylex.ts`, because a marker's generated class name
+  genuinely cannot be restated as a utility; everything else becomes classes.
+  A test that reads a computed style for a value only that survivor owns keeps
+  its read, pointed at the survivor.
+- `Slider/Slider.tsx` 1927 lines, but its one `stylex.create` holds about 50
+  keys (travel box in `cqi`/`cqb`, fill movers, thumb geometry), so the ticket's
+  "1" counts calls, not work.
+- `Stepper/Step.tsx` 1910 lines and `Stepper/Stepper.tsx` 582.
+- `CheckboxInput/CheckboxInput.tsx` 665 lines, 3 calls; its press overlays read
+  the `indicatorPressScope` marker, so they are survivor-shaped like Switch's.
+- `RadioList/RadioListItem.tsx` 437 lines, 3 calls; its `root` zeroes Item's
+  padding, radius and background. Item now sets those as classes in the same
+  layer, so this one needs a variant that beats a sibling declaration, not a
+  later class.
+- Still untouched in Group A: `Collapsible`, `SelectableCard`, `Kbd`,
+  `InfoTip`, `FormLayout`, `InputGroup` (3 files), `FieldStatus`, `Field`
+  (3 files).
+
+Known failure carried into this window and unchanged by it:
+`RadioList.test.tsx` "does not call onChange when group is disabled" and "…
+when individual item is disabled" fail on the branch tip too (jsdom does not
+honour the StyleX `pointer-events` these two read), verified by stashing this
+window's work.
+
+Merge of `poc/tailwind-layout-primitives` into this branch was clean: no
+conflict in `tailwindStylesheet.source-build.test.mjs`, so the conflict-keeper
+rule did not have to be applied. Sheet after the merge: 168.7 kB raw; the size
+gate stayed green.

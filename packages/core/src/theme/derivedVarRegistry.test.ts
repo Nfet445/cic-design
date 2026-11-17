@@ -294,6 +294,7 @@ const DIR_TO_REGISTRY_KEY: Record<string, string> = {
   ProgressBar: 'progress-bar-mark',
   Section: 'section',
   SegmentedControl: 'segmented-control',
+  Skeleton: 'skeleton',
   TextArea: 'text-area',
 };
 
@@ -369,6 +370,14 @@ const CROSS_COMPONENT_VARS: Record<string, string[]> = {
  */
 const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // No standard CSS property maps onto these — they are component behaviors.
+  // A per-instance minimum width: the `menuWidth` prop writes the variable and
+  // the width class reads it. No standard property maps the prop onto a theme.
+  '--astryx-context-menu-min-inline-size',
+  // The menu surface's per-instance size: `menuWidth` and `menuMaxHeight` write
+  // the variables and the size classes read them, so no standard property is
+  // the theme's lever.
+  '--astryx-dropdown-menu-inline-size',
+  '--astryx-dropdown-menu-max-block-size',
   '--button-focus-offset',
   '--button-icon-only-aspect',
   '--_avatar-group-overlap',
