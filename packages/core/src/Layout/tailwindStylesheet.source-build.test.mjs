@@ -225,6 +225,7 @@ import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {sideNavClassName} from '../SideNav/sideNavClasses';
+import {sideNavItemClassName} from '../SideNav/sideNavItemClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {stackClassName} from '../Stack/stackClasses';
@@ -1648,6 +1649,9 @@ function familyClassNames() {
   add(sideNavClassName.resizableContainer);
   add(sideNavClassName.topbar);
   add(sideNavClassName.topbarIcons);
+  for (const value of Object.values(sideNavItemClassName)) {
+    add(value);
+  }
 
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
@@ -1702,8 +1706,9 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // about 45, the item row machine about 45, and the tab family — TabList's
     // strip, masks and arrows, TabMenu, SegmentedControl — about 120. A scan
     // that reaches component bodies or prose would add hundreds more. The
-    // top-nav menus and the row machine brought the sheet to about 975.
-    expect(stylesheet.rules.size).toBeLessThan(1020);
+    // top-nav menus and the row machine brought the sheet to about 975; the
+    // side-nav row's class map added its own transition and popover utilities.
+    expect(stylesheet.rules.size).toBeLessThan(1040);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

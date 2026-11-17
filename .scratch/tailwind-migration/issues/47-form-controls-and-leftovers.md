@@ -29,7 +29,7 @@ tickets left behind.
 - `packages/core/src/FormLayout/FormLayout.tsx` — 1
 - `packages/core/src/InputGroup/InputGroup.tsx` — 2, `InputGroupText.tsx` — 1,
   `groupStyles.ts` — 1 (the shared segment join)
-- `packages/core/src/FieldLabel.tsx`, `FieldStatus/FieldStatus.tsx` — 2,
+- `packages/core/src/FieldStatus/FieldStatus.tsx` — 2,
   `Field/FieldLabel.tsx` — 1, `Field/inputDisabledFocus.ts` — 1,
   `Field/PanelSearchInput.tsx` — 1
 
