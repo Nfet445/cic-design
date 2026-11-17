@@ -37,6 +37,33 @@ import {
   commandPaletteGroupClassName,
   commandPaletteGroupHeadingClassName,
 } from '../CommandPalette/commandPaletteGroupClasses';
+import {
+  calendarClassName,
+  calendarHeaderClassName,
+  calendarMonthYearLabelClassName,
+  calendarMonthsPendingClassName,
+  calendarMonthsContainerClassName,
+  calendarNavIconClassName,
+  dayButtonClassName,
+  dayCellClassName,
+  dayCellPreviewBgClassName,
+  dayCellPreviewBgRoundEndClassName,
+  dayCellPreviewBgRoundStartClassName,
+  dayCellPreviewEndClassName,
+  dayCellPreviewStartClassName,
+  dayCellRangeBgClassName,
+  dayCellRangeBgRoundEndClassName,
+  dayCellRangeBgRoundStartClassName,
+  dayCellRangeInsetEndClassName,
+  dayCellRangeInsetStartClassName,
+  monthGridClassName,
+  monthGridDayNameClassName,
+  monthGridDaysGridClassName,
+  monthGridDaysGridWithNumbersClassName,
+  monthGridWeekNumberClassName,
+  monthGridWeekNumberHeaderClassName,
+  monthGridWeekRowClassName,
+} from '../Calendar/calendarClasses';
 import {commandPaletteListClassName} from '../CommandPalette/commandPaletteListClasses';
 import {
   commandPaletteItemClassName,
@@ -2896,6 +2923,54 @@ function familyClassNames() {
   add(commandPaletteInputEndClassName);
   add(commandPaletteInputSpinnerClassName);
   add(commandPaletteInputFieldClassName);
+
+  // The calendar: the frame, the header with its pending-month spacer, both
+  // month grids, and the day cell with its range and preview bands. The day
+  // button resolves one colour, one fill and one opacity per state, so every
+  // state combination runs through the map.
+  add(calendarClassName);
+  add(calendarHeaderClassName);
+  add(calendarMonthYearLabelClassName);
+  add(calendarMonthsPendingClassName);
+  add(calendarMonthsContainerClassName);
+  add(calendarNavIconClassName);
+  add(monthGridClassName);
+  add(monthGridDayNameClassName);
+  add(monthGridWeekNumberHeaderClassName);
+  add(monthGridDaysGridClassName);
+  add(monthGridDaysGridWithNumbersClassName);
+  add(monthGridWeekNumberClassName);
+  add(monthGridWeekRowClassName);
+  add(dayCellClassName);
+  add(dayCellRangeBgClassName);
+  add(dayCellRangeBgRoundStartClassName);
+  add(dayCellRangeBgRoundEndClassName);
+  add(dayCellRangeInsetStartClassName);
+  add(dayCellRangeInsetEndClassName);
+  add(dayCellPreviewBgClassName);
+  add(dayCellPreviewBgRoundStartClassName);
+  add(dayCellPreviewBgRoundEndClassName);
+  add(dayCellPreviewStartClassName);
+  add(dayCellPreviewEndClassName);
+  for (const isOutside of [false, true]) {
+    for (const isTodayRing of [false, true]) {
+      for (const isTodayInRangeRing of [false, true]) {
+        for (const isSelected of [false, true]) {
+          for (const isDisabled of [false, true]) {
+            add(
+              dayButtonClassName({
+                isOutside,
+                isTodayRing,
+                isTodayInRangeRing,
+                isSelected,
+                isDisabled,
+              }),
+            );
+          }
+        }
+      }
+    }
+  }
 
   return [...names].sort();
 }

@@ -13,15 +13,11 @@ import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {act, render, screen, within, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {getButton} from '../__tests__/fastRoleQueries';
-import {
-  getForcedColorsRules,
-  getAllInjectedCss,
-} from '../__tests__/forcedColors';
-import * as stylex from '@stylexjs/stylex';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {useState} from 'react';
 import {Calendar} from './Calendar';
 import type {CalendarHandle, ISODateString, DateRange} from './Calendar';
-import {calendarStyles} from './styles';
+import {calendarNavIconClassName} from './calendarClasses';
 import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
@@ -1126,12 +1122,13 @@ describe('Calendar', () => {
     const day12Bg = rangeBgFor(12);
     const day14Bg = rangeBgFor(14);
 
-    // Capped edges have a border radius; the un-capped edge stays square.
-    // Radii are logical (inline start/end), so they follow reading direction.
-    expect(getComputedStyle(day12Bg).borderStartEndRadius).not.toBe('');
-    expect(getComputedStyle(day12Bg).borderStartEndRadius).not.toBe('0px');
-    expect(getComputedStyle(day14Bg).borderStartStartRadius).not.toBe('');
-    expect(getComputedStyle(day14Bg).borderStartStartRadius).not.toBe('0px');
+    // Capped edges round with the full radius; an un-capped edge carries no
+    // rounding class at all. The radii are logical (inline start/end), so they
+    // follow reading direction.
+    expect(classesOf(day12Bg)).toContain('rounded-se-[var(--radius-full)]');
+    expect(classesOf(day12Bg)).not.toContain('rounded-ss-[var(--radius-full)]');
+    expect(classesOf(day14Bg)).toContain('rounded-ss-[var(--radius-full)]');
+    expect(classesOf(day14Bg)).not.toContain('rounded-se-[var(--radius-full)]');
   });
 
   it('does not range-highlight adjacent-month spillover days in two-month view', () => {
@@ -2290,22 +2287,22 @@ describe('Calendar', () => {
   // ─── RTL (#3388) ─────────────────────────────────────────────
 
   describe('RTL month navigation', () => {
-    // jsdom does not apply compiled StyleX CSS, so the RTL scaleX mirror is
+    // jsdom does not apply the compiled sheet, so the RTL scaleX mirror is
     // only observable in a browser (see the dir="rtl" Storybook story). These
     // tests pin the structure the mirror relies on: both nav chevrons render
-    // inside the navIcon wrapper (which composes the shared rtlStyles.mirror
-    // transform), and navigation semantics stay identical under dir="rtl".
+    // inside the navIcon wrapper (which carries the shared RTL mirror class),
+    // and navigation semantics stay identical under dir="rtl".
     it('wraps both nav chevrons in the navIcon wrapper', () => {
       render(<Calendar focusDate="2026-01-01" />);
 
-      const {className: navIconClass} = stylex.props(calendarStyles.navIcon);
-      expect(navIconClass).toBeTruthy();
-      const navIconAtoms = navIconClass!.split(' ');
+      const navIconAtoms = calendarNavIconClassName.split(' ');
 
       for (const name of ['Previous month', 'Next month']) {
         const button = getButton(name);
         const wrappers = Array.from(button.querySelectorAll('span')).filter(
-          span => navIconAtoms.every(atom => span.classList.contains(atom)),
+          span =>
+            navIconAtoms.every(atom => span.classList.contains(atom)) &&
+            span.classList.contains('rtl:[transform:scaleX(-1)]'),
         );
         expect(wrappers.length).toBe(1);
       }
@@ -2550,13 +2547,15 @@ describe('forced colors (WCAG 1.4.11)', () => {
       <Calendar mode="single" value="2026-01-15" focusDate="2026-01-01" />,
     );
 
-    const css = getForcedColorsRules();
     // Without these the accent fill is stripped and the selected date renders
-    // identically to every other day in the month.
-    expect(css).toContain('background-color: highlight;');
-    expect(css).toContain('color: highlighttext;');
+    // identically to every other day in the month. The sheet test proves the
+    // classes compile; here the day that holds them is the one that matters.
+    const selected = screen.getByRole('button', {name: /15/});
+    const atoms = classesOf(selected);
+    expect(atoms).toContain('forced-colors:bg-[color:Highlight]');
+    expect(atoms).toContain('forced-colors:text-[color:HighlightText]');
     // A <button> keeps the native ButtonFace surface and ignores the authored
     // Highlight fill unless it opts out of UA remapping.
-    expect(getAllInjectedCss()).toContain('forced-color-adjust: none;');
+    expect(atoms).toContain('[forced-color-adjust:none]');
   });
 });
