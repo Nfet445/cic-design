@@ -370,6 +370,23 @@
   }
 }
 
+/* CodeBlock: the collapsible title's leading chevron grows its own footprint
+   (width plus inline margin) from zero so the title slides into place instead
+   of snapping over. The frames live here because the build scans class maps
+   only. */
+@keyframes astryxChevronReveal {
+  from {
+    width: 0;
+    margin-inline-end: 0;
+    opacity: 0;
+  }
+  to {
+    width: 14px;
+    margin-inline-end: var(--spacing-1);
+    opacity: 1;
+  }
+}
+
 /* ProgressBar: the indeterminate segment travels the track, physically left to
    right; the RTL frames mirror it so the bar moves along the reading flow. */
 @keyframes astryxProgressBarSlide {

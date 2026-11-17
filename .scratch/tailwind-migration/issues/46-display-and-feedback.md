@@ -254,9 +254,11 @@ astryxStatusDotPulse` sits in `packages/core/tailwind/astryx.input.css` and
 `MetadataList`/`MetadataListItem` are done. The rest of the ticket's files
 still carry their `stylex.create` maps:
 
-- `CodeBlock` (3 maps), `ProgressBar` (4), `Outline` (3), `Thumbnail` (1),
-  `Toast`/`ToastViewport` (2), `Carousel` (3), `Markdown` (5) plus
-  `Markdown/plugins/HeadingLinksRenderer.tsx` (2).
+- `ProgressBar` (4), `Outline` (3), `Thumbnail` (1), `Toast`/`ToastViewport`
+  (2), `Carousel` (3), `Markdown` (5) plus
+  `Markdown/plugins/HeadingLinksRenderer.tsx` (2). `CodeBlock` is done in
+  window 8; its exception and the shape of its per-state functions are in
+  `## Comments`.
 - One keyframe is still inside a `.ts` file:
   `Spinner/spinnerRotor.ts` (`rotation`, 100 turns per iteration, so
   `@keyframes astryxSpinnerRotor`). Skeleton is the worked example of the
@@ -430,3 +432,61 @@ resolution this time. Nothing is pushed.
   declarations through `getComputedStyle`. A window that takes it must rewrite those reads
   in the same commit, so the map's class vocabulary should be written alongside the
   component rather than before it.
+
+- Window 8: `CodeBlock` paints with Tailwind classes
+  (`CodeBlock/codeBlockClasses.ts`). The container's card and section frames,
+  the header row in both divider states, the header button and its
+  collapsible arm, the title, the controls column, the corner cluster in both
+  heights, the collapse grid and its zero-row arm, the chevron and its
+  rotation, the code element in both wrap states and its number gutter, the
+  line chunk with its `content-visibility` floor, the line in every number and
+  diff combination, every tint, the diff marker, the two size classes and the
+  copy button are literals over the same tokens.
+- Four property groups decided the shape of the module: the code element's
+  `min-width`/`white-space` pair, the row's grid template, the row's tint and
+  the marker's colour paint one declaration per state, so each is a function
+  returning the whole class string — `codeBlockCodeClassName`,
+  `codeBlockLineClassName`, `codeBlockLineTintClassName`,
+  `codeBlockDiffMarkerClassName`. The tint function takes the highlight arm
+  first because a caller's highlight replaces a diff tint rather than stacking
+  on it.
+- One named `stylex.create` exception, as the Left note asked:
+  `CodeBlock/codeBlockViewportFocusRing.stylex.ts` keeps only the viewport's
+  inset `outline-offset`. The viewport still calls
+  `focusOutlineProps.focusVisible(codeBlockViewportFocusRingStyles.viewportFocusRingInset)`
+  and joins its `.className` into the class string, so
+  `CodeBlock.focusRing.test.tsx` and `__tests__/insetFocusRing.ts` read the same
+  atoms as before. The header says why: the root clips its corners, and an
+  unlayered StyleX rule outranks the `astryx-base` utility, which would lose to
+  the ring's own `outline-offset: 0`.
+- The chevron's frames are `@keyframes astryxChevronReveal` in
+  `packages/core/tailwind/astryx.input.css`, and
+  `codeBlockChevronClassName` names them with the medium duration and the
+  standard curve plus `motion-reduce:animate-none`.
+- The width prop is a class plus an inline `--_codeblock-width`, the digit
+  count is `--_codeblock-gutter-width` (already documented), and the
+  `content-visibility` floor is `--_codeblock-chunk-height`. All three are
+  private and computed from props, so they are set as computed keys and the
+  derived-var source scan does not see them — the same plumbing as
+  `--_codeblock-gutter-width`, which `VARS_WITHOUT_DERIVED_MAPPING` exempts.
+- No assertion moved: no suite in `CodeBlock/` reads a computed style or a
+  StyleX debug name for these nodes. `CodeBlock.test.tsx`'s root-props test
+  still reads the consumer `xstyle` class, which stays StyleX, and the RTL
+  mirror test still reads `rtlStyles.mirror`, kept on the chevron wrapper.
+- `mergeProps` takes four arguments; the root needs five values (theme props,
+  the class string, `stylex.props(xstyle)`, the consumer class and the
+  consumer style), so the root nests two calls. Passing five silently dropped
+  the consumer class and the `xstyle` class, which the root-props test caught.
+- The 30 class names are registered in `familyClassNames()` of
+  `Layout/tailwindStylesheet.source-build.test.mjs`, walking the line, tint
+  and marker combinations. The sheet measures 1609 rules with every family
+  registered, so the ceiling stays `toBeLessThan(1620)` and the comment names
+  the number and says CodeBlock reuses almost every code font, spacing and
+  border utility its siblings spell.
+- `.changeset/card-tailwind-classes.md` gained a `CodeBlock` paragraph and a
+  `ProgressBar` one, which window 7's commits had left out.
+- Two failures are outside this window and were not touched:
+  `theme/derivedVarRegistry.test.ts` reports
+  `--astryx-bottom-sheet-keyboard-inset` (`BottomSheet/BottomSheetPanel.tsx:1098`,
+  another family) and `Markdown/Markdown.test.tsx` expects a `withCounter`
+  class that the List conversion replaced with `[counter-increment:astryx-list]`.

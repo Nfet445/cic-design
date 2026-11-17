@@ -884,6 +884,38 @@ import {
   bannerStatusForegroundClassName,
   bannerTitleClassName,
 } from '../Banner/bannerClasses';
+import {
+  codeBlockChevronClassName,
+  codeBlockChevronExpandedClassName,
+  codeBlockChevronIconClassName,
+  codeBlockCodeClassName,
+  codeBlockCodeNumberedClassName,
+  codeBlockCodeWrapperClassName,
+  codeBlockCodeWrapperCompactClassName,
+  codeBlockCollapseGridClassName,
+  codeBlockCollapseGridCollapsedClassName,
+  codeBlockCollapseInnerClassName,
+  codeBlockContainerClassName,
+  codeBlockCopyButtonClassName,
+  codeBlockCornerClusterClassName,
+  codeBlockCornerClusterHeightClassName,
+  codeBlockDiffMarkerClassName,
+  codeBlockHeaderClassName,
+  codeBlockHeaderCollapsibleClassName,
+  codeBlockHeaderControlsClassName,
+  codeBlockHeaderRowClassName,
+  codeBlockHeaderTitleClassName,
+  codeBlockLineChunkClassName,
+  codeBlockLineClassName,
+  codeBlockLineContentClassName,
+  codeBlockLineTintClassName,
+  codeBlockRootClassName,
+  codeBlockRootCornerClassName,
+  codeBlockRootFitWidthClassName,
+  codeBlockRootWidthClassName,
+  codeBlockSizeClassName,
+  codeBlockViewportClassName,
+} from '../CodeBlock/codeBlockClasses';
 
 const sheet = await buildAstryxTailwindCss();
 const stylesheet = stylesheetOf(sheet);
@@ -2461,6 +2493,56 @@ function familyClassNames() {
   for (const value of Object.values(skeletonRadiusClassName)) {
     add(value);
   }
+  // CodeBlock: the frame, the header row in both divider states, the chevron
+  // and its rotation, the collapse grid in both rows, the code element in both
+  // wrap states, its numbered divider, the row in every number and diff
+  // combination, every tint, the marker in every colour, both sizes and the
+  // corner cluster.
+  for (const value of Object.values(codeBlockContainerClassName)) {
+    add(value);
+  }
+  add(codeBlockRootClassName);
+  add(codeBlockRootCornerClassName);
+  add(codeBlockRootWidthClassName);
+  add(codeBlockRootFitWidthClassName);
+  add(codeBlockViewportClassName);
+  add(codeBlockHeaderRowClassName(true));
+  add(codeBlockHeaderRowClassName(false));
+  add(codeBlockHeaderClassName);
+  add(codeBlockHeaderCollapsibleClassName);
+  add(codeBlockHeaderTitleClassName);
+  add(codeBlockHeaderControlsClassName);
+  add(codeBlockCornerClusterClassName);
+  add(codeBlockCornerClusterHeightClassName('sm'));
+  add(codeBlockCornerClusterHeightClassName('md'));
+  add(codeBlockCollapseGridClassName);
+  add(codeBlockCollapseGridCollapsedClassName);
+  add(codeBlockCollapseInnerClassName);
+  add(codeBlockChevronClassName);
+  add(codeBlockChevronIconClassName);
+  add(codeBlockChevronExpandedClassName);
+  add(codeBlockCodeWrapperClassName);
+  add(codeBlockCodeWrapperCompactClassName);
+  add(codeBlockCodeClassName(true));
+  add(codeBlockCodeClassName(false));
+  add(codeBlockCodeNumberedClassName);
+  add(codeBlockLineChunkClassName);
+  add(codeBlockLineContentClassName);
+  for (const hasLineNumbers of [true, false]) {
+    for (const hasDiff of [true, false]) {
+      add(codeBlockLineClassName({hasLineNumbers, hasDiff}));
+    }
+  }
+  for (const diffKind of ['added', 'removed', 'header', 'context', undefined]) {
+    add(codeBlockLineTintClassName({diffKind, isHighlighted: false}));
+    add(codeBlockLineTintClassName({diffKind, isHighlighted: true}));
+    for (const hasLineNumbers of [true, false]) {
+      add(codeBlockDiffMarkerClassName({hasLineNumbers, diffKind}));
+    }
+  }
+  add(codeBlockSizeClassName('sm'));
+  add(codeBlockSizeClassName('md'));
+  add(codeBlockCopyButtonClassName);
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);
@@ -2777,7 +2859,13 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // mover, filled bar, marks, thumbs and text value added fifty-eight — the
     // travel classes are arbitrary properties with a container-unit calc each —
     // and Stepper's root, its track and the three step states added thirty-three
-    // more.
+    // more. CodeBlock's frame, its header row in both divider states, the
+    // chevron and its rotation, the collapse grid, the code element in both
+    // wrap states, its numbered divider, the row in every number and diff
+    // combination, every tint, the marker and the two size and cluster classes
+    // reuse almost every code font, spacing and border utility the siblings
+    // already spell. The sheet measures 1609 with every family above
+    // registered, and the ceiling keeps headroom above that number.
     expect(stylesheet.rules.size).toBeLessThan(1620);
   });
 
