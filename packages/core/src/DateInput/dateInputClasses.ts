@@ -707,3 +707,320 @@ export function dateInputControlClassName({
     isDisabled && '[&[aria-disabled=true]]:cursor-default',
   );
 }
+
+// ---------------------------------------------------------------------------
+// The touch field's sheet
+// ---------------------------------------------------------------------------
+
+/**
+ * Every transition in the surface swap reads one duration, `--duration-fast`,
+ * so the header, both panels and the chevron land together. The reduced-motion
+ * arm keeps the transition's shape and drops its travel to a frame.
+ */
+const SWAP_TRANSITION =
+  'motion-reduce:[transition-duration:0.01s] [transition-duration:var(--duration-fast)]';
+
+/** Gone, but still laid out: the corner keeps its size while it fades. */
+const HIDDEN_CHROME = 'invisible opacity-0 pointer-events-none';
+
+/** The closed touch field's row: the toggle, the control and the overlay. */
+export const touchDateFieldWrapperClassName = 'gap-2';
+
+/**
+ * The calendar toggle beside the read-only input. The field never renders
+ * native `disabled`, so the default cursor keys off the attribute.
+ */
+export function touchDateFieldIconButtonClassName({
+  isDisabled,
+}: {
+  isDisabled: boolean;
+}): string {
+  return tw(
+    'flex',
+    'items-center',
+    'justify-center',
+    'p-0',
+    'm-0',
+    '[border-width:0]',
+    '[border-style:none]',
+    'bg-transparent',
+    'cursor-pointer',
+    'rounded-[var(--radius-element)]',
+    isDisabled && '[&[aria-disabled=true]]:cursor-default',
+  );
+}
+
+/**
+ * The read-only input that opens the sheet. The picker is the input method
+ * here, so text entry has no place: the caret stays invisible even though the
+ * control takes focus, and the text cannot be selected.
+ */
+export function touchDateFieldInputClassName({
+  isDisabled,
+}: {
+  isDisabled: boolean;
+}): string {
+  return tw(
+    'block',
+    'flex-1',
+    '[min-inline-size:0]',
+    '[border-width:0]',
+    '[border-style:none]',
+    'p-0',
+    '[font-family:var(--font-family-body)]',
+    'text-[length:var(--text-body-size)]',
+    'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
+    '[line-height:var(--text-body-leading)]',
+    'text-[color:var(--color-text-primary)]',
+    'bg-transparent',
+    'outline-none',
+    '[caret-color:transparent]',
+    'cursor-pointer',
+    'select-none',
+    'placeholder:text-[color:var(--color-text-secondary)]',
+    isDisabled && '[&[aria-disabled=true]]:cursor-default',
+  );
+}
+
+/** The sheet's surface: a column the picker fills. */
+export const touchDateSurfaceClassName = tw(
+  'flex',
+  'flex-col',
+  '[inline-size:100%]',
+);
+
+/**
+ * The header carries no inline padding of its own: the content box owns the
+ * inset, and any extra here would push the arrows off the line the day grid
+ * sits on.
+ */
+export const touchDateHeaderClassName = tw(
+  'flex',
+  'items-center',
+  'justify-between',
+  'gap-2',
+  '[block-size:var(--size-element-lg)]',
+);
+
+/**
+ * Both arrows together at the trailing corner. The plate starts below the
+ * header, so the arrows are what the wheels' layer cannot cover: they fade on
+ * that layer's timing instead of blinking out a beat early.
+ */
+export function touchDateMonthArrowsClassName({
+  isHidden,
+}: {
+  isHidden: boolean;
+}): string {
+  return tw(
+    'flex',
+    'items-center',
+    'gap-0.5',
+    '[margin-inline-start:auto]',
+    '[transition-property:opacity,visibility]',
+    SWAP_TRANSITION,
+    '[transition-timing-function:linear]',
+    isHidden && HIDDEN_CHROME,
+  );
+}
+
+/**
+ * An arrow that steps a month, floored at the 44px touch target on a coarse
+ * pointer — `Button` tops out at 36px. An arrow with nowhere to go keeps its
+ * box, so the remaining one does not slide sideways at the edge of the range.
+ */
+export function touchDateMonthArrowClassName({
+  isUnavailable,
+}: {
+  isUnavailable: boolean;
+}): string {
+  return tw(
+    'pointer-coarse:min-h-[44px]',
+    'pointer-coarse:min-w-[44px]',
+    isUnavailable && 'invisible',
+  );
+}
+
+/**
+ * A bare inline wrapper puts the glyph on the text baseline, a few px above
+ * the button's optical centre. Core's Calendar carries the same rule.
+ */
+export const touchDateMonthArrowIconClassName = 'inline-flex';
+
+/** Reset, past the arrows, and gone with them on the wheels. */
+export function touchDateHeaderResetClassName({
+  isHidden,
+}: {
+  isHidden: boolean;
+}): string {
+  return tw(
+    'flex',
+    'items-center',
+    '[transition-property:opacity,visibility]',
+    SWAP_TRANSITION,
+    '[transition-timing-function:linear]',
+    isHidden && HIDDEN_CHROME,
+  );
+}
+
+/** The same 44px floor the arrows take; `Button`'s `sm` is 32px. */
+export const touchDateResetButtonClassName = 'pointer-coarse:min-h-[44px]';
+
+/**
+ * The month and year, and the toggle into the wheels: leading, so it reads
+ * first and sits on the day grid's line. It is the part that gives on a narrow
+ * screen, so the corner cannot be pushed off-viewport.
+ */
+export const touchDateTitleClassName = tw(
+  'flex',
+  'items-center',
+  'gap-1',
+  '[block-size:100%]',
+  'px-2',
+  // Pulls the text back onto the grid's line: the button's own padding would
+  // otherwise inset the label past it.
+  '[margin-inline-start:calc(var(--spacing-2)*-1)]',
+  '[border-width:0]',
+  '[border-style:none]',
+  'rounded-[var(--radius-element)]',
+  'bg-transparent',
+  'text-[color:var(--color-text-primary)]',
+  'text-[length:var(--text-large-size)]',
+  'font-semibold',
+  'cursor-pointer',
+  '[&[aria-disabled=true]]:cursor-default',
+  'whitespace-nowrap',
+  '[min-inline-size:0]',
+  'overflow-hidden',
+);
+
+/** The month and year, ellipsed rather than pushing the corner off-screen. */
+export const touchDateTitleTextClassName = tw(
+  '[min-inline-size:0]',
+  'overflow-hidden',
+  'text-ellipsis',
+);
+
+/**
+ * The one part of the swap that keeps `--ease-standard`, because it is the one
+ * part that travels: a rotation has a distance to cover, and fast-out-slow-in
+ * is what that curve is for.
+ */
+export function touchDateTitleChevronClassName({
+  isOpen,
+}: {
+  isOpen: boolean;
+}): string {
+  return tw(
+    'inline-flex',
+    'shrink-0',
+    '[transition-property:transform]',
+    SWAP_TRANSITION,
+    '[transition-timing-function:var(--ease-standard)]',
+    isOpen && 'rotate-180',
+  );
+}
+
+/**
+ * The weekday row sits above the plate's reach, so it fades on the layer's
+ * timing. Hidden rather than unmounted: the surface still owes it its height,
+ * or opening the wheels would make the picker shorter.
+ */
+export function touchDateWeekdaysClassName({
+  isHidden,
+}: {
+  isHidden: boolean;
+}): string {
+  return tw(
+    'grid',
+    'grid-cols-7',
+    '[block-size:var(--size-element-sm)]',
+    'items-center',
+    '[transition-property:opacity,visibility]',
+    SWAP_TRANSITION,
+    '[transition-timing-function:linear]',
+    isHidden && 'invisible opacity-0',
+  );
+}
+
+/** One weekday name: decorative, so the muted app support reads it. */
+export const touchDateWeekdayClassName = tw(
+  'text-center',
+  'text-[length:var(--text-supporting-size)]',
+  'font-normal',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/**
+ * The two panels share one grid cell, one month pane tall. The size is a
+ * geometry constant spelled out, because a class assembled by interpolation
+ * reaches the DOM with no rule behind it; it mirrors
+ * `dateInputTouchGeometry.paneBlockSize`.
+ */
+export const touchDateBodyClassName = tw(
+  'grid',
+  '[block-size:264px]',
+  'relative',
+);
+
+/** One panel in the shared cell. */
+export const touchDatePanelClassName = tw('[grid-area:1/1]', 'min-w-0');
+
+/**
+ * The layer underneath — the calendar and its footer action. It never fades:
+ * `visibility` alone moves, so the layer is covered and uncovered rather than
+ * seen changing, and it still leaves the accessibility tree at the end.
+ */
+export function touchDatePanelBeneathClassName({
+  isHidden,
+}: {
+  isHidden: boolean;
+}): string {
+  return tw(
+    '[transition-property:visibility]',
+    SWAP_TRANSITION,
+    isHidden && 'invisible pointer-events-none',
+  );
+}
+
+/**
+ * The month and year, as one opaque layer that fades in and out on top. The
+ * background is what makes the fade uniform, and `isolate` is what makes the
+ * plate actually cover: backgrounds paint before text across siblings, so
+ * without a stacking context the calendar's numbers show through an opaque
+ * plate at the two ends of the fade.
+ */
+export function touchDatePanelOverlayClassName({
+  isHidden,
+}: {
+  isHidden: boolean;
+}): string {
+  return tw(
+    'bg-[color:var(--color-background-surface)]',
+    'isolate',
+    '[transition-property:opacity,visibility]',
+    SWAP_TRANSITION,
+    '[transition-timing-function:linear]',
+    isHidden && HIDDEN_CHROME,
+  );
+}
+
+/** The footer takes the content box's inline inset, like the header. */
+export const touchDateFooterClassName = tw(
+  '[padding-block-start:var(--spacing-2)]',
+  'grid',
+  'grid-cols-1',
+);
+
+/** One footer action per surface, both in the same cell. */
+export const touchDateFooterActionClassName = tw('[grid-area:1/1]', 'flex');
+
+/**
+ * One inset on every edge but the top: BottomSheet keeps the band under its
+ * grab bar, which reads as the same inset because the bar sits in it.
+ */
+export const touchDateSheetBodyClassName = tw(
+  'px-4',
+  '[padding-block-start:0]',
+  '[padding-block-end:var(--spacing-4)]',
+);
