@@ -600,13 +600,15 @@ describe('Avatar', () => {
     }
   });
 
-  it('applies shapeStyles to wrapper when rendered inside AvatarGroup', () => {
+  it('publishes the shape radius on the wrapper inside an AvatarGroup', () => {
     render(
-      <AvatarGroup>
-        <Avatar name="Alice" shape="rounded" data-testid="group-avatar" />
+      <AvatarGroup shape="rounded">
+        <Avatar name="Alice" data-testid="group-avatar" />
       </AvatarGroup>,
     );
-    expect(screen.getByTestId('group-avatar')).toBeInTheDocument();
+    expectClassSet(screen.getByTestId('group-avatar'), {
+      includes: ['[--_avatar-radius:var(--radius-element)]'],
+    });
   });
 
   it("an AvatarGroup's shape overrides an individual Avatar's own shape prop, matching how size already works", () => {

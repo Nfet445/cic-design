@@ -27,6 +27,7 @@ import {
   avatarStatusDotIconClassName,
   avatarStatusDotVariantClassName,
 } from '../Avatar/avatarStatusDotClasses';
+import {avatarShapeClassName} from '../Avatar/avatarClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import * as lightboxClasses from '../Lightbox/lightboxClasses';
 import {
@@ -2370,6 +2371,10 @@ function familyClassNames() {
     add(className);
   }
 
+  for (const shape of ['circle', 'rounded', 'square']) {
+    add(avatarShapeClassName[shape]);
+  }
+
   add(avatarStatusDotClassName);
   add(avatarStatusDotIconClassName);
   for (const variant of ['success', 'neutral', 'error']) {
@@ -3748,7 +3753,8 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // their four shapes, added the next batch. The clickable card's surface,
     // its overlay and both border states mostly reuse the selectable card's
     // utilities; with the disabled dimming and the hidden control they took
-    // the sheet to 1974, and the ceiling keeps its headroom above that.
+    // the sheet to 1974. The avatar's three shape radii added 1977, and the
+    // ceiling keeps its headroom above that.
     expect(stylesheet.rules.size).toBeLessThan(1980);
   });
 

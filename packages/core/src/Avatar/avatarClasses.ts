@@ -8,11 +8,11 @@
  *   its image and fallback, its interactive reset and its status slot
  * @position Style primitives; scanned by the Tailwind build
  *
- * The shape's radius and the group's ring and overlap stay StyleX
- * (`shapeStyles`, `avatarGroupRing.stylex.ts`): a theme reads the radius
- * variable there, and a group's step is a declaration AvatarGroup reads back.
- * The size, the initials and the status offset are per-instance numbers, so
- * they ride four inline custom properties that these classes read.
+ * The group's ring and overlap stay StyleX (`avatarGroupRing.stylex.ts`): a
+ * group's step is a declaration AvatarGroup reads back, and the ring has to
+ * outrank the avatar's own border. The size, the initials and the status
+ * offset are per-instance numbers, so they ride four inline custom properties
+ * that these classes read.
  */
 
 import {tw} from '../utils/tw';
@@ -26,9 +26,21 @@ export const avatarVars = {
 } as const;
 
 /**
- * The avatar box. Its radius reads `--_avatar-radius`, which the shape variant
- * publishes, so the wrapper, the content cell and a grouped ring all take the
- * same corner from one property.
+ * The shape's corner, published once as `--_avatar-radius`: the wrapper, the
+ * interactive reset, the content cell and AvatarGroupOverflow's "+N" chip all
+ * read the same property, so a theme's `borderRadius` reaches every surface
+ * through the one derived variable.
+ */
+export const avatarShapeClassName: Record<string, string> = {
+  circle: '[--_avatar-radius:var(--radius-full)]',
+  rounded: '[--_avatar-radius:var(--radius-element)]',
+  square: '[--_avatar-radius:var(--radius-none)]',
+};
+
+/**
+ * The avatar box. Its radius reads `--_avatar-radius`, which the shape class
+ * beside it publishes, so the wrapper, the content cell and a grouped ring all
+ * take the same corner from one property.
  */
 export const avatarRootClassName = tw(
   'relative inline-flex shrink-0',
