@@ -469,6 +469,89 @@ export const chatMessageListEmptyStateClassName =
   'flex items-center justify-center flex-1 min-h-0';
 
 // ---------------------------------------------------------------------------
+// ChatComposerDrawer
+// ---------------------------------------------------------------------------
+
+/**
+ * The drawer panel: it tucks behind the composer, so it ends with a negative
+ * margin one composer radius deep, and its own bottom inset clears that
+ * overlap. The muted tint is a background image over the surface colour, both
+ * in the element's own paint layer, so nothing needs a position or a z-index.
+ */
+export const chatComposerDrawerClassName = tw(
+  'relative z-[1] flex flex-col overflow-hidden px-4 pt-3',
+  'pb-[calc(var(--spacing-3)+var(--radius-chat))] -mb-[var(--radius-chat)]',
+  'bg-[var(--color-background-surface)]',
+  'bg-[linear-gradient(var(--color-background-muted),var(--color-background-muted))]',
+  'rounded-ss-[var(--radius-chat)] rounded-se-[var(--radius-chat)]',
+);
+
+/**
+ * The collapse toggle: one grid cell that stacks the summary and the handle,
+ * so they crossfade without moving the drawer.
+ */
+export const chatComposerDrawerToggleRowClassName = tw(
+  'grid grid-cols-[1fr] items-center h-5 px-4 -mx-4 cursor-pointer select-none',
+  'aria-disabled:cursor-default',
+);
+
+/** The collapsed summary, centered on the toggle row and hidden while open. */
+export function chatComposerDrawerToggleContentClassName(
+  isHidden: boolean,
+): string {
+  return tw(
+    'col-start-1 row-start-1 justify-self-start',
+    'inline-flex items-center pointer-events-none h-5 gap-2',
+    'rounded-[var(--radius-full)]',
+    'transition-opacity duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
+    isHidden ? 'opacity-0' : 'opacity-100',
+  );
+}
+
+/** The collapsed summary's word beside the count. */
+export const chatComposerDrawerLabelClassName = tw(
+  'text-[length:var(--text-body-size)] leading-5',
+  'text-[color:var(--color-text-secondary)]',
+  'transition-[color] duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
+);
+
+/** The grab handle: a bar centered in the toggle row, hidden while open. */
+export function chatComposerDrawerHandleClassName(isHidden: boolean): string {
+  return tw(
+    'col-start-1 row-start-1 justify-self-center self-start w-5 h-0.5',
+    'rounded-[var(--radius-full)] bg-[var(--color-icon-secondary)]',
+    'transition-[background-color,opacity] duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
+    isHidden ? 'opacity-0 pointer-events-none' : 'opacity-100',
+  );
+}
+
+/**
+ * The content area collapses through its own row track, so it keeps the height
+ * it animates from and the items stay in place.
+ */
+export function chatComposerDrawerContentGridClassName(
+  isCollapsed: boolean,
+): string {
+  return tw(
+    'grid transition-[grid-template-rows] duration-[var(--duration-medium)] ease-[var(--ease-standard)]',
+    isCollapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]',
+  );
+}
+
+/** The items inside the drawer: a wrapping row, fading with the row track. */
+export function chatComposerDrawerContentClassName(
+  isCollapsed: boolean,
+): string {
+  return tw(
+    'min-h-0 flex flex-wrap gap-1 items-start',
+    'transition-opacity ease-[var(--ease-standard)]',
+    isCollapsed
+      ? 'opacity-0 duration-[var(--duration-fast)] delay-0'
+      : 'opacity-100 duration-[var(--duration-medium)] delay-[var(--duration-fast)]',
+  );
+}
+
+// ---------------------------------------------------------------------------
 // ChatLayoutScrollButton
 // ---------------------------------------------------------------------------
 

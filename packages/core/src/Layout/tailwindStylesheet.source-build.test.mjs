@@ -845,6 +845,13 @@ import {
   chatMessageListInnerClassName,
   chatMessageListLoadingClassName,
   chatMessageListSpacerClassName,
+  chatComposerDrawerClassName,
+  chatComposerDrawerContentClassName,
+  chatComposerDrawerContentGridClassName,
+  chatComposerDrawerHandleClassName,
+  chatComposerDrawerLabelClassName,
+  chatComposerDrawerToggleContentClassName,
+  chatComposerDrawerToggleRowClassName,
   chatLayoutBlurLayerClassName,
   chatLayoutDockClassName,
   chatFocusRingInsetClassName,
@@ -2778,6 +2785,19 @@ function familyClassNames() {
   add(chatMessageListLoadingClassName);
   add(chatMessageListSpacerClassName);
   add(chatMessageListEmptyStateClassName);
+  // ChatComposerDrawer: the panel, the toggle row, the summary both ways, the
+  // label, the handle both ways and the collapsing content both ways.
+  add(chatComposerDrawerClassName);
+  add(chatComposerDrawerToggleRowClassName);
+  add(chatComposerDrawerToggleContentClassName(true));
+  add(chatComposerDrawerToggleContentClassName(false));
+  add(chatComposerDrawerLabelClassName);
+  add(chatComposerDrawerHandleClassName(true));
+  add(chatComposerDrawerHandleClassName(false));
+  add(chatComposerDrawerContentGridClassName(true));
+  add(chatComposerDrawerContentGridClassName(false));
+  add(chatComposerDrawerContentClassName(true));
+  add(chatComposerDrawerContentClassName(false));
   // ChatLayout: the root in both scroll modes, the message area's density and
   // end room, the dock box, the frosted layer, the dock's own inset and its
   // inner column.
