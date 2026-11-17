@@ -369,6 +369,9 @@ const CROSS_COMPONENT_VARS: Record<string, string[]> = {
  */
 const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // No standard CSS property maps onto these — they are component behaviors.
+  // A per-instance minimum width: the `menuWidth` prop writes the variable and
+  // the width class reads it. No standard property maps the prop onto a theme.
+  '--astryx-context-menu-min-inline-size',
   '--button-focus-offset',
   '--button-icon-only-aspect',
   '--_avatar-group-overlap',
