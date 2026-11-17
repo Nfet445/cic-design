@@ -8,9 +8,11 @@ import {Stepper} from './Stepper';
 import {Step} from './Step';
 import {useStepperContext} from './StepperContext';
 import {useLayer} from '../Layer/useLayer';
+import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {getForcedColorsRules} from '../__tests__/forcedColors';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 describe('Stepper', () => {
   it('renders an ordered list of steps (not a nav landmark)', () => {
@@ -2051,9 +2053,9 @@ describe('Stepper', () => {
 
       const layerRoot = container.querySelector('[popover]') as HTMLElement;
       expect(layerRoot).not.toBeNull();
-      expect(declarationsFor(layerRoot)).toContain(
-        '--step-connector-gap:initial',
-      );
+      // The layer root carries the shared structural reset, whose rule in the
+      // sheet's reset layer names the property: `--step-connector-gap: initial`.
+      expectClassSet(layerRoot, {includes: [layerStructureResetClassName]});
 
       // Ancestor inheritance still works outside the layer, and the inner
       // Stepper keeps the same inheriting root, so a value set on it or through

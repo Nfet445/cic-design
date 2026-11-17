@@ -104,6 +104,7 @@ Progress: 21 of 42 done, 2 waves done before the tickets existed.
 - [x] `40-integration-regressions` — repair the wave's merged failures
 - [ ] `41-shared-modules-after-consumers` — the seven creations whose consumers own the property
 - [ ] `42-table-plugin-styles` — the table plugins and the cells they borrow
+- [x] `43-full-suite-green` — the full core suite back to its known-failing count
 - [ ] `36-remove-stylex` — `@stylexjs` leaves the repository
 
 ## Done when

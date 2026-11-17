@@ -27,10 +27,12 @@ import {Dialog} from '../Dialog';
 import {TimeInput} from '../TimeInput/TimeInput';
 import type {ISOTimeString} from '../utils';
 import {Field} from '../Field';
+import {fieldHorizontalLabelsClassName} from '../Field/fieldClasses';
 import {TextInput} from '../TextInput';
 import {CheckboxInput} from '../CheckboxInput';
 import {CheckboxList, CheckboxListItem} from '../CheckboxList';
 import {Switch} from '../Switch';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 // Helper component to read context
 function DirectionReader() {
@@ -471,8 +473,9 @@ describe('FormLayout', () => {
     );
 
     const field = screen.getByTestId('username-field');
-    // Field should have display:contents class
-    expect(field.className).toContain('horizontalLabels');
+    // Field takes no slot of its own: the `contents` class makes its label and
+    // input wrapper the layout's own grid children.
+    expectClassSet(field, {includes: [fieldHorizontalLabelsClassName]});
 
     // Field's direct children should be: label alignment div + input wrapper div
     const fieldChildren = Array.from(field.children);
