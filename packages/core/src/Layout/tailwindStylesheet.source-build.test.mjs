@@ -346,6 +346,7 @@ import {
   MULTI_SELECTOR_CHECKBOX_END_CLASS,
   MULTI_SELECTOR_OPTION_CELL_CLASS,
   MULTI_SELECTOR_ROW_LABEL_CLASS,
+  MULTI_SELECTOR_TRIGGER_SIZE_CLASS,
   multiSelectorOptionRowClassName,
 } from '../MultiSelector/multiSelectorOptionClasses';
 import {
@@ -1546,6 +1547,9 @@ function familyClassNames() {
   add(MULTI_SELECTOR_OPTION_CELL_CLASS);
   add(MULTI_SELECTOR_ACTION_CELL_CLASS);
   add(MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(MULTI_SELECTOR_TRIGGER_SIZE_CLASS[size]);
+  }
 
   // Typeahead result rows: each size crossed with highlighted and selected,
   // plus the default item's own parts.
