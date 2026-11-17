@@ -43,7 +43,6 @@ import type {StyleXStyles} from '@stylexjs/stylex';
 import {
   colorVars,
   focusVars,
-  radiusVars,
   spacingVars,
   typeScaleVars,
 } from '../theme/tokens.stylex';
@@ -74,6 +73,29 @@ import {useFocusRegionContainment} from '../hooks/useFocusTrap';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {isRtlElement} from '../hooks/isRtlElement';
+import {
+  lightboxChromeLayerClassName,
+  lightboxCloseButtonClassName,
+  lightboxContainerClassName,
+  lightboxControlBackingClassName,
+  lightboxControlButtonClassName,
+  lightboxCounterBackingClassName,
+  lightboxCounterClassName,
+  lightboxDialogClassName,
+  lightboxImageClassName,
+  lightboxImageWrapperClassName,
+  lightboxImageWrapperDismissTargetClassName,
+  lightboxImageWrapperZoomableClassName,
+  lightboxImageWrapperZoomedClassName,
+  lightboxMediaGroupClassName,
+  lightboxNavButtonClassName,
+  lightboxNavNextClassName,
+  lightboxNavPrevClassName,
+  lightboxTrackClassName,
+  lightboxTrackZoomTargetClassName,
+  lightboxVideoClassName,
+} from './lightboxClasses';
+import {lightboxOverrideStyles} from './lightboxOverrides.stylex';
 import {useZoomCore} from './useZoomCore';
 import {usePager} from '../hooks/usePager';
 import {TapGestureRecognizer} from '../gestures/TapGestureRecognizer';
@@ -191,91 +213,12 @@ const OVER_PHOTO_ATTRIBUTE = 'data-lightbox-over-photo';
 const CAPTION_BACKING = `color-mix(in srgb, ${colorVars['--color-on-light']} 90%, transparent)`;
 
 const styles = stylex.create({
-  dialog: {
-    position: 'fixed',
-    inset: 0,
-    width: '100vw',
-    // The dynamic viewport: the height a mobile browser shows. Its 100vh is
-    // the large viewport, measured with the toolbars retracted, so a viewer
-    // that tall runs under Safari's bottom toolbar and hides the caption.
-    height: stylex.firstThatWorks('100dvh', '100vh'),
-    maxWidth: 'none',
-    maxHeight: 'none',
-    margin: 0,
-    padding: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    overflow: 'hidden',
-    outline: 'none',
-    // The backdrop is the theme's overlay colour over a 2 px blur. A drag to
-    // dismiss and its release remove the blur through
-    // `--_lightbox-backdrop-filter`. A full-viewport blur repainted every
-    // frame of the fade drops frames.
-    '::backdrop': {
-      backgroundColor: colorVars['--color-overlay'],
-      backdropFilter: 'var(--_lightbox-backdrop-filter, blur(2px))',
-    },
-  },
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-  },
-  // The stage is the pager's viewport, a single photo's too. It fills the
-  // viewer on every presentation, so its pages have a size of their own.
-  mediaGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    flexGrow: 1,
-    minHeight: 0,
-    maxWidth: '100%',
-    maxHeight: '100%',
-    // ZOOM_DISMISSING_ATTRIBUTE on the stage inside: a photo dragged to
-    // dismiss draws outside the box that hugs it.
-    overflow: {default: 'hidden', ':has([data-zoom-dismissing])': 'visible'},
-  },
   // The zoom button's box clips, so its focus ring sits inside its edge.
   zoomButtonFocusInset: {
     outlineOffset: {
       default: '0',
       ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
     },
-  },
-  imageWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'stretch',
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    position: 'relative',
-    // ZOOM_DISMISSING_ATTRIBUTE on the current page's photo box: a photo
-    // dragged to dismiss draws outside the stage.
-    overflow: {default: 'hidden', ':has([data-zoom-dismissing])': 'visible'},
-    cursor: 'default',
-    userSelect: 'none',
-    minHeight: 0,
-  },
-  // In the touch presentation, a photo without zoom leaves pinch-zoom to the
-  // page but takes one-finger drags. A drag down dismisses it.
-  imageWrapperDismissTarget: {
-    touchAction: 'pinch-zoom',
-  },
-  // The photo rows take the stage's own pinch, pan and double tap, for every
-  // pointer. A descendant cannot allow what an ancestor's `touch-action` rules
-  // out. So the track allows only the page's pinch-zoom, and a pinch on the
-  // controls or a caption still zooms the page. The pager's pan manages the
-  // stage's own `touch-action`.
-  trackZoomTarget: {
-    touchAction: 'pinch-zoom',
   },
   // The photo box is the zoom button. It takes the stage's cursor, not the
   // reset's button cursor, so the zoom-in cursor shows only over the photo.
@@ -285,17 +228,6 @@ const styles = stylex.create({
       default: 'inherit',
       ':is(:disabled,[aria-disabled="true"])': 'default',
     },
-  },
-  // Two rows that every page shares through subgrid: the photo's and the
-  // caption band's. The band has one height on every page (`captionBand`). So
-  // every photo centres on the same box, with or without a caption. The next
-  // photo slides in level with the current one, and paging never resizes it.
-  track: {
-    position: 'absolute',
-    inset: 0,
-    display: 'grid',
-    gridTemplateColumns: '100%',
-    gridTemplateRows: 'minmax(0, 1fr) auto',
   },
   // One page per item, the stage's size, at index × (width + gap). The pages
   // stack in the track's one column, offset by their relative inset. Each has
@@ -464,38 +396,6 @@ const styles = stylex.create({
     overflowY: 'auto',
     touchAction: 'pan-y pinch-zoom',
   },
-  // A fitted photo's zoom-in cursor shows only over the photo, where the
-  // stage sets OVER_PHOTO_ATTRIBUTE. Beside it, a click closes the viewer.
-  imageWrapperZoomable: {
-    cursor: {
-      default: 'default',
-      ':is([data-lightbox-over-photo])': 'zoom-in',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  imageWrapperZoomed: {
-    cursor: {
-      default: 'grab',
-      // ZOOM_DRAGGING_ATTRIBUTE, set by the stage while a drag moves the photo.
-      ':is([data-zoom-dragging])': 'grabbing',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  image: {
-    maxWidth: '100%',
-    maxHeight: '100%',
-    objectFit: 'contain',
-    pointerEvents: 'none',
-    // The zoom stage scales the photo about its top-left corner and moves it
-    // with the individual `scale` and `translate` properties.
-    transformOrigin: '0 0',
-  },
-  video: {
-    maxWidth: '100%',
-    maxHeight: '100%',
-    objectFit: 'contain',
-    outline: 'none',
-  },
   // The caption's box. Its type and color are the caption Text's, and both of
   // its lines start at one edge.
   caption: {
@@ -504,74 +404,6 @@ const styles = stylex.create({
     paddingInline: spacingVars['--spacing-3'],
     maxWidth: '600px',
     flexShrink: 0,
-  },
-  closeButton: {
-    position: 'absolute',
-    top: spacingVars['--spacing-3'],
-    insetInlineEnd: spacingVars['--spacing-3'],
-    zIndex: 1,
-  },
-  navButton: {
-    position: 'absolute',
-    top: '50%',
-    // The individual `translate` property, not `transform`. This style lands
-    // on the Button root, or on its backing with zoom. A `transform` on the
-    // Button root would replace its own transform rules: measured, the
-    // `scale(0.98)` press feedback stops firing. `translate` composes with them.
-    translate: '0 -50%',
-    zIndex: 1,
-  },
-  navPrev: {
-    insetInlineStart: spacingVars['--spacing-3'],
-  },
-  navNext: {
-    insetInlineEnd: spacingVars['--spacing-3'],
-  },
-  // The counter takes its own clicks in the click-through layer, so a click
-  // on it leaves the viewer open.
-  counter: {
-    position: 'absolute',
-    top: spacingVars['--spacing-3'],
-    insetInlineStart: spacingVars['--spacing-3'],
-    zIndex: 1,
-    pointerEvents: 'auto',
-  },
-  controlButton: {
-    pointerEvents: 'auto',
-  },
-  // The controls sit in layers over the viewer that pass clicks through. A
-  // drag to dismiss fades the layers, which carry no transition of their own,
-  // since a Button's opacity transition would trail the finger.
-  // They sit above the stage, even a photo dragged to dismiss. While a fade
-  // writes their opacity, each is a stacking context. The track's positioned
-  // pages, later in tree order, would otherwise cover them and take the taps
-  // meant for the controls.
-  chromeLayer: {
-    position: 'absolute',
-    inset: 0,
-    zIndex: 2,
-    pointerEvents: 'none',
-  },
-  // With zoom a photo can lie under the controls. Lightbox's own translucent
-  // backing keeps them readable over any photo: 3:1 for the buttons, 4.5:1
-  // for the counter's text. A theme restyles the buttons, not the backing.
-  controlBacking: {
-    display: 'inline-flex',
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-on-light']} 75%, transparent)`,
-    borderRadius: radiusVars['--radius-full'],
-  },
-  counterBacking: {
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-on-light']} 75%, transparent)`,
-    borderRadius: radiusVars['--radius-full'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  // With zoom, the icons and the Counter's text keep the on-dark colour on
-  // the backing, whatever a theme does to the buttons or to Text.
-  controlIcon: {
-    color: colorVars['--color-on-dark'],
-  },
-  counterOnDark: {
-    color: colorVars['--color-on-dark'],
   },
 });
 
@@ -1840,7 +1672,7 @@ export function Lightbox({
   // which takes the control's place. Its icon keeps the on-dark colour. So a
   // theme's restyling of the button can't remove its contrast.
   const control = (
-    place: StyleXStyles,
+    place: string,
     {
       icon,
       label,
@@ -1866,7 +1698,7 @@ export function Lightbox({
             color="inherit"
             xstyle={[
               isMirrored && rtlStyles.mirror,
-              hasZoom && styles.controlIcon,
+              hasZoom && lightboxOverrideStyles.onDarkChrome,
             ]}
           />
         }
@@ -1875,11 +1707,13 @@ export function Lightbox({
         variant="ghost"
         isDisabled={isDisabled}
         onClick={onClick}
-        xstyle={[!hasZoom && place, styles.controlButton]}
+        className={tw(!hasZoom && place, lightboxControlButtonClassName)}
       />
     );
     return hasZoom ? (
-      <span {...stylex.props(place, styles.controlBacking)}>{button}</span>
+      <span className={tw(place, lightboxControlBackingClassName)}>
+        {button}
+      </span>
     ) : (
       button
     );
@@ -1896,7 +1730,7 @@ export function Lightbox({
         controls
         autoPlay={isOpen && isCurrent && hasAutoPlay}
         preload={isCurrent ? 'auto' : 'metadata'}
-        {...stylex.props(styles.video)}
+        className={lightboxVideoClassName}
       />
     ) : (
       <img
@@ -1905,7 +1739,7 @@ export function Lightbox({
         alt={isCurrent ? alt : ''}
         aria-hidden={isCurrent ? undefined : true}
         draggable={false}
-        {...stylex.props(styles.image)}
+        className={lightboxImageClassName}
       />
     );
   // The current item and its neighbours; the pager shows one at rest.
@@ -1942,8 +1776,13 @@ export function Lightbox({
       }
       {...mergeProps(
         themeProps('lightbox'),
-        stylex.props(styles.dialog, overlayPaddingReset.reset, xstyle),
-        tw(layerTextResetClassName, layerStructureResetClassName, className),
+        stylex.props(overlayPaddingReset.reset, xstyle),
+        tw(
+          lightboxDialogClassName,
+          layerTextResetClassName,
+          layerStructureResetClassName,
+          className,
+        ),
         style,
       )}
       {...props}
@@ -1964,7 +1803,7 @@ export function Lightbox({
             <MediaTheme mode="dark">
               <div
                 ref={containerRef}
-                {...stylex.props(styles.container)}
+                className={lightboxContainerClassName}
                 // Every press in the viewer records where and how it began. A
                 // mouse's or a pen's press clears a zoomed drag's flag anywhere.
                 // A finger's press clears it only on the stage.
@@ -1980,8 +1819,8 @@ export function Lightbox({
                 }}>
                 <div
                   data-lightbox-chrome=""
-                  {...stylex.props(styles.chromeLayer)}>
-                  {control(styles.closeButton, {
+                  className={lightboxChromeLayerClassName}>
+                  {control(lightboxCloseButtonClassName, {
                     icon: 'close',
                     label: t('@astryx.lightbox.close'),
                     onClick: handleClose,
@@ -1992,26 +1831,33 @@ export function Lightbox({
                 the range so pressing/arrowing to the boundary doesn't unmount the
                 focused control and drop focus to <body>. */}
                   {isGallery &&
-                    control([styles.navButton, styles.navPrev], {
-                      icon: 'chevronLeft',
-                      label: t('@astryx.lightbox.previous'),
-                      isDisabled: !canPrev,
-                      onClick: goToPrev,
-                      isMirrored: true,
-                    })}
+                    control(
+                      tw(lightboxNavButtonClassName, lightboxNavPrevClassName),
+                      {
+                        icon: 'chevronLeft',
+                        label: t('@astryx.lightbox.previous'),
+                        isDisabled: !canPrev,
+                        onClick: goToPrev,
+                        isMirrored: true,
+                      },
+                    )}
                 </div>
 
                 {/* The stage: a track of pages, each a photo and its caption */}
                 <div
                   ref={mediaGroupRef}
                   data-lightbox-media=""
-                  {...stylex.props(styles.mediaGroup)}>
+                  className={lightboxMediaGroupClassName}>
                   <div
                     ref={imageWrapperRef}
-                    {...stylex.props(
-                      styles.imageWrapper,
-                      isZoomTarget && !isZoomed && styles.imageWrapperZoomable,
-                      isZoomTarget && isZoomed && styles.imageWrapperZoomed,
+                    className={tw(
+                      lightboxImageWrapperClassName,
+                      isZoomTarget &&
+                        !isZoomed &&
+                        lightboxImageWrapperZoomableClassName,
+                      isZoomTarget &&
+                        isZoomed &&
+                        lightboxImageWrapperZoomedClassName,
                     )}
                     onPointerMove={
                       isZoomTarget ? markPointerOverPhoto : undefined
@@ -2036,13 +1882,13 @@ export function Lightbox({
                     }>
                     <div
                       ref={trackRef}
-                      {...stylex.props(
-                        styles.track,
-                        isZoomTarget && styles.trackZoomTarget,
+                      className={tw(
+                        lightboxTrackClassName,
+                        isZoomTarget && lightboxTrackZoomTargetClassName,
                         isTouch &&
                           !isZoomTarget &&
                           !isVideo &&
-                          styles.imageWrapperDismissTarget,
+                          lightboxImageWrapperDismissTargetClassName,
                       )}>
                       {pageIndexes.map(i => (
                         <div
@@ -2217,17 +2063,20 @@ export function Lightbox({
 
                 <div
                   data-lightbox-chrome=""
-                  {...stylex.props(styles.chromeLayer)}>
+                  className={lightboxChromeLayerClassName}>
                   {/* Gallery nav: next — see "prev" above; stays mounted and disabled at
               the end of the range instead of unmounting. */}
                   {isGallery &&
-                    control([styles.navButton, styles.navNext], {
-                      icon: 'chevronRight',
-                      label: t('@astryx.lightbox.next'),
-                      isDisabled: !canNext,
-                      onClick: goToNext,
-                      isMirrored: true,
-                    })}
+                    control(
+                      tw(lightboxNavButtonClassName, lightboxNavNextClassName),
+                      {
+                        icon: 'chevronRight',
+                        label: t('@astryx.lightbox.next'),
+                        isDisabled: !canNext,
+                        onClick: goToNext,
+                        isMirrored: true,
+                      },
+                    )}
 
                   {/* Gallery counter */}
                   {isGallery && mediaArray.length > 1 && (
@@ -2235,11 +2084,15 @@ export function Lightbox({
                       as="div"
                       type="body"
                       color={hasZoom ? 'inherit' : undefined}
-                      xstyle={[
-                        styles.counter,
-                        hasZoom && styles.counterBacking,
-                        hasZoom && styles.counterOnDark,
-                      ]}>
+                      className={tw(
+                        lightboxCounterClassName,
+                        hasZoom && lightboxCounterBackingClassName,
+                      )}
+                      xstyle={
+                        hasZoom
+                          ? [lightboxOverrideStyles.onDarkChrome]
+                          : undefined
+                      }>
                       {index + 1} / {mediaArray.length}
                     </Text>
                   )}
