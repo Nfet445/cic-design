@@ -13,6 +13,11 @@ import {describe, it, expect, vi} from 'vitest';
 import {render, screen, fireEvent} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {CodeEditor} from './CodeEditor';
+import {
+  codeEditorClassName,
+  codeEditorFocusedClassName,
+  codeEditorSizeClassNames,
+} from './codeEditorClasses';
 
 /** Place a collapsed caret at a character offset inside the editor. */
 function setCaret(el: HTMLElement, offset: number) {
@@ -250,5 +255,35 @@ describe('CodeEditor', () => {
       'tabindex',
       '0',
     );
+  });
+});
+
+describe('CodeEditor classes', () => {
+  it('carries the frame class and swaps it whole on focus', () => {
+    const {container} = render(
+      <CodeEditor label="Code" value="let a = 1;" onChange={() => {}} />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    for (const token of codeEditorClassName.split(' ')) {
+      expect(root.className.split(' ')).toContain(token);
+    }
+
+    fireEvent.focus(screen.getByRole('textbox', {name: 'Code'}));
+    for (const token of codeEditorFocusedClassName.split(' ')) {
+      expect(root.className.split(' ')).toContain(token);
+    }
+  });
+
+  it('takes its size class from the size prop', () => {
+    render(
+      <CodeEditor
+        label="Code"
+        value="let a = 1;"
+        onChange={() => {}}
+        size="sm"
+      />,
+    );
+    const editor = screen.getByRole('textbox', {name: 'Code'});
+    expect(editor.className).toContain(codeEditorSizeClassNames.sm);
   });
 });
