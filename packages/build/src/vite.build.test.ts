@@ -200,6 +200,15 @@ function itSplitsCorrectly(get: () => Built) {
     expect(library).toContain('--radius-element');
   });
 
+  // Token defaults are generated sheets rather than StyleX rules. A split that
+  // carries only rules ships `var(--color-…)` reads that nothing declares, so
+  // the declarations that come from a sheet must land in the library layer too.
+  it('declares the token defaults its rules read', () => {
+    const library = layerBlock(get().css, 'astryx-base');
+    expect(library).toContain('--radius-element:');
+    expect(library).toContain('--color-data-categorical-blue:');
+  });
+
   // The regression this file exists for. The wrapped-not-split version put the
   // app's own StyleX in astryx-base, below `astryx-theme`, so a theme could
   // silently restyle code the theme has no business reaching.
