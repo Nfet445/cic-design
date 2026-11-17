@@ -4,8 +4,9 @@
 
 /**
  * @file ChatLayout.tsx
- * @input Uses React, StyleX, theme tokens, useChatStreamScroll, useChatNewMessages,
- *   useChatKeyboard, the pooled resize observer
+ * @input Uses React, Tailwind classes from chatClasses, the shared focus ring,
+ *   useChatStreamScroll, useChatNewMessages, useChatKeyboard, the pooled
+ *   resize observer
  * @output Exports ChatLayout component and ChatLayoutProps
  * @position Layout shell for full chat interfaces — messages in page flow, composer fixed to bottom
  *
@@ -40,7 +41,6 @@
 
 import {type ReactNode, useCallback, useMemo, useRef, useState} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {focusVars, spacingVars} from '../theme/tokens.stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
@@ -49,6 +49,18 @@ import {useChatNewMessages} from './useChatNewMessages';
 import {useChatKeyboard} from './useChatKeyboard';
 import {ChatLayoutScrollButton} from './ChatLayoutScrollButton';
 import {ChatLayoutContext} from './ChatContext';
+import {
+  chatLayoutBlurLayerClassName,
+  chatLayoutDockClassName,
+  chatLayoutDockContainerClassName,
+  chatLayoutDockFocusRingClassName,
+  chatLayoutDockInnerClassName,
+  chatLayoutEmptyStateClassName,
+  chatLayoutMessageAreaClassName,
+  chatLayoutRootClassName,
+  chatLayoutSizeVars,
+} from './chatClasses';
+import {tw} from '../utils/tw';
 import {KeyboardSurfaceContext} from './keyboardSurface';
 import {themeProps} from '../utils/themeProps';
 
@@ -66,6 +78,12 @@ registerEnglishFallback(english);
 // =============================================================================
 
 type Density = 'compact' | 'balanced' | 'spacious';
+
+/** The inline custom properties the layout's geometry classes read. */
+type ChatLayoutStyle = React.CSSProperties &
+  Partial<
+    Record<(typeof chatLayoutSizeVars)[keyof typeof chatLayoutSizeVars], string>
+  >;
 
 export interface ChatLayoutProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element. */
@@ -116,173 +134,6 @@ export interface ChatLayoutProps extends BaseProps<HTMLDivElement> {
    */
   density?: Density;
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    position: 'relative',
-    containerType: 'inline-size',
-    minHeight: 0,
-    flex: 1,
-    // Flex column so the sticky dock's natural height is part of the 100%:
-    // messageArea flexes to fill the leftover space instead of forcing
-    // minHeight: 100% on its own. Without this, the in-flow sticky dock
-    // adds its full height on top of the 100% message area and the root
-    // always overflows by exactly the dock height (#2573).
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  rootScrollable: {
-    overflowY: 'auto',
-    overflowX: 'hidden',
-  },
-
-  messageArea: {
-    display: 'flex',
-    flexDirection: 'column',
-    marginInline: 'auto',
-    // Fill the space the dock doesn't need (grow), but never shrink below
-    // content height — long content must overflow the root so it scrolls.
-    flexGrow: 1,
-    flexShrink: 0,
-    flexBasis: 'auto',
-    paddingBlockEnd: spacingVars['--spacing-6'],
-    width: '100%',
-    maxWidth: '100%',
-    paddingInline: 0,
-  },
-
-  // The end padding grows by the part of the keyboard over the dock and, for
-  // a fixed dock, by the dock's height. So the newest message can scroll
-  // above the composer, with no element added for it.
-  messageAreaEndRoom: (room: number) => ({
-    paddingBlockEnd: `calc(${spacingVars['--spacing-6']} + ${room}px)`,
-  }),
-
-  emptyState: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    minHeight: 200,
-  },
-
-  // --- Dock container ---
-  dockContainer: {
-    bottom: 0,
-    insetInlineStart: 0,
-    insetInlineEnd: 0,
-    zIndex: 0,
-    isolation: 'isolate',
-    pointerEvents: 'none',
-    // Keep the sticky dock at its natural height as a flex item.
-    // (Inert in fixed mode — position: fixed takes it out of flex layout.)
-    flexShrink: 0,
-  },
-  dockContainerFixed: {
-    position: 'fixed',
-  },
-  dockContainerSticky: {
-    position: 'sticky',
-  },
-  // Rests the dock above the part of the keyboard that covers it
-  // (useChatKeyboard's lift).
-  dockLift: (lift: number) => ({
-    bottom: lift,
-  }),
-
-  blurLayer: {
-    position: 'absolute',
-    bottom: 0,
-    insetInlineStart: 0,
-    insetInlineEnd: 0,
-    pointerEvents: 'none',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
-    height: 100,
-    maskImage: 'linear-gradient(to bottom, transparent, black 36px)',
-    WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 36px)',
-  },
-
-  dock: {
-    position: 'relative',
-    zIndex: 1,
-    pointerEvents: 'auto',
-    paddingInline: spacingVars['--spacing-3'],
-    paddingBlockEnd: spacingVars['--spacing-3'],
-  },
-
-  // The ring Done's park shows after typing, inside the dock's edge, which can
-  // meet the viewport's.
-  dockFocusRing: {
-    outlineOffset: {
-      default: null,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-  },
-
-  dockInner: {
-    marginInline: 'auto',
-    width: '100%',
-    maxWidth: '100%',
-  },
-
-  // --- Forced density overrides (disable container queries) ---
-  messageAreaCompact: {
-    maxWidth: '100%',
-    paddingInline: 0,
-  },
-  messageAreaBalanced: {
-    maxWidth: '100%',
-    paddingInline: 0,
-  },
-  messageAreaSpacious: {
-    maxWidth: 800,
-    paddingInline: spacingVars['--spacing-4'],
-  },
-
-  blurLayerCompact: {
-    height: 80,
-    maskImage: 'linear-gradient(to bottom, transparent, black 24px)',
-    WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 24px)',
-  },
-  blurLayerBalanced: {
-    height: 100,
-    maskImage: 'linear-gradient(to bottom, transparent, black 36px)',
-    WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 36px)',
-  },
-  blurLayerSpacious: {
-    height: 120,
-    maskImage: 'linear-gradient(to bottom, transparent, black 48px)',
-    WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 48px)',
-  },
-
-  dockCompact: {
-    paddingInline: spacingVars['--spacing-2'],
-    paddingBlockEnd: spacingVars['--spacing-2'],
-  },
-  dockBalanced: {
-    paddingInline: spacingVars['--spacing-3'],
-    paddingBlockEnd: spacingVars['--spacing-3'],
-  },
-  dockSpacious: {
-    paddingInline: spacingVars['--spacing-4'],
-    paddingBlockEnd: spacingVars['--spacing-3'],
-  },
-
-  dockInnerCompact: {
-    maxWidth: '100%',
-  },
-  dockInnerBalanced: {
-    maxWidth: '100%',
-  },
-  dockInnerSpacious: {
-    maxWidth: 800,
-  },
-});
 
 // =============================================================================
 // Helpers
@@ -382,6 +233,12 @@ export function ChatLayout({
   );
   const dockRef = useMergedRefs(keyboard.dockRef, observeDock);
   const endRoom = keyboard.lift + (isSelfScrolling ? 0 : dockHeight);
+  const endRoomStyle: ChatLayoutStyle =
+    endRoom > 0 ? {[chatLayoutSizeVars.endRoom]: `${endRoom}px`} : {};
+  const dockLiftStyle: ChatLayoutStyle =
+    keyboard.lift > 0
+      ? {[chatLayoutSizeVars.dockLift]: `${keyboard.lift}px`}
+      : {};
 
   const defaultScrollButton = (
     <ChatLayoutScrollButton
@@ -402,31 +259,8 @@ export function ChatLayout({
     [scrollContainerRef, newMsgs.contentRef],
   );
 
-  // --- Derived styles ---
+  // --- Derived state ---
   const showEmpty = !hasVisibleContent(children);
-
-  const densityStyles = {
-    compact: {
-      messageArea: styles.messageAreaCompact,
-      blurLayer: styles.blurLayerCompact,
-      dock: styles.dockCompact,
-      dockInner: styles.dockInnerCompact,
-    },
-    balanced: {
-      messageArea: styles.messageAreaBalanced,
-      blurLayer: styles.blurLayerBalanced,
-      dock: styles.dockBalanced,
-      dockInner: styles.dockInnerBalanced,
-    },
-    spacious: {
-      messageArea: styles.messageAreaSpacious,
-      blurLayer: styles.blurLayerSpacious,
-      dock: styles.dockSpacious,
-      dockInner: styles.dockInnerSpacious,
-    },
-  } as const;
-
-  const currentDensity = densityStyles[density];
 
   return (
     <ChatLayoutContext value={layoutContext}>
@@ -436,10 +270,9 @@ export function ChatLayout({
         data-testid={testId}
         {...mergeProps(
           themeProps('chat-layout', {density}),
-          stylex.props(
-            styles.root,
-            isSelfScrolling && styles.rootScrollable,
-            xstyle,
+          tw(
+            chatLayoutRootClassName(isSelfScrolling),
+            xstyle && stylex.props(xstyle).className,
           ),
           className,
           style,
@@ -447,13 +280,13 @@ export function ChatLayout({
         {/* Message area */}
         <div
           ref={keyboard.messagesRef}
-          {...stylex.props(
-            styles.messageArea,
-            currentDensity.messageArea,
-            endRoom > 0 && styles.messageAreaEndRoom(endRoom),
-          )}>
+          className={chatLayoutMessageAreaClassName({
+            density,
+            hasEndRoom: endRoom > 0,
+          })}
+          style={endRoomStyle}>
           {showEmpty && emptyState ? (
-            <div {...stylex.props(styles.emptyState)}>{emptyState}</div>
+            <div className={chatLayoutEmptyStateClassName}>{emptyState}</div>
           ) : (
             children
           )}
@@ -462,18 +295,16 @@ export function ChatLayout({
         {/* Dock container — sticky/fixed, holds blur + scroll button + composer */}
         <div
           ref={dockRef}
-          {...stylex.props(
-            styles.dockContainer,
-            isSelfScrolling
-              ? styles.dockContainerSticky
-              : styles.dockContainerFixed,
-            keyboard.lift > 0 && styles.dockLift(keyboard.lift),
-          )}>
+          className={chatLayoutDockContainerClassName({
+            isFixed: !isSelfScrolling,
+            hasLift: keyboard.lift > 0,
+          })}
+          style={dockLiftStyle}>
           {/* Scroll-to-bottom button */}
           {scrollButton === undefined ? defaultScrollButton : scrollButton}
 
           {/* Frosted glass layer */}
-          <div {...stylex.props(styles.blurLayer, currentDensity.blurLayer)} />
+          <div className={chatLayoutBlurLayerClassName(density)} />
 
           {/* The composer's region. Under a finger in a top-level page,
               useChatKeyboard makes it a group with no name, where focus rests
@@ -481,14 +312,14 @@ export function ChatLayout({
           <KeyboardSurfaceContext value={true}>
             <div
               ref={keyboard.composerRef}
-              {...stylex.props(
-                focusOutlineStyles.focusVisible,
-                styles.dock,
-                currentDensity.dock,
-                styles.dockFocusRing,
+              {...mergeProps(
+                tw(
+                  chatLayoutDockClassName(density),
+                  chatLayoutDockFocusRingClassName,
+                ),
+                stylex.props(focusOutlineStyles.focusVisible),
               )}>
-              <div
-                {...stylex.props(styles.dockInner, currentDensity.dockInner)}>
+              <div className={chatLayoutDockInnerClassName(density)}>
                 {composer}
               </div>
             </div>

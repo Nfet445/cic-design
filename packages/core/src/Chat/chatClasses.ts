@@ -292,3 +292,159 @@ export function chatMessageChildrenClassName({
         : 'gap-1',
   );
 }
+
+// ---------------------------------------------------------------------------
+// ChatLayout
+// ---------------------------------------------------------------------------
+
+/** The per-instance geometry a layout writes, in pixels, for a class to read. */
+export const chatLayoutSizeVars = {
+  dockLift: '--astryx-chat-dock-lift',
+  endRoom: '--astryx-chat-end-room',
+} as const;
+
+/**
+ * The layout root: a flex column, so the sticky dock's natural height is part
+ * of the 100% the message area fills instead of spilling out below it once the
+ * keyboard lifts it, and a container so children can query its inline size.
+ */
+export function chatLayoutRootClassName(isSelfScrolling: boolean): string {
+  return tw(
+    'relative [container-type:inline-size] min-h-0 flex-1 flex flex-col',
+    isSelfScrolling && 'overflow-x-hidden overflow-y-auto',
+  );
+}
+
+/**
+ * The message area grows into the space the dock leaves and never shrinks
+ * below its content, so long content overflows the root and scrolls. Its end
+ * padding also holds whatever the dock covers: the part of the keyboard over
+ * it and, when the dock is fixed, the dock's own height.
+ */
+export function chatLayoutMessageAreaClassName({
+  density,
+  hasEndRoom,
+}: {
+  density: ChatDensity;
+  hasEndRoom: boolean;
+}): string {
+  return tw(
+    'flex flex-col mx-auto grow shrink-0 basis-auto w-full',
+    density === 'spacious' ? 'max-w-[800px] px-4' : 'max-w-full px-0',
+    hasEndRoom
+      ? 'pb-[calc(var(--spacing-6)+var(--astryx-chat-end-room))]'
+      : 'pb-6',
+  );
+}
+
+/** The placeholder for a conversation with no messages yet. */
+export const chatLayoutEmptyStateClassName =
+  'flex items-center justify-center flex-1 min-h-[200px]';
+
+/**
+ * The dock's box: it leaves the pointer to the dock itself, keeps the sticky
+ * (or fixed) position, and lifts by the part of the keyboard that covers it.
+ */
+export function chatLayoutDockContainerClassName({
+  isFixed,
+  hasLift,
+}: {
+  isFixed: boolean;
+  hasLift: boolean;
+}): string {
+  return tw(
+    'inset-x-0 z-0 isolate pointer-events-none shrink-0',
+    isFixed ? 'fixed' : 'sticky',
+    hasLift ? 'bottom-[var(--astryx-chat-dock-lift)]' : 'bottom-0',
+  );
+}
+
+/** The frosted layer: a blur that fades in over the first third of its height. */
+export function chatLayoutBlurLayerClassName(density: ChatDensity): string {
+  return tw(
+    'absolute bottom-0 inset-x-0 pointer-events-none backdrop-blur-[12px]',
+    density === 'compact'
+      ? 'h-20 [mask-image:linear-gradient(to_bottom,transparent,black_24px)]'
+      : density === 'spacious'
+        ? 'h-[120px] [mask-image:linear-gradient(to_bottom,transparent,black_48px)]'
+        : 'h-[100px] [mask-image:linear-gradient(to_bottom,transparent,black_36px)]',
+  );
+}
+
+/** The composer's region: it takes the pointer back from the dock's box. */
+export function chatLayoutDockClassName(density: ChatDensity): string {
+  return tw(
+    'relative z-[1] pointer-events-auto',
+    density === 'compact'
+      ? 'px-2 pb-2'
+      : density === 'spacious'
+        ? 'px-4 pb-3'
+        : 'px-3 pb-3',
+  );
+}
+
+/**
+ * The dock's edge can meet the viewport's, so its ring is drawn inside it.
+ * `focusOutlineStyles` lands in the same layer, and the later rule wins.
+ */
+export const chatLayoutDockFocusRingClassName =
+  'focus-visible:[outline-offset:calc(-1*var(--focus-outline-width))]';
+
+/** The dock's inner column: the composer's own cap, not the viewport's. */
+export function chatLayoutDockInnerClassName(density: ChatDensity): string {
+  return tw(
+    'mx-auto w-full',
+    density === 'spacious' ? 'max-w-[800px]' : 'max-w-full',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ChatLayoutScrollButton
+// ---------------------------------------------------------------------------
+
+/** The wrapper centres the pill and holds the gap above the composer. */
+export const chatLayoutScrollButtonWrapperClassName =
+  'flex justify-center pb-3';
+
+/**
+ * The pill. It clips its own content, so its height tracks the md Button it
+ * wraps: a literal would clip that Button under a theme that retunes the
+ * element scale. `visibility` rides the same transition as the fade, so the
+ * fade-out still plays before the pill leaves the tab order.
+ */
+export function chatLayoutScrollButtonPillClassName({
+  isVisible,
+  isExpanded,
+}: {
+  isVisible: boolean;
+  isExpanded: boolean;
+}): string {
+  return tw(
+    '[contain:layout_style] overflow-hidden',
+    'rounded-[var(--radius-full)] bg-[var(--color-background-popover)] shadow-[var(--shadow-med)]',
+    'h-[var(--size-element-md)]',
+    'transition-[opacity,transform,max-width,visibility] duration-[var(--duration-fast-max)] ease-[var(--ease-standard)]',
+    'motion-reduce:duration-0',
+    // A hidden pill paints nothing, so focus landing on it would have no
+    // visible indicator (WCAG 2.2 SC 2.4.7). `visibility` also removes it from
+    // sequential navigation after the fade; `inert` on the element stops new
+    // focus immediately.
+    isVisible
+      ? 'opacity-100 pointer-events-auto visible'
+      : 'opacity-0 pointer-events-none invisible',
+    isExpanded ? 'max-w-[200px]' : 'max-w-[var(--size-element-md)]',
+  );
+}
+
+/**
+ * The inner Button: it takes the pill's own radius, and its trailing inset
+ * grows when a label sits against the rounded edge.
+ */
+export function chatLayoutScrollButtonButtonClassName(
+  hasLabel: boolean,
+): string {
+  return tw(
+    '[--radius-element:var(--radius-full)] whitespace-nowrap px-2',
+    hasLabel && 'pe-3',
+  );
+}
