@@ -1,6 +1,6 @@
 # links and items
 
-Status: partly done — six of nine groups landed; `Item/`, `List/`, `Avatar/` and `ClickableCard/` wait (see Result)
+Status: done (see Result and Comments; `Item/` and `List/` moved to ticket 44)
 Blocked by: 17
 Wave: 6
 Family: `family:navigation-destinations`
@@ -100,13 +100,39 @@ Left on StyleX, with the reason:
 - `Link`, `Token`, `Item`-shaped rows keep their pressed overlay
   (`interactionOverlayStyles`) and their focus ring (`focusOutlineProps`) in
   StyleX: they are the shared press and ring machines, not component paint.
-- `Avatar`'s `shapeStyles` stays a StyleX export because
-  `AvatarGroup/AvatarGroupOverflow.tsx` consumes it; moving it would change another
-  family's file.
+- `AvatarGroup`'s ring and overlap stay in `avatarGroupRing.stylex.ts`: the
+  ring has to outrank the avatar's own border, and a caller's trailing
+  `className` (`border-0`, `ms-*`) wins a sheet-order tie.
 
-Still to do in a follow-up window: `Item/`, `List/` (`ListItem`, reorder handle),
-`Avatar/` itself and `ClickableCard/`. The first three carry baseline-alignment
-struts, per-density padding, `--_item-inset-inline` and a line-clamp dynamic style
-that a class map has to re-home carefully; `ClickableCard`'s hover and press paint
-is the shared overlay whose `[data-astryx-press]` arms depend on StyleX's
-unlayered priority, which is the same reason the press machine stays.
+Then the two remaining groups of this ticket:
+
+- `ClickableCard/clickableCardClasses.ts` — surface, the press and hover overlay,
+  both border states, the disabled dimming and the hidden control. The overlay's
+  `[data-astryx-press]` arms are literal classes, as in `SelectableCard`; the
+  press machine (`interactionOverlayStyles.pressedAlpha`) still paints the
+  alpha-strength levels.
+- `Avatar/avatarClasses.ts` — `avatarShapeClassName` publishes the shape's
+  `--_avatar-radius` as a class, so the wrapper, the content cell, the focus ring
+  and `AvatarGroupOverflow`'s "+N" chip keep reading one property and a theme's
+  derived `borderRadius` still reaches all of them.
+
+`Item/` and `List/` left this ticket for ticket 44, which carried their density
+padding, `--_item-inset-inline` and line-clamp dynamic style.
+
+## Comments
+
+The overlay's press texture is a class now and the alpha arms are still StyleX, so
+`after:` reads a transition plus `var(--_press-overlay)` and the press machine
+writes `--_press-paint-image` over it. The one StyleX survivor in `ClickableCard`
+is the border-inset padding: `container()` sets `padding` from its variables, so a
+utility would only tie with it and the sheet order would decide.
+
+`--_avatar-radius` stays the lever it was. It is a derived variable in
+`theme/derivedVarRegistry.ts`, so a theme's `borderRadius` on the avatar target
+still lands on every shaped surface; only the per-shape publisher moved from
+`shapeStyles` to `avatarShapeClassName`.
+
+Both class maps are in the coverage walk of
+`packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`, which stands
+at 1977 rules against its 1980 ceiling. The sheet grows by three next time a
+component adds a class, so raise the ceiling with the next landing.
