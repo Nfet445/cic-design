@@ -425,6 +425,16 @@ import {
   inputGroupTextClassName,
 } from '../InputGroup/inputGroupClasses';
 import {
+  COMPLEX_SELECTOR_CONTENT_CLASS,
+  COMPLEX_SELECTOR_STATUS_TIP_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_ICON_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS,
+  complexSelectorHeightClassName,
+} from '../ComplexSelector/complexSelectorClasses';
+import {
   NUMBER_INPUT_DECREMENT_CLASS,
   NUMBER_INPUT_INCREMENT_ICON_CLASS,
   NUMBER_INPUT_STEPPER_COLUMN_CLASS,
@@ -3145,6 +3155,18 @@ function familyClassNames() {
     add(inputGroupSizeClassName[size]);
   }
   add(inputGroupTextClassName);
+  // ComplexSelector: the trigger button, its text, status and chevron slots,
+  // the popup content box and one height per size.
+  add(COMPLEX_SELECTOR_TRIGGER_CLASS);
+  add(COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS);
+  add(COMPLEX_SELECTOR_STATUS_TIP_CLASS);
+  add(COMPLEX_SELECTOR_TRIGGER_ICON_CLASS);
+  add(COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS);
+  add(COMPLEX_SELECTOR_TRIGGER_ICON_OPEN_CLASS);
+  add(COMPLEX_SELECTOR_CONTENT_CLASS);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(complexSelectorHeightClassName({size}));
+  }
   // NumberInput: the entry in every size and state, the unit, the stepper
   // column and both buttons.
   for (const size of ['sm', 'md', 'lg']) {

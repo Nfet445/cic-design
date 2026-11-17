@@ -49,11 +49,7 @@ import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {useInputStatusIcon} from '../hooks/useInputStatusIcon';
 import {
   colorVars,
-  durationVars,
-  easeVars,
   fontWeightVars,
-  radiusVars,
-  sizeVars,
   spacingVars,
   typographyVars,
   typeScaleVars,
@@ -62,6 +58,17 @@ import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {isRenderable, mergeProps} from '../utils';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {
+  COMPLEX_SELECTOR_CONTENT_CLASS,
+  COMPLEX_SELECTOR_STATUS_TIP_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_ICON_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS,
+  complexSelectorHeightClassName,
+} from './complexSelectorClasses';
+import {tw} from '../utils/tw';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
@@ -85,13 +92,13 @@ const CONTENT_BLOCK_CAP = '480px';
  */
 const LAYER_OPEN: string = ':has([aria-expanded="true"])';
 
+// The trigger container shares its element with `inputWrapperStyles.base`,
+// whose unlayered `padding`, `gap`, `backgroundColor` and `boxShadow` outrank
+// every utility in `astryx-base`: its chrome, the ghost and secondary fills and
+// the disabled press reset stay here. `popover` stays because `usePopover`
+// takes StyleX styles only. Every child element uses
+// `complexSelectorClasses.ts`.
 const styles = stylex.create({
-  // The status glyph or info-tip keeps its size when the trigger text is long.
-  statusTip: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
   triggerContainer: {
     position: 'relative',
     display: 'flex',
@@ -117,39 +124,6 @@ const styles = stylex.create({
       default: 'pointer',
       ':is(:disabled,[aria-disabled="true"])': 'default',
     },
-  },
-  trigger: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minWidth: 0,
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-    color: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    outline: 'none',
-    borderRadius: radiusVars['--radius-element'],
-  },
-  triggerText: {
-    flexGrow: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    textAlign: 'start',
   },
   placeholder: {
     color: colorVars['--color-text-secondary'],
@@ -219,55 +193,8 @@ const styles = stylex.create({
       '[data-astryx-press="on"]': 'none',
     },
   },
-  // Only what Icon does not already provide: `sm` gives the 16px box and
-  // `color="secondary"` the color, but the glyph still must not shrink inside
-  // the flex trigger.
-  triggerIcon: {
-    flexShrink: 0,
-  },
-  // Rotation lives on the chevron glyph itself (passed through `xstyle`), not
-  // on the layout wrapper above, so the icon's
-  // `complex-selector-indicator-icon` theme target and the open/closed
-  // transform sit on one element — a theme can restyle the mark and its
-  // rotation through a single selector. The wrapper keeps only layout.
-  triggerIconRotation: {
-    transitionProperty: 'transform',
-    // Under reduced motion the chevron turns at once: an in-place state
-    // change moves nothing (design:reduced-motion DR1–DR3).
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-    transformOrigin: 'center',
-  },
-  triggerIconOpen: {
-    transform: 'rotate(180deg)',
-  },
   popover: {
     minWidth: 'anchor-size(width)',
-  },
-  content: {
-    boxSizing: 'border-box',
-    // The content's own cap, under the layer runtime's viewport cap: the
-    // viewport minus its gutters and any bar the app declares through
-    // LayerProvider's `inset` (spec:AST-059 FR2, FR6), so the last rows never
-    // paint under that bar.
-    maxHeight: stylex.firstThatWorks(
-      `min(${CONTENT_BLOCK_CAP}, ${layerViewportInset.maxBlockSize})`,
-      `min(${CONTENT_BLOCK_CAP}, ${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-    overflow: 'auto',
-    padding: spacingVars['--spacing-3'],
-  },
-  sm: {
-    height: sizeVars['--size-element-sm'],
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
   },
   disabled: {
     cursor: 'default',
@@ -843,7 +770,12 @@ export function ComplexSelector<Value>({
   });
 
   const content = (
-    <div id={contentId} {...stylex.props(styles.content, contentXstyle)}>
+    <div
+      id={contentId}
+      {...mergeProps(
+        COMPLEX_SELECTOR_CONTENT_CLASS,
+        stylex.props(contentXstyle),
+      )}>
       {children(optimisticValue, commitValue, close, {
         isOpen,
         isBusy,
@@ -940,7 +872,6 @@ export function ComplexSelector<Value>({
           stylex.props(
             inputWrapperStyles.base,
             styles.triggerContainer,
-            styles[size],
             // The ring belongs to the wrapper (the focusable `<button>` sits
             // inside it), but it must still be a KEYBOARD ring: `:focus-within`
             // matched a mouse click on the trigger and drew the outline for
@@ -957,7 +888,7 @@ export function ComplexSelector<Value>({
             triggerLabel == null && styles.placeholder,
             controlXstyle,
           ),
-          controlClassName,
+          tw(complexSelectorHeightClassName({size}), controlClassName),
           controlStyle,
         )}>
         {isRenderable(startIconSlot) && startIconSlot}
@@ -994,8 +925,10 @@ export function ComplexSelector<Value>({
           {...(isDisabled ? {'aria-disabled': 'true' as const} : null)}
           onClick={isDisabled ? swallowDisabledPress : handleTriggerButtonClick}
           onKeyDown={handleTriggerButtonKeyDown}
-          {...stylex.props(styles.trigger)}>
-          <span {...stylex.props(styles.triggerText)}>{triggerContent}</span>
+          className={COMPLEX_SELECTOR_TRIGGER_CLASS}>
+          <span className={COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS}>
+            {triggerContent}
+          </span>
         </button>
         {isBusy && <Spinner size="sm" aria-hidden="true" />}
         {isRenderable(statusTip) &&
@@ -1004,13 +937,17 @@ export function ComplexSelector<Value>({
             // message bubble (portaled, so outside this span in the DOM but
             // inside it in React), shows the message without opening the
             // popup.
-            <span onClick={stopPropagation} {...stylex.props(styles.statusTip)}>
+            <span
+              onClick={stopPropagation}
+              className={COMPLEX_SELECTOR_STATUS_TIP_CLASS}>
               {statusTip}
             </span>
           ) : (
             // The plain icon is part of the field: a press on it opens the
             // popup, as a press on the trigger does.
-            <span {...stylex.props(styles.statusTip)}>{statusTip}</span>
+            <span className={COMPLEX_SELECTOR_STATUS_TIP_CLASS}>
+              {statusTip}
+            </span>
           ))}
         {/* A status icon or info-tip takes the chevron's place, as in
             Selector. */}
@@ -1023,14 +960,18 @@ export function ComplexSelector<Value>({
             // and the secondary icon color the wrapper used to set, so the glyph
             // IS the trigger's icon element — one node carrying the box, the
             // color, the rotation, and the theme target.
-            xstyle={[
-              styles.triggerIcon,
-              styles.triggerIconRotation,
-              isOpen && styles.triggerIconOpen,
-            ]}
-            {...themeProps('complex-selector-indicator-icon', {
-              state: isOpen ? 'expanded' : 'collapsed',
-            })}
+            // The theme target and the rotation classes must both land on the
+            // glyph: a later `className` prop would drop the spread's own.
+            {...mergeProps(
+              themeProps('complex-selector-indicator-icon', {
+                state: isOpen ? 'expanded' : 'collapsed',
+              }),
+              tw(
+                COMPLEX_SELECTOR_TRIGGER_ICON_CLASS,
+                COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+                isOpen && COMPLEX_SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+              ),
+            )}
           />
         )}
       </div>
