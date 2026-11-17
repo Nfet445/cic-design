@@ -50,7 +50,6 @@ import {
 } from '../privateAttributes/ownRing.stylex';
 import {listReorderHandleProps} from '../privateAttributes/listReorder.stylex';
 import {reorderingHandleStyles} from '../privateAttributes/reordering.stylex';
-import {reorderLineStyles} from '../privateAttributes/reorderLine.stylex';
 import {useTouchHitArea} from '../utils/touchHitArea';
 import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 import {
@@ -216,7 +215,7 @@ const listStyles = stylex.create({
 });
 
 /** The style of a reorderable list (List applies it): its insertion line. */
-export const reorderListStyle = [listStyles.list, reorderLineStyles.list];
+export const reorderListStyle = listStyles.list;
 
 /** The text the row's label element shows, collapsed; empty without one. */
 function labelTextOf(handle: HTMLElement | null, labelID: string | null) {

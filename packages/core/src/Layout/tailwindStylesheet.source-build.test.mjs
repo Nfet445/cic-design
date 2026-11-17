@@ -25,6 +25,7 @@ import {
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
+import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
   iconColorClassName,
   iconGlyphClassName,
@@ -68,6 +69,8 @@ import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
+import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
+import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {stackClassName} from '../Stack/stackClasses';
 import {stackItemClassName} from '../Stack/stackItemClasses';
 import {
@@ -404,6 +407,11 @@ function familyClassNames() {
     add(iconGlyphClassName(color));
     add(iconRegistryClassName(color));
   }
+  for (const className of Object.values(iconBoxClassName)) {
+    add(className);
+  }
+  add(menuPressLitRowClassName);
+  add(reorderLineClassName);
   for (const placement of ['above', 'below', 'start', 'end']) {
     add(layerAnimations[placement]);
   }
@@ -643,6 +651,46 @@ describe('dist/astryx-tailwind.css declarations', () => {
     const bar = stylesheet.blockOf('forced-colors:bg-[color:CanvasText]');
     expect(bar).toContain('@media(forced-colors:active)');
     expect(bar).toContain('background-color:CanvasText');
+  });
+
+  it('sizes the icon box on its four steps', () => {
+    // Button and the Table row expansion put the box beside the glyph, so the
+    // size is a length of its own rather than the icon's variable.
+    expect(stylesheet.ruleFor('[width:0.75rem]')).toBe('width:0.75rem;');
+    expect(stylesheet.ruleFor('[height:1.5rem]')).toBe('height:1.5rem;');
+    expect(stylesheet.ruleFor('[font-size:1rem]')).toBe('font-size:1rem;');
+  });
+
+  it('paints the lit menu row from the mark it carries', () => {
+    // The row reads the variable in its own `:focus` background, so the marked
+    // row paints the pressed overlay. Neither variable has a default: a
+    // default would print in the same layer as the mark and win on order.
+    expect(
+      stylesheet.blockOf(
+        '[&[data-astryx-menu-press-lit]]:[--_menu-row-focus-paint:var(--color-overlay-pressed)]',
+      ),
+    ).toContain(
+      '&[data-astryx-menu-press-lit]{--_menu-row-focus-paint:var(--color-overlay-pressed);}',
+    );
+    expect(
+      stylesheet.blockOf(
+        '[&[data-astryx-menu-press-lit]]:[--_menu-row-active-paint:var(--color-overlay-pressed)]',
+      ),
+    ).toContain(
+      '&[data-astryx-menu-press-lit]{--_menu-row-active-paint:var(--color-overlay-pressed);}',
+    );
+  });
+
+  it('shows the list insertion line only while the list is marked', () => {
+    // The class moves `display` alone; the line's content, size and colour stay
+    // in the list's own style. Both arms name `::after` themselves, because
+    // Tailwind's `after:` variant would also declare `content`.
+    expect(stylesheet.blockOf('[&::after]:hidden')).toContain('display:none;');
+    const marked = stylesheet.blockOf(
+      '[&[data-astryx-reorder-line]::after]:block',
+    );
+    expect(marked).toContain('display:block;');
+    expect(marked).not.toContain('content');
   });
 
   it('declares no theme variable of its own', () => {
