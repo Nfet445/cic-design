@@ -1,6 +1,6 @@
 # dialogs and sheets
 
-Status: partly done — Dialog, DialogHeader, AlertDialog, DrawerHeader, the `Drawer` panel (plus its content area), the BottomSheet edge tint and all of `MobileNav/` have class maps, and the three rules that must stay unlayered now sit in `*.stylex.ts` beside their map; the BottomSheet host and panel, `BottomSheetSwitcher.tsx`, `Lightbox/` and `Popover/` still hold StyleX (see Result)
+Status: partly done — `Dialog`, `DialogHeader`, `AlertDialog`, `Drawer`, its header, its scrim and its content safe area, `MobileNav` and the bottom-sheet edge tint are classes. What is left is `Popover/` (this window) and the `BottomSheet` host plus `Lightbox`, which moved to ticket 50.
 Blocked by: 11,17
 Wave: 7
 Family: `family:overlay-dismissal`

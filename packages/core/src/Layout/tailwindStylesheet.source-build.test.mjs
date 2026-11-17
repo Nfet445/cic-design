@@ -178,6 +178,13 @@ import {
   dateInputControlClassName,
   dateInputSizeClassName,
   dateInputToggleClassName,
+  nativeDateFieldIconButtonClassName,
+  nativeDateFieldInputClassName,
+  nativeDateFieldOverlayClassName,
+  nativeDateFieldOverlayPlaceholderClassName,
+  nativeDateFieldOverlayValueClassName,
+  nativeDateFieldSlotClassName,
+  nativeDateFieldWrapperClassName,
 } from '../DateInput/dateInputClasses';
 import {
   fileInputBoxClassName,
@@ -219,6 +226,8 @@ import {
   touchTimeFieldWheelsClassName,
 } from '../TimeInput/touchTimeFieldClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
+import {checkboxListItemClassName} from '../CheckboxList/checkboxListItemClasses';
+import {radioListClassName} from '../RadioList/radioListClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
@@ -581,6 +590,34 @@ import {
   dividerLineVariantClassName,
   dividerVerticalLabelClassName,
 } from '../Divider/dividerClasses';
+import {
+  emptyStateActionsClassName,
+  emptyStateActionsCompactClassName,
+  emptyStateClassName,
+  emptyStateCompactClassName,
+  emptyStateDescriptionClassName,
+  emptyStateDescriptionCompactClassName,
+  emptyStateTextGroupClassName,
+  emptyStateTitleClassName,
+  emptyStateTitleCompactClassName,
+} from '../EmptyState/emptyStateClasses';
+import {timestampClassName} from '../Timestamp/timestampClasses';
+import {
+  timestampHoverCardActionClassName,
+  timestampHoverCardGridTemplateClassName,
+  timestampHoverCardLabelClassName,
+  timestampHoverCardListClassName,
+  timestampHoverCardRowClassName,
+  timestampHoverCardValueCellsClassName,
+  timestampHoverCardValueClassName,
+} from '../Timestamp/timestampHoverCardClasses';
+import {
+  skeletonAnimateClassName,
+  skeletonClassName,
+  skeletonDelayClassName,
+  skeletonDimensionsClassName,
+  skeletonRadiusClassName,
+} from '../Skeleton/skeletonClasses';
 import {
   bannerChevronClassName,
   bannerChevronExpandedClassName,
@@ -1205,7 +1242,20 @@ function familyClassNames() {
     add(dateInputToggleClassName({isDisabled}));
     for (const isInvalid of [false, true]) {
       add(dateInputControlClassName({isDisabled, isInvalid}));
+      for (const isHidden of [false, true]) {
+        add(nativeDateFieldInputClassName({isDisabled, isHidden, isInvalid}));
+      }
     }
+  }
+  for (const className of [
+    nativeDateFieldWrapperClassName,
+    nativeDateFieldIconButtonClassName,
+    nativeDateFieldSlotClassName,
+    nativeDateFieldOverlayClassName,
+    nativeDateFieldOverlayValueClassName,
+    nativeDateFieldOverlayPlaceholderClassName,
+  ]) {
+    add(className);
   }
   for (const size of ['sm', 'md', 'lg']) {
     add(dateRangeInputSizeClassName({size}));
@@ -1911,6 +1961,38 @@ function familyClassNames() {
   for (const value of Object.values(bannerStatusControlClassName)) {
     add(value);
   }
+  // EmptyState: the container and its compact arm, the text column, the title
+  // and description with their compact sizes, and the action row.
+  add(emptyStateClassName);
+  add(emptyStateCompactClassName);
+  add(emptyStateTextGroupClassName);
+  add(emptyStateTitleClassName);
+  add(emptyStateTitleCompactClassName);
+  add(emptyStateDescriptionClassName);
+  add(emptyStateDescriptionCompactClassName);
+  add(emptyStateActionsClassName);
+  add(emptyStateActionsCompactClassName);
+  // Timestamp: the `<time>` reset and the hover card's list, row, label, value
+  // and action cells with its four grid templates.
+  add(timestampClassName);
+  add(timestampHoverCardListClassName);
+  add(timestampHoverCardRowClassName);
+  add(timestampHoverCardLabelClassName);
+  add(timestampHoverCardValueClassName);
+  add(timestampHoverCardValueCellsClassName);
+  add(timestampHoverCardActionClassName);
+  for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
+    add(value);
+  }
+  // Skeleton: the placeholder, the pulse, the two utility classes that read
+  // the props' variables, and one class per radius.
+  add(skeletonClassName);
+  add(skeletonAnimateClassName);
+  add(skeletonDelayClassName);
+  add(skeletonDimensionsClassName);
+  for (const value of Object.values(skeletonRadiusClassName)) {
+    add(value);
+  }
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);
@@ -1960,6 +2042,13 @@ function familyClassNames() {
         isOpen,
       }),
     );
+  }
+
+  for (const isSelected of [true, false]) {
+    add(checkboxListItemClassName({isSelected, className: undefined}));
+  }
+  for (const orientation of ['vertical', 'horizontal']) {
+    add(radioListClassName({orientation}));
   }
 
   return [...names].sort();
@@ -2015,11 +2104,14 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // rows, its marker placement, the radio group's column, the sheet's
     // content box and action list, and the two drill-in wrappers added 18:
     // mostly one rule each, with the marker's two coarse-pointer arms and the
-    // row's three radius parts already spelled elsewhere. With every family
-    // above the sheet sits at 1187. The popover's map moved from StyleX to
-    // literal classes — its surface, both viewport-fit states, the two sizing
-    // classes, the anchor wrapper and both hidden close wrappers — and took
-    // the sheet to 1199, so the ceiling follows the sum rather than one side.
+    // row's three radius parts already spelled elsewhere. Skeleton's map added
+    // 25 — the placeholder, the pulse, the two classes that read the props'
+    // variables, and one per radius. With every family above the sheet sits at
+    // 1212, and the windows merged since — the menu surface, EmptyState,
+    // Timestamp — carried it further. The popover's map then moved from StyleX
+    // to literal classes: its surface, both viewport-fit states, the two sizing
+    // classes, the anchor wrapper and both hidden close wrappers. The sheet
+    // measures 1254, so the ceiling follows the sum rather than one side.
     expect(stylesheet.rules.size).toBeLessThan(1260);
   });
 

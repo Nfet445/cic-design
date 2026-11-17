@@ -71,6 +71,52 @@ written into the ticket.
   assembled by interpolation reaches the DOM with no rule behind it, and the
   stylesheet test is what catches it.
 
+## Traps that cost a window each
+
+- `mergeProps(xds, stylexResult, classNameOrStyle, style)` takes a **class
+  string** or a **style object** as its third argument, never `{className}`.
+  A migrated map is a string: join it with `tw()`, and never hand it to
+  `stylex.props()`, which only accepts StyleX values.
+- An arbitrary value can lose to a plain utility on ordering, not on wording:
+  `font-[var(--font-weight-semibold)]` prints **before** `.font-medium`, and two
+  opacities or two backgrounds are ordered by the sheet. Use the stock utility
+  (`font-semibold`) or move the state into a variant whose selector carries the
+  specificity (`[&[aria-disabled=true]]:opacity-…`, `aria-pressed:bg-…`).
+- Keyframes live in `packages/core/tailwind/astryx.input.css` as
+  `@keyframes astryxX`, because the build scans class maps only. A duration
+  computed from tokens is spelled out inside the arbitrary class, never
+  interpolated.
+- A rule that must beat the layer's own utilities — a padding `container()`
+  sets, a motion arm that has to outrank another animation — stays in its own
+  tiny `.stylex.ts` beside the component, with one sentence saying why. Three
+  such files exist (`Card/cardBorder.stylex.ts`,
+  `Dialog/dialogFullscreenSafeArea.stylex.ts`,
+  `AlertDialog/alertDialogTouchMotion.stylex.ts` and `Drawer/drawerContentSafeArea.stylex.ts`).
+- Every class-coverage ticket edits the same block of
+  `packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`, so its
+  merge always conflicts. Resolve by keeping **both** sides at the statement
+  level, add the `it(` closer or `import {` opener the halves need, remove any
+  extra `  });` that closes the `describe` early, and run `node --check` before
+  vitest. Then set one ceiling with the measured number in the comment.
+- Migrating one component trips four guards at once, and every one wants the
+  class map rather than an exception: `theme/derivedVarRegistry.test.ts` (a new
+  variable needs the `*.doc.mjs` `theming.vars[]`/`derived[]` entry, a
+  `theme/derivedVarRegistry.ts` record and its `DIR_TO_REGISTRY_KEY` line),
+  `theme/themeMotion.test.ts` (a literal `var()` must be read from the map once
+  it moves), `theme/themingTargets.test.ts` (an exception that no longer applies
+  is deleted, not kept) and `theme/dynamicType.test.ts` together with
+  `inputFontFloor.test.ts` (repoint to the map file). Otherwise the guard fails
+  **after** the merge, in whichever ticket merges next.
+- A test that leans on jsdom computing a declaration from a class breaks the
+  moment the class arrives: `user.click` used to reject a disabled row because
+  the StyleX rule gave it `pointer-events: none`, and once
+  `Item/itemDisabledClassName` became a class the click went through. Assert
+  the class on the row (`classesOf(node).includes('pointer-events-none')`) and
+  that the handler stayed silent, never the computed value.
+- Concurrency: three windows is the safe number. Six made every suite four
+  minutes long and killed the windows at their 1800 s limit with the work
+  uncommitted.
+
 ## Release and rollback
 
 - One wave is one release. Rollback is a revert of the wave's pull request, not

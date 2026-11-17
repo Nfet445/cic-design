@@ -2171,6 +2171,13 @@ describe('DropdownMenuSubMenu header and footer', () => {
     }
     return true;
   };
+  // The step aside is one stylesheet rule that reads the DOM: a view frame in
+  // the surface host that is not hidden sets the menu and the regions aside.
+  // jsdom parses no stylesheet, so the tests assert the shape the rule reads.
+  const stepsAside = (menu: HTMLElement) =>
+    menu.parentElement?.querySelector(
+      '[data-astryx-submenu-host] > [data-astryx-submenu-regions=view]:not([hidden])',
+    ) != null;
 
   function LabelsMenu({
     onCreate,
@@ -2656,8 +2663,8 @@ describe('DropdownMenuSubMenu header and footer', () => {
       // The view sits beside the root's menu, which steps aside with its own
       // header; the view leads with a Back row.
       expect(rootMenu).not.toContainElement(dialog);
-      expect(isShown(rootMenu)).toBe(false);
-      expect(isShown(rootField)).toBe(false);
+      expect(stepsAside(rootMenu)).toBe(true);
+      expect(isShown(rootField)).toBe(true);
       expect(dialog.closest('[popover]')).toBe(rootMenu.closest('[popover]'));
       const viewRows = Array.from(
         labelsMenu().querySelectorAll('[role="menuitem"]'),
@@ -2673,7 +2680,7 @@ describe('DropdownMenuSubMenu header and footer', () => {
       act(() => field().focus());
       fireEvent.keyDown(field(), {key: 'Escape'});
       await waitFor(() => expect(row).toHaveFocus());
-      expect(isShown(rootMenu)).toBe(true);
+      expect(stepsAside(rootMenu)).toBe(false);
       expect(isShown(rootField)).toBe(true);
     });
 
@@ -2706,7 +2713,7 @@ describe('DropdownMenuSubMenu header and footer', () => {
         detail: 1,
       });
       await screen.findByRole('dialog', {name: /Labels/, ...h});
-      expect(isShown(rootMenu)).toBe(false);
+      expect(stepsAside(rootMenu)).toBe(true);
       const toggle = screen.getByRole('button', {name: 'Toggle filter'});
       const bugIsShown = () =>
         isShown(screen.getByRole('menuitem', {name: 'Bug', ...h}));
@@ -2717,7 +2724,7 @@ describe('DropdownMenuSubMenu header and footer', () => {
       await waitFor(() =>
         expect(screen.queryByRole('dialog', {name: /Labels/, ...h})).toBeNull(),
       );
-      expect(isShown(rootMenu)).toBe(true);
+      expect(stepsAside(rootMenu)).toBe(false);
       expect(bugIsShown()).toBe(true);
 
       // It comes back: the view moves beside the root's menu, which steps
@@ -2728,7 +2735,7 @@ describe('DropdownMenuSubMenu header and footer', () => {
         ...h,
       });
       expect(isShown(dialog)).toBe(true);
-      expect(isShown(rootMenu)).toBe(false);
+      expect(stepsAside(rootMenu)).toBe(true);
       expect(bugIsShown()).toBe(true);
     });
 
