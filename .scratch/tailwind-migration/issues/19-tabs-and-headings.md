@@ -127,3 +127,11 @@ packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`
 - No browser check page was added for `family:navigation-destinations`; the
   TabList slice of this ticket shipped without one, so this ticket keeps that
   gap rather than inventing a page for half a family.
+
+## Closing notes
+
+- `TabList` (strip, masks, arrows), `Tab`, `TabMenu`, `NavHeadingMenu` landed in `c2e73e856`; `SegmentedControl` and `SegmentedControlItem` in `6ae979c3e` via `packages/core/src/SegmentedControl/segmentedControlClasses.ts`, merged `298f7c870`. No `stylex.create` remains in `TabList/`, `Tab/`, `TabMenu/`, `NavHeadingMenu/` or `SegmentedControl/`.
+- Two `TabList.test.tsx` assertions read `getComputedStyle(strip).maskImage`, which jsdom cannot answer once the mask is a class: they now match the whole class (`transparent_var(--_tab-strip-bleed)`, `transparent_calc(100%_-_var(--_tab-strip-bleed))`), and the bleed test reads `[--_tab-strip-bleed:0px]`, `px-`/`-mx-` and the `:has(:focus-visible)` bump from the class set.
+- The stylesheet's rule budget became 940 when this family landed; the sheet builds 124.8 kB.
+- `TabList`, `Tab`, `TabMenu`, `NavHeadingMenu` and `SegmentedControl` suites plus the stylesheet test: 1218 tests.
+- The lens and the selected-segment forced-colors arms are emitted per state in the class map; the disabled selected segment no longer reads as active in Windows High Contrast, which the old single style block could not express.

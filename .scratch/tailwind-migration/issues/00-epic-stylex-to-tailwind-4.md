@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 26 of 42 done, 2 waves done before the tickets existed.
+Progress: 27 of 42 done, 2 waves done before the tickets existed.
 
 ### Wave 0 — the harness
 
