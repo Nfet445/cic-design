@@ -103,8 +103,7 @@ export const touchTimeFieldWheelsStyle = {
 /** The inline property the wheel row's block-size class reads. */
 export function touchTimeFieldWheelsInlineStyle(): CSSProperties {
   return {
-    [touchTimeFieldWheelsStyle.blockSize]:
-      dateInputTouchGeometry.paneBlockSize,
+    [touchTimeFieldWheelsStyle.blockSize]: dateInputTouchGeometry.paneBlockSize,
   } as CSSProperties;
 }
 

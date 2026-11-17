@@ -29,11 +29,7 @@ const SIZE_CLASS: Record<TimeInputSize, string> = {
 };
 
 /** The wrapper's height for a size. */
-export function timeInputSizeClassName({
-  size,
-}: {
-  size: TimeInputSize;
-}): string {
+export function timeInputSizeClassName({size}: {size: TimeInputSize}): string {
   return SIZE_CLASS[size];
 }
 
@@ -78,7 +74,8 @@ export function timeInputClassName({
     'bg-transparent',
     'outline-none',
     'placeholder:text-[color:var(--color-text-secondary)]',
-    isRejected && '[&[aria-invalid=true]]:text-[color:var(--color-text-secondary)]',
+    isRejected &&
+      '[&[aria-invalid=true]]:text-[color:var(--color-text-secondary)]',
     isDisabled && '[&[aria-disabled=true]]:cursor-default',
   );
 }

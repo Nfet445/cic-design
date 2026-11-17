@@ -108,7 +108,6 @@ const TOUCH_POINTER_QUERY = '(pointer: coarse)';
 
 export type {TimeInputSize};
 
-
 export type TimeInputHourFormat = '12h' | '24h';
 
 /** @deprecated Use {@link TimeInputPresentation} via the `presentation` prop. */
