@@ -12,7 +12,7 @@
 import {describe, it, expect, vi, beforeAll} from 'vitest';
 import {render, screen, within, fireEvent} from '@testing-library/react';
 import {MobileNav} from './MobileNav';
-import {declaredValue} from '../__tests__/stylexDeclarations';
+import {classesOf} from '../__tests__/classNameAssertions';
 
 // jsdom doesn't implement showModal/close on <dialog>, so we mock them
 beforeAll(() => {
@@ -349,9 +349,11 @@ describe('MobileNav', () => {
     if (drawer == null) {
       throw new Error('no drawer panel');
     }
-    expect(declaredValue(drawer, 'max-width')).toBe('85vw');
+    expect(classesOf(drawer)).toContain('max-w-[85vw]');
     // The requested width is the width, not a cap on a full-viewport one.
-    expect(drawer.style.getPropertyValue('--x-width')).toBe('300px');
-    expect(declaredValue(drawer, 'width')).toBe('var(--x-width)');
+    expect(drawer.style.getPropertyValue('--astryx-mobile-nav-width')).toBe(
+      '300px',
+    );
+    expect(classesOf(drawer)).toContain('w-[var(--astryx-mobile-nav-width)]');
   });
 });

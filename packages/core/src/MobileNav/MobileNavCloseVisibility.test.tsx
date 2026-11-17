@@ -27,6 +27,7 @@
 import {describe, it, expect, vi, beforeAll} from 'vitest';
 import {render, screen, act} from '@testing-library/react';
 import {MobileNav} from './MobileNav';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {stubMatchMedia} from '../__tests__/stubMatchMedia';
 
 // jsdom doesn't implement showModal/close on <dialog>, so we mock them
@@ -54,21 +55,18 @@ function Drawer({isOpen}: {isOpen: boolean}) {
 describe('MobileNav stays rendered while it closes', () => {
   it('transitions display with allow-discrete so it hides only once closed', () => {
     render(<Drawer isOpen />);
-    const style = getComputedStyle(screen.getByTestId('mobile-nav'));
+    const classes = classesOf(screen.getByTestId('mobile-nav'));
 
-    // Without these two the drawer blanks out the instant `isOpen` flips,
-    // leaving an open modal dialog that nothing renders — and nothing can
-    // click past. See the file header.
-    expect(style.transitionProperty).toContain('display');
-    expect(style.transitionBehavior).toBe('allow-discrete');
+    // Without these the drawer blanks out the instant `isOpen` flips, leaving
+    // an open modal dialog that nothing renders — and nothing can click past.
+    // See the file header.
+    expect(classes).toContain('[transition-property:display]');
+    expect(classes).toContain('[transition-behavior:allow-discrete]');
     // A zero hold is the bug wearing the fix's clothes: the drawer stops being
     // rendered on the next style recalc, before any effect can close it.
-    expect(style.transitionDuration.trim()).not.toBe('');
-    // The hold must stay tied to the motion token rather than a literal: the
-    // close delay is derived by reading this value back, so a hardcoded hold
-    // and a themed slide-out would drift apart again. jsdom leaves var()
-    // unresolved, which is exactly why this reads as a declaration.
-    expect(style.transitionDuration).toContain('var(');
+    // The hold stays tied to the motion token rather than a literal, because
+    // the close delay is derived by reading this value back.
+    expect(classes).toContain('[transition-duration:var(--duration-medium)]');
   });
 
   it('keeps the native dialog open until the slide-out has run', () => {
