@@ -343,6 +343,13 @@ import {
   tabMenuTriggerClassName,
 } from '../TabList/tabListClasses';
 import {
+  SEGMENT_ICON_CLASS,
+  SEGMENT_LABEL_CLASS,
+  segmentedControlClassName,
+  segmentedItemClassName,
+  segmentedItemIconSizeClassName,
+} from '../SegmentedControl/segmentedControlClasses';
+import {
   linkClassName,
   linkColorClassName,
   linkExternalIconInClampedTextClassName,
@@ -1197,6 +1204,46 @@ function familyClassNames() {
   add(TAB_MENU_ITEM_CONTENT_CLASS);
   add(TAB_MENU_HEADING_CLASS);
 
+  // The segmented control: the track answers the layout, the disabled state
+  // and whether the lens paints; a segment answers the size, the selection,
+  // the disabled state, the layout, a hidden label and touch presentation.
+  for (const isFill of [false, true]) {
+    for (const isDisabled of [false, true]) {
+      for (const showsLens of [false, true]) {
+        add(segmentedControlClassName({isFill, isDisabled, showsLens}));
+      }
+    }
+  }
+  for (const size of ['sm', 'md', 'lg']) {
+    for (const isSelected of [false, true]) {
+      for (const isDisabled of [false, true]) {
+        add(
+          segmentedItemClassName({
+            size,
+            isSelected,
+            isDisabled,
+            isFill: false,
+            isLabelHidden: false,
+            isTouchPresentation: false,
+          }),
+        );
+      }
+    }
+    add(segmentedItemIconSizeClassName(size));
+  }
+  add(
+    segmentedItemClassName({
+      size: 'md',
+      isSelected: true,
+      isDisabled: false,
+      isFill: true,
+      isLabelHidden: true,
+      isTouchPresentation: true,
+    }),
+  );
+  add(SEGMENT_ICON_CLASS);
+  add(SEGMENT_LABEL_CLASS);
+
   return [...names].sort();
 }
 
@@ -1592,6 +1639,71 @@ describe('dist/astryx-tailwind.css declarations', () => {
     );
     expect(marked).toContain('display:block;');
     expect(marked).not.toContain('content');
+  });
+
+  it('draws the segmented lens from the variables the motion writes', () => {
+    // The lens is the track's own `::before`/`::after`, so each declaration
+    // reads a variable the selection motion writes and falls back to the
+    // resting value. `forced-color-adjust` keeps an already resolved surface
+    // from being remapped a second time under forced colors.
+    const before = stylesheet.blockOf(
+      '[&::before]:[box-shadow:var(--_segmented-lens-box-shadow,none)]',
+    );
+    expect(before).toContain(
+      'box-shadow:var(--_segmented-lens-box-shadow,none);',
+    );
+    expect(
+      stylesheet.blockOf(
+        '[&::before]:[visibility:var(--_segmented-lens-visibility,hidden)]',
+      ),
+    ).toContain('visibility:var(--_segmented-lens-visibility,hidden);');
+    const after = stylesheet.blockOf(
+      '[&::after]:[background-color:var(--_segmented-after-background-color,transparent)]',
+    );
+    expect(after).toContain(
+      'background-color:var(--_segmented-after-background-color,transparent);',
+    );
+    expect(
+      stylesheet.blockOf('[&::before]:[forced-color-adjust:none]'),
+    ).toContain('forced-color-adjust:none;');
+  });
+
+  it('rounds a segment by the track radius less the track padding', () => {
+    // Concentric radii: the segment's corners keep the track's inset, so a
+    // theme that changes either variable keeps the nesting true.
+    expect(
+      stylesheet.blockOf(
+        'rounded-[max(0px,calc(var(--_segmented-control-radius)_-_var(--_segmented-control-padding)))]',
+      ),
+    ).toContain(
+      'border-radius:max(0px,calc(var(--_segmented-control-radius)-var(--_segmented-control-padding)));',
+    );
+  });
+
+  it('caps a labelled track and leaves an icon-only track uncapped', () => {
+    // Only a track whose segments carry a visible label can truncate, so only
+    // that track takes the container's width as a cap.
+    expect(
+      stylesheet.blockOf(
+        '[&:has([role=radio]:not([aria-label]))]:[max-width:100%]',
+      ),
+    ).toContain('max-width:100%;');
+    expect(stylesheet.ruleFor('[max-width:none]')).toBe('max-width:none;');
+  });
+
+  it('keeps the selected segment perceivable under forced colors', () => {
+    // The arms key off `aria-checked` so they outrank the segment's own
+    // surface and colour inside `astryx-base`, where specificity decides.
+    const surface = stylesheet.blockOf(
+      'aria-checked:forced-colors:bg-[color:Highlight]',
+    );
+    expect(surface).toContain('@media(forced-colors:active)');
+    expect(surface).toContain('background-color:Highlight');
+    const label = stylesheet.blockOf(
+      'aria-checked:forced-colors:text-[color:HighlightText]',
+    );
+    expect(label).toContain('@media(forced-colors:active)');
+    expect(label).toContain('color:HighlightText');
   });
 
   it('declares no theme variable of its own', () => {
