@@ -2,23 +2,14 @@
 
 'use client';
 
-import * as stylex from '@stylexjs/stylex';
 import {ScrollableArea} from '@astryxdesign/core/ScrollableArea';
 import {Card} from '@astryxdesign/core/Card';
 import {Grid} from '@astryxdesign/core/Grid';
 import {VStack} from '@astryxdesign/core/Layout';
 import {Heading, Text} from '@astryxdesign/core/Text';
-import {colorVars, spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
-
-const styles = stylex.create({
-  sectionLabel: {
-    position: 'sticky',
-    insetBlockStart: 0,
-    zIndex: 1,
-    backgroundColor: colorVars['--color-background-card'],
-    paddingBlock: spacingVars['--spacing-2'],
-  },
-});
+const styles = {
+  sectionLabel: 'sticky top-0 z-[1] bg-card [padding-block:var(--spacing-2)]',
+} as const;
 
 const SECTIONS = [
   {
@@ -72,7 +63,7 @@ export default function ScrollableAreaStickyGroupHeaders() {
         </VStack>
         {SECTIONS.map(section => (
           <section key={section.label}>
-            <div {...stylex.props(styles.sectionLabel)}>
+            <div className={styles.sectionLabel}>
               <Text type="label" color="secondary">
                 {section.label}
               </Text>
