@@ -602,6 +602,16 @@ import {
   timestampHoverCardValueClassName,
 } from '../Timestamp/timestampHoverCardClasses';
 import {
+  aspectRatioChildCenterClassName,
+  aspectRatioChildClassName,
+  aspectRatioChildContainClassName,
+  aspectRatioChildCoverClassName,
+  aspectRatioChildFillClassName,
+  aspectRatioClassName,
+  aspectRatioEllipseClassName,
+  aspectRatioRatioClassName,
+} from '../AspectRatio/aspectRatioClasses';
+import {
   spinnerArcClassName,
   spinnerCircleClassName,
   spinnerClassName,
@@ -1973,6 +1983,16 @@ function familyClassNames() {
   for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
     add(value);
   }
+  // AspectRatio: the box, its ratio reading the private variable, the ellipse
+  // clip, the child wrapper and its three fit arms.
+  add(aspectRatioClassName);
+  add(aspectRatioRatioClassName);
+  add(aspectRatioEllipseClassName);
+  add(aspectRatioChildClassName);
+  add(aspectRatioChildCenterClassName);
+  add(aspectRatioChildFillClassName);
+  add(aspectRatioChildCoverClassName);
+  add(aspectRatioChildContainClassName);
   // Spinner: the wrapper, the box with its three geometry variables, the ring,
   // the rotor's box and its one animation shorthand, the circle, the arc, the
   // track and one class per size, per shade and per track alpha.
