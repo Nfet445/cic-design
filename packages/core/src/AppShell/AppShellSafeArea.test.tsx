@@ -13,6 +13,7 @@
  */
 
 import {render, screen} from '@testing-library/react';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 /** Every rule StyleX inserted, as the raw text it handed to `insertRule`. */
@@ -108,17 +109,11 @@ describe('AppShell safe area', () => {
         <div>Content</div>
       </AppShell>,
     );
-    const declarations = rawDeclarations(screen.getByRole('banner'));
-    expect(declarations.get('padding-top')).toBe(
-      'env(safe-area-inset-top,0px)',
-    );
+    const classes = classesOf(screen.getByRole('banner'));
+    expect(classes).toContain('pt-[env(safe-area-inset-top,0px)]');
     // Left-to-right here; a right-to-left context swaps the sides.
-    expect(declarations.get('padding-inline-start')).toBe(
-      'env(safe-area-inset-left,0px)',
-    );
-    expect(declarations.get('padding-inline-end')).toBe(
-      'env(safe-area-inset-right,0px)',
-    );
+    expect(classes).toContain('ps-[env(safe-area-inset-left,0px)]');
+    expect(classes).toContain('pe-[env(safe-area-inset-right,0px)]');
   });
 
   it('pads the sidenav-only phone top bar the same way', () => {
@@ -136,9 +131,7 @@ describe('AppShell safe area', () => {
       </AppShell>,
     );
     const bar = screen.getByRole('banner');
-    expect(rawDeclarations(bar).get('padding-top')).toBe(
-      'env(safe-area-inset-top,0px)',
-    );
+    expect(classesOf(bar)).toContain('pt-[env(safe-area-inset-top,0px)]');
   });
 
   it('pads a sidenav-only phone top bar under a banner by the sides only', () => {
@@ -159,19 +152,15 @@ describe('AppShell safe area', () => {
     // The banner's wrapper pads the top inset once; the top bar below it
     // would otherwise add a second band of the same height.
     const banner = screen.getByRole('banner');
-    expect(rawDeclarations(banner).get('padding-top')).toBe(
-      'env(safe-area-inset-top,0px)',
-    );
+    expect(classesOf(banner)).toContain('pt-[env(safe-area-inset-top,0px)]');
     const topBar = screen
       .getAllByRole('navigation')
       .map(nav => nav.closest('.astryx-app-shell-header'))
       .find(el => el != null && el !== banner) as HTMLElement;
     expect(topBar).toBeTruthy();
-    const declarations = rawDeclarations(topBar);
-    expect(declarations.has('padding-top')).toBe(false);
-    expect(declarations.get('padding-inline-start')).toBe(
-      'env(safe-area-inset-left,0px)',
-    );
+    const topBarClasses = classesOf(topBar);
+    expect(topBarClasses).not.toContain('pt-[env(safe-area-inset-top,0px)]');
+    expect(topBarClasses).toContain('ps-[env(safe-area-inset-left,0px)]');
   });
 
   it('sticks a phone top bar under a banner below the top inset in auto', () => {
@@ -194,10 +183,8 @@ describe('AppShell safe area', () => {
       .map(nav => nav.closest('.astryx-app-shell-header'))
       .find(el => el != null && el !== banner) as HTMLElement;
     expect(topBar).toBeTruthy();
-    expect(rawDeclarations(topBar).get('position')).toBe('sticky');
-    expect(rawDeclarations(topBar).get('top')).toBe(
-      'env(safe-area-inset-top,0px)',
-    );
+    expect(classesOf(topBar)).toContain('sticky');
+    expect(classesOf(topBar)).toContain('top-[env(safe-area-inset-top,0px)]');
     withBanner.unmount();
     // With no banner, the top bar is the header itself. It pads the top inset
     // and sticks at the top edge.
@@ -206,13 +193,9 @@ describe('AppShell safe area', () => {
         <div>Content</div>
       </AppShell>,
     );
-    const bar = screen.getByRole('banner');
-    expect(rawDeclarations(bar).get('padding-top')).toBe(
-      'env(safe-area-inset-top,0px)',
-    );
-    const top = rawDeclarations(bar).get('top');
-    expect(top).toBeDefined();
-    expect(top).not.toContain('env(');
+    const barClasses = classesOf(screen.getByRole('banner'));
+    expect(barClasses).toContain('pt-[env(safe-area-inset-top,0px)]');
+    expect(barClasses.some(name => name.startsWith('top-[env('))).toBe(false);
   });
 
   // Main's block-end padding: the inset it publishes for `contentPadding`

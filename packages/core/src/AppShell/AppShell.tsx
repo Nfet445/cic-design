@@ -69,6 +69,22 @@ import {
 } from '../motion/animatedLayout';
 import {TopNavRenderContext} from '../TopNav/TopNavRenderContext';
 import {TopNavMobileContentContext} from '../TopNav/TopNavMobileContentContext';
+import {
+  APP_SHELL_AUTO_MOBILE_TOP_BAR_CLASS,
+  APP_SHELL_BANNER_CLASS,
+  APP_SHELL_CONTENT_WRAPPER_CLASS,
+  APP_SHELL_ELEVATED_BACKDROP_CLASS,
+  APP_SHELL_ELEVATED_CONTENT_WRAPPER_CLASS,
+  APP_SHELL_HEADER_SAFE_AREA_SIDES_CLASS,
+  APP_SHELL_HEADER_SAFE_AREA_TOP_CLASS,
+  APP_SHELL_HEADER_STICKY_BELOW_TOP_INSET_CLASS,
+  APP_SHELL_HEADER_STICKY_CLASS,
+  APP_SHELL_ROOT_CLASS,
+  APP_SHELL_SIDE_NAV_STICKY_CLASS,
+  appShellHeightClassName,
+  appShellVariantClassName,
+} from './appShellClasses';
+import {tw} from '../utils/tw';
 import {AppShellMobileContext} from './AppShellMobileContext';
 import {AppShellNestingContext, useAppShellMainId} from './useAppShellMainId';
 import type {AppShellMobileContextValue} from './AppShellMobileContext';
@@ -311,31 +327,12 @@ export interface AppShellProps extends BaseProps<HTMLDivElement> {
 // Styles
 // =============================================================================
 
+// What stays off the class map: the area fills and the main focus-target keys
+// travel through `LayoutPanel`'s and `LayoutContent`'s `xstyle` prop, which
+// takes StyleX styles only; `mainSafeAreaEnd` and `panelAutoFill` ride the same
+// props. The skip link keeps its `:focus` arms here because
+// `focusOutlineProps.focusVisible` takes a StyleX style.
 const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'relative',
-    overflow: 'clip',
-  },
-  variantWash: {
-    backgroundColor: colorVars['--color-background-body'],
-  },
-  variantSurface: {
-    backgroundColor: colorVars['--color-background-surface'],
-  },
-  variantSection: {
-    backgroundColor: colorVars['--color-background-surface'],
-  },
-  variantElevated: {
-    backgroundColor: colorVars['--color-background-body'],
-  },
-  rootFill: {
-    height: '100dvh',
-  },
-  rootAuto: {
-    minHeight: '100dvh',
-  },
   skipLink: {
     // Visually hidden by default, visible on focus (keyboard navigation)
     position: {
@@ -419,23 +416,6 @@ const styles = stylex.create({
     },
   },
 
-  elevatedBackdrop: {
-    position: 'absolute',
-    inset: 0,
-    backgroundColor: colorVars['--color-background-surface'],
-    borderStartStartRadius: radiusVars['--radius-page'],
-    pointerEvents: 'none',
-  },
-  contentWrapper: {
-    display: 'contents',
-  },
-  elevatedContentWrapper: {
-    position: 'relative',
-    display: 'flex',
-    flex: 1,
-    minHeight: 0,
-    height: '100%',
-  },
   contentBgSurface: {
     backgroundColor: colorVars['--color-background-surface'],
   },
@@ -452,51 +432,6 @@ const styles = stylex.create({
   navAreaSurface: {
     backgroundColor: colorVars['--color-background-surface'],
   },
-  banner: {
-    flexShrink: 0,
-  },
-  hidden: {
-    display: 'none',
-  },
-  autoMobileTopBar: {
-    display: 'flex',
-    alignItems: 'center',
-    height: spacingVars['--spacing-12'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  // Sticky header for auto height mode. The header stays at its local
-  // stacking level — Field-owned input surfaces contain their own local
-  // z-index layers (AST-027), so no escalated page-level value is needed
-  // for the header to paint above scrolled content.
-  headerSticky: {
-    position: 'sticky',
-    top: 0,
-    zIndex: 1,
-  },
-  // The insets are zero unless the page sets `viewport-fit=cover`. The header
-  // background goes under the status bar and to the screen sides, as a UIKit
-  // bar does.
-  headerSafeAreaTop: {
-    paddingBlockStart: 'env(safe-area-inset-top, 0px)',
-  },
-  // The insets are physical sides, so a right-to-left context swaps them on
-  // the inline sides.
-  headerSafeAreaSides: {
-    paddingInlineStart: {
-      default: 'env(safe-area-inset-left, 0px)',
-      ':is([dir="rtl"] *)': 'env(safe-area-inset-right, 0px)',
-    },
-    paddingInlineEnd: {
-      default: 'env(safe-area-inset-right, 0px)',
-      ':is([dir="rtl"] *)': 'env(safe-area-inset-left, 0px)',
-    },
-  },
-  // In `auto`, the banner's wrapper and the phone top bar both stick. Below a
-  // banner, the bar sticks under the top inset, so its items stay clear of the
-  // status bar.
-  headerStickyBelowTopInset: {
-    top: 'env(safe-area-inset-top, 0px)',
-  },
   // Main adds the bottom inset to the padding that LayoutContent publishes for
   // `contentPadding`. The published value excludes the inset, so a bleed child
   // subtracts only `contentPadding`. Main is border-box, so a child that fills
@@ -504,22 +439,6 @@ const styles = stylex.create({
   mainSafeAreaEnd: {
     paddingBlockEnd:
       'calc(var(--container-padding-block-end, 0px) + env(safe-area-inset-bottom, 0px))',
-  },
-  // Sticky sideNav for auto height mode — sticks within the wrapper.
-  // This div replaces the panel as the direct flex child of the middle
-  // (horizontal) container, so it needs the same flex properties that
-  // LayoutPanel applies: flexShrink: 0 prevents the flex container
-  // from collapsing the sidenav, and overflow: clip matches the panel's
-  // default so content doesn't bleed horizontally.
-  sideNavSticky: {
-    flexShrink: 0,
-    overflow: 'clip',
-    position: 'sticky',
-    top: 'var(--_app-shell-header-height, 0px)',
-    height: 'calc(100dvh - var(--_app-shell-header-height, 0px))',
-    // Ensure children (LayoutPanel → SideNav) fill the sticky container
-    display: 'flex',
-    flexDirection: 'column',
   },
   // Panel fill for auto mode — panel fills the sticky container vertically
   // and scrolls independently since the page (not the panel) owns the scroll
@@ -926,7 +845,10 @@ export function AppShell({
     hasTopNav || hasBanner ? (
       <LayoutHeader padding={0} hasDivider={navHasDividers && hasTopNav}>
         {hasBanner && (
-          <div {...stylex.props(styles.banner, navAreaStyle)}>{banner}</div>
+          <div
+            {...mergeProps(APP_SHELL_BANNER_CLASS, stylex.props(navAreaStyle))}>
+            {banner}
+          </div>
         )}
         {hasTopNav && topNavContent}
       </LayoutHeader>
@@ -940,11 +862,11 @@ export function AppShell({
       role="banner"
       {...mergeProps(
         themeProps('app-shell-header', {variant}),
-        stylex.props(
-          headerAreaStyle,
-          isAuto && styles.headerSticky,
-          styles.headerSafeAreaTop,
-          styles.headerSafeAreaSides,
+        stylex.props(headerAreaStyle),
+        tw(
+          isAuto && APP_SHELL_HEADER_STICKY_CLASS,
+          APP_SHELL_HEADER_SAFE_AREA_TOP_CLASS,
+          APP_SHELL_HEADER_SAFE_AREA_SIDES_CLASS,
         ),
       )}>
       {headerInner}
@@ -1125,7 +1047,7 @@ export function AppShell({
 
   const sideNavContent =
     sideNavPanel != null && isAuto ? (
-      <div {...stylex.props(styles.sideNavSticky)}>{sideNavPanel}</div>
+      <div className={APP_SHELL_SIDE_NAV_STICKY_CLASS}>{sideNavPanel}</div>
     ) : (
       sideNavPanel
     );
@@ -1252,13 +1174,13 @@ export function AppShell({
   // the elevated desktop layout, the wrapper generates no layout box.
   const mainContent = (
     <div
-      {...stylex.props(
+      className={
         shouldElevateWithCorner
-          ? styles.elevatedContentWrapper
-          : styles.contentWrapper,
-      )}>
+          ? APP_SHELL_ELEVATED_CONTENT_WRAPPER_CLASS
+          : APP_SHELL_CONTENT_WRAPPER_CLASS
+      }>
       {shouldElevateWithCorner && (
-        <div ref={backdropRef} {...stylex.props(styles.elevatedBackdrop)} />
+        <div ref={backdropRef} className={APP_SHELL_ELEVATED_BACKDROP_CLASS} />
       )}
       {mainInner}
     </div>
@@ -1289,19 +1211,21 @@ export function AppShell({
         role={headerContent == null ? 'banner' : undefined}
         {...mergeProps(
           themeProps('app-shell-header', {variant}),
-          stylex.props(
-            headerAreaStyle,
-            isAuto && styles.headerSticky,
-            styles.headerSafeAreaSides,
+          stylex.props(headerAreaStyle),
+          tw(
+            isAuto && APP_SHELL_HEADER_STICKY_CLASS,
+            APP_SHELL_HEADER_SAFE_AREA_SIDES_CLASS,
             // Under a banner, the banner's wrapper pads the top inset. This top
             // bar takes only the side insets.
-            headerContent == null && styles.headerSafeAreaTop,
-            isAuto && headerContent != null && styles.headerStickyBelowTopInset,
+            headerContent == null && APP_SHELL_HEADER_SAFE_AREA_TOP_CLASS,
+            isAuto &&
+              headerContent != null &&
+              APP_SHELL_HEADER_STICKY_BELOW_TOP_INSET_CLASS,
           ),
         )}>
         <LayoutHeader padding={0} hasDivider={navHasDividers}>
           <div
-            {...stylex.props(styles.autoMobileTopBar)}
+            {...mergeProps(APP_SHELL_AUTO_MOBILE_TOP_BAR_CLASS, stylex.props())}
             role="navigation"
             aria-label={t('@astryx.appShell.mobileNavigation')}>
             <SideNavRenderContext value="topbar">
@@ -1322,21 +1246,17 @@ export function AppShell({
         {...mergeProps(
           themeProps('app-shell', {variant}),
           stylex.props(
-            styles.root,
             // A layout root (FR18): nothing an ancestor Layout, Card or
             // Section publishes reaches the shell (component:Layout FR8).
             layoutReset,
-            variant === 'wash'
-              ? styles.variantWash
-              : variant === 'surface'
-                ? styles.variantSurface
-                : variant === 'section'
-                  ? styles.variantSection
-                  : styles.variantElevated,
-            isFill ? styles.rootFill : styles.rootAuto,
             xstyle,
           ),
-          className,
+          tw(
+            APP_SHELL_ROOT_CLASS,
+            appShellVariantClassName({variant}),
+            appShellHeightClassName({height}),
+            className,
+          ),
           style,
         )}>
         {/* The Layout area, slot and divider defaults an ancestor Layout
