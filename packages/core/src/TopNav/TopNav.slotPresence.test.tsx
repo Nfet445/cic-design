@@ -20,6 +20,25 @@ import {TopNavHeading} from './TopNavHeading';
 import {TopNavMegaMenuItem} from './TopNavMegaMenuItem';
 import {TopNavMenu} from './TopNavMenu';
 import {TopNavRenderContext} from './TopNavRenderContext';
+import {classesOf} from '../__tests__/classNameAssertions';
+import {
+  topNavHeadingChevronClassName,
+  topNavHeadingEndContentClassName,
+  topNavHeadingLogoClassName,
+} from './topNavHeadingClasses';
+import {
+  topNavCenterRegionClassName,
+  topNavEndContentClassName,
+  topNavEndRegionClassName,
+  topNavHeadingSlotClassName,
+  topNavMobileHeadingClassName,
+  topNavStartContentClassName,
+} from './topNavClasses';
+import {topNavMenuDrawerItemIconClassName} from './topNavMenuClasses';
+import {
+  topNavMegaMenuItemDrawerIconClassName,
+  topNavMegaMenuItemIconClassName,
+} from './topNavMegaMenuItemClasses';
 import {TopNavMobileContentContext} from './TopNavMobileContentContext';
 import {NavHeadingMenu} from '../NavMenu/NavHeadingMenu';
 import {NavHeadingMenuItem} from '../NavMenu/NavHeadingMenuItem';
@@ -52,9 +71,25 @@ function zeroParent(): HTMLElement | null {
   return null;
 }
 
-/** Whether the "0" sits inside an element whose class names `style`. */
-function zeroIsInside(style: string): boolean {
-  return zeroParent()?.closest(`[class*="${style}"]`) != null;
+/** Every element whose class list holds every class of a class set. */
+function slotsOf(classNames: string): Element[] {
+  const wanted = classNames.split(' ');
+  return Array.from(document.querySelectorAll('*')).filter(element => {
+    const present = classesOf(element);
+    return wanted.every(name => present.includes(name));
+  });
+}
+
+/** The first element whose class list holds every class of a class set. */
+function slotOf(classNames: string): Element | null {
+  return slotsOf(classNames)[0] ?? null;
+}
+
+/** Whether the "0" sits inside the slot drawn by a class set. */
+function zeroIsInside(classNames: string): boolean {
+  const slot = slotOf(classNames);
+  const parent = zeroParent();
+  return slot != null && parent != null && slot.contains(parent);
 }
 
 const OPEN_MOBILE_NAV = {
@@ -91,18 +126,22 @@ function InDrawer(props: {children: ReactNode; mobileContent?: ReactNode}) {
 
 describe('TopNav slots follow isRenderable', () => {
   describe.each([
-    ['the desktop bar', (node: ReactNode): ReactNode => node, 'styles.heading'],
+    [
+      'the desktop bar',
+      (node: ReactNode): ReactNode => node,
+      topNavHeadingSlotClassName(),
+    ],
     [
       'the mobile bar',
       (node: ReactNode): ReactNode => (
         <TopNavRenderContext value="mobile-bar">{node}</TopNavRenderContext>
       ),
-      'mobileBarHeading',
+      topNavMobileHeadingClassName(),
     ],
   ] as const)('heading in %s', (_mode, wrap, style) => {
     it.each(EMPTY_VALUES)('renders no heading for %s', (_label, value) => {
       render(wrap(<TopNav heading={value} />));
-      expect(document.querySelector(`[class*="${style}"]`)).toBeNull();
+      expect(slotOf(style)).toBeNull();
     });
 
     it('renders a heading of 0 inside its slot', () => {
@@ -113,22 +152,22 @@ describe('TopNav slots follow isRenderable', () => {
 
   it.each(EMPTY_VALUES)('renders no start content for %s', (_label, value) => {
     render(<TopNav startContent={value} />);
-    expect(document.querySelector('[class*="startContent"]')).toBeNull();
+    expect(slotOf(topNavStartContentClassName())).toBeNull();
   });
 
   it('renders a startContent of 0 in the start section', () => {
     render(<TopNav startContent={0} />);
-    expect(zeroIsInside('startContent')).toBe(true);
+    expect(zeroIsInside(topNavStartContentClassName())).toBe(true);
   });
 
   it.each(EMPTY_VALUES)('renders no end content for %s', (_label, value) => {
     render(<TopNav endContent={value} />);
-    expect(document.querySelector('[class*="styles.endContent"]')).toBeNull();
+    expect(slotOf(topNavEndContentClassName())).toBeNull();
   });
 
   it('renders an endContent of 0 inside its slot', () => {
     render(<TopNav endContent={0} />);
-    expect(zeroIsInside('styles.endContent')).toBe(true);
+    expect(zeroIsInside(topNavEndContentClassName())).toBe(true);
   });
 
   describe('mobile content in the drawer', () => {
@@ -139,9 +178,7 @@ describe('TopNav slots follow isRenderable', () => {
         </InDrawer>,
       );
       expect(container.innerHTML).toBe('');
-      expect(
-        document.querySelector('[class*="drawerExtraContent"]'),
-      ).toBeNull();
+      expect(screen.queryByRole('dialog')).toBeNull();
     });
 
     it('renders a mobile content of 0 inside its drawer slot', () => {
@@ -150,7 +187,7 @@ describe('TopNav slots follow isRenderable', () => {
           <TopNav heading="Product" startContent={<span>Home</span>} />
         </InDrawer>,
       );
-      expect(zeroIsInside('drawerExtraContent')).toBe(true);
+      expect(zeroParent()?.closest('dialog')).toBe(screen.getByRole('dialog'));
     });
   });
 });
@@ -161,8 +198,8 @@ describe('TopNav layout follows isRenderable', () => {
     'an empty centerContent (%s) keeps the bar out of its center layout',
     (_label, value) => {
       render(<TopNav heading="Product" centerContent={value} />);
-      expect(document.querySelector('[class*="centerContent"]')).toBeNull();
-      expect(document.querySelector('[class*="rightSection"]')).toBeNull();
+      expect(slotOf(topNavCenterRegionClassName())).toBeNull();
+      expect(slotOf(topNavEndRegionClassName())).toBeNull();
     },
   );
 
@@ -205,6 +242,28 @@ describe('TopNav layout follows isRenderable', () => {
 });
 
 describe('TopNavHeading slots follow isRenderable', () => {
+  const chevronClasses = topNavHeadingChevronClassName().split(' ');
+
+  /**
+   * The logo slot. The chevron trigger shares the logo's centering classes but
+   * adds its 28px box, so the chevron is not a logo slot.
+   */
+  function logoSlot(): Element | null {
+    return (
+      slotsOf(topNavHeadingLogoClassName()).find(element => {
+        const present = classesOf(element);
+        return !chevronClasses.every(name => present.includes(name));
+      }) ?? null
+    );
+  }
+
+  /** Whether the "0" sits inside the logo slot. */
+  function zeroIsInsideLogo(): boolean {
+    const slot = logoSlot();
+    const parent = zeroParent();
+    return slot != null && parent != null && slot.contains(parent);
+  }
+
   // Each props set reaches a different render path of the heading.
   const paths: ReadonlyArray<[string, Record<string, unknown>]> = [
     ['the logo-only heading', {heading: undefined}],
@@ -221,12 +280,12 @@ describe('TopNavHeading slots follow isRenderable', () => {
   describe.each(paths)('logo in %s', (_path, props) => {
     it.each(EMPTY_VALUES)('renders no logo for %s', (_label, value) => {
       render(<TopNavHeading heading="Product" logo={value} {...props} />);
-      expect(document.querySelector('[class*="styles.logo"]')).toBeNull();
+      expect(logoSlot()).toBeNull();
     });
 
     it('renders a logo of 0 inside its slot', () => {
       render(<TopNavHeading heading="Product" logo={0} {...props} />);
-      expect(zeroIsInside('styles.logo')).toBe(true);
+      expect(zeroIsInsideLogo()).toBe(true);
     });
   });
 
@@ -235,9 +294,9 @@ describe('TopNavHeading slots follow isRenderable', () => {
       <TopNavHeading heading="Product" logo={0} menu={<span>Menu</span>} />,
     );
     fireEvent.click(screen.getByRole('button', {name: /Product/}));
-    const zeros = Array.from(
-      document.querySelectorAll('[class*="styles.logo"]'),
-    ).filter(element => element.textContent === '0');
+    const zeros = slotsOf(topNavHeadingLogoClassName()).filter(
+      element => element.textContent === '0',
+    );
     expect(zeros.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -245,13 +304,13 @@ describe('TopNavHeading slots follow isRenderable', () => {
     'renders no header end content for %s',
     (_label, value) => {
       render(<TopNavHeading heading="Product" headerEndContent={value} />);
-      expect(document.querySelector('[class*="headerEndContent"]')).toBeNull();
+      expect(slotOf(topNavHeadingEndContentClassName())).toBeNull();
     },
   );
 
   it('renders a headerEndContent of 0 inside its slot', () => {
     render(<TopNavHeading heading="Product" headerEndContent={0} />);
-    expect(zeroIsInside('headerEndContent')).toBe(true);
+    expect(zeroIsInside(topNavHeadingEndContentClassName())).toBe(true);
   });
 });
 
@@ -260,24 +319,24 @@ describe('TopNavMegaMenuItem icon follows isRenderable', () => {
     [
       'the desktop popover',
       (node: ReactNode): ReactNode => node,
-      'desktopIcon',
+      topNavMegaMenuItemIconClassName,
     ],
     [
       'the drawer',
       (node: ReactNode): ReactNode => (
         <TopNavRenderContext value="drawer">{node}</TopNavRenderContext>
       ),
-      'drawerItemIcon',
+      topNavMegaMenuItemDrawerIconClassName,
     ],
-  ] as const)('in %s', (_mode, wrap, style) => {
+  ] as const)('in %s', (_mode, wrap, iconClassName) => {
     it.each(EMPTY_VALUES)('renders no icon for %s', (_label, value) => {
       render(wrap(<TopNavMegaMenuItem title="Reports" icon={value} />));
-      expect(document.querySelector(`[class*="${style}"]`)).toBeNull();
+      expect(slotOf(iconClassName())).toBeNull();
     });
 
     it('renders an icon of 0 inside its slot', () => {
       render(wrap(<TopNavMegaMenuItem title="Reports" icon={0} />));
-      expect(zeroIsInside(style)).toBe(true);
+      expect(zeroIsInside(iconClassName())).toBe(true);
     });
   });
 });
@@ -294,12 +353,12 @@ describe('TopNavMenu drawer item icon follows isRenderable', () => {
 
   it.each(EMPTY_VALUES)('renders no icon for %s', (_label, value) => {
     renderDrawerMenu(value);
-    expect(document.querySelector('[class*="itemIcon"]')).toBeNull();
+    expect(slotOf(topNavMenuDrawerItemIconClassName())).toBeNull();
   });
 
   it('renders an icon of 0 inside its slot', () => {
     renderDrawerMenu(0);
-    expect(zeroIsInside('itemIcon')).toBe(true);
+    expect(zeroIsInside(topNavMenuDrawerItemIconClassName())).toBe(true);
   });
 });
 

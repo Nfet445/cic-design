@@ -26,8 +26,10 @@ import {
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {isRenderable} from '../utils/isRenderable';
-import {focusVars, spacingVars} from '../theme/tokens.stylex';
+import {focusVars} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {treeListClassName} from './treeListClasses';
 import type {BaseProps} from '../BaseProps';
 import {TreeListItem} from './TreeListItem';
 import type {
@@ -155,36 +157,6 @@ export interface TreeListProps extends BaseProps<HTMLDivElement> {
 // =============================================================================
 // Styles
 // =============================================================================
-
-const styles = stylex.create({
-  root: {
-    position: 'relative',
-    // Contain the guides' and focused rows' `z-index` (TreeListBranches,
-    // TreeListItem) inside the tree, so they never climb over a sticky header
-    // or other positioned content outside the list.
-    isolation: 'isolate',
-    // Per-level indentation step. Public, themeable lever: a theme can retune
-    // the tree's indent metric (e.g. to `var(--spacing-5)`) via `defineTheme`
-    // on the `tree-list` target, and both the row indents (TreeListItem) and
-    // the guide-line offsets (TreeListBranches) read it so they stay aligned.
-    '--tree-list-indent': spacingVars['--spacing-4'],
-    // Vertical gap between adjacent rows. Public, themeable lever (default
-    // `--spacing-0-5` = 2px for a subtle separation between rows). A theme sets
-    // it on the `tree-list` target to widen or close the gap; the guide
-    // connector spans the gap natively (see TreeListBranches) so the line stays
-    // continuous and does not overhang the last row — no consumer-side guide
-    // tuning needed.
-    '--tree-list-row-gap': spacingVars['--spacing-0-5'],
-  },
-  list: {
-    margin: 0,
-    padding: 0,
-    listStyleType: 'none',
-  },
-  header: {
-    marginBottom: spacingVars['--spacing-2'],
-  },
-});
 
 // =============================================================================
 // Helpers
@@ -727,13 +699,13 @@ export function TreeList({
       onKeyDown={handleRootKeyDown}
       {...mergeProps(
         themeProps('tree-list', {density, variant}),
-        stylex.props(styles.root, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(treeListClassName.root, className),
         style,
       )}
       {...restProps}>
       {hasHeader && (
-        <div id={headerId} {...stylex.props(styles.header)}>
+        <div id={headerId} className={treeListClassName.header}>
           {header}
         </div>
       )}
@@ -747,7 +719,7 @@ export function TreeList({
         aria-label={hasHeader ? undefined : ariaLabel}
         aria-labelledby={hasHeader ? headerId : ariaLabelledby}
         onFocus={handleFocus}
-        {...stylex.props(styles.list)}>
+        className={treeListClassName.list}>
         {renderItems(items, 0, [])}
       </ul>
     </div>

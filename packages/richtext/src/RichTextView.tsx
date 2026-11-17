@@ -20,14 +20,9 @@
 
 import {useEffect, useRef, useState, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {sharedEditorTheme} from './editorTheme';
+import {sharedEditorTheme} from './editorThemeClasses';
 import type {BaseProps} from '@astryxdesign/core';
 import {mergeProps} from '@astryxdesign/core/utils';
-import {
-  colorVars,
-  typeScaleVars,
-  typographyVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 
 import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -43,6 +38,7 @@ import {MarkdownExtensionsPlugin} from './internal/MarkdownExtensionsPlugin';
 import type {RichTextMarkdownExtension} from './markdownExtensions';
 import type {CodeLanguage} from '@astryxdesign/core/CodeBlock';
 import {TaskCheckboxPlugin} from './internal/TaskCheckboxPlugin';
+import {richTextViewRootClassName} from './richTextViewClasses';
 import type {
   AnyLexicalExtension,
   Klass,
@@ -53,22 +49,6 @@ import {defineExtension} from 'lexical';
 import {TextSemanticsExtension} from './textSemantics';
 // The same node set as the editor, so anything it writes renders here.
 import {DEFAULT_NODES} from './editorNodes';
-
-const styles = stylex.create({
-  root: {
-    width: '100%',
-    // Holds the code block headers and task checkboxes drawn over the
-    // content.
-    position: 'relative',
-    // The document's body text, as core Markdown and the editor set it
-    // (spec:AST-061 FR2). Without it, blocks the theme leaves unsized —
-    // list items, quotes, table cells — take the host page's font.
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-  },
-});
 
 /**
  * Lexical's `ContentEditable` renders `role="textbox"` and widget-only ARIA
@@ -285,7 +265,12 @@ export function RichTextView({
     extensionRef.current = null;
     return (
       <div
-        {...mergeProps(stylex.props(styles.root, xstyle), className, style)}
+        {...mergeProps(
+          stylex.props(xstyle),
+          {className: richTextViewRootClassName},
+          className,
+          style,
+        )}
         {...rest}>
         {errorFallback}
       </div>
@@ -310,7 +295,12 @@ export function RichTextView({
 
   return (
     <div
-      {...mergeProps(stylex.props(styles.root, xstyle), className, style)}
+      {...mergeProps(
+        stylex.props(xstyle),
+        {className: richTextViewRootClassName},
+        className,
+        style,
+      )}
       {...rest}>
       <LexicalExtensionComposer
         extension={extensionRef.current}

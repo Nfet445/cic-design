@@ -22,19 +22,13 @@
 
 import {useMemo, useRef, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  fontWeightVars,
-  radiusVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import {usePopoverInternal} from '../Popover/usePopover';
 import {Link} from '../Link';
 import {Icon} from '../Icon';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import type {BaseProps} from '../BaseProps';
 import {useMenuHover} from '../hooks/useMenuHover';
@@ -50,220 +44,30 @@ import {
 } from '../i18n/useComponentTranslator';
 import english from '../i18n/generated-english/TopNav/TopNavHeading.generated';
 import {isRenderable} from '../utils/isRenderable';
+import {
+  topNavHeadingChevronClassName,
+  topNavHeadingChevronGlyphClassName,
+  topNavHeadingChevronWithGlyphClassName,
+  topNavHeadingColumnsClassName,
+  topNavHeadingEndContentClassName,
+  topNavHeadingInteractiveClassName,
+  topNavHeadingLinkedLineClassName,
+  topNavHeadingLogoClassName,
+  topNavHeadingMenuTriggerClassName,
+  topNavHeadingPopoverAnchorClassName,
+  topNavHeadingPopoverChevronWithGlyphClassName,
+  topNavHeadingPopoverContentClassName,
+  topNavHeadingPopoverHeadingClassName,
+  topNavHeadingSupportingLineClassName,
+  topNavHeadingTextContainerClassName,
+  topNavHeadingTitleClassName,
+  topNavHeadingTitleLinkClassName,
+  topNavHeadingTitleRowClassName,
+  topNavHeadingClassName,
+  type TopNavHeadingColumns,
+} from './topNavHeadingClasses';
 
 registerEnglishFallback(english);
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  // The text track can shrink to zero. The logo and the chevron row keep
-  // their width.
-  root: {
-    display: 'grid',
-    gridAutoFlow: 'column',
-    justifyContent: 'start',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    minHeight: spacingVars['--spacing-8'],
-    minWidth: 0,
-    paddingInlineStart: {
-      default: spacingVars['--spacing-2'],
-      ':has(.astryx-nav-icon)': 0,
-    },
-    paddingInlineEnd: spacingVars['--spacing-2'],
-    paddingBlock: 0,
-    boxSizing: 'border-box',
-    textDecoration: 'none',
-    color: colorVars['--color-text-primary'],
-    cursor: 'default',
-  },
-  // The text track takes the free space, so end content sits at the inline end.
-  columnsWithLogo: {
-    gridTemplateColumns: 'auto minmax(0, 1fr)',
-  },
-  columnsText: {
-    gridTemplateColumns: 'minmax(0, 1fr)',
-  },
-  // Linked lines wrap, so the text track keeps its longest word: a link is
-  // never clipped to nothing, and no hidden words grow the bar.
-  columnsWithLogoAndLinks: {
-    gridTemplateColumns: 'auto minmax(min-content, 1fr)',
-  },
-  columnsWithLinks: {
-    gridTemplateColumns: 'minmax(min-content, 1fr)',
-  },
-  // The chevron box plus the gap before it. The track stops there, so a
-  // crowded bar cannot cover the chevron.
-  columnsWithLogoAndMenu: {
-    gridTemplateColumns: `auto minmax(calc(${spacingVars['--spacing-7']} + ${spacingVars['--spacing-1']}), 1fr)`,
-  },
-  columnsWithMenu: {
-    gridTemplateColumns: `minmax(calc(${spacingVars['--spacing-7']} + ${spacingVars['--spacing-1']}), 1fr)`,
-  },
-  interactive: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    textAlign: 'start',
-    ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-      '@media (hover: hover)': {
-        backgroundColor: colorVars['--color-overlay-hover'],
-      },
-    },
-  },
-  menuTrigger: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    textAlign: 'start',
-  },
-  logo: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-  },
-  superheading: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    textDecoration: 'none',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  heading: {
-    fontSize: typeScaleVars['--text-large-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    lineHeight: typeScaleVars['--text-large-leading'],
-    color: colorVars['--color-text-primary'],
-    textDecoration: 'none',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  subheading: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    textDecoration: 'none',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  headingRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  headingLink: {
-    textDecoration: 'none',
-    color: 'inherit',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  // Clip the link itself. The column stays overflow visible, so the link's
-  // own focus ring is not cut off.
-  linkedLine: {
-    minWidth: 0,
-    maxWidth: '100%',
-    overflow: 'hidden',
-  },
-  chevron: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: spacingVars['--spacing-7'],
-    minHeight: spacingVars['--spacing-7'],
-    color: colorVars['--color-icon-secondary'],
-  },
-  // The registry chevron is a 1em SVG, so it has always rendered at the
-  // heading's inherited font size. Icon's size box would repin it to a fixed
-  // rem (the nearest, sm, is 1rem = 16px vs the 14px base here), so hold the
-  // glyph on the inherited em — the 28px chevron box above is unchanged, and
-  // the glyph keeps tracking the surrounding text.
-  chevronGlyph: {
-    width: '1em',
-    height: '1em',
-    fontSize: 'inherit',
-  },
-  headerEndContent: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    marginInlineStart: 'auto',
-  },
-  popoverContent: {
-    padding: spacingVars['--spacing-1'],
-    overflow: 'hidden',
-  },
-  popoverHeading: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    color: 'inherit',
-    textAlign: 'start',
-    minHeight: spacingVars['--spacing-8'],
-    paddingInlineStart: {
-      default: spacingVars['--spacing-2'],
-      ':has(.astryx-nav-icon)': 0,
-    },
-    paddingInlineEnd: spacingVars['--spacing-2'],
-    paddingBlock: 0,
-    marginBlockStart: spacingVars['--spacing-1'],
-    marginBlockEnd: spacingVars['--spacing-2'],
-    marginInline: spacingVars['--spacing-1'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // Composes over `chevron` — the flipped popover copy differs only by the
-  // rotation, so it carries just that.
-  popoverChevron: {
-    transform: 'rotate(180deg)',
-  },
-  popover: {
-    minWidth: 'anchor-size(width)',
-    marginBlockStart: spacingVars['--spacing-1'],
-  },
-  popoverOverlap: {
-    minWidth: 'calc(anchor-size(width) + 16px)',
-    marginBlockStart: 'calc(-1 * anchor-size(height) - 8px)',
-    marginInlineStart: '-8px',
-  },
-});
 
 // =============================================================================
 // Types
@@ -444,16 +248,16 @@ export function TopNavHeading({
   const hasAnyHref = !!(headingHref || superheadingHref || subheadingHref);
   // Logo-only has no text column. An empty second track would add the column
   // gap and widen the heading.
-  const rootColumns =
+  const rootColumns: TopNavHeadingColumns | null =
     !heading && !menu
       ? null
       : isRenderable(logo)
         ? menu
-          ? styles.columnsWithLogoAndMenu
-          : styles.columnsWithLogo
+          ? 'withLogoAndMenu'
+          : 'withLogo'
         : menu
-          ? styles.columnsWithMenu
-          : styles.columnsText;
+          ? 'withMenu'
+          : 'text';
 
   // Determine interaction mode
   const isWholeHeadingTrigger = !!menu && !hasAnyHref;
@@ -462,7 +266,7 @@ export function TopNavHeading({
 
   // Render text content with optional inline chevron
   const renderTextContent = (inlineChevron?: ReactNode) => (
-    <span {...stylex.props(styles.textContainer)}>
+    <span className={topNavHeadingTextContainerClassName()}>
       {superheading &&
         (hasAnyHref && superheadingHref && menu ? (
           <Link
@@ -470,22 +274,27 @@ export function TopNavHeading({
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
             color="secondary"
             size="xsm"
-            xstyle={styles.linkedLine}>
+            className={topNavHeadingLinkedLineClassName()}>
             {superheading}
           </Link>
         ) : (
-          <span {...stylex.props(styles.superheading)}>{superheading}</span>
+          <span className={topNavHeadingSupportingLineClassName()}>
+            {superheading}
+          </span>
         ))}
-      <span {...stylex.props(styles.headingRow)}>
+      <span className={topNavHeadingTitleRowClassName()}>
         {hasAnyHref && headingHref && menu ? (
           <LinkComponent
             href={headingHref}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
-            {...stylex.props(styles.heading, styles.headingLink)}>
+            className={tw(
+              topNavHeadingTitleClassName(),
+              topNavHeadingTitleLinkClassName(),
+            )}>
             {heading}
           </LinkComponent>
         ) : (
-          <span {...stylex.props(styles.heading)}>{heading}</span>
+          <span className={topNavHeadingTitleClassName()}>{heading}</span>
         )}
         {inlineChevron}
       </span>
@@ -496,11 +305,13 @@ export function TopNavHeading({
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
             color="secondary"
             size="xsm"
-            xstyle={styles.linkedLine}>
+            className={topNavHeadingLinkedLineClassName()}>
             {subheading}
           </Link>
         ) : (
-          <span {...stylex.props(styles.subheading)}>{subheading}</span>
+          <span className={topNavHeadingSupportingLineClassName()}>
+            {subheading}
+          </span>
         ))}
     </span>
   );
@@ -510,12 +321,14 @@ export function TopNavHeading({
       icon="chevronDown"
       size="sm"
       color="secondary"
-      xstyle={[styles.chevron, styles.chevronGlyph]}
+      className={topNavHeadingChevronWithGlyphClassName()}
     />
   );
 
   const headerEndContentElement = isRenderable(headerEndContent) && (
-    <span {...stylex.props(styles.headerEndContent)}>{headerEndContent}</span>
+    <span className={topNavHeadingEndContentClassName()}>
+      {headerEndContent}
+    </span>
   );
 
   // Shared popover heading content — uses renderTextContent for consistent
@@ -523,16 +336,18 @@ export function TopNavHeading({
   const popoverHeadingContent = (
     <button
       type="button"
-      {...stylex.props(styles.popoverHeading)}
+      className={topNavHeadingPopoverHeadingClassName()}
       // A close affordance, not the trigger: dismiss only.
       onClick={closeMenu}>
-      {isRenderable(logo) && <span {...stylex.props(styles.logo)}>{logo}</span>}
+      {isRenderable(logo) && (
+        <span className={topNavHeadingLogoClassName()}>{logo}</span>
+      )}
       {renderTextContent(
         <Icon
           icon="chevronDown"
           size="sm"
           color="secondary"
-          xstyle={[styles.chevron, styles.chevronGlyph, styles.popoverChevron]}
+          className={topNavHeadingPopoverChevronWithGlyphClassName()}
         />,
       )}
     </button>
@@ -549,18 +364,18 @@ export function TopNavHeading({
         data-testid={testId}
         {...mergeProps(
           themeProps('top-nav-heading'),
-          stylex.props(
-            styles.root,
-            rootColumns,
-            !!headingHref && styles.menuTrigger,
-            xstyle,
+          stylex.props(xstyle),
+          tw(
+            topNavHeadingClassName(),
+            rootColumns && topNavHeadingColumnsClassName(rootColumns),
+            !!headingHref && topNavHeadingMenuTriggerClassName(),
+            className,
           ),
-          className,
           style,
         )}
         {...props}>
         {isRenderable(logo) && (
-          <span {...stylex.props(styles.logo)}>{logo}</span>
+          <span className={topNavHeadingLogoClassName()}>{logo}</span>
         )}
       </Element>
     );
@@ -575,13 +390,18 @@ export function TopNavHeading({
         data-testid={testId}
         {...mergeProps(
           themeProps('top-nav-heading'),
-          stylex.props(styles.root, rootColumns, styles.menuTrigger, xstyle),
-          className,
+          stylex.props(xstyle),
+          tw(
+            topNavHeadingClassName(),
+            rootColumns && topNavHeadingColumnsClassName(rootColumns),
+            topNavHeadingMenuTriggerClassName(),
+            className,
+          ),
           style,
         )}
         {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
         {isRenderable(logo) && (
-          <span {...stylex.props(styles.logo)}>{logo}</span>
+          <span className={topNavHeadingLogoClassName()}>{logo}</span>
         )}
         {renderTextContent()}
         {headerEndContentElement}
@@ -600,12 +420,17 @@ export function TopNavHeading({
           {...triggerProps}
           {...mergeProps(
             themeProps('top-nav-heading'),
-            stylex.props(styles.root, rootColumns, styles.menuTrigger, xstyle),
-            className,
+            stylex.props(xstyle),
+            tw(
+              topNavHeadingClassName(),
+              rootColumns && topNavHeadingColumnsClassName(rootColumns),
+              topNavHeadingMenuTriggerClassName(),
+              className,
+            ),
             style,
           )}>
           {isRenderable(logo) && (
-            <span {...stylex.props(styles.logo)}>{logo}</span>
+            <span className={topNavHeadingLogoClassName()}>{logo}</span>
           )}
           {renderTextContent(
             // Stays a <button>: this box is the popover trigger, so it carries
@@ -622,12 +447,15 @@ export function TopNavHeading({
                 triggerProps.onClick();
               }}
               {...popover.triggerProps}
-              {...stylex.props(styles.chevron, styles.interactive)}>
+              className={tw(
+                topNavHeadingChevronClassName(),
+                topNavHeadingInteractiveClassName(),
+              )}>
               <Icon
                 icon="chevronDown"
                 size="sm"
                 color="inherit"
-                xstyle={styles.chevronGlyph}
+                className={topNavHeadingChevronGlyphClassName()}
               />
             </button>,
           )}
@@ -636,7 +464,7 @@ export function TopNavHeading({
         {popover.render(
           <div
             ref={menuRef}
-            {...stylex.props(styles.popoverContent)}
+            className={topNavHeadingPopoverContentClassName()}
             {...contentProps}>
             {popoverHeadingContent}
             {/* The menu role is scoped to the actual menu items so the
@@ -657,7 +485,7 @@ export function TopNavHeading({
           {
             placement: 'below',
             alignment: 'start',
-            xstyle: styles.popoverOverlap,
+            className: topNavHeadingPopoverAnchorClassName(),
           },
         )}
       </>
@@ -674,8 +502,12 @@ export function TopNavHeading({
           {...triggerProps}
           {...mergeProps(
             themeProps('top-nav-heading'),
-            stylex.props(styles.root, rootColumns, xstyle),
-            className,
+            stylex.props(xstyle),
+            tw(
+              topNavHeadingClassName(),
+              rootColumns && topNavHeadingColumnsClassName(rootColumns),
+              className,
+            ),
             style,
           )}>
           {isRenderable(logo) &&
@@ -684,11 +516,11 @@ export function TopNavHeading({
                 href={headingHref}
                 aria-label={logoLinkLabel}
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                {...stylex.props(styles.logo)}>
+                className={topNavHeadingLogoClassName()}>
                 {logo}
               </LinkComponent>
             ) : (
-              <span {...stylex.props(styles.logo)}>{logo}</span>
+              <span className={topNavHeadingLogoClassName()}>{logo}</span>
             ))}
           {renderTextContent(
             showChevron ? (
@@ -707,12 +539,15 @@ export function TopNavHeading({
                   triggerProps.onClick();
                 }}
                 {...popover.triggerProps}
-                {...stylex.props(styles.chevron, styles.interactive)}>
+                className={tw(
+                  topNavHeadingChevronClassName(),
+                  topNavHeadingInteractiveClassName(),
+                )}>
                 <Icon
                   icon="chevronDown"
                   size="sm"
                   color="inherit"
-                  xstyle={styles.chevronGlyph}
+                  className={topNavHeadingChevronGlyphClassName()}
                 />
               </button>
             ) : undefined,
@@ -722,7 +557,7 @@ export function TopNavHeading({
         {popover.render(
           <div
             ref={menuRef}
-            {...stylex.props(styles.popoverContent)}
+            className={topNavHeadingPopoverContentClassName()}
             {...contentProps}>
             {popoverHeadingContent}
             {/* The menu role is scoped to the actual menu items so the
@@ -743,7 +578,7 @@ export function TopNavHeading({
           {
             placement: 'below',
             alignment: 'start',
-            xstyle: styles.popoverOverlap,
+            className: topNavHeadingPopoverAnchorClassName(),
           },
         )}
       </>
@@ -752,17 +587,21 @@ export function TopNavHeading({
 
   // Static heading with independent links (no menu)
   if (hasAnyHref && !isWholeHeadingLink) {
-    const linkColumns = isRenderable(logo)
-      ? styles.columnsWithLogoAndLinks
-      : styles.columnsWithLinks;
+    const linkColumns: TopNavHeadingColumns = isRenderable(logo)
+      ? 'withLogoAndLinks'
+      : 'withLinks';
     return (
       <div
         ref={ref as React.Ref<HTMLDivElement>}
         data-testid={testId}
         {...mergeProps(
           themeProps('top-nav-heading'),
-          stylex.props(styles.root, linkColumns, xstyle),
-          className,
+          stylex.props(xstyle),
+          tw(
+            topNavHeadingClassName(),
+            topNavHeadingColumnsClassName(linkColumns),
+            className,
+          ),
           style,
         )}
         {...props}>
@@ -771,35 +610,37 @@ export function TopNavHeading({
             <LinkComponent
               href={headingHref}
               aria-label={logoLinkLabel}
-              {...stylex.props(styles.logo)}>
+              className={topNavHeadingLogoClassName()}>
               {logo}
             </LinkComponent>
           ) : (
-            <span {...stylex.props(styles.logo)}>{logo}</span>
+            <span className={topNavHeadingLogoClassName()}>{logo}</span>
           ))}
-        <span {...stylex.props(styles.textContainer)}>
+        <span className={topNavHeadingTextContainerClassName()}>
           {superheading &&
             (superheadingHref ? (
               <Link
                 href={superheadingHref}
                 color="secondary"
                 size="xsm"
-                xstyle={styles.linkedLine}>
+                className={topNavHeadingLinkedLineClassName()}>
                 {superheading}
               </Link>
             ) : (
-              <span {...stylex.props(styles.superheading)}>{superheading}</span>
+              <span className={topNavHeadingSupportingLineClassName()}>
+                {superheading}
+              </span>
             ))}
           {headingHref ? (
             <Link
               href={headingHref}
               color="primary"
               weight="semibold"
-              xstyle={styles.linkedLine}>
+              className={topNavHeadingLinkedLineClassName()}>
               {heading}
             </Link>
           ) : (
-            <span {...stylex.props(styles.heading)}>{heading}</span>
+            <span className={topNavHeadingTitleClassName()}>{heading}</span>
           )}
           {subheading &&
             (subheadingHref ? (
@@ -807,11 +648,13 @@ export function TopNavHeading({
                 href={subheadingHref}
                 color="secondary"
                 size="xsm"
-                xstyle={styles.linkedLine}>
+                className={topNavHeadingLinkedLineClassName()}>
                 {subheading}
               </Link>
             ) : (
-              <span {...stylex.props(styles.subheading)}>{subheading}</span>
+              <span className={topNavHeadingSupportingLineClassName()}>
+                {subheading}
+              </span>
             ))}
         </span>
         {headerEndContentElement}
@@ -827,12 +670,18 @@ export function TopNavHeading({
       data-testid={testId}
       {...mergeProps(
         themeProps('top-nav-heading'),
-        stylex.props(styles.root, rootColumns, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(
+          topNavHeadingClassName(),
+          rootColumns && topNavHeadingColumnsClassName(rootColumns),
+          className,
+        ),
         style,
       )}
       {...props}>
-      {isRenderable(logo) && <span {...stylex.props(styles.logo)}>{logo}</span>}
+      {isRenderable(logo) && (
+        <span className={topNavHeadingLogoClassName()}>{logo}</span>
+      )}
       {renderTextContent()}
       {headerEndContentElement}
       {chevronElement}

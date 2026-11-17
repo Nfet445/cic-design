@@ -8,6 +8,11 @@
  * Usage:
  *   node scripts/build-css.mjs                 # core  → packages/core/dist/astryx.css
  *   node scripts/build-css.mjs --package lab   # lab   → packages/lab/dist/lab.css
+ *   node scripts/build-css.mjs --package charts --allow-empty
+ *                                              # a package that finished its
+ *                                              # Tailwind migration writes an
+ *                                              # empty stylesheet instead of
+ *                                              # failing
  *
  * This script:
  * 1. Walks component sources and explicit distribution entries through StyleX imports
@@ -124,6 +129,7 @@ function parseTarget() {
     name,
     ...target,
     provider: target.provider ? TARGETS[target.provider] : undefined,
+    allowEmpty: process.argv.includes('--allow-empty'),
   };
 }
 
@@ -256,8 +262,16 @@ async function main() {
   const allRules = await collectStyleXCSS(target);
 
   if (allRules.length === 0) {
-    console.error('No StyleX rules found!');
-    process.exit(1);
+    // A package that moved every style to Tailwind has no StyleX rule left.
+    // The default stays strict so a package that loses its rules by accident
+    // still fails.
+    if (!target.allowEmpty) {
+      console.error('No StyleX rules found!');
+      process.exit(1);
+    }
+    console.warn(
+      'No StyleX rules found, so the stylesheet holds only its layer order.',
+    );
   }
 
   await fs.mkdir(target.dist, {recursive: true});

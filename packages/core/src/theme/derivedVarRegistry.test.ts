@@ -478,6 +478,10 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // control — a theme reaches them by setting the vars directly.
   '--_item-label-color',
   '--_item-description-color',
+  // A line count, not a property value: Item sets it inline from the
+  // `labelLines`/`descriptionLines` prop and the clamp class reads it. A theme
+  // changes the line count through the prop, not through CSS.
+  '--astryx-item-line-clamp',
 ]);
 
 // ---------------------------------------------------------------------------

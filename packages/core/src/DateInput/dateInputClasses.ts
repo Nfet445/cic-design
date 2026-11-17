@@ -183,3 +183,80 @@ export const pickerWheelRowClassName = tw(
   'text-ellipsis',
   'select-none',
 );
+
+/** The calendar toggle beside the typed date: a glyph, no box of its own. */
+// The toggle keeps its focus ring in StyleX (`focusOutlineStyles`), a shared
+// rule the class map does not own; the ring is not a property this map sets.
+export function dateInputToggleClassName({
+  isDisabled,
+}: {
+  isDisabled: boolean;
+}): string {
+  return tw(
+    'flex',
+    'items-center',
+    'justify-center',
+    'p-0',
+    'm-0',
+    '[border-width:0]',
+    '[border-style:none]',
+    'bg-transparent',
+    'cursor-pointer',
+    'rounded-[var(--radius-element)]',
+    // A disabled toggle still takes the tab stop that carries its reason, so
+    // the default cursor keys off the attribute rather than `disabled`.
+    isDisabled && '[&[aria-disabled=true]]:cursor-default',
+  );
+}
+
+export type DateInputSize = 'sm' | 'md' | 'lg';
+
+/** The wrapper's block size for a size, and the narrowest it may render. */
+export function dateInputSizeClassName({size}: {size: DateInputSize}): string {
+  return tw(SIZE_CLASS[size], 'min-w-[180px]');
+}
+
+const SIZE_CLASS: Record<DateInputSize, string> = {
+  sm: '[height:var(--size-element-sm)]',
+  md: '[height:var(--size-element-md)]',
+  lg: '[height:var(--size-element-lg)]',
+};
+
+/**
+ * The typed control fills the wrapper's content box and draws nothing of its
+ * own: the wrapper owns the border, the padding and the ring.
+ *
+ * The 16px floor is iOS-only: iOS Safari zooms the page when a focused control
+ * sits under 16px, and only iOS WebKit implements `-webkit-touch-callout` to
+ * key the coarse-pointer floor to it.
+ *
+ * A rejected draft keeps the secondary colour, so the typed text reads as a
+ * value the control did not accept.
+ */
+export function dateInputControlClassName({
+  isDisabled,
+  isInvalid,
+}: {
+  isDisabled: boolean;
+  isInvalid: boolean;
+}): string {
+  return tw(
+    'block',
+    'flex-1',
+    'min-w-0',
+    '[border-width:0]',
+    '[border-style:none]',
+    'p-0',
+    '[font-family:var(--font-family-body)]',
+    'text-[length:var(--text-body-size)]',
+    'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
+    '[line-height:var(--text-body-leading)]',
+    'text-[color:var(--color-text-primary)]',
+    'bg-transparent',
+    'outline-none',
+    'placeholder:text-[color:var(--color-text-secondary)]',
+    isInvalid &&
+      '[&[aria-invalid=true]]:text-[color:var(--color-text-secondary)]',
+    isDisabled && '[&[aria-disabled=true]]:cursor-default',
+  );
+}

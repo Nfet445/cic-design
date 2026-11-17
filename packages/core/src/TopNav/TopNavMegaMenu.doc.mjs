@@ -6,7 +6,8 @@ export const docs = {
   name: 'TopNavMegaMenu',
   subComponentOf: 'TopNav',
   displayName: 'Top Nav Mega Menu',
-  description: 'Navigation item that displays a full-width mega menu panel on hover. Uses a slots API with items and featured props. TopNavMegaMenuItem renders itself in both desktop and mobile drawer modes. Supports inline collapsible drawer via render mode context.',
+  description:
+    'Navigation item that displays a full-width mega menu panel on hover. Uses a slots API with items and featured props. TopNavMegaMenuItem renders itself in both desktop and mobile drawer modes. Supports inline collapsible drawer via render mode context.',
   // The panel anchors to the nearest <nav>; wrap the preview in a TopNav so
   // it opens below the bar instead of pinning to the viewport corner (#4905).
   playground: {
@@ -22,7 +23,8 @@ export const docs = {
     {
       name: 'items',
       type: 'ReactNode',
-      description: 'Menu items slot: typically TopNavMegaMenuItem components, but accepts any ReactNode.',
+      description:
+        'Menu items slot: typically TopNavMegaMenuItem components, but accepts any ReactNode.',
       slotElements: [
         {
           __element: 'TopNavItem',
@@ -36,7 +38,8 @@ export const docs = {
     {
       name: 'featured',
       type: 'ReactNode',
-      description: 'Featured content slot: rendered in the right panel on desktop, below items in the mobile drawer.',
+      description:
+        'Featured content slot: rendered in the right panel on desktop, below items in the mobile drawer.',
       slotElements: [
         {
           __element: 'Card',
@@ -56,13 +59,15 @@ export const docs = {
     {
       name: 'hideDelay',
       type: 'number',
-      description: 'Delay in milliseconds before hiding the menu after the mouse leaves.',
+      description:
+        'Delay in milliseconds before hiding the menu after the mouse leaves.',
       default: '250',
     },
     {
       name: 'onOpenChange',
       type: '(isOpen: boolean) => void',
-      description: 'Callback fired when the mega menu opens or closes. Useful for coordinating wrapper styles.',
+      description:
+        'Callback fired when the mega menu opens or closes. Useful for coordinating wrapper styles.',
     },
   ],
 };
@@ -70,7 +75,8 @@ export const docs = {
 export const docsZh = {
   name: 'TopNavMegaMenu',
   displayName: 'Top Nav Mega Menu',
-  description: '导航项，在悬停时显示全宽超级菜单面板。使用插槽 API（items 和 featured）。TopNavMegaMenuItem 在桌面和移动抽屉模式中自行渲染。',
+  description:
+    '导航项，在悬停时显示全宽超级菜单面板。使用插槽 API（items 和 featured）。TopNavMegaMenuItem 在桌面和移动抽屉模式中自行渲染。',
   props: [
     {
       name: 'label',
@@ -81,12 +87,14 @@ export const docsZh = {
     {
       name: 'items',
       type: 'ReactNode',
-      description: '菜单项插槽，通常为 TopNavMegaMenuItem 组件，但接受任何 ReactNode。',
+      description:
+        '菜单项插槽，通常为 TopNavMegaMenuItem 组件，但接受任何 ReactNode。',
     },
     {
       name: 'featured',
       type: 'ReactNode',
-      description: '特色内容插槽，桌面端显示在右侧面板，移动抽屉中显示在项目下方。',
+      description:
+        '特色内容插槽，桌面端显示在右侧面板，移动抽屉中显示在项目下方。',
     },
     {
       name: 'delay',
@@ -111,11 +119,14 @@ export const docsZh = {
 export const docsDense = {
   name: 'TopNavMegaMenu',
   displayName: 'Top Nav Mega Menu',
-  description: 'Nav item w/ full-width mega menu panel on hover. Slots API w/ items+featured ReactNode props. Mobile drawer inline collapsible.',
+  description:
+    'Nav item w/ full-width mega menu panel on hover. Slots API w/ items+featured ReactNode props. Mobile drawer inline collapsible.',
   propDescriptions: {
     label: 'Trigger button visible label.',
-    items: 'Menu items slot: typically TopNavMegaMenuItem, accepts any ReactNode.',
-    featured: 'Featured content slot: right panel desktop, below items in drawer.',
+    items:
+      'Menu items slot: typically TopNavMegaMenuItem, accepts any ReactNode.',
+    featured:
+      'Featured content slot: right panel desktop, below items in drawer.',
     delay: 'Show delay ms on hover.',
     hideDelay: 'Hide delay ms after mouse leaves.',
     onOpenChange: 'Fired on open/close. For coordinating wrapper styles.',

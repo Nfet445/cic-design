@@ -41,9 +41,8 @@ import {
 } from 'react';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {useMergedRefs} from '../hooks/useMergedRefs';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars, focusVars, typeScaleVars} from '../theme/tokens.stylex';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {tw} from '../utils/tw';
 import {
   ownRingContainerStyles,
   ownRingProps,
@@ -60,6 +59,7 @@ import english from '../i18n/generated-english/List/ListReorderHandle.generated'
 import {getNodeText} from '../utils/getNodeText';
 import {ItemLabelContext} from '../Item/ItemLabelContext';
 import {ListContext} from './ListContext';
+import {listReorderHandleClassName} from './listReorderHandleClasses';
 import type {
   ListReorderHandleProps,
   ListReorderRowNameProps,
@@ -72,113 +72,6 @@ import type {
 registerEnglishFallback(english);
 
 /**
- * The handle's side, for every pointer: a small control's size. A finger's
- * 44 px target is an invisible coarse-only hit layer, clamped so it never
- * takes from a neighbour (utils/hitArea.ts), not a bigger handle.
- */
-const HANDLE_SIZE = 28;
-/** The three lines' height: the handle's share of its row's height. */
-const LINES_HEIGHT = 14;
-/** The lines' length and thickness, and the distance between them. */
-const LINE_WIDTH = 20;
-const LINE_THICKNESS = 2;
-const LINE_GAP = (LINES_HEIGHT - LINE_THICKNESS) / 2;
-
-const styles = stylex.create({
-  handle: {
-    // Centred on its row, with the lines in its middle. It takes only the
-    // lines' height in the row's layout (the negative block margins). So a
-    // compact row stays compact. The handle and its focus ring reach past
-    // that into the row's padding, never past it. They go no further than the
-    // row's own inline inset, so a flush row's handle stays inside the clip.
-    position: 'relative',
-    alignSelf: 'center',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: HANDLE_SIZE,
-    height: HANDLE_SIZE,
-    marginBlock: (LINES_HEIGHT - HANDLE_SIZE) / 2,
-    marginInlineEnd: 'calc(-1 * min(8px, var(--_item-inset-inline, 8px)))',
-    padding: 0,
-    borderWidth: 0,
-    borderRadius: 4,
-    // The ring sits inside the handle: the handle reaches the row's inline
-    // end, and the list clips what passes it.
-    outlineOffset: {
-      default: '0',
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-    // Pressed while its row is in reorder mode, as a pressed toggle button
-    // is; in forced colors, the system's highlight.
-    backgroundColor: {
-      default: 'transparent',
-      ':is([aria-pressed="true"])': {
-        default: colorVars['--color-overlay-pressed'],
-        '@media (forced-colors: active)': 'Highlight',
-      },
-    },
-    forcedColorAdjust: {
-      default: null,
-      ':is([aria-pressed="true"])': 'none',
-    },
-    color: {
-      default: colorVars['--color-icon-secondary'],
-      ':is([aria-disabled="true"])': colorVars['--color-icon-disabled'],
-      ':is([aria-pressed="true"])': {
-        default: colorVars['--color-icon-secondary'],
-        '@media (forced-colors: active)': 'HighlightText',
-      },
-    },
-    // Where the primary pointer is coarse, the page keeps its scrolling and
-    // its pinch-zoom until the hold claims the drag. A flick on the handle
-    // scrolls, as on iOS. That is `manipulation`, what a long press leaves the
-    // browser. The hold's selection lock stops text selection while the
-    // finger is down, so a mouse keeps the page's selection. Where the
-    // pointer is fine, a finger gets the browser's defaults.
-    touchAction: {
-      default: null,
-      '@media (pointer: coarse)': 'manipulation',
-    },
-    WebkitTapHighlightColor: {
-      default: null,
-      '@media (pointer: coarse)': 'transparent',
-    },
-    // The three lines: one bar and its two shadows, in the handle's color.
-    // Forced colors keep them (shadows and backgrounds go there otherwise),
-    // drawn in the system's button text.
-    '::before': {
-      content: '""',
-      display: 'block',
-      width: LINE_WIDTH,
-      height: LINE_THICKNESS,
-      borderRadius: LINE_THICKNESS / 2,
-      backgroundColor: 'currentColor',
-      boxShadow: `0 -${LINE_GAP}px currentColor, 0 ${LINE_GAP}px currentColor`,
-      forcedColorAdjust: 'none',
-      pointerEvents: 'none',
-    },
-  },
-  // The row's own child, in a row without end content. It ends the row, as
-  // the end slot would. It aligns as the row's `align` would align that slot.
-  inRow: {
-    marginInlineStart: 'auto',
-  },
-  // `start`: at the top of the row's content.
-  inRowStart: {
-    alignSelf: 'flex-start',
-  },
-  // `first-line`: centred on the label's first line, a line of body text at
-  // the top of the row's content. Item's first-line slots centre on it too.
-  // Its layout height stays the lines' height (the end margin).
-  inRowFirstLine: {
-    alignSelf: 'flex-start',
-    marginBlockStart: `calc((${typeScaleVars['--text-body-leading']} - ${HANDLE_SIZE}px) / 2)`,
-  },
-});
-
-/**
  * The style of a row that ends with a handle, which ListItem applies. Its
  * ring on focus within stays off for the handle, which rings itself.
  */
@@ -186,36 +79,6 @@ export const reorderRowStyle = ownRingContainerStyles.focusWithin;
 
 /** The insertion line's thickness, px (the engine centres it on a gap). */
 export const INSERTION_LINE_THICKNESS = 2;
-
-const listStyles = stylex.create({
-  // The insertion line is the list's own pseudo-element. It is decoration
-  // with no semantic role, so no element joins the list. The engine shows it
-  // with `showReorderLine` and places it with the list's custom properties.
-  // They set its top (`--astryx-reorder-line-y`, a compositor translate) and
-  // its inline start and size, which are the dragged row's.
-  list: {
-    '::after': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      insetInlineStart: 'var(--astryx-reorder-line-start, 0px)',
-      inlineSize: 'var(--astryx-reorder-line-size, 0px)',
-      blockSize: INSERTION_LINE_THICKNESS,
-      borderRadius: INSERTION_LINE_THICKNESS / 2,
-      backgroundColor: {
-        default: colorVars['--color-accent'],
-        '@media (forced-colors: active)': 'Highlight',
-      },
-      forcedColorAdjust: 'none',
-      translate: '0 var(--astryx-reorder-line-y, 0px)',
-      pointerEvents: 'none',
-      zIndex: 2,
-    },
-  },
-});
-
-/** The style of a reorderable list (List applies it): its insertion line. */
-export const reorderListStyle = listStyles.list;
 
 /** The text the row's label element shows, collapsed; empty without one. */
 function labelTextOf(handle: HTMLElement | null, labelID: string | null) {
@@ -379,13 +242,10 @@ export function ListReorderHandle({
         }
       }}
       {...focusOutlineProps.focusVisible(
-        styles.handle,
         reorderingHandleStyles.cursor,
         touchHitAreaStyles.layer,
-        rowAlign != null && styles.inRow,
-        rowAlign === 'start' && styles.inRowStart,
-        rowAlign === 'first-line' && styles.inRowFirstLine,
       )}
+      className={tw(listReorderHandleClassName({rowAlign}))}
     />
   );
 }

@@ -6,12 +6,17 @@ export const docs = {
   name: 'TopNavMenu',
   subComponentOf: 'TopNav',
   displayName: 'Top Nav Menu',
-  description: 'Navigation item that displays a hover-triggered popover menu with rich items containing an icon, title, and optional description.',
+  description:
+    'Navigation item that displays a hover-triggered popover menu with rich items containing an icon, title, and optional description.',
   playground: {
     defaults: {
       label: 'Products',
       items: [
-        {title: 'Analytics', description: 'Usage metrics and trends', href: '#'},
+        {
+          title: 'Analytics',
+          description: 'Usage metrics and trends',
+          href: '#',
+        },
         {title: 'Automation', description: 'Workflows and rules', href: '#'},
         {title: 'Billing', href: '#'},
       ],
@@ -27,7 +32,8 @@ export const docs = {
     {
       name: 'items',
       type: 'TopNavMenuItemData[]',
-      description: 'Menu items to display in the hover popover. Item href values follow the shared navigation rule described on Link; rejected destinations remain visible without navigation.',
+      description:
+        'Menu items to display in the hover popover. Item href values follow the shared navigation rule described on Link; rejected destinations remain visible without navigation.',
       required: true,
     },
     {
@@ -39,7 +45,8 @@ export const docs = {
     {
       name: 'hideDelay',
       type: 'number',
-      description: 'Delay in milliseconds before hiding the menu after the mouse leaves.',
+      description:
+        'Delay in milliseconds before hiding the menu after the mouse leaves.',
       default: '200',
     },
   ],
@@ -48,7 +55,8 @@ export const docs = {
 export const docsZh = {
   name: 'TopNavMenu',
   displayName: 'Top Nav Menu',
-  description: '导航项，在悬停时显示弹出菜单，包含带图标、标题和可选描述的丰富菜单项。',
+  description:
+    '导航项，在悬停时显示弹出菜单，包含带图标、标题和可选描述的丰富菜单项。',
   props: [
     {
       name: 'label',
@@ -80,10 +88,12 @@ export const docsZh = {
 export const docsDense = {
   name: 'TopNavMenu',
   displayName: 'Top Nav Menu',
-  description: 'Nav item w/ hover-triggered popover menu containing rich items w/ icon, title, optional description.',
+  description:
+    'Nav item w/ hover-triggered popover menu containing rich items w/ icon, title, optional description.',
   propDescriptions: {
     label: 'Trigger button visible label.',
-    items: 'Menu items in hover popover. href follows the Link navigation rule; rejected destinations do not navigate.',
+    items:
+      'Menu items in hover popover. href follows the Link navigation rule; rejected destinations do not navigate.',
     delay: 'Show delay ms on hover.',
     hideDelay: 'Hide delay ms after mouse leaves.',
   },

@@ -26,7 +26,6 @@ import {useCommittedRef} from '../hooks/useCommittedRef';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {TooltipPresentInterestContext} from './tooltipPresentInterest';
 import {createTriggerFocusGate, isFocusOnTrigger} from '../utils/triggerFocus';
-import * as stylex from '@stylexjs/stylex';
 import {
   useLayerInternal,
   type ContextRenderProps,
@@ -46,12 +45,10 @@ import {useLayerDismissal} from '../Layer/useLayerDismissal';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
 import {
-  colorVars,
-  radiusVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+  tooltipContentClassName,
+  tooltipSurfaceClassName,
+} from './tooltipClasses';
+import {spacingVars} from '../theme/tokens.stylex';
 
 /**
  * Grace period (ms) before hiding on pointer-leave when no explicit `hideDelay`
@@ -59,29 +56,6 @@ import {
  * the tooltip surface without the tooltip disappearing (WCAG 1.4.13 hoverable).
  */
 const HOVER_BRIDGE_DELAY = 100;
-
-const styles = stylex.create({
-  // The same inverted surface Toast paints, so the two match in every theme.
-  container: {
-    backgroundColor: colorVars['--color-background-inverted'],
-    color: colorVars['--color-background-surface'],
-    borderRadius: radiusVars['--radius-container'],
-    // Typography
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-  },
-  // Position-based margin styles
-  // Content wrapper for padding
-  content: {
-    paddingBlockStart: spacingVars['--spacing-1'],
-    paddingBlockEnd: spacingVars['--spacing-1'],
-    paddingInlineStart: spacingVars['--spacing-2'],
-    paddingInlineEnd: spacingVars['--spacing-2'],
-    maxWidth: 300,
-    wordBreak: 'break-word',
-  },
-});
 
 /**
  * Focus trigger behavior for tooltips
@@ -311,8 +285,6 @@ export function useTooltip(options: TooltipOptions = {}): TooltipReturn {
     id: layerId,
     render: renderLayer,
   } = layer;
-
-  const popoverXstyle = styles.container;
 
   const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -958,10 +930,10 @@ export function useTooltip(options: TooltipOptions = {}): TooltipReturn {
         alignment: props?.alignment ?? alignment,
         offset: spacingVars['--spacing-1'],
         role: 'tooltip',
-        xstyle: popoverXstyle,
         className: tw(
           themeProps('tooltip').className,
           layerAnimations[renderPlacement],
+          tooltipSurfaceClassName,
         ),
         // Keep the tooltip open while the pointer is over the surface itself
         // (WCAG 1.4.13 hoverable). These sit on the layer container — the
@@ -978,21 +950,13 @@ export function useTooltip(options: TooltipOptions = {}): TooltipReturn {
         // clickable container around the trigger leaves the press alone while
         // document listeners still see it.
         // The hold's announcement reads this element's text.
-        <div ref={contentRefs} {...stylex.props(styles.content)}>
+        <div ref={contentRefs} className={tooltipContentClassName}>
           {children}
         </div>,
         renderProps,
       );
     },
-    [
-      renderLayer,
-      placement,
-      alignment,
-      popoverXstyle,
-      cancelHide,
-      scheduleHide,
-      contentRefs,
-    ],
+    [renderLayer, placement, alignment, cancelHide, scheduleHide, contentRefs],
   );
 
   const show = useCallback(() => {

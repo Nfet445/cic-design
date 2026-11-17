@@ -19,8 +19,23 @@
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {
+  topNavCenterRegionClassName,
+  topNavClassName,
+  topNavDrawerDividerClassName,
+  topNavDrawerItemsClassName,
+  topNavEndContentClassName,
+  topNavEndRegionClassName,
+  topNavHeadingSlotClassName,
+  topNavMobileBarClassName,
+  topNavMobileEndClassName,
+  topNavMobileHeadingClassName,
+  topNavMobileHeadingTextClassName,
+  topNavStartContentClassName,
+  topNavStartRegionClassName,
+} from './topNavClasses';
 import {TopNavSlotContext} from './TopNavContext';
 import {useTopNavRenderMode} from './TopNavRenderContext';
 import {useTopNavMobileContent} from './TopNavMobileContentContext';
@@ -37,128 +52,6 @@ import english from '../i18n/generated-english/TopNav/TopNav.generated';
 import {isRenderable} from '../utils/isRenderable';
 
 registerEnglishFallback(english);
-
-/**
- * Base TopNav styles
- */
-const styles = stylex.create({
-  base: {
-    alignItems: 'center',
-    width: '100%',
-    padding: spacingVars['--spacing-2'],
-    boxSizing: 'border-box',
-  },
-  // The bar wraps when its regions do not fit one row. The end region then
-  // moves to a second line.
-  baseFlex: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  // While the regions fit one row, the start and end regions share the free
-  // width equally. This keeps the center at the bar's middle.
-  baseThreeRegion: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  // A region keeps its items on one line, so the bar wraps first. Only a
-  // region wider than the bar wraps its own items. `fit-content` is the
-  // region's full row, capped at the bar's width.
-  leftSection: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-4'],
-    flex: '1 1 0%',
-    minWidth: stylex.firstThatWorks('fit-content', '-webkit-fit-content'),
-  },
-  // The heading shrinks only to its own narrowest width. TopNavHeading keeps
-  // its logo there.
-  heading: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 1,
-  },
-  startContent: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  // The center claims its content's minimum width when the bar decides where
-  // to wrap, then grows first, up to its content width. Only a center wider
-  // than the whole bar, alone on its line, narrows below that minimum.
-  centerContent: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacingVars['--spacing-1'],
-    flexGrow: 1000,
-    flexShrink: 1,
-    flexBasis: 'min-content',
-    minWidth: 0,
-    maxWidth: 'max-content',
-  },
-  rightSection: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: spacingVars['--spacing-1'],
-    flex: '1 1 0%',
-    minWidth: stylex.firstThatWorks('fit-content', '-webkit-fit-content'),
-  },
-  endContent: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: spacingVars['--spacing-1'],
-    flexShrink: 0,
-    marginInlineStart: 'auto',
-    minWidth: stylex.firstThatWorks('fit-content', '-webkit-fit-content'),
-    maxWidth: '100%',
-  },
-  // Mobile bar mode — simplified top bar with heading + toggle + endContent
-  mobileBar: {
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%',
-    padding: spacingVars['--spacing-2'],
-    boxSizing: 'border-box',
-  },
-  // The heading gives up space first so the end content and toggle stay in view
-  mobileBarHeading: {
-    display: 'flex',
-    alignItems: 'center',
-    flex: '0 1 auto',
-    minWidth: 0,
-  },
-  // Plain text has no box that can clip it. This box clips it to one line,
-  // so the bar keeps its height.
-  mobileBarHeadingText: {
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  mobileBarEnd: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    flexShrink: 0,
-    marginInlineStart: 'auto',
-  },
-  // Drawer mode — vertical list of nav items
-  drawerItems: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-  },
-  drawerDivider: {
-    marginBlock: spacingVars['--spacing-2'],
-  },
-  drawerExtraContent: {},
-});
 
 export interface TopNavProps extends BaseProps<HTMLElement> {
   /** Ref forwarded to the root element */
@@ -260,15 +153,15 @@ export function TopNav({
         aria-label={label}
         {...mergeProps(
           themeProps('top-nav', {mode: 'mobile-bar'}),
-          stylex.props(styles.mobileBar, xstyle),
-          className,
+          stylex.props(xstyle),
+          tw(topNavMobileBarClassName(), className),
           style,
         )}
         {...props}>
         {isRenderable(heading) && (
-          <div {...stylex.props(styles.mobileBarHeading)}>
+          <div className={topNavMobileHeadingClassName()}>
             {typeof heading === 'string' || typeof heading === 'number' ? (
-              <span {...stylex.props(styles.mobileBarHeadingText)}>
+              <span className={topNavMobileHeadingTextClassName()}>
                 {heading}
               </span>
             ) : (
@@ -276,7 +169,7 @@ export function TopNav({
             )}
           </div>
         )}
-        <div {...stylex.props(styles.mobileBarEnd)}>
+        <div className={topNavMobileEndClassName()}>
           {endContent}
           {hasMobileDrawerContent && hasAutoToggle && <MobileNavToggle />}
         </div>
@@ -297,19 +190,15 @@ export function TopNav({
     return (
       <MobileNav header={heading}>
         {hasCollapsibleContent && (
-          <div {...stylex.props(styles.drawerItems)}>
+          <div className={topNavDrawerItemsClassName()}>
             {resolvedStartContent}
             {centerContent}
           </div>
         )}
         {hasCollapsibleContent && hasMobileContent && (
-          <Divider xstyle={styles.drawerDivider} />
+          <Divider className={topNavDrawerDividerClassName()} />
         )}
-        {hasMobileContent && (
-          <div {...stylex.props(styles.drawerExtraContent)}>
-            {mobileContent}
-          </div>
-        )}
+        {hasMobileContent && <div>{mobileContent}</div>}
       </MobileNav>
     );
   }
@@ -325,22 +214,18 @@ export function TopNav({
       aria-label={label}
       {...mergeProps(
         themeProps('top-nav'),
-        stylex.props(
-          styles.base,
-          hasCenterContent ? styles.baseThreeRegion : styles.baseFlex,
-          xstyle,
-        ),
-        className,
+        stylex.props(xstyle),
+        tw(topNavClassName(), className),
         style,
       )}
       {...props}>
-      <div {...stylex.props(styles.leftSection)}>
+      <div className={topNavStartRegionClassName()}>
         {isRenderable(heading) && (
-          <div {...stylex.props(styles.heading)}>{heading}</div>
+          <div className={topNavHeadingSlotClassName()}>{heading}</div>
         )}
         {hasStartContent && (
           <TopNavSlotContext value="start">
-            <div {...stylex.props(styles.startContent)}>
+            <div className={topNavStartContentClassName()}>
               {resolvedStartContent}
             </div>
           </TopNavSlotContext>
@@ -348,16 +233,18 @@ export function TopNav({
       </div>
       {hasCenterContent && (
         <TopNavSlotContext value="center">
-          <div {...stylex.props(styles.centerContent)}>{centerContent}</div>
+          <div className={topNavCenterRegionClassName()}>{centerContent}</div>
         </TopNavSlotContext>
       )}
       {hasCenterContent ? (
-        <div {...stylex.props(styles.rightSection)}>
+        // eslint-disable-next-line @astryx/no-style-only-wrapper -- the region is a flex box with its own gap, which a context provider cannot carry; the rule reads StyleX objects, not class text.
+        <div className={topNavEndRegionClassName()}>
           <TopNavSlotContext value="end">{endContent}</TopNavSlotContext>
         </div>
       ) : (
         isRenderable(endContent) && (
-          <div {...stylex.props(styles.endContent)}>
+          // eslint-disable-next-line @astryx/no-style-only-wrapper -- the region is a flex box with its own gap, which a context provider cannot carry; the rule reads StyleX objects, not class text.
+          <div className={topNavEndContentClassName()}>
             <TopNavSlotContext value="end">{endContent}</TopNavSlotContext>
           </div>
         )

@@ -38,7 +38,8 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 23 of 42 done, 2 waves done before the tickets existed.
+Progress: 24 of 44 tickets done, plus two waves (layout primitives,
+buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
 
@@ -72,7 +73,7 @@ Progress: 23 of 42 done, 2 waves done before the tickets existed.
 ### Wave 6 — `family:navigation-destinations`
 
 - [ ] `18-links-and-items` — links, rows, avatars, pagination, cards
-- [ ] `19-tabs-and-headings` — `TabList`, nav tabs, tab menus, `SegmentedControl`
+- [x] `19-tabs-and-headings` — `TabList`, nav tabs, tab menus, `SegmentedControl`
 - [ ] `20-side-nav` — `SideNav`, `TreeList`, the size cascade
 - [ ] `21-top-nav` — `TopNav` and its mega menus
 
@@ -80,7 +81,7 @@ Progress: 23 of 42 done, 2 waves done before the tickets existed.
 
 - [ ] `22-dialogs-and-sheets` — `Dialog`, `AlertDialog`, `Drawer`, `BottomSheet`, `MobileNav`, `Lightbox`
 - [ ] `23-menus` — `DropdownMenu`, `ContextMenu`, `MoreMenu`, option menus
-- [ ] `24-tooltip-hovercard` — `Tooltip`, `HoverCard`
+- [x] `24-tooltip-hovercard` — `Tooltip`, `HoverCard`
 - [ ] `25-search-surfaces` — `CommandPalette`, `PowerSearch`, `Tokenizer`, composer popup
 
 ### Wave 8 — the data surfaces
@@ -88,12 +89,12 @@ Progress: 23 of 42 done, 2 waves done before the tickets existed.
 - [x] `26-data-tables-record` — write `docs/families/data-tables.md` first
 - [x] `27-table-structure` — header, rows, cells
 - [x] `28-table-behaviour` — sorting, filtering, selection, virtualised body
-- [ ] `29-charts-and-richtext` — two packages get their own sheets
+- [x] `29-charts-and-richtext` — two packages get their own sheets
 - [ ] `30-lab` — 58 creations in two halves
 
 ### Wave 9 — themes, consumers, removal
 
-- [ ] `31-themes` — the bridge keeps its names, only its shape changes
+- [x] `31-themes` — the bridge keeps its names, only its shape changes
 - [ ] `32-cli-docs-and-templates` — docs and 51 templates stop teaching StyleX
 - [ ] `33-storybook-and-vibe-tests` — both load the sheet
 - [ ] `34-swizzle-and-render-pipeline` — ejected source states its stylesheet
