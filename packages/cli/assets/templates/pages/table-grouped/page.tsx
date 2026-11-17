@@ -42,7 +42,6 @@ import {
   useTableGroupedRows,
 } from '@astryxdesign/core/Table';
 import type {TableColumn, TablePlugin} from '@astryxdesign/core/Table';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {useToast} from '@astryxdesign/core/Toast';
 import {
   PencilIcon,
@@ -714,7 +713,7 @@ function getColumns({
                   icon={ArrowRightIcon}
                   size="sm"
                   color="secondary"
-                  xstyle={rtlStyles.mirror}
+                  className="rtl:[transform:scaleX(-1)]"
                 />
               ),
               onClick: () => {},

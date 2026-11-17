@@ -30,7 +30,6 @@ import {MoreMenu} from '@astryxdesign/core/MoreMenu';
 import type {DropdownMenuOption} from '@astryxdesign/core/DropdownMenu';
 import {Link} from '@astryxdesign/core/Link';
 import {Icon} from '@astryxdesign/core/Icon';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {AspectRatio} from '@astryxdesign/core/AspectRatio';
 import {Divider} from '@astryxdesign/core/Divider';
 import {StatusDot} from '@astryxdesign/core/StatusDot';
@@ -387,7 +386,7 @@ function PageHeader({
                   <Icon
                     icon={ArrowLeftIcon}
                     size="sm"
-                    xstyle={rtlStyles.mirror}
+                    className="rtl:[transform:scaleX(-1)]"
                   />
                   All Tasks
                 </HStack>

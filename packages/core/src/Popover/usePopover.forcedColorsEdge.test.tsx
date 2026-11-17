@@ -2,7 +2,7 @@
 
 /**
  * @file usePopover.forcedColorsEdge.test.tsx
- * @input usePopover's painted surface and the CSS rules StyleX injects
+ * @input usePopover's painted surface class list
  * @output Proof that the surface's forced-colors border sets no border width
  *   or style outside forced colors, so a caller's own border keeps showing
  * @position Unit evidence for the Popover forced-colors edge
@@ -27,45 +27,6 @@ afterAll(() => {
   HTMLElement.prototype.hidePopover = original.hide;
 });
 
-function collectCssText(): string {
-  let out = '';
-  for (const sheet of Array.from(document.styleSheets)) {
-    try {
-      for (const rule of Array.from(sheet.cssRules)) {
-        out += rule.cssText + '\n';
-      }
-    } catch {
-      // A cross-origin sheet has no readable rules.
-    }
-  }
-  return (
-    out +
-    Array.from(document.querySelectorAll('style'))
-      .map(s => s.textContent || '')
-      .join('\n')
-  );
-}
-
-/** The border width and style declarations of `el` outside any @media rule. */
-function borderDeclarationsOutsideMedia(el: Element): string[] {
-  const css = collectCssText().replace(
-    /@media[^{]*\{(?:[^{}]*\{[^}]*\})*\s*\}/g,
-    '',
-  );
-  return Array.from(el.classList).flatMap(cls =>
-    Array.from(
-      css.matchAll(
-        new RegExp(`\\.${cls}(?![0-9a-z_-])[^{]*\\{([^}]*)\\}`, 'gi'),
-      ),
-      m => m[1],
-    )
-      .join(';')
-      .split(';')
-      .map(d => d.replace(/\s+/g, ''))
-      .filter(d => /^border-(width|style):/.test(d)),
-  );
-}
-
 function HeadlessPopover() {
   const popover = usePopover({dialogLabel: 'Filters'});
   return (
@@ -86,5 +47,13 @@ it('sets no border width or style on the surface outside forced colors', () => {
   render(<HeadlessPopover />);
   fireEvent.click(screen.getByRole('button', {name: 'Open'}));
   const surface = screen.getByRole('dialog', {name: 'Filters', hidden: true});
-  expect(borderDeclarationsOutsideMedia(surface)).toEqual([]);
+  // Every border utility: the surface must reach for one only under forced
+  // colors, where the box-shadow edge disappears.
+  const borderClasses = surface.className
+    .split(/\s+/)
+    .filter(cls => cls.replace(/^forced-colors:/, '').includes('border'));
+  expect(borderClasses.length).toBeGreaterThan(0);
+  expect(borderClasses.every(cls => cls.startsWith('forced-colors:'))).toBe(
+    true,
+  );
 });
