@@ -90,6 +90,11 @@ export const derivedVarRegistry: Record<string, DerivedVarEntry[]> = {
     {property: 'height', vars: ['--_progressbar-mark-height'], replaces: true},
   ],
   section: [{property: 'padding', expand: 'container'}],
+  skeleton: [
+    {property: 'width', vars: ['--_skeleton-width']},
+    {property: 'height', vars: ['--_skeleton-height']},
+    {property: 'animationDelay', vars: ['--_skeleton-delay']},
+  ],
   'segmented-control': [
     {property: 'borderRadius', vars: ['--_segmented-control-radius']},
     {property: 'padding', vars: ['--_segmented-control-padding']},

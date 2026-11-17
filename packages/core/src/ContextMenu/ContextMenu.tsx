@@ -65,6 +65,18 @@ import {
   preloadMenuBottomSheetActionList,
 } from '../DropdownMenu/lazyMenuBottomSheet';
 import {menuBottomSheetClassName} from '../DropdownMenu/menuBottomSheetClasses';
+import {dropdownMenuSheetClassName} from '../DropdownMenu/dropdownMenuClasses';
+import {
+  contextMenuCursorAnchorClassName,
+  contextMenuPopoverClassName,
+  contextMenuPopoverWidthClassName,
+  contextMenuSheetInsetClassName,
+  contextMenuSheetMenuClassName,
+  contextMenuTouchPanClassName,
+  contextMenuTouchPinchClassName,
+  contextMenuTriggerClassName,
+  contextMenuWidthVar,
+} from './contextMenuClasses';
 import {tw} from '../utils/tw';
 import {renderDropdownItems} from '../DropdownMenu/renderDropdownItems';
 import {
@@ -86,15 +98,6 @@ import {useMenuPress} from '../hooks/useMenuPress';
 import {useTypeahead} from '../hooks/useTypeahead';
 import {useLongPress} from '../hooks/useLongPress';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
-import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  shadowVars,
-} from '../theme/tokens.stylex';
 import {mergeProps, rtlStyles} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import type {StyleXStyles} from '../theme/types';
@@ -119,124 +122,9 @@ import english from '../i18n/generated-english/ContextMenu/ContextMenu.generated
 
 registerEnglishFallback(english);
 
-const styles = stylex.create({
-  // Trigger wrapper: suppress the iOS long-press callout/selection so the
-  // long-press opens our context menu instead of the native text/callout UI.
-  // `position: relative` establishes the containing block for the absolutely
-  // positioned cursor anchor below, so the anchor point tracks the trigger
-  // (and scrolls with it) instead of the page.
-  trigger: {
-    position: 'relative',
-    WebkitTouchCallout: 'none',
-    WebkitUserSelect: 'none',
-    userSelect: 'none',
-  },
-  // 1px anchor placed at the cursor point within the trigger. The menu is
-  // anchored to this element, so it sits under the cursor yet is positioned
-  // relative to the trigger's context — it follows the content on scroll and
-  // the browser can auto-flip it against the viewport edges. It owns a box
-  // because WebKit counts an empty anchor box as clipped, and the default
-  // `position-visibility: anchors-visible` then hides the menu.
-  cursorAnchor: {
-    position: 'absolute',
-    width: '1px',
-    height: '1px',
-    pointerEvents: 'none',
-  },
-  menu: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-    // 300 px, and no taller than its layer's block-size cap, which folds in
-    // the software keyboard's.
-    maxHeight: stylex.firstThatWorks(
-      `min(300px, ${layerViewportInset.maxBlockSize})`,
-      `min(300px, ${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-    overflowY: 'auto',
-    '--_dropdown-menu-radius': radiusVars['--radius-container'],
-    '--_dropdown-menu-padding': spacingVars['--spacing-1'],
-    padding: spacingVars['--spacing-1'],
-    borderRadius: 'var(--_dropdown-menu-radius)',
-    backgroundColor: colorVars['--color-background-popover'],
-    boxShadow: shadowVars['--shadow-low'],
-    // Forced colors removes box-shadow, which is this surface's only edge.
-    borderWidth: {
-      default: null,
-      '@media (forced-colors: active)': '1px',
-    },
-    borderStyle: {
-      default: null,
-      '@media (forced-colors: active)': 'solid',
-    },
-    borderColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    opacity: 1,
-    transitionProperty: 'opacity',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    userSelect: 'none',
-    WebkitTouchCallout: 'none',
-  },
-  // Scroll ownership by the browser's own signal; see DropdownMenu.
-  touchPinchZoom: {
-    touchAction: 'pinch-zoom',
-  },
-  touchPanYPinchZoom: {
-    touchAction: 'pan-y pinch-zoom',
-    overscrollBehavior: 'contain',
-  },
-  popover: {
-    minWidth: '160px',
-  },
-  popoverCustomWidth: (width: string | number) => ({
-    minWidth: typeof width === 'number' ? `${width}px` : width,
-  }),
-  sheetMenu: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-    width: '100%',
-    '--_dropdown-menu-radius': radiusVars['--radius-container'],
-    '--_dropdown-menu-padding': spacingVars['--spacing-1'],
-    padding: spacingVars['--spacing-1'],
-    borderRadius: 'var(--_dropdown-menu-radius)',
-    backgroundColor: colorVars['--color-background-surface'],
-    outline: 'none',
-    userSelect: 'none',
-  },
-  // The menu's own inset inside the sheet content box (menuBottomSheetClassName
-  // .content): the 4px at the sides the content box keeps plus the menu's
-  // 4px padding; above the first row, the menu's 4px below the band the sheet
-  // keeps under its grab bar.
-  sheetMenuInset: {
-    paddingBlockStart: spacingVars['--spacing-1'],
-    paddingBlockEnd: spacingVars['--spacing-1'],
-    paddingInline: `calc(${spacingVars['--spacing-1']} + ${spacingVars['--spacing-1']})`,
-    // Bleeding rows read the padding this element applies.
-    '--container-padding-block-start': spacingVars['--spacing-1'],
-    '--container-padding-block-end': spacingVars['--spacing-1'],
-    '--container-padding-inline-start': `calc(${spacingVars['--spacing-1']} + ${spacingVars['--spacing-1']})`,
-    '--container-padding-inline-end': `calc(${spacingVars['--spacing-1']} + ${spacingVars['--spacing-1']})`,
-  },
-  sheetHeader: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    marginBottom: spacingVars['--spacing-2'],
-  },
-  sheetRootHeading: {
-    marginInlineStart: spacingVars['--spacing-3'],
-  },
-  sheetViewHeading: {
-    outline: 'none',
-  },
-});
+/** The popover's inline minimum width, read by its width class. */
+type ContextMenuStyle = React.CSSProperties &
+  Partial<Record<typeof contextMenuWidthVar, string>>;
 
 /**
  * Keeps the 1px cursor anchor inside the trigger along one axis. A point in
@@ -775,9 +663,15 @@ export function ContextMenu({
     [handleLongPressTouchCancel, onTouchCancelProp],
   );
 
-  const popoverXstyle = menuWidth
-    ? styles.popoverCustomWidth(menuWidth)
-    : styles.popover;
+  // The width is a class plus an inline variable, so a consumer class can
+  // still override it.
+  const menuWidthStyle: ContextMenuStyle | undefined =
+    menuWidth == null
+      ? undefined
+      : {
+          [contextMenuWidthVar]:
+            typeof menuWidth === 'number' ? `${menuWidth}px` : menuWidth,
+        };
 
   // The drill-in view stack for sub-menus on a phone; the bottom sheet has
   // its own drill-in.
@@ -819,17 +713,24 @@ export function ContextMenu({
       onContextMenu={e => e.preventDefault()}
       {...menuPress.menuProps}
       {...mergeProps(
-        themeProps('context-menu'),
-        stylex.props(
-          usesBottomSheet
-            ? [styles.sheetMenu, styles.sheetMenuInset]
-            : styles.menu,
-          !usesBottomSheet &&
-            (hasOverflow ? styles.touchPanYPinchZoom : styles.touchPinchZoom),
-          xstyle,
-        ),
-        tw(usesBottomSheet && menuBottomSheetClassName.content, className),
-        style,
+        mergeProps(themeProps('context-menu'), stylex.props(xstyle)),
+        {
+          className: tw(
+            usesBottomSheet
+              ? tw(
+                  contextMenuSheetMenuClassName,
+                  contextMenuSheetInsetClassName,
+                )
+              : contextMenuPopoverClassName,
+            !usesBottomSheet &&
+              (hasOverflow
+                ? contextMenuTouchPanClassName
+                : contextMenuTouchPinchClassName),
+            usesBottomSheet && menuBottomSheetClassName.content,
+            className,
+          ),
+          style,
+        },
       )}>
       <DropdownMenuContext value={contextValue}>
         <DropdownMenuRootOpenContext value={isOpen}>
@@ -846,15 +747,11 @@ export function ContextMenu({
       ref={setSheetHeadingRef}
       level={3}
       tabIndex={-1}
-      xstyle={[
-        styles.sheetViewHeading,
-        submenuPath.length === 0 && styles.sheetRootHeading,
-      ]}
-      className={
-        submenuPath.length === 0
-          ? menuBottomSheetClassName.headingAlone
-          : undefined
-      }>
+      className={tw(
+        dropdownMenuSheetClassName.viewHeading,
+        submenuPath.length === 0 && dropdownMenuSheetClassName.rootHeading,
+        submenuPath.length === 0 && menuBottomSheetClassName.headingAlone,
+      )}>
       {currentTitle}
     </Heading>
   );
@@ -866,13 +763,19 @@ export function ContextMenu({
         data-autofocus=""
         tabIndex={0}
         {...mergeProps(
-          themeProps('context-menu'),
-          stylex.props(styles.sheetMenu, styles.sheetMenuInset, xstyle),
-          tw(menuBottomSheetClassName.content, className),
-          style,
+          mergeProps(themeProps('context-menu'), stylex.props(xstyle)),
+          {
+            className: tw(
+              contextMenuSheetMenuClassName,
+              contextMenuSheetInsetClassName,
+              menuBottomSheetClassName.content,
+              className,
+            ),
+            style,
+          },
         )}>
         {submenuPath.length > 0 ? (
-          <div {...stylex.props(styles.sheetHeader)}>
+          <div className={dropdownMenuSheetClassName.header}>
             <Button
               label={backLabel}
               variant="ghost"
@@ -913,24 +816,25 @@ export function ContextMenu({
         onTouchEnd={handleTriggerTouchEnd}
         onTouchCancel={handleTriggerTouchCancel}
         data-testid={testId}
-        {...stylex.props(
-          styles.trigger,
-          ...(triggerXstyle
-            ? Array.isArray(triggerXstyle)
-              ? triggerXstyle
-              : [triggerXstyle]
-            : []),
+        {...mergeProps(
+          contextMenuTriggerClassName,
+          stylex.props(
+            ...(triggerXstyle
+              ? Array.isArray(triggerXstyle)
+                ? triggerXstyle
+                : [triggerXstyle]
+              : []),
+          ),
         )}>
         {children}
         <span
           ref={useMergedRefs(cursorAnchorRef, layer.ref)}
           aria-hidden="true"
-          {...mergeProps(stylex.props(styles.cursorAnchor), {
-            style: {
-              left: `${positionRef.current.x}px`,
-              top: `${positionRef.current.y}px`,
-            },
-          })}
+          className={contextMenuCursorAnchorClassName}
+          style={{
+            left: `${positionRef.current.x}px`,
+            top: `${positionRef.current.y}px`,
+          }}
         />
       </TriggerElement>
 
@@ -945,8 +849,11 @@ export function ContextMenu({
         layer.render(<LayerDepthProvider>{renderedMenu}</LayerDepthProvider>, {
           placement: 'below',
           alignment: 'start',
-          xstyle: popoverXstyle,
-          className: layerAnimations.below,
+          style: menuWidthStyle,
+          className: tw(
+            contextMenuPopoverWidthClassName,
+            layerAnimations.below,
+          ),
         })
       )}
     </>

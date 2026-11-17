@@ -46,7 +46,6 @@ const FLOORED_FLOOR_FILES = [
   'Chat/ChatComposerInput.tsx',
   'CommandPalette/CommandPaletteInput.tsx',
   'ComplexSelector/ComplexSelector.tsx',
-  'DateInput/NativeDateField.tsx',
   'DateInput/TouchDateField.tsx',
   'DateTimeInput/DateTimeInput.tsx',
   'DateTimeInput/TouchDateTimeField.tsx',
