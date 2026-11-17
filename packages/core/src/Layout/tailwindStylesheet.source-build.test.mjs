@@ -425,6 +425,15 @@ import {
   inputGroupTextClassName,
 } from '../InputGroup/inputGroupClasses';
 import {
+  NUMBER_INPUT_DECREMENT_CLASS,
+  NUMBER_INPUT_INCREMENT_ICON_CLASS,
+  NUMBER_INPUT_STEPPER_COLUMN_CLASS,
+  NUMBER_INPUT_UNITS_CLASS,
+  numberInputEntryClassName,
+  numberInputHeightClassName,
+  numberInputStepperButtonClassName,
+} from '../NumberInput/numberInputClasses';
+import {
   panelSearchInputFieldClassName,
   panelSearchInputIconClassName,
   panelSearchInputInputClassName,
@@ -3136,6 +3145,21 @@ function familyClassNames() {
     add(inputGroupSizeClassName[size]);
   }
   add(inputGroupTextClassName);
+  // NumberInput: the entry in every size and state, the unit, the stepper
+  // column and both buttons.
+  for (const size of ['sm', 'md', 'lg']) {
+    add(numberInputHeightClassName({size}));
+  }
+  for (const isDisabled of [false, true]) {
+    for (const isInvalid of [false, true]) {
+      add(numberInputEntryClassName({isDisabled, isInvalid}));
+      add(numberInputStepperButtonClassName({isDisabled}));
+    }
+  }
+  add(NUMBER_INPUT_UNITS_CLASS);
+  add(NUMBER_INPUT_STEPPER_COLUMN_CLASS);
+  add(NUMBER_INPUT_DECREMENT_CLASS);
+  add(NUMBER_INPUT_INCREMENT_ICON_CLASS);
   // FieldStatus: the message box in both placements, the detached content row
   // and glyph, and one fill per status type.
   add(fieldStatusBaseClassName);

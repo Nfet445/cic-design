@@ -23,6 +23,7 @@ import {NumberInput} from './NumberInput';
 import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
+import {classesOf} from '../__tests__/classNameAssertions';
 
 // jsdom cannot match `:focus-visible`: compare the ring's StyleX class hash.
 const RING = stylex
@@ -3115,15 +3116,16 @@ describe('NumberInput stepper padding coupling', () => {
     // The column cancels the wrapper's block padding by reading the same
     // tokens — not a hardcoded default — so it stays flush when a theme
     // changes the padding. The column is the stepper buttons' direct parent.
+    // Its margins are utilities, so the class text is what jsdom can read.
     const steppers = container.querySelector(
       'button[aria-label="Increment Quantity"]',
     )?.parentElement as HTMLElement;
-    const column = getComputedStyle(steppers);
-    expect(noSpace(column.marginTop)).toBe(
-      noSpace(`calc(-1 * ${BLOCK_START})`),
+    const classes = new Set(classesOf(steppers));
+    expect(classes).toContain(
+      `[margin-block-start:calc(-1*${noSpace(BLOCK_START)})]`,
     );
-    expect(noSpace(column.marginBottom)).toBe(
-      noSpace(`calc(-1 * ${BLOCK_END})`),
+    expect(classes).toContain(
+      `[margin-block-end:calc(-1*${noSpace(BLOCK_END)})]`,
     );
   });
 

@@ -47,10 +47,10 @@ const FLOORED_FLOOR_FILES = [
   'CommandPalette/commandPaletteInputClasses.ts',
   'Field/panelSearchInputClasses.ts',
   'Typeahead/typeaheadClasses.ts',
+  'NumberInput/numberInputClasses.ts',
   // Still on StyleX: the component source carries the declaration.
   'ComplexSelector/ComplexSelector.tsx',
   'DateTimeInput/nativePickerSegmentClasses.ts',
-  'NumberInput/NumberInput.tsx',
   'Selector/Selector.tsx',
   // The rich-text package carries the same floor; its path is relative to
   // packages/core/src.
