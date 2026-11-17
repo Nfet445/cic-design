@@ -3,19 +3,12 @@
 'use client';
 
 import {useRef, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Button} from '@astryxdesign/core/Button';
 import {Card} from '@astryxdesign/core/Card';
 import {Center} from '@astryxdesign/core/Center';
 import {useAnnounce, usePanGesture} from '@astryxdesign/core/hooks';
 import {Text} from '@astryxdesign/core/Text';
 import {VStack} from '@astryxdesign/core/VStack';
-import {
-  colorVars,
-  durationVars,
-  easeVars,
-  radiusVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 
 const DECK = [
   {face: 'A\u2660', name: 'Ace of spades'},
@@ -27,35 +20,32 @@ const DECK = [
 const THROW_SPEED = 1000;
 /** How far a thrown card travels while it fades, px. */
 const THROW_DISTANCE = 160;
-const EXIT = `${durationVars['--duration-exit']} ${easeVars['--ease-exit']}`;
 
-const styles = stylex.create({
+// `CSSProperties` has no index signature for custom properties, so the drag's
+// inline style needs this alias to typecheck.
+type DragStyle = React.CSSProperties &
+  Record<'--astryx-card-x' | '--astryx-card-y', string>;
+
+const styles = {
   // A wash under the stage, so the card on top reads in light and dark themes.
-  stage: {
-    backgroundColor: colorVars['--color-neutral'],
-    borderRadius: radiusVars['--radius-container'],
-    overflow: 'hidden',
-  },
-  card: {cursor: 'grab', userSelect: 'none'},
+  stage:
+    'bg-[var(--color-neutral)] rounded-[var(--radius-container)] overflow-hidden',
+  // The place the drag leaves the card in comes from the two variables.
+  card: 'cursor-grab select-none [translate:var(--astryx-card-x)_var(--astryx-card-y)]',
   // A gentle release settles the card back, unless the person reduces motion.
-  settle: {
-    transition: {
-      default: `translate ${durationVars['--duration-medium']} ${easeVars['--ease-move']}`,
-      '@media (prefers-reduced-motion: reduce)': 'none',
-    },
-  },
+  settle:
+    'transition-[translate] [transition-duration:var(--duration-medium)] [transition-timing-function:var(--ease-move)] motion-reduce:transition-none',
   // A flick throws it off to one side as it fades.
-  thrown: {
-    opacity: 0,
-    transition: {
-      default: `translate ${EXIT}, opacity ${EXIT}`,
-      '@media (prefers-reduced-motion: reduce)': 'none',
-    },
-  },
-  drag: (x: number, y: number) => ({translate: `${x}px ${y}px`}),
-});
+  thrown:
+    'opacity-0 transition-[translate,opacity] [transition-duration:var(--duration-exit)] [transition-timing-function:var(--ease-exit)] motion-reduce:transition-none',
+} as const;
 
 type Pose = {x: number; y: number; motion: 'rest' | 'settle' | 'thrown'};
+
+/** The drag's position as the two variables the card's `translate` reads. */
+function dragStyle(pose: Pose): DragStyle {
+  return {'--astryx-card-x': `${pose.x}px`, '--astryx-card-y': `${pose.y}px`};
+}
 
 export default function PanPlayingCard() {
   const card = useRef<HTMLDivElement>(null);
@@ -118,7 +108,7 @@ export default function PanPlayingCard() {
 
   return (
     <VStack gap={4} padding={4} width="min(360px, 80vw)">
-      <Center height={280} xstyle={styles.stage}>
+      <Center height={280} className={styles.stage}>
         <Card
           ref={card}
           // An image's name is all a screen reader announces, so it names the
@@ -128,11 +118,12 @@ export default function PanPlayingCard() {
           width={80}
           height={112}
           elevation="med"
-          xstyle={[
-            styles.card,
-            styles.drag(pose.x, pose.y),
-            pose.motion !== 'rest' && styles[pose.motion],
-          ]}>
+          style={dragStyle(pose)}
+          className={
+            pose.motion === 'rest'
+              ? styles.card
+              : `${styles.card} ${styles[pose.motion]}`
+          }>
           <Center height="100%">
             <Text size="3xl" weight="bold">
               {shown.face}
