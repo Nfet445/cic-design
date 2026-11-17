@@ -28,6 +28,7 @@ import {
   act,
   cleanup,
 } from '@testing-library/react';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import userEvent from '@testing-library/user-event';
 import * as stylex from '@stylexjs/stylex';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
@@ -3280,7 +3281,7 @@ describe('end controls stay in flow', () => {
     );
     const clear = screen.getByRole('button', {name: /clear/i});
     const lane = clear.parentElement as HTMLElement;
-    expect(getComputedStyle(lane).marginInlineStart).toBe('auto');
+    expectClassSet(lane, {includes: ['ms-auto']});
   });
 
   it('keeps the field on one row so the controls cannot be pushed off it', () => {
@@ -3389,7 +3390,7 @@ describe('the value is bounded by the content lane', () => {
     expect(lane.parentElement).toBe(field);
     // The token's containing block is the lane, which is what bounds it.
     expect(token.parentElement).toBe(lane);
-    expect(getComputedStyle(lane).position).toBe('relative');
+    expectClassSet(lane, {includes: ['relative']});
   });
 
   it('lets the lane yield its whole width, so a narrow field cannot overflow', () => {
@@ -3398,9 +3399,7 @@ describe('the value is bounded by the content lane', () => {
     // whatever a narrow parent or an InputGroup gives it.
     const {container} = renderWithValue();
     const lane = screen.getByRole('combobox').parentElement as HTMLElement;
-    const style = getComputedStyle(lane);
-    expect(style.minWidth).toBe('0');
-    expect(style.flexGrow).toBe('1');
+    expectClassSet(lane, {includes: ['min-w-0', 'flex-1']});
     // Nothing states a width: a narrow parent gets all of it back.
     expect(
       (container.querySelector('.astryx-typeahead') as HTMLElement).style

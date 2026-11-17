@@ -549,6 +549,10 @@ import {
   TYPEAHEAD_ITEM_FRAME_CLASS,
   TYPEAHEAD_ITEM_LABEL_CLASS,
   TYPEAHEAD_ROW_CONTENT_CLASS,
+  typeaheadContentLaneClassName,
+  typeaheadEndLaneClassName,
+  typeaheadInputClassName,
+  typeaheadInputDisabledClassName,
   typeaheadRowClassName,
 } from '../Typeahead/typeaheadClasses';
 import {tableCellClassName} from '../Table/tableCellClasses';
@@ -1950,6 +1954,10 @@ function familyClassNames() {
   add(TYPEAHEAD_ITEM_LABEL_CLASS);
   add(TYPEAHEAD_ITEM_DESCRIPTION_CLASS);
   add(TYPEAHEAD_ITEM_DISABLED_CLASS);
+  add(typeaheadInputClassName);
+  add(typeaheadInputDisabledClassName);
+  add(typeaheadEndLaneClassName);
+  add(typeaheadContentLaneClassName);
 
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.

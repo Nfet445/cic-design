@@ -62,13 +62,12 @@ import {spacingVars, sizeVars} from '../theme/tokens.stylex';
 import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
-import {
-  composeEventHandlers,
-  getInputARIA,
-  isImeKeyEvent,
-  mergeProps,
-} from '../utils';
+import {getInputARIA, isImeKeyEvent, mergeProps} from '../utils';
 import {joinAriaIDs} from '../utils/inputAria';
+import {
+  typeaheadContentLaneClassName,
+  typeaheadEndLaneClassName,
+} from './typeaheadClasses';
 import {TrailingKeyDownContext} from './trailingKeyDown';
 import {
   type FieldInputBaseProps,
@@ -268,36 +267,6 @@ const styles = stylex.create({
   // content lane is not the only flexible item in the row (a start icon, a
   // grouped row): `auto` gives free space to the margin rather than to a
   // sibling, so it needs no sibling to exist.
-  endLane: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    marginInlineStart: 'auto',
-  },
-  // The field's content lane: the input, and the token painted over it.
-  //
-  // This is the box the value is allowed to occupy, and it is what makes the
-  // end lane's space its own — the lane is an ordinary flex item that ends
-  // exactly where `endLane` begins, so a value bounded by it can never reach
-  // the clear button or the spinner. Before it existed the token was
-  // positioned against the whole field, so a value longer than the input ran
-  // under the end controls and past the field's border (measured 33px of
-  // overlap and 4px outside the border at a 180px field).
-  //
-  // `flex: 1` with `min-width: 0` is TextInput's own arrangement for its
-  // input: the lane takes the free space so the end controls sit in the
-  // corner, and yields all of it when the field is narrow, so a narrow field
-  // never overflows. Stretched, so its padding box matches the field's
-  // content box in the block direction and the token keeps the vertical
-  // placement it has always had.
-  contentLane: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    flex: 1,
-    minWidth: 0,
-  },
   // While a token shows, the input keeps its place in the row and its own
   // intrinsic width — it is only made invisible and inert. That width is what
   // sizes the field, exactly as it does for TextInput, so a Typeahead is as
@@ -400,7 +369,7 @@ function EndLane({
     return null;
   }
   return (
-    <div {...stylex.props(styles.endLane)}>
+    <div className={typeaheadEndLaneClassName}>
       {isBusy && (
         // Named, never live: the typeahead announces its search.
         <SpinnerOwnerContext value={true}>
@@ -749,7 +718,7 @@ export function Typeahead<T extends SearchableItem>({
             indicator lands in the end controls below beside the clear button
             rather than as a second one inside the base. */}
         <BusyIndicatorLaneProvider value={busyLane}>
-          <div {...stylex.props(styles.contentLane)}>
+          <div className={typeaheadContentLaneClassName}>
             {showToken && (
               <>
                 {/* The token's button is the field's Tab stop while a value
