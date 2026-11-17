@@ -248,6 +248,15 @@ import {
   topNavStartContentClassName,
   topNavStartRegionClassName,
 } from '../TopNav/topNavClasses';
+import {
+  topNavFeaturedCardBodyClassName,
+  topNavFeaturedCardClassName,
+  topNavFeaturedCardDescriptionClassName,
+  topNavFeaturedCardImageClassName,
+  topNavFeaturedCardLinkArrowClassName,
+  topNavFeaturedCardLinkClassName,
+  topNavFeaturedCardTitleClassName,
+} from '../TopNav/topNavMegaMenuFeaturedCardClasses';
 import {mediaThemeClassName} from '../theme/mediaThemeClasses';
 import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
 import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
@@ -455,6 +464,13 @@ function familyClassNames() {
     topNavMobileEndClassName,
     topNavDrawerItemsClassName,
     topNavDrawerDividerClassName,
+    topNavFeaturedCardClassName,
+    topNavFeaturedCardImageClassName,
+    topNavFeaturedCardBodyClassName,
+    topNavFeaturedCardTitleClassName,
+    topNavFeaturedCardDescriptionClassName,
+    topNavFeaturedCardLinkClassName,
+    topNavFeaturedCardLinkArrowClassName,
   ]) {
     add(className());
   }

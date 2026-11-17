@@ -20,61 +20,20 @@
 
 import React, {type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  fontWeightVars,
-} from '../theme/tokens.stylex';
 import {mergeProps, rtlStyles} from '../utils';
+import {tw} from '../utils/tw';
+import {
+  topNavFeaturedCardBodyClassName,
+  topNavFeaturedCardClassName,
+  topNavFeaturedCardDescriptionClassName,
+  topNavFeaturedCardImageClassName,
+  topNavFeaturedCardLinkArrowClassName,
+  topNavFeaturedCardLinkClassName,
+  topNavFeaturedCardTitleClassName,
+} from './topNavMegaMenuFeaturedCardClasses';
 import type {BaseProps} from '../BaseProps';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import {themeProps} from '../utils/themeProps';
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  image: {
-    width: '100%',
-    height: 140,
-    objectFit: 'cover' as const,
-    display: 'block',
-  },
-  body: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-2'],
-    padding: spacingVars['--spacing-4'],
-  },
-  title: {
-    fontSize: typeScaleVars['--text-label-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    color: colorVars['--color-text-primary'],
-  },
-  description: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-  },
-  link: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-accent'],
-    textDecoration: 'none',
-  },
-  // A transform needs a box: an inline span would not mirror.
-  linkArrow: {
-    display: 'inline-block',
-  },
-});
 
 // =============================================================================
 // Types
@@ -155,8 +114,8 @@ export function TopNavMegaMenuFeaturedCard({
       ref={ref}
       {...mergeProps(
         themeProps('top-nav-mega-menu-featured-card'),
-        stylex.props(styles.root, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(topNavFeaturedCardClassName(), className),
         style,
       )}
       {...rest}>
@@ -169,20 +128,30 @@ export function TopNavMegaMenuFeaturedCard({
           alt={imageAlt ?? ''}
           role={imageAlt ? undefined : 'presentation'}
           aria-hidden={imageAlt ? undefined : true}
-          {...stylex.props(styles.image)}
+          className={topNavFeaturedCardImageClassName()}
         />
       )}
-      <div {...stylex.props(styles.body)}>
-        <span {...stylex.props(styles.title)}>{title}</span>
+      <div className={topNavFeaturedCardBodyClassName()}>
+        <span className={topNavFeaturedCardTitleClassName()}>{title}</span>
         {description && (
-          <span {...stylex.props(styles.description)}>{description}</span>
+          <span className={topNavFeaturedCardDescriptionClassName()}>
+            {description}
+          </span>
         )}
         {linkLabel && linkHref && (
-          <LinkComponent href={linkHref} {...stylex.props(styles.link)}>
+          <LinkComponent
+            href={linkHref}
+            className={topNavFeaturedCardLinkClassName()}>
             {linkLabel}{' '}
             {/* The arrow points toward the inline end, so it mirrors in RTL
                 (design:bidirectionality DR4); U+2192 is not bidi-mirrored. */}
-            <span {...stylex.props(styles.linkArrow, rtlStyles.mirror)}>→</span>
+            <span
+              {...mergeProps(
+                stylex.props(rtlStyles.mirror),
+                topNavFeaturedCardLinkArrowClassName(),
+              )}>
+              →
+            </span>
           </LinkComponent>
         )}
         {children}
