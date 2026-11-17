@@ -186,3 +186,16 @@ exception added or deleted. `pnpm -F @astryxdesign/core typecheck` fails on
 `src/DropdownMenu/DropdownMenu.doc.mjs(170,7)`: `ComponentThemingVar` wants a
 `default`, missing on the branch tip before this window's edit. Not this
 ticket's file; recorded, not touched.
+
+### 2026-11-17, window 2 — close
+
+`poc/tailwind-layout-primitives` moved on (Popover surface, template RTL
+mirror) after the previous merge, so it was merged again at the window close:
+clean, no conflict in `tailwindStylesheet.source-build.test.mjs`, so the
+conflict-keeper rule did not have to be applied and `node --check` had nothing
+to repair.
+
+After the merge: sheet 176.5 kB raw, still inside the rule ceiling; `RadioList`
+plus the sheet test plus all of `src/theme` green (1993 passed, 1 skipped).
+
+Nothing pushed.
