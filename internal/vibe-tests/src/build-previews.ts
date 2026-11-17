@@ -30,6 +30,12 @@ const VIBE_DIR = path.resolve(__dirname, '..');
 const _APP_DIR = path.join(VIBE_DIR, 'app');
 const REPO_ROOT = path.resolve(VIBE_DIR, '../..');
 
+/** The built sheet a migrated component's classes resolve against. */
+const ASTRYX_TAILWIND_SHEET = path.join(
+  REPO_ROOT,
+  'packages/core/dist/astryx-tailwind.css',
+);
+
 /**
  * Browser targets for lightningcss.
  * Prevents lowering native light-dark() into --lightningcss-light/--lightningcss-dark
@@ -147,7 +153,7 @@ function parseArgs(): {
 /**
  * Create a temporary entry file that imports and renders the component
  */
-function createEntryFile(
+export function createEntryFile(
   componentPath: string,
   target: string,
   tmpDir: string,
@@ -160,11 +166,23 @@ function createEntryFile(
       target === 'astryx-tailwind'
         ? `\nimport '${path.join(REPO_ROOT, 'packages/core/src/tailwind-theme.css').replace(/\\/g, '/')}';`
         : '';
+    // The prebuilt sheet follows the reset, as it does in a consuming app. A
+    // migrated component carries class names only, so without it the preview
+    // renders unstyled; a missing sheet is an env failure, not a page.
+    const sheetImport =
+      target === 'astryx'
+        ? `\nimport '${ASTRYX_TAILWIND_SHEET.replace(/\\/g, '/')}';`
+        : '';
+    if (target === 'astryx' && !fs.existsSync(ASTRYX_TAILWIND_SHEET)) {
+      throw new Error(
+        'packages/core/dist/astryx-tailwind.css is missing, so a migrated component would render without its classes. Run `pnpm -F @astryxdesign/core build` first.',
+      );
+    }
     fs.writeFileSync(
       entryPath,
       `import React from 'react';
 import {createRoot} from 'react-dom/client';
-import '@astryxdesign/core/reset.css';${tailwindImport}
+import '@astryxdesign/core/reset.css';${sheetImport}${tailwindImport}
 import {Theme} from '@astryxdesign/core/theme';
 import {neutralTheme} from '@astryxdesign/theme/neutral';
 import Component from '${componentPath.replace(/\\/g, '/')}';
@@ -808,7 +826,13 @@ async function main() {
   console.log(`   Manifest: ${manifestOutPath}`);
 }
 
-main().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+const isEntryPoint =
+  process.argv[1] !== undefined &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isEntryPoint) {
+  main().catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+}
