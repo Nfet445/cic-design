@@ -64,10 +64,11 @@ export const TARGETS = {
     // this group even without a Core component import (spec:AST-066 FR3).
     stylexEntries: STYLEX_ENTRIES['@astryxdesign/core'],
     // The token defaults used to reach this sheet as StyleX defineVars
-    // declarations. They now live in a generated tokens.css (spec:AST-119 FR4),
-    // and this sheet still carries them so a page that loads only astryx.css
-    // keeps every default.
-    extraCss: path.resolve(CORE_SRC, 'theme/tokens.css'),
+    // declarations. They now live in generated sheets, and this sheet still
+    // carries them so a page that loads only astryx.css keeps every default.
+    extraCss: ['theme/tokens.css', 'theme/dataTokens.css'].map(file =>
+      path.resolve(CORE_SRC, file),
+    ),
   },
   lab: {
     src: path.resolve(ROOT, 'packages/lab/src'),
@@ -177,6 +178,18 @@ export function composePackageStylesheet(banner, css, extraCss = '') {
   return `/* ${banner} */\n/* Auto-generated. Do not edit manually. */\n\n${layerBlock(body)}`;
 }
 
+/**
+ * A target's generated sheets, joined without their banners, in print order.
+ * Empty for a target that carries none.
+ */
+export async function readExtraCss(target) {
+  const files = target.extraCss ?? [];
+  const sheets = await Promise.all(
+    files.map(async file => withoutBanner(await fs.readFile(file, 'utf8'))),
+  );
+  return sheets.join('\n\n');
+}
+
 /** A generated sheet without its banner, ready to join another rule block. */
 function withoutBanner(css) {
   return css.replace(/^(?:\/\*[^*]*\*\/[ \t]*\n)+/, '').trim();
@@ -277,9 +290,7 @@ async function main() {
   }
 
   const outPath = path.resolve(target.dist, target.outFile);
-  const extraCss = target.extraCss
-    ? withoutBanner(await fs.readFile(target.extraCss, 'utf8'))
-    : '';
+  const extraCss = await readExtraCss(target);
   await fs.writeFile(
     outPath,
     composePackageStylesheet(target.banner, combinedCSS, extraCss),

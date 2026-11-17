@@ -24,6 +24,7 @@
 
 const path = require('node:path');
 const {isSwizzledSource} = require('./swizzle-marker');
+const {GENERATED_SHEETS, generatedSheetCss} = require('./source-stylesheet');
 const fs = require('node:fs');
 const babel = require('@babel/core');
 const stylexBabelPlugin = require('@stylexjs/babel-plugin');
@@ -315,10 +316,20 @@ function createPlugin() {
               })
             : '';
 
+          // Declarations an installed Astryx package generates rather than
+          // compiles. The prebuilt stylesheet prints them after its rules.
+          const librarySheets = Object.keys(GENERATED_SHEETS)
+            .map(name => generatedSheetCss(name, cwd))
+            .filter(Boolean)
+            .join('\n\n');
+
           // Wrap in named layers
           const parts = [];
-          if (libraryCss) {
-            parts.push(`@layer ${layers.library} {\n${libraryCss}\n}`);
+          if (libraryCss || librarySheets) {
+            const body = [libraryCss, librarySheets]
+              .filter(Boolean)
+              .join('\n\n');
+            parts.push(`@layer ${layers.library} {\n${body}\n}`);
           }
           if (productCss) {
             parts.push(`@layer ${layers.product} {\n${productCss}\n}`);

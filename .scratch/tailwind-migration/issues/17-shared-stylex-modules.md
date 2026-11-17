@@ -81,6 +81,10 @@ Keyframes: `pressRelease` (`press.stylex.ts:84`) and `cellRelease` (:99). Author
 
 ## Notes
 
+- Landed three of the ten creates: the icon box (`Icon/iconBoxClasses.ts`), the menu press highlight (`privateAttributes/menuPressLitClasses.ts`) and the reorder line (`privateAttributes/reorderLineClasses.ts`), with `IconSize.stylex.ts` kept as a deprecated shim.
+- The other seven cannot move while their consumers still style the same properties through StyleX. Tailwind utilities print inside `@layer astryx-base`; StyleX output is unlayered, and an unlayered declaration wins at any order. A shared module that now sets an unlayered-styled property would paint differently in a browser. Example: `travellingStyles.row` asks `zIndex: 2` while `List/ListItem.tsx:255` sets `zIndex: 1` under `@media (pointer: coarse)`.
+- The rest moved to `41-shared-modules-after-consumers.md`, which waits for the consumer families.
+
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.
 - Manual Windows High Contrast check is part of this ticket's checklist when the component draws a border, an outline or a focus ring.

@@ -110,7 +110,7 @@ describe.runIf(process.env.ASTRYX_PREBUILT_DATA_BROWSER === '1')(
       });
       it(`rejects unlayered defaults at a themed document root (${mode})`, async () => {
         const block = coreCSS.match(
-          /:root,\s*\.\w+\{[^}]*--color-data-categorical-blue:[^}]+\}/,
+          /:root\s*\{[^}]*--color-data-categorical-blue:[^}]+\}/,
         )[0];
         const unlayered = await colors([themeCSS, block], mode, true);
         expect(unlayered.raw).toBe('rgb(1, 113, 227)');

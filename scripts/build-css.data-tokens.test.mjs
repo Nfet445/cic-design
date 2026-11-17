@@ -38,7 +38,7 @@ describe('prebuilt Core data variables (spec:AST-066)', () => {
     }
   });
 
-  it('uses the same layered root-plus-group-class shape as other defineVars defaults', () => {
+  it('declares the group on :root beside the token defaults, inside the layer', () => {
     const layer = css.indexOf('@layer astryx-base {');
     expect(layer).toBeGreaterThan(0);
     const blocks = [...css.matchAll(/([^{}]+)\{([^{}]+)\}/g)];
@@ -49,8 +49,8 @@ describe('prebuilt Core data variables (spec:AST-066)', () => {
     expect(data).toBeDefined();
     expect(colors).toBeDefined();
     expect(data.index).toBeGreaterThan(layer);
-    expect(data[1].trim()).toMatch(/^:root,\s*\.\w+$/);
-    expect(colors[1].trim()).toMatch(/^:root,\s*\.\w+$/);
+    expect(data[1].trim()).toBe(':root');
+    expect(colors[1].trim()).toBe(':root');
     expect(
       css
         .slice(data.index + data[0].length)

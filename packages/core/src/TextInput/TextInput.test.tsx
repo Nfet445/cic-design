@@ -17,6 +17,7 @@ import * as stylex from '@stylexjs/stylex';
 import {colorVars} from '../theme/tokens.stylex';
 import {TestIcon} from '../__tests__/TestIcon';
 import {declaredValue} from '../__tests__/stylexDeclarations';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {InputGroup} from '../InputGroup';
 import {TextInput} from './TextInput';
 
@@ -1548,9 +1549,10 @@ describe('TextInput text size', () => {
     // inputFontFloor.test.ts; what this asserts is the visible result off
     // the gate: the plain token size, not a floor.
     render(<TextInput label="Name" value="" onChange={() => {}} />);
-    expect(declaredValue(screen.getByLabelText('Name'), 'font-size')).toBe(
-      'var(--text-body-size)',
-    );
+    expectClassSet(screen.getByLabelText('Name'), {
+      includes: ['text-[length:var(--text-body-size)]'],
+      excludes: ['text-[length:max(1rem,var(--text-body-size))]'],
+    });
   });
 });
 
@@ -1560,6 +1562,6 @@ describe('TextInput in a narrow row', () => {
       <TextInput label="Search" value="" onChange={() => {}} />,
     );
     const root = container.querySelector('.astryx-field')!;
-    expect(getComputedStyle(root).minWidth).toBe('0');
+    expectClassSet(root, {includes: ['min-w-0']});
   });
 });

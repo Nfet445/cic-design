@@ -13,6 +13,7 @@ import {describe, it, expect, vi, afterEach} from 'vitest';
 import {render, screen, waitFor, fireEvent} from '@testing-library/react';
 import * as stylex from '@stylexjs/stylex';
 import {Field} from './Field';
+import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
 import {FormLayoutContext} from '../FormLayout/FormLayoutContext';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 
@@ -47,11 +48,15 @@ describe('Field', () => {
       );
 
       const status = screen.getByText('This username may be taken');
-      expect(
-        getComputedStyle(status.parentElement!).getPropertyValue(
-          '--_field-status-overlap',
-        ),
-      ).toBe(`calc(var(--size-element-${size}) / 2)`);
+      const wrapper = status.parentElement!;
+      // The wrapper names half the control's height: the default is the
+      // medium control, and each size arm replaces it through `:has`, whose
+      // own specificity beats the default rather than the sheet order.
+      const overlapClass =
+        size === 'md'
+          ? '[--_field-status-overlap:calc(var(--size-element-md)_/_2)]'
+          : `[&:has(>_[data-size=${size}])]:[--_field-status-overlap:calc(var(--size-element-${size})_/_2)]`;
+      expectClassSet(wrapper, {includes: ['isolate', overlapClass]});
     },
   );
 
@@ -68,9 +73,10 @@ describe('Field', () => {
     const status = screen.getByText('This username may be taken');
     const wrapper = status.parentElement!;
 
-    expect(getComputedStyle(wrapper).isolation).toBe('isolate');
-    expect(getComputedStyle(status).position).toBe('relative');
-    expect(getComputedStyle(status).zIndex).toBe('-1');
+    expectClassSet(wrapper, {includes: ['isolate', 'flex', 'flex-col']});
+    // The overlapping background sits in a negative stacking layer the
+    // isolated wrapper contains.
+    expectClassSet(status, {includes: ['relative', '[z-index:-1]']});
   });
 
   it('renders with label', () => {
@@ -137,8 +143,10 @@ describe('Field', () => {
     // Description should still be in the DOM for screen readers
     const description = screen.getByText('Search for items');
     expect(description).toBeInTheDocument();
-    // But should have the visually-hidden styles applied
-    expect(description.className).toContain('srOnly');
+    // But should carry the visually-hidden classes
+    expectClassSet(description, {
+      includes: ['[clip:rect(0,0,0,0)]', 'absolute', '[width:1px]'],
+    });
   });
 
   it('shows label visually by default', () => {
@@ -522,9 +530,10 @@ describe('Field', () => {
         </Field>,
       );
       const field = screen.getByTestId('field');
-      // StyleX compiles the dynamic width to an inline CSS custom property.
-      expect(field.getAttribute('style')).toContain('100%');
-      expect(field.className).toContain('dynamicStyles.width');
+      // The width is a per-instance value, so it travels as an inline custom
+      // property that the root's class reads.
+      expectVariable(field, '--astryx-field-width', '100%');
+      expectClassSet(field, {includes: ['w-[var(--astryx-field-width)]']});
     });
 
     it('applies a numeric width (treated as pixels)', () => {
@@ -639,7 +648,7 @@ describe('Field', () => {
         {wrapper: horizontalLabelsWrapper},
       );
       const field = container.firstChild as HTMLElement;
-      expect(field.className).toContain('horizontalLabels');
+      expectClassSet(field, {includes: ['contents']});
     });
 
     it('renders label and input as direct grid children via display:contents', () => {
@@ -700,8 +709,10 @@ describe('Field', () => {
         </Field>,
       );
       const field = container.firstChild as HTMLElement;
-      expect(field.className).not.toContain('horizontalLabels');
-      expect(field.className).toContain('container');
+      expectClassSet(field, {
+        includes: ['flex', 'flex-col', 'isolate', 'min-w-0'],
+        excludes: ['contents'],
+      });
     });
 
     it('wraps label in alignment div with top padding', () => {
@@ -715,7 +726,11 @@ describe('Field', () => {
       // First child should be the label alignment wrapper
       const labelWrapper = field.children[0] as HTMLElement;
       expect(labelWrapper.tagName).toBe('DIV');
-      expect(labelWrapper.className).toContain('horizontalLabelAlign');
+      expectClassSet(labelWrapper, {
+        includes: [
+          '[padding-block-start:calc(var(--border-width)_+_var(--spacing-1))]',
+        ],
+      });
       // Label should be inside
       expect(labelWrapper.querySelector('label')).not.toBeNull();
     });
@@ -746,9 +761,11 @@ describe('Field', () => {
         // parent paint level (it carries no positioning or z-index of its
         // own) while containing every local layer — the input wrapper's 1
         // and the attached status -1.
-        expect(getComputedStyle(field).isolation).toBe('isolate');
+        expectClassSet(field, {includes: ['isolate']});
         // Unpositioned and unranked — the owner never competes itself.
-        expect(getComputedStyle(field).zIndex).toBe('');
+        expectClassSet(field, {
+          excludes: ['relative', 'absolute', '[z-index:-1]', '[z-index:1]'],
+        });
       },
     );
 
@@ -759,7 +776,7 @@ describe('Field', () => {
         </Field>,
       );
       const field = screen.getByTestId('field');
-      expect(getComputedStyle(field).isolation).toBe('isolate');
+      expectClassSet(field, {includes: ['isolate']});
     });
   });
 });
@@ -772,7 +789,7 @@ describe('Field in a narrow row', () => {
       </Field>,
     );
     const root = container.querySelector('.astryx-field')!;
-    expect(getComputedStyle(root).minWidth).toBe('0');
+    expectClassSet(root, {includes: ['min-w-0']});
   });
 
   it('keeps an explicit width, which a row may still shrink', () => {
@@ -781,9 +798,9 @@ describe('Field in a narrow row', () => {
         <input id="search" />
       </Field>,
     );
-    const root = container.querySelector('.astryx-field')!;
-    expect(root.getAttribute('style')).toContain('240');
-    expect(getComputedStyle(root).minWidth).toBe('0');
+    const root = container.querySelector<HTMLElement>('.astryx-field')!;
+    expectVariable(root, '--astryx-field-width', '240px');
+    expectClassSet(root, {includes: ['min-w-0']});
   });
 
   it('leaves horizontal-labels mode (display: contents) untouched', () => {
@@ -795,7 +812,6 @@ describe('Field in a narrow row', () => {
       </FormLayoutContext>,
     );
     const root = container.firstChild as HTMLElement;
-    expect(getComputedStyle(root).display).toBe('contents');
-    expect(getComputedStyle(root).minWidth).not.toBe('0');
+    expectClassSet(root, {includes: ['contents'], excludes: ['min-w-0']});
   });
 });
