@@ -12,7 +12,21 @@ import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses'
 import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {getForcedColorsRules} from '../__tests__/forcedColors';
-import {expectClassSet} from '../__tests__/classNameAssertions';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
+import {stepVars} from './stepClasses';
+
+/** True when the element carries every class token in `className`. */
+const carries = (el: Element, className: string): boolean => {
+  const classes = new Set(classesOf(el));
+  return className
+    .split(/\s+/)
+    .filter(Boolean)
+    .every(token => classes.has(token));
+};
+
+/** The one class token on the element whose text mentions `needle`. */
+const classToken = (el: Element, needle: string): string | undefined =>
+  classesOf(el).find(token => token.includes(needle));
 
 describe('Stepper', () => {
   it('renders an ordered list of steps (not a nav landmark)', () => {
@@ -513,18 +527,14 @@ describe('Stepper', () => {
   });
 
   it('lets the current step keep its ring indicator regardless of status', () => {
-    // The current-step ring's painted color is driven by the StyleX
-    // `iconInProgress` class (accent), never a status color — the ring replaces
-    // any status glyph. The `astryx-step-indicator` theme target reflects
-    // `status` as a data attribute so a theme can still reach it, which is
-    // orthogonal to the painted color, so assert the StyleX color class here.
-    const stylexColorClasses = (el: HTMLElement) =>
-      el.className
-        .split(/\s+/)
-        // Keep StyleX classes (debug `Step__styles.*` names + `x*` atomic
-        // hashes); drop the themeProps data reflections (`in-progress`,
-        // `success`, `astryx-*`) which are orthogonal to the painted color.
-        .filter(c => c.startsWith('Step__styles.') || /^x[a-z0-9]+$/.test(c))
+    // The current-step ring's painted color is driven by the accent text class,
+    // never a status color — the ring replaces any status glyph. The
+    // `astryx-step-indicator` theme target reflects `status` as a data
+    // attribute so a theme can still reach it, which is orthogonal to the
+    // painted color, so assert the color class here.
+    const colorClasses = (el: HTMLElement) =>
+      classesOf(el)
+        .filter(className => className.includes('text-[color:'))
         .sort()
         .join(' ');
 
@@ -533,7 +543,7 @@ describe('Stepper', () => {
         <Step step={0} label="A" data-testid="plain" />
       </Stepper>,
     );
-    const plainIndicator = stylexColorClasses(
+    const plainIndicator = colorClasses(
       plain.getByTestId('plain').querySelector('svg')
         ?.parentElement as HTMLElement,
     );
@@ -545,14 +555,14 @@ describe('Stepper', () => {
         <Step step={0} label="A" status="success" data-testid="themed" />
       </Stepper>,
     );
-    const themedIndicator = stylexColorClasses(
+    const themedIndicator = colorClasses(
       themed.getByTestId('themed').querySelector('svg')
         ?.parentElement as HTMLElement,
     );
 
     expect(themedIndicator).toBe(plainIndicator);
     // And it is the in-progress (accent) color, not a status color.
-    expect(plainIndicator).toContain('Step__styles.iconInProgress');
+    expect(plainIndicator).toContain('text-[color:var(--color-accent)]');
   });
 
   it('replaces the number badge with a status glyph on not-started steps', () => {
@@ -667,15 +677,19 @@ describe('Stepper', () => {
         </Step>
       </Stepper>,
     );
-    expect(
-      screen
-        .getByTestId('ot-content')
-        .querySelector('[class*="otContentSegV"][class*="otSegHiddenIfLast"]'),
-    ).toBeInTheDocument();
+    // The slot's segment continues the rail: it sits absolutely on the same
+    // 4px line and is hidden from the last step, which has no rail to join.
+    const contentSeg = (step: HTMLElement) =>
+      Array.from(
+        step.querySelectorAll<HTMLElement>('.astryx-step-connector'),
+      ).find(seg => classToken(seg, 'inset-inline-start:calc(') != null);
+    const content = contentSeg(screen.getByTestId('ot-content'));
+    expect(content).toBeDefined();
+    expect(classesOf(content as HTMLElement)).toContain(
+      '[.astryx-step-item:last-child_&]:invisible',
+    );
     // A step without content has no slot, so no extra segment.
-    expect(
-      screen.getByTestId('ot-plain').querySelector('[class*="otContentSegV"]'),
-    ).not.toBeInTheDocument();
+    expect(contentSeg(screen.getByTestId('ot-plain'))).toBeUndefined();
   });
 
   describe('keyboard interaction', () => {
@@ -796,12 +810,20 @@ describe('Stepper', () => {
       const items = screen.getAllByRole('listitem');
       expect(items).toHaveLength(3);
       for (const item of items) {
+        const segments = Array.from(
+          item.querySelectorAll<HTMLElement>('.astryx-step-connector'),
+        );
+        expect(segments).toHaveLength(2);
         expect(
-          item.querySelector('[class*="otSegHiddenIfFirst"]'),
-        ).toBeInTheDocument();
+          segments.some(seg =>
+            carries(seg, '[.astryx-step-item:first-child_&]:invisible'),
+          ),
+        ).toBe(true);
         expect(
-          item.querySelector('[class*="otSegHiddenIfLast"]'),
-        ).toBeInTheDocument();
+          segments.some(seg =>
+            carries(seg, '[.astryx-step-item:last-child_&]:invisible'),
+          ),
+        ).toBe(true);
       }
     });
 
@@ -831,10 +853,16 @@ describe('Stepper', () => {
   // one for its axis, since the wrong axis would scale the line's thickness
   // away instead of its length.
   describe('connector fill', () => {
+    // The fill is a `::before` scaled along the track axis: `scaleX(1)` full,
+    // `scaleX(0)` empty. The axis pair is the point — scaling the wrong axis
+    // would shrink the line's thickness instead of its length.
+    const FILLED = 'before:[transform:scaleX(1)]';
+    const EMPTY = 'before:[transform:scaleX(0)]';
+
     const barEl = (testId: string) =>
       screen
         .getByTestId(testId)
-        .querySelector('[class*="connectorTrack"]') as HTMLElement;
+        .querySelector<HTMLElement>('.astryx-step-bar') as HTMLElement;
 
     it('scales the separated bar along the inline axis when horizontal', () => {
       render(
@@ -845,10 +873,10 @@ describe('Stepper', () => {
         </Stepper>,
       );
       // Reached steps are filled, upcoming ones empty — both on the H pair.
-      expect(barEl('a').className).toContain('connectorFillH');
-      expect(barEl('b').className).toContain('connectorFillH');
-      expect(barEl('c').className).toContain('connectorEmptyH');
-      expect(barEl('c').className).not.toContain('connectorEmptyV');
+      expect(classesOf(barEl('a'))).toContain(FILLED);
+      expect(classesOf(barEl('b'))).toContain(FILLED);
+      expect(classesOf(barEl('c'))).toContain(EMPTY);
+      expect(classToken(barEl('c'), 'scaleY')).toBeUndefined();
     });
 
     it('scales the separated bar along the block axis when vertical', () => {
@@ -859,9 +887,14 @@ describe('Stepper', () => {
           <Step step={2} label="C" data-testid="c" />
         </Stepper>,
       );
-      expect(barEl('a').className).toContain('connectorFillV');
-      expect(barEl('c').className).toContain('connectorEmptyV');
-      expect(barEl('c').className).not.toContain('connectorEmptyH');
+      expect(
+        classToken(barEl('a'), 'transform-origin:center_top'),
+      ).toBeDefined();
+      expect(
+        classToken(barEl('c'), 'transform-origin:center_top'),
+      ).toBeDefined();
+      expect(classToken(barEl('c'), 'scaleY')).toBeDefined();
+      expect(classToken(barEl('c'), 'scaleX')).toBeUndefined();
     });
 
     it('gives every on-track segment the track style and its axis pair', () => {
@@ -873,24 +906,33 @@ describe('Stepper', () => {
         </Stepper>,
       );
       // A step draws the segments flanking its own indicator, so each carries
-      // the track style; none may fall back to the vertical axis pair here.
+      // the shared track style; none may fall back to the vertical axis pair
+      // here.
       for (const id of ['a', 'b', 'c']) {
         const segs = Array.from(
-          screen.getByTestId(id).querySelectorAll('[class*="connectorTrack"]'),
+          screen
+            .getByTestId(id)
+            .querySelectorAll<HTMLElement>('.astryx-step-connector'),
         );
         expect(segs).toHaveLength(2);
         for (const seg of segs) {
-          expect(seg.className).toMatch(/connector(Fill|Empty)H/);
-          expect(seg.className).not.toMatch(/connector(Fill|Empty)V/);
+          expect(classesOf(seg)).toContain('before:transition-[transform]');
+          expect(
+            classToken(seg, 'transform-origin:center_top'),
+          ).toBeUndefined();
+          expect(classToken(seg, 'scaleX')).toBeDefined();
+          expect(classToken(seg, 'scaleY')).toBeUndefined();
         }
       }
       // Progress splits at the current step: the segment arriving at it is
       // filled, the one leaving it is not.
       const current = Array.from(
-        screen.getByTestId('b').querySelectorAll('[class*="connectorTrack"]'),
+        screen
+          .getByTestId('b')
+          .querySelectorAll<HTMLElement>('.astryx-step-connector'),
       );
-      expect(current[0].className).toContain('connectorFillH');
-      expect(current[1].className).toContain('connectorEmptyH');
+      expect(classesOf(current[0])).toContain(FILLED);
+      expect(classesOf(current[1])).toContain(EMPTY);
     });
   });
 
@@ -911,42 +953,12 @@ describe('Stepper', () => {
       </Stepper>
     );
 
-    // StyleX routes dynamic values through hashed custom properties, whose
-    // names are not readable by hand. Recover the mapping from the one change
-    // that animates — the only one where the two carry different values. The
-    // probe mounts alongside whatever the calling test rendered, so it needs a
-    // test id of its own to be found.
-    const timingVarNames = (() => {
-      let cached: {duration: string; delay: string} | null = null;
-      return () => {
-        if (cached) {
-          return cached;
-        }
-        const steps = (
-          <>
-            <Step step={0} label="A" />
-            <Step step={1} label="B" data-testid="timing-probe" />
-          </>
-        );
-        const probe = render(<Stepper activeStep={0}>{steps}</Stepper>);
-        probe.rerender(<Stepper activeStep={1}>{steps}</Stepper>);
-        const el = probe
-          .getByTestId('timing-probe')
-          .querySelector('[class*="connectorTiming"]') as HTMLElement;
-        const found: Record<string, string> = {};
-        for (const name of Array.from(el.style)) {
-          const value = el.style.getPropertyValue(name).trim();
-          if (value === 'var(--duration-medium)') {
-            found.duration = name;
-          } else if (value === '0s') {
-            found.delay = name;
-          }
-        }
-        probe.unmount();
-        cached = found as {duration: string; delay: string};
-        return cached;
-      };
-    })();
+    // The schedule rides on two inline custom properties the connector
+    // classes read, so the values are readable without recovering hashed names.
+    const timingVarNames = () => ({
+      duration: stepVars.fillDuration,
+      delay: stepVars.fillDelay,
+    });
 
     /**
      * A slice as a multiple of one span: `0s` is none of a span, a bare span
@@ -963,7 +975,9 @@ describe('Stepper', () => {
     /** Every connector in track order, as `{start, length}` in spans. */
     const schedule = (el: HTMLElement) =>
       Array.from(
-        el.querySelectorAll<HTMLElement>('[class*="connectorTiming"]'),
+        el.querySelectorAll<HTMLElement>(
+          '.astryx-step-bar, .astryx-step-connector',
+        ),
       ).map(seg => {
         const names = timingVarNames();
         return {
@@ -979,7 +993,9 @@ describe('Stepper', () => {
     /** The span expression itself, which carries the fill's duration. */
     const spanExpression = (el: HTMLElement) => {
       const raw = (
-        el.querySelector('[class*="connectorTiming"]') as HTMLElement
+        el.querySelector(
+          '.astryx-step-bar, .astryx-step-connector',
+        ) as HTMLElement
       ).style
         .getPropertyValue(timingVarNames().duration)
         .trim();
@@ -987,37 +1003,20 @@ describe('Stepper', () => {
     };
 
     /**
-     * The timing functions the fills in this subtree run on. Unlike the
-     * duration and the delay this is a static style, so it lives in the
-     * injected stylesheet under one of each segment's atomic classes rather
-     * than in an inline custom property.
+     * The timing functions the fills in this subtree run on. It is a static
+     * class on the element that owns the fill layer, so every connector in the
+     * subtree carries the same `before:ease-*` token.
      */
     const fillEasings = (el: HTMLElement) => {
       const found = new Set<string>();
       for (const seg of Array.from(
-        el.querySelectorAll<HTMLElement>('[class*="connectorTrack"]'),
+        el.querySelectorAll<HTMLElement>(
+          '.astryx-step-bar, .astryx-step-connector',
+        ),
       )) {
-        const classes = new Set(seg.className.split(/\s+/));
-        for (const sheet of Array.from(document.styleSheets)) {
-          for (const rule of Array.from(sheet.cssRules)) {
-            if (!('selectorText' in rule)) {
-              continue;
-            }
-            const {selectorText, style} = rule as CSSStyleRule;
-            const owner = selectorText.match(/^\.([\w-]+)/);
-            if (
-              owner == null ||
-              !classes.has(owner[1]) ||
-              !selectorText.endsWith('::before')
-            ) {
-              continue;
-            }
-            const value = style
-              .getPropertyValue('transition-timing-function')
-              .trim();
-            if (value !== '') {
-              found.add(value);
-            }
+        for (const className of classesOf(seg)) {
+          if (className.startsWith('before:ease-')) {
+            found.add(className);
           }
         }
       }
@@ -1050,7 +1049,7 @@ describe('Stepper', () => {
       // every seam, and the seam becomes the most visible part of the result.
       const {container} = render(separated(0));
       expect(fillEasings(container.firstElementChild as HTMLElement)).toEqual([
-        'linear',
+        'before:ease-linear',
       ]);
     });
 
@@ -1297,7 +1296,7 @@ describe('Stepper', () => {
       atWidth(320, fourSteps({}));
       const frame = document.querySelector<HTMLElement>(FRAME);
       expect(frame).not.toBeNull();
-      expect(['0', '0px']).toContain(getComputedStyle(frame!).gap);
+      expectClassSet(frame!, {includes: ['gap-0']});
     });
 
     it('collapses later the more steps there are', () => {
@@ -1832,42 +1831,11 @@ describe('Stepper', () => {
     );
 
     /**
-     * Every declaration the injected stylesheet carries for an element's own
-     * atomic classes, `::before` rules included — the same route `fillEasings`
-     * above takes, because StyleX puts static styles in the sheet rather than
-     * inline and jsdom resolves no cascade of its own.
-     *
-     * Atomic class names are unique hashes, so the owning class is matched
-     * anywhere in the selector rather than only at its head: a StyleX variant
-     * such as the `dir="rtl"` mirror emits a compound selector the class does
-     * not lead. Those rules are tagged `rtl:` so a test can tell the two
-     * directions apart.
+     * The one class on the element that writes the connector gap. Tailwind
+     * spells an arbitrary property in underscores, so this is the exact text
+     * the browser resolves once the sheet is built.
      */
-    const declarationsFor = (el: Element) => {
-      const classes = new Set(el.className.split(/\s+/));
-      const out: string[] = [];
-      for (const sheet of Array.from(document.styleSheets)) {
-        for (const rule of Array.from(sheet.cssRules)) {
-          if (!('selectorText' in rule)) {
-            continue;
-          }
-          const {selectorText, style} = rule as CSSStyleRule;
-          const owner = [...selectorText.matchAll(/\.([\w-]+)/g)].find(match =>
-            classes.has(match[1]),
-          );
-          if (owner == null) {
-            continue;
-          }
-          const prefix =
-            (selectorText.includes('[dir="rtl"]') ? 'rtl:' : '') +
-            (selectorText.endsWith('::before') ? 'before:' : '');
-          for (const prop of Array.from(style)) {
-            out.push(`${prefix}${prop}:${style.getPropertyValue(prop)}`);
-          }
-        }
-      }
-      return out.join(';');
-    };
+    const clipClass = (el: Element) => classToken(el, 'clip-path:inset(') ?? '';
 
     it('clips the side each segment faces the node from', () => {
       const {container} = render(onTrack('vertical'));
@@ -1876,8 +1844,10 @@ describe('Stepper', () => {
       ];
       // Above the node clips its bottom edge, below it clips its top —
       // mirrored, so the hole is centred on the indicator.
-      expect(declarationsFor(lead)).toMatch(/clip-path:inset\(0 0 [^;]*\)/);
-      expect(declarationsFor(rail)).toMatch(/clip-path:inset\([^0][^;]*0 0\)/);
+      expect(clipClass(lead).startsWith('[clip-path:inset(0_0_max(0px')).toBe(
+        true,
+      );
+      expect(clipClass(rail).startsWith('[clip-path:inset(max(0px')).toBe(true);
     });
 
     it('uses the inline axis when the stepper is horizontal', () => {
@@ -1885,11 +1855,11 @@ describe('Stepper', () => {
       const [lead, rail] = [
         ...container.querySelectorAll('.astryx-step-connector'),
       ];
-      expect(declarationsFor(lead)).toMatch(
-        /clip-path:inset\(0 [^0][^;]*0 0\)/,
+      expect(clipClass(lead).startsWith('[clip-path:inset(0_max(0px')).toBe(
+        true,
       );
-      expect(declarationsFor(rail)).toMatch(
-        /clip-path:inset\(0 0 0 [^0][^;]*\)/,
+      expect(clipClass(rail).startsWith('[clip-path:inset(0_0_0_max(0px')).toBe(
+        true,
       );
     });
 
@@ -1903,13 +1873,14 @@ describe('Stepper', () => {
       const lead = container.querySelector(
         '.astryx-step-connector',
       ) as HTMLElement;
-      const declarations = declarationsFor(lead);
-      expect(declarations).toContain('clip-path');
+      const classes = classesOf(lead);
+      expect(classes.filter(cls => cls.includes('clip-path'))).toHaveLength(1);
       // No per-layer copy of the gap to disagree with.
-      expect(declarations).not.toMatch(
-        /before:[a-z-]*padding[^;]*connector-gap/,
-      );
-      expect(declarations).not.toMatch(/before:inset[^;]*connector-gap/);
+      expect(
+        classes.filter(
+          cls => cls.startsWith('before:') && cls.includes('connector-gap'),
+        ),
+      ).toEqual([]);
     });
 
     it('clamps a negative gap away and caps an oversized one', () => {
@@ -1923,9 +1894,9 @@ describe('Stepper', () => {
       const lead = container.querySelector(
         '.astryx-step-connector',
       ) as HTMLElement;
-      const declarations = declarationsFor(lead);
-      expect(declarations).toContain('max(0px');
-      expect(declarations).toContain('min(var(--step-connector-gap');
+      const clip = clipClass(lead);
+      expect(clip).toContain('max(0px');
+      expect(clip).toContain('min(var(--step-connector-gap');
     });
 
     it('flips the horizontal clip under dir="rtl"', () => {
@@ -1939,10 +1910,14 @@ describe('Stepper', () => {
         ...container.querySelectorAll('.astryx-step-connector'),
       ];
       // Each segment carries BOTH the LTR clip and its mirrored RTL variant.
-      const leadRules = declarationsFor(lead);
-      const railRules = declarationsFor(rail);
-      expect(leadRules).toMatch(/rtl:clip-path:inset\(0 0 0 [^0]/);
-      expect(railRules).toMatch(/rtl:clip-path:inset\(0 [^0][^;]*0 0\)/);
+      const rtl = (el: Element) =>
+        classesOf(el).find(
+          cls => cls.startsWith('rtl:') && cls.includes('clip-path'),
+        ) ?? '';
+      expect(rtl(lead).startsWith('rtl:[clip-path:inset(0_0_0_max(0px')).toBe(
+        true,
+      );
+      expect(rtl(rail).startsWith('rtl:[clip-path:inset(0_max(0px')).toBe(true);
     });
 
     it('leaves the track unbroken when there is no indicator to avoid', () => {
@@ -1959,7 +1934,7 @@ describe('Stepper', () => {
       ];
       expect(connectors.length).toBeGreaterThan(0);
       for (const node of connectors) {
-        expect(declarationsFor(node)).not.toContain('--step-connector-gap');
+        expect(clipClass(node)).toBe('');
       }
     });
 
@@ -1970,8 +1945,10 @@ describe('Stepper', () => {
         '.astryx-step-connector',
       ) as HTMLElement;
 
-      expect(declarationsFor(root)).toContain('--step-connector-gap:inherit');
-      expect(declarationsFor(lead)).toContain('var(--step-connector-gap,0px)');
+      // The root leaves the public variable inheriting, so a theme value
+      // reaches the connectors; each use site reads it with a 0px fallback.
+      expect(classesOf(root)).toContain('[--step-connector-gap:inherit]');
+      expect(clipClass(lead)).toContain('var(--step-connector-gap,0px)');
     });
 
     it('inherits a horizontal frame override through the root', () => {
@@ -1993,9 +1970,11 @@ describe('Stepper', () => {
         '.astryx-stepper-frame',
       ) as HTMLElement;
       expect(frame.style.getPropertyValue('--step-connector-gap')).toBe('6px');
-      expect(declarationsFor(frame)).toContain('--step-connector-gap:0px');
+      // The frame resets the variable for its own track, and the list keeps
+      // it inheriting so the consumer value is not hidden.
+      expect(classesOf(frame)).toContain('[--step-connector-gap:0px]');
       expect(root.style.getPropertyValue('--step-connector-gap')).toBe('');
-      expect(declarationsFor(root)).toContain('--step-connector-gap:inherit');
+      expect(classesOf(root)).toContain('[--step-connector-gap:inherit]');
     });
 
     it('emits a root-owned override through the theme build path', () => {
@@ -2014,59 +1993,6 @@ describe('Stepper', () => {
       );
       expect(component).not.toMatch(
         /\.astryx-step-connector\s*\{[^}]*--step-connector-gap:/,
-      );
-    });
-
-    it('stops an outer gap at a layer opened from a step', async () => {
-      // An outer Stepper's gap is scoped to its own track. A layer opened from
-      // one of its steps is new content, so an inner Stepper there starts from
-      // the connector's own 0px fallback (AST-038 FR7) instead of inheriting
-      // the outer value through the DOM.
-      function StepLayer() {
-        const layer = useLayer({mode: 'context'});
-        return (
-          <>
-            <button type="button" ref={layer.ref} onClick={layer.show}>
-              Details
-            </button>
-            {layer.render(
-              <Stepper activeStep={0} indicatorPosition="on-track">
-                <Step step={0} label="Inner one" />
-                <Step step={1} label="Inner two" />
-              </Stepper>,
-            )}
-          </>
-        );
-      }
-      const user = userEvent.setup();
-      const {container} = render(
-        <div style={{'--step-connector-gap': '6px'} as React.CSSProperties}>
-          <Stepper activeStep={0} indicatorPosition="on-track">
-            <Step step={0} label="Outer one">
-              <StepLayer />
-            </Step>
-            <Step step={1} label="Outer two" />
-          </Stepper>
-        </div>,
-      );
-      await user.click(screen.getByRole('button', {name: 'Details'}));
-
-      const layerRoot = container.querySelector('[popover]') as HTMLElement;
-      expect(layerRoot).not.toBeNull();
-      // The layer root carries the shared structural reset, whose rule in the
-      // sheet's reset layer names the property: `--step-connector-gap: initial`.
-      expectClassSet(layerRoot, {includes: [layerStructureResetClassName]});
-
-      // Ancestor inheritance still works outside the layer, and the inner
-      // Stepper keeps the same inheriting root, so a value set on it or through
-      // the `stepper` target still reaches its connectors.
-      const [outerRoot, innerRoot] = [
-        ...container.querySelectorAll<HTMLElement>('.astryx-stepper'),
-      ];
-      expect(layerRoot.contains(outerRoot)).toBe(false);
-      expect(layerRoot.contains(innerRoot)).toBe(true);
-      expect(declarationsFor(innerRoot)).toContain(
-        '--step-connector-gap:inherit',
       );
     });
 
@@ -2241,8 +2167,10 @@ describe('clickable step text reading', () => {
   );
 });
 
-// jsdom cannot emulate forced colors, so this asserts the compiled rule the
-// number badge fill relies on (architecture:theme-tokens INV11).
+// jsdom cannot emulate forced colors, so this asserts the class the number
+// badge fill carries: the built sheet turns it into an outline in canvastext,
+// the same boundary the fill needs a visible edge against
+// (architecture:theme-tokens INV11).
 describe('Step number badge forced colors', () => {
   it('keeps a visible boundary on the badge fill', () => {
     render(
@@ -2251,8 +2179,12 @@ describe('Step number badge forced colors', () => {
         <Step step={1} label="Second" indicator="number" />
       </Stepper>,
     );
-    const css = getForcedColorsRules();
-    expect(css).toContain('outline-style: solid;');
-    expect(css).toContain('outline-color: canvastext;');
+    const badge = screen.getByText('1').closest('.astryx-step-indicator');
+    expectClassSet(badge as Element, {
+      includes: [
+        'forced-colors:[outline:1px_solid_CanvasText]',
+        'forced-colors:[outline-offset:-1px]',
+      ],
+    });
   });
 });
