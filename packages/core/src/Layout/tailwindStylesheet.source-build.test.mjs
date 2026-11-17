@@ -493,6 +493,15 @@ import {
   linkExternalIconInClampedTextClassName,
   linkLabelClassName,
 } from '../Link/linkClasses';
+import {
+  cardBorderClassName,
+  cardClassName,
+  cardCornersClassName,
+  cardElevationClassName,
+  cardOverflowClassName,
+  cardSizingClassName,
+  cardVariantClassName,
+} from '../Card/cardClasses';
 
 const sheet = await buildAstryxTailwindCss();
 const stylesheet = stylesheetOf(sheet);
@@ -1645,6 +1654,21 @@ function familyClassNames() {
   add(sideNavClassName.topbar);
   add(sideNavClassName.topbarIcons);
   for (const value of Object.values(sideNavItemClassName)) {
+    add(value);
+  }
+
+  // Card: one background per variant, one variable per elevation, and the
+  // sizing classes that read a variable.
+  add(cardClassName);
+  add(cardCornersClassName);
+  add(cardBorderClassName);
+  add(cardOverflowClassName({hasFixedHeight: false}));
+  add(cardOverflowClassName({hasFixedHeight: true}));
+  add(cardSizingClassName({height: 1, maxWidth: 1, minHeight: 1, width: 1}));
+  for (const value of Object.values(cardVariantClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(cardElevationClassName)) {
     add(value);
   }
 
