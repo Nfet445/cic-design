@@ -1,7 +1,7 @@
 # published class seams
 
 Status: ready-for-agent
-Blocked by: 41
+Blocked by: 07, 41
 Wave: 9
 Ticket: 52
 Parent: `00-epic-stylex-to-tailwind-4`
