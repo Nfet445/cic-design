@@ -13,10 +13,20 @@
  * scrolls lets the browser pan it vertically and cancel the press when it
  * does. Both leave a two-finger pinch to the browser, so the page stays
  * zoomable over an open menu; `pinch-zoom` admits no one-finger pan.
+ *
+ * Stays in StyleX, and the reason is ownership, not layering: the two values
+ * face no unlayered rule, so the class form works. Each caller passes the pair
+ * to `stylex.props()` beside its own state styles, and seven of the eight
+ * callers are other components (`SideNav`, `TopNav`, `TabList`, `Breadcrumbs`,
+ * `NavMenu`). Converting this module rewrites those components too, so it
+ * belongs to one commit that owns all of them. The class strings already exist
+ * in `dropdownMenuSubMenuClasses.ts` (`[touch-action:pinch-zoom]`,
+ * `[touch-action:pan-y_pinch-zoom]` and `overscroll-contain`).
  */
 
 import * as stylex from '@stylexjs/stylex';
 
+/** The touch-action of an open menu, by whether its rows overflow. */
 export const menuTouchActionStyles = stylex.create({
   fits: {
     touchAction: 'pinch-zoom',
