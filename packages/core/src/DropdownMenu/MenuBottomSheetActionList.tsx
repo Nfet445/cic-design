@@ -17,7 +17,7 @@ import {List} from '../List/List';
 import {ListItem} from '../List/ListItem';
 import {useMenuPress} from '../hooks/useMenuPress';
 import {useMergedRefs} from '../hooks/useMergedRefs';
-import {rtlStyles} from '../utils/rtlStyles';
+import {RTL_MIRROR_CLASS} from '../utils/rtlClasses';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 import type {DropdownMenuItemData, DropdownMenuOption} from './DropdownMenu';
 import {isModifiedClick} from './menuItemRoles';
@@ -120,7 +120,7 @@ export function MenuBottomSheetActionList({
               icon="chevronRight"
               size="sm"
               color="secondary"
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           ) : (
             item.endContent

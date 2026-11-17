@@ -33,7 +33,7 @@ import {warmMenuBottomSheet} from './__tests__/warmMenuBottomSheet';
 import {DropdownMenuSubMenu} from './DropdownMenuSubMenu';
 import {Divider} from '../Divider';
 import {Tooltip} from '../Tooltip/Tooltip';
-import {rtlStyles} from '../utils';
+import {RTL_MIRROR_CLASS} from '../utils';
 import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
 import {
   dropdownMenuInlineSizeVar,
@@ -570,9 +570,7 @@ describe('DropdownMenu', () => {
 
   it('mirrors bottom-sheet drill-in affordances under RTL', async () => {
     const user = userEvent.setup();
-    const {className: mirrorClassName} = stylex.props(rtlStyles.mirror);
-    const mirrorClasses = mirrorClassName?.split(' ') ?? [];
-    expect(mirrorClasses.length).toBeGreaterThan(0);
+    const mirrorClasses = RTL_MIRROR_CLASS.split(' ');
 
     render(
       <div dir="rtl">

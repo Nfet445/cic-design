@@ -68,7 +68,7 @@ import {
 } from './powerSearchSheetClasses';
 import {Dialog} from '../Dialog/Dialog';
 import userEvent from '@testing-library/user-event';
-import {rtlStyles} from '../utils';
+import {RTL_MIRROR_CLASS} from '../utils';
 import {InternationalizationProvider} from '../i18n/InternationalizationProvider';
 import type {Overrides} from '../i18n/types';
 import {useInternalConfig} from './useInternalConfig';
@@ -1979,9 +1979,7 @@ describe('PowerSearch Filters sheet (FR12)', () => {
   });
 
   it("mirrors the field rows' chevrons in right-to-left layouts, and no sheet has a Back action (DR4, FR15a)", () => {
-    const {className: mirrorClassName} = stylex.props(rtlStyles.mirror);
-    const mirrorClasses = mirrorClassName?.split(' ') ?? [];
-    expect(mirrorClasses.length).toBeGreaterThan(0);
+    const mirrorClasses = RTL_MIRROR_CLASS.split(' ');
     // The Icon applies `xstyle` to its wrapper, the element that holds the
     // glyph.
     const hasMirror = (container: HTMLElement) =>

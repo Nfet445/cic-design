@@ -58,7 +58,7 @@ import {Spinner} from '../Spinner';
 import {useTooltip} from '../Tooltip';
 import {useFieldInputStyling} from '../Field/fieldParts';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {rtlStyles} from '../utils/rtlStyles';
+import {RTL_MIRROR_CLASS} from '../utils/rtlClasses';
 import {themeProps} from '../utils/themeProps';
 import {normalizeDayOfWeek} from '../utils/dateTypes';
 import {formatLocaleTime} from '../utils/timeFormat';
@@ -846,8 +846,8 @@ export function TouchDateTimeField({
                 label={t('@astryx.calendar.previousMonth')}
                 icon={
                   <span
-                    {...mergeProps(
-                      stylex.props(rtlStyles.mirror),
+                    className={tw(
+                      RTL_MIRROR_CLASS,
                       dateTimeTouchArrowIconClassName,
                     )}>
                     <Icon icon="chevronLeft" size="sm" color="inherit" />
@@ -866,8 +866,8 @@ export function TouchDateTimeField({
                 label={t('@astryx.calendar.nextMonth')}
                 icon={
                   <span
-                    {...mergeProps(
-                      stylex.props(rtlStyles.mirror),
+                    className={tw(
+                      RTL_MIRROR_CLASS,
                       dateTimeTouchArrowIconClassName,
                     )}>
                     <Icon icon="chevronRight" size="sm" color="inherit" />

@@ -483,6 +483,7 @@ import {
   fieldStatusDetachedIconClassName,
 } from '../FieldStatus/fieldStatusClasses';
 import {entryAnimationClassName} from '../hooks/entryAnimationClasses';
+import {RTL_MIRROR_CLASS} from '../utils/rtlClasses';
 import {inputStatusIconButtonClassName} from '../hooks/inputStatusIconClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
@@ -3314,6 +3315,8 @@ function familyClassNames() {
   }
   // useInputStatusIcon: the tooltip-variant status button's chrome.
   add(inputStatusIconButtonClassName);
+  // utils: the RTL mirror every directional glyph shares.
+  add(RTL_MIRROR_CLASS);
   // Field: the hidden label's info button and the panel search row.
   add(fieldLabelHiddenInfoTipClassName);
   add(panelSearchInputWrapperClassName);

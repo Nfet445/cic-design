@@ -56,7 +56,7 @@ import {useAttachment} from '../hooks/useAttachment';
 import {useShownScrollOverflow} from '../hooks/useScrollOverflow';
 import {isRtlElement} from '../hooks/isRtlElement';
 import type {BaseProps} from '../BaseProps';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import type {SpacingStep} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
 
@@ -671,7 +671,7 @@ export function Carousel({
                   <Icon
                     icon="chevronLeft"
                     size="xsm"
-                    xstyle={rtlStyles.mirror}
+                    className={RTL_MIRROR_CLASS}
                   />
                 }
                 label={t('@astryx.carousel.scrollLeft')}
@@ -709,7 +709,7 @@ export function Carousel({
                   <Icon
                     icon="chevronRight"
                     size="xsm"
-                    xstyle={rtlStyles.mirror}
+                    className={RTL_MIRROR_CLASS}
                   />
                 }
                 label={t('@astryx.carousel.scrollRight')}

@@ -10,7 +10,6 @@
  */
 
 import {createRef, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {describe, it, expect, vi} from 'vitest';
 import {fireEvent, render, screen, act} from '@testing-library/react';
 import {__resetMenuPressForTest} from '../hooks/useMenuPress';
@@ -42,7 +41,7 @@ import {TopNavMegaMenuFeaturedCard} from './TopNavMegaMenuFeaturedCard';
 import {LinkProvider} from '../Link/LinkProvider';
 import {InternationalizationProvider} from '../i18n/InternationalizationProvider';
 import koreanCatalog from '../../locales/ko-KR.json';
-import {rtlStyles} from '../utils';
+import {RTL_MIRROR_CLASS} from '../utils';
 
 function CustomLink({
   children,
@@ -1407,11 +1406,9 @@ describe('TopNavItem', () => {
     // design:bidirectionality DR4: the arrow points toward the inline end, so
     // it mirrors in RTL. jsdom does not apply compiled StyleX CSS, so this pins
     // the structure the mirror relies on: the arrow sits in its own element
-    // carrying the shared rtlStyles.mirror, and the link name is unchanged.
+    // carrying the shared RTL_MIRROR_CLASS, and the link name is unchanged.
     it('wraps the link arrow in the shared RTL mirror', () => {
-      const {className: mirrorClassName} = stylex.props(rtlStyles.mirror);
-      const mirrorClasses = mirrorClassName?.split(' ') ?? [];
-      expect(mirrorClasses.length).toBeGreaterThan(0);
+      const mirrorClasses = RTL_MIRROR_CLASS.split(' ');
       render(
         <div dir="rtl">
           <TopNavMegaMenuFeaturedCard

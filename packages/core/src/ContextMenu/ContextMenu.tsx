@@ -98,7 +98,7 @@ import {useMenuPress} from '../hooks/useMenuPress';
 import {useTypeahead} from '../hooks/useTypeahead';
 import {useLongPress} from '../hooks/useLongPress';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import type {StyleXStyles} from '../theme/types';
 import {themeProps} from '../utils/themeProps';
@@ -781,7 +781,11 @@ export function ContextMenu({
               variant="ghost"
               size="sm"
               icon={
-                <Icon icon="chevronLeft" size="sm" xstyle={rtlStyles.mirror} />
+                <Icon
+                  icon="chevronLeft"
+                  size="sm"
+                  className={RTL_MIRROR_CLASS}
+                />
               }
               isIconOnly
               onClick={() => setSubmenuPath(path => path.slice(0, -1))}
