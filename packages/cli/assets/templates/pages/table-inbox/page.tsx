@@ -82,7 +82,6 @@ import {
   StackItem,
   VStack,
 } from '@astryxdesign/core/Layout';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {
   durationVars,
   easeVars,
@@ -1396,7 +1395,7 @@ function ConversationPane({
                   <Icon
                     icon={ArrowLeftIcon}
                     size="sm"
-                    xstyle={rtlStyles.mirror}
+                    className="rtl:[transform:scaleX(-1)]"
                   />
                 }
                 onClick={onClose}

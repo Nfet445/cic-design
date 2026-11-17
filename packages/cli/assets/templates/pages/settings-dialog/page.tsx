@@ -72,7 +72,6 @@ import {HStack} from '@astryxdesign/core/HStack';
 import {useMediaQuery} from '@astryxdesign/core/hooks';
 import {Icon} from '@astryxdesign/core/Icon';
 import {IconButton} from '@astryxdesign/core/IconButton';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {Kbd} from '@astryxdesign/core/Kbd';
 import {Layout, LayoutContent} from '@astryxdesign/core/Layout';
 import {ListItem} from '@astryxdesign/core/List';
@@ -2364,7 +2363,7 @@ function SettingsSearchResults({
               icon={ChevronRightIcon}
               size="sm"
               color="secondary"
-              xstyle={rtlStyles.mirror}
+              className="rtl:[transform:scaleX(-1)]"
             />
           }
           isSelected={index === activeIndex}

@@ -171,6 +171,7 @@ export const docs = {
         name: '--astryx-dropdown-menu-inline-size',
         description:
           'Inline size of the pointer menu surface, set by `menuWidth`',
+        default: 'auto',
       },
       {
         name: '--astryx-dropdown-menu-max-block-size',
