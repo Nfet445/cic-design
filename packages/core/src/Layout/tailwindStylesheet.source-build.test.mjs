@@ -367,6 +367,12 @@ import {infoTipTriggerClassName} from '../InfoTip/infoTipClasses';
 import {navIconClassName} from '../NavIcon/navIconClasses';
 import {formLayoutDirectionClassName} from '../FormLayout/formLayoutClasses';
 import {
+  inputGroupClassName,
+  inputGroupDisabledClassName,
+  inputGroupSizeClassName,
+  inputGroupTextClassName,
+} from '../InputGroup/inputGroupClasses';
+import {
   panelSearchInputFieldClassName,
   panelSearchInputIconClassName,
   panelSearchInputInputClassName,
@@ -2788,6 +2794,14 @@ function familyClassNames() {
   for (const direction of ['vertical', 'horizontal', 'horizontal-labels']) {
     add(formLayoutDirectionClassName[direction]);
   }
+  // InputGroup: the row, its disabled state, one height per size and the
+  // prefix/suffix cell.
+  add(inputGroupClassName);
+  add(inputGroupDisabledClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(inputGroupSizeClassName[size]);
+  }
+  add(inputGroupTextClassName);
   // FieldStatus: the message box in both placements, the detached content row
   // and glyph, and one fill per status type.
   add(fieldStatusBaseClassName);

@@ -4,7 +4,7 @@
 
 /**
  * @file InputGroupText.tsx
- * @input Uses React, StyleX, theme tokens
+ * @input Uses React, StyleX, class map
  * @output Exports InputGroupText component
  * @position Text/icon element rendered inside InputGroup
  *
@@ -18,57 +18,12 @@
 import React, {type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  typographyVars,
-  typeScaleVars,
-  borderVars,
-} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
 import {inputGroupItemProps} from './groupStyles';
+import {inputGroupTextClassName} from './inputGroupClasses';
 import {textDirectionProps} from '../utils/textDirection';
-
-const styles = stylex.create({
-  text: {
-    display: 'flex',
-    alignItems: 'center',
-    paddingInline: spacingVars['--spacing-2'],
-    backgroundColor: colorVars['--color-background-muted'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-secondary'],
-    whiteSpace: 'nowrap',
-    unicodeBidi: 'isolate',
-    flexShrink: 0,
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border-emphasized'],
-    marginInlineStart: {
-      default: `calc(-1 * ${borderVars['--border-width']})`,
-      ':first-child': 0,
-    },
-    borderStartStartRadius: {
-      default: 0,
-      ':first-child': radiusVars['--radius-element'],
-    },
-    borderEndStartRadius: {
-      default: 0,
-      ':first-child': radiusVars['--radius-element'],
-    },
-    borderStartEndRadius: {
-      default: 0,
-      ':last-child': radiusVars['--radius-element'],
-    },
-    borderEndEndRadius: {
-      default: 0,
-      ':last-child': radiusVars['--radius-element'],
-    },
-  },
-});
 
 export interface InputGroupTextProps extends BaseProps<HTMLDivElement> {
   ref?: React.Ref<HTMLDivElement>;
@@ -108,8 +63,8 @@ export function InputGroupText({
       {...inputGroupItemProps}
       {...mergeProps(
         themeProps('input-group-text'),
-        stylex.props(styles.text, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(inputGroupTextClassName, className),
         style,
       )}>
       {dir == null ? children : <span dir={dir}>{children}</span>}
