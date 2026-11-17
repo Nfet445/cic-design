@@ -27,6 +27,7 @@ import * as commentPartsClasses from './Comments/commentPartsClasses';
 import * as commentRowClasses from './Comments/commentRowClasses';
 import * as commentsClasses from './Comments/commentsClasses';
 import * as diffViewerClasses from './DiffViewer/diffViewerClasses';
+import * as lineClampClasses from './LineClamp/lineClampClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
 import * as scheduleClasses from './Schedule/scheduleClasses';
@@ -62,6 +63,7 @@ function labClassNames() {
     commentRowClasses,
     commentsClasses,
     diffViewerClasses,
+    lineClampClasses,
     listInputClasses,
     loadingMessageClasses,
     scheduleClasses,
