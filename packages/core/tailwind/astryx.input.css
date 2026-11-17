@@ -369,3 +369,35 @@
     opacity: 0.5;
   }
 }
+
+/* ProgressBar: the indeterminate segment travels the track, physically left to
+   right; the RTL frames mirror it so the bar moves along the reading flow. */
+@keyframes astryxProgressBarSlide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes astryxProgressBarSlideRtl {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-250%);
+  }
+}
+
+/* Reduce Motion: the segment stops travelling and pulses in place, from full
+   opacity down to the progress table's floor. The class alternates direction
+   on every pass. */
+@keyframes astryxProgressBarPulse {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: var(--_progress-bar-pulse-floor);
+  }
+}
