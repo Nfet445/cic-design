@@ -7,13 +7,23 @@ import userEvent from '@testing-library/user-event';
 import {ClickableCard} from './ClickableCard';
 import {LinkProvider} from '../Link';
 import {
-  afterPaintsPress,
   hasReleaseFade,
   pressArmsShadowedByDefault,
-  readsPressStrength,
 } from '../__tests__/pressState';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 describe('ClickableCard', () => {
+  it('keeps the theme target class on the card', () => {
+    // The class list rides through mergeProps beside the theme target and the
+    // focus ring; a trailing `className` attribute would drop both.
+    const {container} = render(
+      <ClickableCard label="Card">Content</ClickableCard>,
+    );
+    expectClassSet(container.firstElementChild!, {
+      includes: ['astryx-clickable-card'],
+    });
+  });
+
   it('renders children', () => {
     render(
       <ClickableCard label="Test card" onClick={() => {}}>
@@ -361,10 +371,15 @@ describe('ClickableCard pressed state (touch)', () => {
     // release, and its `::after` paints the pressed token at that strength
     // as its image on both arms, its hover and mouse colour yielding.
     expect(hasReleaseFade(card)).toBe(true);
-    expect(readsPressStrength(card, '[data-astryx-press="on"]')).toBe(true);
-    expect(readsPressStrength(card)).toBe(true);
-    expect(afterPaintsPress(card, '[data-astryx-press="on"]')).toBe(true);
-    expect(afterPaintsPress(card)).toBe(true);
+    expectClassSet(card, {
+      includes: [
+        'after:bg-[var(--_press-overlay)]',
+        '[&[data-astryx-press=on]]:after:bg-transparent',
+        '[&[data-astryx-press=fading]]:after:bg-transparent',
+        '[&[data-astryx-press=on]]:after:[background-image:var(--_press-paint-image)]',
+        '[&[data-astryx-press=fading]]:after:[background-image:var(--_press-paint-image)]',
+      ],
+    });
     // No press arm sits on a custom property the card also declares without
     // it: in a layered stylesheet that declaration wins and the press never
     // paints.

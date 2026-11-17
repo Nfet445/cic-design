@@ -28,8 +28,6 @@ import {
   type ReactNode,
 } from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
-import {radiusVars} from '../theme/tokens.stylex';
 import {
   avatarContentClassName,
   avatarFallbackClassName,
@@ -38,6 +36,7 @@ import {
   avatarInteractiveClassName,
   avatarLoneFallbackClassName,
   avatarRootClassName,
+  avatarShapeClassName,
   avatarStatusCircleClassName,
   avatarStatusClassName,
   avatarStatusCornerClassName,
@@ -146,25 +145,6 @@ export function resolveSize(size: AvatarSize): number {
       return 128;
   }
 }
-
-// Sets one local custom property rather than `borderRadius` directly, so
-// every clipping/ring surface that needs the shape's radius (the wrapper,
-// the interactive focus ring, the content div that actually clips via
-// `overflow: hidden`, and AvatarGroupOverflow's "+N" indicator) reads the
-// same value instead of each hardcoding its own borderRadius independently.
-// A theme override only has to reach this one property, not fight the
-// per-surface StyleX class order to change the shape everywhere at once.
-export const shapeStyles = stylex.create({
-  circle: {
-    '--_avatar-radius': radiusVars['--radius-full'],
-  },
-  rounded: {
-    '--_avatar-radius': radiusVars['--radius-element'],
-  },
-  square: {
-    '--_avatar-radius': radiusVars['--radius-none'],
-  },
-});
 
 export interface AvatarProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element */
@@ -733,11 +713,11 @@ export function Avatar({
       avatarGroup && avatarGroupStyles.ring,
       avatarGroup && avatarGroupStyles.overlap,
       avatarGroup && avatarGroupDynamicStyles.overlap(-avatarGroup.overlap),
-      shapeStyles[resolvedShape],
       xstyle,
     ),
     tw(
       avatarRootClassName,
+      avatarShapeClassName[resolvedShape],
       isInteractive && avatarInteractiveClassName,
       className,
     ),

@@ -27,6 +27,7 @@ import {
   avatarStatusDotIconClassName,
   avatarStatusDotVariantClassName,
 } from '../Avatar/avatarStatusDotClasses';
+import {avatarShapeClassName} from '../Avatar/avatarClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import * as lightboxClasses from '../Lightbox/lightboxClasses';
 import {
@@ -987,6 +988,14 @@ import {
   cardSizingClassName,
   cardVariantClassName,
 } from '../Card/cardClasses';
+import {
+  clickableCardBorderedClassName,
+  clickableCardBorderlessClassName,
+  clickableCardDisabledClassName,
+  clickableCardInteractiveClassName,
+  clickableCardOverlayClassName,
+  clickableCardSrOnlyClassName,
+} from '../ClickableCard/clickableCardClasses';
 import {
   dividerClassName,
   dividerFullBleedClassName,
@@ -2362,6 +2371,10 @@ function familyClassNames() {
     add(className);
   }
 
+  for (const shape of ['circle', 'rounded', 'square']) {
+    add(avatarShapeClassName[shape]);
+  }
+
   add(avatarStatusDotClassName);
   add(avatarStatusDotIconClassName);
   for (const variant of ['success', 'neutral', 'error']) {
@@ -2683,6 +2696,14 @@ function familyClassNames() {
   for (const value of Object.values(cardElevationClassName)) {
     add(value);
   }
+  // ClickableCard: the interactive surface, its hover and press layer, both
+  // border states, the disabled dimming, and the hidden control's reset.
+  add(clickableCardInteractiveClassName);
+  add(clickableCardOverlayClassName);
+  add(clickableCardBorderedClassName);
+  add(clickableCardBorderlessClassName);
+  add(clickableCardDisabledClassName);
+  add(clickableCardSrOnlyClassName);
   // Divider: one row per orientation, one line per orientation and variant,
   // the label, and the full-bleed arms that read the container padding.
   for (const value of Object.values(dividerClassName)) {
@@ -3729,8 +3750,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // mostly reuse those same utilities; the eleven rules they add took the
     // sheet to 1787. The chat drawer's panel, toggle row, summary and
     // collapsing content, then the composer's shell, body and status bar in
-    // their four shapes, added the next batch, and the ceiling keeps its usual
-    // headroom above the measured number.
+    // their four shapes, added the next batch. The clickable card's surface,
+    // its overlay and both border states mostly reuse the selectable card's
+    // utilities; with the disabled dimming and the hidden control they took
+    // the sheet to 1974. The avatar's three shape radii added 1977, and the
+    // ceiling keeps its headroom above that.
     expect(stylesheet.rules.size).toBeLessThan(1980);
   });
 
