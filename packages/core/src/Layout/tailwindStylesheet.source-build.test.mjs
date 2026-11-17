@@ -523,6 +523,11 @@ import {
   badgeVariantClassName,
 } from '../Badge/badgeClasses';
 import {
+  codeClassName,
+  codeColorClassName,
+  codeInheritSizeClassName,
+} from '../Code/codeClasses';
+import {
   cardBorderClassName,
   cardClassName,
   cardCornersClassName,
@@ -1801,6 +1806,13 @@ function familyClassNames() {
   }
   add(dividerLabelClassName);
   add(dividerVerticalLabelClassName);
+  // Code: the inline element, one class per color, and the size arm that
+  // adopts the surrounding type.
+  add(codeClassName);
+  add(codeInheritSizeClassName);
+  for (const value of Object.values(codeColorClassName)) {
+    add(value);
+  }
   // Badge: the pill, the arm that grows with the label, the label, and one
   // class per variant.
   add(badgeClassName);
