@@ -290,6 +290,11 @@ import {
   topNavStartRegionClassName,
 } from '../TopNav/topNavClasses';
 import {
+  topNavItemClassName,
+  topNavItemIconOnlyClassName,
+  topNavItemSelectedClassName,
+} from '../TopNav/topNavItemClasses';
+import {
   topNavFeaturedCardBodyClassName,
   topNavFeaturedCardClassName,
   topNavFeaturedCardDescriptionClassName,
@@ -566,6 +571,12 @@ function familyClassNames() {
   ]) {
     add(className());
   }
+
+  // The horizontal item carries its selected fill keyed off `aria-current`,
+  // so both state classes ship with the base one.
+  add(topNavItemClassName());
+  add(topNavItemSelectedClassName());
+  add(topNavItemIconOnlyClassName());
 
   // The layout family: the shell frame, then every region combination. A
   // region edge publishes its inset and reads it back, so each combination

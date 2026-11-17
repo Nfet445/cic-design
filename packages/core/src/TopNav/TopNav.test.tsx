@@ -24,6 +24,11 @@ import {
   topNavHeadingSlotClassName,
   topNavMobileHeadingTextClassName,
 } from './topNavClasses';
+import {
+  topNavItemClassName,
+  topNavItemIconOnlyClassName,
+  topNavItemSelectedClassName,
+} from './topNavItemClasses';
 import {TopNavHeading} from './TopNavHeading';
 import {NavIcon} from '../NavIcon';
 import {TopNavItem} from './TopNavItem';
@@ -1020,12 +1025,37 @@ describe('TopNavItem', () => {
 
   it('applies aria-current when isSelected', () => {
     render(<TopNavItem label="Home" href="#" isSelected />);
-    expect(screen.getByRole('link')).toHaveAttribute('aria-current', 'page');
+    const item = screen.getByRole('link');
+    expect(item).toHaveAttribute('aria-current', 'page');
+    // The selected fill is keyed off the attribute, so the class set is the
+    // only place the horizontal item's state is decided.
+    expectClassSet(item, {
+      includes: topNavItemSelectedClassName().split(' '),
+    });
   });
 
   it('does not have aria-current when not selected', () => {
     render(<TopNavItem label="Home" href="#" />);
-    expect(screen.getByRole('link')).not.toHaveAttribute('aria-current');
+    const item = screen.getByRole('link');
+    expect(item).not.toHaveAttribute('aria-current');
+    expectClassSet(item, {
+      includes: topNavItemClassName().split(' '),
+      excludes: topNavItemSelectedClassName().split(' '),
+    });
+  });
+
+  it('squares an icon-only item with a smaller inline padding', () => {
+    render(
+      <TopNavItem
+        label="Settings"
+        href="#"
+        icon={<NavIcon icon="gear" />}
+        isIconOnly
+      />,
+    );
+    expectClassSet(screen.getByRole('link', {name: 'Settings'}), {
+      includes: topNavItemIconOnlyClassName().split(' '),
+    });
   });
 
   it('applies aria-disabled when isDisabled', () => {
