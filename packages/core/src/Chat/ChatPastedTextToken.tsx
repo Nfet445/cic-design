@@ -4,8 +4,8 @@
 
 /**
  * @file ChatPastedTextToken.tsx
- * @input Uses React, StyleX, Badge, HoverCard, Button, provider-bound translator,
- *   the shared tap stop (`useTapStop`)
+ * @input Uses React, Badge, HoverCard, Button, provider-bound translator,
+ *   the shared tap stop (`useTapStop`), the class map
  * @output Exports ChatPastedTextToken component
  * @position Inline token for pasted text with hover card preview + expand
  *
@@ -17,13 +17,6 @@
  * - /packages/core/src/Chat/index.ts (exports)
  */
 
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  typographyVars,
-} from '../theme/tokens.stylex';
 import {Badge} from '../Badge';
 import {Button} from '../Button';
 import {HoverCard} from '../HoverCard';
@@ -34,6 +27,12 @@ import {
   useComponentTranslator,
 } from '../i18n/useComponentTranslator';
 import english from '../i18n/generated-english/Chat/ChatPastedTextToken.generated';
+import {
+  chatPastedTextFooterClassName,
+  chatPastedTextMetaClassName,
+  chatPastedTextPreviewClassName,
+  chatPastedTextPreviewTextClassName,
+} from './chatClasses';
 
 registerEnglishFallback(english);
 
@@ -47,39 +46,6 @@ export interface ChatPastedTextTokenProps {
   /** Called when the user clicks Expand — dissolves the token into editable text. */
   onExpand?: () => void;
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  preview: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-2'],
-    maxWidth: '480px',
-  },
-  previewText: {
-    fontFamily: typographyVars['--font-family-code'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-primary'],
-    whiteSpace: 'pre-wrap',
-    wordBreak: 'break-word',
-    maxHeight: '240px',
-    overflowY: 'auto',
-  },
-  footer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-  },
-  meta: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    color: colorVars['--color-text-secondary'],
-  },
-});
 
 // =============================================================================
 // Helpers
@@ -111,10 +77,10 @@ export function ChatPastedTextToken({
   const tapStop = useTapStop('mousedown');
 
   const cardContent = (
-    <div {...stylex.props(styles.preview)}>
-      <div {...stylex.props(styles.previewText)}>{text}</div>
-      <div {...stylex.props(styles.footer)}>
-        <span {...stylex.props(styles.meta)}>{label}</span>
+    <div className={chatPastedTextPreviewClassName}>
+      <div className={chatPastedTextPreviewTextClassName}>{text}</div>
+      <div className={chatPastedTextFooterClassName}>
+        <span className={chatPastedTextMetaClassName}>{label}</span>
         {onExpand && (
           <Button
             label={t('@astryx.chat.pastedText.expand')}

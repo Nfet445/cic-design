@@ -2,23 +2,14 @@
 
 'use client';
 
-import * as stylex from '@stylexjs/stylex';
 import {ScrollableArea} from '@astryxdesign/core/ScrollableArea';
 import {Card} from '@astryxdesign/core/Card';
 import {Grid} from '@astryxdesign/core/Grid';
 import {VStack} from '@astryxdesign/core/Layout';
 import {Heading, Text} from '@astryxdesign/core/Text';
-import {colorVars, spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
-
-const styles = stylex.create({
-  sectionLabel: {
-    position: 'sticky',
-    insetBlockStart: 0,
-    zIndex: 1,
-    backgroundColor: colorVars['--color-background-card'],
-    paddingBlock: spacingVars['--spacing-2'],
-  },
-});
+const styles = {
+  sectionLabel: 'sticky top-0 z-[1] bg-card [padding-block:var(--spacing-2)]',
+} as const;
 
 const SHARED = [
   {id: 'brand', title: 'Brand refresh', meta: 'Priya Raman'},
@@ -88,7 +79,7 @@ export default function ScrollableAreaStickyPassthrough() {
             scrolling and never becomes the Sticky boundary: the label
             passes outward and pins to the panel's edge. */}
         <ScrollableArea axis="block" label="Shared with you">
-          <div {...stylex.props(styles.sectionLabel)}>
+          <div className={styles.sectionLabel}>
             <Text type="label" color="secondary">
               Shared with you
             </Text>
@@ -102,7 +93,7 @@ export default function ScrollableAreaStickyPassthrough() {
           axis="block"
           label="Templates"
           stickyContainment="always">
-          <div {...stylex.props(styles.sectionLabel)}>
+          <div className={styles.sectionLabel}>
             <Text type="label" color="secondary">
               Templates
             </Text>
@@ -110,7 +101,7 @@ export default function ScrollableAreaStickyPassthrough() {
           <FileGrid files={TEMPLATES} />
         </ScrollableArea>
 
-        <div {...stylex.props(styles.sectionLabel)}>
+        <div className={styles.sectionLabel}>
           <Text type="label" color="secondary">
             Archived
           </Text>

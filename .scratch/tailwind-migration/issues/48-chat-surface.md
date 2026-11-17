@@ -139,3 +139,86 @@ touch: `packages/core/src/DropdownMenu/DropdownMenu.doc.mjs:170` reports
 string; }' but required in type 'ComponentThemingVar'`. It comes from
 `f118555dd refactor(dropdown-menu): классы Tailwind для поверхности меню у
 триггера`, so it belongs to ticket 23.
+
+Window 2 (30 min, branch `ticket/48-chat-surface`): three more files landed,
+`poc/tailwind-layout-primitives` merged, no conflict outside the budget
+comment. The assigned order for this window named `ChatTypingIndicator`,
+`ChatUnreadDivider`, `ChatReactionBar`, `ChatVirtualizer` and `ChatReasoning`,
+and no such files exist under `packages/core/src/Chat/`; the window followed
+the Progress list's own "smallest first" order instead. The class map
+`packages/core/src/Chat/chatClasses.ts` now holds five files' vocabulary;
+the coverage block of
+`packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs:2146-2163`
+lists the names under a `// Chat:` comment and the import spans
+`:616-634`.
+
+Done this window:
+
+- `ChatPastedTextToken.tsx` (141 lines) — the preview column
+  `flex flex-col gap-2 max-w-[480px]`, its scrolling code text
+  (`[font-family:var(--font-family-code)]`, `whitespace-pre-wrap break-words
+max-h-[240px] overflow-y-auto`), the footer and the count.
+  `ChatPastedTextToken.test.tsx` needed no change: no test reads a declaration.
+- `ChatSystemMessage.tsx` (165 lines) — the notice (centered, `py-1`,
+  supporting text in the secondary colour), the divider wrapper, the icon slot
+  and the content row at `gap-1.5`. Its test needed no change.
+- `ChatMessageMetadata.tsx` (178 lines) — the metadata row, both sender
+  directions, the status row, the error colour and the sending pulse. The pulse
+  frames moved to `packages/core/tailwind/astryx.input.css` as
+  `@keyframes astryxChatStatusPulse`, spelled inside
+  `animate-[astryxChatStatusPulse_1.5s_ease-in-out_infinite]` with
+  `motion-reduce:animate-none`; `stylex.keyframes` is gone from the file. Its
+  test needed no change.
+
+Left, smallest first, with the line the map starts on and the file size (line
+numbers from window 1, recheck on pick-up):
+
+- `ChatLayoutScrollButton.tsx` — map at :64, 188 lines, 9 entries; its
+  `transitionProperty`/`Duration`/`TimingFunction` and the
+  `hidden`/`visible`/`collapsed`/`expanded` arms are state variants
+  (`[&[data-state=hidden]]:`-style attributes, since the arms must beat the
+  base), and `button` writes `--radius-element` through a dynamic style.
+- `ChatDictationButton.tsx` — map at :59, 197 lines, 3 entries.
+- `ChatMessage.tsx` — map at :88, 311 lines.
+- `ChatMessageBubble.tsx` — maps at :107 and :208, 346 lines; the alignment
+  and the per-instance width are a class plus an inline `--astryx-*` variable.
+- `ChatMessageList.tsx` — maps at :124 and :178, 364 lines; `gapStyles` is the
+  per-instance gap variable.
+- `ChatComposerDrawer.tsx` — map at :105, 368 lines (the two hits at :89 and
+  :93 are doc text).
+- `ChatComposer.tsx` — maps at :139 and :315, 613 lines; elevation stays the
+  variable-reading pair.
+- `ChatToolCalls.tsx` — map at :106, 723 lines; `ChatToolCalls.tsx:363` types a
+  style off `ReturnType<typeof stylex.create>[string]`, so the prop that takes
+  it changes shape with the map.
+- `useTriggerMenu.tsx` — map at :118, 1026 lines.
+- `ChatComposerInput.tsx` — map at :273, 1007 lines, the known window-each
+  file: it states the 16px iOS floor, so
+  `packages/core/src/inputFontFloor.test.ts:41` must move from
+  `'Chat/ChatComposerInput.tsx'` to `'Chat/chatClasses.ts'` in the same
+  commit, and `ChatComposerInput.test.tsx` (2496 lines) asserts the token
+  alignment against it.
+
+Guards at this point: `inputFontFloor.test.ts` still points at
+`ChatComposerInput.tsx` and passes — no Chat file that states the floor moved.
+`theme/themeMotion.test.ts`, `theme/derivedVarRegistry.test.ts`,
+`theme/themingTargets.test.ts` and `theme/dynamicType.test.ts` pass unchanged:
+the three files this window moved read no `var()` that the guards look up
+through a StyleX map, and `--_button-radius` stays in `ChatSendButton.tsx`'s
+class.
+
+Checks after the merge: `pnpm exec vitest run packages/core/src/Chat
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
+packages/core/src/inputFontFloor.test.ts packages/core/src/theme` — 59 files,
+2380 tests, 1 skipped, all passing. `pnpm -F @astryxdesign/core typecheck`
+passes whole: the DropdownMenu `theming.vars` error window 1 recorded is gone
+after the merge. The sheet rebuilt at 183.8 kB; the budget test measures 1318
+rules against the ceiling 1380 the merged side set (the conflict was resolved
+by keeping both sides' prose and one ceiling). `dist/astryx-tailwind.css` is
+rebuilt, not committed.
+
+Still open for this ticket: ten files, the composer input last, one browser
+check page for the family, the manual Windows High Contrast check on the bubble
+edges and the composer focus ring, and the test assertions that move with the
+composer input window. The changeset `.changeset/chat-tailwind-classes.md`
+covers the surface as it stands and is extended with each window.

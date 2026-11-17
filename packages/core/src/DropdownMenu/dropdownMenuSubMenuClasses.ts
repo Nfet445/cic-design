@@ -102,3 +102,72 @@ export const dropdownMenuSubMenuDrillInClassName = tw(
   '[-webkit-touch-callout:none]',
   'select-none',
 );
+
+// The flyout's minimum width when the caller states none: it prefers the
+// content's own size, clamped by the runtime's inline cap.
+const FLYOUT_MIN_WIDTH =
+  '[min-width:min(160px,calc(100vi_-_max(var(--spacing-4),env(safe-area-inset-left,0px))_-_var(--astryx-layer-inset-inline-start,0px)_-_max(var(--spacing-4),env(safe-area-inset-right,0px))_-_var(--astryx-layer-inset-inline-end,0px)))]';
+const FLYOUT_MIN_WIDTH_FALLBACK =
+  '[@supports_not_(inline-size:100vi)]:[min-width:min(160px,calc(100vw_-_var(--spacing-4)_-_var(--spacing-4)_-_var(--astryx-layer-inset-inline-start,0px)_-_var(--astryx-layer-inset-inline-end,0px)))]';
+
+/** The layer box's minimum width with no explicit `menuWidth`. */
+export const dropdownMenuSubMenuFlyoutMinWidthClassName = tw(
+  FLYOUT_MIN_WIDTH,
+  FLYOUT_MIN_WIDTH_FALLBACK,
+);
+
+/**
+ * The layer box: the same block cap the flyout paints. Keeping the cap on the
+ * menu surface above stops Chromium from choosing `flip-inline` for the
+ * anchor-positioned box, which would shift the flyout back across its parent.
+ */
+export const dropdownMenuSubMenuFlyoutViewportClassName = tw(
+  'box-border',
+  FLYOUT_BLOCK_CAP,
+  FLYOUT_BLOCK_CAP_FALLBACK,
+);
+
+/**
+ * The frame a sub-menu with a header or footer renders in: the regions and the
+ * menu in one column, the menu's radius and padding handed to its rows. The
+ * block cap is its own class, because a drilled-in view caps where the root
+ * menu does.
+ */
+export const dropdownMenuSubMenuRegionsFrameClassName = tw(
+  'box-border flex flex-col',
+  '[--_dropdown-menu-radius:var(--radius-container)]',
+  '[--_dropdown-menu-padding:var(--spacing-1)]',
+  'rounded-[var(--_dropdown-menu-radius)]',
+);
+
+/** The frame's own block cap: the flyout's, beside the root menu. */
+export const dropdownMenuSubMenuRegionsFrameCapClassName = tw(
+  FLYOUT_BLOCK_CAP,
+  FLYOUT_BLOCK_CAP_FALLBACK,
+);
+
+/** The flyout's frame paints the surface; a drilled-in view sits inside the
+ * root's. */
+export const dropdownMenuSubMenuRegionsSurfaceClassName = tw(
+  FLYOUT_INLINE_CAP,
+  FLYOUT_INLINE_CAP_FALLBACK,
+  'bg-[var(--color-background-popover)]',
+  'shadow-[var(--shadow-low)]',
+  'opacity-100',
+  '[transition-property:opacity]',
+  '[transition-duration:var(--duration-fast)]',
+  '[transition-timing-function:var(--ease-standard)]',
+);
+
+/** The menu between the frame's regions: it takes the room and may shrink to
+ * none, and it scrolls. */
+export const dropdownMenuSubMenuFrameMenuClassName = tw(
+  'box-border flex flex-col',
+  'gap-[var(--spacing-0-5)]',
+  'grow shrink',
+  '[min-block-size:0]',
+  'p-[var(--spacing-1)]',
+  'outline-none',
+  '[-webkit-touch-callout:none]',
+  'select-none',
+);

@@ -4,17 +4,18 @@
 
 /**
  * @file spinnerRotor.ts
- * @input StyleX keyframes and the slow-min duration token
- * @output The one turning arc: SPINNER_ARC_FRACTION, spinnerRotorStyles.turn
- *   and syncRotationPhase
+ * @input The rotor's Tailwind class and the slow-min duration token it reads
+ * @output The one turning arc: SPINNER_ARC_FRACTION,
+ *   spinnerRotorTurnClassName and syncRotationPhase
  * @position Spinner's rotor, shared by Spinner and Lab's indeterminate
  *   CircularProgress (through `@astryxdesign/core/internal/spinner-rotor`), so
  *   both rings turn the same way on the compositor.
  */
 
-import * as stylex from '@stylexjs/stylex';
-import {durationVars} from '../theme/tokens.stylex';
 import {sharedState} from '../utils/sharedRealm';
+import {spinnerRotorTurnClassName} from './spinnerClasses';
+
+export {spinnerRotorTurnClassName};
 
 /** The fraction of the ring the arc covers: 135°. */
 export const SPINNER_ARC_FRACTION = 0.375;
@@ -26,37 +27,11 @@ export const SPINNER_ARC_FRACTION = 0.375;
  * document listens for `animationiteration`. React listens for it on every
  * root. One iteration holds 100 turns, so the wake comes once in 100 turns.
  * Each turn is 360 degrees, so the ring looks the same.
+ *
+ * The class that names the animation, and the keyframes it names, live in
+ * `spinnerClasses.ts` and `tailwind/astryx.input.css`: the build scans class
+ * maps, so a keyframe in a `.ts` file would emit nothing.
  */
-const TURNS_PER_ITERATION = 100;
-
-/**
- * A `transform` animation runs on the compositor, so the ring keeps turning
- * while a script runs. A `stroke-dashoffset` animation would repaint the arc
- * on the main thread every frame, so it would stop while a script runs.
- */
-const rotation = stylex.keyframes({
-  '0%': {transform: 'rotate(0deg)'},
-  '100%': {transform: `rotate(${360 * TURNS_PER_ITERATION}deg)`},
-});
-
-export const spinnerRotorStyles = stylex.create({
-  turn: {
-    // Mobile Safari keeps a re-timed animation off the main thread only on an
-    // element with its own layer. So the rotor declares one before the start
-    // time is set (see `pinRotorsToTimelineOrigin`).
-    willChange: 'transform',
-    // Reduced motion slows the turn but never stops it: a still ring reads as
-    // broken. The ring's role and name still say that work is busy.
-    animationDuration: {
-      // The loop reads the duration before a theme's tempo scales it.
-      default: `calc(var(--_astryx-pre-tempo-duration-slow-min, ${durationVars['--duration-slow-min']}) * ${TURNS_PER_ITERATION})`,
-      '@media (prefers-reduced-motion: reduce)': `calc(3s * ${TURNS_PER_ITERATION})`,
-    },
-    animationIterationCount: 'infinite',
-    animationName: rotation,
-    animationTimingFunction: 'linear',
-  },
-});
 
 /**
  * Pin every ring's rotation to the document timeline's origin instead of its
