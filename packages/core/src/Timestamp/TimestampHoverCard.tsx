@@ -28,7 +28,6 @@
 
 import type {ReactNode, RefObject} from 'react';
 import {useCallback, useRef} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {useHoverCard} from '../HoverCard/useHoverCard';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {IconButton} from '../IconButton/IconButton';
@@ -36,12 +35,16 @@ import {ComponentIcon} from '../Icon/ComponentIcon';
 import {useClipboardCopy} from '../hooks/useClipboard';
 import {themeProps} from '../utils/themeProps';
 import {VisuallyHidden} from '../VisuallyHidden/VisuallyHidden';
+import {tw} from '../utils/tw';
 import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  fontWeightVars,
-} from '../theme/tokens.stylex';
+  timestampHoverCardActionClassName,
+  timestampHoverCardGridTemplateClassName,
+  timestampHoverCardLabelClassName,
+  timestampHoverCardListClassName,
+  timestampHoverCardRowClassName,
+  timestampHoverCardValueCellsClassName,
+  timestampHoverCardValueClassName,
+} from './timestampHoverCardClasses';
 import type {TimestampTooltipLine} from './tooltipEntries';
 import {
   registerEnglishFallback,
@@ -50,80 +53,6 @@ import {
 import english from '../i18n/generated-english/Timestamp/TimestampHoverCard.generated';
 
 registerEnglishFallback(english);
-
-const styles = stylex.create({
-  // The card is a definition list laid out as a grid so cells align into
-  // columns across rows. `gridTemplateColumns` is set per-card (below) to add
-  // or drop the label and action columns; the row/column gaps live here.
-  dl: {
-    display: 'grid',
-    alignItems: 'center',
-    columnGap: spacingVars['--spacing-4'],
-    rowGap: spacingVars['--spacing-2'],
-    margin: 0,
-    padding: 0,
-  },
-  // Each row spans the full grid so its cells land in the shared columns.
-  // `display: contents` lets the <dt>/<dd> participate directly in the grid.
-  row: {
-    display: 'contents',
-  },
-  // Label: the design system's `supporting` role — secondary colour, the
-  // supporting size/leading, normal weight. This matches Timestamp's own
-  // default `type` ('supporting'), so the card's labels read at the same
-  // register as the component itself.
-  label: {
-    color: colorVars['--color-text-secondary'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    margin: 0,
-    padding: 0,
-    whiteSpace: 'nowrap',
-  },
-  // Value: the `body` role — primary colour, body size/leading, normal weight.
-  value: {
-    color: colorVars['--color-text-primary'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    margin: 0,
-    padding: 0,
-    whiteSpace: 'nowrap',
-  },
-  // A value carrying the action cell spans the value and action columns and
-  // shares the card's tracks, so the copy buttons still align.
-  // Without subgrid, a flex row keeps the button at the row's end.
-  valueCells: {
-    gridColumn: 'span 2',
-    display: {
-      default: 'flex',
-      '@supports (grid-template-columns: subgrid)': 'grid',
-    },
-    justifyContent: 'space-between',
-    gridTemplateColumns: 'subgrid',
-    alignItems: 'center',
-  },
-  // The trailing action cell holds the copy button (or nothing, on a
-  // read-only row). It lives in its own grid column so buttons align.
-  action: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-});
-
-// Grid templates, selected per-card by which columns are present.
-// - hasAnyLabel + hasAnyCopyable → label | value | action
-// - hasAnyLabel only             → label | value
-// - hasAnyCopyable only          → value | action
-// - neither                      → value
-const gridTemplates = stylex.create({
-  labelValueAction: {gridTemplateColumns: 'auto 1fr auto'},
-  labelValue: {gridTemplateColumns: 'auto 1fr'},
-  valueAction: {gridTemplateColumns: '1fr auto'},
-  value: {gridTemplateColumns: '1fr'},
-});
 
 /** How long the copied checkmark stays before reverting to the copy icon. */
 const COPY_FEEDBACK_MS = 1500;
@@ -213,18 +142,22 @@ function EntryRow({
   const hasLabel = line.label != null && line.label !== '';
   const hiddenName = <VisuallyHidden>{line.zoneName}</VisuallyHidden>;
   return (
-    <div {...stylex.props(styles.row)}>
+    <div className={timestampHoverCardRowClassName}>
       {hasLabelColumn ? (
-        <dt {...stylex.props(styles.label)}>
+        <dt className={timestampHoverCardLabelClassName}>
           {hasLabel ? line.label : hiddenName}
         </dt>
       ) : (
         <VisuallyHidden as="dt">{line.zoneName}</VisuallyHidden>
       )}
-      <dd {...stylex.props(styles.value, hasActionColumn && styles.valueCells)}>
+      <dd
+        className={tw(
+          timestampHoverCardValueClassName,
+          hasActionColumn && timestampHoverCardValueCellsClassName,
+        )}>
         {hasActionColumn ? <span>{line.value}</span> : line.value}
         {hasActionColumn && (
-          <span {...stylex.props(styles.action)}>
+          <span className={timestampHoverCardActionClassName}>
             {line.isCopyable && <CopyButton value={line.value} />}
           </span>
         )}
@@ -250,17 +183,17 @@ export interface TimestampHoverCardProps {
 function gridTemplateFor(
   hasLabelColumn: boolean,
   hasActionColumn: boolean,
-): stylex.StyleXStyles {
+): string {
   if (hasLabelColumn && hasActionColumn) {
-    return gridTemplates.labelValueAction;
+    return timestampHoverCardGridTemplateClassName.labelValueAction;
   }
   if (hasLabelColumn) {
-    return gridTemplates.labelValue;
+    return timestampHoverCardGridTemplateClassName.labelValue;
   }
   if (hasActionColumn) {
-    return gridTemplates.valueAction;
+    return timestampHoverCardGridTemplateClassName.valueAction;
   }
-  return gridTemplates.value;
+  return timestampHoverCardGridTemplateClassName.value;
 }
 
 /**
@@ -331,8 +264,8 @@ export default function TimestampHoverCard({
 
   const cardContent = (
     <dl
-      {...stylex.props(
-        styles.dl,
+      className={tw(
+        timestampHoverCardListClassName,
         gridTemplateFor(hasLabelColumn, hasActionColumn),
       )}>
       {lines.map((line, index) => (

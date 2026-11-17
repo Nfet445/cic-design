@@ -184,6 +184,187 @@ export const pickerWheelRowClassName = tw(
   'select-none',
 );
 
+/**
+ * The month scroller's measured geometry: the spacer's full inline size, and
+ * one pane's place and width along it. The scroller measures its own box, so
+ * every value is per instance and rides a variable the element writes.
+ */
+export type DateInputMonthScrollerStyle = CSSProperties &
+  Partial<
+    Record<
+      | '--astryx-date-pane-inline-start'
+      | '--astryx-date-pane-inline-size'
+      | '--astryx-date-spacer-inline-size',
+      string
+    >
+  >;
+
+/** The variable the spacer reads to hold every pane at once. */
+export function dateInputMonthSpacerStyle(
+  inlineSize: number,
+): DateInputMonthScrollerStyle {
+  return {'--astryx-date-spacer-inline-size': `${inlineSize}px`};
+}
+
+/** The variables one pane reads: where it starts, and how wide it is. */
+export function dateInputMonthPaneStyle({
+  insetInlineStart,
+  inlineSize,
+}: {
+  insetInlineStart: number;
+  inlineSize: number;
+}): DateInputMonthScrollerStyle {
+  return {
+    '--astryx-date-pane-inline-start': `${insetInlineStart}px`,
+    '--astryx-date-pane-inline-size': `${inlineSize}px`,
+  };
+}
+
+/**
+ * The month scrollport. `box-sizing` is stated rather than inherited from the
+ * reset: the pane size, the snap offsets and the virtualization all key off
+ * the measured box.
+ *
+ * `pan-x` splits the gesture by axis — horizontal pans stay with the calendar
+ * and vertical ones reach the sheet as swipe-to-dismiss.
+ */
+export const monthScrollerClassName = tw(
+  'relative',
+  'box-border',
+  '[block-size:var(--astryx-date-pane-block-size)]',
+  'overflow-x-auto',
+  'overflow-y-hidden',
+  '[scroll-snap-type:x_mandatory]',
+  'overscroll-contain',
+  '[scrollbar-width:none]',
+  '[touch-action:pan-x]',
+);
+
+/** The spacer that holds every month's pane, so no pane is ever unmounted. */
+export const monthScrollerSpacerClassName = tw(
+  'relative',
+  'block',
+  'h-full',
+  '[inline-size:var(--astryx-date-spacer-inline-size)]',
+);
+
+/**
+ * One month, as a six-row grid, placed into the spacer. No
+ * `scroll-snap-stop: always`: a fling may carry past several months.
+ */
+export const monthPaneClassName = tw(
+  'absolute',
+  'inset-y-0',
+  '[block-size:var(--astryx-date-pane-block-size)]',
+  '[inset-inline-start:var(--astryx-date-pane-inline-start)]',
+  '[inline-size:var(--astryx-date-pane-inline-size)]',
+  '[scroll-snap-align:start]',
+  'grid',
+  'grid-cols-7',
+  'grid-rows-6',
+);
+
+/** A week lays its cells straight into the pane's grid. */
+export const monthRowClassName = 'contents';
+
+/** One grid cell, which centres the day's tap target. */
+export const monthCellClassName = tw(
+  'relative',
+  'flex',
+  'items-center',
+  'justify-center',
+);
+
+/**
+ * A day's tap target: the full cell, floored at the touch target size, and no
+ * browser chrome of its own. A tap must not also select the number inside it.
+ */
+export const monthDayClassName = tw(
+  'flex',
+  'items-center',
+  'justify-center',
+  'w-full',
+  'h-full',
+  'min-w-[44px]',
+  'min-h-[44px]',
+  'p-0',
+  'm-0',
+  '[border-width:0]',
+  '[border-style:none]',
+  'bg-transparent',
+  'text-[color:var(--color-text-primary)]',
+  'text-[length:var(--text-body-size)]',
+  'font-normal',
+  'cursor-pointer',
+  'disabled:cursor-default',
+  'select-none',
+  '[-webkit-tap-highlight-color:transparent]',
+  '[&[aria-disabled=true]]:cursor-default',
+);
+
+/**
+ * A day from the month either side. Muted exactly as the desktop calendar mutes
+ * it: the secondary colour and half opacity together are what make it read as
+ * context rather than as a dimmer choice.
+ */
+export const monthDayOutsideClassName = tw(
+  'text-[color:var(--color-text-secondary)]',
+  'opacity-50',
+);
+
+/**
+ * A day the range rules out. It fades whatever colour the day already had
+ * instead of recolouring it, so a spilled day stays a step apart from an
+ * in-month one and both land lighter than an enabled spill day.
+ *
+ * The opacity keys off `aria-disabled`, not a plain utility: the outside arm's
+ * `opacity-50` is a plain utility too, and two plain utilities are ordered by
+ * the sheet rather than by the class attribute.
+ */
+export const monthDayDisabledClassName = tw(
+  '[&[aria-disabled=true]]:opacity-30',
+  'cursor-default',
+);
+
+/**
+ * The circular puck inside the tap target. Sizing the puck rather than the
+ * button keeps the target at the full cell while the visual stays a circle.
+ */
+export const monthDayPuckClassName = tw(
+  'flex',
+  'items-center',
+  'justify-center',
+  'size-[36px]',
+  'rounded-full',
+  '[border-width:var(--border-width)]',
+  'border-solid',
+  'border-transparent',
+  'bg-transparent',
+  '[transition-property:background-color,_color,_border-color]',
+  '[transition-duration:var(--duration-fast)]',
+);
+
+/**
+ * The hover tint, guarded twice: a touch screen must not keep it on the last
+ * tapped day, and a disabled day must not take it either.
+ */
+export const monthDayPuckHoverableClassName =
+  '[@media(hover:hover)]:[&:hover:where(:not(:disabled,[aria-disabled=true]))]:bg-[var(--color-overlay-hover)]';
+
+/** Today, marked on the puck rather than on the day's text. */
+export const monthDayPuckTodayClassName = tw(
+  'border-[color:var(--color-border-emphasized)]',
+  'font-semibold',
+);
+
+/** The selection puck. The caller does not apply the hover tint beside it. */
+export const monthDayPuckSelectedClassName = tw(
+  'bg-[color:var(--color-accent)]',
+  'border-[color:var(--color-accent)]',
+  'text-[color:var(--color-on-accent)]',
+  'font-semibold',
+);
+
 /** The calendar toggle beside the typed date: a glyph, no box of its own. */
 // The toggle keeps its focus ring in StyleX (`focusOutlineStyles`), a shared
 // rule the class map does not own; the ring is not a property this map sets.
@@ -208,6 +389,131 @@ export function dateInputToggleClassName({
     isDisabled && '[&[aria-disabled=true]]:cursor-default',
   );
 }
+
+/** The closed field's row: the calendar toggle, the control and the overlay. */
+export const nativeDateFieldWrapperClassName = 'gap-2';
+
+/**
+ * The calendar toggle beside the native control. Its disabled cursor keys off
+ * the attribute: the field never renders native `disabled`.
+ */
+export const nativeDateFieldIconButtonClassName = tw(
+  'flex',
+  'items-center',
+  'justify-center',
+  'p-0',
+  'm-0',
+  'border-0',
+  'bg-transparent',
+  'cursor-pointer',
+  '[&:is(:disabled,[aria-disabled=true])]:cursor-default',
+  'rounded-[var(--radius-element)]',
+);
+
+/** The placeholder the empty overlay draws. */
+export const nativeDateFieldOverlayPlaceholderClassName =
+  'text-[color:var(--color-text-secondary)]';
+
+/** A rejected value: the secondary colour, the same one a placeholder reads. */
+export const nativeDateFieldInvalidTextClassName =
+  'text-[color:var(--color-text-secondary)]';
+
+/** The value the overlay draws. */
+export const nativeDateFieldOverlayValueClassName =
+  'text-[color:var(--color-text-primary)]';
+
+/**
+ * The native date control. It carries no border, padding or background of its
+ * own: the field wrapper draws those.
+ *
+ * Below 16px iOS zooms the page when the control takes focus. Only iOS WebKit
+ * implements `-webkit-touch-callout`, so the coarse-pointer floor is keyed to
+ * iOS alone.
+ *
+ * A native date control sizes from its internal edit fields, not from
+ * `line-height`, so the box is pinned to one text line. `1lh` tracks the font
+ * for free; a browser without it falls back to the same calculation.
+ *
+ * A rejected value reads as secondary text, so the typed date reads as one the
+ * control did not accept.
+ */
+export function nativeDateFieldInputClassName({
+  isDisabled,
+  isHidden,
+  isInvalid,
+}: {
+  isDisabled: boolean;
+  isHidden: boolean;
+  isInvalid: boolean;
+}): string {
+  return tw(
+    'block',
+    'flex-1',
+    'min-w-0',
+    'border-0',
+    'p-0',
+    'font-[family-name:var(--font-family-body)]',
+    'text-[length:var(--text-body-size)]',
+    'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
+    'leading-[var(--text-body-leading)]',
+    // The colour is stated once, not layered as two utilities of one property:
+    // the sheet orders those, not the class attribute.
+    isInvalid
+      ? nativeDateFieldInvalidTextClassName
+      : 'text-[color:var(--color-text-primary)]',
+    'bg-transparent',
+    'outline-none',
+    '[height:1lh]',
+    '[@supports_not_(height:1lh)]:[height:calc(var(--text-body-size)_*_var(--text-body-leading))]',
+    'pointer-coarse:[@supports(-webkit-touch-callout:none)]:[height:calc(max(1rem,var(--text-body-size))_*_var(--text-body-leading))]',
+    'appearance-none',
+    // Chromium paints a second calendar glyph inside the control; this surface
+    // ships a toggle of its own. iOS gives the control its own chrome, which
+    // no reset of ours reaches.
+    '[&::-webkit-calendar-picker-indicator]:hidden',
+    '[&::-webkit-date-and-time-value]:[text-align:start]',
+    '[&::-webkit-date-and-time-value]:m-0',
+    '[&::-webkit-date-and-time-value]:p-0',
+    '[&::-webkit-date-and-time-value]:leading-[inherit]',
+    '[&::-webkit-date-and-time-value]:min-h-0',
+    '[&::-webkit-datetime-edit]:p-0',
+    '[&::-webkit-datetime-edit]:leading-[inherit]',
+    // WebKit paints the value into one run the UA stylesheet gives no colour,
+    // so the overlay's own text takes that space.
+    isHidden && 'text-transparent [-webkit-text-fill-color:transparent]',
+    isDisabled && 'cursor-default',
+  );
+}
+
+/** The box the control and its overlay share. */
+export const nativeDateFieldSlotClassName = tw(
+  'relative',
+  'flex',
+  'items-center',
+  'flex-1',
+  '[min-inline-size:0]',
+);
+
+/**
+ * The formatted value over the native control. It repeats the control's font
+ * so the two baselines match, and takes no pointer events: a tap has to reach
+ * the control underneath, which is what raises the OS picker.
+ *
+ * Both insets bound it to the slot; an end inset less block would let a long
+ * date paint over the clear button.
+ */
+export const nativeDateFieldOverlayClassName = tw(
+  'absolute',
+  'inset-0',
+  'block',
+  'text-[length:var(--text-body-size)]',
+  'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
+  'leading-[var(--text-body-leading)]',
+  'pointer-events-none',
+  'overflow-hidden',
+  'whitespace-nowrap',
+  'text-ellipsis',
+);
 
 export type DateInputSize = 'sm' | 'md' | 'lg';
 

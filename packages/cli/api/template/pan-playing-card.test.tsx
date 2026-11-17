@@ -4,7 +4,7 @@
 /**
  * @file Behavior test for the playing-card pan blocks.
  * @input The shipped PanPlayingCard (usePanGesture) block, rendered in jsdom
- *   with the pan, StyleX, the announcer and the Astryx components stubbed.
+ *   with the pan, the announcer and the Astryx components stubbed.
  * @output Guards the keyboard path: a second Discard while the first throw
  *   still runs deals one card, not two. Guards a throw that a drag beginning
  *   during it leaves running. Guards the card's name and each discard's
@@ -28,23 +28,29 @@ type PanEvent = {
 type Styles = {
   translate?: string;
   opacity?: number;
-  transition?: object;
   userSelect?: string;
 };
+
+/**
+ * Reads the card's pose off the class list and the two variables its
+ * `translate` consumes. jsdom loads no stylesheet, so the class is the only
+ * evidence the throw, the drag and the grab cursor exist.
+ */
+function look(className: string, x: string | null, y: string | null): Styles {
+  return {
+    translate: `${x ?? ''} ${y ?? ''}`,
+    opacity: className.includes('opacity-0') ? 0 : undefined,
+    userSelect: className.includes('select-none') ? 'none' : undefined,
+  };
+}
 // The stubbed pan keeps the block's listener, so a case can drive a drag.
 const pan = vi.hoisted(() => ({
   onPan: null as null | ((event: PanEvent) => void),
   destroyed: 0,
 }));
-// This project does not compile StyleX. The stub merges a style list into one
-// object on `data-style`. The card stub records each render's name and
-// styles, so a case reads what the block shows and in what order.
+// The card stub records each render's name and pose, so a case reads what the
+// block shows and in what order.
 const stub = vi.hoisted(() => ({
-  attribute: (...styles: unknown[]) => ({
-    'data-style': JSON.stringify(
-      Object.assign({}, ...styles.flat(Infinity).filter(Boolean)),
-    ),
-  }),
   renders: [] as Array<{name: string; styles: Styles}>,
   announced: [] as string[],
 }));
@@ -55,33 +61,34 @@ const motion = vi.hoisted(() => ({
   running: 2,
   settle: [] as Array<(ended: boolean) => void>,
 }));
-vi.mock('@stylexjs/stylex', () => ({
-  create: (styles: object) => styles,
-  props: stub.attribute,
-}));
 vi.mock('@astryxdesign/core/Card', () => ({
   Card: ({
-    xstyle,
+    className = '',
+    style = {},
     children,
     ref,
     ...rest
   }: {
-    xstyle: unknown;
+    className?: string;
+    style?: Record<string, string>;
     children: ReactNode;
     ref: unknown;
     'aria-label': string;
   }) => {
-    const attribute = stub.attribute(xstyle);
     stub.renders.push({
       name: rest['aria-label'],
-      styles: JSON.parse(attribute['data-style']) as Styles,
+      styles: look(
+        className,
+        style['--astryx-card-x'] ?? null,
+        style['--astryx-card-y'] ?? null,
+      ),
     });
-    return createElement('div', {ref, ...rest, ...attribute}, children);
+    return createElement('div', {ref, ...rest, className, style}, children);
   },
 }));
 vi.mock('@astryxdesign/core/Center', () => ({
-  Center: ({xstyle, children}: {xstyle?: unknown; children: ReactNode}) =>
-    createElement('div', stub.attribute(xstyle), children),
+  Center: ({className, children}: {className?: string; children: ReactNode}) =>
+    createElement('div', {className}, children),
 }));
 vi.mock('@astryxdesign/core/VStack', () => ({
   VStack: ({children}: {children: ReactNode}) =>
@@ -94,18 +101,6 @@ vi.mock('@astryxdesign/core/Text', () => ({
 vi.mock('@astryxdesign/core/Button', () => ({
   Button: ({label, onClick}: {label: string; onClick: () => void}) =>
     createElement('button', {type: 'button', onClick}, label),
-}));
-vi.mock('@astryxdesign/core/theme/tokens.stylex', () => ({
-  colorVars: {'--color-neutral': 'var(--color-neutral)'},
-  durationVars: {
-    '--duration-medium': 'var(--duration-medium)',
-    '--duration-exit': 'var(--duration-exit)',
-  },
-  easeVars: {
-    '--ease-move': 'var(--ease-move)',
-    '--ease-exit': 'var(--ease-exit)',
-  },
-  radiusVars: {'--radius-container': 'var(--radius-container)'},
 }));
 vi.mock('@astryxdesign/core/hooks', () => ({
   usePanGesture: (
@@ -169,7 +164,11 @@ describe('the playing-card pan block', () => {
       throw new Error('the block renders no Discard button or top card');
     }
     const styles = () =>
-      JSON.parse(card.getAttribute('data-style') ?? '{}') as Styles;
+      look(
+        card.className,
+        card.style.getPropertyValue('--astryx-card-x') || null,
+        card.style.getPropertyValue('--astryx-card-y') || null,
+      );
     return {root, button, card, styles, container};
   }
 
@@ -195,10 +194,9 @@ describe('the playing-card pan block', () => {
 
   it("paints the stage in the theme's neutral wash, so the card reads in light and dark themes", async () => {
     const {root, card} = await renderBlock();
-    const stage = JSON.parse(
-      card.parentElement?.getAttribute('data-style') ?? '{}',
-    ) as {backgroundColor?: string};
-    expect(stage.backgroundColor).toBe('var(--color-neutral)');
+    const stage = card.parentElement?.className ?? '';
+    expect(stage).toContain('bg-[var(--color-neutral)]');
+    expect(stage).toContain('rounded-[var(--radius-container)]');
     await act(async () => {
       root.unmount();
     });

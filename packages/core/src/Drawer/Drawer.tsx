@@ -64,13 +64,6 @@ import {useIsHydrating} from '../hooks/useIsHydrating';
 import {useSettledOpen} from '../hooks/useSettledOpen';
 import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
-import {
-  borderVars,
-  colorVars,
-  durationVars,
-  easeVars,
-  shadowVars,
-} from '../theme/tokens.stylex';
 import type {DialogPurpose} from '../Dialog';
 import {useFocusTrap} from '../hooks/useFocusTrap';
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -95,6 +88,13 @@ import {
   spacingStepToToken,
 } from '../Layout/padding.stylex';
 import type {SpacingStep, SpacingToken} from '../Layout';
+import {
+  drawerContentClassName,
+  drawerMobileWidthVar,
+  drawerRootClassName,
+  drawerWidthVar,
+} from './drawerClasses';
+import {drawerContentSafeAreaStyles} from './drawerContentSafeArea.stylex';
 import {useDrawerDialogPresence} from './useDrawerDialogPresence';
 
 type PointerHandler = (event: React.PointerEvent<HTMLDialogElement>) => void;
@@ -103,200 +103,11 @@ type PointerHandler = (event: React.PointerEvent<HTMLDialogElement>) => void;
 // Styles
 // =============================================================================
 
-// Below this viewport width the drawer preserves a fixed reveal of the page
-// behind instead of growing proportionally with the viewport. 640px is the
-// repo's mobile breakpoint.
-const MOBILE_BREAKPOINT = 640;
-
 // Material's established mobile drawer pattern leaves a 56dp reveal. Using
 // the same value in CSS pixels gives the overlay a stable visual relationship
 // to the page behind while the requested width remains an upper bound.
 const MOBILE_PAGE_REVEAL = 56;
 const MOBILE_WIDTH_FULL = '100dvw';
-
-const styles = stylex.create({
-  dialog: {
-    // Reset native <dialog> defaults — the dialog element IS the panel.
-    // The layer text baseline comes from the shared `layerTextResetClassName`,
-    // applied
-    // with the structural reset ahead of these styles on the root below.
-    position: 'fixed',
-    margin: 0,
-    padding: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    // Square corners: the drawer is flush with the viewport edge on three
-    // sides, so a radius would only ever cut the two edge-adjacent corners.
-    borderRadius: 0,
-    maxWidth: 'none',
-    maxHeight: 'none',
-    boxSizing: 'border-box',
-    flexDirection: 'column',
-    backgroundColor: colorVars['--color-background-surface'],
-    boxShadow: shadowVars['--shadow-high'],
-    // `clip`, not `hidden`: `hidden` makes the panel a scroll container, and
-    // Chromium then holds a finger's drag on the page beside an open
-    // non-modal drawer in that container's overscroll containment, so the
-    // page stops scrolling. `clip` clips the off-screen panel the same way
-    // without a scroll container (MobileNav's dialog does the same). The
-    // content area keeps its own scrolling and containment.
-    overflow: 'clip',
-    outline: 'none',
-    // Full-height side panel, pinned across the block axis.
-    insetBlockStart: 0,
-    insetBlockEnd: 0,
-    height: '100dvh',
-    // Closed state. `display` is owned by React (see `rendered`), not by a
-    // discrete `display` transition, so only `transform` animates here.
-    display: 'none',
-    transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-medium'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    '@media (prefers-reduced-motion: reduce)': {
-      transitionDuration: '0.01s',
-    },
-  },
-  // Rendered while the drawer is open AND while it slides out. Applied from
-  // React state, not from a discrete `display` transition: leaving either
-  // native top-layer host drops the panel back into its ordinary containing
-  // context, and any ancestor that establishes a containing block for fixed
-  // positioning (transform, filter, container-type, contain) then becomes the
-  // origin for the panel's `position: fixed`. A panel still painting after host
-  // release therefore snaps back INTO the layout and covers the page for the
-  // rest of the hold. Owning `display` lets the hide land in the same commit, so
-  // no frame is ever painted outside the top layer.
-  //
-  // Applied via the isOpen/exit state, not :where([open]) — attribute
-  // selectors have zero specificity and can lose to default styles
-  // depending on CSS source order (same rationale as Dialog/MobileNav).
-  rendered: {
-    display: 'flex',
-  },
-  // DOM directionality comes from the nearest effective `dir` attribute. A
-  // local override and an inherited region therefore agree with the logical
-  // edge the panel is anchored to.
-  end: {
-    insetInlineEnd: 0,
-    insetInlineStart: 'auto',
-    borderInlineStartWidth: borderVars['--border-width'],
-    borderInlineStartStyle: 'solid',
-    borderInlineStartColor: colorVars['--color-border'],
-    transform: {
-      default: 'translateX(100%)',
-      ':dir(rtl)': 'translateX(-100%)',
-    },
-  },
-  endOpen: {
-    transform: {
-      default: 'translateX(0)',
-      '@starting-style': {
-        default: 'translateX(100%)',
-        ':dir(rtl)': 'translateX(-100%)',
-      },
-    },
-  },
-  start: {
-    insetInlineStart: 0,
-    insetInlineEnd: 'auto',
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-    transform: {
-      default: 'translateX(-100%)',
-      ':dir(rtl)': 'translateX(100%)',
-    },
-  },
-  startOpen: {
-    transform: {
-      default: 'translateX(0)',
-      '@starting-style': {
-        default: 'translateX(-100%)',
-        ':dir(rtl)': 'translateX(100%)',
-      },
-    },
-  },
-  // A drawer present on page load opens where it rests (spec:AST-013 FR13):
-  // the collapse reduced motion uses, so the transition still ends.
-  openSettled: {
-    transitionDuration: '0.01s',
-    '::backdrop': {
-      transitionDuration: '0.01s',
-    },
-  },
-  // Scrim via the browser's ::backdrop pseudo-element (top layer).
-  scrim: {
-    '::backdrop': {
-      // No backdrop-filter: a full-viewport blur is costly to repaint.
-      backgroundColor: colorVars['--color-overlay'],
-      opacity: 0,
-      transitionProperty: 'opacity',
-      transitionDuration: durationVars['--duration-medium'],
-      transitionTimingFunction: easeVars['--ease-standard'],
-    },
-    '@media (prefers-reduced-motion: reduce)': {
-      '::backdrop': {
-        transitionDuration: '0.01s',
-      },
-    },
-  },
-  scrimOpen: {
-    '::backdrop': {
-      opacity: {
-        default: 1,
-        '@starting-style': 0,
-      },
-    },
-  },
-  // Scrollable content area, and the drawer's container: it carries the
-  // container padding (--spacing-4 unless the `padding` prop or the theme sets
-  // it, as in Dialog) and publishes it, so a lone Section child escapes it
-  // exactly as in Dialog and a Layout picks it up for its regions.
-  // touch-action + overscroll containment keep momentum scrolling inside
-  // the panel on touch devices.
-  content: {
-    flexGrow: 1,
-    minHeight: 0,
-    width: '100%',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    overscrollBehavior: 'contain',
-    touchAction: 'pan-y',
-    outline: 'none',
-    // The scrolling area paints the surface itself, covering the panel's whole
-    // inner box. Without it the panel's edge is not uniform: a theme that packs
-    // an inset ring into --shadow-high (the bundled themes all add one in dark
-    // mode) draws that ring just inside the dialog, where an opaque content
-    // wrapper such as Section paints over it — so the ring shows only in the
-    // gap below where the content ends, and the panel's edges appear to change
-    // partway down. Painting the surface here hides the ring evenly, leaving
-    // the anchored-side border as the drawer's one edge (same treatment as
-    // BottomSheetPanel's body, #5305).
-    backgroundColor: colorVars['--color-background-surface'],
-  },
-  // Block-end inset of the content area = container padding + the home
-  // indicator's safe area, so the last row of content stays clear of the
-  // indicator in every padding mode. Applied after container()'s own padding so this
-  // composed value wins on the block-end edge; the published
-  // --container-padding-block-end keeps the safe area OUT, so a bleed child
-  // subtracts only the container inset and the safe area survives below it.
-  contentSafeArea: {
-    paddingBlockEnd:
-      'calc(var(--container-padding-block-end, 0px) + env(safe-area-inset-bottom, 0px))',
-  },
-});
-
-const dynamicStyles = stylex.create({
-  // Width budget: the `width` prop on desktop, a share of the viewport below
-  // the mobile breakpoint. maxWidth keeps a large desktop budget from
-  // overflowing a narrow window.
-  inlineSize: (desktopWidth: string, mobileWidth: string) => ({
-    width: {
-      default: desktopWidth,
-      [`@media (max-width: ${MOBILE_BREAKPOINT}px)`]: mobileWidth,
-    },
-    maxWidth: '100dvw',
-  }),
-});
 
 // =============================================================================
 // Types
@@ -581,9 +392,18 @@ export function Drawer({
   }
   const anchoredSide = isOpen ? side : exitSide;
 
-  const sideStyle = anchoredSide === 'start' ? styles.start : styles.end;
-  const sideOpenStyle =
-    anchoredSide === 'start' ? styles.startOpen : styles.endOpen;
+  const panelClassName = drawerRootClassName({
+    side: anchoredSide,
+    isRendered,
+    isOpen,
+    hasScrim,
+    opensSettled,
+  });
+  // A width rides an inline custom property; the classes read it.
+  const layoutVariables: Record<`--${string}`, string> = {
+    [drawerWidthVar]: widthValue,
+    [drawerMobileWidthVar]: mobileWidth,
+  };
 
   // Filter out native `open` to prevent InvalidStateError when passed
   const {open: _open, ...safeProps} = props as Record<string, unknown>;
@@ -593,20 +413,14 @@ export function Drawer({
       ref={mergedDialogRef}
       {...mergeProps(
         themeProps('drawer', {side: anchoredSide}),
-        stylex.props(
-          styles.dialog,
-          overlayPaddingReset.reset,
-          sideStyle,
-          dynamicStyles.inlineSize(widthValue, mobileWidth),
-          isRendered && styles.rendered,
-          isOpen && sideOpenStyle,
-          hasScrim && styles.scrim,
-          hasScrim && isOpen && styles.scrimOpen,
-          opensSettled && styles.openSettled,
-          xstyle,
+        stylex.props(overlayPaddingReset.reset, xstyle),
+        tw(
+          panelClassName,
+          layerTextResetClassName,
+          layerStructureResetClassName,
+          className,
         ),
-        tw(layerTextResetClassName, layerStructureResetClassName, className),
-        style,
+        {...layoutVariables, ...style},
       )}
       {...safeProps}
       popover={hasScrim ? undefined : 'manual'}
@@ -645,31 +459,33 @@ export function Drawer({
             <div
               ref={outletRef}
               tabIndex={-1}
-              {...stylex.props(
-                styles.content,
-                ...container(
-                  usesThemePadding
-                    ? {useThemeDefault: 'drawer'}
-                    : {
-                        paddingInnerX: paddingToken,
-                        paddingInnerY: paddingToken,
-                        paddingOuterX: paddingToken,
-                        paddingOuterY: paddingToken,
-                      },
+              {...mergeProps(
+                stylex.props(
+                  ...container(
+                    usesThemePadding
+                      ? {useThemeDefault: 'drawer'}
+                      : {
+                          paddingInnerX: paddingToken,
+                          paddingInnerY: paddingToken,
+                          paddingOuterX: paddingToken,
+                          paddingOuterY: paddingToken,
+                        },
+                  ),
+                  !usesThemePadding &&
+                    effectivePadding !== 4 &&
+                    paddingStyles[effectivePadding],
+                  !usesThemePadding &&
+                    effectivePadding !== 4 &&
+                    containerPaddingInlineVarStyles[effectivePadding],
+                  !usesThemePadding &&
+                    effectivePadding !== 4 &&
+                    containerPaddingBlockStartVarStyles[effectivePadding],
+                  !usesThemePadding &&
+                    effectivePadding !== 4 &&
+                    containerPaddingBlockEndVarStyles[effectivePadding],
+                  drawerContentSafeAreaStyles.contentSafeArea,
                 ),
-                !usesThemePadding &&
-                  effectivePadding !== 4 &&
-                  paddingStyles[effectivePadding],
-                !usesThemePadding &&
-                  effectivePadding !== 4 &&
-                  containerPaddingInlineVarStyles[effectivePadding],
-                !usesThemePadding &&
-                  effectivePadding !== 4 &&
-                  containerPaddingBlockStartVarStyles[effectivePadding],
-                !usesThemePadding &&
-                  effectivePadding !== 4 &&
-                  containerPaddingBlockEndVarStyles[effectivePadding],
-                styles.contentSafeArea,
+                {className: drawerContentClassName},
               )}>
               {children}
             </div>

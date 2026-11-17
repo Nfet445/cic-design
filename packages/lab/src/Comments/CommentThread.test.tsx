@@ -328,12 +328,18 @@ describe('CommentThread dismissal', () => {
 
   // A closed-by-default host's top layer reads as hidden to jsdom's
   // accessibility tree, so queries inside a Popover include hidden elements.
+  // OverflowList also renders a hidden copy of every action to measure it; the
+  // press targets the visible list's copy, which its `data-comment-actions-list`
+  // frame marks.
   async function openReply({hidden = false} = {}) {
-    fireEvent.click(
-      within(
-        screen.getByRole('article', {name: 'Maya Chen', hidden}),
-      ).getByRole('button', {name: 'Reply', hidden}),
+    const article = screen.getByRole('article', {name: 'Maya Chen', hidden});
+    const reply = article.querySelector<HTMLElement>(
+      '[data-comment-actions-list] [data-comment-action="reply"]',
     );
+    if (reply == null) {
+      throw new Error('The visible actions list has no Reply button.');
+    }
+    fireEvent.click(reply);
     await settle();
     return screen.getByRole('textbox', {name: 'Reply to Maya Chen…', hidden});
   }

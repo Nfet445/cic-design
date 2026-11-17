@@ -57,9 +57,10 @@ import {PanelSearchInput} from '../Field/PanelSearchInput';
 import {useKeyboardHighlight} from '../hooks/useKeyboardHighlight';
 import {useAnnounce} from '../hooks/useAnnounce';
 import {useAnnounceRenderedText} from '../hooks/useAnnounceRenderedText';
+import {tw} from '../utils/tw';
+import {SELECTOR_TRIGGER_SIZE_CLASS} from './selectorOptionClasses';
 import {
   colorVars,
-  sizeVars,
   spacingVars,
   radiusVars,
   durationVars,
@@ -161,8 +162,8 @@ const styles = stylex.create({
         '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-label-size']})`,
       },
     },
-    // The line box is set per size in sizeStyles below, where it can be capped
-    // to what that size token holds.
+    // The line box is set per size in SELECTOR_TRIGGER_SIZE_CLASS, where it can
+    // be capped to what that size token holds.
     color: colorVars['--color-text-primary'],
     cursor: {
       default: 'pointer',
@@ -215,8 +216,8 @@ const styles = stylex.create({
   // above its group (`<InputGroup size="md"><Selector size="lg">`) grows the
   // row it was supposed to sit in. The padding goes with it: the row is
   // already the size token, and the value box is centred in it. The line box
-  // likewise stops reading the control's own size token (sizeStyles caps it
-  // there), so grouped triggers keep one line box whatever their `size`.
+  // likewise stops reading the control's own size token (the size class caps
+  // it there), so grouped triggers keep one line box whatever their `size`.
   triggerInGroup: {
     minHeight: 0,
     paddingBlock: 0,
@@ -271,7 +272,7 @@ const styles = stylex.create({
     transform: 'rotate(180deg)',
   },
   // Ghost has no borders, so its spacing row never overshoots the token; it
-  // keeps the uncapped line box from before the sizeStyles cap.
+  // keeps the uncapped line box from before the size cap.
   triggerGhost: {
     width: 'auto',
     borderWidth: 0,
@@ -480,45 +481,6 @@ const styles = stylex.create({
   // Divider
   divider: {
     marginBlock: spacingVars['--spacing-1'],
-  },
-});
-
-// The trigger is sized by PADDING, not by a fixed height, so it is the size
-// token plus one text line for each extra line the value uses: 28/32/36 for
-// one line, 48/52/56 for two with the default tokens, where the token and a
-// text line are both multiples of 4 and the trigger lines up with the Buttons
-// and inputs beside it. No prop picks the height — the content does.
-//
-// The line box is `--spacing-5`, floored at the 20px clear control and 1rem
-// icons. When that row would not fit inside the size token's borders, it is
-// capped at what the token holds, so a spacing scale taller than the token
-// cannot push a one-line trigger past it. The cap never goes below 1.5em of
-// the trigger's own font — the type scale's loosest target leading, a
-// conservative bound above a label's glyph extent — so label text too large
-// for the token keeps room rather than being clipped. Line box and padding
-// read the same value; nothing changes wherever the row already fit. Ghost and
-// grouped triggers keep the uncapped line box. `renderValue` content inherits
-// this row like the built-in label; content that sets a larger font should set
-// its own line height, as it must at any spacing scale.
-// Keep these calculations inline: a consumer's Babel preset can lower a
-// module-scope helper to a function expression before StyleX evaluates this
-// object, and StyleX cannot constant-evaluate that transformed helper.
-
-const sizeStyles = stylex.create({
-  sm: {
-    minHeight: sizeVars['--size-element-sm'],
-    lineHeight: `max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-sm']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem)`,
-    paddingBlock: `calc((${sizeVars['--size-element-sm']} - max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-sm']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem) - 2 * ${borderVars['--border-width']}) / 2)`,
-  },
-  md: {
-    minHeight: sizeVars['--size-element-md'],
-    lineHeight: `max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-md']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem)`,
-    paddingBlock: `calc((${sizeVars['--size-element-md']} - max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-md']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem) - 2 * ${borderVars['--border-width']}) / 2)`,
-  },
-  lg: {
-    minHeight: sizeVars['--size-element-lg'],
-    lineHeight: `max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-lg']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem)`,
-    paddingBlock: `calc((${sizeVars['--size-element-lg']} - max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-lg']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem) - 2 * ${borderVars['--border-width']}) / 2)`,
   },
 });
 
@@ -2237,7 +2199,6 @@ export function Selector<T extends SelectorOptionType>(
           stylex.props(
             inputWrapperStyles.base,
             styles.triggerContainer,
-            sizeStyles[size],
             variant === 'ghost' && styles.triggerGhost,
             variant === 'secondary' && styles.triggerSecondary,
             variant !== 'input' && interactionOverlayStyles.backgroundImage,
@@ -2272,7 +2233,13 @@ export function Selector<T extends SelectorOptionType>(
             inputGroup && styles.triggerInGroup,
             controlXstyle,
           ),
-          controlClassName,
+          tw(
+            controlClassName,
+            // A grouped trigger takes the group's row height; its own size
+            // stops asserting one, as `triggerInGroup` did when both were
+            // StyleX declarations in one sheet.
+            !inputGroup && SELECTOR_TRIGGER_SIZE_CLASS[size],
+          ),
           controlStyle,
         )}>
         {startIcon &&

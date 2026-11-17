@@ -29,12 +29,17 @@ import {
   within,
 } from '@testing-library/react';
 import {useAnnounce, useContainerReveal} from '@astryxdesign/core/hooks';
+import {classesOf} from '../../../core/src/__tests__/classNameAssertions';
 import {TextInput} from '@astryxdesign/core/TextInput';
 import {
   ListInput,
   type ListInputColumn,
   type ListInputProps,
 } from './ListInput';
+import {
+  LIST_INPUT_COLUMNS_VAR,
+  listInputFieldsTemplateClassName,
+} from './listInputClasses';
 
 type Guest = {
   id: string;
@@ -350,6 +355,52 @@ describe('ListInput', () => {
     expect(group).not.toHaveAttribute('aria-required');
   });
 
+  it('carries the class map on the group, record row, fields and cells', () => {
+    const {container} = renderListInput();
+
+    expect(classesOf(screen.getByRole('group'))).toEqual(
+      expect.arrayContaining(['flex', 'flex-col', '@container/list-input']),
+    );
+    expect(classesOf(screen.getByRole('list'))).toEqual(
+      expect.arrayContaining([
+        'gap-2',
+        '[@container_list-input_(max-width:640px)]:gap-8',
+      ]),
+    );
+
+    const row = container.querySelector<HTMLElement>('[data-list-input-row]');
+    expect(classesOf(row!)).toEqual(
+      expect.arrayContaining([
+        'grid',
+        'gap-x-1',
+        'grid-cols-[minmax(0,1fr)_var(--size-element-md)]',
+      ]),
+    );
+
+    const fields = row!.querySelector<HTMLElement>(':scope > div');
+    expect(classesOf(fields!)).toEqual(
+      expect.arrayContaining(listInputFieldsTemplateClassName.split(' ')),
+    );
+    // The column template is per instance: a class reads a private variable.
+    expect(fields!.style.getPropertyValue(LIST_INPUT_COLUMNS_VAR)).toBe(
+      'minmax(140px, 1fr)',
+    );
+
+    const cell = container.querySelector<HTMLElement>('[data-list-input-cell]');
+    expect(classesOf(cell!)).toEqual(
+      expect.arrayContaining(['min-w-0', 'col-auto']),
+    );
+    expect(
+      classesOf(cell!.querySelector('[data-list-input-column-label]')!),
+    ).toEqual(
+      expect.arrayContaining([
+        'block',
+        'font-medium',
+        'text-[length:var(--text-label-size)]',
+      ]),
+    );
+  });
+
   it('renders a compact centered EmptyState and keeps Add available', () => {
     const {container} = renderListInput({value: []});
 
@@ -359,9 +410,15 @@ describe('ListInput', () => {
     expect(emptyState).toBeInTheDocument();
     expect(emptyState).toHaveClass('astryx-empty-state');
     expect(emptyState).toHaveAttribute('data-variant', 'compact');
-    expect(getComputedStyle(emptyState!).alignItems).toBe('center');
-    expect(getComputedStyle(emptyState!).justifyContent).toBe('center');
-    expect(getComputedStyle(emptyState!).textAlign).toBe('center');
+    for (const utility of [
+      'flex',
+      'flex-col',
+      'items-center',
+      'justify-center',
+      'text-center',
+    ]) {
+      expect(classesOf(emptyState!)).toContain(utility);
+    }
     expect(
       screen.getByRole('heading', {name: 'No guests yet'}),
     ).toBeInTheDocument();

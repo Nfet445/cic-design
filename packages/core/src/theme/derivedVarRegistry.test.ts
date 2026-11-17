@@ -294,6 +294,7 @@ const DIR_TO_REGISTRY_KEY: Record<string, string> = {
   ProgressBar: 'progress-bar-mark',
   Section: 'section',
   SegmentedControl: 'segmented-control',
+  Skeleton: 'skeleton',
   TextArea: 'text-area',
 };
 
@@ -369,12 +370,28 @@ const CROSS_COMPONENT_VARS: Record<string, string[]> = {
  */
 const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // No standard CSS property maps onto these — they are component behaviors.
+  // A per-instance minimum width: the `menuWidth` prop writes the variable and
+  // the width class reads it. No standard property maps the prop onto a theme.
+  '--astryx-context-menu-min-inline-size',
+  // The `minWidth` prop writes it and each size class reads it with its own
+  // fallback, so no standard property is the theme's lever.
+  '--astryx-nav-heading-menu-min-inline-size',
+  // The menu surface's per-instance size: `menuWidth` and `menuMaxHeight` write
+  // the variables and the size classes read them, so no standard property is
+  // the theme's lever.
+  '--astryx-dropdown-menu-inline-size',
+  '--astryx-dropdown-menu-max-block-size',
   '--button-focus-offset',
   '--button-icon-only-aspect',
   '--_avatar-group-overlap',
   '--_field-status-overlap',
   '--_codeblock-gutter-width',
   '--_tab-indicator-bottom',
+  // The layer viewport fit writes these three on the anchored layer at render
+  // time; no theme author sets a popover's size cap or width.
+  '--astryx-popover-max-inline-size',
+  '--astryx-popover-max-block-size',
+  '--astryx-popover-width',
   // Hit-area outset on a ::after overlay, and whether that overlay is
   // generated at all — `inset` and `content` on a pseudo-element are not
   // properties a theme author sets on the component.
@@ -393,6 +410,12 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // wheel shares with its touch siblings; the colour and weight are read from
   // the text tokens, so a theme changes those tokens, not these vars.
   '--astryx-date-pane-block-size',
+  // The month scroller's measured geometry: where each pane sits, how wide it
+  // is, and the whole strip's width. All three are written from the scrollport
+  // the scroller measured, so no theme value stands behind them.
+  '--astryx-date-pane-inline-start',
+  '--astryx-date-pane-inline-size',
+  '--astryx-date-spacer-inline-size',
   '--astryx-date-wheel-item-size',
   '--astryx-date-wheel-row-offset',
   '--astryx-date-wheel-row-color',
@@ -443,6 +466,10 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   '--tree-list-indent',
   '--_tree-indent',
   '--tree-list-row-gap',
+  // Published by TreeListBranches on each row's guide column: how far that
+  // branch's connector sits from the row's inline start. It is measured per
+  // depth from the indent above, so a theme sets the indent, not this.
+  '--astryx-tree-list-branch-offset',
   // Published by each treeitem while it has keyboard focus and read as its
   // row's z-index, so the focused row paints above the guide lines. Focus
   // state, not a value a theme author sets.

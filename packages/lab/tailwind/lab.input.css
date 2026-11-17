@@ -1,0 +1,40 @@
+/* Copyright (c) Meta Platforms, Inc. and affiliates. */
+
+/*
+ * Build input for `dist/lab-tailwind.css`. Consumers import the built
+ * stylesheet (`@astryxdesign/lab/lab-tailwind.css`), never this file.
+ *
+ * The build wraps the compiled utilities in `astryx-base` — the same cascade
+ * layer the prebuilt StyleX stylesheet (`lab.css`) uses — so a consumer loads
+ * one stylesheet or the other in the same slot. The import line cannot name
+ * the layer itself: with `source(none)` beside it, Tailwind 4.3.2 prints
+ * `@media layer(astryx-base)`.
+ *
+ * `source(none)` turns off automatic source detection, so the scanned set is
+ * exactly the class-map modules named below and no test or comment can
+ * contribute a utility nobody uses.
+ *
+ * The theme bridge is imported by relative path, not by package name: the
+ * build keys its cache on the stylesheets it reaches through `@import`, and a
+ * bare specifier is not a path this package's cache can name.
+ */
+@layer reset, astryx-base, astryx-theme;
+
+/*
+ * Then the slots a page needs around those three: Tailwind's own `theme` and
+ * `base` below `astryx-base`, and `components` and `utilities` above
+ * `astryx-theme`, where a consumer's utilities outrank an Astryx rule.
+ */
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/utilities.css' source(none);
+
+/*
+ * Utilities resolve against Astryx tokens, not Tailwind's defaults: without a
+ * theme, every token-dependent utility (`gap-2`, `h-10`) silently disappears
+ * from the output. The bridge is `@theme reference inline`, so it declares no
+ * variable of its own; the consumer's theme owns every value.
+ */
+@import '../../core/src/tailwind-theme.css';
+
+@source '../src/**/*Classes.ts';

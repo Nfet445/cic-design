@@ -52,7 +52,6 @@ import type {IndicatorPosition} from '../Indicator';
 import {Badge} from '../Badge';
 import {
   colorVars,
-  sizeVars,
   spacingVars,
   radiusVars,
   durationVars,
@@ -76,6 +75,7 @@ import {
 import {useMultiCombobox} from './hooks';
 import {getInputARIA, isImeKeyEvent, mergeProps} from '../utils';
 import {tw} from '../utils/tw';
+import {MULTI_SELECTOR_TRIGGER_SIZE_CLASS} from './multiSelectorOptionClasses';
 import {joinAriaIDs} from '../utils/inputAria';
 import {
   disabledInteractionProps,
@@ -412,18 +412,6 @@ const styles = stylex.create({
     color: colorVars['--color-text-secondary'],
     fontFamily: typographyVars['--font-family-body'],
     fontSize: typeScaleVars['--text-label-size'],
-  },
-});
-
-const sizeStyles = stylex.create({
-  sm: {
-    height: sizeVars['--size-element-sm'],
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
   },
 });
 
@@ -2530,7 +2518,6 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
           stylex.props(
             inputWrapperStyles.base,
             styles.triggerContainer,
-            sizeStyles[size],
             variant === 'secondary' && styles.triggerSecondary,
             variant === 'ghost' && styles.triggerGhost,
             variant !== 'input' && interactionOverlayStyles.backgroundImage,
@@ -2560,7 +2547,14 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             variant !== 'ghost' && inputGroup && groupStyles.inGroup,
             controlXstyle,
           ),
-          controlClassName,
+          tw(
+            controlClassName,
+            // The group's row is the height wherever `groupStyles.inGroup`
+            // applies, as it was when both were StyleX declarations in one
+            // sheet.
+            !(inputGroup && variant !== 'ghost') &&
+              MULTI_SELECTOR_TRIGGER_SIZE_CLASS[size],
+          ),
           controlStyle,
         )}>
         {startIcon &&

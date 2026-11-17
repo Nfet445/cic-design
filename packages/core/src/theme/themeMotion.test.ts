@@ -584,11 +584,13 @@ describe('busy loops read the duration before tempo (spec:AST-108 FR4)', () => {
   it('Spinner and Skeleton read the pre-tempo duration first', () => {
     const read = (file: string) =>
       fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
-    expect(read('Spinner/spinnerRotor.ts')).toContain(
-      "var(--_astryx-pre-tempo-duration-slow-min, ${durationVars['--duration-slow-min']})",
+    expect(read('Spinner/spinnerClasses.ts')).toContain(
+      'var(--_astryx-pre-tempo-duration-slow-min,var(--duration-slow-min))',
     );
-    expect(read('Skeleton/Skeleton.tsx')).toContain(
-      "`var(--_astryx-pre-tempo-duration-medium-max, ${durationVars['--duration-medium-max']})`",
+    // A migrated component states the pulse in its class map, where the
+    // duration has to be the literal token name rather than a StyleX value.
+    expect(read('Skeleton/skeletonClasses.ts')).toContain(
+      'var(--_astryx-pre-tempo-duration-medium-max,var(--duration-medium-max))',
     );
   });
 });

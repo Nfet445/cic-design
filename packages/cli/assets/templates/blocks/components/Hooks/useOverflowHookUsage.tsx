@@ -2,7 +2,6 @@
 
 'use client';
 
-import * as stylex from '@stylexjs/stylex';
 import {useOverflow} from '@astryxdesign/core/hooks';
 import {Button} from '@astryxdesign/core/Button';
 import {Card} from '@astryxdesign/core/Card';
@@ -21,29 +20,15 @@ const actions = [
 
 const GAP = 4;
 
-const styles = stylex.create({
-  box: {
-    resize: 'horizontal',
-    overflow: 'hidden',
-    width: 480,
-    minWidth: 120,
-    maxWidth: '100%',
-  },
-  row: {
-    display: 'flex',
-    gap: GAP,
-  },
+const styles = {
+  // 480px and 120px are layout widths with no spacing token.
+  box: 'w-[480px] min-w-[120px] max-w-full resize-x overflow-hidden',
+  row: 'flex gap-1',
   // Takes no space and paints nothing, so the hook measures every item
-  // without a flicker. Do not use display: none, which stops measurement.
-  measure: {
-    position: 'absolute',
-    visibility: 'hidden',
-    height: 0,
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    pointerEvents: 'none',
-  },
-});
+  // without a flicker. Do not use hidden display, which stops measurement.
+  measure:
+    'absolute invisible h-0 overflow-hidden whitespace-nowrap pointer-events-none',
+} as const;
 
 function MoreMenu({items}: {items: string[]}) {
   return (
@@ -61,12 +46,12 @@ export default function UseOverflowHookUsage() {
   );
 
   return (
-    <Card padding={2} xstyle={styles.box}>
+    <Card padding={2} className={styles.box}>
       <div
         ref={measureRef}
         aria-hidden="true"
         inert
-        {...stylex.props(styles.row, styles.measure)}>
+        className={`${styles.row} ${styles.measure}`}>
         {actions.map(label => (
           <Button key={label} label={label} variant="ghost" size="sm" />
         ))}
@@ -78,7 +63,7 @@ export default function UseOverflowHookUsage() {
         ref={containerRef}
         role="group"
         aria-label="Text formatting"
-        {...stylex.props(styles.row)}>
+        className={styles.row}>
         {actions.slice(0, visibleCount).map(label => (
           <Button key={label} label={label} variant="ghost" size="sm" />
         ))}

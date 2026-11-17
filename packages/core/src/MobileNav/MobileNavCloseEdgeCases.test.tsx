@@ -32,6 +32,7 @@ import {MobileNav} from './MobileNav';
 import {AppShell} from '../AppShell/AppShell';
 import {SideNav, SideNavItem, SideNavSection} from '../SideNav';
 import {stubMatchMedia} from '../__tests__/stubMatchMedia';
+import {classesOf} from '../__tests__/classNameAssertions';
 
 // jsdom doesn't implement showModal/close on <dialog>, so we mock them
 beforeAll(() => {
@@ -141,16 +142,16 @@ describe('MobileNav close path edge cases', () => {
   // it is still an open modal: nothing is visible, yet the page stays inert
   // until the close timer fires. So the dialog's own open styling has to be
   // held by the component, not left to that transition. jsdom applies no
-  // StyleX styles, so this reads the readable class names StyleX emits in
-  // tests: the `open` class (display) is held through the closing commit, the
-  // `backdropOpen` class is not, and the hold ends when the dialog closes.
+  // the built sheet, so this reads the class set: the `flex` display class is
+  // held through the closing commit, the scrim's open class is not, and the
+  // hold ends when the dialog closes.
   it('keeps the dialog rendered until its delayed close has run', () => {
     vi.useFakeTimers();
     try {
       const {rerender} = render(<Drawer isOpen />);
       const dialog = screen.getByTestId('mobile-nav');
-      expect(dialog.className).toMatch(/styles\.open/);
-      expect(dialog.className).toMatch(/styles\.backdropOpen/);
+      expect(classesOf(dialog)).toContain('flex');
+      expect(classesOf(dialog)).toContain('backdrop:opacity-100');
 
       act(() => {
         rerender(<Drawer isOpen={false} />);
@@ -158,15 +159,15 @@ describe('MobileNav close path edge cases', () => {
       // Still an open modal, so still rendered; only the backdrop's open
       // styling (the fade-out) has gone.
       expect(dialog).toHaveAttribute('open');
-      expect(dialog.className).toMatch(/styles\.open/);
-      expect(dialog.className).not.toMatch(/styles\.backdropOpen/);
+      expect(classesOf(dialog)).toContain('flex');
+      expect(classesOf(dialog)).not.toContain('backdrop:opacity-100');
 
       act(() => {
         vi.advanceTimersByTime(300);
       });
       // Closed: the hold is released along with the dialog.
       expect(dialog).not.toHaveAttribute('open');
-      expect(dialog.className).not.toMatch(/styles\.open/);
+      expect(classesOf(dialog)).not.toContain('flex');
     } finally {
       vi.useRealTimers();
     }
@@ -632,8 +633,7 @@ describe('MobileNav close path edge cases', () => {
         const drawer = document.querySelector('dialog');
         commits.push({
           isOpen,
-          isHidden:
-            drawer != null && getComputedStyle(drawer).display === 'none',
+          isHidden: drawer != null && drawer.classList.contains('hidden'),
         });
       });
       return null;

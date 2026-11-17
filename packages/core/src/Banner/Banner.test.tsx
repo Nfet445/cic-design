@@ -20,7 +20,16 @@ import {Banner, type BannerStatus} from './Banner';
 import {defineTheme, generateThemeCSS} from '../theme';
 import {registerIcons, resetIcons} from '../Icon';
 import {InternationalizationProvider} from '../i18n';
-import {getForcedColorsRules} from '../__tests__/forcedColors';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {
+  bannerEndAreaClassName,
+  bannerHeaderClassName,
+  bannerHeaderContentWithEndContentClassName,
+  bannerStatusClassName,
+  bannerStatusControlClassName,
+  bannerStatusForegroundClassName,
+  bannerTitleClassName,
+} from './bannerClasses';
 
 describe('Banner', () => {
   afterEach(() => {
@@ -183,14 +192,9 @@ describe('Banner', () => {
     );
   });
 
-  it.each([
-    ['info', 'var(--color-on-info-muted)'],
-    ['success', 'var(--color-on-success-muted)'],
-    ['warning', 'var(--color-on-warning-muted)'],
-    ['error', 'var(--color-on-error-muted)'],
-  ] as const)(
+  it.each(['info', 'success', 'warning', 'error'] as const)(
     'routes %s built-in controls to the matching on-muted role without recoloring tooltips',
-    (status, expectedRole) => {
+    status => {
       render(
         <Banner
           status={status}
@@ -205,9 +209,9 @@ describe('Banner', () => {
         screen.getByRole('button', {name: 'Collapse'}),
         screen.getByRole('button', {name: `Dismiss ${status} banner`}),
       ]) {
-        expect(
-          getComputedStyle(button).getPropertyValue('--color-text-primary'),
-        ).toBe(expectedRole);
+        expectClassSet(button, {
+          includes: [bannerStatusControlClassName[status] as string],
+        });
         // A tooltip that repeats the name does not describe the button
         // (Button FR12), so find it by its text.
         const describedBy = button.getAttribute('aria-describedby');
@@ -220,9 +224,11 @@ describe('Banner', () => {
                   el => el.textContent === button.getAttribute('aria-label'),
                 ) ?? null);
         expect(tooltip).not.toBeNull();
-        expect(
-          getComputedStyle(tooltip!).getPropertyValue('--color-text-primary'),
-        ).not.toBe(expectedRole);
+        // The tooltip is a sibling of the Button, so it keeps the theme's own
+        // text color instead of the on-muted role.
+        expectClassSet(tooltip!, {
+          excludes: [bannerStatusControlClassName[status] as string],
+        });
       }
     },
   );
@@ -315,15 +321,24 @@ describe('Banner', () => {
 
     const warningTitle = screen.getByText('Warning action');
     const errorTitle = screen.getByText('Error action');
-    const warningDialog = screen.getByTestId('warning-dialog');
-    const errorDialog = screen.getByTestId('error-dialog');
 
-    expect(getComputedStyle(warningTitle).color).not.toBe(
-      getComputedStyle(errorTitle).color,
-    );
-    expect(getComputedStyle(warningDialog).color).toBe(
-      getComputedStyle(errorDialog).color,
-    );
+    // The title inherits the header's on-muted foreground, and consumer
+    // endContent does not: the end area resets the text context first.
+    for (const title of [warningTitle, errorTitle]) {
+      expectClassSet(title, {includes: [bannerStatusForegroundClassName]});
+    }
+    for (const dialog of [
+      screen.getByTestId('warning-dialog'),
+      screen.getByTestId('error-dialog'),
+    ]) {
+      expectClassSet(dialog, {
+        excludes: [bannerStatusForegroundClassName],
+      });
+      // The dialog sits directly in the end area, which resets the context.
+      expectClassSet(dialog.parentElement!, {
+        includes: bannerEndAreaClassName.split(' '),
+      });
+    }
   });
 
   it('renders card container by default', () => {
@@ -847,22 +862,29 @@ describe('Banner', () => {
 
     it('lets the header wrap so the end area can take its own row', () => {
       const {header} = renderBanner(<button type="button">Retry</button>);
-      expect(getComputedStyle(header).flexWrap).toBe('wrap');
+      expectClassSet(header, {includes: ['flex-wrap']});
+      expect(bannerHeaderClassName).toContain('flex-wrap');
     });
 
     it('gives the text column a wrap threshold when endContent is present', () => {
       const {textColumn} = renderBanner(<button type="button">Retry</button>);
-      expect(getComputedStyle(textColumn).flexBasis).toBe('8rem');
+      expectClassSet(textColumn, {
+        includes: [bannerHeaderContentWithEndContentClassName],
+      });
     });
 
     it('leaves the text column free to shrink when there is no endContent', () => {
       const {textColumn} = renderBanner();
-      expect(getComputedStyle(textColumn).flexBasis).not.toBe('8rem');
+      expectClassSet(textColumn, {
+        excludes: [bannerHeaderContentWithEndContentClassName],
+      });
     });
 
     it('leaves it free for an endContent that renders nothing', () => {
       const {textColumn} = renderBanner(false);
-      expect(getComputedStyle(textColumn).flexBasis).not.toBe('8rem');
+      expectClassSet(textColumn, {
+        excludes: [bannerHeaderContentWithEndContentClassName],
+      });
     });
   });
 
@@ -936,14 +958,27 @@ describe('Banner', () => {
   });
 });
 
-// jsdom cannot emulate forced colors, so this asserts the compiled rule the
-// status fill relies on (architecture:theme-tokens INV11): the fill becomes
-// Canvas, and a CanvasText boundary keeps its shape.
+// jsdom cannot emulate forced colors, so this asserts the class the status
+// fill relies on: the fill becomes Canvas, and a CanvasText boundary keeps its
+// shape.
 describe('Banner forced colors', () => {
   it('keeps a visible boundary on the status fill', () => {
     render(<Banner status="error" title="Upload failed" />);
-    const css = getForcedColorsRules();
-    expect(css).toContain('outline-style: solid;');
-    expect(css).toContain('outline-color: canvastext;');
+    const header =
+      screen.getByText('Upload failed').parentElement!.parentElement!;
+    expectClassSet(header, {
+      includes: [
+        'forced-colors:outline-[1px]',
+        'forced-colors:outline-solid',
+        'forced-colors:outline-[color:CanvasText]',
+      ],
+    });
+    // Every status carries the same boundary, not just the one under test.
+    for (const value of Object.values(bannerStatusClassName)) {
+      expect(value).toContain('forced-colors:outline-[color:CanvasText]');
+    }
+    expect(bannerTitleClassName).toContain(
+      'text-[color:var(--color-text-primary)]',
+    );
   });
 });

@@ -37,18 +37,19 @@ import type {BaseProps} from '../BaseProps';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {useMediaQuery} from '../hooks/useMediaQuery';
 import {useScrollableArea} from '../hooks/useScrollableArea';
-import {
-  borderVars,
-  colorVars,
-  durationVars,
-  easeVars,
-  focusVars,
-  radiusVars,
-  shadowVars,
-  sizeVars,
-  spacingVars,
-} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils/mergeProps';
+import {
+  bottomSheetBodyClassName,
+  bottomSheetContentClassName,
+  bottomSheetHandleBarClassName,
+  bottomSheetPanelClassName,
+  type BottomSheetPanelInstanceStyle,
+} from './bottomSheetPanelClasses';
+import {bottomSheetSheetMotionStyles} from './bottomSheetPanelMotion.stylex';
+import {
+  bottomSheetClearsGrabBarStyles,
+  bottomSheetPastGrabBarStyles,
+} from './bottomSheetPanelPadding.stylex';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
@@ -109,12 +110,6 @@ const MOBILE_KEYBOARD_BOTTOM_CLEARANCE = 48;
 // How many more frames a drag's close looks for its scrim's fade to adopt.
 const MAX_SCRIM_FADE_ADOPT_FRAMES = 3;
 const TRANSITION_BACKSTOP_BUFFER_MS = 50;
-// The floating handle bar's height. The bar is out of flow; at rest the
-// content box keeps a band this tall under it (`clearsGrabBar`), so the pill
-// (4px, centered, 10-14px from the sheet's top edge) never sits on the first
-// row, and scrolled content rides up beneath it.
-const HANDLE_BAR_HEIGHT = spacingVars['--spacing-6'];
-
 const BLOCK_SIZE_PROPERTIES = [
   'height',
   'minHeight',
@@ -280,285 +275,12 @@ function snapPointsKeyFor(
   return key;
 }
 
-// An explicit padding publishes only the part past the grab bar's band, so a
-// lone Section that escapes the published padding still starts below the bar.
-// `clearsGrabBar` applies the band on top.
-const pastGrabBarStyles = stylex.create({
-  0: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-0']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  0.5: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-0-5']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  1: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-1']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  1.5: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-1-5']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  2: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-2']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  3: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-3']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  4: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-4']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  5: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-5']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  6: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-6']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  8: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-8']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  10: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-10']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-});
-
 /**
- * The reduced-motion queries. With a coarse primary pointer the sheet
+ * The reduced-motion query. With a coarse primary pointer the sheet
  * cross-fades, else it changes at once. The cross-fade lasts at most 200 ms.
  */
-const REDUCED_MOTION_COARSE =
-  '@media (prefers-reduced-motion: reduce) and (pointer: coarse)';
 export const REDUCED_MOTION_COARSE_QUERY =
   '(prefers-reduced-motion: reduce) and (pointer: coarse)';
-const CROSS_FADE_MS = 200;
-
-const styles = stylex.create({
-  sheet: {
-    pointerEvents: 'auto',
-    boxSizing: 'border-box',
-    // Containing block for the floating handle bar, which is lifted out of
-    // flow so the scrolling body reaches the sheet's top edge.
-    position: 'relative',
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: 0,
-    width: '100%',
-    maxWidth: 640,
-    backgroundColor: colorVars['--color-background-surface'],
-    // A hairline on the three edges that face the scrim. In dark mode the
-    // surface and the scrim are only a few RGB steps apart, and the shadow is
-    // black on near-black, so the side edges disappear. The block-end edge
-    // stays bare, below the viewport.
-    borderBlockStartWidth: borderVars['--border-width'],
-    borderBlockStartStyle: 'solid',
-    borderBlockStartColor: colorVars['--color-border'],
-    borderInlineStartWidth: borderVars['--border-width'],
-    borderInlineStartStyle: 'solid',
-    borderInlineStartColor: colorVars['--color-border'],
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-    borderStartStartRadius: radiusVars['--radius-container'],
-    borderStartEndRadius: radiusVars['--radius-container'],
-    boxShadow: shadowVars['--shadow-high'],
-    outline: 'none',
-    overflow: 'hidden',
-    paddingBlockEnd: `calc(env(safe-area-inset-bottom, 0px) + var(--_sheet-reserve, ${MIN_RESERVE}px))`,
-    marginBlockEnd: `calc(-1 * var(--_sheet-reserve, ${MIN_RESERVE}px))`,
-    // Under reduced motion no transform runs. On a coarse primary pointer the
-    // entrance is an opacity cross-fade of at most 200 ms. A fine pointer gets
-    // the change at once (the 0.01s collapse).
-    transform: {
-      default: 'translateY(0)',
-      '@starting-style': {
-        default: 'translateY(100%)',
-        '@media (prefers-reduced-motion: reduce)': 'translateY(0)',
-      },
-    },
-    opacity: {
-      default: 1,
-      '@starting-style': {
-        default: 1,
-        [REDUCED_MOTION_COARSE]: 0,
-      },
-    },
-    transitionProperty: 'transform, opacity',
-    transitionDuration: {
-      default: durationVars['--duration-medium'],
-      '@media (prefers-reduced-motion: reduce)': {
-        default: '0.01s',
-        '@media (pointer: coarse)': `0.01s, ${CROSS_FADE_MS}ms`,
-      },
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-    willChange: 'transform, opacity',
-    // The dialog writes its scrim's opacity on itself for each move of a drag,
-    // and only its backdrop reads it. A custom property inherits, so each
-    // write would restyle every element in the sheet. The panel ends the
-    // inheritance, so the restyle stops here.
-    '--_sheet-scrim-opacity': 'initial',
-    '--_sheet-scrim-duration': 'initial',
-    '--_sheet-scrim-easing': 'initial',
-  },
-  // A sheet present on page load opens where it rests (spec:AST-013 FR13):
-  // the collapse reduced motion uses, so the transition still ends.
-  sheetSettled: {
-    transitionDuration: '0.01s',
-  },
-  /**
-   * The exit is its own motion, not the entrance played backwards. The
-   * decelerate `--ease-standard` put the sheet half off-screen in 59ms of a
-   * 410ms close, so the travel ended before the eye followed it. An exit
-   * accelerates instead (`--ease-exit`). The curve is gentle, so the sheet
-   * moves within ~50ms and the close reads as one departure. The duration is
-   * the entrance's band, because a shorter band leaves too little travel when
-   * a theme scales motion down.
-   */
-  sheetClosing: {
-    // Under reduced motion the exit does not travel. On a coarse pointer it
-    // fades out where it is, and on a fine one it ends at once.
-    transform: {
-      default: 'translateY(100%)',
-      '@media (prefers-reduced-motion: reduce)': 'translateY(0)',
-    },
-    opacity: {
-      default: null,
-      [REDUCED_MOTION_COARSE]: 0,
-    },
-    // A pointer presentation closes on the theme's exit curve. A touch
-    // presentation keeps its own curve.
-    transitionTimingFunction: {
-      default: easeVars['--ease-exit'],
-      '@media (pointer: coarse)': 'cubic-bezier(0.3, 0, 0.6, 0.6)',
-    },
-  },
-  /**
-   * An exit that cross-fades on a pointer that the media query does not
-   * cover: a touch swipe dismissal under reduced motion fades out in place on
-   * every pointer. It uses the opacity and ceiling of the coarse-pointer rule.
-   */
-  sheetClosingCrossFade: {
-    transform: 'translateY(0)',
-    opacity: 0,
-    transitionDuration: `0.01s, ${CROSS_FADE_MS}ms`,
-  },
-  sheetFading: {
-    opacity: 0,
-  },
-  sheetInactive: {
-    pointerEvents: 'none',
-  },
-  handleBar: {
-    // Floats over the body rather than taking a row in the flex column. The
-    // content starts at the sheet's top edge and rides up under the pill --
-    // both moving it closer to the top and letting scrolled content pass
-    // beneath instead of stopping at a hard edge.
-    position: 'absolute',
-    insetBlockStart: 0,
-    insetInlineStart: 0,
-    insetInlineEnd: 0,
-    zIndex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: HANDLE_BAR_HEIGHT,
-    // Keeps the pill legible over whatever sits or scrolls under it: opaque
-    // surface behind the pill itself, fading out across the lower half so the
-    // content emerging below has no visible cut line.
-    backgroundImage: `linear-gradient(to bottom, ${colorVars['--color-background-surface']} 60%, transparent)`,
-    // WebKit can draw this bar under the scrolling body's own layer while the
-    // sheet's transform animates, so the pill vanishes until the sheet rests.
-    // A layer of its own keeps it above the body.
-    willChange: 'transform',
-    // Drags are the handle's; a pinch still zooms the page (WCAG 1.4.4).
-    touchAction: 'pinch-zoom',
-    cursor: {
-      default: 'grab',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    // The pill is drawn on the grab bar itself, as decoration with no role.
-    '::before': {
-      content: '""',
-      width: sizeVars['--size-element-lg'],
-      height: spacingVars['--spacing-1'],
-      borderRadius: radiusVars['--radius-full'],
-      backgroundColor: colorVars['--color-border'],
-    },
-  },
-  body: {
-    flexGrow: 1,
-    minHeight: 0,
-    boxSizing: 'border-box',
-    touchAction: 'pan-y pinch-zoom',
-    outlineOffset: {
-      default: 0,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-    // The scrolling area paints the surface itself, covering the sheet's whole
-    // inner box. Without it the sheet's edge is not uniform: a theme that packs
-    // an inset ring into --shadow-high (the bundled themes all add one in dark
-    // mode) draws that ring just inside the sheet, where an opaque content
-    // wrapper such as Section paints over it -- so the ring shows only in the
-    // gap below where the content ends, and the sheet's side edges appear to
-    // change width partway down. Painting the surface here hides the ring
-    // evenly, leaving the border below as the sheet's one edge.
-    backgroundColor: colorVars['--color-background-surface'],
-    // No reserve for the handle bar here: it floats over the scrolling area,
-    // so scrolled content rides up under the pill. The content box keeps the
-    // resting content clear of the bar instead (`clearsGrabBar`).
-    paddingBlockEnd: 0,
-  },
-  clearsGrabBar: {
-    paddingBlockStart: `calc(var(--container-padding-block-start, 0px) + ${HANDLE_BAR_HEIGHT})`,
-  },
-  content: {
-    // Preserve the body's block formatting (including margin/float isolation)
-    // and its definite percentage-height basis. fit-content lets this real
-    // observed box grow with async content beyond a fixed-height viewport.
-    // This box is also the sheet's container: it carries the padding and
-    // publishes it, so a lone Section child escapes it exactly as in Dialog.
-    // At the block start it publishes only the padding past the grab bar's
-    // band, so a child escapes the padding but never the band.
-    display: 'flow-root',
-    boxSizing: 'border-box',
-    height: '100%',
-    // fit-content, not min-content: they are one size in the block axis, but
-    // WebKit ignores min-content on a block's min-height. There the box keeps
-    // its body's height on a budget-height sheet. Content placed directly in
-    // it then overflows the box, and its block-end padding leaves the scroll
-    // range.
-    minHeight: 'fit-content',
-  },
-  tallKeyboardBody: {
-    scrollPaddingBlockEnd: MOBILE_KEYBOARD_BOTTOM_CLEARANCE,
-  },
-  // The inset the keyboard takes at the end of a Tall sheet's content
-  // (useMobileKeyboard), so its last control can scroll above the keyboard.
-  // It is the content box's last in-flow box, after the content's own
-  // children, not a box after the content. Firefox resolves the content's
-  // `min-height: min-content` as `auto` in the block axis. The content box
-  // then keeps the body's height while its children overflow it. An inset
-  // after that box sat inside the overflow and added no scroll range. In
-  // Firefox for Android, the body's scrollHeight was 1491 with and without a
-  // 357 px inset.
-  tallKeyboardContent: {
-    '::after': {
-      content: '""',
-      display: 'block',
-      blockSize: 0,
-      pointerEvents: 'none',
-    },
-  },
-  keyboardInset: (inset: number) => ({
-    '::after': {
-      blockSize: inset,
-    },
-  }),
-  budget: {
-    height: `calc(var(--_sheet-budget) + var(--_sheet-reserve, ${MIN_RESERVE}px))`,
-  },
-  hugHeight: {
-    height: 'fit-content',
-    maxHeight: `calc(${HEIGHT_BUDGETS.hug} + var(--_sheet-reserve, ${MIN_RESERVE}px))`,
-  },
-});
 
 export type BottomSheetPanelMotion =
   'entering' | 'aligning' | 'fading' | 'exiting';
@@ -1269,17 +991,25 @@ export function BottomSheetPanel({
       {...mergeProps(
         themeProps('bottom-sheet'),
         stylex.props(
-          styles.sheet,
           overlayPaddingReset.reset,
-          height === 'hug' ? styles.hugHeight : styles.budget,
-          isClosing && styles.sheetClosing,
-          isClosing && isCrossFade && styles.sheetClosingCrossFade,
-          isFading && styles.sheetFading,
-          isInactive && styles.sheetInactive,
-          isEntrySettled && styles.sheetSettled,
+          bottomSheetSheetMotionStyles.sheet,
+          isClosing && bottomSheetSheetMotionStyles.sheetClosing,
+          isClosing &&
+            isCrossFade &&
+            bottomSheetSheetMotionStyles.sheetClosingCrossFade,
+          isFading && bottomSheetSheetMotionStyles.sheetFading,
+          isEntrySettled && bottomSheetSheetMotionStyles.sheetSettled,
           xstyle,
         ),
-        tw(layerTextResetClassName, layerStructureResetClassName, className),
+        tw(
+          layerTextResetClassName,
+          layerStructureResetClassName,
+          bottomSheetPanelClassName({
+            isHug: height === 'hug',
+            isInactive,
+          }),
+          className,
+        ),
         {
           ['--_sheet-budget' as string]: budget,
           ['--_sheet-reserve' as string]: `${reserve}px`,
@@ -1293,7 +1023,7 @@ export function BottomSheetPanel({
       )}>
       <div
         ref={handleRef}
-        {...stylex.props(styles.handleBar)}
+        className={bottomSheetHandleBarClassName}
         {...handleProps}
         aria-hidden="true"
       />
@@ -1303,14 +1033,9 @@ export function BottomSheetPanel({
           getViewportProps<HTMLDivElement>({
             ...bodyProps,
             ...mergeProps(
-              stylex.props(
-                focusOutlineStyles.focusVisible,
-                styles.body,
-                height === 'tall' && styles.tallKeyboardBody,
-              ),
-              bodyEndPadding != null
-                ? {style: {paddingBlockEnd: bodyEndPadding}}
-                : {},
+              stylex.props(focusOutlineStyles.focusVisible),
+              bottomSheetBodyClassName(height === 'tall'),
+              bodyEndPadding != null ? {paddingBlockEnd: bodyEndPadding} : {},
             ),
           }),
         )}>
@@ -1318,37 +1043,44 @@ export function BottomSheetPanel({
           {...whilePresented(
             isPresented,
             getContentProps<HTMLDivElement>(
-              stylex.props(
-                styles.content,
-                height === 'tall' && styles.tallKeyboardContent,
-                height === 'tall' &&
-                  keyboardInset > 0 &&
-                  styles.keyboardInset(keyboardInset),
-                ...container(
-                  usesThemePadding
-                    ? {useThemeDefault: 'bottom-sheet'}
-                    : {
-                        paddingInnerX: paddingToken,
-                        paddingInnerY: paddingToken,
-                        paddingOuterX: paddingToken,
-                        paddingOuterY: paddingToken,
-                      },
+              mergeProps(
+                stylex.props(
+                  ...container(
+                    usesThemePadding
+                      ? {useThemeDefault: 'bottom-sheet'}
+                      : {
+                          paddingInnerX: paddingToken,
+                          paddingInnerY: paddingToken,
+                          paddingOuterX: paddingToken,
+                          paddingOuterY: paddingToken,
+                        },
+                  ),
+                  !usesThemePadding &&
+                    effectivePadding !== 4 &&
+                    paddingStyles[effectivePadding],
+                  !usesThemePadding &&
+                    effectivePadding !== 4 &&
+                    containerPaddingInlineVarStyles[effectivePadding],
+                  // An explicit padding publishes what reaches past the grab
+                  // bar's band, like the theme default (Layout/container.stylex.ts).
+                  !usesThemePadding &&
+                    bottomSheetPastGrabBarStyles[effectivePadding],
+                  !usesThemePadding &&
+                    effectivePadding !== 4 &&
+                    containerPaddingBlockEndVarStyles[effectivePadding],
+                  // The band under the grab bar, on top of the published
+                  // padding past it: max(padding, the bar) in all.
+                  bottomSheetClearsGrabBarStyles.clearsGrabBar,
                 ),
-                !usesThemePadding &&
-                  effectivePadding !== 4 &&
-                  paddingStyles[effectivePadding],
-                !usesThemePadding &&
-                  effectivePadding !== 4 &&
-                  containerPaddingInlineVarStyles[effectivePadding],
-                // An explicit padding publishes what reaches past the grab
-                // bar's band, like the theme default (Layout/container.stylex.ts).
-                !usesThemePadding && pastGrabBarStyles[effectivePadding],
-                !usesThemePadding &&
-                  effectivePadding !== 4 &&
-                  containerPaddingBlockEndVarStyles[effectivePadding],
-                // The band under the grab bar, on top of the published
-                // padding past it: max(padding, the bar) in all.
-                styles.clearsGrabBar,
+                bottomSheetContentClassName({
+                  isTall: height === 'tall',
+                  hasKeyboardInset: height === 'tall' && keyboardInset > 0,
+                }),
+                height === 'tall' && keyboardInset > 0
+                  ? ({
+                      '--astryx-bottom-sheet-keyboard-inset': `${keyboardInset}px`,
+                    } as BottomSheetPanelInstanceStyle)
+                  : {},
               ),
             ),
           )}>

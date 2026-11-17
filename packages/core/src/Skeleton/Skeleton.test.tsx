@@ -1,29 +1,33 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
-import {describe, it, expect} from 'vitest';
+/**
+ * @file Skeleton.test.tsx
+ * @input Uses vitest, @testing-library/react, the built Astryx Tailwind sheet
+ * @output Pins the skeleton pulse: ten-step keyframes, compositor-safe timing,
+ *   and the forced-colors overrides
+ * @position Testing; validates Skeleton.tsx and skeletonClasses.ts
+ */
+
+import {beforeAll, describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {Skeleton} from './Skeleton';
 import {
-  getAllInjectedCss,
-  getForcedColorsRules,
-} from '../__tests__/forcedColors';
+  classesOf,
+  stylesheetOf,
+  type Stylesheet,
+} from '../__tests__/classNameAssertions';
+import {buildAstryxTailwindCss} from '../../scripts/build-css-tailwind.mjs';
 
-/** The declarations the element's atomic classes carry, as `prop: value`. */
-function declarationsOf(el: Element, css: string): string[] {
-  const out: string[] = [];
-  for (const cls of Array.from(el.classList)) {
-    const re = new RegExp(`\\.${cls}\\b[^{]*\\{([^}]*)\\}`, 'g');
-    for (const match of css.matchAll(re)) {
-      out.push(
-        ...match[1]
-          .split(';')
-          .map(d => d.trim())
-          .filter(Boolean),
-      );
-    }
-  }
-  return out;
-}
+/**
+ * The pulse's keyframes and utilities live in the package stylesheet the build
+ * produces, not in an injected StyleX sheet, so every assertion reads the
+ * built sheet.
+ */
+let sheet: Stylesheet;
+
+beforeAll(async () => {
+  sheet = stylesheetOf(await buildAstryxTailwindCss());
+});
 
 /** The whole `@keyframes <name> { … }` rule, braces matched. */
 function keyframesRule(css: string, name: string): string {
@@ -84,33 +88,32 @@ describe('Skeleton', () => {
 describe('pulse', () => {
   function pulse() {
     render(<Skeleton width={200} height={20} data-testid="sk" />);
-    const css = getAllInjectedCss();
-    const declarations = declarationsOf(screen.getByTestId('sk'), css);
-    const value = (prop: string) =>
-      declarations
-        .filter(d => d.startsWith(`${prop}:`))
-        .map(d => d.slice(prop.length + 1).trim());
-    return {css, value};
+    const animation = classesOf(screen.getByTestId('sk')).find(className =>
+      className.startsWith('animate-['),
+    );
+    return {animation};
   }
 
   // WebKit runs no animation with a steps() timing function on the
   // compositor, so a stepped pulse would freeze in Safari while a script runs.
   it('keeps steps() out of the timing function so every engine can composite it', () => {
-    const {css, value} = pulse();
-    expect(value('animation-timing-function')).toEqual(['linear']);
-    expect(value('animation-direction')).toEqual(['alternate']);
-    expect(value('animation-iteration-count')).toEqual(['infinite']);
-    const name = value('animation-name').find(v => v !== 'none');
-    expect(name).toBeTruthy();
-    const rule = keyframesRule(css, name ?? '');
+    const {animation} = pulse();
+    expect(animation).toBeTruthy();
+    // One class spells the whole shorthand: name, duration, and the three
+    // longhands the old StyleX styles declared.
+    expect(animation).toContain('astryxSkeletonFade_');
+    expect(animation).toContain('_linear_');
+    expect(animation).toContain('_infinite_');
+    expect(animation).toContain('_alternate]');
+    expect(animation).not.toContain('steps');
+    const rule = keyframesRule(sheet.css, 'astryxSkeletonFade');
     expect(rule).toMatch(/opacity/);
     expect(rule).not.toMatch(/steps\(|animation-timing-function/);
   });
 
   it('climbs and falls through the same ten opacity steps at the same times', () => {
-    const {css, value} = pulse();
-    const name = value('animation-name').find(v => v !== 'none') ?? '';
-    const frames = opacityKeyframes(css, name);
+    render(<Skeleton width={200} height={20} data-testid="sk" />);
+    const frames = opacityKeyframes(sheet.css, 'astryxSkeletonFade');
     expect(frames[0]).toEqual([0, 0.25]);
     // The previous pulse: 0.25 → 1 through steps(10, end), played back down
     // by `alternate`. Sample each tenth away from its edges.
@@ -136,13 +139,16 @@ describe('pulse', () => {
 // compiled output includes the forced-colors rules; visual behavior needs
 // manual verification under Windows High Contrast.
 describe('forced colors (WCAG 1.4.11)', () => {
+  // jsdom cannot emulate forced-colors rendering, so these assert that the
+  // built stylesheet carries the forced-colors overrides; visual behavior
+  // needs manual verification under Windows High Contrast.
   it('compiles forced-colors overrides so the placeholder stays visible under Windows High Contrast', () => {
-    render(<Skeleton width={200} height={20} data-testid="sk" />);
-    const css = getForcedColorsRules();
     // The painted fill is stripped to Canvas (invisible); GrayText is a
     // system color, so it survives forcing.
-    expect(css).toContain('background-color: graytext;');
+    expect(sheet.blockOf('forced-colors:bg-[GrayText]')).toContain(
+      'background-color:GrayText;',
+    );
     // The resting 0.25 opacity is lifted so the static placeholder reads.
-    expect(css).toContain('opacity: 1;');
+    expect(sheet.blockOf('forced-colors:opacity-[1]')).toContain('opacity:1;');
   });
 });

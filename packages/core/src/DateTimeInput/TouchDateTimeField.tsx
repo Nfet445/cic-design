@@ -57,15 +57,6 @@ import {useSize} from '../SizeContext/SizeContext';
 import {Spinner} from '../Spinner';
 import {useTooltip} from '../Tooltip';
 import {useFieldInputStyling} from '../Field/fieldParts';
-import {
-  colorVars,
-  fontWeightVars,
-  radiusVars,
-  sizeVars,
-  spacingVars,
-  typeScaleVars,
-  typographyVars,
-} from '../theme/tokens.stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {rtlStyles} from '../utils/rtlStyles';
 import {themeProps} from '../utils/themeProps';
@@ -104,6 +95,36 @@ import {MonthYearWheels} from '../DateInput/MonthYearWheels';
 import {Wheel, type WheelOption} from '../DateInput/Wheel';
 import {TimeWheels} from '../DateInput/datePickerTouch';
 import {
+  dateTimeInputControlClassName,
+  dateTimeInputIconButtonClassName,
+  dateTimeInputRowClassName,
+  dateTimeInputSegmentClassName,
+  dateTimeInputSizeClassName,
+  dateTimeTouchArrowClassName,
+  dateTimeTouchArrowIconClassName,
+  dateTimeTouchFooterClassName,
+  dateTimeTouchHeaderActionsClassName,
+  dateTimeTouchHeaderClassName,
+  dateTimeTouchHiddenClassName,
+  dateTimeTouchInputClassName,
+  dateTimeTouchPanelClassName,
+  dateTimeTouchResetButtonClassName,
+  dateTimeTouchSheetBodyClassName,
+  dateTimeTouchStackClassName,
+  dateTimeTouchSurfaceClassName,
+  dateTimeTouchTitleClassName,
+  dateTimeTouchTitleTextClassName,
+  dateTimeTouchUnavailableClassName,
+  dateTimeTouchWeekdayClassName,
+  dateTimeTouchWeekdaysClassName,
+  dateTimeTouchWheelSpacerClassName,
+} from './dateTimeInputClasses';
+import {
+  touchTimeFieldWheelsClassName,
+  touchTimeFieldWheelsInlineStyle,
+} from '../TimeInput/touchTimeFieldClasses';
+import {tw} from '../utils/tw';
+import {
   hour12From24,
   hour24From12,
   hourRowsInHalf,
@@ -113,10 +134,6 @@ import {
   wheelBounds,
 } from '../TimeInput/timeWheelRules';
 import {useTouchPresentation} from '../utils/touchPresentation';
-import {
-  dateInputTouchGeometry,
-  dateInputTouchSizes,
-} from '../DateInput/tokens.stylex';
 import {
   DEFAULT_MONTH_REACH,
   clampIndex,
@@ -171,237 +188,6 @@ function getDefaultTime(hasSeconds: boolean): ISOTimeString {
     hasSeconds,
   );
 }
-
-const sizeStyles = stylex.create({
-  sm: {
-    height: sizeVars['--size-element-sm'],
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
-  },
-});
-
-const HORIZONTAL_SEGMENT_BASIS = 196;
-
-const styles = stylex.create({
-  iconButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-  },
-  iconButtonDisabled: {
-    cursor: 'default',
-  },
-  input: {
-    display: 'block',
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    outline: 'none',
-    '::placeholder': {
-      color: colorVars['--color-text-secondary'],
-    },
-  },
-  inputDisabled: {
-    cursor: 'default',
-  },
-  touchRow: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    inlineSize: '100%',
-    minInlineSize: 0,
-    gap: spacingVars['--spacing-2'],
-  },
-  touchDateWrapper: {
-    flex: 1,
-    flexBasis: HORIZONTAL_SEGMENT_BASIS,
-    minInlineSize: 0,
-  },
-  touchTimeWrapper: {
-    flex: 1,
-    flexBasis: HORIZONTAL_SEGMENT_BASIS,
-    minInlineSize: 0,
-  },
-  touchInput: {
-    caretColor: 'transparent',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    userSelect: 'none',
-  },
-  touchSheetBody: {
-    boxSizing: 'border-box',
-    inlineSize: '100%',
-    minInlineSize: 0,
-    paddingInline: spacingVars['--spacing-4'],
-    // The sheet keeps the band under its grab bar.
-    paddingBlockStart: 0,
-    paddingBlockEnd: spacingVars['--spacing-4'],
-  },
-  touchSurface: {
-    display: 'flex',
-    flexDirection: 'column',
-    inlineSize: '100%',
-    minInlineSize: 0,
-    gap: spacingVars['--spacing-3'],
-  },
-  touchPanelStack: {
-    display: 'grid',
-    inlineSize: '100%',
-    minInlineSize: 0,
-  },
-  touchPanel: {
-    gridArea: '1 / 1',
-    display: 'flex',
-    inlineSize: '100%',
-    minInlineSize: 0,
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-2'],
-  },
-  touchPanelHidden: {
-    visibility: 'hidden',
-    opacity: 0,
-    pointerEvents: 'none',
-  },
-  touchHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    blockSize: sizeVars['--size-element-lg'],
-  },
-  touchTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    minInlineSize: 0,
-    paddingInline: spacingVars['--spacing-2'],
-    borderWidth: 0,
-    borderStyle: 'none',
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: 'transparent',
-    color: colorVars['--color-text-primary'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-large-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  touchTitleText: {
-    minInlineSize: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  touchHeaderActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-0-5'],
-    marginInlineStart: 'auto',
-  },
-  touchHeaderActionsHidden: {
-    visibility: 'hidden',
-    opacity: 0,
-    pointerEvents: 'none',
-  },
-  touchArrow: {
-    minBlockSize: {
-      default: null,
-      '@media (pointer: coarse)': dateInputTouchSizes.daySize,
-    },
-    minInlineSize: {
-      default: null,
-      '@media (pointer: coarse)': dateInputTouchSizes.daySize,
-    },
-  },
-  touchArrowUnavailable: {
-    visibility: 'hidden',
-  },
-  touchArrowIcon: {
-    display: 'inline-flex',
-  },
-  touchResetButton: {
-    minBlockSize: {
-      default: null,
-      '@media (pointer: coarse)': dateInputTouchSizes.daySize,
-    },
-  },
-  touchDateSurfaceStack: {
-    display: 'grid',
-    inlineSize: '100%',
-    minInlineSize: 0,
-  },
-  touchDateSurface: {
-    gridArea: '1 / 1',
-    display: 'flex',
-    inlineSize: '100%',
-    minInlineSize: 0,
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-2'],
-  },
-  touchDateSurfaceHidden: {
-    visibility: 'hidden',
-    opacity: 0,
-    pointerEvents: 'none',
-  },
-  touchWeekdays: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(7, 1fr)',
-    blockSize: sizeVars['--size-element-sm'],
-    alignItems: 'center',
-  },
-  touchWeekday: {
-    textAlign: 'center',
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    color: colorVars['--color-text-secondary'],
-  },
-  touchWheelSpacer: {
-    blockSize: sizeVars['--size-element-sm'],
-  },
-  touchTimeWheels: {
-    display: 'flex',
-    inlineSize: '100%',
-    minInlineSize: 0,
-    blockSize: dateInputTouchGeometry.paneBlockSize,
-    gap: spacingVars['--spacing-2'],
-  },
-  touchFooter: {
-    display: 'flex',
-    marginBlockStart: 'auto',
-    paddingBlockStart: spacingVars['--spacing-1'],
-  },
-});
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -996,7 +782,7 @@ export function TouchDateTimeField({
   );
 
   const surface = (
-    <div {...stylex.props(styles.touchSurface)}>
+    <div className={dateTimeTouchSurfaceClassName}>
       <SegmentedControl
         value={activePanel}
         onChange={nextPanel => {
@@ -1016,16 +802,16 @@ export function TouchDateTimeField({
         />
       </SegmentedControl>
 
-      <div {...stylex.props(styles.touchPanelStack)}>
+      <div className={dateTimeTouchStackClassName}>
         <div
           data-panel="date"
           aria-hidden={activePanel !== 'date' ? 'true' : undefined}
           inert={activePanel !== 'date' ? true : undefined}
-          {...stylex.props(
-            styles.touchPanel,
-            activePanel !== 'date' && styles.touchPanelHidden,
+          className={tw(
+            dateTimeTouchPanelClassName,
+            activePanel !== 'date' && dateTimeTouchHiddenClassName,
           )}>
-          <div {...stylex.props(styles.touchHeader)}>
+          <div className={dateTimeTouchHeaderClassName}>
             <button
               type="button"
               onClick={() => setIsWheelOpen(open => !open)}
@@ -1033,34 +819,37 @@ export function TouchDateTimeField({
               aria-label={t('@astryx.dateInput.chooseMonthYear', {
                 monthYear: monthYearLabel,
               })}
-              {...stylex.props(
-                styles.touchTitle,
-                focusOutlineStyles.focusVisible,
+              {...mergeProps(
+                stylex.props(focusOutlineStyles.focusVisible),
+                dateTimeTouchTitleClassName,
               )}>
-              <span {...stylex.props(styles.touchTitleText)}>
+              <span className={dateTimeTouchTitleTextClassName}>
                 {monthYearLabel}
               </span>
               <Icon icon="chevronDown" size="sm" color="secondary" />
             </button>
             <span
               inert={isWheelOpen ? true : undefined}
-              {...stylex.props(
-                styles.touchHeaderActions,
-                isWheelOpen && styles.touchHeaderActionsHidden,
+              className={tw(
+                dateTimeTouchHeaderActionsClassName,
+                isWheelOpen && dateTimeTouchHiddenClassName,
               )}>
               <IconButton
                 variant="ghost"
                 size="sm"
-                xstyle={[
-                  styles.touchArrow,
-                  !canStepBack && styles.touchArrowUnavailable,
-                ]}
+                className={tw(
+                  dateTimeTouchArrowClassName,
+                  !canStepBack && dateTimeTouchUnavailableClassName,
+                )}
                 isDisabled={!canStepBack}
                 onClick={() => stepMonth(-1)}
                 label={t('@astryx.calendar.previousMonth')}
                 icon={
                   <span
-                    {...stylex.props(styles.touchArrowIcon, rtlStyles.mirror)}>
+                    {...mergeProps(
+                      stylex.props(rtlStyles.mirror),
+                      dateTimeTouchArrowIconClassName,
+                    )}>
                     <Icon icon="chevronLeft" size="sm" color="inherit" />
                   </span>
                 }
@@ -1068,16 +857,19 @@ export function TouchDateTimeField({
               <IconButton
                 variant="ghost"
                 size="sm"
-                xstyle={[
-                  styles.touchArrow,
-                  !canStepForward && styles.touchArrowUnavailable,
-                ]}
+                className={tw(
+                  dateTimeTouchArrowClassName,
+                  !canStepForward && dateTimeTouchUnavailableClassName,
+                )}
                 isDisabled={!canStepForward}
                 onClick={() => stepMonth(1)}
                 label={t('@astryx.calendar.nextMonth')}
                 icon={
                   <span
-                    {...stylex.props(styles.touchArrowIcon, rtlStyles.mirror)}>
+                    {...mergeProps(
+                      stylex.props(rtlStyles.mirror),
+                      dateTimeTouchArrowIconClassName,
+                    )}>
                     <Icon icon="chevronRight" size="sm" color="inherit" />
                   </span>
                 }
@@ -1085,25 +877,29 @@ export function TouchDateTimeField({
               <Button
                 variant="ghost"
                 size="sm"
-                xstyle={styles.touchResetButton}
+                className={dateTimeTouchResetButtonClassName}
                 label={t('@astryx.dateInput.resetPicking')}
                 onClick={handleResetInSheet}
               />
             </span>
           </div>
 
-          <div {...stylex.props(styles.touchDateSurfaceStack)}>
+          <div className={dateTimeTouchStackClassName}>
             <div
               data-date-surface="calendar"
               aria-hidden={isWheelOpen ? 'true' : undefined}
               inert={isWheelOpen ? true : undefined}
-              {...stylex.props(
-                styles.touchDateSurface,
-                isWheelOpen && styles.touchDateSurfaceHidden,
+              className={tw(
+                dateTimeTouchPanelClassName,
+                isWheelOpen && dateTimeTouchHiddenClassName,
               )}>
-              <div aria-hidden="true" {...stylex.props(styles.touchWeekdays)}>
+              <div
+                aria-hidden="true"
+                className={dateTimeTouchWeekdaysClassName}>
                 {weekdayHeaders.map(({dayOfWeek, name}) => (
-                  <div key={dayOfWeek} {...stylex.props(styles.touchWeekday)}>
+                  <div
+                    key={dayOfWeek}
+                    className={dateTimeTouchWeekdayClassName}>
                     {name}
                   </div>
                 ))}
@@ -1122,7 +918,7 @@ export function TouchDateTimeField({
                 weekStartsOn={weekStartsOn}
                 onSelect={handleDateSelect}
               />
-              <div {...stylex.props(styles.touchFooter)}>
+              <div className={dateTimeTouchFooterClassName}>
                 <Button
                   variant="primary"
                   size="md"
@@ -1148,13 +944,13 @@ export function TouchDateTimeField({
               data-date-surface="wheels"
               aria-hidden={!isWheelOpen ? 'true' : undefined}
               inert={!isWheelOpen ? true : undefined}
-              {...stylex.props(
-                styles.touchDateSurface,
-                !isWheelOpen && styles.touchDateSurfaceHidden,
+              className={tw(
+                dateTimeTouchPanelClassName,
+                !isWheelOpen && dateTimeTouchHiddenClassName,
               )}>
               <div
                 aria-hidden="true"
-                {...stylex.props(styles.touchWheelSpacer)}
+                className={dateTimeTouchWheelSpacerClassName}
               />
               <MonthYearWheels
                 monthModel={monthModel}
@@ -1167,7 +963,7 @@ export function TouchDateTimeField({
                 yearLabel={t('@astryx.dateInput.yearWheel')}
                 isActive={activePanel === 'date' && isWheelOpen}
               />
-              <div {...stylex.props(styles.touchFooter)}>
+              <div className={dateTimeTouchFooterClassName}>
                 <Button
                   variant="secondary"
                   size="md"
@@ -1186,11 +982,13 @@ export function TouchDateTimeField({
           aria-label={resolvedTimeLabel}
           aria-hidden={activePanel !== 'time' ? 'true' : undefined}
           inert={activePanel !== 'time' ? true : undefined}
-          {...stylex.props(
-            styles.touchPanel,
-            activePanel !== 'time' && styles.touchPanelHidden,
+          className={tw(
+            dateTimeTouchPanelClassName,
+            activePanel !== 'time' && dateTimeTouchHiddenClassName,
           )}>
-          <div {...stylex.props(styles.touchTimeWheels)}>
+          <div
+            className={touchTimeFieldWheelsClassName}
+            style={touchTimeFieldWheelsInlineStyle}>
             {isTouch ? (
               <TimeWheels
                 time={parsedWheelTime}
@@ -1256,7 +1054,7 @@ export function TouchDateTimeField({
               </>
             )}
           </div>
-          <div {...stylex.props(styles.touchFooter)}>
+          <div className={dateTimeTouchFooterClassName}>
             <Button
               variant="primary"
               size="md"
@@ -1304,8 +1102,8 @@ export function TouchDateTimeField({
             status: status?.type ?? null,
             disabled: isDisabled ? 'disabled' : null,
           }),
-          stylex.props(styles.touchRow, controlXstyle),
-          controlClassName,
+          stylex.props(controlXstyle),
+          tw(dateTimeInputRowClassName, controlClassName),
           controlStyle,
         )}>
         <div
@@ -1322,8 +1120,6 @@ export function TouchDateTimeField({
             stylex.props(
               inputWrapperStyles.base,
               inputWrapperStyles.textField,
-              sizeStyles[size],
-              styles.touchDateWrapper,
               isEffectivelyDisabled && inputWrapperStyles.disabled,
               isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
               status && inputStatusBorderStyles[status.type],
@@ -1332,6 +1128,10 @@ export function TouchDateTimeField({
                 inputStatusHoverShadowStyles[status.type],
               status && inputStatusFocusWithinStyles[status.type],
             ),
+            tw(
+              dateTimeInputSizeClassName({size}),
+              dateTimeInputSegmentClassName,
+            ),
           )}>
           <button
             type="button"
@@ -1339,10 +1139,11 @@ export function TouchDateTimeField({
             aria-disabled={isEffectivelyDisabled || undefined}
             aria-label={t('@astryx.dateInput.openCalendar')}
             tabIndex={-1}
-            {...stylex.props(
-              focusOutlineStyles.focusVisible,
-              styles.iconButton,
-              isEffectivelyDisabled && styles.iconButtonDisabled,
+            {...mergeProps(
+              stylex.props(focusOutlineStyles.focusVisible),
+              dateTimeInputIconButtonClassName({
+                isDisabled: isEffectivelyDisabled,
+              }),
             )}>
             <Icon
               icon="calendar"
@@ -1384,10 +1185,12 @@ export function TouchDateTimeField({
             aria-haspopup="dialog"
             aria-autocomplete="none"
             autoComplete="off"
-            {...stylex.props(
-              styles.input,
-              styles.touchInput,
-              isEffectivelyDisabled && styles.inputDisabled,
+            className={tw(
+              dateTimeInputControlClassName({
+                isDisabled: isEffectivelyDisabled,
+                isRejected: false,
+              }),
+              dateTimeTouchInputClassName({isDisabled: isEffectivelyDisabled}),
             )}
           />
           {hasClear && value !== undefined && !isEffectivelyDisabled && (
@@ -1414,8 +1217,6 @@ export function TouchDateTimeField({
             stylex.props(
               inputWrapperStyles.base,
               inputWrapperStyles.textField,
-              sizeStyles[size],
-              styles.touchTimeWrapper,
               isEffectivelyDisabled && inputWrapperStyles.disabled,
               isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
               status && inputStatusBorderStyles[status.type],
@@ -1423,6 +1224,10 @@ export function TouchDateTimeField({
                 !isEffectivelyDisabled &&
                 inputStatusHoverShadowStyles[status.type],
               status && inputStatusFocusWithinStyles[status.type],
+            ),
+            tw(
+              dateTimeInputSizeClassName({size}),
+              dateTimeInputSegmentClassName,
             ),
           )}>
           <button
@@ -1433,10 +1238,11 @@ export function TouchDateTimeField({
               label: resolvedTimeLabel,
             })}
             tabIndex={-1}
-            {...stylex.props(
-              focusOutlineStyles.focusVisible,
-              styles.iconButton,
-              isEffectivelyDisabled && styles.iconButtonDisabled,
+            {...mergeProps(
+              stylex.props(focusOutlineStyles.focusVisible),
+              dateTimeInputIconButtonClassName({
+                isDisabled: isEffectivelyDisabled,
+              }),
             )}>
             <Icon
               icon="clock"
@@ -1467,10 +1273,12 @@ export function TouchDateTimeField({
             aria-haspopup="dialog"
             aria-autocomplete="none"
             autoComplete="off"
-            {...stylex.props(
-              styles.input,
-              styles.touchInput,
-              isEffectivelyDisabled && styles.inputDisabled,
+            className={tw(
+              dateTimeInputControlClassName({
+                isDisabled: isEffectivelyDisabled,
+                isRejected: false,
+              }),
+              dateTimeTouchInputClassName({isDisabled: isEffectivelyDisabled}),
             )}
           />
         </div>
@@ -1482,7 +1290,7 @@ export function TouchDateTimeField({
           // touchSheetBody owns the inset; the sheet keeps the band under its
           // grab bar.
           padding={0}>
-          <div ref={sheetBodyRef} {...stylex.props(styles.touchSheetBody)}>
+          <div ref={sheetBodyRef} className={dateTimeTouchSheetBodyClassName}>
             {today != null && surface}
           </div>
         </BottomSheet>

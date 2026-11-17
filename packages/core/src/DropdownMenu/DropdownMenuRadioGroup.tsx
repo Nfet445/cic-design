@@ -16,24 +16,14 @@
 
 import {useMemo, type ReactNode, type Ref} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {dropdownMenuRadioGroupClassName} from './dropdownMenuClasses';
 import type {BaseProps} from '../BaseProps';
 import {
   DropdownMenuRadioGroupContext,
   type DropdownMenuRadioGroupContextValue,
 } from './DropdownMenuContext';
-
-const styles = stylex.create({
-  // Match the menu's own inter-item rhythm (2px) so grouped radio items keep
-  // the same gap as ungrouped items instead of sitting flush against each
-  // other inside the role="group" wrapper.
-  group: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-  },
-});
 
 export interface DropdownMenuRadioGroupProps extends Omit<
   BaseProps,
@@ -113,7 +103,10 @@ export function DropdownMenuRadioGroup({
       ref={ref}
       role="group"
       aria-label={label}
-      {...mergeProps(stylex.props(styles.group, xstyle), {className, style})}>
+      {...mergeProps(stylex.props(xstyle), {
+        className: tw(dropdownMenuRadioGroupClassName, className),
+        style,
+      })}>
       <DropdownMenuRadioGroupContext value={contextValue}>
         {children}
       </DropdownMenuRadioGroupContext>

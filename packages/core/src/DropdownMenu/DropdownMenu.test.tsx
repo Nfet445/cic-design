@@ -34,8 +34,17 @@ import {DropdownMenuSubMenu} from './DropdownMenuSubMenu';
 import {Divider} from '../Divider';
 import {Tooltip} from '../Tooltip/Tooltip';
 import {rtlStyles} from '../utils';
-import {expectClassSet} from '../__tests__/classNameAssertions';
-import {itemDensityClassName} from '../Item/itemClasses';
+import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
+import {
+  dropdownMenuInlineSizeVar,
+  dropdownMenuMaxBlockSizeVar,
+  dropdownMenuPopoverClassName,
+  dropdownMenuPopoverFixedWidthClassName,
+  dropdownMenuPopoverMatchTriggerClassName,
+  dropdownMenuPopoverMinWidthClassName,
+  dropdownMenuPopoverViewportClassName,
+  dropdownMenuScrollClassName,
+} from './dropdownMenuClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {spacingVars} from '../theme/tokens.stylex';
@@ -303,15 +312,22 @@ describe('DropdownMenu', () => {
     await user.click(screen.getByRole('button', {name: /Project actions/}));
 
     const heading = screen.getByRole('heading', {name: 'Project actions'});
-    expect(heading).toHaveStyle({marginInlineStart: 'var(--spacing-3)'});
+    // The heading's inset is a class now, so it is read off the class set.
+    expectClassSet(heading, {
+      includes: ['[margin-inline-start:var(--spacing-3)]'],
+    });
     // The menu's content element takes the sheet's content padding itself,
     // with no wrapper: nothing above the first row but the band the sheet
     // keeps under its grab bar, 4px at the sides.
     const content = heading.closest('.astryx-dropdown-menu');
     expect(content?.parentElement?.closest('.astryx-section')).toBeNull();
-    expect(content).toHaveStyle({
-      paddingTop: '0px',
-      paddingInline: 'var(--spacing-1)',
+    // jsdom parses no stylesheet, so the box is read off the class set.
+    expectClassSet(content!, {
+      includes: [
+        '[padding-block:0]',
+        '[padding-inline:var(--spacing-1)]',
+        '[--container-padding-inline-start:var(--spacing-1)]',
+      ],
     });
     // The root heading stands alone, with no row wrapper.
     expect(heading.parentElement).toBe(content);
@@ -822,17 +838,15 @@ describe('DropdownMenu', () => {
     );
     let menu = screen.getByRole('menu', {hidden: true});
     let popover = menu.closest('[popover]');
-    expect(popover?.className).toContain(
-      'DropdownMenu__styles.popoverViewport',
-    );
-    expect(popover?.className).toContain(
-      'DropdownMenu__styles.popoverMatchTrigger',
-    );
-    // The cap is the viewport, never the span beside the trigger
-    // (spec:AST-059 FR2, FR7).
-    expect(popover).toHaveStyle(
-      'min-width: min(anchor-size(width),calc(100vi - calc(max(var(--spacing-4), env(safe-area-inset-left, 0px)) + var(--astryx-layer-inset-inline-start, 0px)) - calc(max(var(--spacing-4), env(safe-area-inset-right, 0px)) + var(--astryx-layer-inset-inline-end, 0px))))',
-    );
+    // jsdom parses no stylesheet, so the caps are read off the class set. The
+    // cap is the viewport, never the span beside the trigger (spec:AST-059
+    // FR2, FR7).
+    expectClassSet(popover!, {
+      includes: [
+        ...dropdownMenuPopoverViewportClassName.split(' '),
+        ...dropdownMenuPopoverMatchTriggerClassName.split(' '),
+      ],
+    });
 
     unmount();
     render(
@@ -844,11 +858,16 @@ describe('DropdownMenu', () => {
     );
     menu = screen.getByRole('menu', {hidden: true});
     popover = menu.closest('[popover]');
-    expect(popover?.className).toContain(
-      'DropdownMenu__styles.popoverViewport',
+    expectClassSet(popover!, {
+      includes: [
+        ...dropdownMenuPopoverViewportClassName.split(' '),
+        ...dropdownMenuPopoverMinWidthClassName.split(' '),
+      ],
+      excludes: dropdownMenuPopoverFixedWidthClassName.split(' '),
+    });
+    expect(popover?.getAttribute('style')).toContain(
+      `${dropdownMenuInlineSizeVar}: min(640px, calc(100vw`,
     );
-    expect(popover).toHaveStyle({minWidth: 'var(--x-minWidth)'});
-    expect(popover?.getAttribute('style')).toContain('min(640px, calc(100vw');
     expect(popover?.getAttribute('style')).not.toContain('100%');
   });
 
@@ -866,9 +885,10 @@ describe('DropdownMenu', () => {
       const popover = screen
         .getByRole('menu', {hidden: true})
         .closest('[popover]');
-      expect(popover?.className).toContain(
-        'DropdownMenu__styles.popoverCustomIntrinsicWidth',
-      );
+      expectClassSet(popover!, {
+        includes: dropdownMenuPopoverFixedWidthClassName.split(' '),
+        excludes: dropdownMenuPopoverMinWidthClassName.split(' '),
+      });
       expect(popover?.getAttribute('style')).toContain(menuWidth);
       expect(popover?.className).toContain('useLayer__styles.gutterInlineEnd');
       expect(popover?.getAttribute('style')).not.toContain(`min(${menuWidth},`);
@@ -898,18 +918,21 @@ describe('DropdownMenu', () => {
           'true',
         );
       });
-      expect(menu).toHaveStyle(
-        'max-height: min(300px,min(calc(100dvb - calc(max(var(--spacing-4), env(safe-area-inset-top, 0px)) + var(--astryx-layer-inset-block-start, 0px)) - calc(max(var(--spacing-4), env(safe-area-inset-bottom, 0px)) + var(--astryx-layer-inset-block-end, 0px))), var(--_layer-keyboard-max-block-size, 100dvb)))',
-      );
-      expect(menu).not.toHaveStyle({overflowY: 'auto'});
+      // jsdom parses no stylesheet: the menu's own cap and its scroll are read
+      // off the class set.
+      expectClassSet(menu, {
+        includes: dropdownMenuPopoverClassName.split(' '),
+        excludes: [dropdownMenuScrollClassName],
+      });
       expect(menu).toHaveAttribute('tabindex', '-1');
 
       scrollHeightSpy.mockReturnValue(480);
       fireEvent(window, new Event('resize'));
 
       await waitFor(() => {
-        expect(menu).toHaveStyle({overflowY: 'auto'});
-        expect(menu).toHaveStyle({overflowX: 'hidden'});
+        expectClassSet(menu, {
+          includes: dropdownMenuScrollClassName.split(' '),
+        });
       });
     } finally {
       clientHeightSpy.mockRestore();
@@ -2783,7 +2806,7 @@ describe('DropdownMenu open focus follows input modality (#4477)', () => {
 
     const menu = screen.getByRole('menu', {hidden: true});
     await waitFor(() => expect(menu).toHaveFocus());
-    expect(menu).toHaveStyle({outline: 'none'});
+    expectClassSet(menu, {includes: ['outline-none']});
     expect(
       screen.getByRole('menuitem', {name: 'Edit', hidden: true}),
     ).not.toHaveFocus();
@@ -4295,15 +4318,18 @@ describe('DropdownMenu menuMaxHeight', () => {
       />,
     );
     const menu = screen.getByRole('menu', {hidden: true});
-    // The cap is lifted to the given height, still bounded by the viewport.
-    expect(menu).toHaveStyle({maxHeight: 'var(--x-maxHeight)'});
-    expect(menu.getAttribute('style')).toContain('min(528px, min(calc(100dvb');
-    expect(menu.getAttribute('style')).not.toContain('min(300px');
-    // The popover viewport that holds the menu lifts its cap with it.
-    const popover = menu.closest('[popover]');
-    expect(popover?.getAttribute('style')).toContain(
-      'min(528px, min(calc(100dvb',
+    const popover = menu.closest('[popover]') as HTMLElement;
+    // The cap class reads the raised height from the variable, and the sheet
+    // keeps the viewport bound underneath it.
+    expectClassSet(menu, {
+      includes: dropdownMenuPopoverClassName.split(' '),
+    });
+    expect(dropdownMenuPopoverClassName).toContain(
+      'min(var(--astryx-dropdown-menu-max-block-size,300px),calc(100dvb',
     );
+    // The popover viewport that holds the menu lifts its cap with it, through
+    // the same inherited variable.
+    expectVariable(popover, dropdownMenuMaxBlockSizeVar, '528px');
   });
 
   it('keeps the viewport bound below the raised cap', () => {
@@ -4318,7 +4344,11 @@ describe('DropdownMenu menuMaxHeight', () => {
       />,
     );
     const menu = screen.getByRole('menu', {hidden: true});
-    expect(menu.getAttribute('style')).toContain('min(720px, min(calc(100dvb');
+    expectVariable(
+      menu.closest('[popover]') as HTMLElement,
+      dropdownMenuMaxBlockSizeVar,
+      '720px',
+    );
   });
 });
 

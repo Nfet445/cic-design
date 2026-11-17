@@ -23,17 +23,11 @@
  * - /packages/cli/assets/templates/blocks/components/DropdownMenu/ (showcase blocks)
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {Divider} from '../Divider';
-import {spacingVars} from '../theme/tokens.stylex';
 import type {BaseProps} from '../BaseProps';
+import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
-
-const styles = stylex.create({
-  divider: {
-    marginBlock: spacingVars['--spacing-1'],
-  },
-});
+import {dropdownMenuDividerClassName} from './dropdownMenuClasses';
 
 const THEME_CLASS_NAME = themeProps('dropdown-menu-divider').className;
 
@@ -73,10 +67,8 @@ export function DropdownMenuDivider({
     <Divider
       {...rest}
       ref={ref}
-      xstyle={[styles.divider, xstyle]}
-      className={
-        className ? `${THEME_CLASS_NAME} ${className}` : THEME_CLASS_NAME
-      }
+      xstyle={xstyle}
+      className={tw(THEME_CLASS_NAME, dropdownMenuDividerClassName, className)}
       style={style}
     />
   );

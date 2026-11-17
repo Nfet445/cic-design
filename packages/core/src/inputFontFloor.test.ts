@@ -38,6 +38,7 @@ const FLOORED_FLOOR_FILES = [
   // Migrated: the class map carries the utility.
   'DateInput/dateInputClasses.ts',
   'DateRangeInput/dateRangeInputClasses.ts',
+  'DateTimeInput/dateTimeInputClasses.ts',
   'FileInput/fileInputClasses.ts',
   'TextArea/textAreaClasses.ts',
   'TextInput/textInputClasses.ts',
@@ -46,10 +47,8 @@ const FLOORED_FLOOR_FILES = [
   'Chat/ChatComposerInput.tsx',
   'CommandPalette/CommandPaletteInput.tsx',
   'ComplexSelector/ComplexSelector.tsx',
-  'DateInput/NativeDateField.tsx',
   'DateInput/TouchDateField.tsx',
   'DateTimeInput/DateTimeInput.tsx',
-  'DateTimeInput/TouchDateTimeField.tsx',
   'DateTimeInput/nativePickerSegmentClasses.ts',
   'Field/PanelSearchInput.tsx',
   'NumberInput/NumberInput.tsx',

@@ -254,6 +254,27 @@ export const docs = {
         private: true,
       },
       {
+        name: '--astryx-date-pane-inline-start',
+        description:
+          'Inline start of one month pane inside the scroller, written per pane from the measured pane size',
+        default: '0px',
+        private: true,
+      },
+      {
+        name: '--astryx-date-pane-inline-size',
+        description:
+          'Inline size of one month pane, written per pane from the measured scrollport',
+        default: '0px',
+        private: true,
+      },
+      {
+        name: '--astryx-date-spacer-inline-size',
+        description:
+          'Inline size the month scroller spacer holds for every pane, written from the measured scrollport',
+        default: '0px',
+        private: true,
+      },
+      {
         name: '--astryx-date-wheel-item-size',
         description: 'Block size of one wheel row, a geometry constant',
         default: 'dateInputTouchSizes.wheelItemSize',
@@ -673,6 +694,27 @@ export const docsZh = {
         description:
           'Block size of one wheel pane, shared with the touch time wheels. A geometry constant, never a theme value',
         default: 'six week rows of dateInputTouchSizes.daySize',
+        private: true,
+      },
+      {
+        name: '--astryx-date-pane-inline-start',
+        description:
+          'Inline start of one month pane inside the scroller, written per pane from the measured pane size',
+        default: '0px',
+        private: true,
+      },
+      {
+        name: '--astryx-date-pane-inline-size',
+        description:
+          'Inline size of one month pane, written per pane from the measured scrollport',
+        default: '0px',
+        private: true,
+      },
+      {
+        name: '--astryx-date-spacer-inline-size',
+        description:
+          'Inline size the month scroller spacer holds for every pane, written from the measured scrollport',
+        default: '0px',
         private: true,
       },
       {

@@ -29,6 +29,29 @@ import {
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
+  dropdownMenuCheckableRowClassName,
+  dropdownMenuDividerClassName,
+  dropdownMenuItemClassName,
+  dropdownMenuMarkerClassName,
+  dropdownMenuRadioGroupClassName,
+  dropdownMenuSheetClassName,
+  dropdownMenuGroupHeadingClassName,
+  dropdownMenuTreeClassName,
+  dropdownMenuTreeHiddenClassName,
+} from '../DropdownMenu/dropdownMenuClasses';
+import {
+  menuBottomSheetActionListClassName,
+  menuBottomSheetClassName,
+} from '../DropdownMenu/menuBottomSheetClasses';
+import {
+  dropdownMenuSubMenuDrillInClassName,
+  dropdownMenuSubMenuFlyoutClassName,
+  dropdownMenuSubMenuScrollClassName,
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+  dropdownMenuSubMenuTriggerClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
+import {
   alertDialogActionsRowClassName,
   alertDialogStackedActionClassName,
 } from '../AlertDialog/alertDialogClasses';
@@ -37,6 +60,28 @@ import {
   dialogInnerClassName,
   dialogRootClassName,
 } from '../Dialog/dialogClasses';
+import {
+  drawerContentClassName,
+  drawerRootClassName,
+} from '../Drawer/drawerClasses';
+import {bottomSheetEdgeTintClassName} from '../BottomSheet/bottomSheetEdgeTintClasses';
+import {
+  popoverAnchorWrapperClassName,
+  popoverCloseButtonWrapperClassName,
+  popoverContentWrapperClassName,
+  popoverExplicitWidthClassName,
+  popoverMatchTriggerClassName,
+  popoverSheetFallbackCloseClassName,
+  popoverSurfaceClassName,
+  popoverViewportFitClassName,
+} from '../Popover/popoverClasses';
+import {
+  mobileNavContentClassName,
+  mobileNavDialogClassName,
+  mobileNavDrawerClassName,
+  mobileNavHeaderClassName,
+  mobileNavHeaderTextClassName,
+} from '../MobileNav/mobileNavClasses';
 import {
   layerHeaderActionsClassName,
   layerHeaderContainerClassName,
@@ -133,6 +178,13 @@ import {
   dateInputControlClassName,
   dateInputSizeClassName,
   dateInputToggleClassName,
+  nativeDateFieldIconButtonClassName,
+  nativeDateFieldInputClassName,
+  nativeDateFieldOverlayClassName,
+  nativeDateFieldOverlayPlaceholderClassName,
+  nativeDateFieldOverlayValueClassName,
+  nativeDateFieldSlotClassName,
+  nativeDateFieldWrapperClassName,
 } from '../DateInput/dateInputClasses';
 import {
   fileInputBoxClassName,
@@ -161,6 +213,32 @@ import {
   dateRangeInputTriggerClassName,
 } from '../DateRangeInput/dateRangeInputClasses';
 import {
+  dateTimeInputControlClassName,
+  dateTimeInputIconButtonClassName,
+  dateTimeInputNativeRowClassName,
+  dateTimeInputRowClassName,
+  dateTimeInputSegmentClassName,
+  dateTimeInputSizeClassName,
+  dateTimeTouchArrowClassName,
+  dateTimeTouchArrowIconClassName,
+  dateTimeTouchFooterClassName,
+  dateTimeTouchHeaderActionsClassName,
+  dateTimeTouchHeaderClassName,
+  dateTimeTouchHiddenClassName,
+  dateTimeTouchInputClassName,
+  dateTimeTouchPanelClassName,
+  dateTimeTouchResetButtonClassName,
+  dateTimeTouchSheetBodyClassName,
+  dateTimeTouchStackClassName,
+  dateTimeTouchSurfaceClassName,
+  dateTimeTouchTitleClassName,
+  dateTimeTouchTitleTextClassName,
+  dateTimeTouchUnavailableClassName,
+  dateTimeTouchWeekdayClassName,
+  dateTimeTouchWeekdaysClassName,
+  dateTimeTouchWheelSpacerClassName,
+} from '../DateTimeInput/dateTimeInputClasses';
+import {
   timeInputClassName,
   timeInputIconClassName,
   timeInputSizeClassName,
@@ -174,6 +252,34 @@ import {
   touchTimeFieldWheelsClassName,
 } from '../TimeInput/touchTimeFieldClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
+import {checkboxListItemClassName} from '../CheckboxList/checkboxListItemClasses';
+import {radioListClassName} from '../RadioList/radioListClasses';
+import {
+  checkboxInputClassName,
+  checkboxInputIndicatorSlotClassName,
+  checkboxInputLabelWrapperClassName,
+  checkboxInputNativeClassName,
+  checkboxInputPressOverlayClassName,
+  checkboxInputRowClassName,
+  checkboxInputRowPressImageClassName,
+  checkboxInputRowPressOverlayClassName,
+  checkboxInputWrapperClassName,
+} from '../CheckboxInput/checkboxInputClasses';
+import {
+  switchClassName,
+  switchContainerClassName,
+  switchLabelWrapperClassName,
+  switchStatusClassName,
+  switchThumbBoxClassName,
+  switchTrackBoxClassName,
+  switchWrapperClassName,
+} from '../Switch/switchClasses';
+import {
+  radioListItemIndicatorSlotClassName,
+  radioListItemInputClassName,
+  radioListItemPressOverlayClassName,
+  radioListItemWrapperClassName,
+} from '../RadioList/radioListItemClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
@@ -220,6 +326,18 @@ import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {sideNavClassName} from '../SideNav/sideNavClasses';
+import {sideNavHeadingClassName} from '../SideNav/sideNavHeadingClasses';
+import {
+  navHeadingMenuClassName,
+  navHeadingMenuItemClassName,
+  navHeadingMenuItemContentClassName,
+  navHeadingMenuMinWidthClassName,
+} from '../NavMenu/navHeadingMenuClasses';
+import {sideNavItemClassName} from '../SideNav/sideNavItemClasses';
+import {
+  treeListItemClassName,
+  treeListItemDensityClassName,
+} from '../TreeList/treeListItemClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {stackClassName} from '../Stack/stackClasses';
@@ -236,9 +354,40 @@ import {
   sectionOuterClassName,
 } from '../Section/sectionClasses';
 import {
+  scrollableAreaContentClassName,
+  scrollableAreaContentWithInlineOverflowClassName,
+  scrollableAreaViewportClassName,
+} from '../ScrollableArea/scrollableAreaClasses';
+import {
+  overflowListContainerClassName,
+  overflowListFillParentClassName,
+  overflowListGapClassName,
+  overflowListMaxHeightClassName,
+  overflowListMeasureContainerClassName,
+  overflowListMeasureIndicatorClassName,
+} from '../OverflowList/overflowListClasses';
+import {
+  swipeEntryClassName,
+  swipeEntryCoveredClassName,
+  swipeEntryDisabledClassName,
+  swipeEntryVariantClassName,
+  swipeOuterEntryClassName,
+  swipeOuterEntryLeadingClassName,
+  swipeOuterEntryTrailingClassName,
+  swipePanelClassName,
+  swipeTrackClassName,
+  swipeTrackCoveredClassName,
+  swipeTrackFillClassName,
+  swipeTrackLeadingClassName,
+  swipeTrackTrailingClassName,
+} from '../Swipe/swipeActionsLayerClasses';
+import {
+  SELECTOR_BOTTOM_SHEET_CONTENT_CLASS,
+  SELECTOR_BOTTOM_SHEET_HEADING_CLASS,
   SELECTOR_OPTION_EMBEDDED_CLASS,
   SELECTOR_ROW_CONTENT_CLASS,
   SELECTOR_ROW_MARK_COLUMN_CLASS,
+  SELECTOR_TRIGGER_SIZE_CLASS,
   selectorOptionRowClassName,
 } from '../Selector/selectorOptionClasses';
 import {
@@ -248,6 +397,7 @@ import {
   MULTI_SELECTOR_CHECKBOX_END_CLASS,
   MULTI_SELECTOR_OPTION_CELL_CLASS,
   MULTI_SELECTOR_ROW_LABEL_CLASS,
+  MULTI_SELECTOR_TRIGGER_SIZE_CLASS,
   multiSelectorOptionRowClassName,
 } from '../MultiSelector/multiSelectorOptionClasses';
 import {
@@ -492,6 +642,168 @@ import {
   linkExternalIconInClampedTextClassName,
   linkLabelClassName,
 } from '../Link/linkClasses';
+import {
+  badgeClassName,
+  badgeGrowsClassName,
+  badgeLabelClassName,
+  badgeVariantClassName,
+} from '../Badge/badgeClasses';
+import {
+  statusDotClassName,
+  statusDotIconClassName,
+  statusDotPulsingClassName,
+  statusDotVariantClassName,
+} from '../StatusDot/statusDotClasses';
+import {
+  blockquoteCiteClassName,
+  blockquoteClassName,
+} from '../Blockquote/blockquoteClasses';
+import {
+  codeClassName,
+  codeColorClassName,
+  codeInheritSizeClassName,
+} from '../Code/codeClasses';
+import {
+  cardBorderClassName,
+  cardClassName,
+  cardCornersClassName,
+  cardElevationClassName,
+  cardOverflowClassName,
+  cardSizingClassName,
+  cardVariantClassName,
+} from '../Card/cardClasses';
+import {
+  dividerClassName,
+  dividerFullBleedClassName,
+  dividerLabelClassName,
+  dividerLineClassName,
+  dividerLineVariantClassName,
+  dividerVerticalLabelClassName,
+} from '../Divider/dividerClasses';
+import {
+  emptyStateActionsClassName,
+  emptyStateActionsCompactClassName,
+  emptyStateClassName,
+  emptyStateCompactClassName,
+  emptyStateDescriptionClassName,
+  emptyStateDescriptionCompactClassName,
+  emptyStateTextGroupClassName,
+  emptyStateTitleClassName,
+  emptyStateTitleCompactClassName,
+} from '../EmptyState/emptyStateClasses';
+import {timestampClassName} from '../Timestamp/timestampClasses';
+import {timerClassName} from '../Timer/timerClasses';
+import {
+  metadataListClassName,
+  metadataListColumnsClassName,
+  metadataListGridClassName,
+  metadataListResetClassName,
+  metadataListTitleClassName,
+  metadataListToggleClassName,
+} from '../MetadataList/metadataListClasses';
+import {
+  metadataListItemIconClassName,
+  metadataListItemLabelClassName,
+  metadataListItemStackedClassName,
+  metadataListItemStackedLabelClassName,
+  metadataListItemStackedValueClassName,
+  metadataListItemValueClassName,
+} from '../MetadataList/metadataListItemClasses';
+import {
+  chatMessageBubbleAlignEndClassName,
+  chatMessageBubbleClassName,
+  chatMessageBubbleGroupClassName,
+  chatMessageBubbleMetadataRowClassName,
+  chatMessageBubbleNameRowClassName,
+  chatMessageBubblePaddingClassName,
+  chatMessageBubbleSlotPaddingClassName,
+  chatMessageBubbleSurfaceClassName,
+  chatMessageBubbleTextClassName,
+  chatMessageAvatarWrapClassName,
+  chatMessageChildrenClassName,
+  chatMessageClassName,
+  chatMessageContentClassName,
+  chatMessageMetadataAssistantClassName,
+  chatMessageMetadataClassName,
+  chatMessageMetadataStatusErrorClassName,
+  chatMessageMetadataStatusPulseClassName,
+  chatMessageMetadataStatusRowClassName,
+  chatMessageMetadataSlotClassName,
+  chatMessageMetadataUserClassName,
+  chatMessageNameClassName,
+  chatPastedTextFooterClassName,
+  chatPastedTextMetaClassName,
+  chatPastedTextPreviewClassName,
+  chatPastedTextPreviewTextClassName,
+  chatSendButtonClassName,
+  chatSystemMessageClassName,
+  chatSystemMessageContentClassName,
+  chatSystemMessageDividerClassName,
+  chatSystemMessageIconClassName,
+  chatTokenizedTextClassName,
+  chatTokenizedTextTokenClassName,
+} from '../Chat/chatClasses';
+import {
+  timestampHoverCardActionClassName,
+  timestampHoverCardGridTemplateClassName,
+  timestampHoverCardLabelClassName,
+  timestampHoverCardListClassName,
+  timestampHoverCardRowClassName,
+  timestampHoverCardValueCellsClassName,
+  timestampHoverCardValueClassName,
+} from '../Timestamp/timestampHoverCardClasses';
+import {
+  aspectRatioChildCenterClassName,
+  aspectRatioChildClassName,
+  aspectRatioChildContainClassName,
+  aspectRatioChildCoverClassName,
+  aspectRatioChildFillClassName,
+  aspectRatioClassName,
+  aspectRatioEllipseClassName,
+  aspectRatioRatioClassName,
+} from '../AspectRatio/aspectRatioClasses';
+import {
+  spinnerArcClassName,
+  spinnerCircleClassName,
+  spinnerClassName,
+  spinnerRingClassName,
+  spinnerRotorBoxClassName,
+  spinnerRotorTurnClassName,
+  spinnerShadeClassName,
+  spinnerSizeClassName,
+  spinnerTrackClassName,
+  spinnerTrackOpacityClassName,
+  spinnerWrapperClassName,
+} from '../Spinner/spinnerClasses';
+import {
+  skeletonAnimateClassName,
+  skeletonClassName,
+  skeletonDelayClassName,
+  skeletonDimensionsClassName,
+  skeletonRadiusClassName,
+} from '../Skeleton/skeletonClasses';
+import {
+  bannerChevronClassName,
+  bannerChevronExpandedClassName,
+  bannerClassName,
+  bannerContentAreaCardClassName,
+  bannerContentAreaClassName,
+  bannerDescriptionClassName,
+  bannerElevatedCardClassName,
+  bannerElevationClassName,
+  bannerEndAreaClassName,
+  bannerHeaderCardStandaloneClassName,
+  bannerHeaderCardWithContentClassName,
+  bannerHeaderCenteredClassName,
+  bannerHeaderClassName,
+  bannerHeaderContentClassName,
+  bannerHeaderContentWithEndContentClassName,
+  bannerIconWrapperClassName,
+  bannerStatusClassName,
+  bannerStatusControlClassName,
+  bannerStatusForegroundClassName,
+  bannerTitleClassName,
+} from '../Banner/bannerClasses';
 
 const sheet = await buildAstryxTailwindCss();
 const stylesheet = stylesheetOf(sheet);
@@ -629,6 +941,47 @@ function familyClassNames() {
       add(sectionInnerClassName({dividers, variant}));
     }
   }
+  add(scrollableAreaViewportClassName({isFullBleed: false}));
+  add(
+    scrollableAreaViewportClassName({
+      height: 200,
+      isFullBleed: true,
+      maxWidth: '64rem',
+      minHeight: 40,
+      width: '100%',
+    }),
+  );
+  add(scrollableAreaContentClassName);
+  add(scrollableAreaContentWithInlineOverflowClassName);
+  // OverflowList: one line and wrapping rows, every gap step, and the hidden
+  // measurement copy with the row cap that reads the measured variable.
+  for (const isMultiRow of [false, true]) {
+    add(overflowListContainerClassName(isMultiRow));
+  }
+  for (const gap of [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10]) {
+    add(overflowListGapClassName[gap]);
+  }
+  add(overflowListFillParentClassName);
+  add(overflowListMaxHeightClassName);
+  add(overflowListMeasureContainerClassName);
+  add(overflowListMeasureIndicatorClassName);
+  // Swipe: both sides' windows, tracks and outermost entries, an entry in each
+  // variant, and the cover and disabled states.
+  add(swipePanelClassName);
+  add(swipeTrackClassName);
+  add(swipeTrackLeadingClassName);
+  add(swipeTrackTrailingClassName);
+  add(swipeTrackCoveredClassName);
+  add(swipeEntryClassName);
+  add(swipeEntryCoveredClassName);
+  add(swipeEntryDisabledClassName);
+  add(swipeOuterEntryClassName);
+  add(swipeOuterEntryLeadingClassName);
+  add(swipeOuterEntryTrailingClassName);
+  for (const variant of ['neutral', 'accent', 'destructive']) {
+    add(swipeEntryVariantClassName[variant]);
+    add(swipeTrackFillClassName[variant]);
+  }
   add(sectionOuterClassName({}));
   add(
     sectionOuterClassName({
@@ -678,6 +1031,64 @@ function familyClassNames() {
       );
     }
   }
+
+  // The drawer panel: both anchored sides, each painting state, with and
+  // without a scrim, and the settled open that collapses its transition.
+  for (const side of ['start', 'end']) {
+    for (const isRendered of [false, true]) {
+      for (const isOpen of [false, true]) {
+        for (const hasScrim of [false, true]) {
+          for (const opensSettled of [false, true]) {
+            add(
+              drawerRootClassName({
+                side,
+                isRendered,
+                isOpen,
+                hasScrim,
+                opensSettled,
+              }),
+            );
+          }
+        }
+      }
+    }
+  }
+  add(drawerContentClassName);
+  // The bottom sheet's edge tint: the strip WebKit samples for the iOS toolbar
+  // colour.
+  add(bottomSheetEdgeTintClassName);
+
+  // The popover: its surface and content wrapper, the anchor wrapper, both
+  // viewport-fit states, the two sizing classes and both hidden close
+  // wrappers.
+  add(popoverAnchorWrapperClassName);
+  add(popoverSurfaceClassName);
+  add(popoverContentWrapperClassName);
+  for (const isScrollable of [false, true]) {
+    add(popoverViewportFitClassName({isScrollable}));
+  }
+  add(popoverExplicitWidthClassName);
+  add(popoverMatchTriggerClassName);
+  add(popoverCloseButtonWrapperClassName);
+  add(popoverSheetFallbackCloseClassName);
+
+  // The mobile nav: the dialog in its two display states, the scrim, both
+  // drawer edges in both motion states, the header row and its content area.
+  for (const isPresentationHeld of [false, true]) {
+    for (const isOpen of [false, true]) {
+      add(mobileNavDialogClassName({isPresentationHeld, isOpen}));
+    }
+  }
+  for (const side of ['start', 'end']) {
+    for (const isOpen of [false, true]) {
+      add(mobileNavDrawerClassName({side, isOpen}));
+    }
+  }
+  for (const hasTitle of [false, true]) {
+    add(mobileNavHeaderClassName({hasTitle}));
+  }
+  add(mobileNavHeaderTextClassName);
+  add(mobileNavContentClassName);
 
   // The alert dialog adds only the row's gesture policy and the stacked width;
   // Button already caps an action at `min-w-0 max-w-full`.
@@ -1025,6 +1436,42 @@ function familyClassNames() {
   for (const size of ['sm', 'md', 'lg']) {
     add(textAreaSizeClassName(size));
   }
+  // The date-time field: two segments, the typed and touch halves of each
+  // control, and the sheet's stacked panels.
+  for (const size of ['sm', 'md', 'lg']) {
+    add(dateTimeInputSizeClassName({size}));
+  }
+  for (const isDisabled of [false, true]) {
+    add(dateTimeInputIconButtonClassName({isDisabled}));
+    add(dateTimeTouchInputClassName({isDisabled}));
+    for (const isRejected of [false, true]) {
+      add(dateTimeInputControlClassName({isDisabled, isRejected}));
+    }
+  }
+  for (const className of [
+    dateTimeInputRowClassName,
+    dateTimeInputNativeRowClassName,
+    dateTimeInputSegmentClassName,
+    dateTimeTouchSheetBodyClassName,
+    dateTimeTouchSurfaceClassName,
+    dateTimeTouchStackClassName,
+    dateTimeTouchPanelClassName,
+    dateTimeTouchHiddenClassName,
+    dateTimeTouchHeaderClassName,
+    dateTimeTouchTitleClassName,
+    dateTimeTouchTitleTextClassName,
+    dateTimeTouchHeaderActionsClassName,
+    dateTimeTouchArrowClassName,
+    dateTimeTouchUnavailableClassName,
+    dateTimeTouchArrowIconClassName,
+    dateTimeTouchResetButtonClassName,
+    dateTimeTouchWeekdaysClassName,
+    dateTimeTouchWeekdayClassName,
+    dateTimeTouchWheelSpacerClassName,
+    dateTimeTouchFooterClassName,
+  ]) {
+    add(className);
+  }
   // The date range field: the closed trigger, its calendar button, the
   // popover body and the preset column.
   // The date field: its calendar toggle, the typed control and the wrapper's
@@ -1036,7 +1483,20 @@ function familyClassNames() {
     add(dateInputToggleClassName({isDisabled}));
     for (const isInvalid of [false, true]) {
       add(dateInputControlClassName({isDisabled, isInvalid}));
+      for (const isHidden of [false, true]) {
+        add(nativeDateFieldInputClassName({isDisabled, isHidden, isInvalid}));
+      }
     }
+  }
+  for (const className of [
+    nativeDateFieldWrapperClassName,
+    nativeDateFieldIconButtonClassName,
+    nativeDateFieldSlotClassName,
+    nativeDateFieldOverlayClassName,
+    nativeDateFieldOverlayValueClassName,
+    nativeDateFieldOverlayPlaceholderClassName,
+  ]) {
+    add(className);
   }
   for (const size of ['sm', 'md', 'lg']) {
     add(dateRangeInputSizeClassName({size}));
@@ -1176,6 +1636,20 @@ function familyClassNames() {
   add(SELECTOR_ROW_CONTENT_CLASS);
   add(SELECTOR_ROW_MARK_COLUMN_CLASS);
   add(SELECTOR_OPTION_EMBEDDED_CLASS);
+  add(SELECTOR_BOTTOM_SHEET_CONTENT_CLASS);
+  add(SELECTOR_BOTTOM_SHEET_HEADING_CLASS);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(SELECTOR_TRIGGER_SIZE_CLASS[size]);
+  }
+  // The nav heading popover: its column, both row states at every size, and
+  // the minimum width each size states as its own fallback.
+  add(navHeadingMenuClassName);
+  add(navHeadingMenuItemContentClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(navHeadingMenuMinWidthClassName[size]);
+    add(navHeadingMenuItemClassName({isDisabled: false, size}));
+    add(navHeadingMenuItemClassName({isDisabled: true, size}));
+  }
 
   // MultiSelector rows: both row kinds (option and Select All) across every
   // size, the grid layout and each runtime state.
@@ -1204,6 +1678,9 @@ function familyClassNames() {
   add(MULTI_SELECTOR_OPTION_CELL_CLASS);
   add(MULTI_SELECTOR_ACTION_CELL_CLASS);
   add(MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(MULTI_SELECTOR_TRIGGER_SIZE_CLASS[size]);
+  }
 
   // Typeahead result rows: each size crossed with highlighted and selected,
   // plus the default item's own parts.
@@ -1643,6 +2120,348 @@ function familyClassNames() {
   add(sideNavClassName.resizableContainer);
   add(sideNavClassName.topbar);
   add(sideNavClassName.topbarIcons);
+  for (const value of Object.values(sideNavItemClassName)) {
+    add(value);
+  }
+
+  for (const value of Object.values(sideNavHeadingClassName)) {
+    add(value);
+  }
+
+  for (const value of Object.values(treeListItemClassName)) {
+    add(value);
+  }
+
+  for (const value of Object.values(treeListItemDensityClassName)) {
+    add(value);
+  }
+  // Card: one background per variant, one variable per elevation, and the
+  // sizing classes that read a variable.
+  add(cardClassName);
+  add(cardCornersClassName);
+  add(cardBorderClassName);
+  add(cardOverflowClassName({hasFixedHeight: false}));
+  add(cardOverflowClassName({hasFixedHeight: true}));
+  add(cardSizingClassName({height: 1, maxWidth: 1, minHeight: 1, width: 1}));
+  for (const value of Object.values(cardVariantClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(cardElevationClassName)) {
+    add(value);
+  }
+  // Divider: one row per orientation, one line per orientation and variant,
+  // the label, and the full-bleed arms that read the container padding.
+  for (const value of Object.values(dividerClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(dividerLineClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(dividerLineVariantClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(dividerFullBleedClassName)) {
+    add(value);
+  }
+  add(dividerLabelClassName);
+  add(dividerVerticalLabelClassName);
+  // StatusDot: the plate, its icon field, the pulse, and one class per
+  // variant.
+  add(statusDotClassName);
+  add(statusDotIconClassName);
+  add(statusDotPulsingClassName);
+  for (const value of Object.values(statusDotVariantClassName)) {
+    add(value);
+  }
+  // Blockquote: the quote and its attribution.
+  add(blockquoteClassName);
+  add(blockquoteCiteClassName);
+  // Code: the inline element, one class per color, and the size arm that
+  // adopts the surrounding type.
+  add(codeClassName);
+  add(codeInheritSizeClassName);
+  for (const value of Object.values(codeColorClassName)) {
+    add(value);
+  }
+  // Badge: the pill, the arm that grows with the label, the label, and one
+  // class per variant.
+  add(badgeClassName);
+  add(badgeGrowsClassName);
+  add(badgeLabelClassName);
+  for (const value of Object.values(badgeVariantClassName)) {
+    add(value);
+  }
+  // Banner: the frame and its elevation, the status header and its fill, the
+  // text column, the end area, the content area and the chevron.
+  add(bannerClassName);
+  add(bannerElevatedCardClassName);
+  add(bannerHeaderClassName);
+  add(bannerHeaderCenteredClassName);
+  add(bannerHeaderCardStandaloneClassName);
+  add(bannerHeaderCardWithContentClassName);
+  add(bannerHeaderContentClassName);
+  add(bannerHeaderContentWithEndContentClassName);
+  add(bannerTitleClassName);
+  add(bannerDescriptionClassName);
+  add(bannerStatusForegroundClassName);
+  add(bannerIconWrapperClassName);
+  add(bannerEndAreaClassName);
+  add(bannerContentAreaClassName);
+  add(bannerContentAreaCardClassName);
+  add(bannerChevronClassName);
+  add(bannerChevronExpandedClassName);
+  for (const value of Object.values(bannerElevationClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(bannerStatusClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(bannerStatusControlClassName)) {
+    add(value);
+  }
+  // EmptyState: the container and its compact arm, the text column, the title
+  // and description with their compact sizes, and the action row.
+  add(emptyStateClassName);
+  add(emptyStateCompactClassName);
+  add(emptyStateTextGroupClassName);
+  add(emptyStateTitleClassName);
+  add(emptyStateTitleCompactClassName);
+  add(emptyStateDescriptionClassName);
+  add(emptyStateDescriptionCompactClassName);
+  add(emptyStateActionsClassName);
+  add(emptyStateActionsCompactClassName);
+  // Timestamp: the `<time>` reset and the hover card's list, row, label, value
+  // and action cells with its four grid templates.
+  add(timestampClassName);
+  add(timestampHoverCardListClassName);
+  add(timestampHoverCardRowClassName);
+  add(timestampHoverCardLabelClassName);
+  add(timestampHoverCardValueClassName);
+  add(timestampHoverCardValueCellsClassName);
+  add(timestampHoverCardActionClassName);
+  // Timer: the inherited-property reset of its `<time>`.
+  add(timerClassName);
+  // MetadataList: the root, the title, the `dl` reset, the three grid arms,
+  // the runtime grid-template class and the show-more toggle.
+  add(metadataListClassName);
+  add(metadataListTitleClassName);
+  add(metadataListResetClassName);
+  add(metadataListColumnsClassName);
+  for (const value of Object.values(metadataListGridClassName)) {
+    add(value);
+  }
+  add(metadataListToggleClassName);
+  // MetadataListItem: the label, the value, the stacked wrapper with its own
+  // label and value, and the icon wrapper.
+  add(metadataListItemLabelClassName);
+  add(metadataListItemValueClassName);
+  add(metadataListItemStackedClassName);
+  add(metadataListItemStackedLabelClassName);
+  add(metadataListItemStackedValueClassName);
+  add(metadataListItemIconClassName);
+  for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
+    add(value);
+  }
+  // AspectRatio: the box, its ratio reading the private variable, the ellipse
+  // clip, the child wrapper and its three fit arms.
+  add(aspectRatioClassName);
+  add(aspectRatioRatioClassName);
+  add(aspectRatioEllipseClassName);
+  add(aspectRatioChildClassName);
+  add(aspectRatioChildCenterClassName);
+  add(aspectRatioChildFillClassName);
+  add(aspectRatioChildCoverClassName);
+  add(aspectRatioChildContainClassName);
+  // Spinner: the wrapper, the box with its three geometry variables, the ring,
+  // the rotor's box and its one animation shorthand, the circle, the arc, the
+  // track and one class per size, per shade and per track alpha.
+  add(spinnerWrapperClassName);
+  add(spinnerClassName);
+  add(spinnerRingClassName);
+  add(spinnerRotorBoxClassName);
+  add(spinnerRotorTurnClassName);
+  add(spinnerCircleClassName);
+  add(spinnerArcClassName);
+  add(spinnerTrackClassName);
+  for (const value of Object.values(spinnerSizeClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(spinnerShadeClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(spinnerTrackOpacityClassName)) {
+    add(value);
+  }
+  // Skeleton: the placeholder, the pulse, the two utility classes that read
+  // the props' variables, and one class per radius.
+  add(skeletonClassName);
+  add(skeletonAnimateClassName);
+  add(skeletonDelayClassName);
+  add(skeletonDimensionsClassName);
+  for (const value of Object.values(skeletonRadiusClassName)) {
+    add(value);
+  }
+  // The menu family's leaves: the rule between groups, the heading that names
+  // one.
+  add(dropdownMenuDividerClassName);
+  add(dropdownMenuMarkerClassName);
+  add(dropdownMenuRadioGroupClassName);
+  for (const isDisabled of [true, false]) {
+    add(dropdownMenuCheckableRowClassName({isDisabled}));
+  }
+  for (const value of Object.values(dropdownMenuSheetClassName)) {
+    add(value);
+  }
+  add(dropdownMenuGroupHeadingClassName);
+  add(dropdownMenuTreeClassName);
+  add(dropdownMenuTreeHiddenClassName);
+  for (const value of Object.values(menuBottomSheetClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(menuBottomSheetActionListClassName)) {
+    add(value);
+  }
+  for (const size of ['sm', 'md', 'lg']) {
+    add(
+      dropdownMenuItemClassName({
+        isDestructive: false,
+        isDisabled: false,
+        size,
+      }),
+    );
+  }
+  add(
+    dropdownMenuItemClassName({
+      isDestructive: true,
+      isDisabled: true,
+      size: 'md',
+    }),
+  );
+  add(dropdownMenuSubMenuDrillInClassName);
+  add(dropdownMenuSubMenuFlyoutClassName);
+  add(dropdownMenuSubMenuScrollClassName);
+  add(dropdownMenuSubMenuTouchClassName);
+  add(dropdownMenuSubMenuTouchPinchClassName);
+  for (const isOpen of [true, false]) {
+    add(
+      dropdownMenuSubMenuTriggerClassName({
+        isDisabled: false,
+        size: 'md',
+        isOpen,
+      }),
+    );
+  }
+
+  for (const isSelected of [true, false]) {
+    add(checkboxListItemClassName({isSelected, className: undefined}));
+  }
+
+  // Chat: the tokenized text root and the inline box a token renders in.
+  add(chatTokenizedTextClassName);
+  add(chatTokenizedTextTokenClassName);
+  add(chatSendButtonClassName);
+  add(chatPastedTextPreviewClassName);
+  add(chatPastedTextPreviewTextClassName);
+  add(chatPastedTextFooterClassName);
+  add(chatPastedTextMetaClassName);
+  add(chatSystemMessageClassName);
+  add(chatSystemMessageDividerClassName);
+  add(chatSystemMessageIconClassName);
+  add(chatSystemMessageContentClassName);
+  add(chatMessageMetadataClassName);
+  add(chatMessageMetadataUserClassName);
+  add(chatMessageMetadataAssistantClassName);
+  add(chatMessageMetadataStatusRowClassName);
+  add(chatMessageMetadataStatusErrorClassName);
+  add(chatMessageMetadataStatusPulseClassName);
+  // ChatMessageBubble: the surface, the sender fill, the density inset, the
+  // grouped corners and the two aligned slots.
+  add(chatMessageBubbleClassName({hasWidth: false, isCompact: false}));
+  add(chatMessageBubbleClassName({hasWidth: true, isCompact: true}));
+  add(chatMessageBubbleTextClassName);
+  add(chatMessageBubbleSurfaceClassName({isGhost: false}));
+  add(chatMessageBubbleSurfaceClassName({isGhost: true}));
+  for (const density of ['compact', 'spacious']) {
+    add(chatMessageBubblePaddingClassName({density, isGhost: false}));
+    add(chatMessageBubbleSlotPaddingClassName(density));
+  }
+  add(chatMessageBubblePaddingClassName({density: 'balanced', isGhost: true}));
+  for (const group of ['first', 'middle', 'last']) {
+    add(chatMessageBubbleGroupClassName.assistant[group]);
+    add(chatMessageBubbleGroupClassName.user[group]);
+  }
+  add(chatMessageBubbleNameRowClassName);
+  add(chatMessageBubbleMetadataRowClassName);
+  add(chatMessageBubbleAlignEndClassName);
+  // ChatMessage: the article, its avatar slot, the content column, the name
+  // row, the children stack read sender and density separately.
+  add(
+    chatMessageClassName({density: 'compact', hasAvatar: true, sender: 'user'}),
+  );
+  add(
+    chatMessageClassName({
+      density: 'spacious',
+      hasAvatar: false,
+      sender: 'system',
+    }),
+  );
+  add(chatMessageAvatarWrapClassName);
+  add(chatMessageContentClassName('system'));
+  add(chatMessageContentClassName('user'));
+  add(chatMessageContentClassName('assistant'));
+  add(chatMessageNameClassName);
+  add(chatMessageMetadataSlotClassName);
+  add(chatMessageChildrenClassName({density: 'compact', sender: 'assistant'}));
+  add(chatMessageChildrenClassName({density: 'spacious', sender: 'user'}));
+  for (const orientation of ['vertical', 'horizontal']) {
+    add(radioListClassName({orientation}));
+  }
+  add(radioListItemIndicatorSlotClassName);
+  add(radioListItemPressOverlayClassName);
+  for (const size of ['sm', 'md']) {
+    add(radioListItemWrapperClassName({size}));
+    add(radioListItemInputClassName({size}));
+  }
+  // CheckboxInput: the field root at both width states, the row in its four
+  // shape states, and the fixed pieces.
+  for (const width of [null, 240]) {
+    add(checkboxInputClassName({width}));
+  }
+  for (const isLabelHidden of [false, true]) {
+    for (const hasHitArea of [false, true]) {
+      add(checkboxInputRowClassName({isLabelHidden, hasHitArea}));
+    }
+  }
+  for (const size of ['sm', 'md']) {
+    add(checkboxInputWrapperClassName({size}));
+    add(checkboxInputNativeClassName({size}));
+  }
+  add(checkboxInputRowPressImageClassName);
+  add(checkboxInputRowPressOverlayClassName);
+  add(checkboxInputPressOverlayClassName);
+  add(checkboxInputIndicatorSlotClassName);
+  add(checkboxInputLabelWrapperClassName);
+  // Switch: the field root at both width states, the row in its four shape
+  // states, the track box per size, the label column and the status gap.
+  for (const width of [null, 240]) {
+    add(switchClassName({width}));
+  }
+  for (const isLabelHidden of [false, true]) {
+    for (const isSpread of [false, true]) {
+      add(switchContainerClassName({isLabelHidden, isSpread}));
+    }
+  }
+  for (const size of ['sm', 'md']) {
+    for (const isInteractive of [false, true]) {
+      add(switchWrapperClassName({size, isInteractive}));
+    }
+    add(switchLabelWrapperClassName({size}));
+    add(switchTrackBoxClassName({size}));
+    for (const isOn of [false, true]) {
+      add(switchThumbBoxClassName({size, isOn}));
+    }
+  }
+  add(switchStatusClassName);
 
   return [...names].sort();
 }
@@ -1676,8 +2495,47 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // about 45, the item row machine about 45, and the tab family — TabList's
     // strip, masks and arrows, TabMenu, SegmentedControl — about 120. A scan
     // that reaches component bodies or prose would add hundreds more. The
-    // top-nav menus and the row machine brought the sheet to about 975.
-    expect(stylesheet.rules.size).toBeLessThan(1020);
+    // top-nav menus and the row machine brought the sheet to about 975; the
+    // side-nav row's class map added its own transition and popover utilities.
+    // The display-and-feedback family added Card's thirteen variant
+    // backgrounds, four elevation variables and its sizing classes, which took
+    // the sheet from 1016 rules to 1042. Divider's row, line, weight, label
+    // and full-bleed classes added 8, Banner's status fills and their
+    // forced-colors outlines, the text column and the content area added 26.
+    // The side-nav heading and the tree row reuse almost every utility their
+    // own families already spell, and their few new ones (the indent column's
+    // padding, the chevron's rotate pair) took the sheet to 1055. The drawer
+    // panel added two sides, two painting states, two direction arms and the
+    // scrim — about 60 — and the mobile nav about 30: its dialog, the scrim's
+    // fade, both drawer edges in both motion states, and the header. Card's
+    // four elevation variables were reused by the dialog family maps, so the
+    // sum of the two families is smaller than their parts. The sub-menu's
+    // flyout surface, its scroll gesture and the two cap fallbacks under
+    // `@supports` added 13. The display-and-feedback family's Badge, Code,
+    // Blockquote and StatusDot maps added about 45 more. The menu's checkable
+    // rows, its marker placement, the radio group's column, the sheet's
+    // content box and action list, and the two drill-in wrappers added 18:
+    // mostly one rule each, with the marker's two coarse-pointer arms and the
+    // row's three radius parts already spelled elsewhere. Skeleton's map added
+    // 25 — the placeholder, the pulse, the two classes that read the props'
+    // variables, and one per radius. With every family above the sheet sat at
+    // 1212, and the windows merged since — the menu surface, EmptyState,
+    // Timestamp — carried it further. The popover's map then moved from StyleX
+    // to literal classes: its surface, both viewport-fit states, the two sizing
+    // classes, the anchor wrapper and both hidden close wrappers. Spinner's box,
+    // ring, rotor, circle, arc, track and its twelve size, shade and alpha
+    // classes, AspectRatio's box, ratio, ellipse clip and four child arms, then
+    // ScrollableArea's platform, inset and both fade arms measured 1330 with
+    // every family above registered. The chat pasted-text preview, the system
+    // notice and the metadata row share almost every utility those maps already
+    // spell, and the checkbox field's row, box, press layers and native input
+    // added six; the sheet measures 1318 here and the ceiling keeps headroom.
+    // ProgressBar's track, fill, indeterminate sweep and label row, the switch
+    // field, row, track, thumb and press layers, the sensor's date-time row and
+    // segments, the bottom-sheet panel and the selector's size arms measured
+    // 1402 with every family above registered, so the ceiling carries the usual
+    // headroom above that number rather than below it.
+    expect(stylesheet.rules.size).toBeLessThan(1460);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

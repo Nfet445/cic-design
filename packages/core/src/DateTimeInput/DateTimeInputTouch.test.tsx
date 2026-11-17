@@ -26,8 +26,6 @@ import {
   afterEach,
 } from 'vitest';
 import {Profiler, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {readFileSync} from 'node:fs';
 import {
   act,
   render,
@@ -37,9 +35,19 @@ import {
   waitFor,
 } from '@testing-library/react';
 import {getOnlyButton} from '../__tests__/fastRoleQueries';
+import {readFileSync} from 'node:fs';
 import {InternationalizationProvider} from '../i18n';
 import {DateTimeInput as CoreDateTimeInput} from './DateTimeInput';
 import type {DateTimeInputProps, ISODateTimeString} from './DateTimeInput';
+import {
+  dateTimeInputRowClassName,
+  dateTimeInputSegmentClassName,
+  dateTimeTouchPanelClassName,
+  dateTimeTouchSheetBodyClassName,
+  dateTimeTouchStackClassName,
+  dateTimeTouchSurfaceClassName,
+} from './dateTimeInputClasses';
+import {touchTimeFieldWheelsClassName} from '../TimeInput/touchTimeFieldClasses';
 
 function DateTimeInput(props: DateTimeInputProps) {
   return <CoreDateTimeInput {...props} nativePicker="never" />;
@@ -53,24 +61,6 @@ class MockResizeObserver {
 
 const HOVER_CAPABLE = /\(\s*hover\s*:\s*hover\s*\)/;
 const SCROLLPORT_WIDTH = 360;
-
-const responsiveLayoutProbe = stylex.create({
-  row: {flexWrap: 'wrap'},
-  segment: {flexBasis: 196, minInlineSize: 0},
-});
-
-function expectResponsiveProbeClasses(
-  element: HTMLElement,
-  style: (typeof responsiveLayoutProbe)[keyof typeof responsiveLayoutProbe],
-): void {
-  const classes = (stylex.props(style).className ?? '')
-    .split(' ')
-    .filter(className => className !== '' && !className.includes('__'));
-  expect(classes.length).toBeGreaterThan(0);
-  for (const className of classes) {
-    expect(element).toHaveClass(className);
-  }
-}
 
 function stubMedia(pointer: 'coarse' | 'fine', anyPointer = pointer): void {
   vi.stubGlobal('matchMedia', (query: string) => ({
@@ -286,9 +276,13 @@ describe('DateTimeInput touch surface', () => {
     const row = container.querySelector(
       '.astryx-date-time-input',
     ) as HTMLElement;
-    expectResponsiveProbeClasses(row, responsiveLayoutProbe.row);
-    expectResponsiveProbeClasses(dateSegment(), responsiveLayoutProbe.segment);
-    expectResponsiveProbeClasses(timeSegment(), responsiveLayoutProbe.segment);
+    expect(row.className).toContain('flex-wrap');
+    expect(row.className).toContain('gap-2');
+    for (const segment of [dateSegment(), timeSegment()]) {
+      expect(segment.className).toContain('flex-1');
+      expect(segment.className).toContain('[flex-basis:196px]');
+      expect(segment.className).toContain('[min-inline-size:0]');
+    }
   });
 
   it('keeps the desktop two-field surface on a fine primary pointer', () => {
@@ -797,36 +791,18 @@ describe('DateTimeInput touch surface', () => {
   });
 
   it('bounds grid panel min-content width so MonthScroller cannot feed back through its spacer', () => {
-    const source = readFileSync(
-      'packages/core/src/DateTimeInput/TouchDateTimeField.tsx',
-      'utf8',
-    );
-    const styleBlock = (name: string): string => {
-      const match = new RegExp(`${name}: \\{([\\s\\S]*?)\\n  \\},`).exec(
-        source,
-      );
-      if (match == null) {
-        throw new Error(`missing style block ${name}`);
-      }
-      return match[1];
-    };
-
-    for (const name of [
-      'touchRow',
-      'touchSheetBody',
-      'touchSurface',
-      'touchPanelStack',
-      'touchPanel',
-      'touchDateSurfaceStack',
-      'touchDateSurface',
-      'touchTimeWheels',
+    for (const value of [
+      dateTimeInputRowClassName,
+      dateTimeTouchSheetBodyClassName,
+      dateTimeTouchSurfaceClassName,
+      dateTimeTouchStackClassName,
+      dateTimeTouchPanelClassName,
+      touchTimeFieldWheelsClassName,
     ]) {
-      expect(styleBlock(name)).toContain("inlineSize: '100%'");
-      expect(styleBlock(name)).toContain('minInlineSize: 0');
+      expect(value).toContain('inline-size:100%');
+      expect(value).toContain('min-inline-size:0');
     }
-    for (const name of ['touchDateWrapper', 'touchTimeWrapper']) {
-      expect(styleBlock(name)).toContain('minInlineSize: 0');
-    }
+    expect(dateTimeInputSegmentClassName).toContain('min-inline-size:0');
   });
 
   it('keeps accepting in-sheet edits while a changeAction is pending', () => {

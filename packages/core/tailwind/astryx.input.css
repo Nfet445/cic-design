@@ -242,6 +242,20 @@
   }
 }
 
+/* StatusDot: the pulse a live status breathes with. A keyframe lives here, not
+   in a `.ts` file, because the build scans class maps only. */
+@keyframes astryxStatusDotPulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 /* Button loading: the spinner fade-in and the content hide share one delay so
    the button never shows an empty frame in between. */
 @keyframes astryxButtonSpinnerReveal {
@@ -259,5 +273,155 @@
   }
   to {
     color: transparent;
+  }
+}
+
+/* Spinner: the rotor's turn. One iteration holds 100 turns, so Chromium wakes
+   the main thread once in 100 turns instead of once a turn; each turn is 360
+   degrees, so the ring looks the same. A `transform` animation runs on the
+   compositor, so the ring keeps turning while a script runs. */
+@keyframes astryxSpinnerRotor {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(36000deg);
+  }
+}
+
+/* Skeleton pulse: ten equal steps up from 0.25 to 0.925, played back down by
+   `alternate`. The steps are holds joined by 0.01% ramps with a linear timing
+   function, not a `steps()` timing function: WebKit never composites a
+   `steps()` animation, so Safari would repaint the pulse on the main thread
+   and freeze it whenever a script runs. Same values at the same times, and
+   every engine can animate these off the main thread. */
+@keyframes astryxSkeletonFade {
+  0% {
+    opacity: 0.25;
+  }
+  9.99% {
+    opacity: 0.25;
+  }
+  10% {
+    opacity: 0.325;
+  }
+  19.99% {
+    opacity: 0.325;
+  }
+  20% {
+    opacity: 0.4;
+  }
+  29.99% {
+    opacity: 0.4;
+  }
+  30% {
+    opacity: 0.475;
+  }
+  39.99% {
+    opacity: 0.475;
+  }
+  40% {
+    opacity: 0.55;
+  }
+  49.99% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.625;
+  }
+  59.99% {
+    opacity: 0.625;
+  }
+  60% {
+    opacity: 0.7;
+  }
+  69.99% {
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 0.775;
+  }
+  79.99% {
+    opacity: 0.775;
+  }
+  80% {
+    opacity: 0.85;
+  }
+  89.99% {
+    opacity: 0.85;
+  }
+  90% {
+    opacity: 0.925;
+  }
+  100% {
+    opacity: 0.925;
+  }
+}
+
+/* Chat message metadata: the "sending" status breathes while the message is in
+   flight. The frames live here because the build scans class maps only. */
+@keyframes astryxChatStatusPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ProgressBar: the indeterminate segment travels the track, physically left to
+   right; the RTL frames mirror it so the bar moves along the reading flow. */
+@keyframes astryxProgressBarSlide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes astryxProgressBarSlideRtl {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-250%);
+  }
+}
+
+/* Reduce Motion: the segment stops travelling and pulses in place, from full
+   opacity down to the progress table's floor. The class alternates direction
+   on every pass. */
+@keyframes astryxProgressBarPulse {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: var(--_progress-bar-pulse-floor);
+  }
+}
+
+/* Switch: under a finger the press rides on a layer of the track and the thumb.
+   The layers' arms read the row's press marker, so switchHoverPress.stylex.ts
+   names the frames and keeps the clock. */
+@keyframes astryxSwitchPressRelease {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Switch: the row holds the press's strength for the layers above. With any
+   pointer but a coarse one the row releases it itself, on the same clock as
+   the shared overlay's release. */
+@keyframes astryxSwitchPressStrength {
+  from {
+    --astryx-press-alpha: 1;
+  }
+  to {
+    --astryx-press-alpha: 0;
   }
 }
