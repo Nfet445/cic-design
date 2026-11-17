@@ -328,3 +328,48 @@ column, the same warning `CheckboxInput.tsx` carries). Nothing pushed.
 Not started in this window: `Slider` (next in order), `Stepper`, `Collapsible`,
 `SelectableCard`, `Kbd`, `InfoTip`, `FormLayout`, `InputGroup` (3 files),
 `FieldStatus`, `Field` (3 files), all of Group B.
+
+### 2026-11-17, window 5
+
+`Switch` again, as planned: the six remaining creations in one commit with the
+`mouse look` and `RTL thumb travel` blocks. **Blocked by the window length, not
+by a decision.** Reading the seam took the whole 30 minutes, so no edit was
+made and the branch is exactly the green state of window 4: `Switch` plus the
+sheet test 170 passed on `599b30183`, worktree clean. Nothing to revert.
+
+Measured on `599b30183`, for the next window to size itself:
+
+- `Switch.tsx:121` `trackSizeStyles`, `:138` `thumbOffSizeStyles`, `:159`
+  `thumbOnSizeStyles`, `:221` `pressOwnerStyles`, `:241` `styles` (the keys
+  `input`, `inputCoarse`, `inputDisabled`, `inputBusy`, `track`, `trackFocus`,
+  `trackOff`, `trackOn`, `trackDisabled`, `trackDisabledOff`, `thumb`,
+  `thumbOff`, `thumbOn`); keyframes at `:205` and `:216`.
+- Two findings that change the conversion plan, both checkable in code:
+  - The forced-colors block of `Switch.test.tsx` reads
+    `getForcedColorsRules()`, which walks **jsdom-injected** sheets, i.e. the
+    StyleX runtime only; the Tailwind sheet is never loaded in jsdom. So every
+    colour arm that moves to a class (`trackOff`'s `Canvas`, `trackOn`'s
+    `Highlight`, both thumb fills, `trackDisabled`'s `GrayText`) stops being
+    observable there and becomes a `expectClassSet(...)` assertion, the way
+    `CheckboxInput.test.tsx:908-929` already does it. The hover-tint half of
+    that block keeps reading the injected survivor and stays as it is.
+  - `useSwitchTouch` writes inline `translate`, `scale` and `opacity` on the
+    thumb (`useSwitchTouch.ts:352-353`). A mouse-mode `[translate:12px]` class
+    is therefore dead while a drag runs, which is harmless, but the coarse arm
+    must be `pointer-coarse:[translate:none]` — the class cannot be the drag's
+    transport, only the rest position. `[transform:translateX(12px)]` would
+    compose with the controller's `translate` instead of sharing its property;
+    keep `translate`, as this window's plan said.
+- The `styles.input` transform is two layers: `inputCoarse`'s
+  `translate(-50%, -50%)` and `rtlStyles.centerInline('-50%')`, which stays
+  StyleX as the sanctioned physical-centering idiom. `Switch.test.tsx:1440`
+  asserts `className` contains `centerInline`, so that block survives the
+  conversion untouched.
+- `Switch.focusRing.source-build.test.mjs` compiles `Switch.tsx` by name; when
+  the ring moves to `switchHoverPress.stylex.ts` the compile target has to
+  follow it (or scan both files), the way `CheckboxInput.test.tsx`'s
+  marker-internal read followed its import.
+
+Window close: `poc/tailwind-layout-primitives` already equals this branch's tip
+(`git merge` reports «Уже актуально»), so no merge commit and no sheet-test
+conflict this window. Nothing pushed.
