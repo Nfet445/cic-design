@@ -325,6 +325,13 @@ and this ticket's Skeleton map and its 25. The merged build measures 1212
 rules, so the comment names that number and the ceiling stays
 `toBeLessThan(1260)`. `node --check` passes on the test file.
 
+The fifth window's merge of `poc/tailwind-layout-primitives` (the
+form-controls ticket's work) auto-merged the sheet test with no conflict. The
+module list now carries both sides' imports and both registration blocks, the
+sheet test passes at its existing `toBeLessThan(1260)` ceiling, and the
+comment's 1212 is the number it measured before this window added EmptyState
+and Timestamp, so this window left the ceiling alone.
+
 After the merge `node packages/core/scripts/build-css-tailwind.mjs` plus
 `pnpm exec vitest run packages/core/src/CodeBlock packages/core/src/Spinner
 packages/core/src/ProgressBar packages/core/src/Skeleton
