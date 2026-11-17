@@ -49,6 +49,10 @@ import {
   spacingVars,
 } from '../theme/tokens.stylex';
 import {mergeProps} from '../utils/mergeProps';
+import {
+  bottomSheetClearsGrabBarStyles,
+  bottomSheetPastGrabBarStyles,
+} from './bottomSheetPanelPadding.stylex';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
@@ -280,45 +284,6 @@ function snapPointsKeyFor(
   return key;
 }
 
-// An explicit padding publishes only the part past the grab bar's band, so a
-// lone Section that escapes the published padding still starts below the bar.
-// `clearsGrabBar` applies the band on top.
-const pastGrabBarStyles = stylex.create({
-  0: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-0']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  0.5: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-0-5']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  1: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-1']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  1.5: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-1-5']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  2: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-2']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  3: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-3']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  4: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-4']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  5: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-5']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  6: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-6']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  8: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-8']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-  10: {
-    '--container-padding-block-start': `max(calc(${spacingVars['--spacing-10']} - ${HANDLE_BAR_HEIGHT}), 0px)`,
-  },
-});
-
 /**
  * The reduced-motion queries. With a coarse primary pointer the sheet
  * cross-fades, else it changes at once. The cross-fade lasts at most 200 ms.
@@ -504,9 +469,6 @@ const styles = stylex.create({
     // so scrolled content rides up under the pill. The content box keeps the
     // resting content clear of the bar instead (`clearsGrabBar`).
     paddingBlockEnd: 0,
-  },
-  clearsGrabBar: {
-    paddingBlockStart: `calc(var(--container-padding-block-start, 0px) + ${HANDLE_BAR_HEIGHT})`,
   },
   content: {
     // Preserve the body's block formatting (including margin/float isolation)
@@ -1342,13 +1304,14 @@ export function BottomSheetPanel({
                   containerPaddingInlineVarStyles[effectivePadding],
                 // An explicit padding publishes what reaches past the grab
                 // bar's band, like the theme default (Layout/container.stylex.ts).
-                !usesThemePadding && pastGrabBarStyles[effectivePadding],
+                !usesThemePadding &&
+                  bottomSheetPastGrabBarStyles[effectivePadding],
                 !usesThemePadding &&
                   effectivePadding !== 4 &&
                   containerPaddingBlockEndVarStyles[effectivePadding],
                 // The band under the grab bar, on top of the published
                 // padding past it: max(padding, the bar) in all.
-                styles.clearsGrabBar,
+                bottomSheetClearsGrabBarStyles.clearsGrabBar,
               ),
             ),
           )}>
