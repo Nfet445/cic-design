@@ -18,9 +18,6 @@
 import {tw} from '../utils/tw';
 import type {TextColor} from '../theme/types';
 
-/** The enabled guard every hover and press variant carries. */
-const ENABLED = ':not(:disabled,[aria-disabled=true])';
-
 /**
  * The root box. An inline-flex box is atomic, so a clamp cannot cut through
  * it; inside a clamp the root is `inline` and lets the clamp cut the lines.
@@ -41,7 +38,9 @@ const rootClassName = tw(
   'transition-[color,text-decoration]',
   'duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
   // A pointer underlines the label; a finger has no hover to show it.
-  `[@media(hover:hover)]:[&:hover:where(${ENABLED})]:underline`,
+  // The scanner reads whole literals only, so the enabled guard is spelled out
+  // in each class rather than shared through interpolation.
+  '[@media(hover:hover)]:[&:hover:where(:not(:disabled,[aria-disabled=true]))]:underline',
 );
 
 /** A pressed link paints the system overlay instead of a decoration. */
@@ -111,17 +110,17 @@ export const linkExternalIconInClampedTextClassName = 'ms-0.5 align-middle';
 export const linkColorClassName: Record<TextColor, string> = {
   primary: tw(
     'text-[color:var(--color-text-primary)]',
-    `[@media(hover:hover)]:[&:hover:where(${ENABLED})]:text-[color:color-mix(in_srgb,var(--color-text-primary),var(--color-tint-hover)_15%)]`,
+    '[@media(hover:hover)]:[&:hover:where(:not(:disabled,[aria-disabled=true]))]:text-[color:color-mix(in_srgb,var(--color-text-primary),var(--color-tint-hover)_15%)]',
   ),
   secondary: tw(
     'text-[color:var(--color-text-secondary)]',
-    `[@media(hover:hover)]:[&:hover:where(${ENABLED})]:text-[color:color-mix(in_srgb,var(--color-text-secondary),var(--color-tint-hover)_15%)]`,
+    '[@media(hover:hover)]:[&:hover:where(:not(:disabled,[aria-disabled=true]))]:text-[color:color-mix(in_srgb,var(--color-text-secondary),var(--color-tint-hover)_15%)]',
   ),
   disabled: 'text-[color:var(--color-text-disabled)]',
   placeholder: 'text-[color:var(--color-text-secondary)]',
   accent: tw(
     'text-[color:var(--color-text-accent)]',
-    `[@media(hover:hover)]:[&:hover:where(${ENABLED})]:text-[color:color-mix(in_srgb,var(--color-text-accent),var(--color-tint-hover)_15%)]`,
+    '[@media(hover:hover)]:[&:hover:where(:not(:disabled,[aria-disabled=true]))]:text-[color:color-mix(in_srgb,var(--color-text-accent),var(--color-tint-hover)_15%)]',
   ),
   inherit: 'text-inherit',
 };

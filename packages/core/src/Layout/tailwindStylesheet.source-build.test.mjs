@@ -156,6 +156,18 @@ import {mediaThemeClassName} from '../theme/mediaThemeClasses';
 import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
 import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
 import {describe, expect, it} from 'vitest';
+import {
+  citationClassName,
+  citationIconClassName,
+  citationIconWrapClassName,
+  citationLabelTextClassName,
+} from '../Citation/citationClasses';
+import {
+  linkClassName,
+  linkColorClassName,
+  linkExternalIconInClampedTextClassName,
+  linkLabelClassName,
+} from '../Link/linkClasses';
 
 const sheet = await buildAstryxTailwindCss();
 const stylesheet = stylesheetOf(sheet);
@@ -625,6 +637,49 @@ function familyClassNames() {
   }
   add(layerTextResetClassName);
   add(layerStructureResetClassName);
+
+  // A link's root reads six inputs, so its map is walked over every
+  // combination; its colour map adds one arm per text colour.
+  for (const color of Object.keys(linkColorClassName)) {
+    add(linkColorClassName[color]);
+  }
+  for (const hasUnderline of [false, true]) {
+    for (const isDisabled of [false, true]) {
+      for (const isButton of [false, true]) {
+        for (const isInClampedText of [false, true]) {
+          for (const isStandalone of [false, true]) {
+            for (const isTruncating of [false, true]) {
+              add(
+                linkClassName({
+                  hasUnderline,
+                  isDisabled,
+                  isButton,
+                  isInClampedText,
+                  isStandalone,
+                  isTruncating,
+                }),
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+  add(linkLabelClassName);
+  add(linkExternalIconInClampedTextClassName);
+
+  // A citation is a label pill or a number badge, with or without a source
+  // icon, linked or inert.
+  for (const variant of ['label', 'number']) {
+    for (const hasIcon of [false, true]) {
+      for (const isLink of [false, true]) {
+        add(citationClassName({variant, hasIcon, isLink}));
+      }
+    }
+  }
+  add(citationIconWrapClassName);
+  add(citationIconClassName);
+  add(citationLabelTextClassName);
 
   return [...names].sort();
 }

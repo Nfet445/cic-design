@@ -13,9 +13,6 @@
 
 import {tw} from '../utils/tw';
 
-/** The enabled guard every hover variant carries. */
-const ENABLED = ':not(:disabled,[aria-disabled=true])';
-
 const labelClassName = tw(
   'inline-flex items-center gap-1 align-baseline h-5 max-w-[15em] overflow-hidden',
   '[font-size:var(--text-supporting-size)] [font-weight:var(--text-supporting-weight)] [line-height:var(--text-supporting-leading)]',
@@ -39,15 +36,17 @@ const linkCursorClassName = tw(
 );
 
 /** The hover tint, over the same tokens the resting state reads. */
+// The scanner reads whole literals only, so the enabled guard is spelled out
+// in each class rather than shared through interpolation.
 const labelLinkClassName = tw(
   linkCursorClassName,
-  `[@media(hover:hover)]:[&:hover:where(${ENABLED})]:bg-[var(--color-overlay-hover)]`,
-  `[@media(hover:hover)]:[&:hover:where(${ENABLED})]:text-[color:var(--color-text-primary)]`,
+  '[@media(hover:hover)]:[&:hover:where(:not(:disabled,[aria-disabled=true]))]:bg-[var(--color-overlay-hover)]',
+  '[@media(hover:hover)]:[&:hover:where(:not(:disabled,[aria-disabled=true]))]:text-[color:var(--color-text-primary)]',
 );
 
 const numberLinkClassName = tw(
   linkCursorClassName,
-  `[@media(hover:hover)]:[&:hover:where(${ENABLED})]:bg-[var(--color-overlay-hover)]`,
+  '[@media(hover:hover)]:[&:hover:where(:not(:disabled,[aria-disabled=true]))]:bg-[var(--color-overlay-hover)]',
 );
 
 /** A source icon narrows the pill's leading padding. */
