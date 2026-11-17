@@ -1,6 +1,6 @@
 # display and feedback surfaces
 
-Status: ready-for-agent
+Status: claimed
 Blocked by: 09
 Wave: 8
 Ticket: 46
@@ -79,3 +79,57 @@ the class map plus a token variable reaches the same pixels.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md`.
 - Manual Windows High Contrast check applies to Card, Divider, Outline,
   Banner and StatusDot.
+
+## Progress
+
+- `Card` paints with Tailwind classes (`Card/cardClasses.ts`). Thirteen variant
+  backgrounds, four elevation variables, the radius, the corners, the border,
+  the overflow arm and the sizing classes are literals; the sizing values ride
+  `--astryx-card-width`, `--astryx-card-height`, `--astryx-card-max-width` and
+  `--astryx-card-min-height`.
+- One rule stays in `Card/cardBorder.stylex.ts`, and the ticket names it:
+  `container()` sets `padding` from its variables as an unlayered StyleX rule,
+  so the border-inset `calc()` padding cannot be a class — an unlayered rule
+  wins over `astryx-base` at any order. Only the subtracted padding stays; the
+  border itself is a class.
+- Moved assertions in `Card/Card.test.tsx`: the four `getComputedStyle`
+  reads of `minWidth`/`overflow` now use `expectClassSet`, and the size check
+  reads `expectVariable('--astryx-card-width')`. One consumer override
+  (`xstyle` with `minWidth: 240`) still reads `getComputedStyle`, because
+  `xstyle` remains StyleX and jsdom still applies its sheet.
+- `cardClassName` and its siblings are registered in `familyClassNames()` of
+  `packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`. With the
+  menu leaves from `poc/tailwind-layout-primitives` the sheet reached 1042
+  rules, so the ceiling moved to `toBeLessThan(1050)` and the comment says why.
+- Changeset: `.changeset/card-tailwind-classes.md` (`component`, patch).
+
+## Left
+
+The rest of the ticket's files still carry their `stylex.create` maps:
+
+- `Divider` (4), `Banner` (4), `Badge` (2), `Code` (3), `CodeBlock` (3),
+  `Blockquote` (1), `Spinner` (4) plus `Spinner/spinnerRotor.ts` (1),
+  `ProgressBar` (4), `Skeleton` (3), `StatusDot` (2), `EmptyState` (1),
+  `Outline` (3), `AspectRatio` (2), `Thumbnail` (1),
+  `MetadataList`/`MetadataListItem` (3), `Timer` (1),
+  `Timestamp`/`TimestampHoverCard` (3), `Toast`/`ToastViewport` (2),
+  `Carousel` (3), `Markdown` (5) plus `Markdown/plugins/HeadingLinksRenderer.tsx`
+  (2).
+- `spinnerRotor.ts` is the first keyframe: `@keyframes astryxSpinnerRotor` goes
+  into `packages/core/tailwind/astryx.input.css`, and the rotor class names it.
+- Cards' remaining test `getComputedStyle` read is the consumer-`xstyle` one
+  named above; `Divider.test.tsx` still carries a comment that says
+  `isFullBleed` "is applied via stylex", which the next pass updates.
+- The manual Windows High Contrast check for Card is not done, and the family
+  browser check page does not exist yet.
+
+## Result
+
+`Card` is converted, verified and committed as
+`refactor(card): перевести стили карточки на Tailwind-классы`. The rest of the
+family is listed under Left for the next window. After the merge of
+`poc/tailwind-layout-primitives` the sheet test conflict kept both sides (this
+ticket's Card registrations and the branch's menu-leaf registrations),
+`node --check` passes, and the build plus
+`pnpm exec vitest run packages/core/src/Card
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` is green.
