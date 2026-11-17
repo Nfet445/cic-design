@@ -1,6 +1,6 @@
 # chat surface
 
-Status: ready-for-agent
+Status: done
 Blocked by: 09, 11, 44
 Wave: 6
 Ticket: 48
@@ -65,6 +65,67 @@ class-based after ticket 44.
   the composer's focus ring.
 
 ## Progress
+
+Final window (branch `ticket/48b-chat-composer`): the last two maps are gone
+and the ticket closes. `ChatComposerDrawer.tsx`'s two arms and
+`ChatComposer.tsx`'s one became class strings in `chatClasses.ts`, and
+`ChatComposerDrawer.stylex.ts` went with them: no `stylex.create` is left under
+`packages/core/src/Chat/`, and no survivor needs naming, because neither file
+needed one.
+
+- Drawer hover (`stylex.when.ancestor(':hover')`, guarded by `@media (hover:
+hover)`): the toggle row now publishes
+  `[--_chat-drawer-label-color:var(--color-text-secondary)]` and
+  `[--_chat-drawer-handle-color:var(--color-icon-secondary)]` plus
+  `[@media(hover:hover)]:hover:` overrides to the primary colours; the label
+  reads `text-[color:var(--_chat-drawer-label-color)]` and the handle
+  `bg-[var(--_chat-drawer-handle-color)]`. Tailwind's `group` lost because it
+  emits no rule of its own (the sheet test requires one rule per registered
+  class) and `group-hover` appears nowhere in the repo, and colour on the row
+  itself lost because inherited colour would leak into a caller's
+  `collapsedSummary`. The row's `focusOutlineProps.focusVisible(...)` ring and
+  the root's `stylex.props(xstyle)` stay as they were.
+- Composer elevation: `chatComposerElevationClassName('low' | 'none')`. The
+  class owns the body's padding — `p-[var(--_chat-composer-padding)]` for
+  `low`, `p-[calc(var(--_chat-composer-padding)_-_var(--border-width))]` for
+  `none` — and `chatComposerBodyClassName` states none, so exactly one padding
+  utility ever applies and the ordering reason the map outlived its siblings
+  for disappears. `none` spells the border `border-[length:var(--border-width)]
+  border-solid`, emphasised then accent on `focus-within`, and rings with
+  `[@media(hover:hover)]:[&:hover:not(:focus-within)…]:shadow-[inset_0px_0px_0px_2px_color-mix(in_srgb,var(--color-border-emphasized)_30%,transparent)]`
+  and `focus-within:shadow-[inset_0px_0px_0px_2px_var(--color-accent-muted)]`;
+  `low` keeps `shadow-[var(--shadow-low)]` rising to med on hover and
+  focus-within.
+- `ChatComposer.elevation` no longer paints through a StyleX map, so the
+  `UNREFLECTED_STYLE_AXIS_EXCEPTIONS` entry in
+  `packages/core/src/theme/themingTargets.test.ts:1010` is stale and the map is
+  empty.
+
+No test moved with these two files: `ChatComposer.test.tsx:35-58` compares the
+body's class text (elevation `none` versus `low`, default equal to `low`) and so
+reads the new classes unchanged, and `ChatComposerDrawer.test.tsx` asserts only
+aria, badge and disclosure state. `chatComposerElevationClassName('low')` and
+`('none')` are registered in the coverage block
+(`packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs:3010-3011`)
+beside the drawer names that were already there.
+
+Checks after the merge: `pnpm exec vitest run packages/core/src/Chat
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
+packages/core/src/inputFontFloor.test.ts` — 27 files, 560 tests, all passing;
+the merge repointed `inputFontFloor.test.ts` at the class maps, so the
+`CommandPalette` entry that failed before it passes again.
+`packages/core/src/theme` — 1805 of 1806; the one failure is `BottomSheet: all
+source vars are in doc file` for `--astryx-bottom-sheet-keyboard-inset`, which
+arrived with `e7820c47e merge: ticket/50-bottom-sheet` and belongs to ticket 50.
+`pnpm exec tsc --noEmit -p packages/core/tsconfig.json` passes whole. Sheet
+rebuilt at 276.6 kB, and the rule count stays under the 1980 ceiling at
+`tailwindStylesheet.source-build.test.mjs:3457`, so the budget comment is
+unchanged. Commits: `0b2776cb0 refactor(chat): перевести высоту композера и
+наведение ящика на классы Tailwind` (with the stale theming exception) and
+`115c24520 Merge branch 'poc/tailwind-layout-primitives'`.
+
+Still open, by hand only: the Windows High Contrast check of the message bubble
+edges and the composer's focus ring.
 
 Window 4 (30 min, branch `ticket/48-chat-surface`): two files landed —
 `ChatMessageBubble.tsx` and `ChatMessage.tsx` — and `poc/tailwind-layout-primitives`
