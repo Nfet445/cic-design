@@ -4,6 +4,7 @@ import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {SVGIcon, type SVGIconDef} from './SVGIcon';
 import {iconVars} from './tokens.stylex';
+import {iconColorClassNames, svgIconRootClassName} from './svgIconClasses';
 import {bellIcon, calendarIcon, homeIcon, xIcon} from './icons';
 
 /** Top-level shape groups, excluding the <defs> mask block. */
@@ -153,6 +154,13 @@ describe('SVGIcon', () => {
     const {container: plain} = render(<SVGIcon icon={xIcon} />);
     const plainSvg = plain.querySelector('svg') as SVGSVGElement;
     expect(plainSvg.style.getPropertyValue(strokeWidthProp)).toBe('');
+  });
+
+  it('carries the box and colour classes of its color role', () => {
+    const {container} = render(<SVGIcon icon={xIcon} color="accent" />);
+    const svg = container.querySelector('svg');
+    expect(svg).toHaveClass(...svgIconRootClassName.split(' '));
+    expect(svg).toHaveClass(...iconColorClassNames.accent.split(' '));
   });
 
   it('honors a custom viewBox and passes extra svg props through', () => {

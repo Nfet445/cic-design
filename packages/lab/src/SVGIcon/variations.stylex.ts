@@ -6,9 +6,11 @@
  * @output StyleX styles for each icon variation preset
  * @position Consumed by SVGIcon to apply variation-specific token overrides
  *
- * Stays StyleX: both maps set only the layer variables from tokens.stylex.ts,
- * whose names StyleX hashes, and the rendered elements read them with `var()`
- * in an inline style. There is no declaration here to move to a class.
+ * Stays StyleX: the two maps publish values for the `--icon-*` custom
+ * properties, not declarations — the rendered `<g>` elements read them with
+ * `var()` in an inline style, and `index.ts` exports both maps as style
+ * objects a caller passes to `stylex.props`. The paint declarations that did
+ * move live in `svgIconClasses.ts`.
  *
  * Each variation sets tokens for both fill-role and stroke-role elements
  * per the path role system. Stroke-role elements (lines, detail strokes)

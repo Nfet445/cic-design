@@ -18,6 +18,40 @@
  */
 
 /**
+ * The icon box. `--icon-*` comes from `tokens.stylex.ts`, whose variable names
+ * reach the sheet unchanged, and `opticalSize` in `variations.stylex.ts` sets
+ * the square's size on the same element.
+ */
+export const svgIconRootClassName =
+  'inline-flex shrink-0 w-[var(--icon-size)] h-[var(--icon-size)] ps-[var(--icon-inline-offset)] pt-[var(--icon-block-offset)]';
+
+/**
+ * The weight-responsive box additionally centres the probe's baseline and
+ * clips the `1ch` probe, which can be wider than the box.
+ */
+export const weightedSvgIconRootClassName =
+  'inline-flex shrink-0 w-[var(--icon-size)] h-[var(--icon-size)] align-middle [font-family:AstryxWeightProbe] [font-synthesis:none] overflow-clip';
+
+/** The drawing fills the box and paints with the icon's own colour. */
+export const weightedSvgIconSvgClassName =
+  'block shrink-0 w-[var(--icon-size)] h-[var(--icon-size)] fill-current';
+
+/** The hidden sprite: one copy of every drawing, out of the flow. */
+export const weightedIconSpriteClassName = 'absolute w-0 h-0 overflow-hidden';
+
+/** One paint per semantic colour role, shared by both icon components. */
+export const iconColorClassNames = {
+  primary: 'text-[color:var(--color-icon-primary)]',
+  secondary: 'text-[color:var(--color-icon-secondary)]',
+  disabled: 'text-[color:var(--color-icon-disabled)]',
+  accent: 'text-[color:var(--color-accent)]',
+  positive: 'text-[color:var(--color-icon-success)]',
+  negative: 'text-[color:var(--color-icon-error)]',
+  warning: 'text-[color:var(--color-icon-warning)]',
+  inherit: 'text-inherit',
+} as const;
+
+/**
  * The probe: a `1ch` box in the probe font that must not shrink to the icon
  * box, and the named inline-size container for the bands below.
  */
