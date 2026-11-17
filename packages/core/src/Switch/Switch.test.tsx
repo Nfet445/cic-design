@@ -1319,13 +1319,12 @@ describe('Switch', () => {
       expect(strengthAndPaint(row)).toEqual(strengthAndPaint(alpha));
     });
 
-    it('with any pointer but a coarse primary one, keeps the shared release on the row', () => {
+    it('with any pointer but a coarse primary one, keeps a release on the row, on the shared clock and curve', () => {
       const {alpha, row} = renderOwners();
       const release = (el: Element) =>
         fadingOnHost(rulesDeclaredFor(el, UNDER_FINE));
       expect(valuesOf(release(alpha), 'animation-name')).not.toEqual([]);
       for (const property of [
-        'animation-name',
         'animation-duration',
         'animation-timing-function',
       ]) {
@@ -1333,6 +1332,9 @@ describe('Switch', () => {
           valuesOf(release(alpha), property),
         );
       }
+      // The row names its own frames (tailwind/astryx.input.css), so only the
+      // clock and the curve are the shared styles' own.
+      expect(valuesOf(release(row), 'animation-name')).not.toEqual(['none']);
     });
 
     it('under a coarse primary pointer, drops the strength’s own release on the row', () => {
@@ -1350,9 +1352,9 @@ describe('Switch', () => {
   });
 
   describe('mouse look', () => {
-    // jsdom applies no `@media (pointer: coarse)` rule, so these are the
-    // styles a mouse gets. The touch presentation must override none of
-    // them: a later style that names a property replaces all of it.
+    // The rest styles are classes, so these read the class set. jsdom applies
+    // no `@media (pointer: coarse)` rule: the coarse arms are asserted where
+    // their state is.
     const look = (container: HTMLElement) => {
       const track = container.querySelector<HTMLElement>('.astryx-switch');
       const thumb = container.querySelector<HTMLElement>(
@@ -1361,15 +1363,7 @@ describe('Switch', () => {
       if (track == null || thumb == null) {
         throw new Error('the switch has no track or thumb');
       }
-      const t = getComputedStyle(track);
-      const h = getComputedStyle(thumb);
-      return {
-        track,
-        thumb,
-        fill: t.backgroundColor,
-        fade: [t.transitionProperty, t.transitionDuration],
-        slide: [h.transitionProperty.replace(/\s/g, ''), h.transitionDuration],
-      };
+      return {track, thumb};
     };
 
     it('keeps the track fill and colour fade, and the thumb slide', () => {
@@ -1379,17 +1373,26 @@ describe('Switch', () => {
         <Switch label="Wi-Fi" value={false} onChange={() => {}} />,
       );
       const off = look(container);
-      expect(off.fill).toContain('--color-background-gray');
-      expect(off.fade[0]).toBe('background-color');
-      expect(off.fade[1]).not.toMatch(/^(0s)?$/);
-      expect(off.slide[0]).toBe('transform,width,height');
-      expect(off.slide[1]).not.toMatch(/^(0s)?$/);
-      expectClassSet(off.track, {includes: ['p-1']});
-      expectClassSet(off.thumb, {includes: ['h-4', 'w-4']});
+      expectClassSet(off.track, {
+        includes: [
+          'bg-[var(--color-background-gray)]',
+          'transition-[background-color]',
+          'duration-[var(--duration-fast)]',
+          'p-1',
+        ],
+      });
+      expectClassSet(off.thumb, {
+        includes: [
+          'h-4',
+          'w-4',
+          'transition-[transform,width,height]',
+          'duration-[var(--duration-fast)]',
+        ],
+      });
 
       rerender(<Switch label="Wi-Fi" value onChange={() => {}} />);
       const on = look(container);
-      expect(on.fill).toContain('--color-accent');
+      expectClassSet(on.track, {includes: ['bg-[var(--color-accent)]']});
       expectClassSet(on.thumb, {
         includes: ['h-5', 'w-5', '[transform:translateX(14px)]'],
       });
@@ -1765,19 +1768,41 @@ describe('hit area under a coarse pointer (Switch FR10)', () => {
 });
 
 describe('forced colors (WCAG 1.4.11)', () => {
-  it('compiles forced-colors overrides so on/off state survives Windows High Contrast', () => {
-    render(<Switch label="Notifications" value={true} onChange={() => {}} />);
-    const css = getForcedColorsRules();
-    // Track outline (backgrounds are stripped; the border keeps the bounds).
-    expect(css).toContain('border-color: canvastext;');
-    // Off track stays empty; on track uses the selection color.
-    expect(css).toContain('background-color: canvas;');
-    expect(css).toContain('background-color: highlight;');
-    // Thumb fill per state.
-    expect(css).toContain('background-color: canvastext;');
-    expect(css).toContain('background-color: highlighttext;');
-    // Disabled affordance (opacity dimming does not survive forcing).
-    expect(css).toContain('border-color: graytext;');
+  it('carries a system-colour track and thumb per state, so on/off survives Windows High Contrast', () => {
+    const {container, rerender} = render(
+      <Switch label="Notifications" value={false} onChange={() => {}} />,
+    );
+    const track = () => container.querySelector('.astryx-switch') as Element;
+    const thumb = () =>
+      container.querySelector('.astryx-switch-thumb') as Element;
+    // Backgrounds are stripped there; the border keeps the track's bounds
+    // (WCAG 1.4.11), and the states keep their own system colours so the
+    // thumb reads against the track it sits on.
+    expectClassSet(track(), {
+      includes: [
+        'forced-colors:border',
+        'forced-colors:border-[color:CanvasText]',
+        'forced-colors:bg-[color:Canvas]',
+      ],
+    });
+    expectClassSet(thumb(), {
+      includes: ['forced-colors:bg-[color:CanvasText]'],
+    });
+
+    rerender(<Switch label="Notifications" value onChange={() => {}} />);
+    expectClassSet(track(), {includes: ['forced-colors:bg-[color:Highlight]']});
+    expectClassSet(thumb(), {
+      includes: ['forced-colors:bg-[color:HighlightText]'],
+    });
+
+    rerender(
+      <Switch label="Notifications" value isDisabled onChange={() => {}} />,
+    );
+    // Opacity dimming does not survive forced colors; GrayText is the
+    // platform's disabled affordance there.
+    expectClassSet(track(), {
+      includes: ['opacity-50', 'forced-colors:border-[color:GrayText]'],
+    });
   });
 
   it('gates the hover tint out of forced colors so the thumb stays visible on hover', () => {
