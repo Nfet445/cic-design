@@ -16,7 +16,18 @@ import {cleanup, render, screen} from '@testing-library/react';
 import {createSwipe} from '../Swipe/createSwipe';
 import userEvent from '@testing-library/user-event';
 import {rulesDeclaredFor} from '../__tests__/pressState';
-import {expectClassSet} from '../__tests__/classNameAssertions';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
+import {
+  LIST_ITEM_BAND_RAISED,
+  LIST_ITEM_BLEED,
+  LIST_ITEM_COUNTER,
+  LIST_ITEM_FLUSH_INSET,
+  LIST_ITEM_OUTSET_END,
+  LIST_ITEM_OUTSET_START,
+  listItemMarkerDotClassName,
+  listItemMarkerSquareClassName,
+} from './listItemClasses';
+import {listRowEdgeOf} from '../privateAttributes/listRow.stylex';
 import {swipeLayerLoaded} from '../Item/__tests__/swipeLayerLoaded';
 
 /**
@@ -327,28 +338,12 @@ describe('List', () => {
     return rulesDeclaredFor(el).join('\n').replace(/\s+/g, '');
   }
 
-  /** The declarations of the row inset variable that reach the row. */
-  function insetDeclarations(item: Element): string[] {
-    return rulesDeclaredFor(item).filter(rule =>
-      rule.includes('--_item-inset-inline:'),
-    );
-  }
-
-  const ZERO_INSET = /--_item-inset-inline:\s*0(px)?\s*;/;
   /** The item's own inset, a class the row always carries. */
   const DEFAULT_INSET_CLASS = '[--_item-inset-inline:var(--spacing-2)]';
   const LIST_REACH = [
     'margin-inline-start:calc(-1*var(--container-padding-inline-start,0px))',
     'margin-inline-end:calc(-1*var(--container-padding-inline-end,0px))',
     'width:calc(100%+var(--container-padding-inline-start,0px)+var(--container-padding-inline-end,0px))',
-  ];
-  const OUTSET_ROW = [
-    'margin-inline-start:max(var(--container-padding-inline-start,0px)-var(--_item-inset-inline),0px)',
-    'margin-inline-end:max(var(--container-padding-inline-end,0px)-var(--_item-inset-inline),0px)',
-  ];
-  const BLEED_ROW = [
-    'padding-inline-start:max(var(--container-padding-inline-start,0px),var(--_item-inset-inline))',
-    'padding-inline-end:max(var(--container-padding-inline-end,0px),var(--_item-inset-inline))',
   ];
 
   function renderEdge(props: Partial<React.ComponentProps<typeof List>>) {
@@ -370,22 +365,24 @@ describe('List', () => {
   it('keeps the row padding and leaves the list and rows in place by default', () => {
     const {ul, items} = renderEdge({});
     for (const item of items) {
-      expect(item.className).not.toMatch(/edge(Flush|Outset|Bleed)/);
-      expectClassSet(item, {includes: [DEFAULT_INSET_CLASS]});
-      expect(insetDeclarations(item).some(rule => ZERO_INSET.test(rule))).toBe(
-        false,
-      );
+      expectClassSet(item, {
+        includes: [DEFAULT_INSET_CLASS],
+        excludes: [
+          LIST_ITEM_FLUSH_INSET,
+          LIST_ITEM_OUTSET_START,
+          LIST_ITEM_BLEED,
+        ],
+      });
     }
     expect(ul.className).not.toContain('reachesContainerPadding');
     expect(edgeContext(ul)).toBe('padded');
   });
 
-  /** The edge each row resolved, read from the row's own edge class. */
+  /** The edge each row resolved, read from the attribute the row carries. */
   function edgeContext(ul: Element): string {
-    const edges = [...ul.querySelectorAll('li')].map(li => {
-      const match = /edge(Flush|Outset|Bleed)/.exec(li.className);
-      return match ? match[1].toLowerCase() : 'padded';
-    });
+    const edges = [...ul.querySelectorAll('li')].map(
+      li => listRowEdgeOf(li) ?? 'padded',
+    );
     expect(new Set(edges).size).toBe(1);
     return edges[0];
   }
@@ -401,14 +398,16 @@ describe('List', () => {
   });
 
   it('flush: zeroes the shared inset at every density and leaves the list in place', () => {
+    // The row's density sets its inset; the flush treatment sets the same
+    // variable behind an attribute selector, which outranks the density
+    // utility, so the zero holds at every density.
+    expect(LIST_ITEM_FLUSH_INSET).toContain('--_item-inset-inline:0px');
     for (const density of ['compact', 'balanced', 'spacious'] as const) {
       const {ul, items} = renderEdge({edge: 'flush', density});
       expect(ul.className).not.toContain('reachesContainerPadding');
       for (const item of items) {
         expect(item).toHaveAttribute('data-density', density);
-        const insets = insetDeclarations(item);
-        expect(insets).toHaveLength(1);
-        expect(insets[0]).toMatch(ZERO_INSET);
+        expectClassSet(item, {includes: [LIST_ITEM_FLUSH_INSET]});
       }
       cleanup();
     }
@@ -423,18 +422,21 @@ describe('List', () => {
     for (const declaration of LIST_REACH) {
       expect(listCss).toContain(declaration);
     }
+    // The start edge reads the start padding var, the end edge the end one.
+    expect(LIST_ITEM_OUTSET_START).toContain('container-padding-inline-start');
+    expect(LIST_ITEM_OUTSET_END).toContain('container-padding-inline-end');
+    expect(LIST_ITEM_OUTSET_END).not.toContain(
+      'container-padding-inline-start',
+    );
     for (const item of items) {
-      const css = declarationsFor(item);
-      for (const declaration of OUTSET_ROW) {
-        expect(css).toContain(declaration);
-      }
-      expect(css).not.toContain(
-        'margin-inline-end:max(var(--container-padding-inline-start',
-      );
-      expect(insetDeclarations(item).some(rule => ZERO_INSET.test(rule))).toBe(
-        false,
-      );
-      expectClassSet(item, {includes: [DEFAULT_INSET_CLASS]});
+      expectClassSet(item, {
+        includes: [
+          LIST_ITEM_OUTSET_START,
+          LIST_ITEM_OUTSET_END,
+          DEFAULT_INSET_CLASS,
+        ],
+        excludes: [LIST_ITEM_FLUSH_INSET],
+      });
     }
   });
 
@@ -444,13 +446,18 @@ describe('List', () => {
     for (const declaration of LIST_REACH) {
       expect(listCss).toContain(declaration);
     }
+    const bleed = LIST_ITEM_BLEED.split(' ');
+    // Text on the container's padding line, never closer to the row's edge
+    // than its own inset, and square corners where the row meets the
+    // container's straight sides.
+    expect(bleed.some(name => name.includes('ps-[max('))).toBe(true);
+    expect(bleed.some(name => name.includes('pe-[max('))).toBe(true);
+    expect(bleed.some(name => name.includes('[border-radius:0px]'))).toBe(true);
     for (const item of items) {
-      const css = declarationsFor(item);
-      for (const declaration of BLEED_ROW) {
-        expect(css).toContain(declaration);
-      }
-      expect(css).toContain('border-radius:0');
-      expect(css).not.toMatch(/margin-inline-(start|end):max/);
+      expectClassSet(item, {
+        includes: bleed,
+        excludes: [LIST_ITEM_OUTSET_START, LIST_ITEM_OUTSET_END],
+      });
     }
   });
 
@@ -572,16 +579,14 @@ describe('List', () => {
       );
       // Above the rows after it, so a later row does not hit-test over the
       // band; painting nothing.
-      expect(layer).toMatch(/z-index: 1/);
+      expectClassSet(row(text), {includes: [LIST_ITEM_BAND_RAISED]});
       expect(layer).not.toMatch(
         /[{;]\s*(?:background|border|box-shadow|outline)[\w-]*\s*:/,
       );
-      // The row itself takes no z-index: it stays no stacking context.
+      // The row box itself takes no z-index: it stays no stacking context.
       expect(
-        touch.filter(
-          rule =>
-            !rule.slice(0, rule.indexOf('{')).includes('::') &&
-            rule.includes('z-index'),
+        classesOf(row(text)).filter(
+          name => name.includes('z-index') && !name.includes('::after'),
         ),
       ).toEqual([]);
       // At rest the row's stacking stays as it was: a rule that isolates the
@@ -1107,12 +1112,9 @@ describe('List', () => {
   });
 
   describe('ListMarkerScope (internal, for Markdown nested lists)', () => {
-    /** The shape inside the item's marker box. */
-    const markerShape = (container: HTMLElement) => {
-      // The dot, ring, or square: an empty element in the marker box.
-      const shape = container.querySelector('li > span > span:empty');
-      return shape == null ? null : getComputedStyle(shape);
-    };
+    /** The dot, ring, or square: the empty element in the marker box. */
+    const markerShape = (container: HTMLElement) =>
+      container.querySelector('li > span > span:empty');
 
     it('draws the list style marker without a scope', () => {
       const {container} = render(
@@ -1120,7 +1122,11 @@ describe('List', () => {
           <ListItem label="Item" />
         </List>,
       );
-      expect(markerShape(container)?.borderRadius).toBe('50%');
+      const shape = markerShape(container);
+      expect(shape).not.toBeNull();
+      expectClassSet(shape!, {
+        includes: listItemMarkerDotClassName.split(' '),
+      });
     });
 
     it('draws the scope marker in place of the list style', () => {
@@ -1133,7 +1139,10 @@ describe('List', () => {
       );
       const shape = markerShape(container);
       expect(shape).not.toBeNull();
-      expect(shape?.borderRadius).not.toBe('50%');
+      expectClassSet(shape!, {
+        includes: listItemMarkerSquareClassName.split(' '),
+        excludes: ['rounded-full'],
+      });
       expect(container.querySelector('ul')).not.toBeNull();
     });
 
@@ -1260,11 +1269,14 @@ describe('ListItem passthrough', () => {
         .map(rule => rule.replace(/\s+/g, ''))
         .filter(rule => rule.includes('counter-increment:'));
     const [first, second] = [...container.querySelectorAll('li')];
+    // The row counts itself in through a class of its own map; the caller's
+    // style arrives unlayered, so it wins over the layered utility.
+    expectClassSet(first, {includes: [LIST_ITEM_COUNTER]});
+    expectClassSet(second, {includes: [LIST_ITEM_COUNTER]});
     expect(counters(first).length).toBeGreaterThan(0);
     expect(counters(first).every(rule => rule.includes(':none'))).toBe(true);
-    expect(counters(second).some(rule => rule.includes('astryx-list'))).toBe(
-      true,
-    );
+    // The row without a caller style declares no counter rule of its own.
+    expect(counters(second)).toEqual([]);
   });
 });
 
