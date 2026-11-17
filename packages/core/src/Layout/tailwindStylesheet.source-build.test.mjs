@@ -852,6 +852,16 @@ import {
   chatComposerDrawerLabelClassName,
   chatComposerDrawerToggleContentClassName,
   chatComposerDrawerToggleRowClassName,
+  chatComposerBodyClassName,
+  chatComposerFooterClassName,
+  chatComposerFooterLeftClassName,
+  chatComposerFooterRightClassName,
+  chatComposerHeaderClassName,
+  chatComposerHeaderLeftClassName,
+  chatComposerHeaderRightClassName,
+  chatComposerInputAreaClassName,
+  chatComposerRootClassName,
+  chatComposerStatusClassName,
   chatLayoutBlurLayerClassName,
   chatLayoutDockClassName,
   chatFocusRingInsetClassName,
@@ -2798,6 +2808,25 @@ function familyClassNames() {
   add(chatComposerDrawerContentGridClassName(false));
   add(chatComposerDrawerContentClassName(true));
   add(chatComposerDrawerContentClassName(false));
+  // ChatComposer: the shell both ways, the body at both densities and the
+  // footer's interruptible arm, then the slot rows and the status bar in all
+  // four shapes.
+  add(chatComposerRootClassName(true));
+  add(chatComposerRootClassName(false));
+  add(chatComposerBodyClassName('compact'));
+  add(chatComposerBodyClassName('balanced'));
+  add(chatComposerHeaderClassName);
+  add(chatComposerHeaderLeftClassName);
+  add(chatComposerHeaderRightClassName);
+  add(chatComposerInputAreaClassName);
+  add(chatComposerFooterClassName);
+  add(chatComposerFooterLeftClassName);
+  add(chatComposerFooterRightClassName(true));
+  add(chatComposerFooterRightClassName(false));
+  add(chatComposerStatusClassName('top', 'error'));
+  add(chatComposerStatusClassName('bottom', 'error'));
+  add(chatComposerStatusClassName('top', 'warning'));
+  add(chatComposerStatusClassName('bottom', 'warning'));
   // ChatLayout: the root in both scroll modes, the message area's density and
   // end room, the dock box, the frosted layer, the dock's own inset and its
   // inner column.
@@ -3071,9 +3100,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // wrap states, its numbered divider, the row in every number and diff
     // combination, every tint, the marker and the two size and cluster classes
     // reuse almost every code font, spacing and border utility the siblings
-    // already spell. The ceiling keeps its usual headroom above the measured
-    // number.
-    expect(stylesheet.rules.size).toBeLessThan(1760);
+    // already spell. The chat drawer's panel, toggle row, summary and
+    // collapsing content, then the composer's shell, body and status bar in its
+    // four shapes, took the sheet to 1762. The ceiling keeps its usual headroom
+    // above the measured number.
+    expect(stylesheet.rules.size).toBeLessThan(1800);
   });
 
   it('keeps the scrim takeover pin under prefers-reduced-motion', () => {

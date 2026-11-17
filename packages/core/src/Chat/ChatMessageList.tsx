@@ -225,14 +225,16 @@ export function ChatMessageList({
         data-testid={testId}
         {...mergeProps(
           themeProps('chat-message-list', {density}),
-          stylex.props(focusOutlineStyles.focusVisible),
           // A tab stop: the shared ring, which a theme restyles through the
           // focus-outline tokens. The log fills the area that scrolls it,
           // which clips at its edges, so the ring sits inside its own box.
-          tw(
-            chatMessageListColumnClassName,
-            chatFocusRingInsetClassName,
-            xstyle && stylex.props(xstyle).className,
+          mergeProps(
+            tw(
+              chatMessageListColumnClassName,
+              chatFocusRingInsetClassName,
+              xstyle && stylex.props(xstyle).className,
+            ),
+            stylex.props(focusOutlineStyles.focusVisible),
           ),
           className,
           style,

@@ -642,3 +642,108 @@ export function chatDictationBarClassName(size: 'sm' | 'md'): string {
     size === 'sm' ? 'w-[2px]' : 'w-[2.5px]',
   );
 }
+
+// ---------------------------------------------------------------------------
+// ChatComposer
+// ---------------------------------------------------------------------------
+
+/**
+ * The shell. It owns the two numbers every nested radius and inset reads: the
+ * chat radius and the body padding, so a density change reaches both. The
+ * button radius is concentric with the shell, and it stays on its own variable
+ * so only buttons follow the shell's curve.
+ */
+export function chatComposerRootClassName(isDisabled: boolean): string {
+  return tw(
+    'relative z-0 isolate flex flex-col',
+    '[--_chat-composer-radius:var(--radius-chat)]',
+    '[--_chat-composer-padding:var(--spacing-3)]',
+    '[--_button-radius:max(var(--radius-element),calc(var(--_chat-composer-radius)-var(--_chat-composer-padding)))]',
+    isDisabled && 'opacity-60 pointer-events-none',
+  );
+}
+
+/**
+ * The body reads its padding from the shell's variable, and compact rewrites
+ * that variable rather than the padding, so the flat elevation's inset border
+ * calculation follows the same value.
+ */
+export function chatComposerBodyClassName(density: ChatDensity): string {
+  return tw(
+    'relative z-[2] flex flex-col p-[var(--_chat-composer-padding)]',
+    'rounded-[var(--_chat-composer-radius)] bg-[var(--color-background-popover)]',
+    'cursor-text [&:is(:disabled,[aria-disabled="true"])]:cursor-default',
+    'transition-[box-shadow,border-color] ease-[var(--ease-standard)]',
+    density === 'compact'
+      ? 'gap-1 [--_chat-composer-padding:var(--spacing-2)]'
+      : 'gap-2',
+  );
+}
+
+export const chatComposerHeaderClassName =
+  'flex items-center justify-between gap-2 min-h-7';
+
+export const chatComposerHeaderLeftClassName = 'flex items-center gap-1';
+
+/** The contextual slot: supporting type, pushed to the trailing edge. */
+export const chatComposerHeaderRightClassName = tw(
+  'flex items-center gap-2 ms-auto',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+export const chatComposerInputAreaClassName = 'flex flex-col';
+
+/** The footer row, as tall as the send button the slots are meant to hold. */
+export const chatComposerFooterClassName =
+  'flex items-center justify-between gap-2 min-h-8';
+
+export const chatComposerFooterLeftClassName = 'flex items-center gap-1';
+
+/**
+ * While a response streams the composer may block editing; the right side
+ * takes hit-testing back so its Stop action stays reachable.
+ */
+export function chatComposerFooterRightClassName(
+  isInterruptible: boolean,
+): string {
+  return tw(
+    'flex items-center gap-1',
+    isInterruptible && 'pointer-events-auto',
+  );
+}
+
+/**
+ * The status bar tucks under (or over) the body by one radius, so it shares the
+ * body's corners on that edge and reads the shell's padding.
+ */
+export function chatComposerStatusClassName(
+  position: 'top' | 'bottom',
+  type: 'error' | 'warning',
+): string {
+  return tw(
+    'relative z-0 flex items-center gap-2 px-4',
+    'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+    'font-[family-name:var(--font-family-body)]',
+    position === 'top'
+      ? tw(
+          'pt-[var(--_chat-composer-padding)]',
+          'pb-[calc(var(--_chat-composer-padding)+var(--_chat-composer-radius))]',
+          '-mb-[var(--_chat-composer-radius)]',
+          'rounded-ss-[var(--_chat-composer-radius)] rounded-se-[var(--_chat-composer-radius)]',
+        )
+      : tw(
+          'pt-[calc(var(--_chat-composer-padding)+var(--_chat-composer-radius))]',
+          'pb-[var(--_chat-composer-padding)]',
+          '-mt-[var(--_chat-composer-radius)]',
+          'rounded-es-[var(--_chat-composer-radius)] rounded-ee-[var(--_chat-composer-radius)]',
+        ),
+    type === 'error'
+      ? 'bg-[var(--color-error-muted)] text-[color:var(--color-on-error-muted)]'
+      : 'bg-[var(--color-warning-muted)] text-[color:var(--color-on-warning-muted)]',
+    // Forced colors replace the fill with Canvas; this boundary keeps its
+    // shape visible.
+    'forced-colors:outline-1 forced-colors:[outline-style:solid]',
+    'forced-colors:[outline-color:CanvasText] forced-colors:[outline-offset:-1px]',
+  );
+}
