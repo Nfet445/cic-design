@@ -220,6 +220,14 @@ import {
   nativeDateFieldOverlayValueClassName,
   nativeDateFieldSlotClassName,
   nativeDateFieldWrapperClassName,
+  scrollWheelBandClassName,
+  scrollWheelColumnClassName,
+  scrollWheelItemActiveClassName,
+  scrollWheelItemClassName,
+  scrollWheelItemFadeClassName,
+  scrollWheelItemInnerClassName,
+  scrollWheelItemInnerTipClassName,
+  scrollWheelScrollerClassName,
 } from '../DateInput/dateInputClasses';
 import {
   fileInputBoxClassName,
@@ -1563,8 +1571,18 @@ function familyClassNames() {
     nativeDateFieldOverlayClassName,
     nativeDateFieldOverlayValueClassName,
     nativeDateFieldOverlayPlaceholderClassName,
+    scrollWheelColumnClassName,
+    scrollWheelBandClassName,
+    scrollWheelScrollerClassName,
+    scrollWheelItemClassName,
+    scrollWheelItemFadeClassName,
+    scrollWheelItemActiveClassName,
+    scrollWheelItemInnerClassName,
   ]) {
     add(className);
+  }
+  for (const isDisabled of [false, true]) {
+    add(scrollWheelItemInnerTipClassName({isDisabled}));
   }
   for (const size of ['sm', 'md', 'lg']) {
     add(dateRangeInputSizeClassName({size}));
@@ -2637,7 +2655,9 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // 1402 with every family above registered, so the ceiling carries the usual
     // headroom above that number rather than below it. The sheet host's dialog,
     // its scrim arms, the switcher positioner and flow wrapper then measured
-    // 1424, inside that headroom.
+    // 1424, and the scroll wheel's column, band, scrollport, row, its colour
+    // fade and the three tip arms added 10 more — the pane and edge padding are
+    // literals it spells alone. The sheet measures 1434 here, inside the ceiling.
     expect(stylesheet.rules.size).toBeLessThan(1460);
   });
 
