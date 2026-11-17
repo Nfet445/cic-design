@@ -37,7 +37,7 @@ import {picker} from '../motion/uikit/picker';
 import {registerScrollTable, scroll} from '../motion/uikit/scroll';
 import {registerSpringsTable, springs} from '../motion/uikit/springs';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {mergeProps} from '../utils';
+import {mergeProps} from '../utils/mergeProps';
 import {mod, nearestLoopCopy} from '../hooks/usePager';
 import {lockSelection} from '../gestures/selectionLock';
 import {

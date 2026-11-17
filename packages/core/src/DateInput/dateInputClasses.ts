@@ -127,6 +127,8 @@ export const pickerWheelColumnClassName = tw(
  * again as the strip moves. It sits inside the column, so it never clips the
  * column's focus ring.
  */
+// The fade is a mask, not paint: its stops are alpha-only black, which no
+// theme colour names, so the values are literal.
 export const pickerWheelFadeClassName = tw(
   'absolute',
   'inset-0',
