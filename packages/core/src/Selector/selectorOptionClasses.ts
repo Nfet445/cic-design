@@ -141,3 +141,12 @@ export const SELECTOR_OPTION_EMBEDDED_CLASS = tw(
   '[border-radius:0]',
   'min-w-0',
 );
+
+/** The shared small-screen sheet takes the width the bottom sheet offers it. */
+export const SELECTOR_BOTTOM_SHEET_CONTENT_CLASS = 'w-full';
+
+/** The sheet's own heading sits above the list, inset clear of its edge. */
+export const SELECTOR_BOTTOM_SHEET_HEADING_CLASS = tw(
+  '[margin-block-end:var(--spacing-2)]',
+  '[margin-inline:var(--spacing-3)]',
+);

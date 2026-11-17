@@ -331,6 +331,8 @@ import {
   scrollableAreaViewportClassName,
 } from '../ScrollableArea/scrollableAreaClasses';
 import {
+  SELECTOR_BOTTOM_SHEET_CONTENT_CLASS,
+  SELECTOR_BOTTOM_SHEET_HEADING_CLASS,
   SELECTOR_OPTION_EMBEDDED_CLASS,
   SELECTOR_ROW_CONTENT_CLASS,
   SELECTOR_ROW_MARK_COLUMN_CLASS,
@@ -1501,6 +1503,8 @@ function familyClassNames() {
   add(SELECTOR_ROW_CONTENT_CLASS);
   add(SELECTOR_ROW_MARK_COLUMN_CLASS);
   add(SELECTOR_OPTION_EMBEDDED_CLASS);
+  add(SELECTOR_BOTTOM_SHEET_CONTENT_CLASS);
+  add(SELECTOR_BOTTOM_SHEET_HEADING_CLASS);
   // The nav heading popover: its column, both row states at every size, and
   // the minimum width each size states as its own fallback.
   add(navHeadingMenuClassName);
