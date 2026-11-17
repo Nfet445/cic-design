@@ -624,6 +624,23 @@ import {
   emptyStateTitleCompactClassName,
 } from '../EmptyState/emptyStateClasses';
 import {timestampClassName} from '../Timestamp/timestampClasses';
+import {timerClassName} from '../Timer/timerClasses';
+import {
+  metadataListClassName,
+  metadataListColumnsClassName,
+  metadataListGridClassName,
+  metadataListResetClassName,
+  metadataListTitleClassName,
+  metadataListToggleClassName,
+} from '../MetadataList/metadataListClasses';
+import {
+  metadataListItemIconClassName,
+  metadataListItemLabelClassName,
+  metadataListItemStackedClassName,
+  metadataListItemStackedLabelClassName,
+  metadataListItemStackedValueClassName,
+  metadataListItemValueClassName,
+} from '../MetadataList/metadataListItemClasses';
 import {
   chatMessageMetadataAssistantClassName,
   chatMessageMetadataClassName,
@@ -2057,6 +2074,26 @@ function familyClassNames() {
   add(timestampHoverCardValueClassName);
   add(timestampHoverCardValueCellsClassName);
   add(timestampHoverCardActionClassName);
+  // Timer: the inherited-property reset of its `<time>`.
+  add(timerClassName);
+  // MetadataList: the root, the title, the `dl` reset, the three grid arms,
+  // the runtime grid-template class and the show-more toggle.
+  add(metadataListClassName);
+  add(metadataListTitleClassName);
+  add(metadataListResetClassName);
+  add(metadataListColumnsClassName);
+  for (const value of Object.values(metadataListGridClassName)) {
+    add(value);
+  }
+  add(metadataListToggleClassName);
+  // MetadataListItem: the label, the value, the stacked wrapper with its own
+  // label and value, and the icon wrapper.
+  add(metadataListItemLabelClassName);
+  add(metadataListItemValueClassName);
+  add(metadataListItemStackedClassName);
+  add(metadataListItemStackedLabelClassName);
+  add(metadataListItemStackedValueClassName);
+  add(metadataListItemIconClassName);
   for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
     add(value);
   }
