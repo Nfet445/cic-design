@@ -548,6 +548,35 @@ describe('dist/astryx-tailwind.css declarations', () => {
     ).toContain('tr[data-table-final-row=true]>&{border-bottom-width:0;}');
   });
 
+  it('aligns a body cell on the axis the table asks for', () => {
+    // The cell's own test reads the class; this pins what the class paints.
+    expect(stylesheet.ruleFor('align-middle')).toBe('vertical-align:middle;');
+    expect(stylesheet.ruleFor('align-top')).toBe('vertical-align:top;');
+    expect(stylesheet.ruleFor('align-bottom')).toBe('vertical-align:bottom;');
+  });
+
+  it('moves the row highlight on the shared duration and easing', () => {
+    expect(stylesheet.ruleFor('transition-[background-color]')).toContain(
+      'transition-property:background-color;',
+    );
+    expect(stylesheet.ruleFor('duration-[var(--duration-fast)]')).toContain(
+      'transition-duration:var(--duration-fast);',
+    );
+    expect(stylesheet.ruleFor('ease-[var(--ease-standard)]')).toContain(
+      'transition-timing-function:var(--ease-standard);',
+    );
+  });
+
+  it('wraps a body cell instead of clipping it when the table asks for wrap', () => {
+    expect(stylesheet.ruleFor('[overflow-wrap:break-word]')).toBe(
+      'overflow-wrap:break-word;',
+    );
+    expect(stylesheet.ruleFor('[word-break:break-word]')).toBe(
+      'word-break:break-word;',
+    );
+    expect(stylesheet.ruleFor('text-ellipsis')).toBe('text-overflow:ellipsis;');
+  });
+
   it('draws the section divider on one border width', () => {
     expect(
       stylesheet.ruleFor('[border-top:1px_solid_var(--color-border)]'),
