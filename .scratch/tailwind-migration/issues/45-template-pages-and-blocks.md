@@ -306,6 +306,15 @@ Untouched, with what each needs (path — `xstyle=` sites / maps /
 - `pages/canvas-editor/page.tsx` — 25 / 6 / no — held back by the task for its
   own pass
 
+- Two arbitrary-value utilities for the same property do not resolve by
+  class order: the stylesheet decides, and Tailwind sorts those rules itself.
+  `ComplexSelectorShowcase` selected a cell by adding `styles.cellSelected` over
+  `styles.cell`, which made the win depend on generation order. The markup
+  already carries `aria-selected`, so the chosen look lives inside `styles.cell`
+  as `aria-selected:` variants and one class covers both states. Any later
+  template that overrode a StyleX property in a second style object needs the
+  same treatment.
+
 Window 4 checks: the three templates and the updated test parse with
 `node_modules/.bin/esbuild --loader:.tsx=tsx`; `prettier --check` clean;
 `eslint` no issues; `vitest run --project node
