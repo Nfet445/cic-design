@@ -26,7 +26,6 @@ import {
 import {isRenderable} from '../utils/isRenderable';
 import {observeMutations} from '../utils/sharedMutationObserver';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
-import * as stylex from '@stylexjs/stylex';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {
   useHoverCard,
@@ -34,8 +33,12 @@ import {
   type HoverCardTouchTrigger,
 } from './useHoverCard';
 import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
+import {tw} from '../utils/tw';
+import {
+  hoverCardHoverIndicationClassName,
+  hoverCardWrapperClassName,
+} from './hoverCardClasses';
 import type {BaseProps} from '../BaseProps';
-import {colorVars, spacingVars} from '../theme/tokens.stylex';
 
 export type {
   HoverCardFocusTrigger,
@@ -48,21 +51,6 @@ import {
   labelledTriggerAttributes,
   popupTriggerSupport,
 } from './popupTrigger';
-
-const styles = stylex.create({
-  wrapperContents: {
-    display: 'contents',
-  },
-  wrapperInline: {
-    display: 'inline',
-  },
-  hoverIndication: {
-    textDecorationLine: 'underline',
-    textDecorationStyle: 'dashed',
-    textDecorationColor: colorVars['--color-border-emphasized'],
-    textUnderlineOffset: spacingVars['--spacing-0-5'],
-  },
-});
 
 export interface HoverCardProps extends Pick<
   BaseProps,
@@ -381,6 +369,9 @@ export function HoverCard({
 
   // For text-only children: use inline span with ref on wrapper
   if (textOnly) {
+    // The span is a tab stop Astryx adds: it draws the shared ring, which a
+    // theme restyles through the focus-outline tokens.
+    const focusProps = focusOutlineProps.focusVisible();
     return (
       <>
         <span
@@ -398,9 +389,11 @@ export function HoverCard({
           aria-describedby={label ? undefined : hoverCard.describedBy}
           // The span is a tab stop Astryx adds: it draws the shared ring,
           // which a theme restyles through the focus-outline tokens.
-          {...focusOutlineProps.focusVisible(
-            styles.wrapperInline,
-            showHoverIndication && styles.hoverIndication,
+          {...focusProps}
+          className={tw(
+            focusProps.className,
+            hoverCardWrapperClassName.inline,
+            showHoverIndication && hoverCardHoverIndicationClassName,
           )}>
           {children}
         </span>
@@ -412,7 +405,7 @@ export function HoverCard({
   // For element children: use inline-safe display:contents, ref on first child
   return (
     <>
-      <span ref={wrapperRef} {...stylex.props(styles.wrapperContents)}>
+      <span ref={wrapperRef} className={hoverCardWrapperClassName.contents}>
         {children}
       </span>
       {renderedHoverCard}
