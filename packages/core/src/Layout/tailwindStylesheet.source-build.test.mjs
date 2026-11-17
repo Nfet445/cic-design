@@ -336,6 +336,7 @@ import {
   SELECTOR_OPTION_EMBEDDED_CLASS,
   SELECTOR_ROW_CONTENT_CLASS,
   SELECTOR_ROW_MARK_COLUMN_CLASS,
+  SELECTOR_TRIGGER_SIZE_CLASS,
   selectorOptionRowClassName,
 } from '../Selector/selectorOptionClasses';
 import {
@@ -1505,6 +1506,9 @@ function familyClassNames() {
   add(SELECTOR_OPTION_EMBEDDED_CLASS);
   add(SELECTOR_BOTTOM_SHEET_CONTENT_CLASS);
   add(SELECTOR_BOTTOM_SHEET_HEADING_CLASS);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(SELECTOR_TRIGGER_SIZE_CLASS[size]);
+  }
   // The nav heading popover: its column, both row states at every size, and
   // the minimum width each size states as its own fallback.
   add(navHeadingMenuClassName);

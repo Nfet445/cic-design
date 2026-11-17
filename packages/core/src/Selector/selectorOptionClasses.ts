@@ -150,3 +150,34 @@ export const SELECTOR_BOTTOM_SHEET_HEADING_CLASS = tw(
   '[margin-block-end:var(--spacing-2)]',
   '[margin-inline:var(--spacing-3)]',
 );
+
+/**
+ * The single-line trigger's box per size: the token's floor, the text line and
+ * the padding that centres it. The line box floors at the 20px clear control
+ * and 1rem icons, and caps at what the size token's borders leave, so a
+ * spacing scale taller than the token cannot push a one-line trigger past it.
+ * It never goes below 1.5em of the trigger's own font, so label text too large
+ * for the token keeps room instead of being clipped. Ghost and grouped
+ * triggers keep the uncapped line box, so these classes sit beside the
+ * trigger's own box rather than carry it.
+ */
+export const SELECTOR_TRIGGER_SIZE_CLASS: Record<
+  SelectorOptionRowSize,
+  string
+> = {
+  sm: tw(
+    '[min-height:var(--size-element-sm)]',
+    '[line-height:max(min(var(--spacing-5),max(var(--size-element-sm)-2*var(--border-width),1.5em)),20px,1rem)]',
+    '[padding-block:calc((var(--size-element-sm)-max(min(var(--spacing-5),max(var(--size-element-sm)-2*var(--border-width),1.5em)),20px,1rem)-2*var(--border-width))/2)]',
+  ),
+  md: tw(
+    '[min-height:var(--size-element-md)]',
+    '[line-height:max(min(var(--spacing-5),max(var(--size-element-md)-2*var(--border-width),1.5em)),20px,1rem)]',
+    '[padding-block:calc((var(--size-element-md)-max(min(var(--spacing-5),max(var(--size-element-md)-2*var(--border-width),1.5em)),20px,1rem)-2*var(--border-width))/2)]',
+  ),
+  lg: tw(
+    '[min-height:var(--size-element-lg)]',
+    '[line-height:max(min(var(--spacing-5),max(var(--size-element-lg)-2*var(--border-width),1.5em)),20px,1rem)]',
+    '[padding-block:calc((var(--size-element-lg)-max(min(var(--spacing-5),max(var(--size-element-lg)-2*var(--border-width),1.5em)),20px,1rem)-2*var(--border-width))/2)]',
+  ),
+};
