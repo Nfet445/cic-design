@@ -16,6 +16,7 @@ import {fileURLToPath} from 'node:url';
 
 import {buildTailwindStylesheet} from '../../build/src/tailwind-stylesheet.mjs';
 import {describeTailwindStylesheet} from '../../core/src/__tests__/classNameAssertions';
+import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -27,7 +28,22 @@ const sheet = await buildTailwindStylesheet({
 
 /** Every class this package's migrated maps can emit, one token each. */
 function labClassNames() {
-  return [];
+  const names = new Set();
+  const add = value => {
+    for (const className of value.split(/\s+/)) {
+      if (className !== '') {
+        names.add(className);
+      }
+    }
+  };
+  for (const map of [chatUnreadDividerClasses]) {
+    for (const [name, value] of Object.entries(map)) {
+      if (name.endsWith('ClassName')) {
+        add(value);
+      }
+    }
+  }
+  return [...names];
 }
 
 // Lab's StyleX sheet still carries most of the package: 12 514 B gzip when
