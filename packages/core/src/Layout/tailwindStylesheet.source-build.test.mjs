@@ -602,6 +602,19 @@ import {
   timestampHoverCardValueClassName,
 } from '../Timestamp/timestampHoverCardClasses';
 import {
+  spinnerArcClassName,
+  spinnerCircleClassName,
+  spinnerClassName,
+  spinnerRingClassName,
+  spinnerRotorBoxClassName,
+  spinnerRotorTurnClassName,
+  spinnerShadeClassName,
+  spinnerSizeClassName,
+  spinnerTrackClassName,
+  spinnerTrackOpacityClassName,
+  spinnerWrapperClassName,
+} from '../Spinner/spinnerClasses';
+import {
   skeletonAnimateClassName,
   skeletonClassName,
   skeletonDelayClassName,
@@ -1960,6 +1973,26 @@ function familyClassNames() {
   for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
     add(value);
   }
+  // Spinner: the wrapper, the box with its three geometry variables, the ring,
+  // the rotor's box and its one animation shorthand, the circle, the arc, the
+  // track and one class per size, per shade and per track alpha.
+  add(spinnerWrapperClassName);
+  add(spinnerClassName);
+  add(spinnerRingClassName);
+  add(spinnerRotorBoxClassName);
+  add(spinnerRotorTurnClassName);
+  add(spinnerCircleClassName);
+  add(spinnerArcClassName);
+  add(spinnerTrackClassName);
+  for (const value of Object.values(spinnerSizeClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(spinnerShadeClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(spinnerTrackOpacityClassName)) {
+    add(value);
+  }
   // Skeleton: the placeholder, the pulse, the two utility classes that read
   // the props' variables, and one class per radius.
   add(skeletonClassName);
@@ -2082,9 +2115,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // mostly one rule each, with the marker's two coarse-pointer arms and the
     // row's three radius parts already spelled elsewhere. Skeleton's map added
     // 25 — the placeholder, the pulse, the two classes that read the props'
-    // variables, and one per radius. With every family above the sheet sits at
-    // 1212, so the ceiling follows the sum rather than one side.
-    expect(stylesheet.rules.size).toBeLessThan(1260);
+    // variables, and one per radius. With every family above the sheet sat at
+    // 1212; Spinner's box, ring, rotor, circle, arc, track and its twelve
+    // size, shade and alpha classes took it to 1280, so the ceiling follows
+    // the sum rather than one side.
+    expect(stylesheet.rules.size).toBeLessThan(1300);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
