@@ -36,7 +36,9 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {DateInput, type DateInputProps} from './DateInput';
+import {nativeDateFieldInvalidTextClassName} from './dateInputClasses';
 import type {ISODateString} from '../utils';
 import type * as NativeDateSegments from './nativeDateSegments';
 import {
@@ -108,21 +110,6 @@ function getInput(): HTMLInputElement {
 }
 
 /** The CSS rules that apply to an element, for the paint-level assertions. */
-function rulesFor(el: Element): string {
-  const classes = new Set(el.className.split(/\s+/).filter(Boolean));
-  return Array.from(document.styleSheets)
-    .flatMap(sheet => {
-      try {
-        return Array.from(sheet.cssRules);
-      } catch {
-        return [];
-      }
-    })
-    .map(rule => rule.cssText)
-    .filter(text => [...classes].some(cls => text.includes(`.${cls}`)))
-    .join(' ');
-}
-
 // A transition that suspends for good: React renders its element, then keeps
 // the committed tree and never commits that render.
 const forever = new Promise<never>(() => {});
@@ -586,11 +573,11 @@ describe('DateInput nativePicker', () => {
     stubPointer(true);
     render(<DateInput label="Date" value="2026-01-25" onChange={() => {}} />);
 
-    const rules = rulesFor(getInput());
     // One transparent colour covers Chromium's `::-webkit-datetime-edit` and
     // Firefox's plain text; `-webkit-text-fill-color` is what wins in WebKit.
-    expect(rules).toContain('color: transparent');
-    expect(rules).toContain('-webkit-text-fill-color: transparent');
+    expectClassSet(getInput(), {
+      includes: ['text-transparent', '[-webkit-text-fill-color:transparent]'],
+    });
   });
 
   it('bounds the overlay so a long date cannot paint past it', () => {
@@ -604,17 +591,20 @@ describe('DateInput nativePicker', () => {
       />,
     );
 
-    const rules = rulesFor(screen.getByText('September 30, 2026'));
     // Without the end inset the overlay is shrink-to-fit and a long date runs
     // over the clear button — measured 24px across it on an iPhone.
-    expect(rules).toContain('inset-inline-end: 0');
     // `text-overflow` only applies to a BLOCK container: on a flex one a
     // too-long date hard-clips mid-glyph instead (measured identical to
     // `text-overflow: clip` in WebKit and Chromium). Centring then comes from
     // the line box, so the overlay must carry the input's own leading.
-    expect(rules).toContain('display: block');
-    expect(rules).toContain('text-overflow: ellipsis');
-    expect(rules).toContain('line-height: var(--text-body-leading)');
+    expectClassSet(screen.getByText('September 30, 2026'), {
+      includes: [
+        'inset-0',
+        'block',
+        'text-ellipsis',
+        'leading-[var(--text-body-leading)]',
+      ],
+    });
   });
 
   // ===========================================================================
@@ -798,8 +788,8 @@ describe('DateInput nativePicker', () => {
     // `-webkit-text-fill-color` is what wins inside a date control, and
     // unlike a bare `color:` cannot be confused with the wrapper's
     // `background-color: transparent`.
-    expect(rulesFor(getInput())).not.toContain(
-      '-webkit-text-fill-color: transparent',
+    expect(classesOf(getInput())).not.toContain(
+      '[-webkit-text-fill-color:transparent]',
     );
   });
 
@@ -812,9 +802,9 @@ describe('DateInput nativePicker', () => {
     fireEvent.blur(getInput());
 
     expect(screen.getByText('January 25, 2026')).toBeInTheDocument();
-    expect(rulesFor(getInput())).toContain(
-      '-webkit-text-fill-color: transparent',
-    );
+    expectClassSet(getInput(), {
+      includes: ['[-webkit-text-fill-color:transparent]'],
+    });
   });
 
   it('stands aside for the engine’s placeholder while empty and focused', () => {
@@ -1094,7 +1084,8 @@ describe('DateInput native rejected entries', () => {
         />,
       );
       const input = getInput();
-      const isStyledInvalid = () => /\.inputInvalid\b/.test(input.className);
+      const isStyledInvalid = () =>
+        classesOf(input).includes(nativeDateFieldInvalidTextClassName);
       fireEvent.focus(input);
       for (const date of ['0002-03-15', '2026-03-25']) {
         fireEvent.change(input, {target: {value: date}});

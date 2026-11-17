@@ -3091,22 +3091,12 @@ describe('DateInput — scroll CSS (definition-level)', () => {
     // field that sizes itself differently on one of them changes height for
     // a reason the call site never asked about.
     //
-    // Compared with formatting normalized away: the two files write the same
-    // declarations differently, one entry per line against one per size.
-    const sizeMap = (file: string) => {
-      const source = read(file);
-      const start = source.indexOf('const sizeStyles = stylex.create(');
-      expect(start).toBeGreaterThan(-1);
-      return source
-        .slice(start, source.indexOf('});', start))
-        .replace(/\/\/.*$/gm, '')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/\s+/g, '')
-        .replace(/,(?=[}\]])/g, '');
-    };
-    expect(sizeMap('TouchDateField.tsx')).toEqual(
-      sizeMap('NativeDateField.tsx'),
-    );
+    // Both read the one size class, so they cannot drift apart.
+    for (const file of ['TouchDateField.tsx', 'NativeDateField.tsx']) {
+      expect(read(file)).toMatch(
+        /tw\([^)]*dateInputSizeClassName\(\{size\}\),[^)]*controlClassName/,
+      );
+    }
   });
 
   it('floors the month arrows too — Button tops out at 36px', () => {
