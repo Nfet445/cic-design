@@ -24,6 +24,7 @@ import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
 import * as chatVirtualizerClasses from './Chat/chatVirtualizerClasses';
 import * as circularProgressClasses from './CircularProgress/circularProgressClasses';
 import * as codeEditorClasses from './CodeEditor/codeEditorClasses';
+import * as scrollEdgeEffectClasses from './internal/scrollEdgeEffectClasses';
 import * as svgIconClasses from './SVGIcon/svgIconClasses';
 import * as commentPinClasses from './CommentPin/commentPinClasses';
 import * as commentActionsClasses from './Comments/commentActionsClasses';
@@ -95,6 +96,7 @@ function labClassNames() {
     pageControlClasses,
     radialChartClasses,
     scheduleClasses,
+    scrollEdgeEffectClasses,
     statClasses,
     tabBarClasses,
     transferListClasses,

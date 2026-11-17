@@ -373,13 +373,11 @@ describe('useScrollEdgeEffect', () => {
     const layer = getByTestId('layer');
     expect(layer.getAttribute('aria-hidden')).toBe('true');
     expect(getByTestId('sentinel').getAttribute('aria-hidden')).toBe('true');
-    // The veil's colour and height are runtime values, StyleX custom
-    // properties on the element. The height is the soft extent past the
-    // bar's bottom, and the bar's bottom under Reduce Transparency.
+    // The veil's colour and the bar's bottom are runtime values, so they
+    // travel as custom properties the layer's classes read.
     const style = layer.getAttribute('style') ?? '';
-    expect(style).toContain('rgb(1, 2, 3)');
-    expect(style).toContain('calc(44px + 54.8px)');
-    expect(style).toContain('44px');
+    expect(style).toContain('--_scroll-edge-color: rgb(1, 2, 3)');
+    expect(style).toContain('--_scroll-edge-bar-bottom: 44px');
   });
 
   it("adds the caller's sentinel styles, e.g. its static position", () => {
@@ -719,17 +717,10 @@ describe('useScrollEdgeEffect', () => {
 
 describe('the veil follows the constants table', () => {
   const source = readFileSync(
-    join(__dirname, 'useScrollEdgeEffect.ts'),
+    join(__dirname, 'scrollEdgeEffectClasses.ts'),
     'utf8',
   );
-
-  /** The literal block of `styles.<name>` in useScrollEdgeEffect.ts. */
-  function styleBlock(name: string): string {
-    const start = source.indexOf(`\n  ${name}: {`);
-    expect(start, `styles.${name} not found`).toBeGreaterThan(-1);
-    const end = source.indexOf('\n  },', start);
-    return source.slice(start, end);
-  }
+  const hook = readFileSync(join(__dirname, 'useScrollEdgeEffect.ts'), 'utf8');
 
   // The veil's edge is the bar's bottom. The soft extent reaches
   // `softExtentPt` past it, so the edge is that far above the layer's bottom.
@@ -740,22 +731,24 @@ describe('the veil follows the constants table', () => {
 
   it('the layer reaches softExtentPt past the bar; Reduce Transparency ends it at the bar', () => {
     expect(source).toContain(
-      'dynamicStyles.geometry(`calc(${edge} + ' +
-        edgeAboveBottom +
-        'px)`, edge, color)',
+      `h-[calc(var(--_scroll-edge-bar-bottom)_+_${edgeAboveBottom}px)]`,
     );
+    expect(source).toContain(
+      '[@media(prefers-reduced-transparency:reduce)]:h-[var(--_scroll-edge-bar-bottom)]',
+    );
+    // The bar's bottom edge and the colour are the caller's lengths.
+    expect(hook).toContain("'--_scroll-edge-bar-bottom': edge,");
+    expect(hook).toContain("'--_scroll-edge-color': color,");
   });
 
   it('the layer’s will-change follows the hook’s promotion property', () => {
-    expect(styleBlock('layer')).toContain(
-      "willChange: 'var(--_scroll-edge-will-change, auto)',",
+    expect(source).toContain(
+      'will-change-[var(--_scroll-edge-will-change,auto)]',
     );
   });
 
   it('the sentinel is switchPt tall', () => {
-    expect(styleBlock('sentinel')).toContain(
-      `height: ${bars.scrollEdgeEffect.switchPt},`,
-    );
+    expect(source).toContain(`h-[${bars.scrollEdgeEffect.switchPt}px]`);
   });
 
   // Denser than UIKit's 0.85: 0.95, with the edge at the bar's bottom. A
@@ -772,8 +765,9 @@ describe('the veil follows the constants table', () => {
       const offset = Math.round((uikitEdge - d) * 10) / 10;
       stops.push(`rgb(0 0 0 / ${alpha.toFixed(3)}) calc(100% - ${offset}px)`);
     }
-    expect(styleBlock('layer')).toContain(
-      `'linear-gradient(to bottom, ${stops.join(', ')})'`,
+    // A class spells every space as an underscore.
+    expect(source).toContain(
+      `[mask-image:${`linear-gradient(to bottom, ${stops.join(', ')})`.replaceAll(' ', '_')}]`,
     );
   });
 });
