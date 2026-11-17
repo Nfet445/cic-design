@@ -23,6 +23,7 @@ import * as chatTypingIndicatorClasses from './Chat/chatTypingIndicatorClasses';
 import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
 import * as commentActionsClasses from './Comments/commentActionsClasses';
 import * as commentMarkdownClasses from './Comments/commentMarkdownClasses';
+import * as commentRowClasses from './Comments/commentRowClasses';
 import * as commentsClasses from './Comments/commentsClasses';
 import * as diffViewerClasses from './DiffViewer/diffViewerClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
@@ -55,6 +56,7 @@ function labClassNames() {
     chatUnreadDividerClasses,
     commentActionsClasses,
     commentMarkdownClasses,
+    commentRowClasses,
     commentsClasses,
     diffViewerClasses,
     listInputClasses,
