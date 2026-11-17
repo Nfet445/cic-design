@@ -44,6 +44,11 @@ content = content.replaceAll(
   'resolve(__dirname, "swizzle-marker.js")',
   'resolve(__dirname, "../src/swizzle-marker.js")',
 );
+// The generated-sheet reader (@astryxdesign/build shipped, not compiled) too.
+content = content.replaceAll(
+  'resolve(__dirname, "source-stylesheet.js")',
+  'resolve(__dirname, "../src/source-stylesheet.js")',
+);
 writeFileSync('dist/vite.mjs', content);
 
 console.log('Built dist/vite.mjs');
