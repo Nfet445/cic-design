@@ -373,6 +373,10 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // A per-instance minimum width: the `menuWidth` prop writes the variable and
   // the width class reads it. No standard property maps the prop onto a theme.
   '--astryx-context-menu-min-inline-size',
+  // Markdown's `contentWidth` prop writes both on each block and a class reads
+  // them, so no standard property is the theme's lever.
+  '--astryx-markdown-prose-width',
+  '--astryx-markdown-block-width',
   // The `minWidth` prop writes it and each size class reads it with its own
   // fallback, so no standard property is the theme's lever.
   '--astryx-nav-heading-menu-min-inline-size',
