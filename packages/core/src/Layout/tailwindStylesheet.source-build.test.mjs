@@ -40,6 +40,11 @@ import {
 } from '../Field/fieldLabelClasses';
 import {inputClearButtonClassName} from '../Field/inputClearButtonClasses';
 import {
+  fileInputBoxClassName,
+  fileInputHiddenInputClassName,
+  fileInputTextClassName,
+} from '../FileInput/fileInputClasses';
+import {
   textAreaClassName,
   textAreaCounterClassName,
   textAreaEndSlotClassName,
@@ -480,6 +485,36 @@ function familyClassNames() {
       }
     }
   }
+  for (const isDropzone of [false, true]) {
+    for (const isDisabled of [false, true]) {
+      for (const [isDragOver, isBusy] of [
+        [false, false],
+        [true, false],
+        [false, true],
+      ]) {
+        for (const status of [null, 'warning', 'error', 'success']) {
+          add(
+            fileInputBoxClassName({
+              isDropzone,
+              isSelectionDisabled: false,
+              isDragOver,
+              isDisabled,
+              isBusy,
+              status,
+            }),
+          );
+        }
+      }
+    }
+  }
+  for (const kind of ['placeholder', 'fileName']) {
+    for (const isCompact of [false, true]) {
+      for (const wraps of [false, true]) {
+        add(fileInputTextClassName({kind, isCompact, wraps}));
+      }
+    }
+  }
+  add(fileInputHiddenInputClassName);
   add(textAreaStartIconClassName);
   add(textAreaEndSlotClassName);
   for (const isOverLimit of [false, true]) {

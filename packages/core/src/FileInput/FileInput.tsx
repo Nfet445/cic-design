@@ -52,6 +52,12 @@ export type {
   InputStatusType as FileInputStatusType,
 } from '../Field';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {
+  fileInputBoxClassName,
+  fileInputHiddenInputClassName,
+  fileInputTextClassName,
+} from './fileInputClasses';
 import type {BaseProps} from '../BaseProps';
 import {
   type FieldInputBaseProps,
@@ -138,182 +144,6 @@ function validateFiles(
 
   return {valid, errors};
 }
-
-const styles = stylex.create({
-  dropzone: {
-    boxSizing: 'border-box',
-    position: 'relative',
-    zIndex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-6'],
-    paddingInline: spacingVars['--spacing-4'],
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'dashed',
-    borderColor: {
-      default: colorVars['--color-border-emphasized'],
-      ':focus-within': colorVars['--color-accent'],
-    },
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: colorVars['--color-background-surface'],
-    transitionProperty: 'border-color, box-shadow, background-color',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    outline: 'none',
-  },
-  dropzoneHover: {
-    boxShadow: {
-      default: null,
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': `inset 0 0 0 2px color-mix(in srgb, ${colorVars['--color-accent']} 20%, transparent)`,
-      },
-    },
-  },
-  dropzoneActive: {
-    borderColor: colorVars['--color-accent'],
-    backgroundColor: colorVars['--color-accent-muted'],
-  },
-  dropzoneDisabled: {
-    cursor: 'default',
-    opacity: 0.5,
-    // Keeps the :focus-within border: a focused disabled trigger still shows
-    // focus (spec:AST-085 FR6).
-    borderColor: {
-      default: colorVars['--color-border-emphasized'],
-      ':focus-within': colorVars['--color-accent'],
-    },
-  },
-  compact: {
-    boxSizing: 'border-box',
-    position: 'relative',
-    zIndex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: {
-      default: colorVars['--color-border-emphasized'],
-      ':focus-within': colorVars['--color-accent'],
-    },
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: colorVars['--color-background-surface'],
-    transitionProperty: 'border-color, box-shadow',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': `inset 0 0 0 2px color-mix(in srgb, ${colorVars['--color-accent']} 20%, transparent)`,
-        },
-    },
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    height: sizeVars['--size-element-md'],
-    outline: 'none',
-  },
-  compactDisabled: {
-    cursor: 'default',
-    opacity: 0.5,
-    // Keeps the :focus-within border: a focused disabled trigger still shows
-    // focus (spec:AST-085 FR6).
-    borderColor: {
-      default: colorVars['--color-border-emphasized'],
-      ':focus-within': colorVars['--color-accent'],
-    },
-  },
-  busy: {
-    cursor: 'default',
-    boxShadow: 'none',
-  },
-  hiddenInput: {
-    position: 'absolute',
-    width: 1,
-    height: 1,
-    padding: 0,
-    margin: -1,
-    overflow: 'hidden',
-    clip: 'rect(0, 0, 0, 0)',
-    whiteSpace: 'nowrap',
-    borderWidth: 0,
-  },
-  placeholderText: {
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-secondary'],
-    textAlign: 'center',
-    userSelect: 'none',
-  },
-  fileNameText: {
-    fontFamily: typographyVars['--font-family-body'],
-    // ...and the filename beside it keeps the same floor, so both lines the
-    // control shows stay the same size.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    flex: 1,
-    minWidth: 0,
-  },
-  fileNameDropzone: {
-    textAlign: 'center',
-    whiteSpace: 'normal',
-  },
-  fileNameCompact: {
-    textAlign: 'start',
-  },
-  placeholderCompact: {
-    textAlign: 'start',
-    flex: 1,
-    minWidth: 0,
-  },
-});
-
-const statusBorderStyles = stylex.create({
-  warning: {
-    borderColor: colorVars['--color-border-warning'],
-  },
-  error: {
-    borderColor: colorVars['--color-border-error'],
-  },
-  success: {
-    borderColor: colorVars['--color-border-success'],
-  },
-});
 
 export interface FileInputProps extends Omit<
   FieldInputBaseProps,
@@ -851,7 +681,12 @@ export function FileInput({
     if (hasFiles) {
       return (
         <>
-          <div {...stylex.props(styles.fileNameText, styles.fileNameDropzone)}>
+          <div
+            className={fileInputTextClassName({
+              kind: 'fileName',
+              isCompact: false,
+              wraps: true,
+            })}>
             {fileNames}
           </div>
           {tooltipStatus}
@@ -866,7 +701,12 @@ export function FileInput({
           color="secondary"
           {...themeProps('file-input-icon', {mode})}
         />
-        <span {...stylex.props(styles.placeholderText)}>
+        <span
+          className={fileInputTextClassName({
+            kind: 'placeholder',
+            isCompact: false,
+            wraps: false,
+          })}>
           {isDragOver ? t('@astryx.fileInput.dropHint') : displayPlaceholder}
         </span>
         {tooltipStatus}
@@ -878,7 +718,12 @@ export function FileInput({
     if (isBusy) {
       return (
         <>
-          <span {...stylex.props(styles.fileNameText)}>
+          <span
+            className={fileInputTextClassName({
+              kind: 'fileName',
+              isCompact: true,
+              wraps: false,
+            })}>
             {fileNames ?? displayPlaceholder}
           </span>
           <Spinner size="sm" aria-hidden="true" />
@@ -895,10 +740,11 @@ export function FileInput({
           {...themeProps('file-input-icon', {mode})}
         />
         <span
-          {...stylex.props(
-            hasFiles ? styles.fileNameText : styles.placeholderText,
-            hasFiles ? styles.fileNameCompact : styles.placeholderCompact,
-          )}>
+          className={fileInputTextClassName({
+            kind: hasFiles ? 'fileName' : 'placeholder',
+            isCompact: true,
+            wraps: false,
+          })}>
           {fileNames ?? displayPlaceholder}
         </span>
         {statusIcon}
@@ -955,20 +801,20 @@ export function FileInput({
         {...dragDropProps}
         {...mergeProps(
           themeProps('file-input', {mode, status: status?.type ?? null}),
-          stylex.props(
-            isDropzone ? styles.dropzone : styles.compact,
-            isDropzone && !isSelectionDisabled && styles.dropzoneHover,
-            isDropzone &&
-              !isSelectionDisabled &&
-              isDragOver &&
-              styles.dropzoneActive,
-            isDropzone && isDisabled && styles.dropzoneDisabled,
-            !isDropzone && isDisabled && styles.compactDisabled,
-            isBusy && styles.busy,
-            status && statusBorderStyles[status.type],
-            controlXstyle,
+          stylex.props(controlXstyle),
+          // The third positional argument is a class string, not a props
+          // object: an object there is read as the inline style.
+          tw(
+            fileInputBoxClassName({
+              isDropzone,
+              isSelectionDisabled,
+              isDragOver,
+              isDisabled,
+              isBusy,
+              status: status?.type ?? null,
+            }),
+            controlClassName,
           ),
-          controlClassName,
           controlStyle,
         )}>
         {/* Visually hidden real button carrying the accessible role, name, and
@@ -1022,7 +868,7 @@ export function FileInput({
           // its describedby/required/invalid live on the trigger button.
           aria-hidden="true"
           tabIndex={-1}
-          {...stylex.props(styles.hiddenInput)}
+          className={fileInputHiddenInputClassName}
         />
         {isDropzone ? renderDropzoneContent() : renderCompactContent()}
         {hasFiles && !isDisabled && !isBusy && (
