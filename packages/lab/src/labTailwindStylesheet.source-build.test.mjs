@@ -21,6 +21,7 @@ import * as chatReactionBarClasses from './Chat/chatReactionBarClasses';
 import * as chatReasoningClasses from './ChatReasoning/chatReasoningClasses';
 import * as chatTypingIndicatorClasses from './Chat/chatTypingIndicatorClasses';
 import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
+import * as chatVirtualizerClasses from './Chat/chatVirtualizerClasses';
 import * as codeEditorClasses from './CodeEditor/codeEditorClasses';
 import * as commentActionsClasses from './Comments/commentActionsClasses';
 import * as commentMarkdownClasses from './Comments/commentMarkdownClasses';
@@ -63,6 +64,7 @@ function labClassNames() {
     chatReasoningClasses,
     chatTypingIndicatorClasses,
     chatUnreadDividerClasses,
+    chatVirtualizerClasses,
     codeEditorClasses,
     commentActionsClasses,
     commentMarkdownClasses,
