@@ -86,8 +86,6 @@ import {
   durationVars,
   easeVars,
   shadowVars,
-  typographyVars,
-  typeScaleVars,
   focusVars,
 } from '../theme/tokens.stylex';
 import {
@@ -100,6 +98,14 @@ import {
 import {visibleText} from '../utils/accessibleName';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLit.stylex';
+import {
+  dropdownMenuSubMenuDrillInClassName,
+  dropdownMenuSubMenuFlyoutClassName,
+  dropdownMenuSubMenuScrollClassName,
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+  dropdownMenuSubMenuTriggerClassName,
+} from './dropdownMenuSubMenuClasses';
 import {tw} from '../utils/tw';
 import {getInteractionModality} from '../utils/interactionModality';
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -138,115 +144,35 @@ const MENU_BLOCK_CAP = '300px';
 const MENU_MAX_BLOCK_SIZE = `min(${MENU_BLOCK_CAP}, ${layerViewportInset.maxBlockSize})`;
 const MENU_MAX_BLOCK_SIZE_FALLBACK = `min(${MENU_BLOCK_CAP}, ${layerViewportInset.maxBlockSizeFallback})`;
 
+// The row's paint stays unlayered, as on every other menu row: Item's hover
+// and press overlays and the shared focus ring are unlayered too, so a utility
+// inside `astryx-base` loses to them whatever the class order says. The row's
+// box, its open paint and its disabled look are
+// `dropdownMenuSubMenuTriggerClassName`'s.
 const triggerStyles = stylex.create({
-  root: {
-    boxSizing: 'border-box',
-    width: '100%',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
-    borderRadius: `max(0px, calc(var(--_dropdown-menu-radius, ${spacingVars['--spacing-2']}) - var(--_dropdown-menu-padding, ${spacingVars['--spacing-1']})))`,
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    color: colorVars['--color-text-primary'],
+  row: {
     backgroundColor: {
       default: 'transparent',
       // menuPressLitRowClassName sets the variable on the row a held finger or pen
       // lights.
       ':focus': `var(--_menu-row-focus-paint, ${colorVars['--color-overlay-hover']})`,
     },
-    borderWidth: 0,
-    borderStyle: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    textAlign: 'start',
     // Rows show focus with a translucent overlay, which forced colors replace
     // with the page color. The standard focus ring (focusOutlineStyles), drawn
     // inside the row by its own width, marks the focused row in every mode.
     outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
   },
-  // While the flyout is open, keep the trigger visibly active so the open
-  // branch reads as the current path even when focus has moved into the child.
-  open: {
-    backgroundColor: colorVars['--color-overlay-hover'],
-  },
-  disabled: {
-    opacity: 0.5,
-    cursor: 'default',
-  },
+  // The caret is a slot wrapper, kept here: its box is structural, and the
+  // rule against a style-only wrapper reads that from the style it applies.
   caret: {
     display: 'flex',
     alignItems: 'center',
   },
 });
 
-const triggerSizeStyles = stylex.create({
-  sm: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  md: {
-    paddingBlock: spacingVars['--spacing-1-5'],
-  },
-  lg: {},
-});
-
+// The popover container's own size stays in StyleX: the layer receives it as
+// `xstyle`, and anchor positioning owns the rest of that box.
 const flyoutStyles = stylex.create({
-  menu: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-    maxInlineSize: stylex.firstThatWorks(
-      `calc(${layerViewportInset.maxInlineSize})`,
-      `calc(${layerViewportInset.maxInlineSizeFallback})`,
-    ),
-    maxHeight: stylex.firstThatWorks(
-      MENU_MAX_BLOCK_SIZE,
-      MENU_MAX_BLOCK_SIZE_FALLBACK,
-    ),
-    '--_dropdown-menu-radius': radiusVars['--radius-container'],
-    '--_dropdown-menu-padding': spacingVars['--spacing-1'],
-    padding: spacingVars['--spacing-1'],
-    borderRadius: 'var(--_dropdown-menu-radius)',
-    backgroundColor: colorVars['--color-background-popover'],
-    boxShadow: shadowVars['--shadow-low'],
-    // Forced colors removes box-shadow, which is this surface's only edge.
-    borderWidth: {
-      default: null,
-      '@media (forced-colors: active)': '1px',
-    },
-    borderStyle: {
-      default: null,
-      '@media (forced-colors: active)': 'solid',
-    },
-    borderColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    opacity: 1,
-    transitionProperty: 'opacity',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    // A held finger drives the highlight; the browser's held-press callout
-    // and text selection must not compete with it.
-    WebkitTouchCallout: 'none',
-    userSelect: 'none',
-  },
-  scrollable: {
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    overscrollBehavior: 'contain',
-  },
-  // Scroll ownership by the browser's own signal; see DropdownMenu.
-  touchPinchZoom: {
-    touchAction: 'pinch-zoom',
-  },
-  touchPanYPinchZoom: {
-    touchAction: 'pan-y pinch-zoom',
-    overscrollBehavior: 'contain',
-  },
   popoverViewport: {
     boxSizing: 'border-box',
     // Keep the inline viewport cap on the menu surface above. Applying it to
@@ -270,22 +196,6 @@ const flyoutStyles = stylex.create({
   popoverCustomIntrinsicWidth: (width: string) => ({
     inlineSize: width,
   }),
-});
-
-// The drilled-in list shows in place of the parent rows, inside the parent's
-// own box: no surface, shadow or cap of its own.
-const drillInStyles = stylex.create({
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-    outline: 'none',
-    WebkitTouchCallout: 'none',
-    userSelect: 'none',
-  },
-  hidden: {
-    display: 'none',
-  },
 });
 
 // With a header or footer the sub-menu's surface is a frame holding the
@@ -1298,16 +1208,17 @@ export function DropdownMenuSubMenu(
         onClick={handleRowClick}
         onKeyDown={composeEventHandlers(handleTriggerKeyDown, onKeyDown)}
         isDisabled={isDisabled}
-        xstyle={[
-          focusOutlineStyles.focusVisible,
-          triggerStyles.root,
-          triggerSizeStyles[menuSize],
-          isOpen && triggerStyles.open,
-          isDisabled && triggerStyles.disabled,
-          xstyle,
-        ]}
+        xstyle={[focusOutlineStyles.focusVisible, triggerStyles.row, xstyle]}
         {...mergeProps(themeProps('dropdown-menu-item', {size: menuSize}), {
-          className: tw(menuPressLitRowClassName, className),
+          className: tw(
+            dropdownMenuSubMenuTriggerClassName({
+              isDisabled,
+              size: menuSize,
+              isOpen,
+            }),
+            menuPressLitRowClassName,
+            className,
+          ),
           style,
         })}
       />
@@ -1332,13 +1243,20 @@ export function DropdownMenuSubMenu(
                     data-testid={menuDataTestId}
                     {...menuPress.menuProps}
                     {...surfaceOwnerProps}
-                    {...stylex.props(
-                      regionStyles.menu,
-                      hasOverflow && flyoutStyles.scrollable,
-                      hasOverflow
-                        ? flyoutStyles.touchPanYPinchZoom
-                        : flyoutStyles.touchPinchZoom,
-                      isMenuKeyboardFocused && focusOutlineStyles.focusVisible,
+                    {...mergeProps(
+                      stylex.props(
+                        regionStyles.menu,
+                        isMenuKeyboardFocused &&
+                          focusOutlineStyles.focusVisible,
+                      ),
+                      {
+                        className: tw(
+                          hasOverflow
+                            ? dropdownMenuSubMenuTouchClassName
+                            : dropdownMenuSubMenuTouchPinchClassName,
+                          hasOverflow && dropdownMenuSubMenuScrollClassName,
+                        ),
+                      },
                     )}>
                     {nestedContent}
                   </div>,
@@ -1368,10 +1286,7 @@ export function DropdownMenuSubMenu(
                   onKeyDown={handleContentKeyDown}
                   data-testid={menuDataTestId}
                   {...menuPress.menuProps}
-                  {...stylex.props(
-                    drillInStyles.list,
-                    !isTopView && drillInStyles.hidden,
-                  )}>
+                  className={dropdownMenuSubMenuDrillInClassName}>
                   {nestedContent}
                 </div>,
                 activeDrillIn.host,
@@ -1393,13 +1308,20 @@ export function DropdownMenuSubMenu(
                     data-testid={menuDataTestId}
                     {...menuPress.menuProps}
                     {...surfaceOwnerProps}
-                    {...stylex.props(
-                      regionStyles.menu,
-                      hasOverflow
-                        ? flyoutStyles.touchPanYPinchZoom
-                        : flyoutStyles.touchPinchZoom,
-                      hasOverflow && flyoutStyles.scrollable,
-                      isMenuKeyboardFocused && focusOutlineStyles.focusVisible,
+                    {...mergeProps(
+                      stylex.props(
+                        regionStyles.menu,
+                        isMenuKeyboardFocused &&
+                          focusOutlineStyles.focusVisible,
+                      ),
+                      {
+                        className: tw(
+                          hasOverflow
+                            ? dropdownMenuSubMenuTouchClassName
+                            : dropdownMenuSubMenuTouchPinchClassName,
+                          hasOverflow && dropdownMenuSubMenuScrollClassName,
+                        ),
+                      },
                     )}>
                     {nestedContent}
                   </div>,
@@ -1428,14 +1350,16 @@ export function DropdownMenuSubMenu(
                   {...menuPress.menuProps}
                   {...mergeProps(
                     themeProps('dropdown-menu', {presentation: 'popover'}),
-                    stylex.props(
-                      flyoutStyles.menu,
-                      hasOverflow
-                        ? flyoutStyles.touchPanYPinchZoom
-                        : flyoutStyles.touchPinchZoom,
-                      hasOverflow && flyoutStyles.scrollable,
-                    ),
-                    layerAnimations.end,
+                    {
+                      className: tw(
+                        dropdownMenuSubMenuFlyoutClassName,
+                        hasOverflow
+                          ? dropdownMenuSubMenuTouchClassName
+                          : dropdownMenuSubMenuTouchPinchClassName,
+                        hasOverflow && dropdownMenuSubMenuScrollClassName,
+                      ),
+                    },
+                    stylex.props(layerAnimations.end),
                   )}>
                   {nestedContent}
                 </div>
