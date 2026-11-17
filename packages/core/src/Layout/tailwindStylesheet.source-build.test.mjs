@@ -2530,7 +2530,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // notice and the metadata row share almost every utility those maps already
     // spell, and the checkbox field's row, box, press layers and native input
     // added six; the sheet measures 1318 here and the ceiling keeps headroom.
-    expect(stylesheet.rules.size).toBeLessThan(1380);
+    // ProgressBar's track, fill, indeterminate sweep and label row, the switch
+    // field, row, track, thumb and press layers, the sensor's date-time row and
+    // segments, the bottom-sheet panel and the selector's size arms measured
+    // 1402 with every family above registered, so the ceiling carries the usual
+    // headroom above that number rather than below it.
+    expect(stylesheet.rules.size).toBeLessThan(1460);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
