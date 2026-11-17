@@ -52,3 +52,18 @@ separately because it owns a whole StyleX interception harness.
   a `getComputedStyle` result, which jsdom can never compute for a class.
 - A per-instance value is a class plus an inline `--astryx-*` variable; read the
   variable with `expectVariable`.
+
+## Comments
+
+- `packages/core/src/theme/extensibleAxes.test.ts` needed no change: all 42
+  cases pass on the integration branch, alone and in the eight-file run.
+- `packages/core/src/theme/derivedVarRegistry.test.ts`: `--astryx-table-row-height`
+  is a per-instance value (`rowHeight` writes it inline on the row; the fixed
+  row height class reads it), so it is documented as a private var in
+  `Table.doc.mjs` and allowlisted with a reason, not mapped to a derived entry.
+  No component source changed.
+- `pnpm -F @astryxdesign/core typecheck` still reports two errors in
+  `packages/core/src/Markdown/Markdown.doc.mjs` (lines 241 and 247, TS2741,
+  missing `default`). They predate this ticket on the branch (commit
+  `refactor(markdown): перевести документ и подсветку заголовков на классы`)
+  and are outside these eight files.
