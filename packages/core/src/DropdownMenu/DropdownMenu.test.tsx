@@ -23,6 +23,7 @@ import {render, screen, fireEvent, waitFor, act} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {Suspense, createRef, startTransition, use, useState} from 'react';
 import * as stylex from '@stylexjs/stylex';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {DropdownMenu, type DropdownMenuTriggerProps} from './DropdownMenu';
 import {DropdownMenuItem} from './DropdownMenuItem';
 import {Popover} from '../Popover/Popover';
@@ -312,12 +313,18 @@ describe('DropdownMenu', () => {
     });
     // The root heading stands alone, with no row wrapper.
     expect(heading.parentElement).toBe(content);
-    expect(
-      screen.getByRole('button', {name: 'Edit project'}).closest('li'),
-    ).toHaveStyle({
-      paddingInline: 'var(--_item-inset-inline)',
-      '--_item-inset-inline': 'var(--spacing-3)',
-    });
+    // The row reads its padding back from `--_item-inset-inline`, and the
+    // menu's spacious density is what states the inset; jsdom parses no
+    // stylesheet, so both are read off the class set.
+    const row = screen
+      .getByRole('button', {name: 'Edit project'})
+      .closest('li');
+    expect(row && classesOf(row)).toEqual(
+      expect.arrayContaining([
+        'px-[var(--_item-inset-inline)]',
+        '[--_item-inset-inline:var(--spacing-3)]',
+      ]),
+    );
   });
 
   it('renders nothing of the sheet at rest and keeps it through its exit', async () => {
