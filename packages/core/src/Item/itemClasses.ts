@@ -22,27 +22,23 @@ import type {ItemAlign, ItemDensity} from './Item';
  * registry, so the padding and every consumer that compensates for it stay in
  * step.
  */
-const INLINE_INSET = '[--_item-inset-inline:var(--spacing-2)]';
-
 const FRAME = tw(
   'flex items-center gap-2 relative box-border text-start',
   'rounded-[var(--radius-element)]',
-  INLINE_INSET,
   'px-[var(--_item-inset-inline)]',
 );
 
 /**
- * `spacious` widens the inset as well as the block padding. It keys off the
- * `data-density` attribute the row already sets, so it outranks the frame's
- * own inset by specificity instead of by class order in the shared layer.
+ * Each density states the inset itself rather than overriding one the frame
+ * sets: two classes of the same custom property would be decided by the
+ * sheet's order, and no row ever carries two densities.
+ *
+ * `spacious` widens the inset as well as the block padding.
  */
 export const itemDensityClassName: Record<ItemDensity, string> = {
-  compact: 'py-1',
-  balanced: 'py-2',
-  spacious: tw(
-    'py-3',
-    'data-[density=spacious]:[--_item-inset-inline:var(--spacing-3)]',
-  ),
+  compact: tw('py-1', '[--_item-inset-inline:var(--spacing-2)]'),
+  balanced: tw('py-2', '[--_item-inset-inline:var(--spacing-2)]'),
+  spacious: tw('py-3', '[--_item-inset-inline:var(--spacing-3)]'),
 };
 
 /** `center` is the frame's own `items-center`; only the other two add a class. */
