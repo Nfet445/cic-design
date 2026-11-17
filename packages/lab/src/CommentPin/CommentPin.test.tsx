@@ -3,9 +3,17 @@
 import {describe, expect, it, vi} from 'vitest';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {CommentPin} from './CommentPin';
+import {
+  commentPinDisabledUnselectedClassName,
+  commentPinSelectedClassName,
+} from './commentPinClasses';
+
+/** Whether an element carries every class of a map entry. */
+function carries(element: Element | null | undefined, mapClassName: string) {
+  const classes = new Set(element?.classList);
+  return mapClassName.split(' ').every(className => classes.has(className));
+}
 
 const ADA = {id: 'ada', name: 'Ada Lovelace'};
 const LIN = {id: 'lin', name: 'Lin Chen'};
@@ -432,35 +440,13 @@ describe('CommentPin', () => {
   });
 
   it('paints an unselected disabled pin GrayText in forced colors (AST-085 FR6)', () => {
-    // The same declarations as the component's styles compile to the same
-    // atomic classes. Null defaults emit no atom of their own, so these are
-    // exactly the forced-colors arms — the shared default-mode atoms
-    // (borderColor: transparent) cannot make this check pass vacuously.
-    const atoms = (style: stylex.StyleXStyles) =>
-      stylex
-        .props(style)
-        .className!.split(' ')
-        .filter(name => name.includes('x') && !name.includes('__'));
-    const forced = stylex.create({
-      disabled: {
-        borderColor: {
-          default: null,
-          '@media (forced-colors: active)': 'GrayText',
-        },
-        color: {default: null, '@media (forced-colors: active)': 'GrayText'},
-      },
-    });
-    const forcedAtoms = atoms(forced.disabled);
-    expect(forcedAtoms.length).toBeGreaterThan(0);
-
     const {rerender} = render(
       <CommentPin label="Pending annotation" participants={[ADA]} isDisabled />,
     );
 
     const pin = screen.getByRole('button', {name: 'Pending annotation'});
-    for (const name of forcedAtoms) {
-      expect(pin).toHaveClass(name);
-    }
+    expect(carries(pin, commentPinDisabledUnselectedClassName)).toBe(true);
+    expect(carries(pin, commentPinSelectedClassName)).toBe(false);
 
     // A selected pin keeps its forced-colors Highlight treatment instead; the
     // disabled affordance rides on the selected presentation staying intact.
@@ -472,26 +458,17 @@ describe('CommentPin', () => {
         isSelected
       />,
     );
-    for (const name of forcedAtoms) {
-      expect(pin).not.toHaveClass(name);
-    }
+    expect(carries(pin, commentPinSelectedClassName)).toBe(true);
+    expect(carries(pin, commentPinDisabledUnselectedClassName)).toBe(false);
   });
 
   it('keeps the root text colour on an unselected disabled pin outside forced colors', () => {
-    // disabledUnselected must repeat the root's colour token as its default:
-    // a null default would replace it under StyleX's per-property merge and
-    // the count would fall back to the raw theme text colour.
-    const atoms = (style: stylex.StyleXStyles) =>
-      stylex
-        .props(style)
-        .className!.split(' ')
-        .filter(name => name.includes('x') && !name.includes('__'));
-    const rootColor = stylex.create({
-      color: {color: colorVars['--color-text-secondary']},
-    });
-    const colorAtoms = atoms(rootColor.color);
-    expect(colorAtoms.length).toBeGreaterThan(0);
-
+    // The disabled class repeats the root's colour token beside its
+    // forced-colors arm: one class per state, so no second class can replace
+    // the colour and leave the count on the theme's raw text colour.
+    expect(carries(undefined, commentPinDisabledUnselectedClassName)).toBe(
+      false,
+    );
     render(
       <CommentPin
         label="Open 3 grouped annotations"
@@ -504,9 +481,8 @@ describe('CommentPin', () => {
     const pin = screen.getByRole('button', {
       name: 'Open 3 grouped annotations',
     });
-    for (const name of colorAtoms) {
-      expect(pin).toHaveClass(name);
-    }
+    expect(carries(pin, commentPinDisabledUnselectedClassName)).toBe(true);
+    expect(carries(pin, 'text-[color:var(--color-text-secondary)]')).toBe(true);
   });
 
   it('forwards the ref and neutral button props', () => {

@@ -518,3 +518,36 @@ Still holding a `stylex.create` in non-test lab sources (measured): `CircularPro
 `Comments/commentPartsOverrides.stylex.ts` 2, `TransferList/TransferListSelector.tsx` 1.
 The `*Overrides.stylex.ts` files are the rules that must outrank a core utility, so they stay; each
 needs its one-sentence reason in this ticket.
+
+## Comments — window 9
+
+Landed, one commit each: `CircularProgress` (`circularProgressClasses.ts`), `CommentPin`
+(`commentPinClasses.ts`), `SVGIcon`'s weight probe (`svgIconClasses.ts`, with
+`weighted.stylex.ts` deleted), `internal/useScrollEdgeEffect.ts`
+(`internal/scrollEdgeEffectClasses.ts`) and `NavigationStack`
+(`navigationStackClasses.ts`). Lab suite 102 files / 1354 tests.
+
+`NavigationStack` needed the class seam window 8 said it lacked, and core already had it:
+`ScrollableElementProps = BaseProps & RefAttributes` (`packages/core/src/hooks/useScrollableArea.ts:92`),
+so `getViewportProps({className})` keeps a caller's class through `mergeProps`, and the dimming alpha
+becomes `--_navigation-dim-alpha` read by `bg-[rgba(0,0,0,var(--_navigation-dim-alpha))]`. The only
+new seam is `useScrollEdgeEffect`'s `layerClassName`/`sentinelClassName`, lab-internal, because the
+large-title sentinel's insets had to leave StyleX.
+
+The `*Overrides.stylex.ts` files and the two marker sheets stay StyleX, each with its reason:
+
+| file | reason |
+| ---- | ------ |
+| `SVGIcon/variations.stylex.ts` | Both maps only publish variables from `tokens.stylex.ts`, whose names StyleX hashes; the layers read them with `var()` in an inline style, so there is no declaration to move. |
+| `Comments/commentComposerOverrides.stylex.ts` | `Card` already sets a container radius and both sheets share one layer, so a utility's order would come from the built sheet, not the class attribute. |
+| `Comments/commentPartsOverrides.stylex.ts` | A highlight's quote-rule colour must outrank `Blockquote`'s own, and the shimmer's transparency holds only where the glyph clip is supported, so those four-condition rules need a stated order. |
+| `Comments/commentRowOverrides.stylex.ts` | The thread's surface paints its fill through a theme rule, so a utility class cannot be trusted to win over it. |
+| `Schedule/scheduleOverrides.stylex.ts` | The focus ring needs a sibling marker (`schedule.stylex.ts`) that a class cannot express, the height cap needs `stylex.firstThatWorks`, and one rule rides a StyleX-only prop. |
+| `TransferList/transferListOverrides.stylex.ts` | These reverse `Item`'s `pointer-events-none`/`opacity-50` and `Button`'s own label scale and background image, which the sheet would order, not the class attribute. |
+| `TransferList/TransferListSelector.tsx` | Still blocked: `ComplexSelector` exposes only `contentXstyle`, so the popup's width has no class or inline-style seam. |
+| `Schedule/schedule.stylex.ts`, `TabBar/tabBar.stylex.ts` | Their rules read `stylex.when.ancestor` markers, which no class expresses. |
+
+Maps this window did not touch stay where window 8's measurement left them: `EmojiPicker.tsx`,
+`Tour/TourStep.tsx`, `SVGIcon/SVGIcon.tsx`, `SVGIcon/WeightedSVGIcon.tsx`,
+`SVGIcon/colors.stylex.ts` and `TransferList/TransferListSelector.tsx` (still blocked on
+`ComplexSelector`'s `contentXstyle`).

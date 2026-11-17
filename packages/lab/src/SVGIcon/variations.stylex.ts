@@ -6,6 +6,10 @@
  * @output StyleX styles for each icon variation preset
  * @position Consumed by SVGIcon to apply variation-specific token overrides
  *
+ * Stays StyleX: both maps set only the layer variables from tokens.stylex.ts,
+ * whose names StyleX hashes, and the rendered elements read them with `var()`
+ * in an inline style. There is no declaration here to move to a class.
+ *
  * Each variation sets tokens for both fill-role and stroke-role elements
  * per the path role system. Stroke-role elements (lines, detail strokes)
  * never become fills — they stay as strokes across all variations.

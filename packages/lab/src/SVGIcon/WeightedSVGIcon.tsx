@@ -11,7 +11,7 @@
  * All drawings of an icon live in one SVG; CSS shows the one whose weight
  * range contains the current font weight. The weight comes from the text
  * around the icon, read by a 1ch-wide probe container (see weightProbe.ts
- * and weighted.stylex.ts), so an icon inside bold text draws its bold
+ * and svgIconClasses.ts), so an icon inside bold text draws its bold
  * drawing with no prop. `weight` pins it, and an ancestor can set
  * `--astryx-icon-weight` to pin a subtree.
  *
@@ -29,7 +29,12 @@ import {iconVars} from './tokens.stylex';
 import {iconColorStyles} from './colors.stylex';
 import {iconA11yProps} from './iconA11y';
 import {opticalSize} from './variations.stylex';
-import {weightProbeStyles, weightRanges} from './weighted.stylex';
+import {
+  weightProbeClassName,
+  weightProbeSvgClassName,
+  weightRangeClassNames,
+} from './svgIconClasses';
+import {tw} from '../tw';
 import {registerWeightProbe} from './weightProbe';
 import type {
   IconWeight,
@@ -104,12 +109,12 @@ const styles = stylex.create({
   },
 });
 
-type RangeKey = keyof typeof weightRanges;
+type RangeKey = keyof typeof weightRangeClassNames;
 
 function Layer({layer}: {layer: WeightedIconLayer}) {
   const key = `r${layer.from}_${layer.to}` as RangeKey;
   return (
-    <g {...stylex.props(weightRanges[key])}>
+    <g className={weightRangeClassNames[key]}>
       {layer.paths.map((path, i) => (
         <path
           key={i}
@@ -188,15 +193,15 @@ export function WeightedSVGIcon({
         themeProps('weighted-svg-icon', {size, color}),
         stylex.props(styles.root, iconColorStyles[color], opticalSize[size]),
       )}>
-      <span {...stylex.props(weightProbeStyles.probe)}>
+      <span className={weightProbeClassName}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox={icon.viewBox ?? '0 0 24 24'}
           {...a11yProps}
           {...props}
           {...mergeProps(
-            stylex.props(styles.svg, weightProbeStyles.svg),
-            className,
+            stylex.props(styles.svg),
+            tw(weightProbeSvgClassName, className),
             {...pinnedStyle, ...(style as CSSProperties)},
           )}>
           {sprite ? (

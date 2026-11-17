@@ -22,7 +22,11 @@ import * as chatReasoningClasses from './ChatReasoning/chatReasoningClasses';
 import * as chatTypingIndicatorClasses from './Chat/chatTypingIndicatorClasses';
 import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
 import * as chatVirtualizerClasses from './Chat/chatVirtualizerClasses';
+import * as circularProgressClasses from './CircularProgress/circularProgressClasses';
 import * as codeEditorClasses from './CodeEditor/codeEditorClasses';
+import * as scrollEdgeEffectClasses from './internal/scrollEdgeEffectClasses';
+import * as svgIconClasses from './SVGIcon/svgIconClasses';
+import * as commentPinClasses from './CommentPin/commentPinClasses';
 import * as commentActionsClasses from './Comments/commentActionsClasses';
 import * as commentMarkdownClasses from './Comments/commentMarkdownClasses';
 import * as commentPartsClasses from './Comments/commentPartsClasses';
@@ -41,6 +45,7 @@ import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
 import * as logStreamClasses from './LogStream/logStreamClasses';
 import * as scheduleClasses from './Schedule/scheduleClasses';
+import * as navigationStackClasses from './NavigationStack/navigationStackClasses';
 import * as pageControlClasses from './PageControl/pageControlClasses';
 import * as radialChartClasses from './Radial/radialChartClasses';
 import * as selectableCardGroupClasses from './SelectableCardGroup/selectableCardGroupClasses';
@@ -73,12 +78,15 @@ function labClassNames() {
     chatTypingIndicatorClasses,
     chatUnreadDividerClasses,
     chatVirtualizerClasses,
+    circularProgressClasses,
     codeEditorClasses,
     commentActionsClasses,
     commentMarkdownClasses,
     commentPartsClasses,
+    commentPinClasses,
     commentRowClasses,
     circleCheckClasses,
+    svgIconClasses,
     commentsClasses,
     dialogHeroHeaderClasses,
     diffViewerClasses,
@@ -86,9 +94,11 @@ function labClassNames() {
     listInputClasses,
     loadingMessageClasses,
     logStreamClasses,
+    navigationStackClasses,
     pageControlClasses,
     radialChartClasses,
     scheduleClasses,
+    scrollEdgeEffectClasses,
     statClasses,
     tabBarClasses,
     transferListClasses,

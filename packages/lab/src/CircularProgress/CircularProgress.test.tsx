@@ -7,6 +7,28 @@ import {
   spinnerRotorTurnClassName,
 } from '@astryxdesign/core/internal/spinner-rotor';
 import {CircularProgress} from './CircularProgress';
+import {
+  circularProgressFillClassName,
+  circularProgressFillClassNames,
+  circularProgressFillHalfClassName,
+  circularProgressFillHalfRightClassName,
+  circularProgressLabelClassName,
+  circularProgressLabelDisabledClassName,
+  circularProgressRingClassName,
+  circularProgressRingIndeterminateClassName,
+  circularProgressRootClassName,
+  circularProgressRootWithLabelClassName,
+  circularProgressTrackClassName,
+  circularProgressTrackClassNames,
+  circularProgressValueLabelDisabledClassName,
+  circularProgressVisuallyHiddenClassName,
+} from './circularProgressClasses';
+
+/** Whether an element carries every class of a map entry. */
+function carries(element: Element | null | undefined, mapClassName: string) {
+  const classes = new Set(element?.classList);
+  return mapClassName.split(' ').every(className => classes.has(className));
+}
 
 /**
  * The Web Animations timing objects the component probes the theme's easing
@@ -730,6 +752,103 @@ describe('CircularProgress', () => {
         </CircularProgress>,
       );
       expect(screen.getByText('...')).toBeInTheDocument();
+    });
+  });
+
+  describe('classes', () => {
+    it('puts the root, ring and track classes on the elements that paint', () => {
+      const {container} = render(
+        <CircularProgress value={50} label="Progress" isLabelHidden={false} />,
+      );
+      expect(
+        carries(
+          container.querySelector('.astryx-circular-progress'),
+          circularProgressRootClassName,
+        ),
+      ).toBe(true);
+      expect(
+        carries(
+          container.querySelector('.astryx-circular-progress'),
+          circularProgressRootWithLabelClassName,
+        ),
+      ).toBe(true);
+      const ring = screen.getByRole('progressbar');
+      expect(carries(ring, circularProgressRingClassName)).toBe(true);
+      expect(
+        carries(
+          container.querySelector('.astryx-circular-progress-track'),
+          `${circularProgressTrackClassName} ${circularProgressTrackClassNames.accent}`,
+        ),
+      ).toBe(true);
+    });
+
+    it('replaces the label class when disabled instead of stacking a colour', () => {
+      const {container} = render(
+        <CircularProgress
+          value={50}
+          label="Canceled"
+          isLabelHidden={false}
+          isDisabled
+          hasValueLabel
+        />,
+      );
+      const label = screen.getByText('Canceled');
+      expect(carries(label, circularProgressLabelDisabledClassName)).toBe(true);
+      expect(carries(label, circularProgressLabelClassName)).toBe(false);
+      expect(
+        carries(
+          screen.getByText('50%'),
+          circularProgressValueLabelDisabledClassName,
+        ),
+      ).toBe(true);
+      // The track's disabled spelling is the base class plus one stroke.
+      expect(
+        carries(
+          container.querySelector('.astryx-circular-progress-track'),
+          `${circularProgressTrackClassName} ${circularProgressTrackClassNames.neutral}`,
+        ),
+      ).toBe(true);
+    });
+
+    it('keeps the label visually hidden until it is shown', () => {
+      render(<CircularProgress value={50} label="Upload progress" />);
+      expect(
+        carries(
+          screen.getByText('Upload progress'),
+          circularProgressVisuallyHiddenClassName,
+        ),
+      ).toBe(true);
+    });
+
+    it('draws the fill as two clipped halves with the variant stroke', () => {
+      const {container} = render(
+        <CircularProgress value={25} label="Progress" />,
+      );
+      const fill = container.querySelector('.astryx-circular-progress-fill');
+      expect(
+        carries(
+          fill,
+          `${circularProgressFillClassName} ${circularProgressFillClassNames.accent}`,
+        ),
+      ).toBe(true);
+      const rightHalves = Array.from(fill!.children).filter(child =>
+        carries(child, circularProgressFillHalfRightClassName),
+      );
+      expect(rightHalves).toHaveLength(1);
+      expect(carries(rightHalves[0], circularProgressFillHalfClassName)).toBe(
+        true,
+      );
+    });
+
+    it('keeps the rotor classes beside the indeterminate ring class', () => {
+      render(<CircularProgress isIndeterminate label="Loading" />);
+      const ring = screen.getByRole('progressbar');
+      expect(carries(ring, circularProgressRingIndeterminateClassName)).toBe(
+        true,
+      );
+      for (const token of spinnerRotorTurnClassName.split(' ')) {
+        expect(ring).toHaveClass(token);
+      }
     });
   });
 });

@@ -22,7 +22,6 @@
  * - /packages/lab/blocks/CommentPinShowcase.tsx
  */
 
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {Avatar, type AvatarSize} from '@astryxdesign/core/Avatar';
 import {AvatarGroup, AvatarGroupOverflow} from '@astryxdesign/core/AvatarGroup';
@@ -33,16 +32,6 @@ import {
 } from '@astryxdesign/core/hooks';
 import {Icon, type IconSize} from '@astryxdesign/core/Icon';
 import {StatusDot} from '@astryxdesign/core/StatusDot';
-import {
-  borderVars,
-  colorVars,
-  fontWeightVars,
-  shadowVars,
-  sizeVars,
-  spacingVars,
-  typeScaleVars,
-  typographyVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import {useTooltip} from '@astryxdesign/core/Tooltip';
 import {
   focusOutlineProps,
@@ -50,6 +39,22 @@ import {
   mergeProps,
   themeProps,
 } from '@astryxdesign/core/utils';
+import {
+  commentPinAvatarRailClassName,
+  commentPinClassName,
+  commentPinCountClassName,
+  commentPinDimmedOpacityClassName,
+  commentPinDisabledOpacityClassName,
+  commentPinDisabledUnselectedClassName,
+  commentPinGroupedRailClassName,
+  commentPinRootClassName,
+  commentPinSelectedClassName,
+  commentPinSizeClassNames,
+  commentPinTrailingClassName,
+  commentPinUnreadDotClassName,
+  commentPinWithCountClassName,
+} from './commentPinClasses';
+import {tw} from '../tw';
 
 /** Pin heights on the shared element-size scale: 28, 32, or 36px. */
 export type CommentPinSize = 'sm' | 'md' | 'lg';
@@ -121,183 +126,6 @@ export interface CommentPinProps extends Omit<
   /** Whether activation is unavailable. */
   isDisabled?: boolean;
 }
-
-const styles = stylex.create({
-  root: {
-    appearance: 'none',
-    boxSizing: 'border-box',
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    verticalAlign: 'middle',
-    transformOrigin: {
-      default: 'left bottom',
-      ':is([dir="rtl"] *)': 'right bottom',
-    },
-    margin: 0,
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: 'transparent',
-    // Speech-bubble silhouette: a fixed 2px logical bottom-start corner; the
-    // other three corners are half the pin's height (see `sizeStyles`). The
-    // literal is intentional: no radius token is 2px, and themes may change
-    // `--radius-inner`, which would soften the anchor cue. Logical longhands
-    // mirror the corner in RTL by construction.
-    borderEndStartRadius: '2px',
-    backgroundColor: colorVars['--color-background-popover'],
-    backgroundImage: 'none',
-    boxShadow: shadowVars['--shadow-med'],
-    color: colorVars['--color-text-secondary'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    whiteSpace: 'nowrap',
-    userSelect: 'none',
-  },
-  withCount: {
-    justifyContent: 'flex-start',
-    gap: spacingVars['--spacing-1'],
-  },
-  selected: {
-    // Native buttons keep ButtonFace/ButtonText under forced colors unless the
-    // selected state opts out of UA remapping; author both sides together.
-    forcedColorAdjust: 'none',
-    opacity: 1,
-    // The border stays transparent so the selection reads as exactly one 2px
-    // accent outline: the box-shadow ring below, drawn outside the pin.
-    borderColor: {
-      default: 'transparent',
-      '@media (forced-colors: active)': 'Highlight',
-    },
-    backgroundColor: {
-      default: colorVars['--color-background-popover'],
-      '@media (forced-colors: active)': 'Highlight',
-    },
-    // A solid 2px accent outline outside the pin, layered with its resting
-    // medium elevation. A box-shadow ring shifts no layout, follows the
-    // speech-bubble corners, and leaves the shared focus outline (offset
-    // farther out) as a separate cue.
-    boxShadow: {
-      default: `0 0 0 2px ${colorVars['--color-accent']}, ${shadowVars['--shadow-med']}`,
-      '@media (forced-colors: active)': 'none',
-    },
-    color: {
-      default: colorVars['--color-text-secondary'],
-      '@media (forced-colors: active)': 'HighlightText',
-    },
-  },
-  dimmed: {
-    opacity: {
-      default: 0.4,
-      '@media (forced-colors: active)': 1,
-    },
-  },
-  disabled: {
-    cursor: 'default',
-    opacity: {
-      default: 0.45,
-      '@media (forced-colors: active)': 1,
-    },
-  },
-  // An aria-disabled button gets no system disabled paint in forced colors;
-  // GrayText is the platform's disabled affordance there. Defaults repeat the
-  // base values, since StyleX merges per property. Only unselected pins take
-  // it — the selected treatment keeps its forced-colors Highlight, so a
-  // selected disabled pin stays prominent (ORD4).
-  disabledUnselected: {
-    borderColor: {
-      default: 'transparent',
-      '@media (forced-colors: active)': 'GrayText',
-    },
-    color: {
-      default: colorVars['--color-text-secondary'],
-      '@media (forced-colors: active)': 'GrayText',
-    },
-  },
-  avatarRail: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  // AvatarGroup draws every face inside a 2px surface ring. Sitting the first
-  // ring in the start padding keeps the faces themselves as far from the start
-  // edge as from the top and bottom, as on a single pin.
-  groupedRail: {
-    marginInlineStart: -2,
-  },
-  // AvatarGroupOverflow pads its content for multi-digit `+N` pills; the
-  // ellipsis inside this pin stays a circle the size of its sibling Avatars.
-  overflowCircle: {
-    paddingInline: 0,
-  },
-  // The thread total and then the unread dot follow the participants. The
-  // end padding gives whichever comes last room before the pin's edge, so a
-  // number or dot never crowds it.
-  trailing: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    paddingInlineEnd: spacingVars['--spacing-1'],
-  },
-  count: {
-    color: 'inherit',
-    fontVariantNumeric: 'tabular-nums',
-  },
-  // StatusDot paints its plate with a background, which forced colors would
-  // erase; there it takes the pin's own text color, so it shows in every state.
-  unreadDot: {
-    forcedColorAdjust: 'none',
-    color: {
-      default: colorVars['--color-on-accent'],
-      '@media (forced-colors: active)': 'inherit',
-    },
-    backgroundColor: {
-      default: colorVars['--color-accent'],
-      '@media (forced-colors: active)': 'currentColor',
-    },
-  },
-});
-
-// Each size pairs an element-size height with a participant circle diameter
-// (see AVATAR_SIZE). The padding is the inset that centers that circle in the
-// height, applied on every side: the avatars and overflow sit the same
-// distance from all four edges. The three round corners are half the height,
-// which is fully round: the 9999px full-radius token would make the browser
-// scale every corner down to fit the box (the CSS corner-overlap rule) and
-// shrink the 2px anchor corner to nothing.
-const sizeStyles = stylex.create({
-  sm: {
-    minWidth: sizeVars['--size-element-sm'],
-    height: sizeVars['--size-element-sm'],
-    padding: `calc((${sizeVars['--size-element-sm']} - 22px) / 2 - ${borderVars['--border-width']})`,
-    borderStartStartRadius: `calc(${sizeVars['--size-element-sm']} / 2)`,
-    borderStartEndRadius: `calc(${sizeVars['--size-element-sm']} / 2)`,
-    borderEndEndRadius: `calc(${sizeVars['--size-element-sm']} / 2)`,
-  },
-  md: {
-    minWidth: sizeVars['--size-element-md'],
-    height: sizeVars['--size-element-md'],
-    padding: `calc((${sizeVars['--size-element-md']} - 24px) / 2 - ${borderVars['--border-width']})`,
-    borderStartStartRadius: `calc(${sizeVars['--size-element-md']} / 2)`,
-    borderStartEndRadius: `calc(${sizeVars['--size-element-md']} / 2)`,
-    borderEndEndRadius: `calc(${sizeVars['--size-element-md']} / 2)`,
-  },
-  lg: {
-    minWidth: sizeVars['--size-element-lg'],
-    height: sizeVars['--size-element-lg'],
-    padding: `calc((${sizeVars['--size-element-lg']} - 28px) / 2 - ${borderVars['--border-width']})`,
-    borderStartStartRadius: `calc(${sizeVars['--size-element-lg']} / 2)`,
-    borderStartEndRadius: `calc(${sizeVars['--size-element-lg']} / 2)`,
-    borderEndEndRadius: `calc(${sizeVars['--size-element-lg']} / 2)`,
-  },
-});
 
 /**
  * Participant circle diameter per pin size, matching the literals in
@@ -517,22 +345,31 @@ export function CommentPin({
           disabled: isDisabled ? 'disabled' : null,
         }),
         focusOutlineProps.focusVisible(
-          styles.root,
-          sizeStyles[resolvedSize],
           interactionOverlayStyles.backgroundImage,
-          (isGrouped || hasUnread) && styles.withCount,
-          isDimmed && !isSelected && styles.dimmed,
-          isSelected && styles.selected,
-          isDisabled && styles.disabled,
-          isDisabled && !isSelected && styles.disabledUnselected,
           xstyle,
         ),
-        className,
+        tw(
+          commentPinRootClassName,
+          commentPinSizeClassNames[resolvedSize],
+          (isGrouped || hasUnread) && commentPinWithCountClassName,
+          isSelected
+            ? commentPinSelectedClassName
+            : isDisabled
+              ? commentPinDisabledUnselectedClassName
+              : commentPinClassName,
+          isDisabled
+            ? commentPinDisabledOpacityClassName
+            : isDimmed && !isSelected && commentPinDimmedOpacityClassName,
+          className,
+        ),
         style,
       )}>
       <span
         aria-hidden="true"
-        {...stylex.props(styles.avatarRail, isGrouped && styles.groupedRail)}>
+        className={tw(
+          commentPinAvatarRailClassName,
+          isGrouped && commentPinGroupedRailClassName,
+        )}>
         {isGrouped ? (
           <AvatarGroup size={avatarSize}>
             {avatarParticipants.map(participant => (
@@ -546,7 +383,9 @@ export function CommentPin({
             {overflowCount > 0 ? (
               <AvatarGroupOverflow
                 count={overflowCount}
-                xstyle={styles.overflowCircle}>
+                // Inline: the chip's own inline padding is a utility class, so
+                // a class here would be ordered by the sheet, not by this call.
+                style={{paddingInline: 0}}>
                 <Icon
                   icon="moreHorizontal"
                   size={OVERFLOW_ICON_SIZE[resolvedSize]}
@@ -567,13 +406,19 @@ export function CommentPin({
         )}
       </span>
       {hasUnread || isGrouped ? (
-        <span aria-hidden="true" {...stylex.props(styles.trailing)}>
+        <span aria-hidden="true" className={commentPinTrailingClassName}>
           {isGrouped ? (
-            <span {...stylex.props(styles.count)}>{resolvedThreadCount}</span>
+            <span className={commentPinCountClassName}>
+              {resolvedThreadCount}
+            </span>
           ) : null}
           {hasUnread ? (
             // Decorative: the button's label carries the unread context.
-            <StatusDot variant="accent" label="" xstyle={styles.unreadDot} />
+            <StatusDot
+              variant="accent"
+              label=""
+              className={commentPinUnreadDotClassName}
+            />
           ) : null}
         </span>
       ) : null}

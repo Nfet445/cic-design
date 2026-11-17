@@ -4,15 +4,16 @@
 
 /**
  * @file useScrollEdgeEffect.ts
- * @input React, StyleX, IntersectionObserver, Lab's motion engine, and
- *   Core's gesture host, finger-scroll hook (with its end call), resize
- *   observer, touch presentation and colour tokens
+ * @input React, StyleX, IntersectionObserver, Lab's motion engine, the veil's
+ *   classes, and Core's gesture host, finger-scroll hook (with its end call),
+ *   resize observer, touch presentation and colour tokens
  * @output useScrollEdgeEffect: props for a bar's scroll edge veil and for the
  *   sentinel that switches it, fading on the caller's springs
  * @position Lab's iOS 26 bar look under a finger, for NavigationStack. Lab's
  *   entry point does not export it. With a mouse it observes nothing.
  *
  * SYNC: When modified, update useScrollEdgeEffect.test.tsx and NavigationStack.
+ * The veil's shape lives in scrollEdgeEffectClasses.ts.
  */
 
 import * as stylex from '@stylexjs/stylex';
@@ -27,6 +28,12 @@ import {
 import {colorVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {observeResize} from '@astryxdesign/core/utils';
 import {useMotionEngine} from './useMotionEngine';
+import {
+  scrollEdgeLayerClassName,
+  scrollEdgeLayerMaskClassName,
+  scrollEdgeSentinelClassName,
+} from './scrollEdgeEffectClasses';
+import {tw} from '../tw';
 
 /** No scroller: nothing is watched (a mouse, or the effect is off). */
 const NO_SCROLLER: RefObject<Element | null> = {current: null};
@@ -37,56 +44,6 @@ const NO_SCROLLER: RefObject<Element | null> = {current: null};
  * inline; it is not theme data.
  */
 export const SCROLL_EDGE_LAYER_PROMOTION = '--_scroll-edge-will-change';
-
-const styles = stylex.create({
-  // The veil: one colour, never a blur. Its mask is
-  // 0.95 × (1 − Φ((y − edge) / 18px)), half strength at `edge`, sampled every
-  // 6px over ±3σ; useScrollEdgeEffect.test.tsx recomputes it. It is denser
-  // than UIKit's 0.85, so a bar's title keeps 4.5:1 over bright content.
-  layer: {
-    display: {
-      default: 'none',
-      '@media (pointer: coarse)': 'block',
-    },
-    position: 'absolute',
-    insetInline: 0,
-    insetBlockStart: 0,
-    pointerEvents: 'none',
-    opacity: 0,
-    // Composited only while a finger works the scroller. On iOS 26.2, a
-    // composited layer under a sticky bar blanks the bar's items when the
-    // program scrolls back to the top.
-    willChange: 'var(--_scroll-edge-will-change, auto)',
-    maskImage: {
-      default:
-        'linear-gradient(to bottom, rgb(0 0 0 / 0.950) calc(100% - 118.8px), rgb(0 0 0 / 0.949) calc(100% - 112.8px), rgb(0 0 0 / 0.948) calc(100% - 106.8px), rgb(0 0 0 / 0.945) calc(100% - 100.8px), rgb(0 0 0 / 0.938) calc(100% - 94.8px), rgb(0 0 0 / 0.922) calc(100% - 88.8px), rgb(0 0 0 / 0.893) calc(100% - 82.8px), rgb(0 0 0 / 0.845) calc(100% - 76.8px), rgb(0 0 0 / 0.772) calc(100% - 70.8px), rgb(0 0 0 / 0.675) calc(100% - 64.8px), rgb(0 0 0 / 0.559) calc(100% - 58.8px), rgb(0 0 0 / 0.433) calc(100% - 52.8px), rgb(0 0 0 / 0.312) calc(100% - 46.8px), rgb(0 0 0 / 0.207) calc(100% - 40.8px), rgb(0 0 0 / 0.127) calc(100% - 34.8px), rgb(0 0 0 / 0.071) calc(100% - 28.8px), rgb(0 0 0 / 0.036) calc(100% - 22.8px), rgb(0 0 0 / 0.017) calc(100% - 16.8px), rgb(0 0 0 / 0.007) calc(100% - 10.8px))',
-      // Reduce Transparency: an opaque band with a hard edge, as UIKit's.
-      '@media (prefers-reduced-transparency: reduce)': 'none',
-    },
-  },
-  // `bars.scrollEdgeEffect.switchPt` (10px) tall, at the top of the content.
-  sentinel: {
-    position: 'absolute',
-    insetBlockStart: 0,
-    insetInlineStart: 0,
-    width: 1,
-    height: 10,
-    pointerEvents: 'none',
-    visibility: 'hidden',
-  },
-});
-
-const dynamicStyles = stylex.create({
-  // The layer ends 54.8px below the veil's edge (the soft extent). Reduce
-  // Transparency ends the opaque band at the edge, the bar's bottom.
-  geometry: (height: string, reducedHeight: string, color: string) => ({
-    height: {
-      default: height,
-      '@media (prefers-reduced-transparency: reduce)': reducedHeight,
-    },
-    backgroundColor: color,
-  }),
-});
 
 export interface UseScrollEdgeEffectOptions {
   /**
@@ -120,11 +77,18 @@ export interface UseScrollEdgeEffectOptions {
   readonly color?: string;
   /** Extra styles for the layer, e.g. its stacking order. */
   readonly layerXstyle?: StyleXStyles;
+  /** Extra classes for the layer, e.g. its stacking order. */
+  readonly layerClassName?: string;
   /**
    * Extra styles for the sentinel. Insets of `auto` leave it at its static
    * position, the top of the content, with no positioned wrapper.
    */
   readonly sentinelXstyle?: StyleXStyles;
+  /**
+   * Extra classes for the sentinel. In a caller that has left StyleX, its
+   * insets of `auto` keep it at its static position.
+   */
+  readonly sentinelClassName?: string;
   /** The fades' springs: a bar's are `bars.scrollEdgeEffect`'s. */
   readonly springs: {
     readonly appear: SpringDescription;
@@ -178,7 +142,9 @@ export function useScrollEdgeEffect({
   edge,
   color = colorVars['--color-background-body'],
   layerXstyle,
+  layerClassName,
   sentinelXstyle,
+  sentinelClassName,
   springs,
 }: UseScrollEdgeEffectOptions): UseScrollEdgeEffectResult {
   const {isTouch} = useTouchPresentation();
@@ -344,16 +310,28 @@ export function useScrollEdgeEffect({
     layerProps: {
       ref: layerRef,
       'aria-hidden': true,
-      ...stylex.props(
-        styles.layer,
-        dynamicStyles.geometry(`calc(${edge} + 54.8px)`, edge, color),
-        layerXstyle,
+      className: tw(
+        scrollEdgeLayerClassName,
+        scrollEdgeLayerMaskClassName,
+        layerClassName,
+        layerXstyle != null && stylex.props(layerXstyle).className,
       ),
+      style: {
+        ...stylex.props(layerXstyle).style,
+        // Both are lengths a caller chooses, so they travel as properties the
+        // classes read, not as classes the build cannot name.
+        '--_scroll-edge-bar-bottom': edge,
+        '--_scroll-edge-color': color,
+      },
     },
     sentinelProps: {
       ref: sentinelRef,
       'aria-hidden': true,
-      ...stylex.props(styles.sentinel, sentinelXstyle),
+      className: tw(
+        scrollEdgeSentinelClassName,
+        sentinelClassName,
+        sentinelXstyle != null && stylex.props(sentinelXstyle).className,
+      ),
     },
   };
 }
