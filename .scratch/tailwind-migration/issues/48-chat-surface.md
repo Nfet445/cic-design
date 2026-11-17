@@ -29,8 +29,8 @@ class-based after ticket 44.
 
 ## Approach
 
-- Literal classes in `packages/core/src/Chat/chatClasses.ts` (and a second map
-  only if one file's vocabulary is genuinely separate), joined with `tw()`.
+- Literal classes in a `chatClasses.ts` module beside the files (and a second
+  map only if one file's vocabulary is genuinely separate), joined with `tw()`.
 - `ChatComposerInput` states the 16px iOS floor. `packages/core/src/inputFontFloor.test.ts`
   lists the file, so its entry must follow the map: writing the floor as a
   literal class and leaving the entry pointing at the component breaks that
