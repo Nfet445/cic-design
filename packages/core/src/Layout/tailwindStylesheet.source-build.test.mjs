@@ -517,6 +517,12 @@ import {
   linkLabelClassName,
 } from '../Link/linkClasses';
 import {
+  badgeClassName,
+  badgeGrowsClassName,
+  badgeLabelClassName,
+  badgeVariantClassName,
+} from '../Badge/badgeClasses';
+import {
   cardBorderClassName,
   cardClassName,
   cardCornersClassName,
@@ -1795,6 +1801,14 @@ function familyClassNames() {
   }
   add(dividerLabelClassName);
   add(dividerVerticalLabelClassName);
+  // Badge: the pill, the arm that grows with the label, the label, and one
+  // class per variant.
+  add(badgeClassName);
+  add(badgeGrowsClassName);
+  add(badgeLabelClassName);
+  for (const value of Object.values(badgeVariantClassName)) {
+    add(value);
+  }
   // Banner: the frame and its elevation, the status header and its fill, the
   // text column, the end area, the content area and the chevron.
   add(bannerClassName);
