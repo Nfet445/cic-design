@@ -22,6 +22,7 @@ import * as chatReasoningClasses from './ChatReasoning/chatReasoningClasses';
 import * as chatTypingIndicatorClasses from './Chat/chatTypingIndicatorClasses';
 import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
 import * as chatVirtualizerClasses from './Chat/chatVirtualizerClasses';
+import * as circularProgressClasses from './CircularProgress/circularProgressClasses';
 import * as codeEditorClasses from './CodeEditor/codeEditorClasses';
 import * as commentActionsClasses from './Comments/commentActionsClasses';
 import * as commentMarkdownClasses from './Comments/commentMarkdownClasses';
@@ -73,6 +74,7 @@ function labClassNames() {
     chatTypingIndicatorClasses,
     chatUnreadDividerClasses,
     chatVirtualizerClasses,
+    circularProgressClasses,
     codeEditorClasses,
     commentActionsClasses,
     commentMarkdownClasses,
