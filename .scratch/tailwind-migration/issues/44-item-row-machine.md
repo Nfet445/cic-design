@@ -40,5 +40,20 @@ Ticket 18 finished `Link`, `Citation`, `BreadcrumbItem`, `Token`, `Pagination` a
 made each density state its own `--_item-inset-inline`: the `spacious` inset
 had keyed off a `data-density` attribute nothing rendered.
 
-Left: `List.tsx` (2 `stylex.create`), `ListReorderHandle.tsx` (2) and
-`listReorderEngine.tsx` (1).
+`List.tsx` is a class map too (`List/listClasses.ts`, `41b74cc9b`): the frame,
+its gap, the numbered columns, the margins that reach the container's padding,
+the corners it publishes to bled rows, the header, and the counter's start. The
+start is a per-instance value, so it travels as `--astryx-list-counter-start`
+beside the class that reads it. A divided list states `gap-0` instead of the
+row gap: two classes of one property are decided by the sheet's order, not by
+the class attribute. The corner classes are spelled out in full, because the
+build reads class text from the source and a class assembled from parts never
+reaches the sheet.
+
+Left: `ListReorderHandle.tsx` (2 `stylex.create`: the handle and the list's
+insertion line) and `listReorderEngine.tsx` (1: the reorder-mode hint's
+buttons). The insertion line is the one that reaches past its file: the
+session publishes it as `listStyle`, a `StyleXStyles` value in
+`listReorderContext.ts` and applied through `stylex.props` in `List.tsx`, so
+moving it to a class changes that contract to a `className` in the same
+commit.
