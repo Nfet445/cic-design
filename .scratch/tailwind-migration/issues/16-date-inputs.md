@@ -1,6 +1,6 @@
 # date inputs
 
-Status: ready-for-agent
+Status: done
 Blocked by: 14
 Wave: 4
 Family: `family:input-fields`
@@ -378,3 +378,9 @@ now (`dateInputClasses.ts`, `dateTimeInputClasses.ts`); 1802 of 1803 date-family
 tests pass and the one failure is the pre-existing Chinese-calendar case.
 
 The only creation left in this ticket is `Calendar/styles.ts` — 4.
+
+## Comments
+
+- 2026-11-17: closed. Every map in `DateInput/`, `DateRangeInput/`, `DateTimeInput/` and `TimeInput/` is a literal class map now; `Calendar/styles.ts` was the last file and became `Calendar/calendarClasses.ts`. The two layout literals in it (`p-[2px]`, `before:*-[-2px]`) stay literals because matcha moves the spacing step to 3px and adjacent hit targets would then overlap; a `calc()` from the two size tokens needs its own measured change.
+- The day button resolves one colour, one fill and one opacity per state instead of stacking arms, because two classes for one property in `astryx-base` are decided by sheet order.
+- Tests that read compiled declarations moved to class sets: the range cap radii, the nav-chevron wrapper (atom match plus the `rtl:[transform:scaleX(-1)]` token), and the forced-colors fill.

@@ -1,6 +1,6 @@
 # swizzle and render pipeline
 
-Status: ready-for-agent
+Status: done
 Blocked by: 32
 Wave: 9
 Ticket: 34
@@ -32,3 +32,9 @@ Update `astryx swizzle` and the render pipeline so ejected source states which s
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.
 - Manual Windows High Contrast check is part of this ticket's checklist when the component draws a border, an outline or a focus ring.
+
+## Comments
+
+- 2026-11-17: closed. `swizzle` names `@astryxdesign/core/astryx-tailwind.css` in its receipt and prints the import instead of the StyleX build note; the render pipeline already loads the sheet.
+- Root-cause fix in `packages/cli/api/swizzle/_moduleGraph.mjs`: `choosePublic` no longer offers a `.stylex` subpath for a name whose origin is a plain module. The deprecated `IconSize.stylex` shim re-exports the class map under the old name `iconBoxSizeStyles`, so the copy used to import `{iconBoxSizeStyles as iconBoxClassName}` — a different value under a misleading name.
+- The copy still takes a genuine StyleX module from its exported path (`@astryxdesign/core/Layout/edgeCompensation.stylex`), which stays until the marker and shared-module tickets land.

@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 33 of 50 tickets done, plus two waves (layout primitives,
+Progress: 35 of 50 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -64,7 +64,7 @@ buttons) that landed before the tickets were written.
 
 - [x] `14-field-and-text-inputs` — `Field`, `TextInput`, `TextArea`, `NumberInput`, `FileInput`
 - [x] `15-choice-inputs` — `Selector`, `MultiSelector`, `ComplexSelector`, `Typeahead`
-- [ ] `16-date-inputs` — `DateInput`, `DateRangeInput`, `DateTimeInput`, `TimeInput`
+- [x] `16-date-inputs` — `DateInput`, `DateRangeInput`, `DateTimeInput`, `TimeInput`
 
 ### Wave 5 — the shared style modules
 
@@ -103,7 +103,7 @@ buttons) that landed before the tickets were written.
 - [x] `32-cli-docs-and-templates` — consumer styling docs stop teaching StyleX
 - [ ] `45-template-pages-and-blocks` — the shipped page and block templates become class-based
 - [ ] `33-storybook-and-vibe-tests` — both load the sheet
-- [ ] `34-swizzle-and-render-pipeline` — ejected source states its stylesheet
+- [x] `34-swizzle-and-render-pipeline` — ejected source states its stylesheet
 - [ ] `35-deprecate-stylex-subpaths` — 80 export entries, one release
 - [x] `37-table-row-and-cell` — row and body cell
 - [x] `38-data-token-sheet` — 56 data tokens get their own sheet
