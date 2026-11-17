@@ -766,6 +766,28 @@ import {
   chatMessageChildrenClassName,
   chatMessageClassName,
   chatMessageContentClassName,
+} from '../Chat/chatClasses';
+import {
+  carouselFadeClassName,
+  carouselItemClassName,
+  carouselOverlayClassName,
+  carouselPillClassName,
+  carouselRootClassName,
+  carouselScrollerClassName,
+  carouselSnapClassName,
+} from '../Carousel/carouselClasses';
+import {
+  outlineActiveAnchorClassName,
+  outlineDividerClassName,
+  outlineIndicatorClassName,
+  outlineItemClassName,
+  outlineLabelClassName,
+  outlineLinkClassName,
+  outlineListClassName,
+  outlineRootClassName,
+  outlineTrackClassName,
+} from '../Outline/outlineClasses';
+import {
   chatMessageMetadataAssistantClassName,
   chatMessageMetadataClassName,
   chatMessageMetadataStatusErrorClassName,
@@ -2348,6 +2370,43 @@ function familyClassNames() {
   for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
     add(value);
   }
+  // Outline: the root, the track, the divider line, the anchored indicator,
+  // the list and the label, then one complete link string per density, level
+  // and active state.
+  add(outlineRootClassName);
+  add(outlineTrackClassName);
+  add(outlineDividerClassName);
+  add(outlineIndicatorClassName);
+  add(outlineActiveAnchorClassName);
+  add(outlineListClassName);
+  add(outlineItemClassName);
+  add(outlineLabelClassName);
+  for (const density of ['compact', 'default']) {
+    for (let level = 1; level <= 6; level += 1) {
+      add(outlineLinkClassName(density, level, false));
+      add(outlineLinkClassName(density, level, true));
+    }
+  }
+  // Carousel: the root, an item, the overlay and the snap pair, then the
+  // scroller at every gap and every padding step, the three fade arms, and
+  // each pill state.
+  add(carouselRootClassName);
+  add(carouselItemClassName);
+  add(carouselOverlayClassName);
+  add(carouselSnapClassName);
+  for (const gap of [0, 0.5, 1, 1.5, 2, 3, 4]) {
+    add(carouselScrollerClassName({gap, hasSnap: true}));
+  }
+  for (const padding of [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10]) {
+    add(carouselScrollerClassName({gap: 1, padding, hasSnap: false}));
+  }
+  for (const fade of ['start', 'end', 'both']) {
+    add(carouselFadeClassName[fade]);
+  }
+  for (const edge of ['start', 'end']) {
+    add(carouselPillClassName(edge, false));
+    add(carouselPillClassName(edge, true));
+  }
   // AspectRatio: the box, its ratio reading the private variable, the ellipse
   // clip, the child wrapper and its three fit arms.
   add(aspectRatioClassName);
@@ -2657,8 +2716,13 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // its scrim arms, the switcher positioner and flow wrapper then measured
     // 1424, and the scroll wheel's column, band, scrollport, row, its colour
     // fade and the three tip arms added 10 more — the pane and edge padding are
-    // literals it spells alone. The sheet measures 1434 here, inside the ceiling.
-    expect(stylesheet.rules.size).toBeLessThan(1460);
+    // literals it spells alone, so the sheet measured 1434 there. Outline's nav,
+    // track, divider, the anchored indicator, the list, the item, the label and
+    // one link string per density, level and active state, then Carousel's root,
+    // item, overlay and pill states and its scroller at every gap, padding and
+    // fade arm added six more. With the toast card and its row the sheet
+    // measures 1502 here, inside the ceiling.
+    expect(stylesheet.rules.size).toBeLessThan(1540);
   });
 
   it('keeps the scrim takeover pin under prefers-reduced-motion', () => {

@@ -4,7 +4,8 @@
 
 /**
  * @file Carousel.tsx
- * @input Uses React, StyleX, useScrollOverflow, useLayer, Button, Icon, theme tokens
+ * @input Uses React, StyleX, the carousel class map, useScrollOverflow, useLayer,
+ *   Button, Icon, theme tokens
  * @output Exports Carousel component
  * @position Horizontal scroll container with fade-edge overflow indication,
  *   optional prev/next buttons on the top layer, scroll-snap, a 1px
@@ -35,16 +36,15 @@ import {
   isValidElement,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  spacingVars,
-  colorVars,
-  shadowVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  focusVars,
-} from '../theme/tokens.stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {
+  carouselItemClassName,
+  carouselOverlayClassName,
+  carouselPillClassName,
+  carouselRootClassName,
+  carouselScrollerClassName,
+} from './carouselClasses';
+import {tw} from '../utils/tw';
 import {
   focusOwnerProps,
   focusWithinOwnerOverlay,
@@ -179,151 +179,11 @@ export interface CarouselProps extends BaseProps<HTMLDivElement> {
 // Styles
 // =============================================================================
 
-const styles = stylex.create({
-  root: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    minWidth: 0,
-    maxWidth: '100%',
-    overflow: 'clip',
-    overflowClipMargin: '1px',
-  },
-  scroller: {
-    display: 'flex',
-    alignItems: 'center',
-    overflowX: 'auto',
-    overflowY: 'hidden',
-    /* eslint-disable @astryx/no-hardcoded-styles -- 1px bleed for tab indicator; no token at this size */
-    paddingBottom: '1px',
-    marginBottom: '-1px',
-    /* eslint-enable @astryx/no-hardcoded-styles */
-    overscrollBehaviorX: 'contain',
-    scrollBehavior: {
-      default: 'smooth',
-      '@media (prefers-reduced-motion: reduce)': 'auto',
-    },
-    scrollbarWidth: 'none',
-    maskImage: 'none',
-  },
-  fadeStart: {
-    maskImage: {
-      default: `linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 2px, black ${spacingVars['--spacing-1']})`,
-      ':is([dir="rtl"] *)': `linear-gradient(to left, transparent 0%, rgba(0,0,0,0.3) 2px, black ${spacingVars['--spacing-1']})`,
-    },
-  },
-  fadeEnd: {
-    maskImage: {
-      default: `linear-gradient(to left, transparent 0%, rgba(0,0,0,0.3) 2px, black ${spacingVars['--spacing-1']})`,
-      ':is([dir="rtl"] *)': `linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 2px, black ${spacingVars['--spacing-1']})`,
-    },
-  },
-  fadeBoth: {
-    maskImage: `linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 2px, black ${spacingVars['--spacing-1']}, black calc(100% - ${spacingVars['--spacing-1']}), rgba(0,0,0,0.3) calc(100% - 2px), transparent 100%)`,
-  },
-  snap: {
-    scrollSnapType: 'x mandatory',
-  },
-  item: {
-    scrollSnapAlign: 'start',
-    display: 'flex',
-    flexShrink: 0,
-  },
-  // Overlay on top layer — covers the carousel anchor area
-  buttonOverlay: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    pointerEvents: 'none',
-  },
-  buttonPill: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colorVars['--color-background-popover'],
-    borderRadius: radiusVars['--radius-full'],
-    boxShadow: shadowVars['--shadow-med'],
-    pointerEvents: 'auto',
-    opacity: 1,
-    transitionProperty: 'opacity',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  // The overlay is in the top layer, above the root's focus ring. Each pill
-  // sits inside the ring, by the ring's offset and width, so it never covers it.
-  buttonPillStart: {
-    marginInlineStart: `calc(${focusVars['--focus-outline-offset']} + ${focusVars['--focus-outline-width']})`,
-  },
-  buttonPillEnd: {
-    marginInlineEnd: `calc(${focusVars['--focus-outline-offset']} + ${focusVars['--focus-outline-width']})`,
-  },
-  buttonHidden: {
-    opacity: 0,
-    pointerEvents: 'none' as const,
-  },
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/consistent-type-assertions -- CSS custom property requires type widening for StyleX
-  buttonRadiusOverride: {
-    '--_button-radius': radiusVars['--radius-full'],
-  } as Record<string, string>,
-});
-
-const gapStyles = stylex.create({
-  0: {gap: spacingVars['--spacing-0']},
-  0.5: {gap: spacingVars['--spacing-0-5']},
-  1: {gap: spacingVars['--spacing-1']},
-  1.5: {gap: spacingVars['--spacing-1-5']},
-  2: {gap: spacingVars['--spacing-2']},
-  3: {gap: spacingVars['--spacing-3']},
-  4: {gap: spacingVars['--spacing-4']},
-});
-
-const paddingStyles = stylex.create({
-  0: {
-    paddingInline: spacingVars['--spacing-0'],
-    scrollPaddingInline: spacingVars['--spacing-0'],
-  },
-  0.5: {
-    paddingInline: spacingVars['--spacing-0-5'],
-    scrollPaddingInline: spacingVars['--spacing-0-5'],
-  },
-  1: {
-    paddingInline: spacingVars['--spacing-1'],
-    scrollPaddingInline: spacingVars['--spacing-1'],
-  },
-  1.5: {
-    paddingInline: spacingVars['--spacing-1-5'],
-    scrollPaddingInline: spacingVars['--spacing-1-5'],
-  },
-  2: {
-    paddingInline: spacingVars['--spacing-2'],
-    scrollPaddingInline: spacingVars['--spacing-2'],
-  },
-  3: {
-    paddingInline: spacingVars['--spacing-3'],
-    scrollPaddingInline: spacingVars['--spacing-3'],
-  },
-  4: {
-    paddingInline: spacingVars['--spacing-4'],
-    scrollPaddingInline: spacingVars['--spacing-4'],
-  },
-  5: {
-    paddingInline: spacingVars['--spacing-5'],
-    scrollPaddingInline: spacingVars['--spacing-5'],
-  },
-  6: {
-    paddingInline: spacingVars['--spacing-6'],
-    scrollPaddingInline: spacingVars['--spacing-6'],
-  },
-  8: {
-    paddingInline: spacingVars['--spacing-8'],
-    scrollPaddingInline: spacingVars['--spacing-8'],
-  },
-  10: {
-    paddingInline: spacingVars['--spacing-10'],
-    scrollPaddingInline: spacingVars['--spacing-10'],
-  },
-});
-
+/**
+ * StyleX exception: Button reads its corner radius from its own private
+ * variable and keeps `xstyle` last, so only a StyleX style can round it. The
+ * rule paints nothing else, so no Tailwind utility competes with it.
+ */
 /**
  * Runs one of Carousel's own calls into the paging: a scroll call or the
  * detach. Such a call can run inside React's commit, so a report it raises
@@ -712,15 +572,15 @@ export function Carousel({
     receiver.focus({preventScroll: true});
   }, [canScrollStart, canScrollEnd]);
 
-  const fadeStyle = hasEdgeFade
+  const fade = hasEdgeFade
     ? (hasLoop && hasOverflow) || (overflowStart && overflowEnd)
-      ? styles.fadeBoth
+      ? 'both'
       : overflowStart
-        ? styles.fadeStart
+        ? 'start'
         : overflowEnd
-          ? styles.fadeEnd
-          : null
-    : null;
+          ? 'end'
+          : undefined
+    : undefined;
 
   // Self-authored position styles (positioning: 'custom' below): a cover
   // centered on the anchor, sized to it — direction-neutral by construction.
@@ -738,13 +598,12 @@ export function Carousel({
       {...mergeProps(
         themeProps('carousel'),
         stylex.props(
-          styles.root,
           // The scroller is the focus owner. Its edge-fade mask would cover a
           // ring the root draws itself.
           focusWithinOwnerOverlay,
           xstyle,
         ),
-        className,
+        tw(carouselRootClassName, className),
         style,
       )}
       role="region"
@@ -768,14 +627,15 @@ export function Carousel({
             edgeFade: hasEdgeFade ? 'edge-fade' : null,
           }),
           stylex.props(
-            styles.scroller,
             // A tab stop whose shared ring the root paints.
             focusOutlineStyles.suppressed,
-            gapStyles[gap],
-            padding != null && paddingStyles[padding],
-            hasSnap && styles.snap,
-            fadeStyle,
           ),
+          carouselScrollerClassName({
+            gap,
+            padding,
+            hasSnap: Boolean(hasSnap),
+            fade,
+          }),
         )}>
         {slides.map((child, index) => (
           // APG carousel pattern: each slide container is a group with
@@ -791,7 +651,7 @@ export function Carousel({
               current: index + 1,
               total: slides.length,
             })}
-            {...stylex.props(styles.item)}>
+            className={carouselItemClassName}>
             {child}
           </div>
         ))}
@@ -804,11 +664,7 @@ export function Carousel({
               // A hidden button is never a Tab stop or in the a11y tree. Its
               // disabled state alone would keep it focusable.
               inert={!canScrollStart || undefined}
-              {...stylex.props(
-                styles.buttonPill,
-                styles.buttonPillStart,
-                !canScrollStart && styles.buttonHidden,
-              )}>
+              className={carouselPillClassName('start', !canScrollStart)}>
               <Button
                 ref={startButtonRef}
                 icon={
@@ -839,18 +695,14 @@ export function Carousel({
                   }
                 }}
                 onClick={() => scrollBy(-1)}
-                xstyle={styles.buttonRadiusOverride}
+                className="[--_button-radius:var(--radius-full)]"
               />
             </div>
             <div
               // A hidden button is never a Tab stop or in the a11y tree. Its
               // disabled state alone would keep it focusable.
               inert={!canScrollEnd || undefined}
-              {...stylex.props(
-                styles.buttonPill,
-                styles.buttonPillEnd,
-                !canScrollEnd && styles.buttonHidden,
-              )}>
+              className={carouselPillClassName('end', !canScrollEnd)}>
               <Button
                 ref={endButtonRef}
                 icon={
@@ -879,14 +731,14 @@ export function Carousel({
                   }
                 }}
                 onClick={() => scrollBy(1)}
-                xstyle={styles.buttonRadiusOverride}
+                className="[--_button-radius:var(--radius-full)]"
               />
             </div>
           </>,
           {
             positioning: 'custom',
             style: coverStyle,
-            xstyle: styles.buttonOverlay,
+            className: carouselOverlayClassName,
           },
         )}
     </div>
