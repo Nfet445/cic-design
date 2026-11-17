@@ -609,6 +609,10 @@ import {
 } from '../EmptyState/emptyStateClasses';
 import {timestampClassName} from '../Timestamp/timestampClasses';
 import {
+  chatPastedTextFooterClassName,
+  chatPastedTextMetaClassName,
+  chatPastedTextPreviewClassName,
+  chatPastedTextPreviewTextClassName,
   chatSendButtonClassName,
   chatTokenizedTextClassName,
   chatTokenizedTextTokenClassName,
@@ -2063,6 +2067,10 @@ function familyClassNames() {
   add(chatTokenizedTextClassName);
   add(chatTokenizedTextTokenClassName);
   add(chatSendButtonClassName);
+  add(chatPastedTextPreviewClassName);
+  add(chatPastedTextPreviewTextClassName);
+  add(chatPastedTextFooterClassName);
+  add(chatPastedTextMetaClassName);
   for (const orientation of ['vertical', 'horizontal']) {
     add(radioListClassName({orientation}));
   }
@@ -2133,8 +2141,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // Timestamp — carried it further. The popover's map then moved from StyleX
     // to literal classes: its surface, both viewport-fit states, the two sizing
     // classes, the anchor wrapper and both hidden close wrappers. The sheet
-    // measures 1254, so the ceiling follows the sum rather than one side.
-    expect(stylesheet.rules.size).toBeLessThan(1260);
+    // measures 1254, so the ceiling follows the sum rather than one side. The
+    // chat pasted-text token's preview column, its scrolling code text, the
+    // footer and the count added about 10, so the sheet measures 1261.
+    expect(stylesheet.rules.size).toBeLessThan(1270);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

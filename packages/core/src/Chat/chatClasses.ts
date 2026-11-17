@@ -21,3 +21,26 @@ export const chatTokenizedTextClassName = 'inline';
 export const chatTokenizedTextTokenClassName = tw(
   'inline-flex items-center h-[1lh] align-top',
 );
+
+/** The pasted-text preview card: a column, capped so long text scrolls. */
+export const chatPastedTextPreviewClassName = tw(
+  'flex flex-col gap-2 max-w-[480px]',
+);
+
+/** The preview's text: monospaced, so the pasted indentation shows. */
+export const chatPastedTextPreviewTextClassName = tw(
+  '[font-family:var(--font-family-code)]',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-primary)]',
+  'whitespace-pre-wrap break-words max-h-[240px] overflow-y-auto',
+);
+
+/** The preview's footer: the count on one side, the Expand button on the other. */
+export const chatPastedTextFooterClassName = tw(
+  'flex items-center justify-between gap-2',
+);
+
+/** The pasted-text count, quieter than the preview it labels. */
+export const chatPastedTextMetaClassName = tw(
+  'text-[length:var(--text-supporting-size)] text-[color:var(--color-text-secondary)]',
+);
