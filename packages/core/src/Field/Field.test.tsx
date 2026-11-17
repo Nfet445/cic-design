@@ -636,7 +636,7 @@ describe('Field', () => {
       );
 
       const description = screen.getByText('Search for items');
-      expect(description.className).toContain('visuallyHidden');
+      expect(description.className).toContain('[clip:rect(0,0,0,0)]');
       expect(description).toHaveAttribute('id', 'search-desc');
     });
 

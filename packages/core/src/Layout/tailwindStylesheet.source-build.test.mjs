@@ -599,6 +599,7 @@ import {
   overlayScrimShownClassName,
   overlayScrimTintClassName,
 } from '../Overlay/overlayClasses';
+import {visuallyHiddenClassName} from '../VisuallyHidden/visuallyHiddenClasses';
 import {
   swipeEntryClassName,
   swipeEntryCoveredClassName,
@@ -1455,6 +1456,8 @@ function familyClassNames() {
   add(scrollableAreaContentWithInlineOverflowClassName);
   // Overlay: the container, the scrim's box, its tint, and every reveal arm
   // (controlled open and closed, always shown, hover and focus) per position.
+  // VisuallyHidden: the clip block every accessible label reuses.
+  add(visuallyHiddenClassName);
   add(overlayContainerClassName);
   add(overlayScrimBaseClassName);
   for (const position of ['fill', 'bottom', 'top']) {
