@@ -15,6 +15,10 @@ import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest';
 import {render, screen, act} from '@testing-library/react';
 import {RadialChart} from './RadialChart';
 import {useRadial} from './RadialContext';
+import {
+  radialChartClassName,
+  radialChartInteractiveClassName,
+} from './radialChartClasses';
 
 const spiderData = [
   {name: 'modelA', speed: 8, handling: 6, comfort: 7},
@@ -192,6 +196,28 @@ describe('RadialChart container sizing', () => {
     const svg = screen.getByRole('img');
     expect(svg).toHaveAttribute('width', '500');
     expect(svg).toHaveAttribute('height', '300');
+  });
+});
+
+describe('RadialChart classes', () => {
+  it('fills its column and drops pan gestures only when interactive', () => {
+    const {container, rerender} = render(
+      <RadialChart data={pieData} valueKey="revenue">
+        <g />
+      </RadialChart>,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.className).toBe(radialChartClassName);
+    expect(root.className).not.toContain('touch-none');
+
+    rerender(
+      <RadialChart data={pieData} valueKey="revenue" interactive>
+        <g />
+      </RadialChart>,
+    );
+    expect((container.firstElementChild as HTMLElement).className).toBe(
+      radialChartInteractiveClassName,
+    );
   });
 });
 

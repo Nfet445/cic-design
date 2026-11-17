@@ -13,7 +13,6 @@
  * hidden data table (slices in pie mode, axis values in spider mode).
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {
   type ReactNode,
   useMemo,
@@ -23,6 +22,10 @@ import {
 } from 'react';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
 import {RadialProvider} from './RadialContext';
+import {
+  radialChartClassName,
+  radialChartInteractiveClassName,
+} from './radialChartClasses';
 import type {RadialMode} from './types';
 
 export interface RadialChartProps {
@@ -74,12 +77,6 @@ export interface RadialChartProps {
  * this a table is more noise than signal, so larger charts are name-only.
  */
 const MAX_TABLE_POINTS = 100;
-
-const styles = stylex.create({
-  interactive: {
-    touchAction: 'none',
-  },
-});
 
 /**
  * Row header for a spider-mode table row: the first string field in the row
@@ -269,8 +266,9 @@ export function RadialChart({
   return (
     <div
       ref={containerRef}
-      {...stylex.props(interactive && styles.interactive)}
-      style={{width: '100%'}}>
+      className={
+        interactive ? radialChartInteractiveClassName : radialChartClassName
+      }>
       {containerWidth > 0 && (
         <svg
           role="img"
