@@ -554,6 +554,10 @@ import {
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {reorderingHandleCursorClassName} from '../privateAttributes/reorderingClasses';
+import {
+  travellingRaisedSwipeRowClassName,
+  travellingRowClassName,
+} from '../privateAttributes/travellingClasses';
 import {stackClassName} from '../Stack/stackClasses';
 import {
   tokenClassName,
@@ -2273,6 +2277,8 @@ function familyClassNames() {
   add(menuPressLitRowClassName);
   add(reorderLineClassName);
   add(reorderingHandleCursorClassName);
+  add(travellingRowClassName);
+  add(travellingRaisedSwipeRowClassName);
   for (const placement of ['above', 'below', 'start', 'end']) {
     add(layerAnimations[placement]);
   }
