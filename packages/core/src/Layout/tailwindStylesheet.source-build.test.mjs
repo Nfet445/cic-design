@@ -851,6 +851,9 @@ import {
   chatLayoutScrollButtonButtonClassName,
   chatLayoutScrollButtonPillClassName,
   chatLayoutScrollButtonWrapperClassName,
+  chatDictationBarClassName,
+  chatDictationBarsClassName,
+  chatDictationWrapperClassName,
 } from '../Chat/chatClasses';
 import {
   carouselFadeClassName,
@@ -2784,6 +2787,11 @@ function familyClassNames() {
   }
   add(chatLayoutScrollButtonButtonClassName(true));
   add(chatLayoutScrollButtonButtonClassName(false));
+  // ChatDictationButton: the frame, the bars' row and both bar widths.
+  add(chatDictationWrapperClassName);
+  add(chatDictationBarsClassName);
+  add(chatDictationBarClassName('sm'));
+  add(chatDictationBarClassName('md'));
   for (const orientation of ['vertical', 'horizontal']) {
     add(radioListClassName({orientation}));
   }

@@ -448,3 +448,44 @@ export function chatLayoutScrollButtonButtonClassName(
     hasLabel && 'pe-3',
   );
 }
+
+// ---------------------------------------------------------------------------
+// ChatDictationButton
+// ---------------------------------------------------------------------------
+
+/** The per-instance geometry and colour of the listening bars. */
+export const chatDictationBarVars = {
+  gap: '--astryx-chat-dictation-bar-gap',
+  height: '--astryx-chat-dictation-bar-height',
+  color: '--astryx-chat-dictation-bar-color',
+  scale: '--astryx-chat-dictation-bar-scale',
+} as const;
+
+/** The button's frame: the bars sit over it, so it positions them. */
+export const chatDictationWrapperClassName =
+  'relative inline-flex items-center justify-center';
+
+/**
+ * The bars' row. Its gap and height come from the size the caller picked, so
+ * the class reads the two variables the component writes.
+ */
+export const chatDictationBarsClassName = tw(
+  'absolute flex items-center justify-center pointer-events-none z-[1]',
+  '[gap:var(--astryx-chat-dictation-bar-gap)]',
+  '[height:var(--astryx-chat-dictation-bar-height)]',
+);
+
+/**
+ * One bar: its width follows the button size, and each frame rewrites only the
+ * scale and the colour, so the browser transitions between two frames.
+ */
+export function chatDictationBarClassName(size: 'sm' | 'md'): string {
+  return tw(
+    'h-full rounded-[var(--radius-full)] [transform-origin:center]',
+    '[transform:scaleY(var(--astryx-chat-dictation-bar-scale))]',
+    'bg-[var(--astryx-chat-dictation-bar-color)]',
+    'transition-[transform,background-color] duration-[60ms] ease-out',
+    'motion-reduce:duration-0',
+    size === 'sm' ? 'w-[2px]' : 'w-[2.5px]',
+  );
+}
