@@ -66,6 +66,16 @@ import {
 } from '../Drawer/drawerClasses';
 import {bottomSheetEdgeTintClassName} from '../BottomSheet/bottomSheetEdgeTintClasses';
 import {
+  popoverAnchorWrapperClassName,
+  popoverCloseButtonWrapperClassName,
+  popoverContentWrapperClassName,
+  popoverExplicitWidthClassName,
+  popoverMatchTriggerClassName,
+  popoverSheetFallbackCloseClassName,
+  popoverSurfaceClassName,
+  popoverViewportFitClassName,
+} from '../Popover/popoverClasses';
+import {
   mobileNavContentClassName,
   mobileNavDialogClassName,
   mobileNavDrawerClassName,
@@ -218,6 +228,12 @@ import {
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {checkboxListItemClassName} from '../CheckboxList/checkboxListItemClasses';
 import {radioListClassName} from '../RadioList/radioListClasses';
+import {
+  radioListItemIndicatorSlotClassName,
+  radioListItemInputClassName,
+  radioListItemPressOverlayClassName,
+  radioListItemWrapperClassName,
+} from '../RadioList/radioListItemClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
@@ -593,6 +609,11 @@ import {
 } from '../EmptyState/emptyStateClasses';
 import {timestampClassName} from '../Timestamp/timestampClasses';
 import {
+  chatSendButtonClassName,
+  chatTokenizedTextClassName,
+  chatTokenizedTextTokenClassName,
+} from '../Chat/chatClasses';
+import {
   timestampHoverCardActionClassName,
   timestampHoverCardGridTemplateClassName,
   timestampHoverCardLabelClassName,
@@ -842,6 +863,20 @@ function familyClassNames() {
   // The bottom sheet's edge tint: the strip WebKit samples for the iOS toolbar
   // colour.
   add(bottomSheetEdgeTintClassName);
+
+  // The popover: its surface and content wrapper, the anchor wrapper, both
+  // viewport-fit states, the two sizing classes and both hidden close
+  // wrappers.
+  add(popoverAnchorWrapperClassName);
+  add(popoverSurfaceClassName);
+  add(popoverContentWrapperClassName);
+  for (const isScrollable of [false, true]) {
+    add(popoverViewportFitClassName({isScrollable}));
+  }
+  add(popoverExplicitWidthClassName);
+  add(popoverMatchTriggerClassName);
+  add(popoverCloseButtonWrapperClassName);
+  add(popoverSheetFallbackCloseClassName);
 
   // The mobile nav: the dialog in its two display states, the scrim, both
   // drawer edges in both motion states, the header row and its content area.
@@ -2023,8 +2058,19 @@ function familyClassNames() {
   for (const isSelected of [true, false]) {
     add(checkboxListItemClassName({isSelected, className: undefined}));
   }
+
+  // Chat: the tokenized text root and the inline box a token renders in.
+  add(chatTokenizedTextClassName);
+  add(chatTokenizedTextTokenClassName);
+  add(chatSendButtonClassName);
   for (const orientation of ['vertical', 'horizontal']) {
     add(radioListClassName({orientation}));
+  }
+  add(radioListItemIndicatorSlotClassName);
+  add(radioListItemPressOverlayClassName);
+  for (const size of ['sm', 'md']) {
+    add(radioListItemWrapperClassName({size}));
+    add(radioListItemInputClassName({size}));
   }
 
   return [...names].sort();
@@ -2083,7 +2129,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // row's three radius parts already spelled elsewhere. Skeleton's map added
     // 25 — the placeholder, the pulse, the two classes that read the props'
     // variables, and one per radius. With every family above the sheet sits at
-    // 1212, so the ceiling follows the sum rather than one side.
+    // 1212, and the windows merged since — the menu surface, EmptyState,
+    // Timestamp — carried it further. The popover's map then moved from StyleX
+    // to literal classes: its surface, both viewport-fit states, the two sizing
+    // classes, the anchor wrapper and both hidden close wrappers. The sheet
+    // measures 1254, so the ceiling follows the sum rather than one side.
     expect(stylesheet.rules.size).toBeLessThan(1260);
   });
 

@@ -9,7 +9,6 @@ import {Grid} from '@astryxdesign/core/Grid';
 import {AspectRatio} from '@astryxdesign/core/AspectRatio';
 import {Card} from '@astryxdesign/core/Card';
 import {Icon} from '@astryxdesign/core/Icon';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {ArrowRightIcon} from '@heroicons/react/24/outline';
 import type {CSSProperties} from 'react';
 
@@ -140,7 +139,7 @@ export default function ProductGalleryTemplate() {
                     <Icon
                       icon={ArrowRightIcon}
                       color="inherit"
-                      xstyle={rtlStyles.mirror}
+                      className="rtl:[transform:scaleX(-1)]"
                     />
                   }
                 />

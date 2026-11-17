@@ -41,6 +41,12 @@ import type {UsePopoverReturn} from './usePopover';
 import {Dialog} from '../Dialog';
 import {SegmentedControl, SegmentedControlItem} from '../SegmentedControl';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {
+  popoverExplicitWidthClassName,
+  popoverMatchTriggerClassName,
+  popoverSurfaceClassName,
+  popoverViewportFitClassName,
+} from './popoverClasses';
 
 // Store original matches to restore later
 const originalMatches = HTMLElement.prototype.matches;
@@ -345,24 +351,27 @@ describe('Popover', () => {
     // the trigger (FR2).
     expect(layer?.className).toContain('useLayer__styles.viewportFit');
     expect(layer?.className).toContain('useLayer__styles.gutterInlineEnd');
-    expect(layer?.className).toContain('Popover__styles.customWidth');
+    expect(layer?.className).toContain(popoverExplicitWidthClassName);
+    // The width travels as a variable, so one class serves every value, and it
+    // is clamped to the viewport, never to the span beside the trigger.
+    expect(layer?.getAttribute('style')).toContain('--astryx-popover-width');
     expect(layer?.getAttribute('style')).toContain('min(640px, calc(100vw');
     expect(layer?.getAttribute('style')).not.toContain('100%');
+    // The cap is the layer runtime's own definition, read from the shared
+    // constant rather than respelled here.
+    expect(layer?.getAttribute('style')).toContain(
+      '--astryx-popover-max-inline-size',
+    );
+    expect(layer?.getAttribute('style')).toContain('100vi');
     const surface = screen.getByTestId('popover-content').parentElement;
-    expect(surface?.className).toContain('Popover__styles.surfaceViewportFit');
+    expect(surface?.className).toContain(popoverSurfaceClassName);
     const popoverSource = readFileSync(
       'packages/core/src/Popover/Popover.tsx',
       'utf8',
     );
-    expect(popoverSource).toMatch(
-      /surfaceViewportFit:[\s\S]*?maxInlineSize: stylex\.firstThatWorks\(\s*`calc\(\$\{layerViewportInset\.maxInlineSize\}\)`/,
-    );
-    expect(popoverSource).toMatch(
-      /surfaceViewportFit:[\s\S]*?maxBlockSize: stylex\.firstThatWorks\(\s*`calc\(\$\{layerViewportInset\.maxBlockSize\}\)`/,
-    );
     expect(popoverSource).not.toMatch(/safe-area-inset|calc\(100%/);
     expect(surface?.className).not.toContain(
-      'Popover__styles.surfaceScrollable',
+      popoverViewportFitClassName({isScrollable: true}),
     );
   });
 
@@ -393,7 +402,7 @@ describe('Popover', () => {
 
       expect(
         screen.getByTestId('popover-content').parentElement?.className,
-      ).toContain('Popover__styles.surfaceScrollable');
+      ).toContain(popoverViewportFitClassName({isScrollable: true}));
     } finally {
       clientHeight.mockRestore();
       scrollHeight.mockRestore();
@@ -530,10 +539,12 @@ describe('Popover', () => {
     expect(layer?.className).not.toContain(
       'useLayer__styles.gutterInlineStart',
     );
-    expect(layer?.className).toContain('Popover__styles.matchTrigger');
-    expect(layer).toHaveStyle(
-      'min-width: min(anchor-size(width),calc(100vi - calc(max(var(--spacing-4), env(safe-area-inset-left, 0px)) + var(--astryx-layer-inset-inline-start, 0px)) - calc(max(var(--spacing-4), env(safe-area-inset-right, 0px)) + var(--astryx-layer-inset-inline-end, 0px))))',
+    expect(layer?.className).toContain(popoverMatchTriggerClassName);
+    // The class reads the cap from the variable the layer carries.
+    expect(layer?.getAttribute('style')).toContain(
+      '--astryx-popover-max-inline-size',
     );
+    expect(layer?.getAttribute('style')).toContain('100vi');
   });
 
   it('mirrors the far-edge gutter for end-aligned popovers', () => {
@@ -563,7 +574,7 @@ describe('Popover', () => {
     expect(layer?.className).toContain('useLayer__styles.gutterInlineStart');
     expect(layer?.className).toContain('useLayer__styles.gutterInlineEnd');
     // One match-trigger minimum for every alignment: the cap is the viewport.
-    expect(layer?.className).toContain('Popover__styles.matchTrigger');
+    expect(layer?.className).toContain(popoverMatchTriggerClassName);
   });
 
   it('uses block-axis gutters for side placement', () => {
@@ -1607,7 +1618,7 @@ describe('Popover', () => {
       fireEvent.click(trigger, {detail: 1});
       runFrames();
       expect(surface.className).not.toContain(
-        'Popover__styles.surfaceScrollable',
+        popoverViewportFitClassName({isScrollable: true}),
       );
 
       // The window the Popover renders in gets too short for its content.
@@ -1624,7 +1635,7 @@ describe('Popover', () => {
         });
         runFrames();
         expect(surface.className).toContain(
-          'Popover__styles.surfaceScrollable',
+          popoverViewportFitClassName({isScrollable: true}),
         );
       } finally {
         sizes.forEach(size => size.mockRestore());

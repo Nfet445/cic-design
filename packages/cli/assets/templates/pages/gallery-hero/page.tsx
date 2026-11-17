@@ -9,7 +9,6 @@ import {Button} from '@astryxdesign/core/Button';
 import {Icon} from '@astryxdesign/core/Icon';
 import {Grid} from '@astryxdesign/core/Grid';
 import {AspectRatio} from '@astryxdesign/core/AspectRatio';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {ArrowRightIcon} from '@heroicons/react/20/solid';
 
 const IMAGES = [
@@ -76,7 +75,7 @@ export default function GalleryHero() {
                       icon={ArrowRightIcon}
                       size="sm"
                       color="inherit"
-                      xstyle={rtlStyles.mirror}
+                      className="rtl:[transform:scaleX(-1)]"
                     />
                   }
                 />
