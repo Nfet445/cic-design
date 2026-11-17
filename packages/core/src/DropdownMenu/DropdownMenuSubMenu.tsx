@@ -79,14 +79,7 @@ import {useTypeahead} from '../hooks/useTypeahead';
 import {useMenuOverflow} from './useMenuOverflow';
 import {resolveMenuWidth} from './menuWidth';
 import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  shadowVars,
-} from '../theme/tokens.stylex';
+import {spacingVars} from '../theme/tokens.stylex';
 import {
   composeEventHandlers,
   isImeKeyEvent,
@@ -97,15 +90,28 @@ import {
 import {visibleText} from '../utils/accessibleName';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {menuRowStateStyles} from './menuRowState.stylex';
+import {dropdownMenuInlineSizeVar} from './dropdownMenuClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLit.stylex';
 import {
   dropdownMenuSubMenuDrillInClassName,
   dropdownMenuSubMenuFlyoutClassName,
+  dropdownMenuSubMenuFlyoutMinWidthClassName,
+  dropdownMenuSubMenuFlyoutViewportClassName,
+  dropdownMenuSubMenuFrameMenuClassName,
+  dropdownMenuSubMenuRegionsFrameCapClassName,
+  dropdownMenuSubMenuRegionsFrameClassName,
+  dropdownMenuSubMenuRegionsSurfaceClassName,
   dropdownMenuSubMenuScrollClassName,
   dropdownMenuSubMenuTouchClassName,
   dropdownMenuSubMenuTouchPinchClassName,
   dropdownMenuSubMenuTriggerClassName,
 } from './dropdownMenuSubMenuClasses';
+import {
+  dropdownMenuPopoverFixedWidthClassName,
+  dropdownMenuPopoverMinWidthClassName,
+  dropdownMenuPopoverViewportClassName,
+  dropdownMenuRegionClassName,
+} from './dropdownMenuClasses';
 import {tw} from '../utils/tw';
 import {getInteractionModality} from '../utils/interactionModality';
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -138,110 +144,12 @@ import english from '../i18n/generated-english/DropdownMenu/DropdownMenuSubMenu.
 
 registerEnglishFallback(english);
 
-// The flyout's own lower cap on the placement axis; the viewport cap under
-// it and the inline gutter beside it are the layer runtime's (spec:AST-059).
-const MENU_BLOCK_CAP = '300px';
-const MENU_MAX_BLOCK_SIZE = `min(${MENU_BLOCK_CAP}, ${layerViewportInset.maxBlockSize})`;
-const MENU_MAX_BLOCK_SIZE_FALLBACK = `min(${MENU_BLOCK_CAP}, ${layerViewportInset.maxBlockSizeFallback})`;
-
 // The caret is a slot wrapper, kept here: its box is structural, and the rule
 // against a style-only wrapper reads that from the style it applies.
 const triggerStyles = stylex.create({
   caret: {
     display: 'flex',
     alignItems: 'center',
-  },
-});
-
-// The popover container's own size stays in StyleX: the layer receives it as
-// `xstyle`, and anchor positioning owns the rest of that box.
-const flyoutStyles = stylex.create({
-  popoverViewport: {
-    boxSizing: 'border-box',
-    // Keep the inline viewport cap on the menu surface above. Applying it to
-    // the anchor-positioned popover itself prevents Chromium from selecting
-    // `flip-inline` and instead shifts the flyout back across its parent.
-    maxBlockSize: stylex.firstThatWorks(
-      MENU_MAX_BLOCK_SIZE,
-      MENU_MAX_BLOCK_SIZE_FALLBACK,
-    ),
-  },
-  popover: {
-    minWidth: stylex.firstThatWorks(
-      `min(160px, ${layerViewportInset.maxInlineSize})`,
-      `min(160px, ${layerViewportInset.maxInlineSizeFallback})`,
-      '160px',
-    ),
-  },
-  popoverCustomWidth: (width: string) => ({
-    minWidth: width,
-  }),
-  popoverCustomIntrinsicWidth: (width: string) => ({
-    inlineSize: width,
-  }),
-});
-
-// With a header or footer the sub-menu's surface is a frame holding the
-// header, the sub-menu's own role="menu" element and the footer, in one column
-// under the flyout's block cap: the regions keep their height and the rows
-// shrink and scroll between them.
-// A drilled-in view with a header or footer takes the root menu's place, so
-// it caps where the root does when the root's `menuMaxHeight` lifts the 300px
-// cap; the viewport still bounds it.
-const dynamicRegionStyles = stylex.create({
-  viewMaxHeight: (maxHeight: string) => ({
-    maxHeight: `min(${maxHeight}, ${layerViewportInset.maxBlockSize})`,
-  }),
-});
-
-const regionStyles = stylex.create({
-  frame: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    maxHeight: stylex.firstThatWorks(
-      MENU_MAX_BLOCK_SIZE,
-      MENU_MAX_BLOCK_SIZE_FALLBACK,
-    ),
-    '--_dropdown-menu-radius': radiusVars['--radius-container'],
-    '--_dropdown-menu-padding': spacingVars['--spacing-1'],
-    borderRadius: 'var(--_dropdown-menu-radius)',
-  },
-  // The flyout paints its own surface; a drilled-in view sits inside the
-  // root's.
-  flyoutSurface: {
-    // Each constant inside calc(), as for the plain flyout: a bare pair would
-    // ship as var(--<hash>, <fallback>) with the hash defined nowhere.
-    maxInlineSize: stylex.firstThatWorks(
-      `calc(${layerViewportInset.maxInlineSize})`,
-      `calc(${layerViewportInset.maxInlineSizeFallback})`,
-    ),
-    backgroundColor: colorVars['--color-background-popover'],
-    boxShadow: shadowVars['--shadow-low'],
-    opacity: 1,
-    transitionProperty: 'opacity',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  menu: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-    flexGrow: 1,
-    flexShrink: 1,
-    minBlockSize: 0,
-    padding: spacingVars['--spacing-1'],
-    outline: 'none',
-    WebkitTouchCallout: 'none',
-    userSelect: 'none',
-  },
-  region: {
-    flexShrink: 0,
-    padding: spacingVars['--spacing-1'],
-  },
-  hidden: {
-    display: 'none',
   },
 });
 
@@ -1020,11 +928,18 @@ export function DropdownMenuSubMenu(
   const resolvedMenuWidth = menuWidth
     ? resolveMenuWidth(menuWidth, layerViewportInset.maxInlineSizeFallback)
     : null;
-  const popoverXstyle = resolvedMenuWidth
+  // The width is a class plus an inline variable, so a consumer class still
+  // overrides it.
+  const flyoutWidthClassName = resolvedMenuWidth
     ? resolvedMenuWidth.property === 'inlineSize'
-      ? flyoutStyles.popoverCustomIntrinsicWidth(resolvedMenuWidth.value)
-      : flyoutStyles.popoverCustomWidth(resolvedMenuWidth.value)
-    : flyoutStyles.popover;
+      ? dropdownMenuPopoverFixedWidthClassName
+      : dropdownMenuPopoverMinWidthClassName
+    : dropdownMenuSubMenuFlyoutMinWidthClassName;
+  const flyoutStyle: React.CSSProperties &
+    Partial<Record<typeof dropdownMenuInlineSizeVar, string>> =
+    resolvedMenuWidth == null
+      ? {}
+      : {[dropdownMenuInlineSizeVar]: resolvedMenuWidth.value};
 
   // The flyout is a layer of its own, where layer-scoped contexts reset:
   // nested rows get this level's menu context and the root's surface again.
@@ -1099,22 +1014,29 @@ export function DropdownMenuSubMenu(
           // on it; a drilled-in view sits inside the root's surface.
           mergeProps(
             themeProps('dropdown-menu', {presentation: 'popover'}),
-            stylex.props(regionStyles.frame, regionStyles.flyoutSurface),
-            // The entrance runs on the surface: an anchored layer lays out
-            // again on each frame its own style animates.
-            layerAnimations.end,
+            tw(
+              dropdownMenuSubMenuRegionsFrameClassName,
+              dropdownMenuSubMenuRegionsFrameCapClassName,
+              dropdownMenuSubMenuRegionsSurfaceClassName,
+              // The entrance runs on the surface: an anchored layer lays out
+              // again on each frame its own style animates.
+              layerAnimations.end,
+            ),
           )
-        : stylex.props(
-            regionStyles.frame,
-            rootSurface?.menuMaxHeight != null &&
-              dynamicRegionStyles.viewMaxHeight(rootSurface.menuMaxHeight),
-            frameProps.hidden === true && regionStyles.hidden,
-          ))}>
+        : {
+            className: tw(
+              dropdownMenuSubMenuRegionsFrameClassName,
+              // A view with a header or footer takes the root menu's place, so
+              // its cap reads the root's lift through the same variable.
+              dropdownMenuPopoverViewportClassName,
+              frameProps.hidden === true && 'hidden',
+            ),
+          })}>
       {isRenderable(header) && (
         <div
           ref={headerRef}
           onKeyDown={handleRegionKeyDown}
-          {...stylex.props(regionStyles.region)}>
+          className={dropdownMenuRegionClassName}>
           {header}
         </div>
       )}
@@ -1123,7 +1045,7 @@ export function DropdownMenuSubMenu(
         <div
           ref={footerRef}
           onKeyDown={handleRegionKeyDown}
-          {...stylex.props(regionStyles.region)}>
+          className={dropdownMenuRegionClassName}>
           {footer}
         </div>
       )}
@@ -1232,12 +1154,12 @@ export function DropdownMenuSubMenu(
                     {...surfaceOwnerProps}
                     {...mergeProps(
                       stylex.props(
-                        regionStyles.menu,
                         isMenuKeyboardFocused &&
                           focusOutlineStyles.focusVisible,
                       ),
                       {
                         className: tw(
+                          dropdownMenuSubMenuFrameMenuClassName,
                           hasOverflow
                             ? dropdownMenuSubMenuTouchClassName
                             : dropdownMenuSubMenuTouchPinchClassName,
@@ -1297,12 +1219,12 @@ export function DropdownMenuSubMenu(
                     {...surfaceOwnerProps}
                     {...mergeProps(
                       stylex.props(
-                        regionStyles.menu,
                         isMenuKeyboardFocused &&
                           focusOutlineStyles.focusVisible,
                       ),
                       {
                         className: tw(
+                          dropdownMenuSubMenuFrameMenuClassName,
                           hasOverflow
                             ? dropdownMenuSubMenuTouchClassName
                             : dropdownMenuSubMenuTouchPinchClassName,
@@ -1353,7 +1275,11 @@ export function DropdownMenuSubMenu(
                 placement: 'end',
                 alignment: 'start',
                 offset: spacingVars['--spacing-1'],
-                xstyle: [flyoutStyles.popoverViewport, popoverXstyle],
+                className: tw(
+                  dropdownMenuSubMenuFlyoutViewportClassName,
+                  flyoutWidthClassName,
+                ),
+                style: flyoutStyle,
               },
             ),
           )}
