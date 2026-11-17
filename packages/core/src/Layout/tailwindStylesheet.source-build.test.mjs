@@ -23,6 +23,26 @@ import {
   buttonPressClassName,
 } from '../Button/buttonClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
+import {
+  fieldAttachedStatusLayerClassName,
+  fieldClassName,
+  fieldHorizontalLabelAlignClassName,
+  fieldHorizontalLabelsClassName,
+  fieldInputStatusWrapperClassName,
+} from '../Field/fieldClasses';
+import {
+  fieldDescriptionClassName,
+  fieldLabelClassName,
+  fieldLabelGroupClassName,
+  fieldLabelRowClassName,
+  fieldLabelStatusClassName,
+  fieldScreenReaderOnlyClassName,
+} from '../Field/fieldLabelClasses';
+import {inputClearButtonClassName} from '../Field/inputClearButtonClasses';
+import {
+  textInputClassName,
+  textInputHeightClassName,
+} from '../TextInput/textInputClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {
@@ -391,6 +411,43 @@ function familyClassNames() {
     }
   }
 
+  // The input field family: the frame, the label slot and the text control.
+  for (const isLabelHidden of [false, true]) {
+    for (const width of [null, 240, '100%']) {
+      add(fieldClassName({isLabelHidden, width}));
+    }
+    add(fieldLabelGroupClassName({isLabelHidden}));
+    add(fieldLabelRowClassName({isLabelHidden}));
+    add(
+      fieldLabelClassName({
+        isDisabled: isLabelHidden,
+        isLabelHidden,
+      }),
+    );
+    add(
+      fieldDescriptionClassName({
+        forwardsClick: isLabelHidden,
+        isLabelHidden,
+      }),
+    );
+  }
+  for (const className of [
+    fieldHorizontalLabelsClassName,
+    fieldHorizontalLabelAlignClassName,
+    fieldInputStatusWrapperClassName,
+    fieldAttachedStatusLayerClassName,
+    fieldScreenReaderOnlyClassName,
+    fieldLabelStatusClassName,
+    inputClearButtonClassName,
+  ]) {
+    add(className);
+  }
+  for (const size of ['sm', 'md', 'lg']) {
+    add(textInputHeightClassName({size}));
+  }
+  add(textInputClassName({isDisabled: false}));
+  add(textInputClassName({isDisabled: true}));
+
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
   for (const mode of ['light', 'dark', 'system']) {
@@ -456,6 +513,29 @@ describe('dist/astryx-tailwind.css declarations', () => {
         '[overflow-wrap:var(--_astryx-text-overflow-wrap,break-word)]',
       ),
     ).toBe('overflow-wrap:var(--_astryx-text-overflow-wrap,break-word);');
+  });
+
+  it('prints the field family utilities', () => {
+    // The width a consumer sets travels as a custom property the class reads,
+    // so one class serves every width.
+    expect(stylesheet.ruleFor('w-[var(--astryx-field-width)]')).toBe(
+      'width:var(--astryx-field-width);',
+    );
+    expect(
+      stylesheet.ruleFor(
+        '[--_field-status-overlap:calc(var(--size-element-md)_/_2)]',
+      ),
+    ).toBe('--_field-status-overlap:calc(var(--size-element-md)/2);');
+    expect(
+      stylesheet.ruleFor(
+        '[padding-block-start:calc(var(--border-width)_+_var(--spacing-1))]',
+      ),
+    ).toBe(
+      'padding-block-start:calc(var(--border-width)+var(--spacing-1));',
+    );
+    expect(stylesheet.ruleFor('h-5')).toBe(
+      'height:calc(var(--spacing-1)*5);',
+    );
   });
 
   it('keeps token utilities inside the astryx-base layer', () => {
