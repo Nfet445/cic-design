@@ -127,13 +127,12 @@ and the day-outside/day-disabled parity checks now read Calendar's StyleX
 declarations and assert the same colour variable and the same opacity percent
 appear in the touch class — they keep following the desktop when it moves.
 
-New private variables, not yet registered: `--astryx-date-pane-inline-start`,
+New private variables: `--astryx-date-pane-inline-start`,
 `--astryx-date-pane-inline-size`, `--astryx-date-spacer-inline-size`. They are
 measured per element, so they cannot be constants like `--astryx-date-wheel-*`.
-`pnpm check:token-docs` and `derivedVarRegistry.test.ts` will want them in
-`DateInput/DateInput.doc.mjs`'s `theming.vars[]` (with `private: true`) and in
-its `VARS_WITHOUT_DERIVED_MAPPING` allowlist — do that with the next commit
-that touches the file.
+They are registered in both `theming.vars[]` lists of `DateInput.doc.mjs`
+(`private: true`) and in `VARS_WITHOUT_DERIVED_MAPPING`; `derivedVarRegistry`
+and `check:token-docs` are green.
 
 Traps found this session:
 
@@ -180,4 +179,6 @@ Verified this session: `node packages/core/scripts/build-css-tailwind.mjs`
 rebuilds clean at 162.7 kB; the sheet test passes with no ceiling change;
 `DateInput` alone is 798 tests green; the wider set is 1532/1533 with the known
 `Calendar.calendarSystems.test.tsx` "names each day by the month and day the
-grid shows when Intl disagrees" failure, which fails without this diff.
+grid shows when Intl disagrees" failure, which fails without this diff. `derivedVarRegistry.test.ts` still fails
+`TreeList: all source vars are in doc file`, which arrived with the ticket-20
+merge and is not this ticket's.
