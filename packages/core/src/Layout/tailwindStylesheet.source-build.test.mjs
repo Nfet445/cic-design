@@ -43,6 +43,13 @@ import {
 } from '../Drawer/drawerClasses';
 import {bottomSheetEdgeTintClassName} from '../BottomSheet/bottomSheetEdgeTintClasses';
 import {
+  mobileNavContentClassName,
+  mobileNavDialogClassName,
+  mobileNavDrawerClassName,
+  mobileNavHeaderClassName,
+  mobileNavHeaderTextClassName,
+} from '../MobileNav/mobileNavClasses';
+import {
   layerHeaderActionsClassName,
   layerHeaderContainerClassName,
   layerHeaderSlotClassName,
@@ -710,6 +717,24 @@ function familyClassNames() {
   // The bottom sheet's edge tint: the strip WebKit samples for the iOS toolbar
   // colour.
   add(bottomSheetEdgeTintClassName);
+
+  // The mobile nav: the dialog in its two display states, the scrim, both
+  // drawer edges in both motion states, the header row and its content area.
+  for (const isPresentationHeld of [false, true]) {
+    for (const isOpen of [false, true]) {
+      add(mobileNavDialogClassName({isPresentationHeld, isOpen}));
+    }
+  }
+  for (const side of ['start', 'end']) {
+    for (const isOpen of [false, true]) {
+      add(mobileNavDrawerClassName({side, isOpen}));
+    }
+  }
+  for (const hasTitle of [false, true]) {
+    add(mobileNavHeaderClassName({hasTitle}));
+  }
+  add(mobileNavHeaderTextClassName);
+  add(mobileNavContentClassName);
 
   // The alert dialog adds only the row's gesture policy and the stacked width;
   // Button already caps an action at `min-w-0 max-w-full`.
@@ -1713,9 +1738,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // that reaches component bodies or prose would add hundreds more. The
     // top-nav menus and the row machine brought the sheet to about 975; the
     // side-nav row's class map added its own transition and popover utilities,
-    // and the drawer panel — two sides, two painting states, two direction arms
-    // and the scrim — about 60 more.
-    expect(stylesheet.rules.size).toBeLessThan(1050);
+    // the drawer panel — two sides, two painting states, two direction arms
+    // and the scrim — about 60 more, and the mobile nav about 30: its dialog,
+    // the scrim's fade, both drawer edges in both motion states, and the
+    // header.
+    expect(stylesheet.rules.size).toBeLessThan(1080);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
