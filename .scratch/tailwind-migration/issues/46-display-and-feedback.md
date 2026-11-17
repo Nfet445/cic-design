@@ -205,14 +205,31 @@ astryxStatusDotPulse` sits in `packages/core/tailwind/astryx.input.css` and
 - `skeletonClassName` and its siblings are registered in `familyClassNames()`
   of `packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`.
 
+- `EmptyState` paints with Tailwind classes (`EmptyState/emptyStateClasses.ts`):
+  the centered container and its compact arm, the text column, the title and
+  description with their compact sizes, and the action row with its stacked
+  arm. The compact classes override only what the compact layout changes, so
+  they stay joined after the base. No test moved: `EmptyState.test.tsx` reads
+  only the consumer-`xstyle` class, which is still StyleX.
+- `Timestamp` paints with Tailwind classes (`Timestamp/timestampClasses.ts`):
+  the `<time>` element's inherited-property reset. `TimestampHoverCard`
+  paints with `Timestamp/timestampHoverCardClasses.ts`: the definition-list
+  grid with its two gaps, the `contents` row, the label and value cells in
+  supporting and body type, the value cell that spans both tracks (`flex`,
+  with a `supports-[grid-template-columns:subgrid]:grid` arm), the action
+  cell, and the four grid templates as one string-valued map. No test moved;
+  `Timestamp.test.tsx` reads no computed style for these nodes.
+- `Timestamp.test.tsx` fails 5 ICU cases ("Timestamp calendar systems",
+  `chinese` calendar) on `main` too; the count is unchanged.
+
 ## Left
 
-`Card`, `Divider`, `Banner`, `Badge`, `Code`, `Blockquote`, `StatusDot` and
-`Skeleton` are done. The rest of the ticket's files still carry their
-`stylex.create` maps:
+`Card`, `Divider`, `Banner`, `Badge`, `Code`, `Blockquote`, `StatusDot`,
+`Skeleton`, `EmptyState` and `Timestamp`/`TimestampHoverCard` are done. The
+rest of the ticket's files still carry their `stylex.create` maps:
 
 - `CodeBlock` (3), `Spinner` (4) plus `Spinner/spinnerRotor.ts` (1),
-  `ProgressBar` (4), `EmptyState` (1), `Outline` (3),
+  `ProgressBar` (4), `Outline` (3),
   `AspectRatio` (2), `Thumbnail` (1), `MetadataList`/`MetadataListItem` (3),
   `Timer` (1), `Timestamp`/`TimestampHoverCard` (3), `Toast`/`ToastViewport` (2),
   `Carousel` (3), `Markdown` (5) plus `Markdown/plugins/HeadingLinksRenderer.tsx`
@@ -240,6 +257,20 @@ astryxStatusDotPulse` sits in `packages/core/tailwind/astryx.input.css` and
   the two diff arms vs the highlight tint), so each group needs one function
   that returns a complete class string per state rather than two classes that
   paint the same declaration.
+- `CodeBlock/CodeBlock.tsx:76-489` holds the four maps and the keyframes: the
+  card and section frames, the prop-driven `width`/`gutterWidth` functions
+  (line 97), the `chevronReveal` keyframes (line 116, which has to become
+  `@keyframes astryxChevronReveal` in `tailwind/astryx.input.css`), and about
+  40 keys in `styles` with `::before`/`::after` content, four property groups
+  whose state arms paint the same declaration (`code`/`codeWrapped` at 268 and
+  282, `line`/`lineNumbered`/the two diff arms/the highlight tint at 312-404),
+  and the collapse grid transition. It is a window of its own.
+- `ToastViewport.tsx:79-260` carries about 17 keys, not one: the outlet's
+  `display: contents`, the viewport reset with its safe-area paddings (a
+  `pointer: coarse` block arm and both RTL inline arms), the four placement
+  arms, and eight wrapper keys with `@starting-style` entries and a
+  `:last-child`/`:first-child` gap arm. `Toast/Toast.tsx:83-150` is smaller but
+  paints the swipe transform from three `--_toast-swipe-*` private vars.
 - `ProgressBar` computes its fill width and its mark position from props, so
   those go through a class plus an inline `--astryx-*` variable, and its test
   reads computed geometry.
@@ -280,6 +311,13 @@ Lab's `CircularProgress`, and `ProgressBar` reads computed geometry in its
 test. `Skeleton` was chosen because it carries two of the three recorded
 traps — the keyframes move and the sheet-reading test rewrite — and it is the
 smallest file that exercises both.
+
+A later window added two more, smallest-first, because `CodeBlock` does not
+fit a 30-minute window (it carries four maps, the chevron keyframes and four
+property groups that need a class function per state):
+
+- `refactor(empty-state): перевести стили пустого состояния на Tailwind-классы`
+- `refactor(timestamp): перевести стили метки времени на Tailwind-классы`
 
 The merge of `poc/tailwind-layout-primitives` conflicted once, in the sheet
 test's ceiling. Both sides were kept: the menu's paragraph and its 18 rules,
