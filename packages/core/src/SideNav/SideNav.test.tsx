@@ -25,6 +25,7 @@ import * as stylex from '@stylexjs/stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {getForcedColorsRules} from '../__tests__/forcedColors';
 import {classesOf} from '../__tests__/classNameAssertions';
+import {sideNavClassName} from './sideNavClasses';
 import {Button} from '../Button';
 import {SideNav} from './SideNav';
 import {__resetMenuPressForTest} from '../hooks/useMenuPress';
@@ -53,6 +54,15 @@ function CustomLink({
       {children}
     </a>
   );
+}
+
+/** The footer row, found by the class the map gives it. */
+function footerRows(): Element[] {
+  const wanted = sideNavClassName.footerRow.split(' ');
+  return Array.from(document.querySelectorAll('*')).filter(element => {
+    const present = classesOf(element);
+    return wanted.every(name => present.includes(name));
+  });
 }
 
 // =============================================================================
@@ -212,7 +222,7 @@ describe('SideNav', () => {
     // space below the footer. The footer must be its only child.
     const stickyBottom = screen.getByTestId('footer').parentElement;
     expect(stickyBottom?.children).toHaveLength(1);
-    expect(document.querySelector('[class*="footerRow"]')).toBeNull();
+    expect(footerRows()).toEqual([]);
   });
 
   it('keeps the footer row for footerIcons beside a footer', () => {
@@ -224,7 +234,7 @@ describe('SideNav', () => {
       </SideNav>,
     );
 
-    const footerRow = document.querySelector('[class*="footerRow"]');
+    const [footerRow] = footerRows();
     expect(footerRow).toContainElement(screen.getByTestId('icons'));
     expect(screen.getByTestId('footer').parentElement?.children).toHaveLength(
       2,
@@ -240,7 +250,7 @@ describe('SideNav', () => {
       </SideNav>,
     );
 
-    const footerRow = document.querySelector('[class*="footerRow"]');
+    const [footerRow] = footerRows();
     expect(footerRow).toContainElement(
       screen.getByRole('button', {name: 'Collapse sidebar'}),
     );
@@ -263,8 +273,10 @@ describe('SideNav', () => {
     const childrenContainer =
       screen.getByTestId('children-content').parentElement;
     const footerContainer = screen.getByTestId('footer-content').parentElement;
-    expect(getComputedStyle(childrenContainer!).alignItems).toBe('center');
-    expect(getComputedStyle(footerContainer!).alignItems).toBe('center');
+    // Both carry the collapsed rail's centering class. A drift in either
+    // leaves the content up against the start edge instead.
+    expect(classesOf(childrenContainer!)).toContain('items-center');
+    expect(classesOf(footerContainer!)).toContain('items-center');
   });
 
   it('fires a consumer onClick on the collapse button in addition to toggling', async () => {
@@ -1625,7 +1637,7 @@ describe('SideNav resizable', () => {
     const handle = screen.getByTestId('astryx-sidenav-resize-handle');
 
     expect(container).toContainElement(handle);
-    expect(getComputedStyle(container!).overflow).toBe('clip');
+    expect(classesOf(container!)).toContain('overflow-clip');
   });
 
   it('does not render drag handle without resizable', () => {

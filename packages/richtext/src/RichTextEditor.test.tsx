@@ -379,19 +379,20 @@ describe('RichTextEditor', () => {
     const {container, rerender} = render(<RichTextEditor label="Notes" />);
     const wrapper = container.querySelector('.astryx-rich-text-editor');
 
+    const minHeightVariable = '--astryx-richtext-body-min-height';
     expect(
-      screen.getByRole('textbox').style.getPropertyValue('--x-minHeight'),
+      screen.getByRole('textbox').style.getPropertyValue(minHeightVariable),
     ).toBe('4.5rem');
-    expect(wrapper).not.toHaveStyle({'--x-minHeight': '4.5rem'});
+    expect(wrapper?.style.getPropertyValue(minHeightVariable)).toBe('');
 
     rerender(<RichTextEditor label="Notes" minHeight={180} />);
     expect(
-      screen.getByRole('textbox').style.getPropertyValue('--x-minHeight'),
+      screen.getByRole('textbox').style.getPropertyValue(minHeightVariable),
     ).toBe('180px');
 
     rerender(<RichTextEditor label="Notes" minHeight="12rem" />);
     expect(
-      screen.getByRole('textbox').style.getPropertyValue('--x-minHeight'),
+      screen.getByRole('textbox').style.getPropertyValue(minHeightVariable),
     ).toBe('12rem');
   });
 
@@ -1391,14 +1392,14 @@ describe('RichTextEditorToolbar', () => {
     // The compact gutter is emitted by StyleX; do not regress to a component
     // inline-style escape hatch. Browser coverage below owns the geometry.
     expect(toolbarRegion).not.toHaveAttribute('style');
-    // Vitest's JSDOM setup does not load compiled StyleX CSS. The WithToolbar
-    // story provides visual coverage for flush edges and preserved body inset;
-    // here we verify that the dedicated body receives its StyleX layout.
-    expect(
-      [...(editorBody?.classList ?? [])].some(className =>
-        className.startsWith('x'),
-      ),
-    ).toBe(true);
+    // JSDOM loads no stylesheet, so the class set is the proof that the
+    // dedicated body receives its own layout. The WithToolbar story carries
+    // the flush edges and the preserved body inset visually.
+    expect(editorBody).not.toBeNull();
+    expect(editorBody?.className).toContain('relative');
+    expect(editorBody?.className).toContain(
+      '[min-height:var(--astryx-richtext-body-min-height)]',
+    );
 
     // Block formatting is consolidated into a selector, while history and
     // inline formatting remain direct buttons.

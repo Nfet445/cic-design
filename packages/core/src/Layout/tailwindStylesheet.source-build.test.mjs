@@ -209,6 +209,7 @@ import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
+import {sideNavClassName} from '../SideNav/sideNavClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {stackClassName} from '../Stack/stackClasses';
@@ -1524,6 +1525,31 @@ function familyClassNames() {
   );
   add(SEGMENT_ICON_CLASS);
   add(SEGMENT_LABEL_CLASS);
+
+  // The side nav: the rail answers the state of its own collapse, its zones
+  // answer where they sit between the fixed edges, and the footer row turns
+  // with the rail.
+  add(sideNavClassName.root);
+  add(sideNavClassName.rootCollapsed);
+  add(sideNavClassName.stickyTop);
+  add(sideNavClassName.stickyTopCollapsed);
+  add(sideNavClassName.scrollable);
+  add(sideNavClassName.scrollableCollapsed);
+  add(sideNavClassName.scrollableNoTop);
+  add(sideNavClassName.scrollableWithTop);
+  add(sideNavClassName.scrollableNoBottom);
+  add(sideNavClassName.scrollableWithBottom);
+  add(sideNavClassName.stickyBottom);
+  add(sideNavClassName.stickyBottomCollapsed);
+  add(sideNavClassName.footerRow);
+  add(sideNavClassName.footerRowCollapsed);
+  add(sideNavClassName.footerIcons);
+  add(sideNavClassName.footerIconsCollapsed);
+  add(sideNavClassName.drawerFooter);
+  add(sideNavClassName.drawerFooterIcons);
+  add(sideNavClassName.resizableContainer);
+  add(sideNavClassName.topbar);
+  add(sideNavClassName.topbarIcons);
 
   return [...names].sort();
 }

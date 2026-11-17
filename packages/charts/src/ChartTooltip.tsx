@@ -38,14 +38,11 @@ import {
   type ReactNode,
 } from 'react';
 import {createPortal} from 'react-dom';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  radiusVars,
-  shadowVars,
-  spacingVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import {HStack, Text, useLayer, VStack} from '@astryxdesign/core';
+import {
+  chartTooltipCardClassName,
+  chartTooltipCrosshairClassName,
+} from './chartTooltipClasses';
 import {useChart} from './ChartContext';
 import {ChartSwatch, swatchVariantForType} from './ChartSwatch';
 import {
@@ -91,31 +88,6 @@ export interface ChartTooltipProps {
    */
   placement?: ChartTooltipPlacement;
 }
-
-const styles = stylex.create({
-  // Visual card chrome is applied to the Layer host. useLayer owns its fixed
-  // positioning and browser top-layer promotion.
-  card: {
-    backgroundColor: colorVars['--color-background-popover'],
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-    borderRadius: radiusVars['--radius-container'],
-    // Longhands match the Layer host's padding reset, so the card padding
-    // still wins when each package ships its own prebuilt stylesheet.
-    paddingBlockStart: spacingVars['--spacing-2'],
-    paddingBlockEnd: spacingVars['--spacing-2'],
-    paddingInlineStart: spacingVars['--spacing-3'],
-    paddingInlineEnd: spacingVars['--spacing-3'],
-    boxShadow: shadowVars['--shadow-med'],
-    pointerEvents: 'none',
-    whiteSpace: 'nowrap',
-  },
-  crosshair: {
-    stroke: colorVars['--color-text-primary'],
-    strokeWidth: 1,
-  },
-});
 
 /** Default tooltip body — used when `render` is not provided. */
 const DefaultTooltipContent = memo(function DefaultTooltipContent({
@@ -393,7 +365,7 @@ export function ChartTooltip({
         x2={px}
         y1={0}
         y2={height}
-        {...stylex.props(styles.crosshair)}
+        className={chartTooltipCrosshairClassName}
         pointerEvents="none"
       />
     );
@@ -482,7 +454,7 @@ export function ChartTooltip({
                 // remove our guard before showPopover() measures it. Layer's
                 // reduced fallback needs the explicit closed display state.
                 style: shouldHideLayerHost ? {display: 'none'} : undefined,
-                xstyle: styles.card,
+                className: chartTooltipCardClassName,
               },
             ),
             portalTarget,
