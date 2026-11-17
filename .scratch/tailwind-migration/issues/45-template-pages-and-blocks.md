@@ -1,6 +1,7 @@
 # template pages and blocks
 
-Status: ready-for-agent
+Status: blocked — every page template is converted; the four remaining block
+files need a class seam from core (see Comments).
 Blocked by: 31
 Wave: 9
 Ticket: 45
@@ -415,3 +416,70 @@ Counts after the window: 7 files, 97 `xstyle=`, 6 `@stylexjs/stylex` imports,
 14 `stylex.create` occurrences. The four block files the earlier windows parked
 are still parked; `pages/settings-dialog`, `pages/table-filter` and
 `pages/canvas-editor` are what remain.
+
+Window 8 (`refactor(cli): читать цвета статуса на странице table-comparison из
+токенов` and `refactor(cli): перевести страницу canvas-editor на классы
+Tailwind`): the last two pages. `table-filter` and `settings-dialog` were
+already off StyleX on this branch (`2c3c5a91f`, `cf3ae2ca3`), so the window's
+list named more files than were left.
+
+- `pages/table-comparison/page.tsx` kept one `tokens.stylex` import for the
+  three uptime colours `uptimeStatus()` returns. They are now
+  `var(--color-text-success)` / `-warning` / `-error`, read the way
+  `dashboard-alert-rail` reads them; the map itself was already classes.
+- `pages/canvas-editor/page.tsx` — 30 `xstyle` sites and six maps. The map is
+  one `const styles = {...} as const` of class strings, and the four values
+  that change per interaction ride variables the classes read:
+  `--astryx-artboard-scale` (zoom), `--astryx-type-size/tracking/line/color/
+  stroke/shadow` (a text layer, written by one `typeVars()` helper),
+  `--astryx-plane-x/-y/-fill` (the saturation/value thumbs), and a plain inline
+  `backgroundColor`/`filter` for the hue slider and the photo. The closed sets
+  (`typeCase`, `typeLine`, `typeSlant`, `typeAlign`) stay literal classes picked
+  by key. `HIDE_INSPECTOR`/`HIDE_RAIL` are gone: the fold is
+  `max-[839.98px]:hidden` / `max-[1099.98px]:hidden` on the class.
+  `ItemAction` lost its `xstyle` prop (no caller passed one) and joins
+  `styles.itemAction` onto `className`; `NumberInput` and `Selector` take
+  `controlClassName` instead of `controlXstyle`.
+
+Counts after the window: **4 files**, 1 `xstyle=`, 3 `@stylexjs/stylex`
+imports, 2 `tokens.stylex` imports, 2 `stylex.create`. All four are the parked
+blocks below.
+
+Window 8 checks: `node_modules/.bin/esbuild` parsed both pages, `prettier
+--check` clean; `vitest run --project node packages/cli/api/template
+packages/cli/foundation/discovery` is 114 files passed, 2 failed — 3 tests in
+`componentDocOverlay.test.mjs` (Breadcrumbs `--zh`/`--dense`, a syntax error in
+a doc fixture) and `integration-component-views.test.mjs` (a missing cache
+directory), all three failing identically with this window stashed.
+`page-templates-strict`, `template.test` and `data-token-fallbacks` pass (18
+tests). The guard test **Done when** asks for still cannot land while these four
+files carry StyleX.
+
+## Comments
+
+The four parked block files, and the core seam each waits on. None of them is
+convertible inside a template:
+
+- `blocks/components/DrawerHeader/DrawerHeaderShowcase.tsx` — the panel needs
+  the overlay padding-boundary reset that `overlayPaddingReset.reset` writes
+  (`--container-padding-*: 0px`, `--layout-padding-*: initial`) to stand in for
+  the Drawer root. The Tailwind counterpart lives in
+  `packages/core/src/Layout/layoutClasses.ts` (`layoutInnerClassName`) and no
+  package entry exports it, so the template keeps the StyleX import until
+  `Layout` publishes a reset class.
+- `blocks/components/Hooks/useInputStatusIconHookUsage.tsx` — reads
+  `inputWrapperStyles.base`/`.textField` and
+  `inputStatusBorderStyles[status.type]` from `@astryxdesign/core/Field`. Both
+  are StyleX in `Field/inputStyles.stylex.ts`, and `Field/fieldClasses.ts`
+  publishes no input-wrapper or status-border class, so only `Field` can
+  replace them.
+- `blocks/components/Hooks/usePressFeedbackHookUsage.tsx` and its
+  `.test.tsx` — compose `focusOutlineStyles.focusVisible` and
+  `interactionOverlayStyles.backgroundImage` from `@astryxdesign/core/utils`,
+  both still StyleX behind a seam marked as going away when StyleX leaves the
+  package. The test asserts the ring by splitting
+  `stylex.props(focusOutlineStyles.focusVisible).className`, so it moves with
+  the seam, not before it.
+
+`tw()` is still not exported from `@astryxdesign/core`, so every joined class
+in this window is a template literal or an array `.join(' ')`.
