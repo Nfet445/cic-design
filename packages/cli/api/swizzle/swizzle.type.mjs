@@ -35,7 +35,7 @@
  * @property {string} data.outputDir
  * @property {number} data.filesCopied
  * @property {string[]} data.files Copied file names, relative to the component folder; the internal modules copied beside it start with `../` (spec:AST-110 FR2).
- * @property {boolean} data.usesStyleX Whether any copied file uses StyleX (requires build-time setup).
+ * @property {string} data.stylesheet The stylesheet the copied class maps need, `@astryxdesign/core/astryx-tailwind.css`; import it once in the app (spec:AST-119 FR1).
  * @property {Record<string, string>} data.dependencies Each npm package the copied files import, other than the owner package, with the version range the owner package declares (`*` when it declares none). The copy builds once the product installs them (spec:AST-110 FR1).
  * @property {{path: string, written: boolean, found?: string[]}} [data.marker] The output folder's astryx-swizzle.json, relative to the project (spec:AST-110 FR5). Swizzle writes it only into a folder it owns: one the copy creates, an empty one, or one it marked before. When it does not, `written` is false and `found` names up to five entries already in the folder.
  * @property {SwizzleFeedback} [data.feedback]
