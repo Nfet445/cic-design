@@ -286,6 +286,11 @@ import {
   sectionOuterClassName,
 } from '../Section/sectionClasses';
 import {
+  scrollableAreaContentClassName,
+  scrollableAreaContentWithInlineOverflowClassName,
+  scrollableAreaViewportClassName,
+} from '../ScrollableArea/scrollableAreaClasses';
+import {
   SELECTOR_OPTION_EMBEDDED_CLASS,
   SELECTOR_ROW_CONTENT_CLASS,
   SELECTOR_ROW_MARK_COLUMN_CLASS,
@@ -767,6 +772,18 @@ function familyClassNames() {
       add(sectionInnerClassName({dividers, variant}));
     }
   }
+  add(scrollableAreaViewportClassName({isFullBleed: false}));
+  add(
+    scrollableAreaViewportClassName({
+      height: 200,
+      isFullBleed: true,
+      maxWidth: '64rem',
+      minHeight: 40,
+      width: '100%',
+    }),
+  );
+  add(scrollableAreaContentClassName);
+  add(scrollableAreaContentWithInlineOverflowClassName);
   add(sectionOuterClassName({}));
   add(
     sectionOuterClassName({
