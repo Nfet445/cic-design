@@ -19,20 +19,15 @@
 
 import {useCallback, useEffect, useRef} from 'react';
 import type {FocusEvent, ReactNode, RefObject} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Button} from '../Button';
 import {Icon} from '../Icon';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  shadowVars,
-  typographyVars,
-  typeScaleDefaults,
-} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
+import {
+  toastContentClassName,
+  toastEndContentClassName,
+  toastInnerClassName,
+  toastSurfaceClassName,
+} from './toastClasses';
 import {INTERACTIVE_SELECTORS} from '../hooks/useClickableContainer';
 import {useAnnounceRenderedText} from '../hooks/useAnnounceRenderedText';
 import type {AnnounceFn} from '../hooks/useAnnounce';
@@ -76,76 +71,6 @@ function isInteractiveTarget(
   }
   return false;
 }
-
-const TOAST_EDGE_DRIFT = spacingVars['--spacing-2'];
-const styles = stylex.create({
-  root: {
-    paddingBlock: spacingVars['--spacing-4'],
-    paddingInline: spacingVars['--spacing-4'],
-    borderRadius: radiusVars['--radius-container'],
-    boxSizing: 'border-box',
-    width: 400,
-    maxWidth: '100%',
-    boxShadow: shadowVars['--shadow-med'],
-    opacity: 'var(--_toast-swipe-opacity, 1)',
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleDefaults['--text-body-size'],
-    lineHeight: typeScaleDefaults['--text-body-leading'],
-    transform:
-      'translateY(var(--_toast-swipe-y, 0px)) scale(var(--_toast-swipe-scale, 1))',
-    transitionProperty: 'opacity, transform',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0.01ms',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  // A card enters from its edge only when it first renders. A move between
-  // modal outlets renders it again, and it must not enter again.
-  entering: {
-    '@starting-style': {
-      opacity: 0,
-      transform: `translateY(var(--_toast-slide-y, ${TOAST_EDGE_DRIFT}))`,
-    },
-  },
-  variantDefault: {
-    backgroundColor: colorVars['--color-background-inverted'],
-  },
-
-  inner: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    flexWrap: 'nowrap',
-    gap: spacingVars['--spacing-3'],
-    width: '100%',
-  },
-  variantError: {
-    backgroundColor: colorVars['--color-background-error-inverted'],
-  },
-  content: {
-    flex: 1,
-    minWidth: 0,
-    overflowWrap: 'anywhere',
-    // Text inside keeps `anywhere` too (Text FR3).
-    '--_astryx-text-overflow-wrap': 'anywhere',
-  },
-  exiting: {
-    opacity: 0,
-    transform: `translateY(var(--_toast-swipe-exit-y, var(--_toast-swipe-y, var(--_toast-slide-y, ${TOAST_EDGE_DRIFT})))) scale(var(--_toast-swipe-scale, 1))`,
-  },
-  endContent: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    // Keep every trailing control centered on the first 20px body line, even
-    // when the body wraps or a consumer supplies a control taller than the
-    // built-in 28px dismiss button. The action label should still stay short;
-    // the wrappers above let it break rather than widen the Toast.
-    blockSize: `calc(${typeScaleDefaults['--text-body-size']} * ${typeScaleDefaults['--text-body-leading']})`,
-    marginInlineEnd: `calc(${spacingVars['--spacing-1']} * -1)`,
-  },
-});
 
 export interface ToastProps {
   type: ToastType;
@@ -462,12 +387,11 @@ export function ToastSurface({
       {...gestureBindings}
       {...mergeProps(
         themeProps('toast', {type}),
-        stylex.props(
-          styles.root,
-          !hasEntryStarted && styles.entering,
-          isError ? styles.variantError : styles.variantDefault,
-          isExiting && styles.exiting,
-        ),
+        toastSurfaceClassName({
+          isError,
+          isEntering: !hasEntryStarted,
+          isExiting,
+        }),
       )}>
       <MediaTheme mode="auto" fallback={fallbackMediaMode}>
         {renderContent ? (
@@ -480,12 +404,12 @@ export function ToastSurface({
             dismiss: handleDismiss,
           })
         ) : (
-          <div {...stylex.props(styles.inner)}>
-            <div ref={bodyRef} {...stylex.props(styles.content)}>
+          <div className={toastInnerClassName}>
+            <div ref={bodyRef} className={toastContentClassName}>
               {body}
             </div>
 
-            <div {...stylex.props(styles.endContent)}>
+            <div className={toastEndContentClassName}>
               {endContent}
               <Button
                 variant="ghost"

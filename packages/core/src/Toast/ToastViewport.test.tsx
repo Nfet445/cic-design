@@ -48,6 +48,7 @@ import {Button} from '../Button';
 import type {ToastProps} from './Toast';
 import {ToastViewport} from './ToastViewport';
 import {useToast} from './useToast';
+import {classesOf} from '../__tests__/classNameAssertions';
 import type {ToastOptions} from './types';
 
 // jsdom reports no window focus until an element is focused, but a test page
@@ -209,13 +210,18 @@ describe('Toast responsive layout', () => {
       name: 'Dismiss notification',
     });
 
-    expect(getComputedStyle(layoutRow).flexWrap).toBe('nowrap');
-    expect(getComputedStyle(layoutRow).alignItems).toBe('flex-start');
-    expect(getComputedStyle(body).minWidth).toBe('0');
-    expect(getComputedStyle(body).overflowWrap).toBe('anywhere');
-    expect(getComputedStyle(endArea).alignItems).toBe('center');
-    expect(getComputedStyle(endArea).height).toBe(
-      'calc(var(--text-body-size) * var(--text-body-leading))',
+    expect(classesOf(layoutRow)).toEqual(
+      expect.arrayContaining(['flex', 'flex-nowrap', 'items-start']),
+    );
+    expect(classesOf(body)).toEqual(
+      expect.arrayContaining(['min-w-0', 'flex-1', '[overflow-wrap:anywhere]']),
+    );
+    expect(classesOf(endArea)).toEqual(
+      expect.arrayContaining([
+        'flex',
+        'items-center',
+        '[block-size:calc(var(--text-body-size)*var(--text-body-leading))]',
+      ]),
     );
     expect(actionControl.className).toContain(
       'h-[max(var(--size-element-lg),1lh)]',
@@ -1604,17 +1610,18 @@ describe('Toast native motion contract', () => {
 
   it('uses tokenized transform and wrapper timing, with reduced motion kept eventful', () => {
     const {visualToast, wrapper} = renderMotionToast('bottomEnd');
-    const toastStyle = getComputedStyle(visualToast);
     const wrapperStyle = getComputedStyle(wrapper);
 
-    expect(normalizeCssFunction(toastStyle.transform)).toBe(
-      'translateY(var(--_toast-swipe-y, 0px)) scale(var(--_toast-swipe-scale, 1))',
+    expect(classesOf(visualToast)).toEqual(
+      expect.arrayContaining([
+        '[opacity:var(--_toast-swipe-opacity,1)]',
+        '[transform:translateY(var(--_toast-swipe-y,0px))_scale(var(--_toast-swipe-scale,1))]',
+        'transition-[opacity,transform]',
+        'duration-[var(--duration-fast)]',
+        'ease-[var(--ease-standard)]',
+        'motion-reduce:duration-[0.01ms]',
+      ]),
     );
-    expect(normalizeCssList(toastStyle.transitionProperty)).toBe(
-      'opacity, transform',
-    );
-    expect(toastStyle.transitionDuration).toBe('var(--duration-fast)');
-    expect(toastStyle.transitionTimingFunction).toBe('var(--ease-standard)');
     expect(normalizeCssList(wrapperStyle.transitionProperty)).toBe(
       'grid-template-rows, padding',
     );
@@ -1800,7 +1807,7 @@ describe('Toast native motion contract', () => {
 
   it('keeps reduced motion transitions eventful for exit cleanup', () => {
     const toastSource = readFileSync(
-      'packages/core/src/Toast/Toast.tsx',
+      'packages/core/src/Toast/toastClasses.ts',
       'utf8',
     );
     const viewportSource = readFileSync(
@@ -1808,9 +1815,10 @@ describe('Toast native motion contract', () => {
       'utf8',
     );
 
-    expect(toastSource).toContain(
-      "'@media (prefers-reduced-motion: reduce)': '0.01ms'",
-    );
+    // A zero duration settles the transition with no `transitionend`, so the
+    // exit cleanup would never run.
+    expect(toastSource).toContain('motion-reduce:duration-[0.01ms]');
+    expect(toastSource).not.toContain('motion-reduce:duration-0');
     expect(viewportSource).toContain(
       "'@media (prefers-reduced-motion: reduce)': '0.01ms'",
     );
