@@ -75,7 +75,7 @@ const source = new Map(
 // a bare attribute selector or inside `:is(…)`. The press attribute's owner
 // module writes some arms for a component, which composes them ready-made.
 const PRESS_ARM =
-  /':active|'(?::is\()?\[data-astryx-press=|interactionOverlayStyles\.|indicatorPressPaintStyles\.|rowPressPaintStyles\./;
+  /':active|'(?::is\()?\[data-astryx-press=|interactionOverlayStyles\.|indicatorPressPaintStyles\.|rowPressPaintStyles\.|menuPressLitRowClassName/;
 const ANCESTOR_ARM =
   /stylex\.when\.ancestor\(\s*'(?::active|\[data-astryx-press=[^)]*)',\s*(\w+)\s*,?\s*\)/g;
 
@@ -106,7 +106,13 @@ function delegatesToItem(text: string): boolean {
  */
 function isMarked(file: string): boolean {
   const text = source.get(file) ?? '';
-  return text.includes('usePressFeedback(') || delegatesToItem(text);
+  return (
+    text.includes('usePressFeedback(') ||
+    delegatesToItem(text) ||
+    // A menu row paints its press through the lit class; `useMenuPress` is the
+    // controller for that family and writes the attribute the class reads.
+    text.includes('menuPressLitRowClassName')
+  );
 }
 
 /** Files (other than `except`) that apply the scope marker `name` to an element. */
