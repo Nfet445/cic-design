@@ -482,6 +482,7 @@ import {
   fieldStatusDetachedContentClassName,
   fieldStatusDetachedIconClassName,
 } from '../FieldStatus/fieldStatusClasses';
+import {entryAnimationClassName} from '../hooks/entryAnimationClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
   iconColorClassName,
@@ -3305,6 +3306,11 @@ function familyClassNames() {
   // FieldStatus: the message box in both placements, the detached content row
   // and glyph, and one fill per status type.
   add(fieldStatusBaseClassName);
+  // useEntryAnimation: one mount animation per preset, each off under Reduce
+  // Motion; FieldStatus mounts with the slide-down preset.
+  for (const preset of ['slideDown', 'slideUp', 'fadeIn', 'scaleIn']) {
+    add(entryAnimationClassName(preset));
+  }
   // Field: the hidden label's info button and the panel search row.
   add(fieldLabelHiddenInfoTipClassName);
   add(panelSearchInputWrapperClassName);
