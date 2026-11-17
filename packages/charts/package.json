@@ -2,7 +2,7 @@
   "name": "@astryxdesign/charts",
   "version": "0.1.9",
   "private": true,
-  "description": "Astryx charts — a config-model data visualization library (d3-based). Published to npm only under the @canary dist-tag for early testing; never released as a stable (latest) version.",
+  "description": "Astryx charts \u2014 a config-model data visualization library (d3-based). Published to npm only under the @canary dist-tag for early testing; never released as a stable (latest) version.",
   "author": "Meta Open Source",
   "license": "MIT",
   "homepage": "https://github.com/meta/astryx#readme",
@@ -22,7 +22,7 @@
   ],
   "astryx": {
     "canaryOnly": true,
-    "_comment": "Published ONLY to the @canary dist-tag (see .github/workflows/release.yml). Never published as a stable `latest` release. `private: true` is intentional and must stay — it is npm's hard guarantee against an accidental stable publish."
+    "_comment": "Published ONLY to the @canary dist-tag (see .github/workflows/release.yml). Never published as a stable `latest` release. `private: true` is intentional and must stay \u2014 it is npm's hard guarantee against an accidental stable publish."
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -46,13 +46,17 @@
     },
     "./charts.css": {
       "default": "./dist/charts.css"
+    },
+    "./charts-tailwind.css": {
+      "types": "./dist/charts-tailwind.css.d.ts",
+      "default": "./dist/charts-tailwind.css"
     }
   },
   "scripts": {
     "prepack": "pnpm build",
     "build": "node ../../scripts/clean-dist.mjs && pnpm build:esm && tsc --project tsconfig.build.json && node ../../scripts/add-declaration-extensions.mjs && pnpm build:css && node ../../scripts/check-no-dev-jsx.mjs && node ../../scripts/check-fully-specified.mjs",
     "build:esm": "babel src --out-dir dist --extensions .ts,.tsx --out-file-extension .js --ignore \"**/*.test.ts,**/*.test.tsx,**/__tests__/**,**/*.perf.test.*,**/*.doc.mjs,**/*.d.ts,**/*.css,**/*.css.d.ts\" --config-file ./babel.config.cjs",
-    "build:css": "node ../../scripts/build-css.mjs --package charts",
+    "build:css": "node ../../scripts/build-css.mjs --package charts && node scripts/build-css-tailwind.mjs",
     "dev": "babel src --watch --out-dir dist --extensions .ts,.tsx --out-file-extension .js --ignore \"**/*.test.*,**/*.doc.mjs,**/*.d.ts,**/*.css*\" --config-file ./babel.config.cjs",
     "test": "vitest run --root ../..",
     "test:watch": "vitest --root ../..",
@@ -78,8 +82,11 @@
     "@babel/preset-react": "catalog:",
     "@babel/preset-typescript": "catalog:",
     "@stylexjs/babel-plugin": "catalog:",
+    "@tailwindcss/postcss": "^4.3.2",
     "@testing-library/react": "catalog:",
     "@types/d3-scale": "^4.0.9",
-    "@types/d3-shape": "^3.1.8"
+    "@types/d3-shape": "^3.1.8",
+    "postcss": "catalog:",
+    "tailwindcss": "^4.3.2"
   }
 }
