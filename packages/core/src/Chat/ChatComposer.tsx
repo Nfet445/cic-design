@@ -35,12 +35,12 @@ import React, {
 } from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import {colorVars, shadowVars, borderVars} from '../theme/tokens.stylex';
 import {inputWrapperStyles} from '../Field/inputStyles.stylex';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {
   chatComposerBodyClassName,
+  chatComposerElevationClassName,
   chatComposerFooterClassName,
   chatComposerFooterLeftClassName,
   chatComposerFooterRightClassName,
@@ -135,58 +135,6 @@ export interface ChatComposerProps extends Omit<
   /** Where to render the status. @default 'bottom' */
   statusPosition?: 'top' | 'bottom';
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-// Resting elevation for the composer body, narrowed to two steps. The two
-// presentations also own the body's padding: a flat body draws its border
-// inside the padding, so its padding must replace the class map's, and an
-// unlayered rule wins over the utility layer.
-// - `low` (default) preserves today's look: low at rest, bumping to med on
-//   hover / focus-within. The WCAG focus indicator is a separate shared ring,
-//   gated to keyboard focus in the editor; the shadow change remains depth.
-// - `none` is flat; depth comes from a border + inset rings instead. The
-//   border is drawn *inside* the padding — its width is subtracted from every
-//   side (like Card) so total inset (border + padding) equals the elevated
-//   case and content geometry is unchanged. Border color, hover, and focus
-//   states mirror TextInput (shared `inputWrapperStyles.base` treatment):
-//   emphasized border at rest → accent on focus-within, with the same inset
-//   shadow rings on hover and focus.
-const elevationStyles = stylex.create({
-  low: {
-    boxShadow: {
-      default: shadowVars['--shadow-low'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': shadowVars['--shadow-med'],
-      },
-    },
-    ':focus-within': {
-      boxShadow: shadowVars['--shadow-med'],
-    },
-  },
-  none: {
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: {
-      default: colorVars['--color-border-emphasized'],
-      ':focus-within': colorVars['--color-accent'],
-    },
-    // Draw the border *inside* the padding — subtract its width from the body
-    // padding (like Card's withBorder) so total inset (border + padding) equals
-    // the elevated case and content geometry is unchanged.
-    padding: `calc(var(--_chat-composer-padding) - ${borderVars['--border-width']})`,
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': `inset 0px 0px 0px 2px color-mix(in srgb, ${colorVars['--color-border-emphasized']} 30%, transparent)`,
-        },
-      ':focus-within': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-    },
-  },
-});
 
 function isComposerEditor(target: EventTarget | null): target is HTMLElement {
   return (
@@ -412,11 +360,11 @@ export function ChatComposer(props: ChatComposerProps) {
           {...mergeProps(
             tw(
               chatComposerBodyClassName(density),
+              chatComposerElevationClassName(elevation),
               xstyle && stylex.props(xstyle).className,
             ),
             stylex.props(
               inputWrapperStyles.textField,
-              elevationStyles[elevation],
               hasKeyboardEditorFocus && focusOutlineStyles.focusWithin,
             ),
           )}>

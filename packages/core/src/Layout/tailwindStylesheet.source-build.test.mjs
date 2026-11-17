@@ -933,6 +933,7 @@ import {
   chatComposerDrawerToggleContentClassName,
   chatComposerDrawerToggleRowClassName,
   chatComposerBodyClassName,
+  chatComposerElevationClassName,
   chatComposerFooterClassName,
   chatComposerFooterLeftClassName,
   chatComposerFooterRightClassName,
@@ -2992,13 +2993,15 @@ function familyClassNames() {
   add(chatComposerDrawerContentGridClassName(false));
   add(chatComposerDrawerContentClassName(true));
   add(chatComposerDrawerContentClassName(false));
-  // ChatComposer: the shell both ways, the body at both densities and the
-  // footer's interruptible arm, then the slot rows and the status bar in all
-  // four shapes.
+  // ChatComposer: the shell both ways, the body at both densities, both
+  // elevations and the footer's interruptible arm, then the slot rows and the
+  // status bar in all four shapes.
   add(chatComposerRootClassName(true));
   add(chatComposerRootClassName(false));
   add(chatComposerBodyClassName('compact'));
   add(chatComposerBodyClassName('balanced'));
+  add(chatComposerElevationClassName('low'));
+  add(chatComposerElevationClassName('none'));
   add(chatComposerHeaderClassName);
   add(chatComposerHeaderLeftClassName);
   add(chatComposerHeaderRightClassName);
