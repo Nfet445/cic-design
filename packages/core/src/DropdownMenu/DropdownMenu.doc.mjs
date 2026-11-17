@@ -167,6 +167,17 @@ export const docs = {
         default: 'var(--spacing-1)',
         private: true,
       },
+      {
+        name: '--astryx-dropdown-menu-inline-size',
+        description:
+          'Inline size of the pointer menu surface, set by `menuWidth`',
+      },
+      {
+        name: '--astryx-dropdown-menu-max-block-size',
+        description:
+          'Lift of the menu block cap, set by `menuMaxHeight`; the viewport still bounds it',
+        default: '300px',
+      },
     ],
     derived: [
       {property: 'borderRadius', vars: ['--_dropdown-menu-radius']},

@@ -168,6 +168,13 @@ import {
   dateInputControlClassName,
   dateInputSizeClassName,
   dateInputToggleClassName,
+  nativeDateFieldIconButtonClassName,
+  nativeDateFieldInputClassName,
+  nativeDateFieldOverlayClassName,
+  nativeDateFieldOverlayPlaceholderClassName,
+  nativeDateFieldOverlayValueClassName,
+  nativeDateFieldSlotClassName,
+  nativeDateFieldWrapperClassName,
 } from '../DateInput/dateInputClasses';
 import {
   fileInputBoxClassName,
@@ -573,6 +580,27 @@ import {
   dividerLineVariantClassName,
   dividerVerticalLabelClassName,
 } from '../Divider/dividerClasses';
+import {
+  emptyStateActionsClassName,
+  emptyStateActionsCompactClassName,
+  emptyStateClassName,
+  emptyStateCompactClassName,
+  emptyStateDescriptionClassName,
+  emptyStateDescriptionCompactClassName,
+  emptyStateTextGroupClassName,
+  emptyStateTitleClassName,
+  emptyStateTitleCompactClassName,
+} from '../EmptyState/emptyStateClasses';
+import {timestampClassName} from '../Timestamp/timestampClasses';
+import {
+  timestampHoverCardActionClassName,
+  timestampHoverCardGridTemplateClassName,
+  timestampHoverCardLabelClassName,
+  timestampHoverCardListClassName,
+  timestampHoverCardRowClassName,
+  timestampHoverCardValueCellsClassName,
+  timestampHoverCardValueClassName,
+} from '../Timestamp/timestampHoverCardClasses';
 import {
   skeletonAnimateClassName,
   skeletonClassName,
@@ -1190,7 +1218,20 @@ function familyClassNames() {
     add(dateInputToggleClassName({isDisabled}));
     for (const isInvalid of [false, true]) {
       add(dateInputControlClassName({isDisabled, isInvalid}));
+      for (const isHidden of [false, true]) {
+        add(nativeDateFieldInputClassName({isDisabled, isHidden, isInvalid}));
+      }
     }
+  }
+  for (const className of [
+    nativeDateFieldWrapperClassName,
+    nativeDateFieldIconButtonClassName,
+    nativeDateFieldSlotClassName,
+    nativeDateFieldOverlayClassName,
+    nativeDateFieldOverlayValueClassName,
+    nativeDateFieldOverlayPlaceholderClassName,
+  ]) {
+    add(className);
   }
   for (const size of ['sm', 'md', 'lg']) {
     add(dateRangeInputSizeClassName({size}));
@@ -1894,6 +1935,29 @@ function familyClassNames() {
     add(value);
   }
   for (const value of Object.values(bannerStatusControlClassName)) {
+    add(value);
+  }
+  // EmptyState: the container and its compact arm, the text column, the title
+  // and description with their compact sizes, and the action row.
+  add(emptyStateClassName);
+  add(emptyStateCompactClassName);
+  add(emptyStateTextGroupClassName);
+  add(emptyStateTitleClassName);
+  add(emptyStateTitleCompactClassName);
+  add(emptyStateDescriptionClassName);
+  add(emptyStateDescriptionCompactClassName);
+  add(emptyStateActionsClassName);
+  add(emptyStateActionsCompactClassName);
+  // Timestamp: the `<time>` reset and the hover card's list, row, label, value
+  // and action cells with its four grid templates.
+  add(timestampClassName);
+  add(timestampHoverCardListClassName);
+  add(timestampHoverCardRowClassName);
+  add(timestampHoverCardLabelClassName);
+  add(timestampHoverCardValueClassName);
+  add(timestampHoverCardValueCellsClassName);
+  add(timestampHoverCardActionClassName);
+  for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
     add(value);
   }
   // Skeleton: the placeholder, the pulse, the two utility classes that read

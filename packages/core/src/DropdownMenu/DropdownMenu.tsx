@@ -105,16 +105,27 @@ import {
 import {menuBottomSheetClassName} from './menuBottomSheetClasses';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
 import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
-import {
-  spacingVars,
-  colorVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-} from '../theme/tokens.stylex';
+import {spacingVars} from '../theme/tokens.stylex';
 import {isRenderable, mergeProps, rtlStyles} from '../utils';
 import {tw} from '../utils/tw';
-import {dropdownMenuSheetClassName} from './dropdownMenuClasses';
+import {
+  dropdownMenuInlineSizeVar,
+  dropdownMenuMenuInFrameClassName,
+  dropdownMenuPopoverClassName,
+  dropdownMenuPopoverFixedWidthClassName,
+  dropdownMenuPopoverMatchTriggerClassName,
+  dropdownMenuPopoverMinWidthClassName,
+  dropdownMenuPopoverViewportClassName,
+  dropdownMenuRegionClassName,
+  dropdownMenuRegionsFrameClassName,
+  dropdownMenuScrollClassName,
+  dropdownMenuSheetClassName,
+  dropdownMenuStepsAsideForViewClassName,
+  dropdownMenuSurfaceHostClassName,
+  dropdownMenuTriggerOpenClassName,
+  dropdownMenuTriggerPressableClassName,
+  dropdownMenuMaxBlockSizeVar,
+} from './dropdownMenuClasses';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {
@@ -130,146 +141,14 @@ import english from '../i18n/generated-english/DropdownMenu/DropdownMenu.generat
 
 registerEnglishFallback(english);
 
-// The menu's own lower cap on the placement axis; the viewport cap underneath
-// it is the layer runtime's (spec:AST-059 FR3).
-const MENU_BLOCK_CAP = '300px';
-const MENU_MAX_BLOCK_SIZE = `min(${MENU_BLOCK_CAP}, ${layerViewportInset.maxBlockSize})`;
-const MENU_MAX_BLOCK_SIZE_FALLBACK = `min(${MENU_BLOCK_CAP}, ${layerViewportInset.maxBlockSizeFallback})`;
-const MENU_TRIGGER_OPEN_BACKGROUND = `linear-gradient(${colorVars['--color-overlay-pressed']}, ${colorVars['--color-overlay-pressed']})`;
-
-// A sub-menu's drilled-in view with a header or footer renders in the surface
-// host that follows the menu (marked `data-astryx-submenu-host`), as the frame
-// marked `data-astryx-submenu-regions="view"` (hidden while a deeper view
-// shows). While one shows, the menu and its header and footer step aside. The
-// rule reads that from the DOM, so no state mirrors which view shows; it names
-// the host by its marker rather than a universal selector.
-const STEPS_ASIDE_FOR_VIEW =
-  ':has(~ [data-astryx-submenu-host] > [data-astryx-submenu-regions="view"]:not([hidden]))';
-
-const styles = stylex.create({
-  triggerOpen: {
-    backgroundImage: MENU_TRIGGER_OPEN_BACKGROUND,
-  },
-  // A finger held on the trigger opens the menu; the browser's own held-press
-  // affordances — the link preview callout, text selection — must not compete
-  // with it.
-  triggerPressable: {
-    WebkitTouchCallout: 'none',
-    userSelect: 'none',
-  },
-  dropdown: {
-    boxSizing: 'border-box',
-    display: {
-      default: 'flex',
-      // A sub-menu's drilled-in view with a header or footer shows in its
-      // place (see `stepsAsideForView`).
-      [STEPS_ASIDE_FOR_VIEW]: 'none',
-    },
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-    // Pointer opens focus this container so subsequent arrow keys and Escape
-    // stay owned by the menu. It is an internal focus target, not a control,
-    // so suppress the browser ring; keyboard focus moves to an item instead.
-    outline: 'none',
-    // Menu rows never offer the browser's held-press link preview or text
-    // selection: a held finger is driving the highlight.
-    WebkitTouchCallout: 'none',
-    userSelect: 'none',
-    maxInlineSize: stylex.firstThatWorks(
-      `calc(${layerViewportInset.maxInlineSize})`,
-      `calc(${layerViewportInset.maxInlineSizeFallback})`,
-    ),
-    maxHeight: stylex.firstThatWorks(
-      MENU_MAX_BLOCK_SIZE,
-      MENU_MAX_BLOCK_SIZE_FALLBACK,
-    ),
-    '--_dropdown-menu-radius': radiusVars['--radius-container'],
-    '--_dropdown-menu-padding': spacingVars['--spacing-1'],
-    padding: spacingVars['--spacing-1'],
-    borderRadius: 'var(--_dropdown-menu-radius)',
-    opacity: 1,
-    transitionProperty: 'opacity',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  scrollable: {
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    overscrollBehavior: 'contain',
-  },
-  // With a header or footer, the regions and the menu share one column under
-  // the menu's block cap: the regions keep their height and the menu shrinks
-  // and scrolls between them.
-  regionsFrame: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    maxHeight: stylex.firstThatWorks(
-      MENU_MAX_BLOCK_SIZE,
-      MENU_MAX_BLOCK_SIZE_FALLBACK,
-    ),
-  },
-  menuInFrame: {
-    flexGrow: 1,
-    flexShrink: 1,
-    minBlockSize: 0,
-  },
-  // Where a sub-menu with a header or footer renders its surface: beside the
-  // menu, never inside it. It owns no box, so the popover's layout is
-  // unchanged.
-  surfaceHost: {
-    display: 'contents',
-  },
-  // While a sub-menu's drilled-in view with its own header or footer shows
-  // in the surface host, the header and footer step aside for it, as the menu
-  // does (see `dropdown`). Derived from the DOM by the rule itself: the view
-  // is the frame in the host that is not hidden.
-  stepsAsideForView: {
-    display: {
-      default: null,
-      [STEPS_ASIDE_FOR_VIEW]: 'none',
-    },
-  },
-  region: {
-    flexShrink: 0,
-    padding: spacingVars['--spacing-1'],
-  },
-  // The menu's lower block cap rides on the layer box too, so the layer's
-  // flip decision sees the same height the menu paints.
-  popoverViewport: {
-    boxSizing: 'border-box',
-    maxBlockSize: stylex.firstThatWorks(
-      MENU_MAX_BLOCK_SIZE,
-      MENU_MAX_BLOCK_SIZE_FALLBACK,
-    ),
-  },
-  // Without a width the menu prefers the trigger's minimum width, clamped by
-  // the runtime's cap because a CSS minimum beats a maximum (spec:AST-059 FR7).
-  popoverMatchTrigger: {
-    minWidth: stylex.firstThatWorks(
-      `min(anchor-size(width), ${layerViewportInset.maxInlineSize})`,
-      `min(anchor-size(width), ${layerViewportInset.maxInlineSizeFallback})`,
-      'anchor-size(width)',
-    ),
-  },
-  popoverCustomWidth: (width: string) => ({
-    minWidth: width,
-  }),
-  popoverCustomIntrinsicWidth: (width: string) => ({
-    inlineSize: width,
-  }),
-});
-
-// `menuMaxHeight` lifts the 300px cap for a menu that must fit its rows; the
-// viewport still bounds it.
-const dynamicStyles = stylex.create({
-  menuMaxHeight: (maxHeight: string) => ({
-    maxHeight: `min(${maxHeight}, ${layerViewportInset.maxBlockSize})`,
-  }),
-  popoverViewportMaxBlockSize: (maxHeight: string) => ({
-    maxBlockSize: `min(${maxHeight}, ${layerViewportInset.maxBlockSize})`,
-  }),
-});
+/** The inline geometry the popover's classes read. */
+type DropdownMenuPopoverStyle = React.CSSProperties &
+  Partial<
+    Record<
+      typeof dropdownMenuMaxBlockSizeVar | typeof dropdownMenuInlineSizeVar,
+      string
+    >
+  >;
 
 // =============================================================================
 // Types
@@ -788,8 +667,8 @@ function DropdownMenuBottomSheet({
         <Button
           {...button}
           ref={triggerRef}
+          className={tw(isOpen && dropdownMenuTriggerOpenClassName)}
           xstyle={[
-            isOpen && styles.triggerOpen,
             button.xstyle,
             isFocusRingSuppressed && focusOutlineStyles.suppressed,
           ]}
@@ -1608,11 +1487,13 @@ function DropdownMenuPopover({
   const resolvedMenuWidth = menuWidth
     ? resolveMenuWidth(menuWidth, layerViewportInset.maxInlineSizeFallback)
     : null;
-  const popoverXstyle = resolvedMenuWidth
+  // The width and the lifted block cap are classes plus an inline variable,
+  // so a consumer class can still override them.
+  const popoverWidthClassName = resolvedMenuWidth
     ? resolvedMenuWidth.property === 'inlineSize'
-      ? styles.popoverCustomIntrinsicWidth(resolvedMenuWidth.value)
-      : styles.popoverCustomWidth(resolvedMenuWidth.value)
-    : styles.popoverMatchTrigger;
+      ? dropdownMenuPopoverFixedWidthClassName
+      : dropdownMenuPopoverMinWidthClassName
+    : dropdownMenuPopoverMatchTriggerClassName;
 
   // The drill-in view stack for sub-menus on a phone.
   const {drillIn, wrapContent} = useMenuDrillIn(isOpen);
@@ -1635,6 +1516,14 @@ function DropdownMenuPopover({
     [surfaceHostKey],
   );
   const resolvedMaxHeight = menuMaxHeight == null ? null : `${menuMaxHeight}px`;
+  const popoverStyle: DropdownMenuPopoverStyle = {
+    ...(resolvedMaxHeight != null && {
+      [dropdownMenuMaxBlockSizeVar]: resolvedMaxHeight,
+    }),
+    ...(resolvedMenuWidth != null && {
+      [dropdownMenuInlineSizeVar]: resolvedMenuWidth.value,
+    }),
+  };
   // Context for compound items
   const contextValue = useMemo<DropdownMenuContextValue>(
     () => ({closeMenu, menuSize, drillIn, menuLabel}),
@@ -1665,22 +1554,20 @@ function DropdownMenuPopover({
     <div
       ref={attachSurfaceHost}
       data-astryx-submenu-host=""
-      {...stylex.props(styles.surfaceHost)}
+      className={dropdownMenuSurfaceHostClassName}
     />
   );
   const renderWithRegions = (menu: ReactNode): ReactNode =>
     hasRegions ? (
-      <div
-        {...stylex.props(
-          styles.regionsFrame,
-          resolvedMaxHeight != null &&
-            dynamicStyles.menuMaxHeight(resolvedMaxHeight),
-        )}>
+      <div className={dropdownMenuRegionsFrameClassName}>
         {isRenderable(header) && (
           <div
             ref={headerRef}
             onKeyDown={handleRegionKeyDown}
-            {...stylex.props(styles.region, styles.stepsAsideForView)}>
+            className={tw(
+              dropdownMenuRegionClassName,
+              dropdownMenuStepsAsideForViewClassName,
+            )}>
             {header}
           </div>
         )}
@@ -1689,7 +1576,10 @@ function DropdownMenuPopover({
           <div
             ref={footerRef}
             onKeyDown={handleRegionKeyDown}
-            {...stylex.props(styles.region, styles.stepsAsideForView)}>
+            className={tw(
+              dropdownMenuRegionClassName,
+              dropdownMenuStepsAsideForViewClassName,
+            )}>
             {footer}
           </div>
         )}
@@ -1760,9 +1650,11 @@ function DropdownMenuPopover({
         <Button
           {...button}
           ref={buttonTriggerRef}
+          className={tw(
+            dropdownMenuTriggerPressableClassName,
+            isOpen && dropdownMenuTriggerOpenClassName,
+          )}
           xstyle={[
-            styles.triggerPressable,
-            isOpen && styles.triggerOpen,
             button.xstyle,
             isFocusRingSuppressed && focusOutlineStyles.suppressed,
           ]}
@@ -1838,14 +1730,9 @@ function DropdownMenuPopover({
             {...mergeProps(
               themeProps('dropdown-menu', {presentation: 'popover'}),
               stylex.props(
-                styles.dropdown,
-                resolvedMaxHeight != null &&
-                  dynamicStyles.menuMaxHeight(resolvedMaxHeight),
                 hasOverflow
                   ? menuTouchActionStyles.scrolls
                   : menuTouchActionStyles.fits,
-                hasOverflow && styles.scrollable,
-                hasRegions && styles.menuInFrame,
                 // Between a header and a footer the menu is a Tab stop, so
                 // keyboard focus on it must be visible (the base style removes
                 // the ring for the pointer-open focus target).
@@ -1854,7 +1741,12 @@ function DropdownMenuPopover({
                   focusOutlineStyles.focusVisible,
                 xstyle,
               ),
-              className,
+              tw(
+                dropdownMenuPopoverClassName,
+                hasOverflow && dropdownMenuScrollClassName,
+                hasRegions && dropdownMenuMenuInFrameClassName,
+                className,
+              ),
               style,
             )}>
             <DropdownMenuContext value={contextValue}>
@@ -1870,12 +1762,11 @@ function DropdownMenuPopover({
           placement,
           alignment,
           offset: spacingVars['--spacing-1'],
-          xstyle: [
-            styles.popoverViewport,
-            resolvedMaxHeight != null &&
-              dynamicStyles.popoverViewportMaxBlockSize(resolvedMaxHeight),
-            popoverXstyle,
-          ],
+          className: tw(
+            dropdownMenuPopoverViewportClassName,
+            popoverWidthClassName,
+          ),
+          style: popoverStyle,
         },
       )}
     </>
