@@ -30,6 +30,7 @@ import {
   fieldLabelClassName,
   fieldLabelGroupClassName,
   fieldLabelRowClassName,
+  fieldLabelHiddenInfoTipClassName,
   fieldLabelStatusClassName,
 } from './fieldLabelClasses';
 import {useInputContainer} from '../hooks/useInputContainer';
@@ -41,22 +42,6 @@ import {
 import english from '../i18n/generated-english/Field/FieldLabel.generated';
 
 registerEnglishFallback(english);
-
-// A hidden label's info button takes no layout slot. While it has keyboard
-// focus, it moves into flow above the control, where nothing covers or clips
-// it. It stays positioned, because InfoTip's touch band needs a positioned
-// host. InfoTip renders its own trigger through StyleX, which is unlayered and
-// therefore beats any class in `astryx-base`; so this one state still travels
-// through `xstyle`.
-const styles = stylex.create({
-  infoTipHidden: {
-    position: {default: 'absolute', ':focus-visible': 'relative'},
-    alignSelf: 'flex-start',
-    clip: {default: 'rect(0, 0, 0, 0)', ':focus-visible': 'auto'},
-    overflow: {default: 'hidden', ':focus-visible': 'visible'},
-    whiteSpace: 'nowrap',
-  },
-});
 
 export interface FieldLabelProps extends BaseProps<HTMLLabelElement> {
   /** Ref forwarded to the root element */
@@ -259,7 +244,7 @@ export function FieldLabel({
       <InfoTip
         content={labelTooltip}
         label={t('@astryx.field.labelTooltip', {label})}
-        xstyle={isLabelHidden ? styles.infoTipHidden : undefined}
+        className={isLabelHidden ? fieldLabelHiddenInfoTipClassName : undefined}
       />
     </span>
   ) : (

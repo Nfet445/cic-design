@@ -339,6 +339,42 @@ import {
   radioListItemWrapperClassName,
 } from '../RadioList/radioListItemClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
+import {kbdKeyClassName, kbdWrapperClassName} from '../Kbd/kbdClasses';
+import {infoTipTriggerClassName} from '../InfoTip/infoTipClasses';
+import {
+  panelSearchInputFieldClassName,
+  panelSearchInputIconClassName,
+  panelSearchInputInputClassName,
+  panelSearchInputKeyboardFocusClassName,
+  panelSearchInputWrapperClassName,
+} from '../Field/panelSearchInputClasses';
+import {fieldLabelHiddenInfoTipClassName} from '../Field/fieldLabelClasses';
+import {
+  collapsibleChevronClassName,
+  collapsibleChevronClosedClassName,
+  collapsibleChevronOpenClassName,
+  collapsibleChevronStartClassName,
+  collapsibleChevronStartClosedClassName,
+  collapsibleChevronStartOpenClassName,
+  collapsibleContentClassName,
+  collapsibleContentDensityClassName,
+  collapsibleContentHiddenClassName,
+  collapsibleDividedClassName,
+  collapsibleGroupWrapperClassName,
+  collapsibleRootClassName,
+  collapsibleTriggerClassName,
+  collapsibleTriggerDensityClassName,
+  collapsibleTriggerDisabledClassName,
+  collapsibleTriggerLabelClassName,
+} from '../Collapsible/collapsibleClasses';
+import {
+  fieldStatusAttachedClassName,
+  fieldStatusBaseClassName,
+  fieldStatusColorClassName,
+  fieldStatusDetachedClassName,
+  fieldStatusDetachedContentClassName,
+  fieldStatusDetachedIconClassName,
+} from '../FieldStatus/fieldStatusClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
   iconColorClassName,
@@ -2634,6 +2670,49 @@ function familyClassNames() {
   add(checkboxInputPressOverlayClassName);
   add(checkboxInputIndicatorSlotClassName);
   add(checkboxInputLabelWrapperClassName);
+  // Kbd: the shortcut row and the one badge shape both platforms show.
+  add(kbdWrapperClassName);
+  add(kbdKeyClassName);
+  // InfoTip: the one info button, whatever its size.
+  add(infoTipTriggerClassName);
+  // FieldStatus: the message box in both placements, the detached content row
+  // and glyph, and one fill per status type.
+  add(fieldStatusBaseClassName);
+  // Field: the hidden label's info button and the panel search row.
+  add(fieldLabelHiddenInfoTipClassName);
+  add(panelSearchInputWrapperClassName);
+  add(panelSearchInputFieldClassName);
+  add(panelSearchInputKeyboardFocusClassName);
+  add(panelSearchInputIconClassName);
+  add(panelSearchInputInputClassName);
+  // Collapsible and its group: the root, the trigger and its label, the chevron
+  // in both orientations and states, the content region, the divider, and one
+  // padding pair per density.
+  add(collapsibleRootClassName);
+  add(collapsibleTriggerClassName);
+  add(collapsibleTriggerLabelClassName);
+  add(collapsibleTriggerDisabledClassName);
+  add(collapsibleChevronClassName);
+  add(collapsibleChevronOpenClassName);
+  add(collapsibleChevronClosedClassName);
+  add(collapsibleChevronStartClassName);
+  add(collapsibleChevronStartOpenClassName);
+  add(collapsibleChevronStartClosedClassName);
+  add(collapsibleContentClassName);
+  add(collapsibleContentHiddenClassName);
+  add(collapsibleDividedClassName);
+  add(collapsibleGroupWrapperClassName);
+  for (const density of ['compact', 'balanced', 'spacious']) {
+    add(collapsibleTriggerDensityClassName[density]);
+    add(collapsibleContentDensityClassName[density]);
+  }
+  add(fieldStatusAttachedClassName);
+  add(fieldStatusDetachedClassName);
+  add(fieldStatusDetachedContentClassName);
+  add(fieldStatusDetachedIconClassName);
+  for (const type of ['warning', 'error', 'success']) {
+    add(fieldStatusColorClassName[type]);
+  }
   // Switch: the field root at both width states, the row in its four shape
   // states, the track box per size, the label column and the status gap.
   for (const width of [null, 240]) {

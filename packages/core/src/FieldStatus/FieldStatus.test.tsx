@@ -14,7 +14,7 @@ import {render, screen, waitFor} from '@testing-library/react';
 import * as stylex from '@stylexjs/stylex';
 import {FieldStatus} from './FieldStatus';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
-import {getForcedColorsRules} from '../__tests__/forcedColors';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 
 const testStyles = stylex.create({
   custom: {color: 'rebeccapurple'},
@@ -153,19 +153,19 @@ describe('FieldStatus', () => {
 
     it('extends the attached background by the field-provided overlap', () => {
       render(<FieldStatus type="warning" message="msg" data-testid="fs" />);
-      const styles = getComputedStyle(screen.getByTestId('fs'));
 
-      expect(styles.marginTop).toBe(
-        'calc(-1 * var(--_field-status-overlap,var(--spacing-1-5)))',
+      // jsdom cannot resolve the class, so the assertion quotes its text.
+      expect(classesOf(screen.getByTestId('fs'))).toContain(
+        '[margin-top:calc(-1*var(--_field-status-overlap,var(--spacing-1-5)))]',
       );
     });
 
     it('does not intercept pointer input over the attached control', () => {
       render(<FieldStatus type="warning" message="msg" data-testid="fs" />);
 
-      expect(getComputedStyle(screen.getByTestId('fs')).pointerEvents).toBe(
-        'none',
-      );
+      expectClassSet(screen.getByTestId('fs'), {
+        includes: ['pointer-events-none'],
+      });
     });
   });
 
@@ -470,13 +470,17 @@ describe('FieldStatus', () => {
   });
 });
 
-// jsdom cannot emulate forced colors, so this asserts the compiled rule the
-// status fill relies on (architecture:theme-tokens INV11).
+// jsdom cannot emulate forced colors, so this asserts the classes the status
+// fill relies on there (architecture:theme-tokens INV11).
 describe('FieldStatus forced colors', () => {
   it('keeps a visible boundary on the status fill', () => {
     render(<FieldStatus type="error" message="Required" />);
-    const css = getForcedColorsRules();
-    expect(css).toContain('outline-style: solid;');
-    expect(css).toContain('outline-color: canvastext;');
+    expect(classesOf(screen.getByText('Required').closest('div')!)).toEqual(
+      expect.arrayContaining([
+        'forced-colors:outline-[1px]',
+        'forced-colors:outline-solid',
+        'forced-colors:outline-[color:CanvasText]',
+      ]),
+    );
   });
 });
