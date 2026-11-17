@@ -572,6 +572,17 @@ import {
   dividerVerticalLabelClassName,
 } from '../Divider/dividerClasses';
 import {
+  emptyStateActionsClassName,
+  emptyStateActionsCompactClassName,
+  emptyStateClassName,
+  emptyStateCompactClassName,
+  emptyStateDescriptionClassName,
+  emptyStateDescriptionCompactClassName,
+  emptyStateTextGroupClassName,
+  emptyStateTitleClassName,
+  emptyStateTitleCompactClassName,
+} from '../EmptyState/emptyStateClasses';
+import {
   skeletonAnimateClassName,
   skeletonClassName,
   skeletonDelayClassName,
@@ -1894,6 +1905,17 @@ function familyClassNames() {
   for (const value of Object.values(bannerStatusControlClassName)) {
     add(value);
   }
+  // EmptyState: the container and its compact arm, the text column, the title
+  // and description with their compact sizes, and the action row.
+  add(emptyStateClassName);
+  add(emptyStateCompactClassName);
+  add(emptyStateTextGroupClassName);
+  add(emptyStateTitleClassName);
+  add(emptyStateTitleCompactClassName);
+  add(emptyStateDescriptionClassName);
+  add(emptyStateDescriptionCompactClassName);
+  add(emptyStateActionsClassName);
+  add(emptyStateActionsCompactClassName);
   // Skeleton: the placeholder, the pulse, the two utility classes that read
   // the props' variables, and one class per radius.
   add(skeletonClassName);
