@@ -26,7 +26,6 @@ import {
   vi,
 } from 'vitest';
 import {springs, timing} from '../motion/uikit';
-import {fontWeightVars} from '../theme/tokens.stylex';
 import {PickerWheel} from './PickerWheel';
 import {bounceCurve, scaleFor} from './wheelPhysics';
 import {
@@ -417,12 +416,16 @@ describe('PickerWheel — at rest', () => {
   });
 });
 
-/** Whether a row carries the band's mark: painted, or styled in render and not overridden. */
+/**
+ * Whether a row carries the band's mark: painted, or set in render and not
+ * overridden. The mark rides the inline property the row's class reads, so the
+ * assertion reads that property rather than a declaration or a debug name.
+ */
 function isMarked(row: HTMLElement): boolean {
-  if (row.style.fontWeight !== '') {
-    return row.style.fontWeight === fontWeightVars['--font-weight-semibold'];
-  }
-  return row.className.includes('rowActive');
+  return (
+    row.style.getPropertyValue('--astryx-date-wheel-row-weight') ===
+    'var(--font-weight-semibold)'
+  );
 }
 
 describe('PickerWheel — a finger', () => {
@@ -1467,7 +1470,9 @@ function labelDrawnAt(column: Element, rows: number): string | null {
   ).map((row, index) => ({row, place: index * ROW}));
   const copies = copiesOf(column).map(row => ({
     row,
-    place: Number.parseFloat(row.style.insetBlockStart),
+    place: Number.parseFloat(
+      row.style.getPropertyValue('--astryx-date-wheel-row-offset'),
+    ),
   }));
   for (const {row, place} of [...own, ...copies]) {
     if (Math.abs(place + shift - rows * ROW) < 1) {
@@ -1801,7 +1806,11 @@ describe('PickerWheel — looping', () => {
       const drawn = new Set([
         ...MINUTES.map((_, index) => index),
         ...copiesOf(column).map(row =>
-          Math.round(Number.parseFloat(row.style.insetBlockStart) / ROW),
+          Math.round(
+            Number.parseFloat(
+              row.style.getPropertyValue('--astryx-date-wheel-row-offset'),
+            ) / ROW,
+          ),
         ),
       ]);
       const first = Math.floor(Math.min(turn.from, turn.to));
