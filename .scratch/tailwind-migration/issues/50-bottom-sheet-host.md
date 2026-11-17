@@ -31,6 +31,47 @@ Finish the two surfaces ticket 22 could not carry, now that their shape is known
 - `pnpm exec vitest run packages/core/src/BottomSheet packages/core/src/Lightbox packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`
 - `pnpm -F @astryxdesign/core typecheck`
 
+## Progress
+
+Window 1 (branch `ticket/50-bottom-sheet`, merged `poc/tailwind-layout-primitives` after the commit):
+
+- Done: the depth recede. It moved out of `BottomSheet.tsx`'s `stylex.create`
+  into `packages/core/src/BottomSheet/bottomSheetStackMotion.stylex.ts`
+  (`motion`, `receded1`, `receded2`), together with
+  `bottomSheetStackRecedeContract`, the two transform strings its test
+  compares against (same shape as `dialogFullscreenSafeAreaPaddingContract`).
+  `stackPositionerStyles` in `BottomSheet.tsx` now reads that module, so the
+  stacked switcher step keeps the same rules.
+- Assertions moved in `BottomSheetStacking.test.tsx`: the eleven
+  `getComputedStyle(...positioner).transform` reads (old `:441`, `:627`,
+  `:830-836`, `:954-993`, `:2384`, `:2746`, `:3164`, `:3220`) are now
+  `data-sheet-stack-depth` / `data-sheet-stack` assertions on the dialog, and
+  one new case asserts `bottomSheetStackRecedeContract.depth1` /
+  `.depth2` — the layout question the old reads answered. The unused
+  `getPositioner` helper went with them; the file holds no `getComputedStyle`
+  call.
+- Verified: `node packages/core/scripts/build-css-tailwind.mjs` (175.8 kB before
+  the merge, 176.6 kB after it), `vitest run BottomSheet Lightbox
+tailwindStylesheet.source-build` 851 passed, `pnpm -F @astryxdesign/core
+typecheck` clean.
+
+## What is left
+
+- `BottomSheet.tsx:132` — the dialog host: `dialog`, `dialogOpen`,
+  `dialogPanelHost`, `dialogNonModal*`, `positioner*` and the `::backdrop`
+  scrim. The scrim needs its duration and timing-function arms chosen in the
+  class function rather than layered (`isEntrySettled` → `0.01s`, `isExiting`
+  → `var(--_sheet-scrim-easing, linear)`), because two classes of one property
+  are ordered by the sheet, not by the map. `--_sheet-scrim-opacity` /
+  `--_sheet-scrim-duration` stay inline variables the classes read.
+- `BottomSheetPanel.tsx:286` (`pastGrabBarStyles`) and `:332` (`styles`), then
+  `BottomSheetPanel.test.tsx:627-634` (a `getComputedStyle` spy), `:738`,
+  `:742`, `:845`, `:866` (`document.styleSheets` walks), `:967`, `:1050`.
+- `BottomSheetSwitcher.tsx:98` (`flow`, `flowNonModal`), then
+  `BottomSheetSwitcher.test.tsx:1626` (transition duration), `:1700-1711`
+  (`isolation` / `zIndex`), `:1789` (sheet walk).
+- `Lightbox.tsx:193` and `:578` — only if a window is left.
+
 ## Notes
 
 - Start from `BottomSheetStacking.test.tsx`: the recorded failures were `expected '' to contain 'scale(.96)'` at `:627` plus the z-index and reduced-motion duration reads in `BottomSheetSwitcher.test.tsx`. Move those reads to `classesOf`/`expectClassSet` from `packages/core/src/__tests__/classNameAssertions.ts` first, then move the map.

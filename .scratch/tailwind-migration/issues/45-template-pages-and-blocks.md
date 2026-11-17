@@ -34,6 +34,12 @@ Measured on `ticket/45-template-pages` before the first conversion:
   `stylex.create` maps in the showcase blocks.
 - `packages/cli/assets/templates/themes/**` if a theme template names StyleX.
 
+Re-measured at the start of window 2, after window 1:
+
+- 38 files name `stylex` or `xstyle`, 166 `xstyle=` sites, 37
+  `@stylexjs/stylex` imports, 23 `@astryxdesign/core/theme/tokens.stylex`
+  imports, 36 files with a `stylex.create` map.
+
 ## Approach
 
 A template is consumer code, so it obeys the consumer contract, not the
@@ -97,6 +103,7 @@ Remaining, smallest first:
 - `blocks/components/Hooks/usePressFeedbackHookUsage.tsx` and its
   `usePressFeedbackHookUsage.test.tsx` — the test asserts the focus-ring class
   through `stylex.props(focusOutlineStyles.focusVisible)`, so it moves first.
+
 - `blocks/components/Hooks/{useContainerReveal,useScrollLock,useScrollableArea,useInputContainer,useInputStatusIcon,useOverflow,useScrollOverflow}HookUsage.tsx`
   — one `stylex.create` each, two or three declarations.
 - `blocks/components/DateTimeInput/DateTimeInputWithValidation.tsx`,
@@ -118,6 +125,46 @@ lands with the final file, in the shape of
 `packages/core/src/inputFontFloor.test.ts` — read every file under
 `packages/cli/assets/templates/**` and fail on `@stylexjs/stylex` or `xstyle`.
 
+Window 2 (`refactor(templates): читать CSS-переменную вместо токенов StyleX`):
+`blocks/components/Popover/PopoverBottomSheetAlternative.tsx` and
+`blocks/components/Hooks/useScrollLockHookUsage.tsx` stopped importing
+`tokens.stylex` and StyleX. Each `*Vars['--x']` read became a class reading the
+same custom property (`[margin-inline-start:var(--spacing-3)]`,
+`[padding:var(--spacing-4)]`), so the token sheet alone styles them; no token
+name and no value was invented. `xstyle` became `className` on `VStack` and on
+the dialog.
+
+`tw()` is not exported from `@astryxdesign/core` on this branch: the Approach
+above says a template may import it, and it cannot. Two classes in one attribute
+are joined with a template literal until core exports `tw`; that is a public
+API decision, not this ticket's.
+
+Blocked templates found in this window, recorded here instead of inventing a
+value:
+
+- `blocks/components/DrawerHeader/DrawerHeaderShowcase.tsx` needs
+  `overlayPaddingReset` to stand in for the Drawer root. The Tailwind
+  counterpart lives in `layoutClasses.ts` (`layoutInnerClassName`), which no
+  package entry exports, so the template keeps the StyleX import until Layout
+  publishes a reset class.
+- `blocks/components/Hooks/useInputStatusIconHookUsage.tsx` reads
+  `inputWrapperStyles` and `inputStatusBorderStyles` from `@astryxdesign/core/Field`,
+  which are StyleX. Only `Field` can replace them with class names.
+
+Window 2 checks: `esbuild --loader:.tsx=tsx` parsed both changed templates,
+`prettier --check` clean, `eslint` no issues, `pnpm check:knowledge`
+aligned. Merging `poc/tailwind-layout-primitives` into this branch took one
+commit (`Chat`/`RadioList` classes and changesets); both templates re-parsed and
+re-linted after the merge, and the diff touches no template.
+
+Remaining, smallest first (23 `tokens.stylex` importers as measured above):
+`DrawerHeaderShowcase` and `useInputStatusIconHookUsage` are blocked on core
+classes, not on this ticket. Next convertible ones are
+`BaseTypeaheadShowcase`/`BaseTypeaheadCustomSearch` (field classes and the
+`:has(:focus-visible)` outline read `--focus-outline-*`), then
+`ScrollableArea*`, `usePanGesture/PanDraggableBox` (dynamic `translate` needs an
+inline `--astryx-*` variable plus a reading class), then the large pages.
+
 Window 1 checks: `esbuild --loader:.tsx=tsx` parsed all 15 changed templates,
 `prettier --check` clean, `eslint` on them reports one pre-existing warning in
 `pages/ai-chat/page.tsx` (`consistent-type-assertions`, not this change),
@@ -130,6 +177,70 @@ test files by itself — it needs `--project node` and a real path.
 Merging `poc/tailwind-layout-primitives` at the close of the window said
 `Уже актуально`: the branch head (`3b460df42`) already reached this branch
 through `12add4df7`, so no merge commit was needed.
+
+Window 3 (`refactor(templates): карты stylex.create → классы Tailwind`): the
+whole `stylex.create` map left nine templates, smallest maps first, and each
+declaration became a literal Tailwind class on `className`:
+
+- `blocks/components/Hooks/useContainerRevealHookUsage.tsx` (`flex gap-1`;
+  `ps-3 pe-3 pb-2`), `useOverflowHookUsage.tsx`
+  (`w-[480px] min-w-[120px] max-w-full resize-x overflow-hidden`, `flex gap-1`,
+  `absolute invisible h-0 overflow-hidden whitespace-nowrap
+pointer-events-none`), `useScrollableAreaHookUsage.tsx` (`h-40` and the three
+  `[box-shadow:…var(--color-shadow)]` inset fades),
+  `useScrollOverflowHookUsage.tsx` (`flex gap-2 overflow-x-auto`, `shrink-0`,
+  three `[mask-image:linear-gradient(…var(--spacing-8))]` fades).
+- `blocks/components/ScrollableArea/ScrollableAreaStickyGroupHeaders.tsx` and
+  `ScrollableAreaStickyPassthrough.tsx`
+  (`sticky top-0 z-[1] bg-card [padding-block:var(--spacing-2)]`),
+  `ScrollableAreaOverscrollChaining.tsx`
+  (`[border-width:var(--border-width)] border-solid border-border rounded-md`;
+  `border-border` is `--color-border`, `rounded-md` is `--radius-element` in
+  `tailwind-theme.css`).
+- `blocks/components/Item/ItemDocumentTabs.tsx` (`min-w-0 shrink
+[scrollbar-width:none]`, `h-4`, `invisible`, `w-[164px] min-w-24 shrink`,
+  `-m-1 [transition-property:none]`).
+- `blocks/components/DateTimeInput/DateTimeInputWithValidation.tsx`
+  (`w-full max-w-full min-[480px]:w-[400px]`).
+
+Values kept arbitrary because the token sheet has none: 400px and 480px
+(`DateTimeInputWithValidation`), 480px and 120px (`useOverflowHookUsage`), and
+164px (tab width). Everything on the 4px scale used the named utilities
+(`h-40` = 160px, `h-4` = 16px, `min-w-24` = 96px, `gap-1` = 4px), which resolve
+through `--spacing` in `tailwind-theme.css`.
+
+Where the shape differs from the Approach above:
+
+- No class is assembled from parts. `useScrollableAreaHookUsage` first read the
+  two inset shadows from constants; a Tailwind build only sees classes present
+  as literals in the generated source, so each of the three shadow classes is
+  written out (`styles.shadowBoth` repeats both). Conditional variants stay one
+  template literal over whole class strings.
+- `tw()` is still not exported from `@astryxdesign/core`, so combinations are
+  ordinary template literals, as window 2 noted.
+- `getContentRevealProps()`, `getViewportProps()` and `mergeProps()` take
+  `{className}`, so the hook-driven elements keep their generated props.
+
+Counts after the window (before: 38 files, 166 `xstyle=`, 37
+`@stylexjs/stylex` imports, 23 `tokens.stylex` imports, 36 maps): 29 files, 157
+`xstyle=`, 28 imports, 18 `tokens.stylex` imports, 27 maps. Five of the nine
+files also stopped importing `tokens.stylex`, because each map read
+`colorVars`/`spacingVars`/`radiusVars` where the same custom property works.
+
+Remaining maps, smallest first: `TableLeadingMarkSelection.tsx` (134 lines),
+`TableFloatingBulkActionsTable.tsx` (139), `BaseTypeaheadCustomSearch.tsx`
+(84), `BaseTypeaheadShowcase.tsx` (87), `PanDraggableBox.tsx` (98, dynamic
+`translate` — needs a class plus an inline `--astryx-*` variable),
+`ComplexSelectorShowcase.tsx`, `BaseTypeaheadMenu.tsx`, `ToolbarTableFilter.tsx`,
+then the large pages.
+
+Window 3 checks: all nine templates parsed with
+`node_modules/.bin/esbuild --loader:.tsx=tsx`, `prettier --check` clean,
+`eslint` no issues, `pnpm check:knowledge` aligned, and
+`vitest run --project node packages/cli/foundation/discovery/doc-types.test.mjs
+packages/cli/clients/cli/__tests__/cliManifest.test.ts` passed (27 tests),
+before and after merging `poc/tailwind-layout-primitives` (`fb5d905f7`); the
+merge touched no template.
 
 ## Notes
 

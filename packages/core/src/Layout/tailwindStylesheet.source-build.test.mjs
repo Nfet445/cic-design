@@ -229,6 +229,17 @@ import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {checkboxListItemClassName} from '../CheckboxList/checkboxListItemClasses';
 import {radioListClassName} from '../RadioList/radioListClasses';
 import {
+  checkboxInputClassName,
+  checkboxInputIndicatorSlotClassName,
+  checkboxInputLabelWrapperClassName,
+  checkboxInputNativeClassName,
+  checkboxInputPressOverlayClassName,
+  checkboxInputRowClassName,
+  checkboxInputRowPressImageClassName,
+  checkboxInputRowPressOverlayClassName,
+  checkboxInputWrapperClassName,
+} from '../CheckboxInput/checkboxInputClasses';
+import {
   radioListItemIndicatorSlotClassName,
   radioListItemInputClassName,
   radioListItemPressOverlayClassName,
@@ -301,6 +312,11 @@ import {
   sectionInnerClassName,
   sectionOuterClassName,
 } from '../Section/sectionClasses';
+import {
+  scrollableAreaContentClassName,
+  scrollableAreaContentWithInlineOverflowClassName,
+  scrollableAreaViewportClassName,
+} from '../ScrollableArea/scrollableAreaClasses';
 import {
   SELECTOR_OPTION_EMBEDDED_CLASS,
   SELECTOR_ROW_CONTENT_CLASS,
@@ -609,7 +625,21 @@ import {
 } from '../EmptyState/emptyStateClasses';
 import {timestampClassName} from '../Timestamp/timestampClasses';
 import {
+  chatMessageMetadataAssistantClassName,
+  chatMessageMetadataClassName,
+  chatMessageMetadataStatusErrorClassName,
+  chatMessageMetadataStatusPulseClassName,
+  chatMessageMetadataStatusRowClassName,
+  chatMessageMetadataUserClassName,
+  chatPastedTextFooterClassName,
+  chatPastedTextMetaClassName,
+  chatPastedTextPreviewClassName,
+  chatPastedTextPreviewTextClassName,
   chatSendButtonClassName,
+  chatSystemMessageClassName,
+  chatSystemMessageContentClassName,
+  chatSystemMessageDividerClassName,
+  chatSystemMessageIconClassName,
   chatTokenizedTextClassName,
   chatTokenizedTextTokenClassName,
 } from '../Chat/chatClasses';
@@ -811,6 +841,18 @@ function familyClassNames() {
       add(sectionInnerClassName({dividers, variant}));
     }
   }
+  add(scrollableAreaViewportClassName({isFullBleed: false}));
+  add(
+    scrollableAreaViewportClassName({
+      height: 200,
+      isFullBleed: true,
+      maxWidth: '64rem',
+      minHeight: 40,
+      width: '100%',
+    }),
+  );
+  add(scrollableAreaContentClassName);
+  add(scrollableAreaContentWithInlineOverflowClassName);
   add(sectionOuterClassName({}));
   add(
     sectionOuterClassName({
@@ -2116,6 +2158,20 @@ function familyClassNames() {
   add(chatTokenizedTextClassName);
   add(chatTokenizedTextTokenClassName);
   add(chatSendButtonClassName);
+  add(chatPastedTextPreviewClassName);
+  add(chatPastedTextPreviewTextClassName);
+  add(chatPastedTextFooterClassName);
+  add(chatPastedTextMetaClassName);
+  add(chatSystemMessageClassName);
+  add(chatSystemMessageDividerClassName);
+  add(chatSystemMessageIconClassName);
+  add(chatSystemMessageContentClassName);
+  add(chatMessageMetadataClassName);
+  add(chatMessageMetadataUserClassName);
+  add(chatMessageMetadataAssistantClassName);
+  add(chatMessageMetadataStatusRowClassName);
+  add(chatMessageMetadataStatusErrorClassName);
+  add(chatMessageMetadataStatusPulseClassName);
   for (const orientation of ['vertical', 'horizontal']) {
     add(radioListClassName({orientation}));
   }
@@ -2125,6 +2181,25 @@ function familyClassNames() {
     add(radioListItemWrapperClassName({size}));
     add(radioListItemInputClassName({size}));
   }
+  // CheckboxInput: the field root at both width states, the row in its four
+  // shape states, and the fixed pieces.
+  for (const width of [null, 240]) {
+    add(checkboxInputClassName({width}));
+  }
+  for (const isLabelHidden of [false, true]) {
+    for (const hasHitArea of [false, true]) {
+      add(checkboxInputRowClassName({isLabelHidden, hasHitArea}));
+    }
+  }
+  for (const size of ['sm', 'md']) {
+    add(checkboxInputWrapperClassName({size}));
+    add(checkboxInputNativeClassName({size}));
+  }
+  add(checkboxInputRowPressImageClassName);
+  add(checkboxInputRowPressOverlayClassName);
+  add(checkboxInputPressOverlayClassName);
+  add(checkboxInputIndicatorSlotClassName);
+  add(checkboxInputLabelWrapperClassName);
 
   return [...names].sort();
 }
@@ -2187,9 +2262,13 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // to literal classes: its surface, both viewport-fit states, the two sizing
     // classes, the anchor wrapper and both hidden close wrappers. Spinner's box,
     // ring, rotor, circle, arc, track and its twelve size, shade and alpha
-    // classes, and AspectRatio's box, ratio, ellipse clip and four child arms,
-    // measured 1300, so the ceiling follows the sum rather than one side.
-    expect(stylesheet.rules.size).toBeLessThan(1330);
+    // classes, AspectRatio's box, ratio, ellipse clip and four child arms, then
+    // ScrollableArea's platform, inset and both fade arms measured 1330 with
+    // every family above registered. The chat pasted-text preview, the system
+    // notice and the metadata row share almost every utility those maps already
+    // spell, and the checkbox field's row, box, press layers and native input
+    // added six; the sheet measures 1318 here and the ceiling keeps headroom.
+    expect(stylesheet.rules.size).toBeLessThan(1380);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

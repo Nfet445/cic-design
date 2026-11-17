@@ -3,9 +3,9 @@
 /**
  * @file `astryx docs styling-overview`
  *
- * One question: "How do I set up CSS?"
- * Three paths, each with its exact imports. Every path loads the prebuilt
- * stylesheets (spec:AST-080 FR5); none compiles Astryx package source.
+ * One question: "How do I load CSS, and where does my styling go?"
+ * Two layers the packages ship (component classes, theme tokens), the order a
+ * page loads them in, and the three ways to style: a class, a token, `xstyle`.
  */
 
 /** @type {import('@astryxdesign/cli/authoring').ReferenceDoc} */
@@ -15,59 +15,42 @@ export const docs = {
   title: 'Styling overview',
   category: 'guide',
   description:
-    'How to set up CSS — exact imports for three paths: plain, Tailwind, and StyleX for your own code — plus the stylesheet each Astryx package ships.',
+    'Which stylesheets to load, the order they land in, and when to style with a class, a token, or the xstyle escape hatch.',
   keywords: [
     'styling',
     'CSS',
     'setup',
     'imports',
-    'StyleX',
+    'classes',
     'Tailwind',
-    'astryx.css',
+    'astryx-tailwind.css',
     'globals.css',
   ],
 
   sections: [
     {
-      id: 'pick-a-path',
-      title: 'Pick a path',
+      id: 'what-ships',
+      title: 'What a component ships',
       content: [
         {
-          type: 'table',
-          headers: ['Path', 'Good for', 'Build step?'],
-          rows: [
-            [
-              'Plain CSS',
-              'Most apps. Style with className, xstyle, or any CSS library.',
-              'None.',
-            ],
-            [
-              'Tailwind',
-              'Apps on Tailwind v4. A CSS bridge maps utility classes to design tokens.',
-              "None beyond Tailwind's own.",
-            ],
-            [
-              'StyleX for your own code',
-              'Your own `stylex.create()` styles and swizzled (ejected) components. Astryx itself stays prebuilt.',
-              'Yes \u2014 a StyleX plugin for your own code.',
-            ],
-          ],
+          type: 'prose',
+          text: 'A component carries literal utility classes, and the package stylesheet already holds the declaration behind each one. Nothing about a component is styled at runtime: no CSS-in-JS call, no injected sheet, no build step in your app. `<Stack gap={2}>` renders `flex flex-col gap-2`, and `.gap-2` is in the stylesheet you import.',
         },
         {
           type: 'prose',
-          text: 'All three load the same prebuilt Astryx stylesheets, resolve to the same design tokens, and support theming and dark mode. None of them compiles Astryx package source. You can mix them in one app.',
+          text: 'Those classes read design tokens as CSS custom properties, and the theme declares them. The package declares no token value of its own, so switching theme or color mode changes what every class computes to with no stylesheet rebuilt.',
         },
       ],
     },
     {
-      id: 'plain',
-      title: 'Plain CSS',
+      id: 'load',
+      title: 'Load the stylesheets',
       content: [
         {
           type: 'code',
           lang: 'bash',
           label: 'Install',
-          code: '{@pm install @astryxdesign/core @stylexjs/stylex @astryxdesign/theme-neutral}',
+          code: '{@pm install @astryxdesign/core @astryxdesign/theme-neutral}',
         },
         {
           type: 'code',
@@ -75,125 +58,108 @@ export const docs = {
           label: 'globals.css',
           code: `@import "@astryxdesign/core/reset.css";
 @import "@astryxdesign/core/astryx.css";
+@import "@astryxdesign/core/astryx-tailwind.css";
 @import "@astryxdesign/theme-neutral/theme.css";`,
         },
         {
           type: 'prose',
-          text: "Done. Components work out of the box \u2014 style them with `className`, `xstyle`, or `style`. Swap `theme-neutral` for any theme package (`{@command theme list}` shows what's available).",
+          text: 'Core ships two component stylesheets: `astryx-tailwind.css` for the components whose own styles are utility classes, and `astryx.css` for the ones still on the previous stylesheet. Load both in that slot. They register the same layer order and put every rule in the same `astryx-base` layer, so order between them does not matter. Swap `theme-neutral` for any theme package (`{@command theme list}` shows what is available).',
+        },
+        {
+          type: 'prose',
+          text: 'Done. Style with `className`, `style`, or `xstyle`. A page that skips these imports renders unstyled markup: the classes reach the DOM and no rule exists for them.',
         },
       ],
     },
     {
-      id: 'tailwind',
-      title: 'Tailwind',
+      id: 'order',
+      title: 'The order a page needs',
       content: [
         {
-          type: 'code',
-          lang: 'bash',
-          label: 'Install',
-          code: '{@pm install @astryxdesign/core @stylexjs/stylex @astryxdesign/theme-neutral}',
+          type: 'table',
+          headers: ['Layer', 'Who writes rules there', 'Load'],
+          rows: [
+            [
+              '`reset`',
+              'Cross-browser reset, zero specificity.',
+              '`reset.css`',
+            ],
+            [
+              '`astryx-base`',
+              'Every component class in the packages you use.',
+              '`astryx.css`, `astryx-tailwind.css`',
+            ],
+            [
+              '`astryx-theme`',
+              'The active theme: token values and any component override it makes.',
+              '`theme.css`',
+            ],
+            [
+              'Your slots',
+              'Your own CSS, CSS Modules, and Tailwind utilities.',
+              'after `theme.css`',
+            ],
+          ],
+        },
+        {
+          type: 'prose',
+          text: 'Declare the order once, before the imports, so your layer wins over a component class on the same element. On the Tailwind path, the slots are Tailwind\u2019s own `theme`, `base`, `components`, and `utilities`; {@link generic:tailwind} gives that file.',
         },
         {
           type: 'code',
           lang: 'css',
           label: 'globals.css',
-          code: `@layer reset, theme, base, astryx-base, astryx-theme, components, utilities;
+          code: `@layer reset, astryx-base, astryx-theme, app;
 
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/preflight.css" layer(base);
 @import "@astryxdesign/core/reset.css";
 @import "@astryxdesign/core/astryx.css";
+@import "@astryxdesign/core/astryx-tailwind.css";
 @import "@astryxdesign/theme-neutral/theme.css";
-@import "@astryxdesign/core/tailwind-theme.css";
-@import "tailwindcss/utilities.css" layer(utilities);`,
+@import "./app.css" layer(app);`,
         },
         {
           type: 'prose',
-          text: 'The `@layer` declaration is critical \u2014 without it, component styles outrank Tailwind utilities and `className` overrides stop working. The bridge (`tailwind-theme.css`) maps classes like `text-primary`, `bg-surface`, and `rounded-lg` to design tokens with no JS.',
-        },
-        {
-          type: 'prose',
-          text: 'A project with Tailwind already set up needs a smaller change, which {@link generic:tailwind} shows. For Tailwind v3, see the layer workaround in {@link generic:migration-setup}.',
+          text: '`className` and `style` are unlayered, so they need no slot in this statement: a class you pass is appended after the component\u2019s own classes and beats them.',
         },
       ],
     },
     {
-      id: 'stylex-own-code',
-      title: 'StyleX for your own code',
+      id: 'choose',
+      title: 'A class, a token, or xstyle',
       content: [
         {
-          type: 'prose',
-          text: 'Only needed when you write your own StyleX (`stylex.create()`) or swizzle a component (`{@command swizzle <Component>}`), which copies its StyleX source into your app. The plain path already supports `xstyle` overrides \u2014 this path is for your own StyleX code. Some built-in page templates also use StyleX for layout; if you scaffold one and see "Unexpected stylex.create call at runtime", add the compiler plugin for your bundler below.',
-        },
-        {
-          type: 'code',
-          lang: 'bash',
-          label: 'Install',
-          code: '{@pm install @astryxdesign/core @stylexjs/stylex @astryxdesign/theme-neutral}',
-        },
-        {
-          type: 'code',
-          lang: 'css',
-          label: 'globals.css',
-          code: `@import "@astryxdesign/core/reset.css";
-@import "@astryxdesign/core/astryx.css";
-@import "@astryxdesign/theme-neutral/theme.css";`,
-        },
-        {
-          type: 'prose',
-          text: 'Keep `astryx.css`: Astryx component styles always come from the prebuilt stylesheets. Point the StyleX compiler at your own source only, never at `node_modules/@astryxdesign`. Add the plugin for your bundler:',
-        },
-        {
           type: 'table',
-          headers: ['Bundler', 'Plugin'],
+          headers: ['You want', 'Use', 'Example'],
           rows: [
-            ['Webpack', '@stylexjs/webpack-plugin'],
-            ['Vite / Rollup', '@stylexjs/rollup-plugin'],
             [
-              'Babel (any)',
-              '@stylexjs/babel-plugin + @stylexjs/postcss-plugin',
+              'A different value from the one the props offer',
+              '`className` with a utility class or your own class',
+              '`className="rounded-[var(--radius-element)]"`',
             ],
-            ['Next.js (keep next/font)', '@stylexswc/nextjs-plugin'],
+            [
+              'Your own card, panel, or page chrome',
+              'A token in your CSS',
+              '`background: var(--color-background-card);`',
+            ],
+            [
+              'A component-specific override, kept from existing code',
+              '`xstyle`',
+              '`<Card xstyle={styles.tight} />`',
+            ],
+            [
+              'A value nobody can name as a class, such as a computed width',
+              'A class that reads a custom property, plus the property on the element',
+              '`className="w-[var(--panel-width)]"`',
+            ],
           ],
         },
         {
           type: 'prose',
-          text: 'If a swizzled component fails at runtime with a `stylex.create` error, the app is missing a StyleX compiler: see the StyleX Build Setup section of {@link generic:tokens-and-setup}.',
+          text: 'Reach for props first: a step, an axis, or a variant the component already offers computes the class for you, and it is the only form that follows a theme change. A token in your own CSS is next. `xstyle` is the last resort, because it carries a StyleX style, is kept for one release, and is not a path to build new code on.',
         },
         {
           type: 'prose',
-          text: "`{@command swizzle <Component>}` writes an `astryx-swizzle.json` marker into an output folder it owns (one the copy creates, an empty one, or one it marked before); every module under that folder then compiles as Astryx source, so keep copies in a folder of their own, such as the default `components/astryx`. For a folder that already holds other files it writes no marker and says how to add one by hand. With `@astryxdesign/build`'s Babel, PostCSS and Vite integrations, or `withAstryx()` under webpack, a copy under that folder compiles into `astryx-base`, below `astryx-theme`, so theme component overrides reach it as they reach the package component. Under Turbopack, and with the stock StyleX plugins above, a copy's rules land in your own styles, above `astryx-theme`, and theme component overrides do not reach it.",
-        },
-      ],
-    },
-    {
-      id: 'other-packages',
-      title: 'Other Astryx packages',
-      content: [
-        {
-          type: 'prose',
-          text: 'Every Astryx package whose components carry styles ships its own prebuilt stylesheet. Import it after `astryx.css` for each package you use. All of them place their rules in the same `astryx-base` layer, so your theme overrides win over every package.',
-        },
-        {
-          type: 'code',
-          lang: 'css',
-          label: 'globals.css',
-          code: `@import "@astryxdesign/core/reset.css";
-@import "@astryxdesign/core/astryx.css";
-@import "@astryxdesign/richtext/richtext.css"; /* Rich Text */
-@import "@astryxdesign/lab/lab.css"; /* Lab */
-@import "@astryxdesign/charts/charts.css"; /* Charts */
-@import "@astryxdesign/theme-neutral/theme.css";`,
-        },
-        {
-          type: 'table',
-          headers: ['Package', 'Stylesheet'],
-          rows: [
-            ['@astryxdesign/core', '@astryxdesign/core/astryx.css'],
-            ['@astryxdesign/richtext', '@astryxdesign/richtext/richtext.css'],
-            ['@astryxdesign/lab', '@astryxdesign/lab/lab.css'],
-            ['@astryxdesign/charts', '@astryxdesign/charts/charts.css'],
-          ],
+          text: 'A value the props do not cover stays a class, never an inline declaration: {@link generic:styling-basics} shows the custom property form and why it wins the cascade.',
         },
       ],
     },
@@ -213,24 +179,23 @@ export const docs = {
             [
               'astryx.css',
               'astryx-base',
-              'Prebuilt component styles. Required on every path.',
+              'Prebuilt component styles for the components still on the previous stylesheet. Required today.',
             ],
             [
-              'richtext.css, lab.css, charts.css',
+              'astryx-tailwind.css',
               'astryx-base',
-              'Prebuilt styles for each other Astryx package you use. Load after astryx.css.',
+              'Prebuilt utility classes, and the declarations behind them, for the components styled that way. Required today.',
             ],
             [
               'theme.css',
               'astryx-theme',
               'Design tokens (colors, spacing, radius, typography) as CSS custom properties. Swap the package for a different theme.',
             ],
-            [
-              'tailwind-theme.css',
-              '\u2014',
-              'Tailwind v4 bridge. Maps utility classes to design tokens. Pure CSS, no JS. Tailwind path only.',
-            ],
           ],
+        },
+        {
+          type: 'prose',
+          text: 'Every Astryx package whose components carry styles ships its own stylesheet for each form. Import the ones for the packages you use; all of them put their rules in the same `astryx-base` layer, so a theme override still wins over every package.',
         },
       ],
     },
@@ -242,10 +207,10 @@ export const docs = {
           type: 'list',
           style: 'unordered',
           items: [
-            '{@link namespace:styling} \u2014 xstyle, className, data-attribute selectors, design tokens in code.',
-            '{@link namespace:styling-libraries} \u2014 Tailwind bridge details, Panda, Chakra, MUI, CSS Modules, and non-CSS token resolution.',
+            '{@link generic:styling-basics} \u2014 worked examples: className, xstyle, a per-instance value, rest props.',
+            '{@link generic:tokens-and-setup} \u2014 the token table, and the stylesheet each package names.',
+            '{@link namespace:styling-libraries} \u2014 Tailwind, Panda, Chakra, MUI, CSS Modules, and non-CSS token resolution.',
             '{@link generic:use-a-theme} \u2014 applying themes, dark mode, nested themes. {@link generic:author-a-theme} \u2014 defineTheme, overrides, production builds.',
-            '{@link namespace:migration} \u2014 cascade layer audit, Tailwind v3 coexistence, and foundation smoke test.',
           ],
         },
       ],
