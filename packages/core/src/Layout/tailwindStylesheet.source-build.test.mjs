@@ -2856,8 +2856,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // mover, filled bar, marks, thumbs and text value added fifty-eight — the
     // travel classes are arbitrary properties with a container-unit calc each —
     // and Stepper's root, its track and the three step states added thirty-three
-    // more.
-    expect(stylesheet.rules.size).toBeLessThan(1620);
+    // more. Kbd, InfoTip, the field status row, the collapse block and its
+    // group, and the selectable card's selection layer then took the sheet to
+    // 1623, so the ceiling keeps its usual headroom above that number.
+    expect(stylesheet.rules.size).toBeLessThan(1680);
   });
 
   it('keeps the scrim takeover pin under prefers-reduced-motion', () => {
