@@ -18,6 +18,7 @@ import {SideNav} from './SideNav';
 import {SideNavHeading} from './SideNavHeading';
 import {SideNavItem} from './SideNavItem';
 import {SideNavSection} from './SideNavSection';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {SideNavCollapseContext} from './SideNavCollapseContext';
 import {SideNavRenderContext} from './SideNavRenderContext';
 import {AppShellMobileContext} from '../AppShell/AppShellMobileContext';
@@ -53,6 +54,19 @@ function zeroParent(root: Node): HTMLElement | null {
 function zeroIsInside(style: string): boolean {
   return zeroParent(document.body)?.closest(`[class*="${style}"]`) != null;
 }
+
+/** Whether the "0" itself carries every one of `tokens` as a whole class. */
+function zeroCarries(...tokens: ReadonlyArray<string>): boolean {
+  const parent = zeroParent(document.body);
+  if (!parent) {
+    return false;
+  }
+  const set = new Set(classesOf(parent));
+  return tokens.every(token => set.has(token));
+}
+
+/** The class tokens of the section's end-content slot. */
+const SECTION_END_CONTENT = ['shrink-0', 'flex', 'items-center'] as const;
 
 const COLLAPSED = {isCollapsed: true, toggle: () => {}, isCollapsible: true};
 
@@ -214,7 +228,8 @@ describe('SideNavItem and SideNavSection endContent follow isRenderable', () => 
           {null}
         </SideNavSection>,
       );
-      expect(document.querySelector('[class*="endContent"]')).toBeNull();
+      const slot = document.querySelector<HTMLElement>('[class*="endContent"]');
+      expect(slot).toBeNull();
     },
   );
 
@@ -224,6 +239,6 @@ describe('SideNavItem and SideNavSection endContent follow isRenderable', () => 
         {null}
       </SideNavSection>,
     );
-    expect(zeroIsInside('endContent')).toBe(true);
+    expect(zeroCarries(...SECTION_END_CONTENT)).toBe(true);
   });
 });

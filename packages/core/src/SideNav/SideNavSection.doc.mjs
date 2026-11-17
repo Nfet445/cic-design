@@ -7,12 +7,16 @@ export const docs = {
   subComponentOf: 'SideNav',
   displayName: 'Side Nav Section',
   isHiddenFromOverview: true,
-  description: 'Section grouping with an optional title, subtitle, and end content.',
+  description:
+    'Section grouping with an optional title, subtitle, and end content.',
   playground: {
     defaults: {
       title: 'Workspace',
       children: [
-        {__element: 'SideNavItem', props: {label: 'Dashboard', isSelected: true}},
+        {
+          __element: 'SideNavItem',
+          props: {label: 'Dashboard', isSelected: true},
+        },
         {__element: 'SideNavItem', props: {label: 'Projects'}},
         {__element: 'SideNavItem', props: {label: 'Settings'}},
       ],
@@ -66,13 +70,15 @@ export const docs = {
     {
       name: 'isHeaderHidden',
       type: 'boolean',
-      description: 'Visually hides the section header while keeping it accessible to screen readers.',
+      description:
+        'Visually hides the section header while keeping it accessible to screen readers.',
       default: 'false',
     },
     {
       name: 'xstyle',
       type: 'StyleXStyles',
-      description: 'StyleX styles for layout customization (margins, positioning, sizing). Must be a stylex.create() value: not an inline style object like style={{}}.',
+      description:
+        'StyleX styles for layout customization (margins, positioning, sizing). Must be a stylex.create() value: not an inline style object like style={{}}.',
     },
   ],
 };
@@ -123,7 +129,8 @@ export const docsDense = {
     subtitle: 'Section subtitle.',
     children: 'Section items.',
     endContent: 'Right-side content in section header.',
-    isHeaderHidden: 'Visually hides section header while keeping accessible to screen readers.',
+    isHeaderHidden:
+      'Visually hides section header while keeping accessible to screen readers.',
     xstyle: 'StyleX styles for layout customization.',
   },
 };

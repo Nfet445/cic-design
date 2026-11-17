@@ -7,7 +7,8 @@ export const docs = {
   subComponentOf: 'SideNav',
   displayName: 'Side Nav Heading',
   isHiddenFromOverview: true,
-  description: 'Product/suite/account heading with smart interaction boundary logic for links and a menu popover.',
+  description:
+    'Product/suite/account heading with smart interaction boundary logic for links and a menu popover.',
   playground: {
     defaults: {heading: 'Acme Console', subheading: 'Production'},
   },
@@ -75,7 +76,8 @@ export const docs = {
     {
       name: 'headerEndContent',
       type: 'ReactNode',
-      description: 'Content rendered at the trailing edge of the heading row, between text and chevron. Useful for badges, status indicators, or compact action buttons. Hidden when collapsed.',
+      description:
+        'Content rendered at the trailing edge of the heading row, between text and chevron. Useful for badges, status indicators, or compact action buttons. Hidden when collapsed.',
       slotElements: [
         {
           __element: 'Button',
@@ -94,7 +96,8 @@ export const docsZh = {
   name: 'SideNavHeading',
   isHiddenFromOverview: true,
   displayName: 'Side Nav Heading',
-  description: '产品/套件/账户头部，具有智能交互边界逻辑，支持链接和菜单弹出框。',
+  description:
+    '产品/套件/账户头部，具有智能交互边界逻辑，支持链接和菜单弹出框。',
   props: [
     {
       name: 'heading',
@@ -140,7 +143,8 @@ export const docsZh = {
     {
       name: 'headerEndContent',
       type: 'ReactNode',
-      description: '在标题行尾部渲染的内容，位于文本和箭头之间。适用于徽章、状态指示器或紧凑操作按钮。折叠时隐藏。',
+      description:
+        '在标题行尾部渲染的内容，位于文本和箭头之间。适用于徽章、状态指示器或紧凑操作按钮。折叠时隐藏。',
     },
   ],
 };
@@ -149,7 +153,8 @@ export const docsDense = {
   name: 'SideNavHeading',
   isHiddenFromOverview: true,
   displayName: 'Side Nav Heading',
-  description: 'Product/suite/account heading w/ smart interaction boundary logic for links + menu popover.',
+  description:
+    'Product/suite/account heading w/ smart interaction boundary logic for links + menu popover.',
   propDescriptions: {
     heading: 'Product/app name.',
     icon: 'Product/app icon.',
@@ -159,6 +164,7 @@ export const docsDense = {
     subheading: 'Text below heading.',
     subheadingHref: 'Link for subheading.',
     menu: 'Menu content rendered inside popover.',
-    headerEndContent: 'Content at trailing edge of heading row. For badges, status indicators, action buttons. Hidden when collapsed.',
+    headerEndContent:
+      'Content at trailing edge of heading row. For badges, status indicators, action buttons. Hidden when collapsed.',
   },
 };
