@@ -68,12 +68,7 @@ import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import type {DialogPurpose} from '../Dialog';
 import type {SpacingStep} from '../utils/types';
-import {
-  colorVars,
-  durationVars,
-  easeVars,
-  spacingVars,
-} from '../theme/tokens.stylex';
+import {colorVars, durationVars, easeVars} from '../theme/tokens.stylex';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {useScrollLock} from '../hooks/useScrollLock';
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -131,6 +126,7 @@ import {
 export type {BottomSheetHeight, BottomSheetSnapPoint} from './BottomSheetPanel';
 import type {BottomSheetHeight, BottomSheetSnapPoint} from './BottomSheetPanel';
 import {BottomSheetEscapeContext} from './bottomSheetEscape';
+import {bottomSheetStackMotionStyles} from './bottomSheetStackMotion.stylex';
 import {layerClickBoundary} from '../Layer/layerClickBoundary';
 
 const styles = stylex.create({
@@ -235,36 +231,14 @@ const styles = stylex.create({
   positionerTop: {
     zIndex: 1,
   },
-  // A sheet in a stack recedes and returns with CSS motion only; the style
-  // stays on while another sheet is presented so the return animates too.
-  // On a standalone sheet these apply to the dialog itself (its panel's
-  // positioner); on a switcher step, to the step's positioner.
-  positionerStackMotion: {
-    transformOrigin: '50% 0',
-    transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-medium'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    '@media (prefers-reduced-motion: reduce)': {
-      transitionDuration: '0.01s',
-    },
-  },
-  // Covered sheets recede behind the top sheet: the nearest shrinks a step
-  // about its top edge and lifts, the next shrinks a second step; deeper
-  // sheets share that second step. Only sheets count toward the depth.
-  positionerReceded1: {
-    transform: `translateY(calc(-1 * ${spacingVars['--spacing-2']})) scale(0.96)`,
-  },
-  positionerReceded2: {
-    transform: `translateY(calc(-2 * ${spacingVars['--spacing-2']})) scale(0.92)`,
-  },
 });
 
 /** Positioner styles for a sheet's place in the stack; the switcher items share them. */
 function stackPositionerStyles(view: BottomSheetStackView) {
   return [
-    view.isStacked && styles.positionerStackMotion,
-    view.depth === 1 && styles.positionerReceded1,
-    view.depth >= 2 && styles.positionerReceded2,
+    view.isStacked && bottomSheetStackMotionStyles.motion,
+    view.depth === 1 && bottomSheetStackMotionStyles.receded1,
+    view.depth >= 2 && bottomSheetStackMotionStyles.receded2,
   ] as const;
 }
 

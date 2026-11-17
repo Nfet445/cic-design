@@ -34,6 +34,7 @@ import {subscribeModalOutlets} from '../Layer/modalOutlet';
 import * as BottomSheetModule from './index';
 import {BottomSheet} from './BottomSheet';
 import {BottomSheetSwitcher} from './BottomSheetSwitcher';
+import {bottomSheetStackRecedeContract} from './bottomSheetStackMotion.stylex';
 import {
   BOTTOM_SHEET_STACK_STATE_FOR_TESTS,
   getBottomSheetStackForTests,
@@ -139,14 +140,6 @@ function getPanel(dialog: HTMLElement): HTMLElement {
     throw new Error('sheet panel not found');
   }
   return panel;
-}
-
-function getPositioner(dialog: HTMLElement): HTMLElement {
-  const positioner = getPanel(dialog).parentElement;
-  if (positioner == null) {
-    throw new Error('positioner not found');
-  }
-  return positioner;
 }
 
 function getHandle(dialog: HTMLElement): HTMLElement {
@@ -438,7 +431,6 @@ describe('R1 no new public API', () => {
     expect(dialog).not.toHaveAttribute('data-sheet-stack');
     expect(dialog).not.toHaveAttribute('data-sheet-stack-depth');
     expect(scrim(dialog)).toBe('1');
-    expect(getComputedStyle(getPositioner(dialog)).transform).toBe('');
     expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalledTimes(1);
     expect(getPanel(dialog)).toHaveFocus();
 
@@ -620,12 +612,6 @@ describe('R2 order is open order', () => {
     expect(switcherDialog).toHaveAttribute('data-sheet-stack-depth', '1');
     expect(switcherDialog).toHaveAttribute('inert');
     expect(switcherDialog).toHaveAttribute('aria-hidden', 'true');
-    // The step's positioner recedes with the switcher.
-    for (const positioner of Array.from(
-      switcherDialog.querySelectorAll<HTMLElement>('.astryx-bottom-sheet'),
-    ).map(panel => panel.parentElement!)) {
-      expect(getComputedStyle(positioner).transform).toContain('scale(.96)');
-    }
     // One scrim: A, the bottom sheet, owns it; the step and C are clear.
     expect(scrim(getDialog('A'))).toBe('1');
     expect(scrim(switcherDialog)).toBe('0');
@@ -827,13 +813,7 @@ describe('R3 same-update opens (deep link)', () => {
     expect(getDialog('A')).toHaveAttribute('data-sheet-stack-depth', '2');
     expect(getDialog('B')).toHaveAttribute('data-sheet-stack-depth', '1');
     expect(getDialog('C')).toHaveAttribute('data-sheet-stack', 'top');
-    expect(getComputedStyle(getPositioner(getDialog('A'))).transform).toContain(
-      'scale(.92)',
-    );
-    expect(getComputedStyle(getPositioner(getDialog('B'))).transform).toContain(
-      'scale(.96)',
-    );
-    expect(getComputedStyle(getPositioner(getDialog('C'))).transform).toBe('');
+    expect(getDialog('C')).toHaveAttribute('data-sheet-stack', 'top');
     expect(scrim(getDialog('A'))).toBe('1');
     expect(scrim(getDialog('B'))).toBe('0');
     expect(scrim(getDialog('C'))).toBe('0');
@@ -950,22 +930,19 @@ describe('R4 covered sheets', () => {
       );
     }
     render(<Four />);
-    const transform = (label: string) =>
-      getComputedStyle(getPositioner(getDialog(label))).transform;
     expect(getDialog('A')).toHaveAttribute('data-sheet-stack-depth', '3');
-    expect(transform('A')).toBe(
-      'translateY(calc(-2 * var(--spacing-2))) scale(.92)',
+    expect(getDialog('B')).toHaveAttribute('data-sheet-stack-depth', '2');
+    expect(getDialog('C')).toHaveAttribute('data-sheet-stack-depth', '1');
+    expect(getDialog('D')).not.toHaveAttribute('data-sheet-stack-depth');
+  });
+
+  it('recede wins over the positioner travel: the exception carries both steps', () => {
+    expect(bottomSheetStackRecedeContract.depth1).toBe(
+      'translateY(calc(-1 * var(--spacing-2))) scale(0.96)',
     );
-    expect(transform('B')).toBe(
-      'translateY(calc(-2 * var(--spacing-2))) scale(.92)',
+    expect(bottomSheetStackRecedeContract.depth2).toBe(
+      'translateY(calc(-2 * var(--spacing-2))) scale(0.92)',
     );
-    expect(transform('C')).toBe(
-      'translateY(calc(-1 * var(--spacing-2))) scale(.96)',
-    );
-    expect(transform('D')).toBe('');
-    expect(
-      getComputedStyle(getPositioner(getDialog('C'))).transformOrigin,
-    ).toBe('50% 0');
   });
 
   it('only sheets count: a Dialog over a sheet does not make it recede', () => {
@@ -990,9 +967,7 @@ describe('R4 covered sheets', () => {
     expect(getDialog('Over')).toHaveAttribute('open');
     expect(stackSummary()).toEqual(['Sheet:top:0']);
     expect(getDialog('Sheet')).not.toHaveAttribute('data-sheet-stack');
-    expect(getComputedStyle(getPositioner(getDialog('Sheet'))).transform).toBe(
-      '',
-    );
+    expect(getDialog('Sheet')).not.toHaveAttribute('data-sheet-stack-depth');
   });
 });
 
@@ -2380,10 +2355,8 @@ describe('R11 non-modal sheets', () => {
     expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalledTimes(1);
     expect(stackSummary()).toEqual(['Modal:top:0']);
     expect(getDialog('Modal')).not.toHaveAttribute('data-sheet-stack');
+    expect(getDialog('Modal')).not.toHaveAttribute('data-sheet-stack-depth');
     expect(getDialog('NonModal')).not.toHaveAttribute('data-sheet-stack');
-    expect(getComputedStyle(getPositioner(getDialog('Modal'))).transform).toBe(
-      '',
-    );
   });
 
   it('a hasScrim={false} sheet rendered inside an open modal sheet enters the top layer', () => {
@@ -2742,9 +2715,7 @@ describe('R11 non-modal sheets', () => {
     expect(stackSummary()).toEqual(['Modal:top:0']);
     expect(getDialog('NonModal')).not.toHaveAttribute('data-sheet-stack');
     expect(getDialog('NonModal')).not.toHaveAttribute('inert');
-    expect(
-      getComputedStyle(getPositioner(getDialog('NonModal'))).transform,
-    ).toBe('');
+    expect(getDialog('NonModal')).not.toHaveAttribute('data-sheet-stack-depth');
   });
 });
 
@@ -3160,9 +3131,6 @@ describe('R14 a switcher flow stacked with standalone sheets', () => {
     expect(stepDialog).toHaveAttribute('data-sheet-stack-depth', '1');
     expect(stepDialog).toHaveAttribute('inert');
     expect(stepDialog).toHaveAttribute('aria-hidden', 'true');
-    expect(
-      getComputedStyle(getPanel(stepDialog).parentElement!).transform,
-    ).toContain('scale(.96)');
 
     // Escape reaches C, the top sheet; the covered flow stands down.
     act(() => {
@@ -3217,8 +3185,7 @@ describe('R12 existing behaviour', () => {
     expect(a).not.toHaveAttribute('data-sheet-stack');
     expect(a).not.toHaveAttribute('inert');
     expect(scrim(a)).toBe('1');
-    expect(getComputedStyle(getPositioner(a)).transform).toBe('');
-    expect(classes(getPositioner(a))).not.toContain('positionerStackMotion');
+    expect(a).not.toHaveAttribute('data-sheet-stack-depth');
     act(() => {
       pressEscape();
     });
