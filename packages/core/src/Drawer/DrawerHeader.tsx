@@ -26,9 +26,13 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
-import {sizeVars, spacingVars, typeScaleVars} from '../theme/tokens.stylex';
+import {
+  layerHeaderActionsClassName,
+  layerHeaderContainerClassName,
+  layerHeaderSlotClassName,
+  layerHeaderTitleBlockClassName,
+} from '../Layer/layerHeaderClasses';
 import {Button} from '../Button';
 import {Heading} from '../Heading';
 import {Icon} from '../Icon';
@@ -42,38 +46,6 @@ import {
 import english from '../i18n/generated-english/Drawer/DrawerHeader.generated';
 
 registerEnglishFallback(english);
-
-const styles = stylex.create({
-  container: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-3'],
-  },
-  // Compensate for the medium icon button's visual padding on the end slot.
-  endBlockEdgeCompensation: {
-    marginBlock: `calc(-1 * ${spacingVars['--spacing-2']})`,
-  },
-  endInlineEdgeCompensation: {
-    marginInlineEnd: `calc(-1 * ${spacingVars['--spacing-2']})`,
-  },
-  titleWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0'],
-    flex: 1,
-    minWidth: 0,
-    // Align the title's center with the close button's center, as
-    // DialogHeader does.
-    marginBlock: `calc(${sizeVars['--size-element-md']} / 2 - ${spacingVars['--spacing-2']} - ${typeScaleVars['--text-heading-2-size']} * ${typeScaleVars['--text-heading-2-leading']} / 2)`,
-  },
-  actions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    flexShrink: 0,
-  },
-});
 
 export interface DrawerHeaderProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element */
@@ -177,24 +149,21 @@ export function DrawerHeader({
       style={style}
       {...rest}>
       <div
-        {...mergeProps(
-          themeProps('drawer-header'),
-          stylex.props(styles.container),
-        )}>
+        {...mergeProps(themeProps('drawer-header'), {
+          className: layerHeaderContainerClassName,
+        })}>
         {hasStartContent && (
           <div
-            {...mergeProps(
-              themeProps('drawer-header-start-content'),
-              stylex.props(styles.actions),
-            )}>
+            {...mergeProps(themeProps('drawer-header-start-content'), {
+              className: layerHeaderSlotClassName,
+            })}>
             {startContent}
           </div>
         )}
         <div
-          {...mergeProps(
-            themeProps('drawer-header-title-block'),
-            stylex.props(styles.titleWrapper),
-          )}>
+          {...mergeProps(themeProps('drawer-header-title-block'), {
+            className: layerHeaderTitleBlockClassName,
+          })}>
           <Heading level={2}>{title}</Heading>
           {hasSubtitle && (
             <Text type="body" size="sm" color="secondary">
@@ -204,14 +173,12 @@ export function DrawerHeader({
         </div>
         {(hasEndContent || onOpenChange != null) && (
           <div
-            {...mergeProps(
-              themeProps('drawer-header-end-content'),
-              stylex.props(
-                styles.actions,
-                shouldCompensateEndBlock && styles.endBlockEdgeCompensation,
-                shouldCompensateEndInline && styles.endInlineEdgeCompensation,
-              ),
-            )}>
+            {...mergeProps(themeProps('drawer-header-end-content'), {
+              className: layerHeaderActionsClassName({
+                hasBlockCompensation: shouldCompensateEndBlock,
+                hasInlineCompensation: shouldCompensateEndInline,
+              }),
+            })}>
             {endContent}
             {onOpenChange && (
               <Button

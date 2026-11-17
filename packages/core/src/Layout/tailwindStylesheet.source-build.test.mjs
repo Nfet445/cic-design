@@ -38,11 +38,11 @@ import {
   dialogRootClassName,
 } from '../Dialog/dialogClasses';
 import {
-  dialogHeaderActionsClassName,
-  dialogHeaderContainerClassName,
-  dialogHeaderSlotClassName,
-  dialogHeaderTitleBlockClassName,
-} from '../Dialog/dialogHeaderClasses';
+  layerHeaderActionsClassName,
+  layerHeaderContainerClassName,
+  layerHeaderSlotClassName,
+  layerHeaderTitleBlockClassName,
+} from '../Layer/layerHeaderClasses';
 import {
   fieldAttachedStatusLayerClassName,
   fieldClassName,
@@ -450,13 +450,13 @@ function familyClassNames() {
     add(dialogInlineClassName({isFullscreen}));
   }
   add(dialogInnerClassName);
-  add(dialogHeaderContainerClassName);
-  add(dialogHeaderSlotClassName);
-  add(dialogHeaderTitleBlockClassName);
+  add(layerHeaderContainerClassName);
+  add(layerHeaderSlotClassName);
+  add(layerHeaderTitleBlockClassName);
   for (const hasBlockCompensation of [false, true]) {
     for (const hasInlineCompensation of [false, true]) {
       add(
-        dialogHeaderActionsClassName({
+        layerHeaderActionsClassName({
           hasBlockCompensation,
           hasInlineCompensation,
         }),

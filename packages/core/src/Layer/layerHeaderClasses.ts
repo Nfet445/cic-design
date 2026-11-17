@@ -1,16 +1,18 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 /**
- * @file dialogHeaderClasses.ts
- * @input Whether the end slot carries a close action, and on which axes it is
+ * @file layerHeaderClasses.ts
+ * @input Whether a slot carries a close action, and on which axes it is
  *   edge-compensated
- * @output Utility class strings for the dialog header row, its title block, and
- *   its end slot
- * @position Dialog style primitives; scanned by the Tailwind build
+ * @output Utility class strings for a layer header row, its title block, and
+ *   its slots
+ * @position Layer style primitives; scanned by the Tailwind build
  *
- * The title block's block margin centres the title on the close button: the
- * button's midpoint is half a medium element, the title's is half its own line
- * box, and the header padding already moves both by one spacing step.
+ * Both headers of a layer — the dialog's and the drawer's — lay out the same
+ * row: a start slot, a title block that centres on the close button, and an end
+ * slot. The title block's block margin centres it: the button's midpoint is
+ * half a medium element, the title's is half its own line box, and the header
+ * padding already moves both by one spacing step.
  */
 
 import {tw} from '../utils/tw';
@@ -22,12 +24,7 @@ const CONTAINER = tw(
   'gap-[var(--spacing-3)]',
 );
 
-const ACTIONS = tw(
-  'flex',
-  'items-center',
-  'gap-[var(--spacing-2)]',
-  'shrink-0',
-);
+const SLOT = tw('flex', 'items-center', 'gap-[var(--spacing-2)]', 'shrink-0');
 
 /** Pulls the end slot back against the icon button's visual padding. */
 const END_BLOCK_COMPENSATION = '[margin-block:calc(-1*var(--spacing-2))]';
@@ -45,10 +42,13 @@ const TITLE_BLOCK = tw(
 );
 
 /** The header row. */
-export const dialogHeaderContainerClassName = CONTAINER;
+export const layerHeaderContainerClassName = CONTAINER;
 
-/** A start or end slot of the header row. */
-export function dialogHeaderActionsClassName({
+/** A slot of the header row that needs neither edge compensation. */
+export const layerHeaderSlotClassName = SLOT;
+
+/** The end slot, pulled back against the icon button's visual padding. */
+export function layerHeaderActionsClassName({
   hasBlockCompensation,
   hasInlineCompensation,
 }: {
@@ -56,14 +56,11 @@ export function dialogHeaderActionsClassName({
   hasInlineCompensation: boolean;
 }): string {
   return tw(
-    ACTIONS,
+    SLOT,
     hasBlockCompensation && END_BLOCK_COMPENSATION,
     hasInlineCompensation && END_INLINE_COMPENSATION,
   );
 }
 
 /** The title block, which also holds the optional subtitle. */
-export const dialogHeaderTitleBlockClassName = TITLE_BLOCK;
-
-/** The class set of a header slot that is neither edge-compensated nor a title. */
-export const dialogHeaderSlotClassName = ACTIONS;
+export const layerHeaderTitleBlockClassName = TITLE_BLOCK;
