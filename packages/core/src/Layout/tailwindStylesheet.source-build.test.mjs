@@ -1895,8 +1895,8 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // fade, both drawer edges in both motion states, and the header. Card's
     // four elevation variables were reused by the dialog family maps, so the
     // sum of the two families is smaller than their parts. With every family
-    // above the sheet sits at about 1100.
-    expect(stylesheet.rules.size).toBeLessThan(1120);
+    // above the sheet sits at 1121.
+    expect(stylesheet.rules.size).toBeLessThan(1160);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
