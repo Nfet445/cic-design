@@ -38,3 +38,27 @@
 @import '../../core/src/tailwind-theme.css';
 
 @source '../src/**/*Classes.ts';
+
+/*
+ * Keyframes the class maps name. The build scans `*Classes.ts` for class
+ * names only, so an animation written there has no rule unless this file
+ * declares it. Each name starts with `astryx` for the same reason core's do.
+ */
+@keyframes astryxChatTypingIndicatorBounce {
+  0% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+}

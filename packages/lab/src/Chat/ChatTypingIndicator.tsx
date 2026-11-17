@@ -4,11 +4,12 @@
 
 /**
  * @file ChatTypingIndicator.tsx
- * @input Uses React, i18n (useTranslator/useLocale), StyleX (keyframes), theme tokens
+ * @input Uses React, i18n (useTranslator/useLocale), the dot class map
  * @output Exports ChatTypingIndicator component and ChatTypingIndicatorProps
  * @position Animated "X is typing…" hint above a chat composer
  *
- * Three staggered bouncing dots (stylex.keyframes, reduced-motion safe)
+ * Three staggered bouncing dots (an `astryx*` keyframe in the package's
+ * Tailwind input, reduced-motion safe)
  * with a grammar-aware label: "Ana is typing…", "Ana and Ben are typing…",
  * or "Ana and 2 others are typing…". The label is announced once per change
  * through the shared polite channel (`useAnnounce`), or left to an enclosing
@@ -23,20 +24,21 @@
 
 import {useEffect, useMemo, useRef} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  typographyVars,
-  typeScaleVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {mergeProps, mergeRefs} from '@astryxdesign/core/utils';
 import {useAnnounce} from '@astryxdesign/core/hooks';
 import {themeProps} from '@astryxdesign/core/utils';
 import {useLocale, useTranslator} from '@astryxdesign/core/i18n';
 import type {TranslatorFn} from '@astryxdesign/core/i18n';
+import {tw} from '../tw';
+import {
+  chatTypingIndicatorDotClassName,
+  chatTypingIndicatorDotsClassName,
+  chatTypingIndicatorLabelClassName,
+  chatTypingIndicatorRootClassName,
+  chatTypingIndicatorSecondDotClassName,
+  chatTypingIndicatorThirdDotClassName,
+} from './chatTypingIndicatorClasses';
 
 export interface ChatTypingIndicatorProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element */
@@ -52,56 +54,8 @@ export interface ChatTypingIndicatorProps extends BaseProps<HTMLDivElement> {
 }
 
 // =============================================================================
-// Styles
+// Label
 // =============================================================================
-
-const bounceKeyframes = stylex.keyframes({
-  '0%': {transform: 'translateY(0)', opacity: 0.35},
-  '30%': {transform: 'translateY(-3px)', opacity: 1},
-  '60%': {transform: 'translateY(0)', opacity: 0.35},
-  '100%': {transform: 'translateY(0)', opacity: 0.35},
-});
-
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    minHeight: 20,
-  },
-  dots: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: 'var(--astryx-chat-typing-indicator-dots-column-width, auto)',
-    gap: spacingVars['--spacing-0-5'],
-  },
-  dot: {
-    width: 5,
-    height: 5,
-    borderRadius: radiusVars['--radius-full'],
-    backgroundColor: colorVars['--color-icon-secondary'],
-    animationName: bounceKeyframes,
-    animationDuration: durationVars['--duration-slow'],
-    animationIterationCount: 'infinite',
-    animationTimingFunction: 'ease-in-out',
-    '@media (prefers-reduced-motion: reduce)': {
-      animationName: 'none',
-    },
-  },
-  dot2: {
-    animationDelay: '160ms',
-  },
-  dot3: {
-    animationDelay: '320ms',
-  },
-  label: {
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    color: colorVars['--color-text-secondary'],
-  },
-});
 
 /**
  * Builds the status sentence for the people currently typing.
@@ -206,16 +160,28 @@ export function ChatTypingIndicator({
       data-testid={testId}
       {...mergeProps(
         themeProps('chat-typing-indicator'),
-        stylex.props(styles.root, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(chatTypingIndicatorRootClassName, className),
         styleProp,
       )}>
-      <span aria-hidden="true" {...stylex.props(styles.dots)}>
-        <span {...stylex.props(styles.dot)} />
-        <span {...stylex.props(styles.dot, styles.dot2)} />
-        <span {...stylex.props(styles.dot, styles.dot3)} />
+      <span aria-hidden="true" className={chatTypingIndicatorDotsClassName}>
+        <span className={chatTypingIndicatorDotClassName} />
+        <span
+          className={tw(
+            chatTypingIndicatorDotClassName,
+            chatTypingIndicatorSecondDotClassName,
+          )}
+        />
+        <span
+          className={tw(
+            chatTypingIndicatorDotClassName,
+            chatTypingIndicatorThirdDotClassName,
+          )}
+        />
       </span>
-      {label != null && <span {...stylex.props(styles.label)}>{label}</span>}
+      {label != null && (
+        <span className={chatTypingIndicatorLabelClassName}>{label}</span>
+      )}
     </div>
   );
 }

@@ -16,8 +16,10 @@ import {fileURLToPath} from 'node:url';
 
 import {buildTailwindStylesheet} from '../../build/src/tailwind-stylesheet.mjs';
 import {describeTailwindStylesheet} from '../../core/src/__tests__/classNameAssertions';
+import * as chatTypingIndicatorClasses from './Chat/chatTypingIndicatorClasses';
 import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
+import * as loadingMessageClasses from './loadingMessageClasses';
 import * as transferListClasses from './TransferList/transferListClasses';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -39,8 +41,10 @@ function labClassNames() {
     }
   };
   for (const map of [
+    chatTypingIndicatorClasses,
     chatUnreadDividerClasses,
     listInputClasses,
+    loadingMessageClasses,
     transferListClasses,
   ]) {
     for (const [name, value] of Object.entries(map)) {
