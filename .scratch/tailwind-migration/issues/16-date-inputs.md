@@ -63,4 +63,3 @@ control's own utility has to key off an attribute the component sets
 utilities in `astryx-base` are ordered by the sheet, not by the class attribute;
 and `Wheel`'s pane block size is a geometry constant, so the row reads
 `--astryx-time-wheels-block-size` and the element writes it inline.
-
