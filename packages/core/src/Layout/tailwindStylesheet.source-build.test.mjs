@@ -125,6 +125,11 @@ import {
 } from '../Field/fieldLabelClasses';
 import {inputClearButtonClassName} from '../Field/inputClearButtonClasses';
 import {
+  dateInputControlClassName,
+  dateInputSizeClassName,
+  dateInputToggleClassName,
+} from '../DateInput/dateInputClasses';
+import {
   fileInputBoxClassName,
   fileInputHiddenInputClassName,
   fileInputTextClassName,
@@ -1017,6 +1022,17 @@ function familyClassNames() {
   }
   // The date range field: the closed trigger, its calendar button, the
   // popover body and the preset column.
+  // The date field: its calendar toggle, the typed control and the wrapper's
+  // size.
+  for (const size of ['sm', 'md', 'lg']) {
+    add(dateInputSizeClassName({size}));
+  }
+  for (const isDisabled of [false, true]) {
+    add(dateInputToggleClassName({isDisabled}));
+    for (const isInvalid of [false, true]) {
+      add(dateInputControlClassName({isDisabled, isInvalid}));
+    }
+  }
   for (const size of ['sm', 'md', 'lg']) {
     add(dateRangeInputSizeClassName({size}));
     add(timeInputSizeClassName({size}));

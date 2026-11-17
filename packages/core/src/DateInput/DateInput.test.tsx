@@ -28,6 +28,8 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {getButton, queryButton} from '../__tests__/fastRoleQueries';
+import {classesOf} from '../__tests__/classNameAssertions';
+import {dateInputControlClassName} from './dateInputClasses';
 import {
   DateInput,
   type DateInputEntryError,
@@ -3239,6 +3241,17 @@ describe('DateInput rejected entries', () => {
   });
 });
 
+/**
+ * The rejected arm is a class the control's own map computes, so an assertion
+ * names that class instead of a StyleX debug name.
+ */
+const rejectedArmClass = dateInputControlClassName({
+  isDisabled: false,
+  isInvalid: true,
+})
+  .split(' ')
+  .find(name => name.includes('aria-invalid'))!;
+
 describe('DateInput entryErrorBehavior', () => {
   const INVALID = 'Invalid date';
   const NONEXISTENT = 'Enter a real date';
@@ -3259,7 +3272,9 @@ describe('DateInput entryErrorBehavior', () => {
       status:
         container.querySelector('.astryx-field-status')?.textContent ?? '',
       isInvalid: input.getAttribute('aria-invalid') === 'true',
-      isStyledInvalid: /\.inputInvalid\b/.test(input.className),
+      // The rejected arm is a class the control's own map computes, so the
+      // assertion names that class instead of a StyleX debug name.
+      isStyledInvalid: classesOf(input).includes(rejectedArmClass),
     };
   }
 

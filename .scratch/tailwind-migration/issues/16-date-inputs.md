@@ -63,3 +63,42 @@ control's own utility has to key off an attribute the component sets
 utilities in `astryx-base` are ordered by the sheet, not by the class attribute;
 and `Wheel`'s pane block size is a geometry constant, so the row reads
 `--astryx-time-wheels-block-size` and the element writes it inline.
+
+### Session 2 (branch `ticket/16-date-inputs`, merged with the POC)
+
+Landed: `DateInput/DateInput.tsx` keeps no `stylex.create`.
+`dateInputClasses.ts` gained `dateInputToggleClassName`,
+`dateInputControlClassName`, `dateInputSizeClassName` and the `DateInputSize`
+union; the component spreads only `focusOutlineStyles.focusVisible` (a shared
+StyleX ring it does not own) and joins its class into the same `className`,
+because a lone `{...stylex.props()}` followed by `className` trips
+`@astryx/no-classname-clobber`. `DateInput.test.tsx` reads the rejected arm
+through `classesOf`; `inputFontFloor.test.ts` now lists
+`DateInput/dateInputClasses.ts` in place of `DateInput/DateInput.tsx`. The sheet
+test's coverage block gained the toggle, control and size arms; the sheet stayed
+under the existing 1020 budget.
+
+Left, with the traps that will bite the next worker:
+
+- `DateInput/`: `MonthScroller.tsx`, `NativeDateField.tsx`, `TouchDateField.tsx`,
+  `Wheel.tsx` — 7 maps. `DateInputTouch.test.tsx` reads their source text
+  (`const styles = stylex.create(`, `const sizeStyles = stylex.create(`,
+  `blockSize: dateInputTouchGeometry.paneBlockSize` twice, the `band:` object,
+  the `transitionTimingFunction`/`transitionDuration` counts), so the
+  assertions move before the maps do. The `sizeStyles` equality between
+  `TouchDateField.tsx` and `NativeDateField.tsx` needs both files to move in one
+  commit.
+- `DateTimeInput/`: `DateTimeInput.tsx` (3 creates) and `TouchDateTimeField.tsx`
+  (2). The invalid arm at `styles.inputInvalid` cannot move on its own: the
+  element's `color` is declared by the leftover unlayered `styles.input`, and an
+  unlayered StyleX rule beats a class in `astryx-base` at any order. `input`,
+  `inputDisabled` and `inputInvalid` move together, the way
+  `timeInputClassName` already does. `DateTimeInput.test.tsx` keeps
+  `/\.inputInvalid\b/` beside `nativePickerSegmentInvalidClassName` for the same
+  reason.
+- `NativeDateField.test.tsx` keeps its debug-name regex: that surface renders
+  `NativeDateField`'s own map, not `dateInputControlClassName`.
+- Pre-existing, not this ticket: `inputFontFloor.test.ts` → "gates every floored
+  text control to iOS alone" fails on `../../richtext/src/RichTextEditor.tsx` at
+  HEAD (reproduced with this ticket's diff stashed); it arrived with the
+  rich-text merge.
