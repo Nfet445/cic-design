@@ -154,7 +154,7 @@ Traps found this session:
   the same 6, but an interpolated class would emit nothing.
 - The day button and the puck need no `mergeProps` except where the shared focus
   ring joins a class: `mergeProps(stylex.props(focusOutlineStyles.focusVisible),
-  {className})` is the sanctioned shape and passes `no-classname-clobber`.
+{className})` is the sanctioned shape and passes `no-classname-clobber`.
 
 Left, in order:
 
@@ -182,3 +182,37 @@ rebuilds clean at 162.7 kB; the sheet test passes with no ceiling change;
 grid shows when Intl disagrees" failure, which fails without this diff. `derivedVarRegistry.test.ts` still fails
 `TreeList: all source vars are in doc file`, which arrived with the ticket-20
 merge and is not this ticket's.
+
+### Session 4 (branch `ticket/16-date-inputs`, merged with the POC again)
+
+Landed: both closed fields' `sizeStyles` maps are gone — `NativeDateField.tsx`
+and `TouchDateField.tsx` now join `tw(dateInputSizeClassName({size}),
+controlClassName)` in the wrapper's `mergeProps` class slot, the third argument
+the helper accepts. The parity test in `DateInputTouch.test.tsx` no longer
+compares two source texts; it asserts both files read the one shared call, so
+the two surfaces cannot drift apart. `DateInput` is 798 tests green, the wider
+set is 1685/1686 with the pre-existing `Calendar.calendarSystems.test.tsx`
+failure, the sheet rebuilds at 166.5 kB, and eslint reports only the two
+pre-existing findings in `DateInput/__tests__/WheelContrast.a11y.chromium.spec.ts`
+and `dateInputClasses.ts`. The changeset still names the same patch.
+
+Read this before the next window: the remaining five files are map-sized, not
+edit-sized. `TouchDateField.tsx`'s `styles` map is 373 lines and around a dozen
+assertions in `DateInputTouch.test.tsx` read it as source text
+(`monthArrow:`, `monthArrowIcon:`, `titleChevron:`, `panelOverlay`,
+`panelBeneath`, `weekdays`, `monthArrows`, the `styles.panelBeneath,` /
+`styles.panelOverlay,` counts, the six `transitionDuration: SWAP_DURATION`
+occurrences, the one eased and four linear timing functions, `width="100%"`
+twice, and the section insets). Each needs a class to assert against before the
+map moves, exactly as the month scroller did; budget one window for
+`TouchDateField.tsx` alone. `Wheel.tsx` carries its own keyframes
+(`tip`, `tipAndDim`, `dim`, `fade`) — check whether the sheet has a
+keyframes home for a class-based animation before starting it, because four
+`stylex.keyframes` calls do not translate to utilities. `NativeDateField.tsx`
+`styles` is the mechanical one (14 objects, no cross-file test), and
+`Calendar/styles.ts` stays last.
+
+Still open, in order: `NativeDateField.tsx` `styles`, `TouchDateField.tsx`
+`styles`, `Wheel.tsx`, `DateTimeInput/TouchDateTimeField.tsx`,
+`DateTimeInput/DateTimeInput.tsx` (+ the `/\.inputInvalid\b/` assertion), then
+`Calendar/styles.ts`.
