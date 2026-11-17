@@ -1,6 +1,6 @@
 # menus
 
-Status: done except the nav heading menus and the option menus — every menu row, surface, sheet and sub-menu class is a Tailwind map; `NavHeadingMenu`, `NavHeadingMenuItem`, `Selector` and `MultiSelector` wait (see Result)
+Status: done
 Blocked by: 22
 Wave: 7
 Family: `family:action-groups`
@@ -458,3 +458,8 @@ sizes), `Selector/SelectorBottomSheet.tsx:24` (two keys),
 `MultiSelector/MultiSelector.tsx:154` (about 25 keys) and `:418` (three sizes).
 Every menu surface and row in `DropdownMenu/`, `ContextMenu/`, `MoreMenu/` and
 `NavMenu/` is a class map now.
+
+## Comments
+
+- 2026-11-17: closed. `DropdownMenu`, `ContextMenu`, `MoreMenu`, the option menus of `Selector` and `MultiSelector`, and `NavHeadingMenu`/`NavHeadingMenuItem` draw their paint from class maps; the family has no map left besides the survivors below.
+- Survivors: `packages/core/src/DropdownMenu/menuRowState.stylex.ts` keeps the row's `:focus`/`:active` fill and ring inset, because the row, `Item`'s overlays and the shared ring are all unlayered and a utility in `astryx-base` loses whatever the class order says; `packages/core/src/DropdownMenu/DropdownMenuSubMenu.tsx:152` keeps `triggerStyles.caret`, because `@astryx/no-style-only-wrapper` rejects a `className`-only wrapper; `packages/core/src/Selector/selectorPresentation.stylex.ts` keeps the focus-return reset, which writes three properties at once against the unlayered field base.

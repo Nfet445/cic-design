@@ -24,7 +24,6 @@ import {
   type ReactNode,
   type Ref,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {Field, type FieldContainerStyleProps} from '@astryxdesign/core/Field';
 import {
@@ -37,20 +36,12 @@ import {
   useFieldInputStyling,
   type SelectableCardInput,
 } from '@astryxdesign/core/internal/selectable-card';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {mergeProps, themeProps} from '@astryxdesign/core/utils';
-
-const styles = stylex.create({
-  group: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: spacingVars['--spacing-3'],
-  },
-  vertical: {
-    flexDirection: 'column',
-    flexWrap: 'nowrap',
-  },
-});
+import {tw} from '../tw';
+import {
+  selectableCardGroupClassName,
+  selectableCardGroupVerticalClassName,
+} from './selectableCardGroupClasses';
 
 // =============================================================================
 // Props
@@ -258,10 +249,13 @@ export function SelectableCardGroup(props: SelectableCardGroupProps) {
             orientation,
             selectionMode: isMultiple ? 'multiple' : 'single',
           }),
-          stylex.props(
-            styles.group,
-            orientation === 'vertical' && styles.vertical,
-          ),
+          {
+            className: tw(
+              selectableCardGroupClassName,
+              orientation === 'vertical' &&
+                selectableCardGroupVerticalClassName,
+            ),
+          },
         )}>
         <SelectableCardGroupContext.Provider value={context}>
           {children}

@@ -24,6 +24,10 @@
  * from a `.stylex.ts` file. A plain `export const` fails the build with
  * "a style value can only contain an array, string or number".
  *
+ * @deprecated The touch picker reads its geometry from
+ *   `dateInputClasses.ts` and the `--astryx-date-*` variables. This
+ *   module keeps the numbers and the derived values for the callers that
+ *   still read them, and it disappears when StyleX leaves the package.
  */
 
 import * as stylex from '@stylexjs/stylex';

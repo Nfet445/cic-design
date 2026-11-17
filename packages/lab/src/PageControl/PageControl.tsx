@@ -4,7 +4,7 @@
 
 /**
  * @file PageControl.tsx
- * @input React, StyleX, Core's theme tokens and translator, Core's internal
+ * @input React, the shared `tw` helper, Core's translator, Core's internal
  *   touch entry, pageControlTable.ts, pageControlModel.ts, PageControlTouch.ts
  * @output Exports PageControl: a row of page indicators that pages one step
  *   per tap and follows a scrubbing finger, like UIPageControl
@@ -32,7 +32,17 @@ import {
   mergeProps,
   mergeRefs,
 } from '@astryxdesign/core/utils';
-import {colorVars, focusVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {tw} from '../tw';
+import {
+  pageControlCroppedClassName,
+  pageControlIndicatorClassName,
+  pageControlPlatterHiddenClassName,
+  pageControlPlatterShownClassName,
+  pageControlRestingDotClassName,
+  pageControlRestingStripClassName,
+  pageControlRootClassName,
+  pageControlStripClassName,
+} from './pageControlClasses';
 import {
   animatorFor,
   isRtlElement,
@@ -91,70 +101,6 @@ export interface PageControlProps extends Omit<
   /** The slider element. */
   ref?: Ref<HTMLDivElement>;
 }
-
-const styles = stylex.create({
-  root: {
-    position: 'relative',
-    display: 'inline-block',
-    boxSizing: 'border-box',
-    flexShrink: 0,
-    verticalAlign: 'middle',
-    cursor: 'default',
-    userSelect: 'none',
-    WebkitUserSelect: 'none',
-    WebkitTapHighlightColor: 'transparent',
-    outlineStyle: {
-      default: 'none',
-      ':focus-visible': focusVars['--focus-outline-style'],
-    },
-    outlineWidth: focusVars['--focus-outline-width'],
-    outlineColor: focusVars['--focus-outline-color'],
-    outlineOffset: focusVars['--focus-outline-offset'],
-  },
-  cropped: {
-    overflow: 'hidden',
-  },
-  // The held look has no element of its own. The root's `::before` paints it.
-  platter: {
-    '::before': {
-      content: '""',
-      position: 'absolute',
-      inset: 0,
-      borderRadius: 9999,
-      backgroundColor: colorVars['--color-overlay-pressed'],
-      pointerEvents: 'none',
-      opacity: 0,
-      transition: 'var(--_page-control-platter-transition, none)',
-    },
-  },
-  platterShown: {
-    '::before': {
-      opacity: 1,
-    },
-  },
-  strip: {
-    position: 'absolute',
-    insetBlock: 0,
-    width: 0,
-    pointerEvents: 'none',
-  },
-  indicator: {
-    position: 'absolute',
-    borderRadius: '50%',
-    backgroundColor: colorVars['--color-text-primary'],
-  },
-  // The resting offset and sizes the markup carries (custom properties the
-  // render sets); the animator's inline translate and scale override them.
-  restingStrip: {
-    translate: {
-      default: 'calc(-1 * var(--_page-control-rest, 0px)) 0',
-      ':is([dir="rtl"] *)': 'var(--_page-control-rest, 0px) 0',
-    },
-  },
-  restingDot: {
-    scale: 'var(--_page-control-scale, 1)',
-  },
-});
 
 /** The page count: 0 for a total that is not a finite number. */
 function pageCountOf(totalPages: number): number {
@@ -371,7 +317,7 @@ function PageControlRow({
     : croppedRowOffset(pages, current);
   const stripStyle: CSSProperties & Record<`--${string}`, string> = {
     insetInlineStart: stripStart,
-    '--_page-control-rest': `${restOffset}px`,
+    '--astryx-page-control-rest': `${restOffset}px`,
   };
   const top = (PC.height - BOX) / 2;
 
@@ -382,20 +328,21 @@ function PageControlRow({
       {...htmlProps}
       ref={mergedRef}
       {...mergeProps(
-        stylex.props(
-          styles.root,
-          !isTouch && styles.cropped,
-          isTouch && styles.platter,
-          isTouch && touchHitAreaStyles.layer,
-          isTouch && isInteracting && styles.platterShown,
-          xstyle,
+        stylex.props(isTouch && touchHitAreaStyles.layer, xstyle),
+        tw(
+          pageControlRootClassName,
+          !isTouch && pageControlCroppedClassName,
+          isTouch &&
+            (isInteracting
+              ? pageControlPlatterShownClassName
+              : pageControlPlatterHiddenClassName),
+          className,
         ),
-        className,
         {
           ...style,
           width: layout.width,
           height: PC.height,
-          ['--_page-control-platter-transition' as string]: transition,
+          ['--astryx-page-control-platter-transition' as string]: transition,
         },
       )}
       role="slider"
@@ -414,7 +361,10 @@ function PageControlRow({
       <span
         ref={stripRef}
         aria-hidden="true"
-        {...stylex.props(styles.strip, styles.restingStrip)}
+        className={tw(
+          pageControlStripClassName,
+          pageControlRestingStripClassName,
+        )}
         style={stripStyle}>
         {Array.from({length: last - first}, (_, i) => {
           const page = first + i;
@@ -422,14 +372,17 @@ function PageControlRow({
             <span
               key={page}
               data-page={page}
-              {...stylex.props(styles.indicator, styles.restingDot)}
+              className={tw(
+                pageControlIndicatorClassName,
+                pageControlRestingDotClassName,
+              )}
               style={{
                 // The box overhangs its drawn indicator by half a pixel.
                 insetInlineStart: page * PITCH - (BOX - PC.indicatorSize) / 2,
                 top,
                 width: BOX,
                 height: BOX,
-                ['--_page-control-scale' as string]: String(
+                ['--astryx-page-control-scale' as string]: String(
                   isTouch
                     ? indicatorSize(pages, windowStart, page) / BOX
                     : DOT_SCALE,

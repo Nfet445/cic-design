@@ -14,6 +14,9 @@ import * as stylex from '@stylexjs/stylex';
  *
  * Owners apply it only while enabled, so disabled controls get no hover
  * feedback.
+ * @deprecated The scope becomes a `data-astryx-indicator-*` attribute the
+ *   owner sets, so an ancestor flips with a class variant. This module
+ *   disappears with StyleX.
  */
 export const indicatorScope: ReturnType<typeof stylex.defineMarker> =
   stylex.defineMarker();

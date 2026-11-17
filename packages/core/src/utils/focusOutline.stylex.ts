@@ -5,6 +5,9 @@
  * @input Uses StyleX and theme color tokens
  * @output Exports shared focus-outline prop builders
  * @position Internal utility for consistent keyboard focus outlines across core components
+ * @deprecated Internal seam: a ring needs `:focus-visible`, which a class
+ *   literal cannot express on its own, so this module stays until StyleX
+ *   leaves the package. It is not a public API.
  */
 
 // Every ring in core and lab comes from here, except Switch's: its condition
