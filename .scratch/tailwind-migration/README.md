@@ -107,6 +107,12 @@ written into the ticket.
   is deleted, not kept) and `theme/dynamicType.test.ts` together with
   `inputFontFloor.test.ts` (repoint to the map file). Otherwise the guard fails
   **after** the merge, in whichever ticket merges next.
+- A test that leans on jsdom computing a declaration from a class breaks the
+  moment the class arrives: `user.click` used to reject a disabled row because
+  the StyleX rule gave it `pointer-events: none`, and once
+  `Item/itemDisabledClassName` became a class the click went through. Assert
+  the class on the row (`classesOf(node).includes('pointer-events-none')`) and
+  that the handler stayed silent, never the computed value.
 - Concurrency: three windows is the safe number. Six made every suite four
   minutes long and killed the windows at their 1800 s limit with the work
   uncommitted.
