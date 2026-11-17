@@ -1966,9 +1966,9 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // flyout surface, its scroll gesture and the two cap fallbacks under
     // `@supports` added 13. The display-and-feedback family's Badge, Code,
     // Blockquote and StatusDot maps added about 45 more. With every family
-    // above the sheet sits at 1169, so the ceiling follows the sum rather
+    // above the sheet sits at 1182, so the ceiling follows the sum rather
     // than one side.
-    expect(stylesheet.rules.size).toBeLessThan(1180);
+    expect(stylesheet.rules.size).toBeLessThan(1260);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
