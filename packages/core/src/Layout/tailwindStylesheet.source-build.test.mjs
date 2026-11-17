@@ -2590,8 +2590,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // box, value anchors, track, fill clip and mover, filled bar, marks, thumbs
     // and text value added fifty-eight — the travel classes are arbitrary
     // properties with a container-unit calc each — and the sheet measures 1460
-    // with every family above registered.
-    expect(stylesheet.rules.size).toBeLessThan(1470);
+    // with every family above registered. Stepper's root, its track and the
+    // three step states added thirty-three more, so the sheet measures 1493
+    // here and the ceiling keeps its headroom above that number.
+    expect(stylesheet.rules.size).toBeLessThan(1530);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
