@@ -41,7 +41,7 @@ Remove `@stylexjs/*` from core, lab, charts and richtext, retire the StyleX half
 
 Measured on the integration branch after tickets 07, 35 and 51 landed:
 `grep -rn "stylex.create(" packages/core/src --include='*.ts' --include='*.tsx' | grep -v
-"\.test\.\|__tests__\|\.stylex\.ts\|\.doc\.mjs"` returns 49 sites in 33 files, and
+"\.test\.\|__tests__\|\.stylex\.ts\|\.doc\.mjs"` returns 31 sites in 24 files, and
 `packages/lab/src` holds 21 files with a map. Almost every remaining site is one of these four
 shapes, and each needs the seam its ticket names before it moves:
 
