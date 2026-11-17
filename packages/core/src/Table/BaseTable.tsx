@@ -46,6 +46,8 @@ import {
 } from './tableColumnAdmission';
 import {isRenderable} from '../utils/isRenderable';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
+import {FIXED_ROW_HEIGHT_CLASS} from './tableRowClasses';
+import {tw} from '../utils/tw';
 import * as stylex from '@stylexjs/stylex';
 import type {
   BaseTableProps,
@@ -106,9 +108,9 @@ registerEnglishFallback(english);
 
 // A row the caller gives a height keeps it through the row's own style
 // channel, which carries StyleX until TableRow moves onto its class map.
-const styles = stylex.create({
-  fixedRow: (height: number) => ({height}),
-});
+type FixedRowHeightStyle = React.CSSProperties & {
+  '--astryx-table-row-height': string;
+};
 
 /**
  * Run a value through a pipeline of plugin transform functions.
@@ -426,11 +428,19 @@ function TableRowInner<T extends Record<string, unknown>>({
               }
             }
       }
-      xstyle={
+      className={
         rowHeight == null
-          ? rowRenderProps.xstyle
-          : [...rowRenderProps.xstyle, styles.fixedRow(rowHeight)]
-      }>
+          ? rowHtml.className
+          : tw(rowHtml.className, FIXED_ROW_HEIGHT_CLASS)
+      }
+      style={
+        rowHeight == null
+          ? undefined
+          : ({
+              '--astryx-table-row-height': `${rowHeight}px`,
+            } as FixedRowHeightStyle)
+      }
+      xstyle={rowRenderProps.xstyle}>
       {rowRenderProps.children}
     </RowComponent>
   );

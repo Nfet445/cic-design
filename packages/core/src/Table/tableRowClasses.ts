@@ -77,3 +77,10 @@ export function tableRowClassName({
     hasHover && HOVER_ROW_CLASS,
   );
 }
+
+/**
+ * A row whose height the table fixes (a virtualised body hands each row its
+ * own height). The height travels in `--astryx-table-row-height`, because a
+ * per-instance value cannot live in a literal class.
+ */
+export const FIXED_ROW_HEIGHT_CLASS = 'h-[var(--astryx-table-row-height)]';

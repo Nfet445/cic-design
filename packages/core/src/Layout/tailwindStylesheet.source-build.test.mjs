@@ -721,6 +721,7 @@ import {
   tableGapCellClassName,
 } from '../Table/tableClasses';
 import {TABLE_ROW_INDEX_CLASS} from '../Table/plugins/rowIndex/rowIndexClasses';
+import {FIXED_ROW_HEIGHT_CLASS} from '../Table/tableRowClasses';
 import {
   TABLE_ROW_STATUS_DOT_CLASS,
   TABLE_ROW_STATUS_ICON_CLASS,
@@ -3567,6 +3568,7 @@ function familyClassNames() {
   // The Table plugins: the row number, the status marker, and the pagination
   // wrapper on each side at each alignment.
   add(TABLE_ROW_INDEX_CLASS);
+  add(FIXED_ROW_HEIGHT_CLASS);
   add(TABLE_ROW_STATUS_WRAP_CLASS);
   add(TABLE_ROW_STATUS_DOT_CLASS);
   add(TABLE_ROW_STATUS_ICON_CLASS);
