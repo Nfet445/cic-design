@@ -16,7 +16,6 @@
  *   reserves the header's height, so the code sits where core Markdown's does.
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {useEffect, useState, type JSX} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$isCodeNode} from '@lexical/code';
@@ -27,12 +26,14 @@ import {useClipboard} from '@astryxdesign/core/hooks';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import type {CodeLanguage} from '@astryxdesign/core/CodeBlock';
 import {listedLanguage} from '../codeLanguages';
+import {tw} from '../tw';
 import {
-  fontWeightVars,
-  spacingVars,
-  typeScaleVars,
-  typographyVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
+  codeBlockHeaderCopyButtonClassName,
+  codeBlockHeaderCornerButtonClassName,
+  codeBlockHeaderCornerClassName,
+  codeBlockHeaderRowClassName,
+  codeBlockHeaderTitleClassName,
+} from '../codeBlockHeaderClasses';
 
 /** Where one code block's header goes, in the container's coordinates. */
 interface HeaderPlacement {
@@ -42,52 +43,6 @@ interface HeaderPlacement {
   readonly left: number;
   readonly width: number;
 }
-
-const styles = stylex.create({
-  // Core CodeBlock's compact header row: 8px above and below a small control,
-  // 16px at the sides.
-  header: {
-    position: 'absolute',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-4'],
-    boxSizing: 'border-box',
-  },
-  // No language: the copy button alone, 8px from the top end corner.
-  corner: {
-    position: 'absolute',
-    display: 'flex',
-    justifyContent: 'flex-end',
-    padding: spacingVars['--spacing-2'],
-    boxSizing: 'border-box',
-    pointerEvents: 'none',
-  },
-  cornerButton: {
-    pointerEvents: 'auto',
-  },
-  title: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontFamily: typographyVars['--font-family-code'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: 'var(--color-syntax-comment)',
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  copyButton: {
-    color: 'var(--color-syntax-comment)',
-  },
-  placement: (top: number, left: number, width: number) => ({
-    top,
-    // eslint-disable-next-line @astryx/no-physical-properties -- intentional: `left` is a measured viewport coordinate (`box.left - origin.left + element.clientLeft`), not an authored edge. `insetInlineStart` would resolve to the right edge in RTL and place the header off the block.
-    left,
-    width,
-  }),
-});
 
 /**
  * The language a header names, as core CodeBlock decides it: none for a fence
@@ -151,22 +106,24 @@ function CodeBlockHeader({
           .read(() => $getNodeByKey(placement.key)?.getTextContent() ?? '');
         void copy(code);
       }}
-      xstyle={[
-        styles.copyButton,
-        placement.language == null && styles.cornerButton,
-      ]}
+      className={tw(
+        codeBlockHeaderCopyButtonClassName,
+        placement.language == null && codeBlockHeaderCornerButtonClassName,
+      )}
     />
   );
-  const position = styles.placement(
-    placement.top,
-    placement.left,
-    placement.width,
-  );
+  const position = {
+    top: placement.top,
+
+    left: placement.left,
+    width: placement.width,
+  };
   if (placement.language == null) {
     return (
       <div
         data-richtext-code-header=""
-        {...stylex.props(styles.corner, position)}>
+        className={codeBlockHeaderCornerClassName}
+        style={position}>
         {copyButton}
       </div>
     );
@@ -174,8 +131,11 @@ function CodeBlockHeader({
   return (
     <div
       data-richtext-code-header=""
-      {...stylex.props(styles.header, position)}>
-      <span {...stylex.props(styles.title)}>{label ?? placement.language}</span>
+      className={codeBlockHeaderRowClassName}
+      style={position}>
+      <span className={codeBlockHeaderTitleClassName}>
+        {label ?? placement.language}
+      </span>
       {copyButton}
     </div>
   );

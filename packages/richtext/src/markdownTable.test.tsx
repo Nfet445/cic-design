@@ -185,9 +185,12 @@ describe('GFM tables', () => {
     await waitFor(() => {
       const wrapper = container.querySelector('table')?.parentElement;
       expect(wrapper?.getAttribute('contenteditable')).toBeNull();
-      // jsdom keeps `display` but not grid track sizes; the browser test
-      // checks what the track does.
-      expect(wrapper).toHaveStyle({display: 'grid'});
+      // jsdom loads no stylesheet, so the class set stands in for the grid
+      // and its single shrinkable track; the browser test checks the track.
+      expect(wrapper?.className).toContain('grid');
+      expect(wrapper?.className).toContain(
+        '[grid-template-columns:minmax(0,1fr)]',
+      );
     });
   });
 
