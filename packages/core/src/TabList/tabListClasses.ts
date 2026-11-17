@@ -267,3 +267,190 @@ export const TAB_MENU_HEADING_CLASS = tw(
   '[font-weight:var(--font-weight-semibold)] text-[color:var(--color-text-secondary)]',
   'py-[var(--spacing-1)] px-[var(--spacing-3)]',
 );
+
+// =============================================================================
+// TabList
+// =============================================================================
+
+const TAB_LIST_NAV_CLASS = tw(
+  'relative flex items-stretch',
+  'gap-[var(--spacing-0-5)] max-w-full min-w-0',
+);
+
+/** The strip's frame; a fill list stretches to the container's width. */
+export function tabListNavClassName({isFill}: {isFill: boolean}): string {
+  return tw(TAB_LIST_NAV_CLASS, isFill && 'w-full');
+}
+
+/**
+ * The divider rail. It reserves a gap under the tabs so the hover pill no
+ * longer touches the underline, and drops the selected indicator through that
+ * gap plus the border, onto the rail.
+ */
+export const TAB_LIST_DIVIDER_CLASS = tw(
+  'border-b-[length:var(--border-width)] border-b-solid border-b-[color:var(--color-border)]',
+  'pb-[var(--spacing-1)]',
+  '[--_tab-indicator-bottom:calc(-1*(var(--spacing-1)_+_var(--border-width)))]',
+);
+
+/** A full-bleed list reaches its container's content edges. */
+export const TAB_LIST_FULL_BLEED_CLASS = tw(
+  'ms-[calc(-1*var(--container-padding-inline-start,0px))]',
+  'me-[calc(-1*var(--container-padding-inline-end,0px))]',
+  'max-w-none',
+  'w-[calc(100%_+_var(--container-padding-inline-start,0px)_+_var(--container-padding-inline-end,0px))]',
+);
+
+const TAB_LIST_STRIP_CLASS = tw(
+  'flex items-stretch',
+  // Inherited rather than restated so an `xstyle` gap override on the TabList
+  // still reaches the tabs.
+  'gap-[inherit] grow shrink min-w-0',
+  // Content-height, not stretched: the bleed padding below is inside the
+  // strip's own height, and a stretched height would push the tabs out of the
+  // scrollport.
+  'self-start',
+);
+
+/**
+ * A scroll container clips at its padding box, and two things a tab paints sit
+ * outside its own box: the focus ring (offset + width) and the selected
+ * indicator, which `--_tab-indicator-bottom` pushes further down when a
+ * divider rail is reserved. The strip pads by that much and takes the padding
+ * straight back off with a negative margin, so nothing is clipped and the tabs
+ * stay exactly where they were.
+ *
+ * A bleed is not free: the padding is real geometry, and any ancestor that
+ * scrolls counts it as something to scroll to. So the ring's share is taken
+ * only while a ring is actually drawn inside the strip — the same
+ * `:has(:focus-visible)` condition that draws it — while the indicator's share
+ * is always taken, because the indicator is always drawn.
+ */
+const TAB_LIST_STRIP_SCROLL_CLASS = tw(
+  'overflow-x-auto overflow-y-hidden overscroll-x-contain',
+  'scroll-smooth motion-reduce:scroll-auto [scrollbar-width:none]',
+  '[scroll-padding-inline:calc(var(--_tab-strip-bleed)_+_var(--spacing-8))]',
+  '[--_tab-strip-bleed:0px]',
+  '[&:has(:focus-visible)]:[--_tab-strip-bleed:calc(var(--focus-outline-width)_+_var(--focus-outline-offset))]',
+  'pt-[var(--_tab-strip-bleed)] -mt-[var(--_tab-strip-bleed)]',
+  'pb-[max(var(--_tab-strip-bleed),calc(-1*var(--_tab-indicator-bottom,-1px)))]',
+  '-mb-[max(var(--_tab-strip-bleed),calc(-1*var(--_tab-indicator-bottom,-1px)))]',
+  'px-[var(--_tab-strip-bleed)] -mx-[var(--_tab-strip-bleed)]',
+  'transition-[mask-image] duration-[var(--duration-medium)] ease-[var(--ease-standard)]',
+  'motion-reduce:duration-0',
+);
+
+/**
+ * A stop's own inline padding is restated here because a full-bleed strip has
+ * to subtract it: the strip pads back in only the part of the container's
+ * padding the stop does not already supply, so the edge label lands on the
+ * content inset. Kept in step with `Tab`/`TabMenu`'s inline padding by hand —
+ * the import would be circular. Put back the part a stop does not supply, so the first and last label land on the container's content inset
+ * while their boxes still hang out over it.
+ */
+const TAB_LIST_FULL_BLEED_STRIP_CLASS = tw(
+  'ps-[calc(var(--_tab-strip-bleed,0px)_+_max(var(--container-padding-inline-start,0px)_-_var(--spacing-3),0px))]',
+  'pe-[calc(var(--_tab-strip-bleed,0px)_+_max(var(--container-padding-inline-end,0px)_-_var(--spacing-3),0px))]',
+);
+
+export type TabListStripClassNameOptions = {
+  hasScroll: boolean;
+  isFullBleed: boolean;
+  fadesStart: boolean;
+  fadesEnd: boolean;
+};
+
+/**
+ * The fade reaches transparent at the strip's own edge, not at the bleed edge,
+ * so the scrollport paints nothing past the TabList's box. Exactly one mask is
+ * emitted: two classes of the same property would be decided by the sheet's
+ * order, not by the strip's state.
+ */
+export function tabListStripClassName({
+  hasScroll,
+  isFullBleed,
+  fadesStart,
+  fadesEnd,
+}: TabListStripClassNameOptions): string {
+  return tw(
+    TAB_LIST_STRIP_CLASS,
+    hasScroll && TAB_LIST_STRIP_SCROLL_CLASS,
+    isFullBleed && TAB_LIST_FULL_BLEED_STRIP_CLASS,
+    tabListMaskClassName({hasScroll, fadesStart, fadesEnd}),
+  );
+}
+
+const FADE_START_CLASS = tw(
+  '[mask-image:linear-gradient(to_right,transparent_var(--_tab-strip-bleed),black_calc(var(--_tab-strip-bleed)_+_var(--spacing-8)))]',
+  // The gradient follows the inline direction the fade is on.
+  '[&:is([dir="rtl"]_*)]:[mask-image:linear-gradient(to_left,transparent_var(--_tab-strip-bleed),black_calc(var(--_tab-strip-bleed)_+_var(--spacing-8)))]',
+);
+
+const FADE_END_CLASS = tw(
+  '[mask-image:linear-gradient(to_left,transparent_var(--_tab-strip-bleed),black_calc(var(--_tab-strip-bleed)_+_var(--spacing-8)))]',
+  '[&:is([dir="rtl"]_*)]:[mask-image:linear-gradient(to_right,transparent_var(--_tab-strip-bleed),black_calc(var(--_tab-strip-bleed)_+_var(--spacing-8)))]',
+);
+
+const FADE_BOTH_CLASS =
+  '[mask-image:linear-gradient(to_right,transparent_var(--_tab-strip-bleed),black_calc(var(--_tab-strip-bleed)_+_var(--spacing-8)),black_calc(100%_-_calc(var(--_tab-strip-bleed)_+_var(--spacing-8))),transparent_calc(100%_-_var(--_tab-strip-bleed)))]';
+
+function tabListMaskClassName({
+  hasScroll,
+  fadesStart,
+  fadesEnd,
+}: Omit<TabListStripClassNameOptions, 'isFullBleed'>): string {
+  if (!hasScroll) {
+    return '[mask-image:none]';
+  }
+  if (fadesStart && fadesEnd) {
+    return FADE_BOTH_CLASS;
+  }
+  if (fadesStart) {
+    return FADE_START_CLASS;
+  }
+  if (fadesEnd) {
+    return FADE_END_CLASS;
+  }
+  return '[mask-image:none]';
+}
+
+const TAB_LIST_ARROW_CLASS = tw(
+  'absolute top-0 hidden items-center justify-center',
+  'p-0 border-0 rounded-full',
+  // Opaque, because it sits over the tabs it scrolls: the strip's edge fade
+  // thins the content underneath but does not clear it.
+  'bg-[var(--color-background-popover)] shadow-[var(--shadow-low)]',
+  'text-[color:var(--color-text-secondary)]',
+  'hover:text-[color:var(--color-text-primary)]',
+  'cursor-pointer [&:is(:disabled,[aria-disabled=true])]:cursor-default',
+  // A pointer-only affordance: keyboard and assistive-technology users move
+  // through the strip with the arrow keys, which scrolls the focused tab into
+  // view on its own.
+  '[@media(hover:hover)]:flex',
+);
+
+const TAB_LIST_ARROW_EDGE_CLASS = {
+  start: 'start-0',
+  end: 'end-0',
+};
+
+const ARROW_SIZE_CLASS: Record<TabListSize, string> = {
+  sm: 'w-[var(--size-element-sm)] h-[var(--size-element-sm)]',
+  md: 'w-[var(--size-element-md)] h-[var(--size-element-md)]',
+  lg: 'w-[var(--size-element-lg)] h-[var(--size-element-lg)]',
+};
+
+/** A scroll arrow, capped on the edge it scrolls away from. */
+export function tabListArrowClassName({
+  edge,
+  size,
+}: {
+  edge: 'start' | 'end';
+  size: TabListSize;
+}): string {
+  return tw(
+    TAB_LIST_ARROW_CLASS,
+    TAB_LIST_ARROW_EDGE_CLASS[edge],
+    ARROW_SIZE_CLASS[size],
+  );
+}
