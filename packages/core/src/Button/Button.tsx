@@ -35,7 +35,8 @@ import {Spinner} from '../Spinner/Spinner';
 import {Icon} from '../Icon/Icon';
 import {VisuallyHidden} from '../VisuallyHidden/VisuallyHidden';
 import {IconDefaultSizeProvider} from '../Icon/IconDefaultSizeContext';
-import {iconBoxSizeStyles, type IconSize} from '../Icon/IconSize.stylex';
+import type {IconSize} from '../Icon/IconSize';
+import {iconBoxClassName} from '../Icon/iconBoxClasses';
 
 import {EDGE_COMP_ATTR} from '../Layout/edgeCompensation.stylex';
 import {useSize} from '../SizeContext/SizeContext';
@@ -573,7 +574,7 @@ export function Button({
           <span
             className={tw(
               buttonIconWrapperClassName,
-              stylex.props(iconBoxSizeStyles[iconSize]).className,
+              iconBoxClassName[iconSize],
             )}>
             <IconDefaultSizeProvider value={iconSize}>
               {icon}

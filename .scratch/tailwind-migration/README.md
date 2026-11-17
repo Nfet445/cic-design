@@ -36,7 +36,15 @@ A ticket is done when all five exist:
 2. coverage of those classes in the package's stylesheet test, and the sheet
    inside the size gate;
 3. the family's tests assert classes and variables, not declarations that jsdom
-   cannot evaluate;
+   cannot evaluate. A test that reads `getComputedStyle`, walks
+   `document.styleSheets` or matches StyleX debug class names only ever passed
+   because StyleX injected a real sheet at runtime. jsdom cannot parse the built
+   Tailwind sheet at all — importing `packages/core/dist/astryx-tailwind.css`
+   throws `Could not parse CSS stylesheet` and then `RangeError: Maximum call
+stack size exceeded` inside `@acemir/cssom` on nested rules — so no component
+   change can revive such an assertion. Assert the class set through
+   `packages/core/src/__tests__/classNameAssertions.ts` instead, and say in the
+   ticket which assertions moved and why;
 4. a browser check page for the family, with the values it shows recorded in
    the pull request;
 5. a changeset (`component`, patch) and the ticket updated to `done`.

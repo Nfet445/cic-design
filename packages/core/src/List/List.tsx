@@ -39,6 +39,7 @@ import {
   type ListMarkerStyle,
 } from './ListContext';
 import {mergeProps} from '../utils/mergeProps';
+import {tw} from '../utils/tw';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useListLayoutUpdates} from './listLayoutUpdates';
 import {LayoutChangeSnapshot} from '../motion/LayoutChangeSnapshot';
@@ -447,7 +448,9 @@ export function List({
           reorderSession?.listStyle,
           xstyle,
         ),
-        className,
+        // The session's insertion line: its `::after` stays hidden until the
+        // reorder machinery marks the list.
+        tw(reorderSession?.listClassName, className),
         style,
       )}>
       {children}

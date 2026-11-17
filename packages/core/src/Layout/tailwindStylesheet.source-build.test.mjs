@@ -57,6 +57,7 @@ import {
 } from '../TextInput/textInputClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
+import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
   iconColorClassName,
   iconGlyphClassName,
@@ -100,13 +101,17 @@ import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
+import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
+import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {stackClassName} from '../Stack/stackClasses';
 import {stackItemClassName} from '../Stack/stackItemClasses';
 import {
   sectionInnerClassName,
   sectionOuterClassName,
 } from '../Section/sectionClasses';
+import {tableCellClassName} from '../Table/tableCellClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
+import {tableRowClassName} from '../Table/tableRowClasses';
 import {
   textClassName,
   truncationTooltipContentClassName,
@@ -409,6 +414,17 @@ function familyClassNames() {
     add(radioDotClassName({size}));
   }
 
+  // The body row answers three axes, the body cell six. Both are walked over
+  // their cross product: a stripe or a divider is one utility per variant, so
+  // a combination nobody thought of would otherwise miss its rule.
+  for (const hasHover of [false, true]) {
+    for (const hasKnownPosition of [false, true]) {
+      for (const isStriped of [false, true]) {
+        add(tableRowClassName({hasHover, hasKnownPosition, isStriped}));
+      }
+    }
+  }
+
   for (const density of ['compact', 'balanced', 'spacious']) {
     for (const hasColumnDivider of [false, true]) {
       for (const hasContextMenu of [false, true]) {
@@ -419,6 +435,22 @@ function familyClassNames() {
             hasContextMenu,
           }),
         );
+        for (const hasRowDivider of [false, true]) {
+          for (const textOverflow of ['wrap', 'truncate']) {
+            for (const verticalAlign of ['middle', 'top', 'bottom']) {
+              add(
+                tableCellClassName({
+                  density,
+                  hasColumnDivider,
+                  hasContextMenu,
+                  hasRowDivider,
+                  textOverflow,
+                  verticalAlign,
+                }),
+              );
+            }
+          }
+        }
       }
     }
   }
@@ -534,6 +566,11 @@ function familyClassNames() {
     add(iconGlyphClassName(color));
     add(iconRegistryClassName(color));
   }
+  for (const className of Object.values(iconBoxClassName)) {
+    add(className);
+  }
+  add(menuPressLitRowClassName);
+  add(reorderLineClassName);
   for (const placement of ['above', 'below', 'start', 'end']) {
     add(layerAnimations[placement]);
   }
@@ -635,6 +672,66 @@ describe('dist/astryx-tailwind.css declarations', () => {
     expect(
       stylesheet.ruleFor('[border-bottom-width:var(--border-width)]'),
     ).toBe('border-bottom-width:var(--border-width);');
+  });
+
+  it('stripes only the rows that are not detail panels', () => {
+    // A panel is a sibling row in the same body, so the stripe counts only
+    // rows that are not panels; an open panel cannot flip the parity.
+    const block = stylesheet.blockOf(
+      '[&:nth-child(even_of_:not([data-expansion-panel]))]:bg-[var(--color-background-muted)]',
+    );
+    expect(block).toContain('nth-child(evenof:not([data-expansion-panel]))');
+    expect(block).toContain('background-color:var(--color-background-muted)');
+  });
+
+  it('paints the row highlight only where a pointer can hover', () => {
+    expect(
+      stylesheet.blockOf(
+        '[@media(hover:hover)]:[&:hover:where(:not(:disabled,[aria-disabled=true]))]:bg-[var(--color-overlay-hover)]',
+      ),
+    ).toContain('@media(hover:hover)');
+  });
+
+  it('zeroes the row divider on the last row, paint and width alike', () => {
+    // The pinned-column plugin reads the published width, so the reset has to
+    // cover the variable as well as the border.
+    expect(
+      stylesheet.blockOf('[tr:last-child>&]:[--_table-row-divider-width:0px]'),
+    ).toContain('tr:last-child>&{--_table-row-divider-width:0px;}');
+    expect(
+      stylesheet.blockOf(
+        '[tr[data-table-final-row=true]>&]:[border-bottom-width:0]',
+      ),
+    ).toContain('tr[data-table-final-row=true]>&{border-bottom-width:0;}');
+  });
+
+  it('aligns a body cell on the axis the table asks for', () => {
+    // The cell's own test reads the class; this pins what the class paints.
+    expect(stylesheet.ruleFor('align-middle')).toBe('vertical-align:middle;');
+    expect(stylesheet.ruleFor('align-top')).toBe('vertical-align:top;');
+    expect(stylesheet.ruleFor('align-bottom')).toBe('vertical-align:bottom;');
+  });
+
+  it('moves the row highlight on the shared duration and easing', () => {
+    expect(stylesheet.ruleFor('transition-[background-color]')).toContain(
+      'transition-property:background-color;',
+    );
+    expect(stylesheet.ruleFor('duration-[var(--duration-fast)]')).toContain(
+      'transition-duration:var(--duration-fast);',
+    );
+    expect(stylesheet.ruleFor('ease-[var(--ease-standard)]')).toContain(
+      'transition-timing-function:var(--ease-standard);',
+    );
+  });
+
+  it('wraps a body cell instead of clipping it when the table asks for wrap', () => {
+    expect(stylesheet.ruleFor('[overflow-wrap:break-word]')).toBe(
+      'overflow-wrap:break-word;',
+    );
+    expect(stylesheet.ruleFor('[word-break:break-word]')).toBe(
+      'word-break:break-word;',
+    );
+    expect(stylesheet.ruleFor('text-ellipsis')).toBe('text-overflow:ellipsis;');
   });
 
   it('draws the section divider on one border width', () => {
@@ -792,6 +889,46 @@ describe('dist/astryx-tailwind.css declarations', () => {
     const bar = stylesheet.blockOf('forced-colors:bg-[color:CanvasText]');
     expect(bar).toContain('@media(forced-colors:active)');
     expect(bar).toContain('background-color:CanvasText');
+  });
+
+  it('sizes the icon box on its four steps', () => {
+    // Button and the Table row expansion put the box beside the glyph, so the
+    // size is a length of its own rather than the icon's variable.
+    expect(stylesheet.ruleFor('[width:0.75rem]')).toBe('width:0.75rem;');
+    expect(stylesheet.ruleFor('[height:1.5rem]')).toBe('height:1.5rem;');
+    expect(stylesheet.ruleFor('[font-size:1rem]')).toBe('font-size:1rem;');
+  });
+
+  it('paints the lit menu row from the mark it carries', () => {
+    // The row reads the variable in its own `:focus` background, so the marked
+    // row paints the pressed overlay. Neither variable has a default: a
+    // default would print in the same layer as the mark and win on order.
+    expect(
+      stylesheet.blockOf(
+        '[&[data-astryx-menu-press-lit]]:[--_menu-row-focus-paint:var(--color-overlay-pressed)]',
+      ),
+    ).toContain(
+      '&[data-astryx-menu-press-lit]{--_menu-row-focus-paint:var(--color-overlay-pressed);}',
+    );
+    expect(
+      stylesheet.blockOf(
+        '[&[data-astryx-menu-press-lit]]:[--_menu-row-active-paint:var(--color-overlay-pressed)]',
+      ),
+    ).toContain(
+      '&[data-astryx-menu-press-lit]{--_menu-row-active-paint:var(--color-overlay-pressed);}',
+    );
+  });
+
+  it('shows the list insertion line only while the list is marked', () => {
+    // The class moves `display` alone; the line's content, size and colour stay
+    // in the list's own style. Both arms name `::after` themselves, because
+    // Tailwind's `after:` variant would also declare `content`.
+    expect(stylesheet.blockOf('[&::after]:hidden')).toContain('display:none;');
+    const marked = stylesheet.blockOf(
+      '[&[data-astryx-reorder-line]::after]:block',
+    );
+    expect(marked).toContain('display:block;');
+    expect(marked).not.toContain('content');
   });
 
   it('declares no theme variable of its own', () => {

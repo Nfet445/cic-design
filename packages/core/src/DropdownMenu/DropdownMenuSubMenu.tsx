@@ -99,7 +99,8 @@ import {
 } from '../utils';
 import {visibleText} from '../utils/accessibleName';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {menuPressLitRowStyle} from '../privateAttributes/menuPressLit.stylex';
+import {menuPressLitRowClassName} from '../privateAttributes/menuPressLit.stylex';
+import {tw} from '../utils/tw';
 import {getInteractionModality} from '../utils/interactionModality';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useDevWarning} from '../hooks/useDevWarning';
@@ -149,7 +150,7 @@ const triggerStyles = stylex.create({
     color: colorVars['--color-text-primary'],
     backgroundColor: {
       default: 'transparent',
-      // menuPressLitRowStyle sets the variable on the row a held finger or pen
+      // menuPressLitRowClassName sets the variable on the row a held finger or pen
       // lights.
       ':focus': `var(--_menu-row-focus-paint, ${colorVars['--color-overlay-hover']})`,
     },
@@ -1300,14 +1301,13 @@ export function DropdownMenuSubMenu(
         xstyle={[
           focusOutlineStyles.focusVisible,
           triggerStyles.root,
-          menuPressLitRowStyle,
           triggerSizeStyles[menuSize],
           isOpen && triggerStyles.open,
           isDisabled && triggerStyles.disabled,
           xstyle,
         ]}
         {...mergeProps(themeProps('dropdown-menu-item', {size: menuSize}), {
-          className,
+          className: tw(menuPressLitRowClassName, className),
           style,
         })}
       />

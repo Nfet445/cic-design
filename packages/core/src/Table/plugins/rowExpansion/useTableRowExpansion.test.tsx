@@ -10,6 +10,7 @@ import {InternationalizationProvider} from '../../../i18n';
 import type {ComponentIconMap} from '../../../Icon/index';
 import {defineTheme} from '../../../theme/defineTheme';
 import {Theme} from '../../../theme/Theme';
+import {buildAstryxTailwindCss} from '../../../../scripts/build-css-tailwind.mjs';
 
 // popover mock for context-menu tests
 beforeEach(() => {
@@ -568,33 +569,31 @@ describe('useTableRowExpansion (detail panel)', () => {
      * jsdom's selector engine does not implement `:nth-child(… of S)` — it
      * matches nothing and reports no error — so the paint itself cannot be
      * asserted here; the browser-side check is the visual regression suite.
-     * What this can pin is the two halves of the contract: the panel is a
-     * sibling row in the same tbody (which is what makes an exclusion
-     * necessary at all), and every stripe rule counts only rows that are not
-     * panels.
+     * The stripe is a class rule in the built sheet, not a rule StyleX injects
+     * into the document, so the selector is read from the built sheet. What
+     * this can pin is the two halves of the contract: the panel is a sibling
+     * row in the same tbody (which is what makes an exclusion necessary at
+     * all), and every stripe rule counts only rows that are not panels.
      *
      * Both cases render without row dividers. The panel's divider carry reads
      * the striped row's computed style, and jsdom resolves it in about 2,000
      * nested passes, which takes seconds. Striping does not depend on
      * dividers.
      */
-    const stripeRules = () => {
+    const stripeRules = async () => {
+      const css = await buildAstryxTailwindCss();
       const out: string[] = [];
-      for (const sheet of Array.from(document.styleSheets)) {
-        try {
-          for (const rule of Array.from(sheet.cssRules)) {
-            if (rule.cssText.includes(':nth-child(even')) {
-              out.push(rule.cssText);
-            }
-          }
-        } catch {
-          // cross-origin sheet; nothing of ours lives there
-        }
+      for (
+        let at = css.indexOf('nth-child(even');
+        at >= 0;
+        at = css.indexOf('nth-child(even', at + 1)
+      ) {
+        out.push(css.slice(at, css.indexOf('{', at) + 1));
       }
       return out;
     };
 
-    it('counts stripes over data rows only, so an open panel cannot flip them', () => {
+    it('counts stripes over data rows only, so an open panel cannot flip them', async () => {
       render(
         <Harness isStriped dividers="none" initialExpanded={new Set(['a'])} />,
       );
@@ -607,7 +606,7 @@ describe('useTableRowExpansion (detail panel)', () => {
       expect(bodyRows).toHaveLength(4);
       expect(bodyRows[1]).toHaveAttribute('data-expansion-panel');
 
-      const rules = stripeRules();
+      const rules = await stripeRules();
       expect(rules.length).toBeGreaterThan(0);
       for (const rule of rules) {
         expect(rule).toContain('of :not([data-expansion-panel])');

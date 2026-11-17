@@ -38,7 +38,8 @@ import {useIndicator} from '../Indicator';
 import {Item} from '../Item';
 import {useDropdownMenuContext} from './DropdownMenuContext';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {menuPressLitRowStyle} from '../privateAttributes/menuPressLit.stylex';
+import {menuPressLitRowClassName} from '../privateAttributes/menuPressLit.stylex';
+import {tw} from '../utils/tw';
 import {focusMenuItemOnHover} from './menuItemHover';
 import {colorVars, focusVars, spacingVars} from '../theme/tokens.stylex';
 import {composeEventHandlers, mergeProps, themeProps} from '../utils';
@@ -52,7 +53,7 @@ const styles = stylex.create({
     color: colorVars['--color-text-primary'],
     backgroundColor: {
       default: 'transparent',
-      // menuPressLitRowStyle sets the variable on the row a held finger or pen
+      // menuPressLitRowClassName sets the variable on the row a held finger or pen
       // lights.
       ':focus': `var(--_menu-row-focus-paint, ${colorVars['--color-overlay-hover']})`,
     },
@@ -240,12 +241,11 @@ export function DropdownMenuCheckboxItem({
       xstyle={[
         focusOutlineStyles.focusVisible,
         styles.root,
-        menuPressLitRowStyle,
         isDisabled && styles.disabled,
         xstyle,
       ]}
       {...mergeProps(themeProps('dropdown-menu-item', {size: menuSize}), {
-        className,
+        className: tw(menuPressLitRowClassName, className),
         style,
       })}
     />
