@@ -33,6 +33,7 @@ import * as diffViewerClasses from './DiffViewer/diffViewerClasses';
 import * as lineClampClasses from './LineClamp/lineClampClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
+import * as logStreamClasses from './LogStream/logStreamClasses';
 import * as scheduleClasses from './Schedule/scheduleClasses';
 import * as pageControlClasses from './PageControl/pageControlClasses';
 import * as radialChartClasses from './Radial/radialChartClasses';
@@ -76,6 +77,7 @@ function labClassNames() {
     lineClampClasses,
     listInputClasses,
     loadingMessageClasses,
+    logStreamClasses,
     pageControlClasses,
     radialChartClasses,
     scheduleClasses,
