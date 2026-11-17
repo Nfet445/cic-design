@@ -609,8 +609,17 @@ import {
   multiSelectorOptionRowClassName,
 } from '../MultiSelector/multiSelectorOptionClasses';
 import {
+  MULTI_SELECTOR_STATUS_BUTTON_CLASS,
+  MULTI_SELECTOR_TRIGGER_BADGES_CLASS,
+  MULTI_SELECTOR_TRIGGER_CONTENT_CLASS,
+  MULTI_SELECTOR_TRIGGER_ICON_CLASS,
+  MULTI_SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+  MULTI_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+  MULTI_SELECTOR_TRIGGER_OVERFLOW_CLASS,
+  MULTI_SELECTOR_TRIGGER_TEXT_CLASS,
   multiSelectorListWrapperClassName,
   multiSelectorOptionsClassName,
+  multiSelectorTriggerClassName,
 } from '../MultiSelector/multiSelectorClasses';
 import {
   TYPEAHEAD_DEFAULT_ITEM_CLASS,
@@ -2089,6 +2098,19 @@ function familyClassNames() {
   }
   add(multiSelectorListWrapperClassName);
   add(multiSelectorOptionsClassName);
+  // MultiSelector trigger: the button in both cursor states, the value row,
+  // the chip row with its overflow tail, the status button and the chevron.
+  for (const isReadOnly of [false, true]) {
+    add(multiSelectorTriggerClassName({isReadOnly}));
+  }
+  add(MULTI_SELECTOR_TRIGGER_CONTENT_CLASS);
+  add(MULTI_SELECTOR_TRIGGER_TEXT_CLASS);
+  add(MULTI_SELECTOR_TRIGGER_BADGES_CLASS);
+  add(MULTI_SELECTOR_TRIGGER_OVERFLOW_CLASS);
+  add(MULTI_SELECTOR_STATUS_BUTTON_CLASS);
+  add(MULTI_SELECTOR_TRIGGER_ICON_CLASS);
+  add(MULTI_SELECTOR_TRIGGER_ICON_ROTATION_CLASS);
+  add(MULTI_SELECTOR_TRIGGER_ICON_OPEN_CLASS);
   add(MULTI_SELECTOR_ROW_LABEL_CLASS);
   add(MULTI_SELECTOR_CHECKBOX_CLASS);
   add(MULTI_SELECTOR_CHECKBOX_END_CLASS);

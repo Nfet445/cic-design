@@ -52,9 +52,6 @@ import {Badge} from '../Badge';
 import {
   colorVars,
   spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
   typographyVars,
   fontWeightVars,
   typeScaleVars,
@@ -76,8 +73,17 @@ import {getInputARIA, isImeKeyEvent, mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {MULTI_SELECTOR_TRIGGER_SIZE_CLASS} from './multiSelectorOptionClasses';
 import {
+  MULTI_SELECTOR_STATUS_BUTTON_CLASS,
+  MULTI_SELECTOR_TRIGGER_BADGES_CLASS,
+  MULTI_SELECTOR_TRIGGER_CONTENT_CLASS,
+  MULTI_SELECTOR_TRIGGER_ICON_CLASS,
+  MULTI_SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+  MULTI_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+  MULTI_SELECTOR_TRIGGER_OVERFLOW_CLASS,
+  MULTI_SELECTOR_TRIGGER_TEXT_CLASS,
   multiSelectorListWrapperClassName,
   multiSelectorOptionsClassName,
+  multiSelectorTriggerClassName,
 } from './multiSelectorClasses';
 import {
   selectorDividerClassName,
@@ -160,6 +166,12 @@ function isCreateValue(value: string): boolean {
  */
 const LAYER_OPEN: string = ':has([aria-expanded="true"])';
 
+// The trigger container shares its element with `inputWrapperStyles.base`,
+// whose unlayered `padding`, `gap`, `backgroundColor` and `boxShadow` outrank
+// every utility in `astryx-base`: its chrome, the ghost and secondary fills,
+// the read-only and disabled press resets stay here. `popover` stays because
+// `usePopover` takes StyleX styles only. Every child element uses
+// `multiSelectorClasses.ts`.
 const styles = stylex.create({
   // Trigger container — the enhanced click target wrapping the combobox button and clear button as siblings
   triggerContainer: {
@@ -180,87 +192,8 @@ const styles = stylex.create({
       ':is(:disabled,[aria-disabled="true"])': 'default',
     },
   },
-  // Trigger button — the actual combobox button, visually integrated with the container
-  trigger: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minWidth: 0,
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-    color: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    // The wrapper (inputWrapperStyles.base) renders the focus ring via
-    // :focus-within when this button is focused, matching
-    // TextInput/NumberInput/Selector. The button must not draw its own
-    // :focus-visible outline or the two stack into a doubled ring over the
-    // trigger.
-    outline: 'none',
-    borderRadius: radiusVars['--radius-element'],
-  },
   triggerPlaceholder: {
     color: colorVars['--color-text-secondary'],
-  },
-  triggerContent: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-  triggerText: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  triggerBadges: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: spacingVars['--spacing-1'],
-    alignItems: 'center',
-  },
-  triggerOverflow: {
-    flexShrink: 0,
-    fontSize: typeScaleVars['--text-label-size'],
-    color: colorVars['--color-text-secondary'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  // Only what Icon does not already provide: `size="sm"` gives the 16px box
-  // and `color` the token, but the glyph still must not shrink inside the flex
-  // trigger.
-  triggerIcon: {
-    flexShrink: 0,
-  },
-  // Rotation lives on the chevron glyph itself (passed through `xstyle`), not
-  // on the layout wrapper above, so the icon's `multi-selector-indicator-icon`
-  // theme target and the open/closed transform sit on one element — a theme can
-  // restyle the mark and its rotation through a single selector. The wrapper
-  // keeps only layout. The status branch renders a different icon, so it never
-  // picks these up and needs no transition opt-out.
-  triggerIconRotation: {
-    transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    transformOrigin: 'center',
-  },
-  triggerIconOpen: {
-    transform: 'rotate(180deg)',
   },
   triggerGhost: {
     width: 'auto',
@@ -337,24 +270,6 @@ const styles = stylex.create({
       ':active': 'none',
       '[data-astryx-press="on"]': 'none',
     },
-  },
-
-  // Clear button
-  statusButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
   },
 
   // A panel with a search field, capped as a whole.,
@@ -1776,13 +1691,15 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
 
   const renderTriggerContent = useCallback(() => {
     if (optimisticValue.length === 0) {
-      return <span {...stylex.props(styles.triggerText)}>{placeholder}</span>;
+      return (
+        <span className={MULTI_SELECTOR_TRIGGER_TEXT_CLASS}>{placeholder}</span>
+      );
     }
 
     switch (triggerDisplay) {
       case 'count':
         return (
-          <span {...stylex.props(styles.triggerText)}>
+          <span className={MULTI_SELECTOR_TRIGGER_TEXT_CLASS}>
             {formatValue?.(selectedItems) ??
               t('@astryx.multiSelector.selectedCount', {
                 count: optimisticValue.length,
@@ -1798,7 +1715,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             ? `${displayed.join(', ')}, +${remaining}`
             : displayed.join(', ');
         return (
-          <span {...stylex.props(styles.triggerText)}>
+          <span className={MULTI_SELECTOR_TRIGGER_TEXT_CLASS}>
             {formatValue?.(selectedItems) ?? text}
           </span>
         );
@@ -1808,12 +1725,12 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
         const displayed = selectedLabels.slice(0, maxBadges);
         const remaining = selectedLabels.length - displayed.length;
         return (
-          <span {...stylex.props(styles.triggerBadges)}>
+          <span className={MULTI_SELECTOR_TRIGGER_BADGES_CLASS}>
             {displayed.map(label => (
               <Badge key={label} label={label} variant="neutral" />
             ))}
             {remaining > 0 && (
-              <span {...stylex.props(styles.triggerOverflow)}>
+              <span className={MULTI_SELECTOR_TRIGGER_OVERFLOW_CLASS}>
                 +{remaining}
               </span>
             )}
@@ -2372,10 +2289,9 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
         }
       : composeEventHandlers(handleTriggerButtonClick, onClick),
     tabIndex: 0,
-    ...stylex.props(
-      styles.trigger,
-      isEffectivelyReadOnly && styles.triggerReadOnly,
-    ),
+    className: multiSelectorTriggerClassName({
+      isReadOnly: isEffectivelyReadOnly,
+    }),
   };
 
   if (renderTrigger != null) {
@@ -2561,7 +2477,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
           // aria-disabled (`spec:AST-085` FR1); the isDisabled guards in
           // useMultiCombobox block every way of opening it.
           aria-disabled={isDisabled ? 'true' : undefined}>
-          <span {...stylex.props(styles.triggerContent)}>
+          <span className={MULTI_SELECTOR_TRIGGER_CONTENT_CLASS}>
             {renderTriggerContent()}
           </span>
         </button>
@@ -2597,15 +2513,15 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
               aria-describedby={statusTooltip.describedBy}
               {...keepOpenProps}
               onClick={e => e.stopPropagation()}
-              {...stylex.props(
-                focusOutlineStyles.focusVisible,
-                styles.statusButton,
+              {...mergeProps(
+                MULTI_SELECTOR_STATUS_BUTTON_CLASS,
+                stylex.props(focusOutlineStyles.focusVisible),
               )}>
               <Icon
                 icon={STATUS_ICON_MAP[status.type]}
                 size="sm"
                 color={STATUS_ICON_COLOR_MAP[status.type]}
-                xstyle={styles.triggerIcon}
+                className={MULTI_SELECTOR_TRIGGER_ICON_CLASS}
               />
             </button>
           ) : (
@@ -2613,7 +2529,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
               icon={STATUS_ICON_MAP[status.type]}
               size="sm"
               color={STATUS_ICON_COLOR_MAP[status.type]}
-              xstyle={styles.triggerIcon}
+              className={MULTI_SELECTOR_TRIGGER_ICON_CLASS}
             />
           )
         ) : !isEffectivelyReadOnly ? (
@@ -2624,19 +2540,16 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             // The rotation rides on the glyph, alongside the box and color
             // the wrapper used to provide, so one element carries the mark,
             // its open/closed transform, and the theme target.
-            xstyle={[
-              styles.triggerIcon,
-              styles.triggerIconRotation,
-              surface.isOpen && styles.triggerIconOpen,
-            ]}
-            // Stable theme target on the chevron glyph itself, so a theme can
-            // restyle just this icon (color, size, hover) — and its
-            // open/closed state — via `defineTheme`. Same-element rules in
-            // @layer astryx-theme win over the icon's own base color/size,
-            // which a button-level target could not reach.
-            {...themeProps('multi-selector-indicator-icon', {
-              state: surface.isOpen ? 'expanded' : 'collapsed',
-            })}
+            {...mergeProps(
+              themeProps('multi-selector-indicator-icon', {
+                state: surface.isOpen ? 'expanded' : 'collapsed',
+              }),
+              tw(
+                MULTI_SELECTOR_TRIGGER_ICON_CLASS,
+                MULTI_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+                surface.isOpen && MULTI_SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+              ),
+            )}
           />
         ) : null}
       </div>
