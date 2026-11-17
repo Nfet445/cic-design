@@ -240,6 +240,13 @@ import {
   checkboxInputWrapperClassName,
 } from '../CheckboxInput/checkboxInputClasses';
 import {
+  switchClassName,
+  switchContainerClassName,
+  switchLabelWrapperClassName,
+  switchStatusClassName,
+  switchWrapperClassName,
+} from '../Switch/switchClasses';
+import {
   radioListItemIndicatorSlotClassName,
   radioListItemInputClassName,
   radioListItemPressOverlayClassName,
@@ -2237,6 +2244,23 @@ function familyClassNames() {
   add(checkboxInputPressOverlayClassName);
   add(checkboxInputIndicatorSlotClassName);
   add(checkboxInputLabelWrapperClassName);
+  // Switch: the field root at both width states, the row in its four shape
+  // states, the track box per size, the label column and the status gap.
+  for (const width of [null, 240]) {
+    add(switchClassName({width}));
+  }
+  for (const isLabelHidden of [false, true]) {
+    for (const isSpread of [false, true]) {
+      add(switchContainerClassName({isLabelHidden, isSpread}));
+    }
+  }
+  for (const size of ['sm', 'md']) {
+    for (const isInteractive of [false, true]) {
+      add(switchWrapperClassName({size, isInteractive}));
+    }
+    add(switchLabelWrapperClassName({size}));
+  }
+  add(switchStatusClassName);
 
   return [...names].sort();
 }
