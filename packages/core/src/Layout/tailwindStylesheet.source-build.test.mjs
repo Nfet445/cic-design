@@ -30,6 +30,7 @@ import {
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
   dropdownMenuDividerClassName,
+  dropdownMenuItemClassName,
   dropdownMenuGroupHeadingClassName,
 } from '../DropdownMenu/dropdownMenuClasses';
 import {
@@ -1652,6 +1653,22 @@ function familyClassNames() {
   // one.
   add(dropdownMenuDividerClassName);
   add(dropdownMenuGroupHeadingClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(
+      dropdownMenuItemClassName({
+        isDestructive: false,
+        isDisabled: false,
+        size,
+      }),
+    );
+  }
+  add(
+    dropdownMenuItemClassName({
+      isDestructive: true,
+      isDisabled: true,
+      size: 'md',
+    }),
+  );
 
   return [...names].sort();
 }
