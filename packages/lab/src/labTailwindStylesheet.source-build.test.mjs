@@ -32,6 +32,7 @@ import * as lineClampClasses from './LineClamp/lineClampClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
 import * as scheduleClasses from './Schedule/scheduleClasses';
+import * as pageControlClasses from './PageControl/pageControlClasses';
 import * as selectableCardGroupClasses from './SelectableCardGroup/selectableCardGroupClasses';
 import * as statClasses from './Stat/statClasses';
 import * as transferListClasses from './TransferList/transferListClasses';
@@ -70,6 +71,7 @@ function labClassNames() {
     lineClampClasses,
     listInputClasses,
     loadingMessageClasses,
+    pageControlClasses,
     scheduleClasses,
     statClasses,
     transferListClasses,
