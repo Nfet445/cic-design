@@ -1,6 +1,6 @@
 # lab
 
-Status: in-progress (window 1 done: sheet + ChatUnreadDivider)
+Status: in-progress (windows 1–8 merged; nine maps left)
 Blocked by: 22,29
 Wave: 8
 Ticket: 30
@@ -499,3 +499,22 @@ Deviations to review:
 - The sheet test's `stylexGzipBaseline: 12514` still passes, but it now measures
   a much smaller StyleX sheet (688 rules). It records the original measurement
   by design; a future window may want to re-measure it.
+
+## Comments — window 8 (merged into the integration branch)
+
+Landed: `LogStream` (`logStreamClasses.ts`), `TabBar` (`tabBarClasses.ts`, with the tab markers
+left in StyleX because `TabBar` reads them through `stylex.when.ancestor`), `CircleCheckIndicator`
+(`circleCheckIndicatorClasses.ts`, reading the `data-astryx-indicator-scope` attribute ticket 07
+introduced). Lab suite 102 files / 1347 tests.
+
+`NavigationStack` was attempted and reverted: its map feeds `getViewportProps`' `xstyle` and a
+`dynamicStyles.dimColor(alpha)` arm, so it needs a class seam from core before it can move, not a
+mechanical rewrite.
+
+Still holding a `stylex.create` in non-test lab sources (measured): `CircularProgress/CircularProgress.tsx`
+3, `internal/useScrollEdgeEffect.ts` 2, `NavigationStack/NavigationStack.tsx` 2,
+`CommentPin/CommentPin.tsx` 2, `SVGIcon/weighted.stylex.ts` 2, `SVGIcon/variations.stylex.ts` 2,
+`TransferList/transferListOverrides.stylex.ts` 3, `Schedule/scheduleOverrides.stylex.ts` 3,
+`Comments/commentPartsOverrides.stylex.ts` 2, `TransferList/TransferListSelector.tsx` 1.
+The `*Overrides.stylex.ts` files are the rules that must outrank a core utility, so they stay; each
+needs its one-sentence reason in this ticket.

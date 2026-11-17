@@ -2,77 +2,33 @@
 
 /**
  * @file circleCheck.test.tsx
- * @input vitest, Testing Library, CircleCheckIndicator, its build-time
- *   mirror and its measured table (circleCheck.table.ts)
- * @output Holds the mirror to the table: the multiselect circle's geometry
- *   with the two derived xSmall values. Asserts what the circle ships. Its
- *   colour change takes the theme's duration token on every pointer and is
- *   immediate under Reduce Motion. Its diameter and stroke are UIKit's at
- *   each size.
- * @position Unit test beside circleCheck.stylex.ts. It renders the indicator
- *   alone: the stylesheet it reads is the one StyleX injects for this
- *   component.
+ * @input vitest, Testing Library, CircleCheckIndicator, its build-time mirror
+ *   (circleCheckClasses.ts) and its measured table (circleCheck.table.ts)
+ * @output Holds the class text to the table: the multiselect circle's geometry
+ *   with the two derived xSmall values, its ring, its press, and its motion.
+ * @position Unit test beside circleCheckClasses.ts. It reads the class map, not
+ *   a stylesheet: the sheet is a build artifact and jsdom injects none.
  */
 
 import {describe, expect, it} from 'vitest';
 import {render} from '@testing-library/react';
 import {circleCheckTable} from './circleCheck.table';
 import {CircleCheckIndicator} from './CircleCheckIndicator';
-import {circleCheckConsts} from './circleCheck.stylex';
+import {
+  circleBarClassName,
+  circleCheckConsts,
+  circleCheckmarkClassName,
+  circleClassName,
+} from './circleCheckClasses';
 
 const {large, xSmall} = circleCheckTable;
 
-/**
- * Every declaration on `el`'s own classes, keyed by property, per enclosing
- * media and supports conditions (outermost first, " | "-joined; null at the
- * top level).
- */
-function declarationsOf(el: Element): Map<string, Map<string | null, string>> {
-  const classes = el.className
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(name => `.${name}`);
-  const out = new Map<string, Map<string | null, string>>();
-  const walk = (rules: CSSRuleList, conditions: string[]) => {
-    for (const rule of Array.from(rules)) {
-      if (rule instanceof CSSMediaRule) {
-        walk(rule.cssRules, [...conditions, rule.media.mediaText]);
-      } else if (rule instanceof CSSSupportsRule) {
-        walk(rule.cssRules, [...conditions, rule.conditionText]);
-      } else if (
-        rule instanceof CSSStyleRule &&
-        classes.some(cls => rule.selectorText.startsWith(cls))
-      ) {
-        const media = conditions.length === 0 ? null : conditions.join(' | ');
-        for (const property of Array.from(rule.style)) {
-          const byMedia = out.get(property) ?? new Map();
-          byMedia.set(media, rule.style.getPropertyValue(property).trim());
-          out.set(property, byMedia);
-        }
-      }
-    }
-  };
-  for (const sheet of Array.from(document.styleSheets)) {
-    walk(sheet.cssRules, []);
-  }
-  return out;
-}
-
-/** A CSS length or duration as a number (px, or ms; `0s` is written so). */
+/** A CSS length as a number of px. */
 function toNumber(value: string | undefined): number {
-  if (value == null) {
-    return Number.NaN;
-  }
-  if (value.endsWith('ms') || value.endsWith('px')) {
-    return parseFloat(value);
-  }
-  return value.endsWith('s') ? parseFloat(value) * 1000 : parseFloat(value);
+  return value == null ? Number.NaN : parseFloat(value);
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
-
-/** The Reduce Motion key that Core's indicators use. */
-const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
 
 describe('circleCheckConsts mirror the constants table', () => {
   it('takes the circle at the Large text size for md', () => {
@@ -94,11 +50,32 @@ describe('circleCheckConsts mirror the constants table', () => {
       round2((large.checkOffsetY * xSmall.diameter) / large.diameter),
     );
   });
+
+  it.each(['md', 'sm'] as const)(
+    'writes the %s circle at the table’s diameter and stroke',
+    size => {
+      const classes = circleClassName({
+        size,
+        isFilled: false,
+        isDisabled: false,
+      });
+      // The class text is written out, because Tailwind reads literals only,
+      // so this assertion is what keeps it equal to the table.
+      expect(classes).toContain(`w-[${circleCheckConsts[`${size}Diameter`]}]`);
+      expect(classes).toContain(`h-[${circleCheckConsts[`${size}Diameter`]}]`);
+      expect(classes).toContain(
+        `[--_circle-stroke:${circleCheckConsts[`${size}Stroke`]}]`,
+      );
+    },
+  );
 });
 
-describe('CircleCheckIndicator ships the table', () => {
-  function circle(size: 'sm' | 'md'): Element {
-    render(<CircleCheckIndicator state="checked" size={size} />);
+describe('CircleCheckIndicator class map', () => {
+  function circle(
+    state: 'checked' | 'unchecked' | 'indeterminate',
+    size: 'sm' | 'md' = 'md',
+  ) {
+    render(<CircleCheckIndicator state={state} size={size} />);
     const el = document.querySelector(
       `.astryx-circle-check-indicator[data-size="${size}"]`,
     );
@@ -108,108 +85,65 @@ describe('CircleCheckIndicator ships the table', () => {
     return el;
   }
 
-  it('paints the press image on every pointer, and its :active fill yields to it, so a held press paints once', () => {
-    // A CheckboxInput row hands the image down only while the press
-    // controller paints its press, and then sets `--_indicator-active-press`
-    // to transparent. So a mouse's or a pen's press paints the image alone.
-    const el = circle('md');
-    const images = [
-      ...(declarationsOf(el).get('background-image') ??
-        new Map<string | null, string>()),
-    ];
-    expect(images.length).toBeGreaterThan(0);
-    for (const [media, value] of images) {
-      expect(media ?? '').not.toContain('pointer');
-      expect(value).toContain('--_indicator-press-image');
-    }
-    const classes = el.className
-      .split(/\s+/)
-      .filter(Boolean)
-      .map(name => `.${name}`);
-    const activeFills: string[] = [];
-    const walk = (rules: CSSRuleList, media: string | null) => {
-      for (const rule of Array.from(rules)) {
-        if (rule instanceof CSSMediaRule) {
-          walk(rule.cssRules, rule.media.mediaText);
-        } else if (
-          rule instanceof CSSStyleRule &&
-          media == null &&
-          rule.selectorText.includes(':active') &&
-          classes.some(cls => rule.selectorText.startsWith(cls))
-        ) {
-          activeFills.push(rule.style.getPropertyValue('background-color'));
-        }
-      }
-    };
-    for (const sheet of Array.from(document.styleSheets)) {
-      walk(sheet.cssRules, null);
-    }
-    expect(activeFills.length).toBeGreaterThan(0);
-    for (const fill of activeFills) {
-      expect(fill).toMatch(/^var\(--_indicator-active-press,/);
-    }
+  it('marks the circle as painting its own press, so the host leaves its layer off', () => {
+    expect(circle('unchecked')).toHaveAttribute(
+      'data-astryx-indicator-press',
+      '',
+    );
+    // The host's rounded-square layer would tint past the circle.
+    expect(
+      circleClassName({size: 'md', isFilled: false, isDisabled: false}),
+    ).toContain(
+      'pointer-fine:[[data-astryx-indicator-scope]:active_&]:after:bg-[color:var(--_indicator-active-press,var(--color-overlay-pressed))]',
+    );
+    // A disabled circle paints no press at all.
+    expect(
+      circleClassName({size: 'md', isFilled: false, isDisabled: true}),
+    ).not.toContain('after:absolute');
   });
 
-  it("reads only the touch press image a CheckboxInput row hands down, so a mapped menu row's own press paints once", () => {
-    const images = [
-      ...(declarationsOf(circle('md')).get('background-image') ??
-        new Map<string | null, string>()),
-    ];
-    expect(images.length).toBeGreaterThan(0);
-    for (const [, value] of images) {
-      expect(value).not.toContain('--_press-paint-image');
-    }
+  it('reads only the touch press image a CheckboxInput row hands down', () => {
+    const classes = circleClassName({
+      size: 'md',
+      isFilled: true,
+      isDisabled: false,
+    });
+    expect(classes).toContain(
+      'after:[background-image:var(--_indicator-press-image,none)]',
+    );
+    expect(classes).not.toContain('--_press-paint-image');
   });
 
   it('fades over the theme’s duration on every pointer and changes at once under Reduce Motion', () => {
-    const durations = [
-      ...(declarationsOf(circle('md')).get('transition-duration') ??
-        new Map<string | null, string>()),
-    ];
+    const classes = circleClassName({
+      size: 'md',
+      isFilled: true,
+      isDisabled: false,
+    });
+    expect(classes).toContain('duration-[var(--duration-fast)]');
+    expect(classes).toContain('motion-reduce:duration-0');
     // No pointer gets a timing of its own.
-    expect(durations.filter(([media]) => media?.includes('pointer'))).toEqual(
-      [],
-    );
-    const byMedia = new Map(durations);
-    expect(byMedia.get(null)).toMatch(/^var\(--duration-fast/);
-    expect(byMedia.get(REDUCED_MOTION)).toBe('0s');
+    expect(classes).not.toMatch(/pointer-(coarse|fine):duration/);
   });
 
-  it.each([
-    ['md', large],
-    ['sm', xSmall],
-  ] as const)(
-    'draws the %s circle at UIKit’s diameter and stroke',
-    (size, row) => {
-      const declared = declarationsOf(circle(size));
-      expect(toNumber(declared.get('width')?.get(null))).toBe(row.diameter);
-      expect(toNumber(declared.get('height')?.get(null))).toBe(row.diameter);
-      // The ring is an inset shadow of this width (a border would snap to
-      // whole device pixels).
-      expect(toNumber(declared.get('--_circle-stroke')?.get(null))).toBe(
-        row.stroke,
-      );
-    },
-  );
-
   it('draws the empty ring as an inset shadow of the stroke, and the filled circle without one', () => {
-    render(<CircleCheckIndicator state="unchecked" size="md" />);
-    const empty = document.querySelector(
-      '.astryx-circle-check-indicator:not([data-checked])',
+    expect(
+      circleClassName({size: 'md', isFilled: false, isDisabled: false}),
+    ).toContain(
+      '[box-shadow:inset_0_0_0_var(--_circle-stroke)_var(--color-border-emphasized)]',
     );
-    if (empty == null) {
-      throw new Error('no empty circle');
-    }
-    expect(declarationsOf(empty).get('box-shadow')?.get(null)).toMatch(
-      /^inset 0 0 0 var\(--_circle-stroke\)/,
-    );
-    render(<CircleCheckIndicator state="checked" size="md" />);
-    const filled = document.querySelector(
-      '.astryx-circle-check-indicator[data-checked="checked"]',
-    );
-    if (filled == null) {
-      throw new Error('no filled circle');
-    }
-    expect(declarationsOf(filled).get('box-shadow')?.get(null)).toBe('none');
+    expect(
+      circleClassName({size: 'md', isFilled: true, isDisabled: false}),
+    ).toContain('[box-shadow:none]');
+  });
+
+  it('shows the check and the bar in exactly one of the three states', () => {
+    const check = (isVisible: boolean) =>
+      circleCheckmarkClassName({size: 'md', isVisible}).split(' ')[0];
+    const bar = (isVisible: boolean) =>
+      circleBarClassName({size: 'md', isVisible}).split(' ')[0];
+    expect([check(false), bar(false)]).toEqual(['hidden', 'hidden']);
+    expect([check(true), bar(false)]).toEqual(['block', 'hidden']);
+    expect([check(false), bar(true)]).toEqual(['hidden', 'block']);
   });
 });

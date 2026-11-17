@@ -14,7 +14,7 @@ import {Button} from '@astryxdesign/core/Button';
 import {ButtonGroup} from '@astryxdesign/core/ButtonGroup';
 import {Icon} from '@astryxdesign/core/Icon';
 import {IconButton} from '@astryxdesign/core/IconButton';
-import {rtlStyles} from '@astryxdesign/core/utils';
+import {RTL_MIRROR_CLASS} from '@astryxdesign/core/utils';
 import {useScheduleContext} from '../context';
 import type {
   ScheduleHeaderContent,
@@ -43,7 +43,7 @@ function SchedulePaginationControls() {
             icon="chevronLeft"
             size="sm"
             color="inherit"
-            xstyle={rtlStyles.mirror}
+            className={RTL_MIRROR_CLASS}
           />
         }
         onClick={onPreviousDate}
@@ -56,7 +56,7 @@ function SchedulePaginationControls() {
             icon="chevronRight"
             size="sm"
             color="inherit"
-            xstyle={rtlStyles.mirror}
+            className={RTL_MIRROR_CLASS}
           />
         }
         onClick={onNextDate}
