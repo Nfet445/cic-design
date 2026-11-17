@@ -3,31 +3,21 @@
 'use client';
 
 import {useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Button} from '@astryxdesign/core/Button';
 import {Card} from '@astryxdesign/core/Card';
 import {useScrollableArea} from '@astryxdesign/core/hooks';
 import {HStack, VStack} from '@astryxdesign/core/Layout';
 import {Heading, Text} from '@astryxdesign/core/Text';
-import {colorVars} from '@astryxdesign/core/theme/tokens.stylex';
 
-const TOP_SHADOW = `inset 0 12px 8px -8px ${colorVars['--color-shadow']}`;
-const BOTTOM_SHADOW = `inset 0 -12px 8px -8px ${colorVars['--color-shadow']}`;
-
-const styles = stylex.create({
-  viewport: {
-    height: 160,
-  },
-  shadowTop: {
-    boxShadow: TOP_SHADOW,
-  },
-  shadowBottom: {
-    boxShadow: BOTTOM_SHADOW,
-  },
-  shadowBoth: {
-    boxShadow: `${TOP_SHADOW}, ${BOTTOM_SHADOW}`,
-  },
-});
+// Each shadow is a literal class: a Tailwind build scans the generated source,
+// so a class assembled from parts would never reach the stylesheet.
+const styles = {
+  viewport: 'h-40',
+  shadowTop: '[box-shadow:inset_0_12px_8px_-8px_var(--color-shadow)]',
+  shadowBottom: '[box-shadow:inset_0_-12px_8px_-8px_var(--color-shadow)]',
+  shadowBoth:
+    '[box-shadow:inset_0_12px_8px_-8px_var(--color-shadow),inset_0_-12px_8px_-8px_var(--color-shadow)]',
+} as const;
 
 const ACTIVITY = [
   'Maya created the Checkout project',
@@ -53,6 +43,15 @@ export default function UseScrollableAreaHookUsage() {
   const hiddenAbove = isScrollable && !atStart;
   const hiddenBelow = isScrollable && !atEnd;
 
+  const shadow =
+    hiddenAbove && hiddenBelow
+      ? styles.shadowBoth
+      : hiddenAbove
+        ? styles.shadowTop
+        : hiddenBelow
+          ? styles.shadowBottom
+          : '';
+
   return (
     <Card width={320} padding={4}>
       <VStack gap={3}>
@@ -65,17 +64,7 @@ export default function UseScrollableAreaHookUsage() {
             onClick={() => setCount(count + 1)}
           />
         </HStack>
-        <div
-          {...getViewportProps(
-            stylex.props(
-              styles.viewport,
-              hiddenAbove && hiddenBelow
-                ? styles.shadowBoth
-                : hiddenAbove
-                  ? styles.shadowTop
-                  : hiddenBelow && styles.shadowBottom,
-            ),
-          )}>
+        <div {...getViewportProps({className: `${styles.viewport} ${shadow}`})}>
           <VStack {...getContentProps()} gap={2}>
             {ACTIVITY.slice(0, count).map(entry => (
               <Text key={entry} type="body">
