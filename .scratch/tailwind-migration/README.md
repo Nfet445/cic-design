@@ -73,6 +73,14 @@ written into the ticket.
 
 ## Traps that cost a window each
 
+- A deprecated `.stylex.ts` shim that re-exports a class map under its old name
+  is not a source for that name. `swizzle` read the shim's subpath and turned
+  `import {iconBoxClassName} from '../Icon/iconBoxClasses'` into
+  `import {iconBoxSizeStyles as iconBoxClassName} from
+'@astryxdesign/core/Icon/IconSize.stylex'` — a different value under a
+  misleading name. `choosePublic` now keeps a `.stylex` subpath out of an
+  import whose origin is a plain module.
+
 - `mergeProps(xds, stylexResult, classNameOrStyle, style)` takes a **class
   string** or a **style object** as its third argument, never `{className}`.
   A migrated map is a string: join it with `tw()`, and never hand it to
