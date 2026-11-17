@@ -296,8 +296,8 @@ export const dropdownMenuPopoverMatchTriggerClassName = tw(
 
 /** The layer box's minimum width when the caller states one. */
 export const dropdownMenuPopoverMinWidthClassName =
-  'min-w-[var(--astryx-dropdown-menu-inline-size)]';
+  'min-w-[var(--astryx-dropdown-menu-inline-size,auto)]';
 
 /** The layer box's fixed width when the caller states one. */
 export const dropdownMenuPopoverFixedWidthClassName =
-  'w-[var(--astryx-dropdown-menu-inline-size)]';
+  'w-[var(--astryx-dropdown-menu-inline-size,auto)]';
