@@ -41,6 +41,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {useState} from 'react';
 import type {ISODateString} from '../utils';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {InputGroup} from '../InputGroup';
 import {InternationalizationProvider} from '../i18n';
 import {DateInput} from './DateInput';
@@ -58,6 +59,18 @@ import {
   scrollWheelItemInnerClassName,
   scrollWheelItemInnerTipClassName,
   scrollWheelScrollerClassName,
+  touchDateBodyClassName,
+  touchDateFooterClassName,
+  touchDateHeaderClassName,
+  touchDateHeaderResetClassName,
+  touchDateMonthArrowClassName,
+  touchDateMonthArrowIconClassName,
+  touchDateMonthArrowsClassName,
+  touchDatePanelBeneathClassName,
+  touchDatePanelOverlayClassName,
+  touchDateSheetBodyClassName,
+  touchDateTitleChevronClassName,
+  touchDateWeekdaysClassName,
 } from './dateInputClasses';
 import {
   toMonthIndex,
@@ -72,6 +85,7 @@ import {
   rowsIn,
   DEFAULT_MONTH_REACH,
 } from './monthGeometry';
+import {WEEKS_PER_PANE, dateInputTouchGeometry} from './tokens.stylex';
 import {WHEEL_ROW_HEIGHT} from './wheelOptions';
 import {SWIPE_DISTANCE} from './useOwnScrollGesture';
 import {DRAG_SLOP} from './usePointerDragScroll';
@@ -1062,8 +1076,10 @@ describe('DateInput — calendar surface', () => {
       // Still mounted, so the header cannot reflow...
       expect(arrow(name)).toBeInTheDocument();
       expect(arrow(name)).toHaveAttribute('aria-disabled', 'true');
-      // ...but gone from the accessibility tree, and so unreachable.
-      expect(screen.queryByRole('button', {name})).toBeNull();
+      // ...but gone from the accessibility tree, and so unreachable. jsdom
+      // loads none of the sheet, so the class that hides it is the evidence;
+      // `visibility: hidden` is what takes the name away.
+      expect(classesOf(arrow(name)!)).toContain('invisible');
     }
   });
 
@@ -2085,12 +2101,14 @@ describe('DateInput — month/year wheels', () => {
     expect(header.lastElementChild).toHaveAttribute('data-action', 'reset');
 
     openWheels();
-    // The wheels choose a month; there is no date there to clear.
-    expect(screen.queryByRole('button', {name: 'Reset'})).toBeNull();
-    // Hidden, not unmounted, so the header cannot change height mid-swap.
-    expect(
-      document.querySelector('dialog[open] [data-action="reset"]'),
-    ).toHaveAttribute('inert');
+    // The wheels choose a month; there is no date there to clear. Hidden, not
+    // unmounted, so the header cannot change height mid-swap — read off the
+    // class, since jsdom loads none of the sheet.
+    const hiddenReset = document.querySelector(
+      'dialog[open] [data-action="reset"]',
+    );
+    expect(hiddenReset).toHaveAttribute('inert');
+    expect(classesOf(hiddenReset as HTMLElement)).toContain('invisible');
   });
 
   it('Save closes the whole picker; Done only leaves the wheels', () => {
@@ -2169,15 +2187,21 @@ describe('DateInput — month/year wheels', () => {
     // pass or fail on that nesting rather than on reachability.
     const isBlocked = (label: string) =>
       button(label)?.closest('[inert]') != null;
+    // The action sits inside the fading wrapper, and it is the wrapper that
+    // hides: jsdom loads none of the sheet, so the class is the evidence.
+    const isHidden = (label: string) =>
+      classesOf(button(label)!.parentElement!).includes('invisible');
 
     expect(isBlocked('Save')).toBe(false);
+    expect(isHidden('Save')).toBe(false);
     expect(isBlocked('Done')).toBe(true);
-    expect(screen.queryByRole('button', {name: 'Done'})).toBeNull();
+    expect(isHidden('Done')).toBe(true);
 
     openWheels();
     expect(isBlocked('Save')).toBe(true);
+    expect(isHidden('Save')).toBe(true);
     expect(isBlocked('Done')).toBe(false);
-    expect(screen.queryByRole('button', {name: 'Save'})).toBeNull();
+    expect(isHidden('Done')).toBe(false);
 
     // Both stay mounted throughout, which is what keeps the row's height
     // fixed across the swap.
@@ -2991,6 +3015,17 @@ describe('DateInput — scroll CSS (definition-level)', () => {
     expect(scrollWheelScrollerClassName).toContain('box-border');
   });
 
+  it('makes the sheet body exactly one pane tall', () => {
+    // Both panels share one cell one month pane high. The body spells the
+    // geometry out as a literal, because an interpolated class emits no rule;
+    // the scroller inside it reads the same number as a variable.
+    expect(dateInputTouchGeometry.paneBlockSize).toBe(
+      `calc(${WEEKS_PER_PANE} * 44px)`,
+    );
+    expect(touchDateBodyClassName).toContain('[block-size:264px]');
+    expect(touchDateBodyClassName).toContain('grid');
+  });
+
   it('sizes the wheel row tighter than a day cell, with larger text', () => {
     const tokens = read('tokens.stylex.ts');
     // Scroll-first rows: closer together than day cells and closer to the
@@ -3091,25 +3126,18 @@ describe('DateInput — scroll CSS (definition-level)', () => {
   });
 
   it('insets the sheet content equally on every edge', () => {
-    const source = read('TouchDateField.tsx');
     // One inset, and the header/footer must not add their own on top of it —
     // that is what put the title and Done 4px off the day grid's line.
-    expect(source).toContain("paddingInline: spacingVars['--spacing-4']");
-    expect(source).toContain("paddingBlockEnd: spacingVars['--spacing-4']");
+    expect(touchDateSheetBodyClassName).toContain('px-4');
+    expect(touchDateSheetBodyClassName).toContain(
+      '[padding-block-end:var(--spacing-4)]',
+    );
     // The block-start is the documented exception: BottomSheet keeps the band
     // under its grab bar (component:BottomSheet, Content area inset), so the
     // content wrapper adds nothing above.
-    expect(source).toContain('paddingBlockStart: 0,');
-    const header = source.slice(
-      source.indexOf('  header: {'),
-      source.indexOf('  title: {'),
-    );
-    expect(header).not.toContain('paddingInline');
-    const footer = source.slice(
-      source.indexOf('  footer: {'),
-      source.indexOf('  sheetBody: {'),
-    );
-    expect(footer).not.toContain('paddingInline');
+    expect(touchDateSheetBodyClassName).toContain('[padding-block-start:0]');
+    expect(touchDateHeaderClassName).not.toContain('px-');
+    expect(touchDateFooterClassName).not.toContain('px-');
   });
 
   it('sizes the closed field the same on both surfaces', () => {
@@ -3126,16 +3154,12 @@ describe('DateInput — scroll CSS (definition-level)', () => {
   });
 
   it('floors the month arrows too — Button tops out at 36px', () => {
-    const source = read('TouchDateField.tsx');
-    const arrow = source.slice(
-      source.indexOf('  monthArrow: {'),
-      source.indexOf('  monthArrowIcon: {'),
-    );
-    expect(arrow).toContain(
-      "minBlockSize: {default: null, '@media (pointer: coarse)': TOUCH_TARGET}",
-    );
-    expect(arrow).toContain(
-      "minInlineSize: {default: null, '@media (pointer: coarse)': TOUCH_TARGET}",
+    const arrow = touchDateMonthArrowClassName({isUnavailable: false});
+    expect(arrow).toContain('pointer-coarse:min-h-[44px]');
+    expect(arrow).toContain('pointer-coarse:min-w-[44px]');
+    // An arrow with nowhere to go keeps that box, so the pair does not move.
+    expect(touchDateMonthArrowClassName({isUnavailable: true})).toBe(
+      `${arrow} invisible`,
     );
   });
 
@@ -3145,11 +3169,7 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * own nav icons.
    */
   it('keeps the mirrored arrow glyph centred', () => {
-    const source = read('TouchDateField.tsx');
-    const icon = source.slice(source.indexOf('  monthArrowIcon: {'));
-    expect(icon.slice(0, icon.indexOf('}'))).toContain(
-      "display: 'inline-flex'",
-    );
+    expect(touchDateMonthArrowIconClassName).toBe('inline-flex');
   });
 
   /**
@@ -3173,38 +3193,36 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * background, the layer beneath gets visibility and nothing else.
    */
   it('fades the wheels in and out over a calendar that does not animate', () => {
-    const source = read('TouchDateField.tsx');
-    const overlay = declarations(source, 'panelOverlay');
-    const beneath = declarations(source, 'panelBeneath');
+    const overlay = touchDatePanelOverlayClassName({isHidden: false});
+    const beneath = touchDatePanelBeneathClassName({isHidden: false});
 
     // The layer fades, both directions — the transition is on the shown
     // state, so entering and leaving it both animate.
-    expect(overlay).toContain("transitionProperty: 'opacity, visibility'");
-    expect(overlay).toContain('transitionDuration: SWAP_DURATION');
-    expect(declarations(source, 'panelOverlayHidden')).toContain('opacity: 0');
+    expect(overlay).toContain('[transition-property:opacity,visibility]');
+    expect(overlay).toContain('[transition-duration:var(--duration-fast)]');
+    expect(touchDatePanelOverlayClassName({isHidden: true})).toContain(
+      'opacity-0',
+    );
 
     // And it is opaque while it does, in the token the sheet paints itself
     // with, so the fade is uniform across the band and the text alike.
-    expect(overlay).toContain(
-      "backgroundColor: colorVars['--color-background-surface']",
-    );
+    expect(overlay).toContain('bg-[color:var(--color-background-surface)]');
 
     // The layer beneath moves nothing that can be SEEN moving: visibility
     // only, no opacity, so it is covered and uncovered rather than faded.
-    expect(beneath).toContain("transitionProperty: 'visibility'");
-    expect(beneath.some(d => d.startsWith('opacity'))).toBe(false);
-    expect(
-      declarations(source, 'panelBeneathHidden').some(d =>
-        d.startsWith('opacity'),
-      ),
-    ).toBe(false);
+    expect(beneath).toContain('[transition-property:visibility]');
+    expect(beneath).not.toContain('opacity');
+    expect(touchDatePanelBeneathClassName({isHidden: true})).not.toContain(
+      'opacity',
+    );
 
     // Two of each, and never the same one twice: the calendar panel and the
     // calendar's footer actions are beneath, the wheels and their Done above.
+    const source = read('TouchDateField.tsx');
     const count = (name: string) =>
-      source.match(new RegExp(`styles\\.${name},`, 'g'))?.length ?? 0;
-    expect(count('panelBeneath')).toBe(2);
-    expect(count('panelOverlay')).toBe(2);
+      source.match(new RegExp(`${name}\\(\\{`, 'g'))?.length ?? 0;
+    expect(count('touchDatePanelBeneathClassName')).toBe(2);
+    expect(count('touchDatePanelOverlayClassName')).toBe(2);
   });
 
   /**
@@ -3221,8 +3239,8 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * exactly 1 — which is to say, whenever anyone is actually looking.
    */
   it('paints the layer as a unit, so the plate really covers', () => {
-    expect(declarations(read('TouchDateField.tsx'), 'panelOverlay')).toContain(
-      "isolation: 'isolate'",
+    expect(touchDatePanelOverlayClassName({isHidden: false})).toContain(
+      'isolate',
     );
   });
 
@@ -3234,12 +3252,18 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * grid being covered.
    */
   it('fades the uncovered chrome on the same timing as the layer', () => {
-    const source = read('TouchDateField.tsx');
-    for (const name of ['weekdays', 'monthArrows']) {
-      expect(declarations(source, name)).toContain(
-        'transitionDuration: SWAP_DURATION',
-      );
-      expect(declarations(source, `${name}Hidden`)).toContain('opacity: 0');
+    for (const [shown, hidden] of [
+      [
+        touchDateWeekdaysClassName({isHidden: false}),
+        touchDateWeekdaysClassName({isHidden: true}),
+      ],
+      [
+        touchDateMonthArrowsClassName({isHidden: false}),
+        touchDateMonthArrowsClassName({isHidden: true}),
+      ],
+    ]) {
+      expect(shown).toContain('[transition-duration:var(--duration-fast)]');
+      expect(hidden).toContain('opacity-0');
     }
   });
 
@@ -3282,23 +3306,22 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * rotation is travel.
    */
   it('fades linearly, and eases only the thing that travels', () => {
-    const source = read('TouchDateField.tsx');
-    const styles = source.slice(
-      source.indexOf('const styles = stylex.create('),
-    );
-    const chevron = styles.slice(
-      styles.indexOf('  titleChevron: {'),
-      styles.indexOf('  titleChevronOpen: {'),
-    );
-    expect(chevron).toContain("transitionProperty: 'transform'");
+    const chevron = touchDateTitleChevronClassName({isOpen: false});
+    expect(chevron).toContain('[transition-property:transform]');
     expect(chevron).toContain(
-      "transitionTimingFunction: easeVars['--ease-standard']",
+      '[transition-timing-function:var(--ease-standard)]',
     );
     // The chevron is the only eased transition; every fade is linear.
-    expect(
-      styles.match(/transitionTimingFunction: easeVars\['--ease-standard'\]/g),
-    ).toHaveLength(1);
-    expect(styles.match(/transitionTimingFunction: 'linear'/g)).toHaveLength(4);
+    const fades = [
+      touchDateMonthArrowsClassName({isHidden: false}),
+      touchDateHeaderResetClassName({isHidden: false}),
+      touchDateWeekdaysClassName({isHidden: false}),
+      touchDatePanelOverlayClassName({isHidden: false}),
+    ];
+    for (const fade of fades) {
+      expect(fade).toContain('[transition-timing-function:linear]');
+    }
+    expect(chevron).not.toContain('[transition-timing-function:linear]');
   });
 
   /**
@@ -3312,18 +3335,24 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * 175ms, and the swap follows it without knowing.
    */
   it('runs the whole swap on one duration', () => {
-    const source = read('TouchDateField.tsx');
-    const styles = source.slice(
-      source.indexOf('const styles = stylex.create('),
-    );
-    // The arrows, Reset, the weekday row, the layer beneath, the layer
-    // above, and the chevron.
-    expect(styles.match(/transitionDuration: SWAP_DURATION/g)).toHaveLength(6);
-    // And no leftover hand-rolled timing beside them.
-    expect(styles).not.toContain('PANEL_FADE_MS');
-    expect(source).toContain(
-      "const SWAP_DURATION = durationVars['--duration-fast']",
-    );
+    // The arrows, Reset, the weekday row, the layer beneath, the layer above,
+    // and the chevron.
+    const arms = [
+      touchDateMonthArrowsClassName({isHidden: false}),
+      touchDateHeaderResetClassName({isHidden: false}),
+      touchDateWeekdaysClassName({isHidden: false}),
+      touchDatePanelBeneathClassName({isHidden: false}),
+      touchDatePanelOverlayClassName({isHidden: false}),
+      touchDateTitleChevronClassName({isOpen: false}),
+    ];
+    for (const arm of arms) {
+      // A token, not a literal: the Storybook theme resolves `--duration-fast`
+      // to 125ms, and the swap follows it without knowing.
+      expect(arm).toContain('[transition-duration:var(--duration-fast)]');
+      expect(arm).toContain('motion-reduce:[transition-duration:0.01s]');
+      // No leftover hand-rolled timing beside them.
+      expect(arm).not.toMatch(/\d+ms/);
+    }
   });
 
   it('keeps the virtual keyboard down on the touch field', () => {
