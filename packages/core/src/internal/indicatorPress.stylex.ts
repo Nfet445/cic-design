@@ -7,6 +7,8 @@
  *   indicator that paints its own press
  * @position Internal entry for Astryx's own replacement indicators;
  *   CheckboxInput reads it
+ * @deprecated The press scope becomes a `data-astryx-*` attribute. This
+ *   module disappears with StyleX.
  */
 
 import * as stylex from '@stylexjs/stylex';

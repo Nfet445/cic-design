@@ -4,7 +4,7 @@
 
 /**
  * @file Comments.tsx
- * @input Uses React, StyleX, ChatLayout, ChatMessageList, Banner, Button,
+ * @input Uses React, ChatLayout, ChatMessageList, Banner, Button,
  *   EmptyState, and the Comments family's controller, rows, and composer
  * @output Exports Comments and CommentsProps
  * @position The comments on one item: its comment threads and activity
@@ -33,7 +33,6 @@ import {Button} from '@astryxdesign/core/Button';
 import {ChatLayout, ChatMessageList} from '@astryxdesign/core/Chat';
 import {EmptyState} from '@astryxdesign/core/EmptyState';
 import {VStack} from '@astryxdesign/core/Layout';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {mergeProps, themeProps} from '@astryxdesign/core/utils';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {CommentComposerBase} from './CommentComposer';
@@ -44,11 +43,19 @@ import {
   ErrorBanner,
 } from './CommentParts';
 import {CommentRow, THREAD_DIVIDERS, type ThreadDivider} from './CommentRow';
+import {
+  commentsComposerDockClassName,
+  commentsRootClassName,
+  commentsTimelineBleedBalancedClassName,
+  commentsTimelineBleedCompactClassName,
+  commentsTimelineClassName,
+} from './commentsClasses';
 import {useStatusAnnouncement} from '../useStatusAnnouncement';
 import {
   CommentsContextProvider,
   useCommentsController,
 } from './CommentsContext';
+import {tw} from '../tw';
 import {timelineTime} from './utils';
 import type {
   CommentAnchor,
@@ -136,36 +143,6 @@ type TimelineEntry =
   | {kind: 'event'; value: CommentActivityEvent};
 
 const NO_EVENTS: readonly CommentActivityEvent[] = [];
-
-const styles = stylex.create({
-  root: {
-    minHeight: 0,
-    overflow: 'hidden',
-  },
-  timeline: {
-    position: 'relative',
-    zIndex: 0,
-    isolation: 'isolate',
-  },
-  // A card parent's Sections bleed to the panel's edges through the message
-  // list's padding.
-  bleedCompact: {
-    width: `calc(100% + (${spacingVars['--spacing-3']} * 2))`,
-    marginInline: `calc(-1 * ${spacingVars['--spacing-3']})`,
-    marginBlockStart: `calc(-1 * ${spacingVars['--spacing-2']})`,
-  },
-  bleedBalanced: {
-    width: `calc(100% + (${spacingVars['--spacing-4']} * 2))`,
-    marginInline: `calc(-1 * ${spacingVars['--spacing-4']})`,
-    marginBlockStart: `calc(-1 * ${spacingVars['--spacing-4']})`,
-  },
-  // ChatLayout's dock pads one spacing step less than ChatMessageList, so a
-  // docked composer would stick out past the threads' edge. One step of
-  // inset restores it.
-  composerDock: {
-    paddingInline: spacingVars['--spacing-1'],
-  },
-});
 
 /**
  * The comments on one item: comment threads with one level of replies,
@@ -500,16 +477,18 @@ export function Comments({
     ) : (
       emptyState
     );
-  const timelineXstyle = [
-    styles.timeline,
+  const timelineClassName = tw(
+    commentsTimelineClassName,
     bleedsToPanelEdge &&
-      (density === 'compact' ? styles.bleedCompact : styles.bleedBalanced),
-  ];
+      (density === 'compact'
+        ? commentsTimelineBleedCompactClassName
+        : commentsTimelineBleedBalancedClassName),
+  );
 
   const loadingStack = (
     <VStack
       width={bleedsToPanelEdge ? undefined : '100%'}
-      xstyle={timelineXstyle}>
+      className={timelineClassName}>
       <CommentThreadLoadingSkeleton container={container} />
     </VStack>
   );
@@ -517,7 +496,7 @@ export function Comments({
     <VStack
       width={bleedsToPanelEdge ? undefined : '100%'}
       gap={container === 'card' ? 0 : density === 'compact' ? 2 : 4}
-      xstyle={timelineXstyle}>
+      className={timelineClassName}>
       {hasOlderComments && (
         <VStack gap={1} align="center" width="100%">
           {olderError != null ? (
@@ -580,8 +559,8 @@ export function Comments({
         {...rest}
         {...mergeProps(
           themeProps('comments', {layout, density, container}),
-          stylex.props(!isEmbedded && styles.root, xstyle),
-          className,
+          stylex.props(xstyle),
+          tw(!isEmbedded && commentsRootClassName, className),
           style,
         )}>
         {loadError != null && (
@@ -621,7 +600,7 @@ export function Comments({
           <ChatLayout
             composer={
               composerPosition === 'bottom' && visibleComposer != null ? (
-                <VStack width="100%" xstyle={styles.composerDock}>
+                <VStack width="100%" className={commentsComposerDockClassName}>
                   {visibleComposer}
                 </VStack>
               ) : null

@@ -1,6 +1,6 @@
 # storybook and vibe tests
 
-Status: in-progress (both surfaces load the sheet; the browser comparison is open)
+Status: done
 Blocked by: 31
 Wave: 9
 Ticket: 33
@@ -107,3 +107,33 @@ Not verified: `pnpm -F @astryxdesign/storybook build` has not run on the branch 
 `internal/vibe-tests/src/build-previews.ts:158` shows the two targets are not the same thing: `astryx-tailwind` is a vibeability target that renders a component written in plain Tailwind against the CDN script at `internal/vibe-tests/src/build-previews.ts:209`, so it never reads our sheet. The target whose screenshots show Astryx components is `astryx`, and `createEntryFile` at `internal/vibe-tests/src/build-previews.ts:155` gives it only `@astryxdesign/core/reset.css` plus whatever the StyleX unplugin injects from source.
 
 So the survey's remaining work here is one import in `createEntryFile` for the `astryx` target: `packages/core/dist/astryx-tailwind.css`, guarded by the same build check `internal/vibe-tests/src/build-report.ts:38` already applies to `packages/core/dist/astryx.css` and `packages/themes/neutral/dist/theme.css`. Do not read the sheet at request time the way Storybook does — these previews are static files written to `results/`, so a build artifact is the right input.
+
+### Final slice (`9a01693b8`)
+
+`internal/vibe-tests/environments/project-astryx-tailwind/globals.css` now
+imports `@astryxdesign/core/astryx-tailwind.css` in the reset → `astryx.css` →
+built sheet order `render-pages.ts` uses, and keeps
+`@astryxdesign/core/tailwind-theme.css`.
+
+Decision: the bridge stays. The built sheet carries no `@theme` block, so
+without the bridge the environment's own Tailwind build generates none of the
+words a generated page writes (`bg-surface`, `text-primary`) — the worker
+measured 0 matches in a compiled probe. The bridge declares no variable of its
+own (`@theme reference inline`), so keeping it adds no second styling path: it
+is the vocabulary, the built sheet is the component rules. That is why
+`The Tailwind environment no longer needs a second stylesheet` reads as the
+component sheet, not the bridge.
+
+Verification after the change and the merge of the trunk:
+
+- `pnpm exec vitest run internal/vibe-tests/src` — 64 passed.
+- `node scripts/fixture-suite.mjs verify` — `verified 3 canonical fixtures`.
+- `prettier --check` clean.
+- Storybook: `pnpm -F @astryxdesign/storybook build` exit 0 from the earlier
+  slice; the sheet is in `dist/assets/iframe-*.css` inside `@layer astryx-base`.
+
+Still not run, and left to review rather than code: the `Done when` browser
+comparison of a migrated story against the family check page. The build proves
+the classes resolve; nobody has looked at the computed values side by side.
+
+No changeset: no published package surface changed.

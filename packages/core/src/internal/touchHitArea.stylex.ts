@@ -21,6 +21,8 @@
  * `::before`, so its positioned children paint over the clip path's edge, and
  * the pixels on their own edges stay theirs. SYNC: utils/hitArea.ts
  * HIT_INSET_PROPERTIES, utils/touchHitArea.ts and utils/touchHitArea.test.tsx.
+ * @deprecated Internal seam: it is not a public API and it disappears
+ *   when StyleX leaves the package.
  */
 
 import * as stylex from '@stylexjs/stylex';

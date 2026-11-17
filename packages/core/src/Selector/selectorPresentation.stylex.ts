@@ -5,6 +5,8 @@
  * @input Uses field border tokens
  * @output Shared focus-return styles for Selector and MultiSelector
  * @position Internal visual policy for selector presentation changes
+ * @deprecated Internal visual seam: it is not a public API and it
+ *   disappears when StyleX leaves the package.
  */
 
 import * as stylex from '@stylexjs/stylex';

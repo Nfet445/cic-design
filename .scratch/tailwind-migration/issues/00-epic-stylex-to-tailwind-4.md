@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 41 of 50 tickets done, plus two waves (layout primitives,
+Progress: 45 of 50 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -72,7 +72,7 @@ buttons) that landed before the tickets were written.
 
 ### Wave 6 — `family:navigation-destinations`
 
-- [ ] `18-links-and-items` — links, rows, avatars, pagination, cards
+- [x] `18-links-and-items` — links, rows, avatars, pagination, cards
 - [x] `19-tabs-and-headings` — `TabList`, nav tabs, tab menus, `SegmentedControl`
 - [x] `20-side-nav` — `SideNav`, `TreeList`, the size cascade
 - [x] `21-top-nav` — `TopNav` and its mega menus
@@ -80,7 +80,7 @@ buttons) that landed before the tickets were written.
 ### Wave 7 — `family:overlay-dismissal` and `family:action-groups`
 
 - [x] `22-dialogs-and-sheets` — `Dialog`, `AlertDialog`, `Drawer`, `BottomSheet`, `MobileNav`, `Lightbox`
-- [ ] `23-menus` — `DropdownMenu`, `ContextMenu`, `MoreMenu`, option menus
+- [x] `23-menus` — `DropdownMenu`, `ContextMenu`, `MoreMenu`, option menus
 - [x] `49-overflow-and-gesture` — scroll shadows, overflow measurement, swipe, resize
 - [x] `50-bottom-sheet-host` — the `BottomSheet` host and `Lightbox`, split out of ticket 22 because their tests own about twenty computed-style reads
 - [x] `24-tooltip-hovercard` — `Tooltip`, `HoverCard`
@@ -102,9 +102,9 @@ buttons) that landed before the tickets were written.
 - [x] `31-themes` — the bridge keeps its names, only its shape changes
 - [x] `32-cli-docs-and-templates` — consumer styling docs stop teaching StyleX
 - [ ] `45-template-pages-and-blocks` — the shipped page and block templates become class-based
-- [ ] `33-storybook-and-vibe-tests` — both load the sheet
+- [x] `33-storybook-and-vibe-tests` — both load the sheet
 - [x] `34-swizzle-and-render-pipeline` — ejected source states its stylesheet
-- [ ] `35-deprecate-stylex-subpaths` — 80 export entries, one release
+- [x] `35-deprecate-stylex-subpaths` — 80 export entries, one release
 - [x] `37-table-row-and-cell` — row and body cell
 - [x] `38-data-token-sheet` — 56 data tokens get their own sheet
 - [x] `39-layout-regions-page` — a check page that does not contradict the classes
