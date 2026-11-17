@@ -3,35 +3,26 @@
 'use client';
 
 import {useCallback, useRef, useState, type Ref} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {createPanGesture} from '@astryxdesign/core';
 import {Card} from '@astryxdesign/core/Card';
 import {Center} from '@astryxdesign/core/Center';
 import {HStack} from '@astryxdesign/core/HStack';
 import {usePanGesture, type PanGestureEvent} from '@astryxdesign/core/hooks';
-import {
-  colorVars,
-  durationVars,
-  easeVars,
-  radiusVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 
-const styles = stylex.create({
+// `CSSProperties` has no index signature for custom properties, so the drag's
+// inline style needs this alias to typecheck.
+type DragStyle = React.CSSProperties &
+  Record<'--astryx-box-x' | '--astryx-box-y', string>;
+
+const styles = {
   // A wash under the stage, so the box on top reads in light and dark themes.
-  stage: {
-    backgroundColor: colorVars['--color-neutral'],
-    borderRadius: radiusVars['--radius-container'],
-  },
-  box: {cursor: 'grab', userSelect: 'none'},
+  stage: 'bg-[var(--color-neutral)] rounded-[var(--radius-container)]',
+  // The place the drag leaves the box in comes from the two variables.
+  box: 'cursor-grab select-none [translate:var(--astryx-box-x)_var(--astryx-box-y)]',
   // Let go, the box springs back, unless the person reduces motion.
-  springBack: {
-    transition: {
-      default: `translate ${durationVars['--duration-medium']} ${easeVars['--ease-move']}`,
-      '@media (prefers-reduced-motion: reduce)': 'none',
-    },
-  },
-  drag: (x: number, y: number) => ({translate: `${x}px ${y}px`}),
-});
+  springBack:
+    'transition-[translate] [transition-duration:var(--duration-medium)] [transition-timing-function:var(--ease-move)] motion-reduce:transition-none',
+} as const;
 
 type Drag = {x: number; y: number; held: boolean};
 const REST: Drag = {x: 0, y: 0, held: false};
@@ -49,17 +40,18 @@ function DraggableBox(props: {
   drag: Drag;
 }) {
   const {name, ref, drag} = props;
+  const dragStyle: DragStyle = {
+    '--astryx-box-x': `${drag.x}px`,
+    '--astryx-box-y': `${drag.y}px`,
+  };
   return (
-    <Center width="min(280px, 80vw)" height={180} xstyle={styles.stage}>
+    <Center width="min(280px, 80vw)" height={180} className={styles.stage}>
       <Card
         ref={ref}
         padding={6}
         elevation="med"
-        xstyle={[
-          styles.box,
-          styles.drag(drag.x, drag.y),
-          !drag.held && styles.springBack,
-        ]}>
+        className={`${styles.box} ${drag.held ? '' : styles.springBack}`}
+        style={dragStyle}>
         {name}
       </Card>
     </Center>

@@ -4,7 +4,7 @@
 
 /**
  * @file DialogHeroHeader.tsx
- * @input Uses React, StyleX, theme tokens, LayoutHeader, Button, Icon,
+ * @input Uses React, LayoutHeader, Button, Icon,
  *   Heading, MediaTheme, VisuallyHidden, useDialogContext, useTranslator
  * @output Exports DialogHeroHeader component, DialogHeroHeaderProps, and
  *   DialogHeroHeaderMediaMode
@@ -52,9 +52,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {LayoutHeader} from '@astryxdesign/core/Layout';
 import {Button} from '@astryxdesign/core/Button';
 import {Icon} from '@astryxdesign/core/Icon';
@@ -63,53 +61,14 @@ import {MediaTheme} from '@astryxdesign/core/theme';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
 import {useDialogContext} from '@astryxdesign/core/internal/dialog-context';
 import {useTranslator} from '@astryxdesign/core/i18n';
-
-const styles = stylex.create({
-  // Media container: full width of the header, media centered. Negative
-  // margins cancel the LayoutHeader padding (published as
-  // --container-padding-* custom properties) so the media bleeds to the
-  // dialog's edges — the same compensation contract Section uses. Layout-only
-  // wrapper: all paint lives on the caller's media and the Button.
-  mediaArea: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginInlineStart: 'calc(-1 * var(--container-padding-inline-start, 0px))',
-    marginInlineEnd: 'calc(-1 * var(--container-padding-inline-end, 0px))',
-    marginBlockStart: 'calc(-1 * var(--container-padding-block-start, 0px))',
-  },
-  // Close button floats over the media's top-trailing corner (logical
-  // properties keep it trailing under RTL, matching Drawer's controls).
-  closeButton: {
-    position: 'absolute',
-    insetBlockStart: spacingVars['--spacing-2'],
-    insetInlineEnd: spacingVars['--spacing-2'],
-    zIndex: 1,
-  },
-  // Title row below the media; startContent is outside the accessible label.
-  titleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-3'],
-    marginBlockStart: spacingVars['--spacing-4'],
-  },
-  startContent: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  // Allow the heading to shrink and truncate inside the flex row.
-  titleHeading: {
-    minWidth: 0,
-    outline: 'none',
-  },
-  // Layout-only slot around a caller-provided heading. It never takes the
-  // title id or focus; those land on the heading itself.
-  customTitleSlot: {
-    minWidth: 0,
-  },
-});
+import {
+  dialogHeroHeaderCloseButtonClassName,
+  dialogHeroHeaderCustomTitleSlotClassName,
+  dialogHeroHeaderMediaAreaClassName,
+  dialogHeroHeaderStartContentClassName,
+  dialogHeroHeaderTitleClassName,
+  dialogHeroHeaderTitleRowClassName,
+} from './dialogHeroHeaderClasses';
 
 const HEADING_SELECTOR = 'h1, h2, h3, h4, h5, h6, [role="heading"]';
 
@@ -347,7 +306,7 @@ export function DialogHeroHeader({
         onOpenChange(false);
       }}
       isIconOnly
-      xstyle={styles.closeButton}
+      className={dialogHeroHeaderCloseButtonClassName}
     />
   );
 
@@ -355,9 +314,11 @@ export function DialogHeroHeader({
   // title id and focus request onto the rendered heading, never the slot and
   // never the start-content, so neither leaks into the dialog's name.
   const titleRow = (
-    <div {...stylex.props(styles.titleRow)}>
+    <div className={dialogHeroHeaderTitleRowClassName}>
       {startContent != null && (
-        <div {...stylex.props(styles.startContent)}>{startContent}</div>
+        <div className={dialogHeroHeaderStartContentClassName}>
+          {startContent}
+        </div>
       )}
       {typeof title === 'string' ? (
         <Heading
@@ -367,13 +328,13 @@ export function DialogHeroHeader({
           data-autofocus={shouldAutoFocus ? 'dialog-title' : undefined}
           level={2}
           maxLines={maxLines}
-          xstyle={styles.titleHeading}>
+          className={dialogHeroHeaderTitleClassName}>
           {title}
         </Heading>
       ) : (
         <div
           ref={attachCustomTitleSlot}
-          {...stylex.props(styles.customTitleSlot)}>
+          className={dialogHeroHeaderCustomTitleSlotClassName}>
           {title}
         </div>
       )}
@@ -388,7 +349,7 @@ export function DialogHeroHeader({
       className={className}
       style={style}
       {...rest}>
-      <div {...stylex.props(styles.mediaArea)}>
+      <div className={dialogHeroHeaderMediaAreaClassName}>
         {media}
         {closeButton && (
           <MediaTheme mode={mediaMode ?? 'off'}>{closeButton}</MediaTheme>

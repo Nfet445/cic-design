@@ -21,15 +21,23 @@ import * as chatReactionBarClasses from './Chat/chatReactionBarClasses';
 import * as chatReasoningClasses from './ChatReasoning/chatReasoningClasses';
 import * as chatTypingIndicatorClasses from './Chat/chatTypingIndicatorClasses';
 import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
+import * as chatVirtualizerClasses from './Chat/chatVirtualizerClasses';
+import * as codeEditorClasses from './CodeEditor/codeEditorClasses';
 import * as commentActionsClasses from './Comments/commentActionsClasses';
 import * as commentMarkdownClasses from './Comments/commentMarkdownClasses';
 import * as commentPartsClasses from './Comments/commentPartsClasses';
 import * as commentRowClasses from './Comments/commentRowClasses';
 import * as commentsClasses from './Comments/commentsClasses';
+import * as dialogHeroHeaderClasses from './DialogHeroHeader/dialogHeroHeaderClasses';
 import * as diffViewerClasses from './DiffViewer/diffViewerClasses';
+import * as lineClampClasses from './LineClamp/lineClampClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
 import * as scheduleClasses from './Schedule/scheduleClasses';
+import * as pageControlClasses from './PageControl/pageControlClasses';
+import * as radialChartClasses from './Radial/radialChartClasses';
+import * as selectableCardGroupClasses from './SelectableCardGroup/selectableCardGroupClasses';
+import * as statClasses from './Stat/statClasses';
 import * as transferListClasses from './TransferList/transferListClasses';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -56,20 +64,31 @@ function labClassNames() {
     chatReasoningClasses,
     chatTypingIndicatorClasses,
     chatUnreadDividerClasses,
+    chatVirtualizerClasses,
+    codeEditorClasses,
     commentActionsClasses,
     commentMarkdownClasses,
     commentPartsClasses,
     commentRowClasses,
     commentsClasses,
+    dialogHeroHeaderClasses,
     diffViewerClasses,
+    lineClampClasses,
     listInputClasses,
     loadingMessageClasses,
+    pageControlClasses,
+    radialChartClasses,
     scheduleClasses,
+    statClasses,
     transferListClasses,
   ]) {
     for (const [name, value] of Object.entries(map)) {
       if (name.endsWith('ClassName')) {
         add(value);
+      } else if (name.endsWith('ClassNames')) {
+        for (const variant of Object.values(value)) {
+          add(variant);
+        }
       }
     }
   }

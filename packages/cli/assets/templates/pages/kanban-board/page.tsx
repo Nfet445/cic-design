@@ -7,10 +7,10 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 
 import {
   Layout,
@@ -226,62 +226,41 @@ const INITIAL_ITEMS: WorkItem[] = [
 // on card controls still register normally.
 const DRAG_THRESHOLD = 5;
 
-// Shared width for every board column, so they stay visually aligned.
-const COLUMN_WIDTH = 300;
-
 // ============= STYLES =============
 
-const styles = stylex.create({
-  boardColumns: {
-    overflowX: 'auto',
-    overflowY: 'hidden',
-    height: '100%',
-    padding: 'var(--spacing-4)',
-  },
-  columnShell: {
-    flexShrink: 0,
-    flexBasis: COLUMN_WIDTH,
-    height: '100%',
-  },
-  card: {
-    cursor: 'grab',
-    userSelect: 'none',
-    touchAction: 'none',
-    transition: 'box-shadow 120ms ease',
-    ':hover': {
-      boxShadow: 'var(--shadow-med)',
-    },
-  },
+// The dragged card and its landing ghost carry their geometry as inline
+// variables, so the declarations stay in the classes below.
+type DragCloneStyle = CSSProperties &
+  Record<'--astryx-drag-x' | '--astryx-drag-y' | '--astryx-drag-width', string>;
+type GhostStyle = CSSProperties & Record<'--astryx-ghost-height', string>;
+
+function dragCloneStyle(x: number, y: number, width: number): DragCloneStyle {
+  return {
+    '--astryx-drag-x': `${x}px`,
+    '--astryx-drag-y': `${y}px`,
+    '--astryx-drag-width': `${width}px`,
+  };
+}
+
+function ghostStyle(height: number): GhostStyle {
+  return {'--astryx-ghost-height': `${height}px`};
+}
+
+const styles = {
+  boardColumns: 'overflow-x-auto overflow-y-hidden h-full p-4',
+  // Shared width for every board column, so they stay visually aligned.
+  columnShell: 'shrink-0 basis-[300px] h-full',
+  card: 'cursor-grab select-none touch-none transition-[box-shadow] [transition-duration:120ms] [transition-timing-function:ease] [@media(hover:hover)]:hover:shadow-[var(--shadow-med)]',
   // The dragged card is lifted out of flow and follows the pointer. It ignores
   // pointer events so hit-testing reads the columns underneath it.
-  floating: {
-    position: 'fixed',
-    insetBlockStart: 0,
-    insetInlineStart: 0,
-    pointerEvents: 'none',
-    cursor: 'grabbing',
-    boxShadow: 'var(--shadow-high)',
-    zIndex: 1000,
-  },
-  floatingAt: (x: number, y: number, width: number) => ({
-    width,
-    transform: `translate(${x}px, ${y}px)`,
-  }),
+  floating:
+    'fixed [inset-block-start:0] [inset-inline-start:0] pointer-events-none cursor-grabbing shadow-[var(--shadow-high)] z-[1000] w-[var(--astryx-drag-width)] [translate:var(--astryx-drag-x)_var(--astryx-drag-y)]',
   // Placeholder marking the landing slot; matches the dragged card's height.
-  ghost: (height: number) => ({
-    height,
-    borderRadius: 'var(--radius-container)',
-    backgroundColor: 'var(--color-background-muted)',
-  }),
-  toolbarDivider: {
-    height: 'auto',
-    marginBlock: 'var(--spacing-1)',
-    alignSelf: 'stretch',
-  },
-  columnEmptyState: {
-    paddingBlock: 'var(--spacing-10)',
-  },
-});
+  ghost:
+    'h-[var(--astryx-ghost-height)] rounded-[var(--radius-container)] bg-[var(--color-background-muted)]',
+  toolbarDivider: 'h-auto my-1 self-stretch',
+  columnEmptyState: '[padding-block:var(--spacing-10)]',
+} as const;
 
 // ============= CARD BODY =============
 
@@ -359,7 +338,7 @@ function BoardCard({
     <Card
       ref={cardRef}
       padding={3}
-      xstyle={styles.card}
+      className={styles.card}
       onPointerDown={e => onPointerDown(e, item.id)}>
       <BoardCardBody item={item} onMove={onMove} />
     </Card>
@@ -380,7 +359,7 @@ function BoardColumn({
   children: ReactNode;
 }) {
   return (
-    <Card variant="muted" padding={0} xstyle={styles.columnShell}>
+    <Card variant="muted" padding={0} className={styles.columnShell}>
       <Layout
         height="fill"
         header={
@@ -411,7 +390,7 @@ function BoardColumn({
             {children ?? (
               <EmptyState
                 isCompact
-                xstyle={styles.columnEmptyState}
+                className={styles.columnEmptyState}
                 icon={
                   <Icon icon={meta.emptyIcon} size="lg" color="secondary" />
                 }
@@ -663,7 +642,11 @@ export default function KanbanBoardTemplate() {
       nodes.splice(
         index,
         0,
-        <VStack key="drag-ghost" xstyle={styles.ghost(ghostTarget.height)} />,
+        <VStack
+          key="drag-ghost"
+          className={styles.ghost}
+          style={ghostStyle(ghostTarget.height)}
+        />,
       );
     }
 
@@ -702,7 +685,7 @@ export default function KanbanBoardTemplate() {
                   <Divider
                     variant="strong"
                     orientation="vertical"
-                    xstyle={styles.toolbarDivider}
+                    className={styles.toolbarDivider}
                   />
                   <HStack gap={1} vAlign="center">
                     <IconButton
@@ -730,7 +713,7 @@ export default function KanbanBoardTemplate() {
         }
         content={
           <LayoutContent padding={0}>
-            <HStack gap={4} xstyle={styles.boardColumns}>
+            <HStack gap={4} className={styles.boardColumns}>
               {COLUMNS.map(meta => (
                 <BoardColumn
                   key={meta.id}
@@ -747,14 +730,12 @@ export default function KanbanBoardTemplate() {
       {drag && draggedItem ? (
         <Card
           padding={3}
-          xstyle={[
-            styles.floating,
-            styles.floatingAt(
-              drag.pointerX - drag.offsetX,
-              drag.pointerY - drag.offsetY,
-              drag.width,
-            ),
-          ]}>
+          className={styles.floating}
+          style={dragCloneStyle(
+            drag.pointerX - drag.offsetX,
+            drag.pointerY - drag.offsetY,
+            drag.width,
+          )}>
           <BoardCardBody item={draggedItem} onMove={() => {}} />
         </Card>
       ) : null}

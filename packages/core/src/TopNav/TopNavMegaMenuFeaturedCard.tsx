@@ -20,8 +20,9 @@
 
 import React, {type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
+import {RTL_MIRROR_CLASS} from '../utils/rtlClasses';
 import {
   topNavFeaturedCardBodyClassName,
   topNavFeaturedCardClassName,
@@ -146,8 +147,8 @@ export function TopNavMegaMenuFeaturedCard({
             {/* The arrow points toward the inline end, so it mirrors in RTL
                 (design:bidirectionality DR4); U+2192 is not bidi-mirrored. */}
             <span
-              {...mergeProps(
-                stylex.props(rtlStyles.mirror),
+              className={tw(
+                RTL_MIRROR_CLASS,
                 topNavFeaturedCardLinkArrowClassName(),
               )}>
               →

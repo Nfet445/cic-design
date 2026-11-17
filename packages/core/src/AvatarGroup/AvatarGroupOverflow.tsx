@@ -16,13 +16,13 @@
 
 import React, {type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {shapeStyles} from '../Avatar/Avatar';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {resolveSize} from '../Avatar';
 import {useAvatarGroup} from './AvatarGroupContext';
 import {AVATAR_GROUP_OVERLAP_VAR} from './avatarGroupClasses';
 import {avatarGroupOverflowClassName} from './avatarGroupOverflowClasses';
+import {avatarShapeClassName} from '../Avatar/avatarClasses';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
@@ -144,13 +144,13 @@ export function AvatarGroupOverflow({
             // The press tint and the ring are the shared press and ring
             // machines: their unlayered arms must outrank a layer utility.
             interactionOverlayStyles.backgroundImageOnNeutral,
-            shapeStyles[shape],
             xstyle,
           ),
           tw(
             avatarGroupOverflowClassName.base,
             avatarGroupOverflowClassName.button,
             avatarGroupOverflowClassName.overlap,
+            avatarShapeClassName[shape],
             focusProps.className,
             className,
           ),
@@ -170,10 +170,11 @@ export function AvatarGroupOverflow({
       aria-label={label}
       {...mergeProps(
         themeProps('avatar-group-overflow', {size, shape}),
-        stylex.props(shapeStyles[shape], xstyle),
+        stylex.props(xstyle),
         tw(
           avatarGroupOverflowClassName.base,
           avatarGroupOverflowClassName.overlap,
+          avatarShapeClassName[shape],
           className,
         ),
         {...overflowBoxStyle(numericSize, overlap), ...style},

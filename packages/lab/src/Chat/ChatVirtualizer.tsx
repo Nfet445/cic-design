@@ -18,7 +18,6 @@
  */
 
 import * as React from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {useScrollableArea} from '@astryxdesign/core/hooks';
 import {observeResize} from '@astryxdesign/core/utils';
 import {useTranslator} from '@astryxdesign/core/i18n';
@@ -29,6 +28,12 @@ import {
   scrollsPage,
 } from '@astryxdesign/core/internal/page-scroller';
 import {useFingerScroll} from '@astryxdesign/core/internal/touch';
+import {
+  chatVirtualizerContentClassName,
+  chatVirtualizerScrollerClassName,
+  chatVirtualizerViewportProbeClassName,
+} from './chatVirtualizerClasses';
+import {tw} from '../tw';
 
 // "Did the declarative target land?" — a convergence tolerance, deliberately
 // NOT the same knob as `endThreshold` (which is a user-intent question).
@@ -55,36 +60,11 @@ const PRIOR_SAMPLES = 5;
 // column-flex host scroller (attach mode) the block is a
 // flex item and would otherwise be compressed to fit (default shrink 1),
 // silently corrupting the whole geometry.
-const styles = stylex.create({
-  content: {
-    display: 'flow-root',
-    flexShrink: 0,
-    alignSelf: 'stretch',
-  },
-  // The own scroller positions nothing itself; `relative` keeps a row's
-  // absolutely positioned parts inside it.
-  scroller: {
-    position: 'relative',
-  },
-  // A fixed box the viewport's size: its ResizeObserver entry reports a
-  // viewport change that leaves the page scroller's own box unchanged.
-  viewportProbe: {
-    position: 'fixed',
-    inset: 0,
-    visibility: 'hidden',
-    pointerEvents: 'none',
-    zIndex: -1,
-  },
-});
-
 /** Adds the hidden viewport-sized box the page scroller observes. */
 const addViewportProbe = (doc: Document): HTMLElement => {
   const probe = doc.createElement('div');
   probe.setAttribute('aria-hidden', 'true');
-  const {className} = stylex.props(styles.viewportProbe);
-  if (className !== undefined) {
-    probe.className = className;
-  }
+  probe.className = chatVirtualizerViewportProbeClassName;
   doc.body.appendChild(probe);
   return probe;
 };
@@ -593,7 +573,7 @@ export function ChatVirtualizer<T>(
 
   // Size both spacers so the mounted window occupies its true place in the
   // scroll range, under whatever geometry is current, and move the content
-  // block's floor (styles.content) to the extent that geometry describes.
+  // block's floor (chatVirtualizerContentClassName) to the extent that geometry describes.
   const writeSpacers = (w: Win): void => {
     const g = geo.current;
     const empty = w.end < w.start || g.offsets.length === 0;
@@ -771,7 +751,7 @@ export function ChatVirtualizer<T>(
     // layout below would otherwise place the new rows against stale spacers
     // — every origin and anchor read off it wrong by the swapped rows'
     // height. (The extent itself cannot collapse meanwhile: the content
-    // block's floor holds it, see styles.content.) Style writes don't force
+    // block's floor holds it, see chatVirtualizerContentClassName.) Style writes don't force
     // layout, so the spacers are consistent BEFORE the first read.
     writeSpacers(winRef.current);
     // The pass's one batch of reads, before its next write: position, size,
@@ -1696,18 +1676,14 @@ export function ChatVirtualizer<T>(
     ref: contentRef,
     onFocus: onContentFocus,
     onBlur: onContentBlur,
-    xstyle: styles.content,
+    className: chatVirtualizerContentClassName,
   };
   // In own-container mode the scrollable area measures this block's overflow
   // to decide whether keyboard users can scroll.
-  const {xstyle: contentXstyle, ...contentDomProps} = attachMode
+  const contentDomProps = attachMode
     ? contentProps
     : getContentProps<HTMLDivElement>(contentProps);
-  const content = (
-    <div {...contentDomProps} {...stylex.props(contentXstyle)}>
-      {children}
-    </div>
-  );
+  const content = <div {...contentDomProps}>{children}</div>;
 
   if (attachMode) {
     return content;
@@ -1717,9 +1693,8 @@ export function ChatVirtualizer<T>(
     <div
       {...getViewportProps<HTMLDivElement>({
         ref: ownScrollerRef,
-        className,
+        className: tw(chatVirtualizerScrollerClassName, className),
         style,
-        xstyle: styles.scroller,
       })}>
       {content}
     </div>

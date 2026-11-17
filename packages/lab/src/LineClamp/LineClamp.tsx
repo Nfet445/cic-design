@@ -4,7 +4,7 @@
 
 /**
  * @file LineClamp.tsx
- * @input Uses React, stylex, useTruncation + Tooltip + BaseProps from
+ * @input Uses React, useTruncation + Tooltip + BaseProps from
  *   @astryxdesign/core, and Core's canonical focusable selector and shared
  *   mutation observer through `@astryxdesign/core/internal/line-clamp`
  * @output Exports LineClamp component, LineClampProps
@@ -38,6 +38,8 @@ import {
   observeResize,
 } from '@astryxdesign/core/utils';
 import {useMergedRefs} from '@astryxdesign/core/hooks';
+import {lineClampClassName} from './lineClampClasses';
+import {tw} from '../tw';
 import {
   FOCUSABLE_SELECTOR,
   flushMutations,
@@ -45,22 +47,6 @@ import {
   TruncationTooltip,
   useTruncationTooltipInterest,
 } from '@astryxdesign/core/internal/line-clamp';
-
-const styles = stylex.create({
-  clamp: {
-    display: '-webkit-box',
-    WebkitBoxOrient: 'vertical',
-    // `clip`, not `hidden`: both clip the same way visually, but `hidden`
-    // makes the box a scroll container, so a browser bringing a focused
-    // descendant into view scrolls it, which, against a clamped box, means
-    // focusing a clipped link replaces the visible line with the hidden one
-    // out from under the reader. `clip` clips without becoming scrollable,
-    // so that scroll-into-view path never triggers.
-    overflow: 'clip',
-    wordBreak: 'break-word',
-    overflowWrap: 'break-word',
-  },
-});
 
 const HIDDEN_ATTRIBUTE = 'data-line-clamp-hidden';
 const ROOT_ATTRIBUTE = 'data-line-clamp-root';
@@ -526,8 +512,8 @@ export function LineClamp({
         ref={mergedRef}
         {...mergeProps(
           themeProps('line-clamp'),
-          stylex.props(focusOutlineStyles.focusVisible, styles.clamp, xstyle),
-          className,
+          stylex.props(focusOutlineStyles.focusVisible, xstyle),
+          tw(lineClampClassName, className),
           {...style, WebkitLineClamp: maxLines},
         )}
         // A truncated clamp is a tab stop so keyboard users can reveal the

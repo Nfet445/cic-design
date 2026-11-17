@@ -7,6 +7,10 @@
  *   container padding variables, and (re-exported) paddingStyles and
  *   overlayPaddingReset
  * @position Layout utility; used by Card, Section, and Layout sub-components
+ * @deprecated A numeric padding step is a class in `paddingClasses.ts`.
+ *   This module keeps the container variables and the overlay reset that
+ *   must stay unlayered, and it disappears when StyleX leaves the
+ *   package.
  */
 
 import * as stylex from '@stylexjs/stylex';

@@ -85,7 +85,7 @@ import {
   isImeKeyEvent,
   isRenderable,
   mergeProps,
-  rtlStyles,
+  RTL_MIRROR_CLASS,
 } from '../utils';
 import {visibleText} from '../utils/accessibleName';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
@@ -922,8 +922,10 @@ export function DropdownMenuSubMenu(
         icon="chevronRight"
         size="sm"
         color="secondary"
-        xstyle={rtlStyles.mirror}
-        {...themeProps('dropdown-menu-indicator-icon')}
+        {...mergeProps(
+          themeProps('dropdown-menu-indicator-icon'),
+          RTL_MIRROR_CLASS,
+        )}
       />
     </span>
   );
@@ -956,7 +958,7 @@ export function DropdownMenuSubMenu(
                 icon="chevronLeft"
                 size="sm"
                 color="secondary"
-                xstyle={rtlStyles.mirror}
+                className={RTL_MIRROR_CLASS}
               />
             }
             label={backLabel}

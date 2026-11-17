@@ -11,7 +11,7 @@
  *   useTranslator).
  *
  * Render-time last resort. Prefer, in order: CSS logical properties; the shared
- * `rtlStyles.mirror` for directional icons (CSS scaleX, not a JS icon-name
+ * `RTL_MIRROR_CLASS` for directional icons (CSS scaleX, not a JS icon-name
  * swap); and lazy DOM reads (`isRtlElement`) for behavioral logic like keyboard
  * nav or drag math. Reach for this hook only when you need the direction value
  * during render and none of those fit — note it can mismatch on hydration if

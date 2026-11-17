@@ -5,7 +5,7 @@
 /**
  * @file BreadcrumbItem.tsx
  * @input Uses React use/useRef/useEffect, stylex, theme tokens, BreadcrumbContext,
- *   rtlStyles for the contextual default slash, and (for the menu trigger)
+ *   RTL_MIRROR_CLASS for the contextual default slash, and (for the menu trigger)
  *   usePopover + the shared DropdownMenu item API (renderDropdownItems,
  *   DropdownMenuContext, MENU_ITEM_SELECTOR, useListFocus), and
  *   the AppShell mobile drawer helpers
@@ -39,7 +39,7 @@ import {radiusVars, spacingVars} from '../theme/tokens.stylex';
 import {BreadcrumbContext, type BreadcrumbsVariant} from './Breadcrumbs';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import {tw} from '../utils/tw';
 import {
   breadcrumbButtonResetClassName,
@@ -163,7 +163,7 @@ function BreadcrumbSeparator({separator}: {separator: ReactNode}) {
   return (
     <span aria-hidden="true" className={breadcrumbSeparatorClassName}>
       {separator === '/' ? (
-        <span {...stylex.props(rtlStyles.mirror)}>/</span>
+        <span className={RTL_MIRROR_CLASS}>/</span>
       ) : (
         separator
       )}
