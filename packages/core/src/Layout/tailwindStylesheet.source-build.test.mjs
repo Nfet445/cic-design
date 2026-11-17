@@ -649,6 +649,17 @@ import {
   metadataListItemValueClassName,
 } from '../MetadataList/metadataListItemClasses';
 import {
+  outlineActiveAnchorClassName,
+  outlineDividerClassName,
+  outlineIndicatorClassName,
+  outlineItemClassName,
+  outlineLabelClassName,
+  outlineLinkClassName,
+  outlineListClassName,
+  outlineRootClassName,
+  outlineTrackClassName,
+} from '../Outline/outlineClasses';
+import {
   chatMessageMetadataAssistantClassName,
   chatMessageMetadataClassName,
   chatMessageMetadataStatusErrorClassName,
@@ -2103,6 +2114,23 @@ function familyClassNames() {
   add(metadataListItemIconClassName);
   for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
     add(value);
+  }
+  // Outline: the root, the track, the divider line, the anchored indicator,
+  // the list and the label, then one complete link string per density, level
+  // and active state.
+  add(outlineRootClassName);
+  add(outlineTrackClassName);
+  add(outlineDividerClassName);
+  add(outlineIndicatorClassName);
+  add(outlineActiveAnchorClassName);
+  add(outlineListClassName);
+  add(outlineItemClassName);
+  add(outlineLabelClassName);
+  for (const density of ['compact', 'default']) {
+    for (let level = 1; level <= 6; level += 1) {
+      add(outlineLinkClassName(density, level, false));
+      add(outlineLinkClassName(density, level, true));
+    }
   }
   // AspectRatio: the box, its ratio reading the private variable, the ellipse
   // clip, the child wrapper and its three fit arms.
