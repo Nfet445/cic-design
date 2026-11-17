@@ -39,6 +39,7 @@ import * as stylex from '@stylexjs/stylex';
 import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useCalendarConstraints} from '../Calendar';
 import type {DateInputProps} from './DateInput';
+import {dateInputSizeClassName} from './dateInputClasses';
 import {hasEditableDateSegments} from './nativeDateSegments';
 import {useNativeDateRejection} from './useTypedDate';
 import {
@@ -64,7 +65,6 @@ import {Spinner} from '../Spinner';
 import {
   colorVars,
   radiusVars,
-  sizeVars,
   spacingVars,
   typeScaleVars,
   typographyVars,
@@ -83,6 +83,7 @@ import {
   type ISODateString,
 } from '../utils';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
+import {tw} from '../utils/tw';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -242,12 +243,6 @@ const styles = stylex.create({
   overlayPlaceholder: {
     color: colorVars['--color-text-secondary'],
   },
-});
-
-const sizeStyles = stylex.create({
-  sm: {height: sizeVars['--size-element-sm'], minWidth: 180},
-  md: {height: sizeVars['--size-element-md'], minWidth: 180},
-  lg: {height: sizeVars['--size-element-lg'], minWidth: 180},
 });
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -634,7 +629,6 @@ export function NativeDateField({
         stylex.props(
           inputWrapperStyles.base,
           inputWrapperStyles.textField,
-          sizeStyles[size],
           styles.wrapper,
           // Disabled paint belongs to the disabled state only; a busy field
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
@@ -649,7 +643,7 @@ export function NativeDateField({
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
-        controlClassName,
+        tw(dateInputSizeClassName({size}), controlClassName),
         controlStyle,
       )}>
       {inputGroup && <VisuallyHidden id={inputLabelID}>{label}</VisuallyHidden>}

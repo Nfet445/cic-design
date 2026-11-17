@@ -15,7 +15,17 @@ export const docs = {
   name: 'Skeleton',
   displayName: 'Skeleton',
   category: 'Feedback & Status',
-  keywords: ["skeleton","placeholder","loading","shimmer","pulse","loader","bone","ghost","preloader"],
+  keywords: [
+    'skeleton',
+    'placeholder',
+    'loading',
+    'shimmer',
+    'pulse',
+    'loader',
+    'bone',
+    'ghost',
+    'preloader',
+  ],
   props: [
     {
       name: 'width',
@@ -32,7 +42,8 @@ export const docs = {
     {
       name: 'radius',
       type: "'none' | 0 | 1 | 2 | 3 | 4 | 'rounded'",
-      description: 'Border radius using design token scale. Use none for sharp corners, rounded for fully rounded (avatars, pills, circles).',
+      description:
+        'Border radius using design token scale. Use none for sharp corners, rounded for fully rounded (avatars, pills, circles).',
       default: '3',
     },
     {
@@ -53,8 +64,32 @@ export const docs = {
     },
   },
   theming: {
-    targets: [
-      {className: 'astryx-skeleton'},
+    targets: [{className: 'astryx-skeleton'}],
+    vars: [
+      {
+        name: '--_skeleton-width',
+        description: 'Box width, set from the width prop.',
+        default: '100%',
+        private: true,
+      },
+      {
+        name: '--_skeleton-height',
+        description: 'Box height, set from the height prop.',
+        default: '100%',
+        private: true,
+      },
+      {
+        name: '--_skeleton-delay',
+        description:
+          'Animation delay, computed from the index prop so sequential skeletons pulse in a wave.',
+        default: '1000ms',
+        private: true,
+      },
+    ],
+    derived: [
+      {property: 'width', vars: ['--_skeleton-width']},
+      {property: 'height', vars: ['--_skeleton-height']},
+      {property: 'animationDelay', vars: ['--_skeleton-delay']},
     ],
   },
   usage: {
@@ -62,11 +97,31 @@ export const docs = {
     description:
       'An animated shimmer placeholder that previews the shape of content while it loads. Use it to build loading screens that match the layout of the real content. For content with unknown dimensions, use Spinner instead.',
     bestPractices: [
-      {guidance: true, description: 'Match the size and shape of the content being loaded to create a realistic placeholder.'},
-      {guidance: true, description: 'Stagger multiple skeletons with the `index` prop for a natural wave animation.'},
-      {guidance: false, description: 'Use when the content dimensions are unknown; use Spinner instead.'},
-      {guidance: false, description: 'Combine with a Spinner on the same content area; pick one loading pattern.'},
-      {guidance: false, description: 'Show skeletons indefinitely; if loading takes too long, show an error or empty state instead.'},
+      {
+        guidance: true,
+        description:
+          'Match the size and shape of the content being loaded to create a realistic placeholder.',
+      },
+      {
+        guidance: true,
+        description:
+          'Stagger multiple skeletons with the `index` prop for a natural wave animation.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use when the content dimensions are unknown; use Spinner instead.',
+      },
+      {
+        guidance: false,
+        description:
+          'Combine with a Spinner on the same content area; pick one loading pattern.',
+      },
+      {
+        guidance: false,
+        description:
+          'Show skeletons indefinitely; if loading takes too long, show an error or empty state instead.',
+      },
     ],
   },
 };
@@ -91,7 +146,8 @@ export const docsZh = {
     {
       name: 'radius',
       type: "'none' | 0 | 1 | 2 | 3 | 4 | 'rounded'",
-      description: '使用设计令牌的边框圆角。使用 none 表示直角，rounded 表示完全圆角（头像、药丸形、圆形）。',
+      description:
+        '使用设计令牌的边框圆角。使用 none 表示直角，rounded 表示完全圆角（头像、药丸形、圆形）。',
       default: '3',
     },
     {
@@ -103,8 +159,32 @@ export const docsZh = {
     },
   ],
   theming: {
-    targets: [
-      {className: 'astryx-skeleton'},
+    targets: [{className: 'astryx-skeleton'}],
+    vars: [
+      {
+        name: '--_skeleton-width',
+        description: 'Box width, set from the width prop.',
+        default: '100%',
+        private: true,
+      },
+      {
+        name: '--_skeleton-height',
+        description: 'Box height, set from the height prop.',
+        default: '100%',
+        private: true,
+      },
+      {
+        name: '--_skeleton-delay',
+        description:
+          'Animation delay, computed from the index prop so sequential skeletons pulse in a wave.',
+        default: '1000ms',
+        private: true,
+      },
+    ],
+    derived: [
+      {property: 'width', vars: ['--_skeleton-width']},
+      {property: 'height', vars: ['--_skeleton-height']},
+      {property: 'animationDelay', vars: ['--_skeleton-delay']},
     ],
   },
   usage: {
@@ -112,11 +192,31 @@ export const docsZh = {
     description:
       'An animated shimmer placeholder that previews the shape of content while it loads. Use it to build loading screens that match the layout of the real content. For content with unknown dimensions, use Spinner instead.',
     bestPractices: [
-      {guidance: true, description: 'Match the size and shape of the content being loaded to create a realistic placeholder.'},
-      {guidance: true, description: 'Stagger multiple skeletons with the `index` prop for a natural wave animation.'},
-      {guidance: false, description: 'Use when the content dimensions are unknown; use Spinner instead.'},
-      {guidance: false, description: 'Combine with a Spinner on the same content area; pick one loading pattern.'},
-      {guidance: false, description: 'Show skeletons indefinitely; if loading takes too long, show an error or empty state instead.'},
+      {
+        guidance: true,
+        description:
+          'Match the size and shape of the content being loaded to create a realistic placeholder.',
+      },
+      {
+        guidance: true,
+        description:
+          'Stagger multiple skeletons with the `index` prop for a natural wave animation.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use when the content dimensions are unknown; use Spinner instead.',
+      },
+      {
+        guidance: false,
+        description:
+          'Combine with a Spinner on the same content area; pick one loading pattern.',
+      },
+      {
+        guidance: false,
+        description:
+          'Show skeletons indefinitely; if loading takes too long, show an error or empty state instead.',
+      },
     ],
   },
 };
@@ -128,17 +228,39 @@ export const docsDense = {
     description:
       'An animated shimmer placeholder that previews the shape of content while it loads. Use it to build loading screens that match the layout of the real content. For content with unknown dimensions, use Spinner instead.',
     bestPractices: [
-      {guidance: true, description: 'Match the size and shape of the content being loaded to create a realistic placeholder.'},
-      {guidance: true, description: 'Stagger multiple skeletons with the `index` prop for a natural wave animation.'},
-      {guidance: false, description: 'Use when the content dimensions are unknown; use Spinner instead.'},
-      {guidance: false, description: 'Combine with a Spinner on the same content area; pick one loading pattern.'},
-      {guidance: false, description: 'Show skeletons indefinitely; if loading takes too long, show an error or empty state instead.'},
+      {
+        guidance: true,
+        description:
+          'Match the size and shape of the content being loaded to create a realistic placeholder.',
+      },
+      {
+        guidance: true,
+        description:
+          'Stagger multiple skeletons with the `index` prop for a natural wave animation.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use when the content dimensions are unknown; use Spinner instead.',
+      },
+      {
+        guidance: false,
+        description:
+          'Combine with a Spinner on the same content area; pick one loading pattern.',
+      },
+      {
+        guidance: false,
+        description:
+          'Show skeletons indefinitely; if loading takes too long, show an error or empty state instead.',
+      },
     ],
   },
   propDescriptions: {
     width: 'Width in pixels (number) or CSS value (string).',
     height: 'Height in pixels (number) or CSS value (string).',
-    radius: 'Border radius using design tokens. none for sharp, 0-4 for scale, rounded for pills.',
-    index: 'Index for staggered animation timing. Element at index n starts at DELAY_TIME + (STAGGER_TIME \u00d7 n).',
+    radius:
+      'Border radius using design tokens. none for sharp, 0-4 for scale, rounded for pills.',
+    index:
+      'Index for staggered animation timing. Element at index n starts at DELAY_TIME + (STAGGER_TIME \u00d7 n).',
   },
 };
