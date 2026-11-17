@@ -73,6 +73,13 @@ export const docs = {
       {className: 'astryx-nav-heading-menu', visualProps: ['size']},
       {className: 'astryx-nav-heading-menu-item', visualProps: ['size']},
     ],
+    vars: [
+      {
+        name: '--astryx-nav-heading-menu-min-inline-size',
+        description: 'Minimum inline size of the heading popover',
+        default: '160px',
+      },
+    ],
   },
 };
 
