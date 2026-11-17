@@ -100,9 +100,9 @@ Three more files lost that one site but still hold `stylex.create` maps:
 
 Remaining, smallest first:
 
--~~`blocks/components/Hooks/usePressFeedbackHookUsage.tsx`~~ and its
-`usePressFeedbackHookUsage.test.tsx` — the test asserts the focus-ring class
-through `stylex.props(focusOutlineStyles.focusVisible)`, so it moves first.
+- `blocks/components/Hooks/usePressFeedbackHookUsage.tsx` and its
+  `usePressFeedbackHookUsage.test.tsx` — the test asserts the focus-ring class
+  through `stylex.props(focusOutlineStyles.focusVisible)`, so it moves first.
 
 - `blocks/components/Hooks/{useContainerReveal,useScrollLock,useScrollableArea,useInputContainer,useInputStatusIcon,useOverflow,useScrollOverflow}HookUsage.tsx`
   — one `stylex.create` each, two or three declarations.
