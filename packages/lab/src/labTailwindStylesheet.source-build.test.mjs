@@ -24,6 +24,7 @@ import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
 import * as chatVirtualizerClasses from './Chat/chatVirtualizerClasses';
 import * as circularProgressClasses from './CircularProgress/circularProgressClasses';
 import * as codeEditorClasses from './CodeEditor/codeEditorClasses';
+import * as commentPinClasses from './CommentPin/commentPinClasses';
 import * as commentActionsClasses from './Comments/commentActionsClasses';
 import * as commentMarkdownClasses from './Comments/commentMarkdownClasses';
 import * as commentPartsClasses from './Comments/commentPartsClasses';
@@ -79,6 +80,7 @@ function labClassNames() {
     commentActionsClasses,
     commentMarkdownClasses,
     commentPartsClasses,
+    commentPinClasses,
     commentRowClasses,
     circleCheckClasses,
     commentsClasses,
