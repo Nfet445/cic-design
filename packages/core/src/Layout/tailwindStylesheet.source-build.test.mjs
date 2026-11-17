@@ -70,6 +70,21 @@ import {
 } from '../Item/itemClasses';
 
 import {
+  listClassName,
+  listCounterStartClassName,
+  listHeaderClassName,
+  listRootClassName,
+  LIST_ANIMATED_ISOLATION,
+  LIST_BLEED_CORNERS,
+  LIST_BLEED_CORNERS_BELOW_HEADER,
+  LIST_COARSE_ISOLATION,
+  LIST_COUNTER,
+  LIST_DIVIDED_GAP,
+  LIST_NUMBER_COLUMNS,
+  LIST_REACHES_CONTAINER_PADDING,
+  LIST_ROW_GAP,
+} from '../List/listClasses';
+import {
   LIST_ITEM_BAND_RAISED,
   LIST_ITEM_BLEED,
   LIST_ITEM_COUNTER,
@@ -1328,6 +1343,58 @@ function familyClassNames() {
     add(className);
   }
 
+  // The List frame answers its header, its dividers, its motion, its counted
+  // columns and the container it reaches into; each flag is crossed with a
+  // header, since that moves the published corners to the list's root.
+  for (const hasHeader of [false, true]) {
+    for (const hasDividers of [false, true]) {
+      for (const animatesRows of [false, true]) {
+        for (const publishesCorners of [false, true]) {
+          add(
+            listClassName({
+              animatesRows,
+              countsRows: true,
+              hasDividers,
+              hasHeader,
+              publishesCorners,
+              reachesContainerPadding: publishesCorners,
+              startsCounter: true,
+              usesNumberColumns: true,
+            }),
+          );
+        }
+      }
+      add(
+        listClassName({
+          animatesRows: false,
+          countsRows: false,
+          hasDividers,
+          hasHeader: false,
+          publishesCorners: false,
+          reachesContainerPadding: false,
+          startsCounter: false,
+          usesNumberColumns: false,
+        }),
+      );
+    }
+  }
+  for (const className of [
+    listRootClassName,
+    listHeaderClassName,
+    listCounterStartClassName,
+    LIST_COUNTER,
+    LIST_ROW_GAP,
+    LIST_DIVIDED_GAP,
+    LIST_COARSE_ISOLATION,
+    LIST_ANIMATED_ISOLATION,
+    LIST_NUMBER_COLUMNS,
+    LIST_REACHES_CONTAINER_PADDING,
+    LIST_BLEED_CORNERS,
+    LIST_BLEED_CORNERS_BELOW_HEADER,
+  ]) {
+    add(className);
+  }
+
   // A List row answers its edge treatment and four list-driven flags: the
   // walk crosses every edge with and without dividers, then turns the row's
   // whole machinery on at once.
@@ -1854,6 +1921,35 @@ describe('dist/astryx-tailwind.css declarations', () => {
     );
     expect(marked).toContain('display:block;');
     expect(marked).not.toContain('content');
+  });
+
+  it('clips the list inline, so a row dragged aside paints no further', () => {
+    // `clip`, never `hidden`: hidden makes a scroll container, which fights
+    // the list's vertical scroller.
+    expect(stylesheet.ruleFor('overflow-x-clip')).toBe('overflow-x:clip;');
+  });
+
+  it('publishes the list corners a bled row takes', () => {
+    // A bled row squares itself and reads the corner the list publishes for
+    // the container's first and last rows. The plain class publishes zero, so
+    // a list that is not the container's first child keeps a square corner.
+    expect(stylesheet.blockOf('[--_list-corner-start-start:0px]')).toBe(
+      '--_list-corner-start-start:0px;',
+    );
+    const corner =
+      'first:[--_list-corner-start-start:max(0px,var(--container-corner-start-start,0px)-var(--container-padding-block-start,0px))]';
+    expect(stylesheet.blockOf(corner)).toContain(
+      '&:first-child{--_list-corner-start-start:max(0px,var(--container-corner-start-start,0px)-var(--container-padding-block-start,0px));}',
+    );
+  });
+
+  it('reads a counted list start from the property the list writes', () => {
+    // The number is a per-instance value no class can name, so it travels as
+    // an inline property the class reads.
+    expect(stylesheet.ruleFor(listCounterStartClassName)).toBe(
+      'counter-reset:astryx-listvar(--astryx-list-counter-start);',
+    );
+    expect(stylesheet.ruleFor(LIST_COUNTER)).toBe('counter-reset:astryx-list;');
   });
 
   it('draws the list row divider and clears it after the last row', () => {
