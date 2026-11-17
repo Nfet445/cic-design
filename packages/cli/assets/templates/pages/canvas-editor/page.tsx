@@ -3,8 +3,6 @@
 'use client';
 
 import {Fragment, useCallback, useRef, useState, type SVGProps} from 'react';
-import * as stylex from '@stylexjs/stylex';
-
 import {AspectRatio} from '@astryxdesign/core/AspectRatio';
 import {Card} from '@astryxdesign/core/Card';
 import {Center} from '@astryxdesign/core/Center';
@@ -182,15 +180,6 @@ const ICON = 'sm' as const;
 const LABEL_COLUMN = 80;
 
 /**
- * Widest a document tab is allowed to get, in pixels.
- *
- * A ceiling rather than a fixed width: it holds the longest seeded name with
- * its close showing, and tabs fall below it as the strip fills or the window
- * narrows.
- */
-const TAB_MAX_WIDTH = 164;
-
-/**
  * Room the tab strip leaves for the rest of the header, in pixels.
  *
  * Covers the menu button ahead of the strip, the save note and Export button
@@ -199,23 +188,6 @@ const TAB_MAX_WIDTH = 164;
  * spent on tabs.
  */
 const TAB_STRIP_RESERVE = 320;
-
-/**
- * Width below which the inspector is folded away.
- *
- * It is the wider of the two panels and the one whose absence costs least:
- * you can still see the artwork and pick layers without it. Set where the
- * canvas would otherwise be squeezed under the artboard's own width.
- */
-const HIDE_INSPECTOR = '@media (max-width: 1099.98px)';
-
-/**
- * Width below which the layer rail folds away too.
- *
- * Later than the inspector, since knowing what is on the canvas survives
- * longer than being able to adjust it.
- */
-const HIDE_RAIL = '@media (max-width: 839.98px)';
 
 const PHOTO_LAYER_SRC = '/template-assets/moody-scene-vertical-1.png';
 
@@ -691,39 +663,22 @@ function shadowCss(shadow: Shadow | undefined): string {
 // Styles
 // =============================================================================
 
-const styles = stylex.create({
+const styles = {
   // Zoom the way a design tool does: lay the artboard out once at its native
   // size and scale the painted result. Type and spacing stay in artboard
   // pixels, and the poster gets no reflow between zoom steps.
-  artboard: (scale: number) => ({
-    width: FRAME.width,
-    transform: `scale(${scale})`,
-    transformOrigin: 'top left',
-  }),
+  artboard: 'origin-top-left [transform:scale(var(--astryx-artboard-scale))]',
   // Type the inspector owns. Size and tracking can't be theme tokens: they
   // belong to a layer, not to the poster, and they change per keystroke.
   // Tracking is a percentage of the type size, the way a design tool states
-  // it, so it holds when the size changes.
-  type: (
-    size: number,
-    tracking: number,
-    line: number,
-    color: string,
-    stroke: number,
-    shadow: string,
-  ) => ({
-    fontSize: `${size}px`,
-    letterSpacing: `${tracking / 100}em`,
-    lineHeight: `${line}%`,
-    color,
-    WebkitTextStrokeWidth: stroke > 0 ? `${stroke}px` : null,
-    WebkitTextStrokeColor: stroke > 0 ? color : null,
-    textShadow: shadow,
-  }),
+  // it, so it holds when the size changes. Each value rides a variable that
+  // `typeVars` writes, because no class can name it.
+  typeLayer:
+    '[font-size:var(--astryx-type-size)] [letter-spacing:var(--astryx-type-tracking)] [line-height:var(--astryx-type-line)] [color:var(--astryx-type-color)] [-webkit-text-stroke-width:var(--astryx-type-stroke)] [-webkit-text-stroke-color:var(--astryx-type-color)] [text-shadow:var(--astryx-type-shadow)]',
   // AspectRatio's `fit` stretches every direct child to fill the box, so a
   // second one would flow below the photo and clip. Taking the text layers
   // out of flow is what stacks them over it, the way they sit on an artboard.
-  textLayers: {position: 'absolute', inset: 0},
+  textLayers: 'absolute inset-0',
   // A Card given a height prop turns into a scroll container, which is the
   // right default for a card holding more copy than fits. This one is a
   // viewport onto an artboard that is deliberately larger than its frame —
@@ -731,7 +686,7 @@ const styles = stylex.create({
   // scales it — so it clips instead. `clip` over `hidden`: nothing here
   // should scroll, including the quiet scroll that focusing a clipped child
   // would otherwise cause.
-  artboardFrame: {overflow: 'clip'},
+  artboardFrame: 'overflow-clip',
   // The canvas pans in both axes, which centring normally breaks.
   //
   // A scroll port that centres with `justify-content`/`align-items` has no
@@ -746,141 +701,119 @@ const styles = stylex.create({
   // The one part HStack has no prop for; the rest of the stage — the flex
   // box, the max-content sizing and the 100% floor on the block axis — says
   // itself in props.
-  canvasStage: {minWidth: '100%'},
-  artboardCentered: {margin: 'auto'},
+  canvasStage: 'min-w-full',
+  artboardCentered: 'm-auto',
   // Concentric corners. The card rounds to --radius-container and holds one
   // spacing step of padding, so the controls inside it round to the
   // difference: an inner corner struck from the same centre as the outer one
   // rather than a rounder curve cutting across it. Stated as the subtraction
   // so it still holds if either token moves.
-  toolBarControl: {
-    borderRadius: 'calc(var(--radius-container) - var(--spacing-1))',
-  },
+  toolBarControl: 'rounded-[calc(var(--radius-container)-var(--spacing-1))]',
   // The trailing control is a ghost, so edge compensation pulls it out to the
   // card's edge to optically align its label. That is the right call when the
   // control is the only thing in a container, but here it leaves the bar with
   // a gutter on the left and none on the right. Putting the step back matches
   // the two ends. It rides on the control itself rather than a wrapper — a
   // div whose only job is one margin is a div the control can absorb.
-  toolBarTrailing: {
-    marginInlineEnd: 'var(--spacing-2)',
-  },
+  toolBarTrailing: 'me-[var(--spacing-2)]',
   // A vertical Divider is `height: 100%`, and a flex row that centres its
   // items gives a percentage height nothing to resolve against — the rule
   // collapses to nothing and the tool bar loses its groups. Stretching the
   // item is what gives it a height; the inset then pulls it back off the
   // buttons so it separates them rather than boxing them in.
-  toolBarRule: {
-    alignSelf: 'stretch',
-    height: 'auto',
-    marginBlock: 'var(--spacing-1)',
-  },
+  toolBarRule: 'self-stretch h-auto my-[var(--spacing-1)]',
   // Give the header bar its own inline padding, so the Export button stops
   // at a margin instead of the window edge.
   //
   // The layout under it is set to zero padding — the panels have to reach
   // the edges — and a Toolbar takes its inline padding from whatever
-  // container it sits in, so it inherits that zero. The fix has to arrive as
-  // Section's padding token rather than as `paddingInline`: Section renders
-  // an outer wrapper that escapes its parent's gutter and an inner one that
-  // holds the padding, xstyle lands on the outer, and padding set there
-  // makes the bar bleed 12px past the window rather than inset its contents.
-  // The token is read on the inner element, where it also republishes
-  // --container-padding-inline-*. That second effect is the one that
-  // matters: it feeds the toolbar's edge compensation, which pulls ghost
-  // triggers back out by their own padding so the menu button's *icon* lines
-  // up on the gutter while its hover box still bleeds into it.
-  headerBar: {
-    // Named so the tab strip can size against the bar rather than the window:
-    // cqw tracks this element, so it stays right if the bar ever stops being
-    // full-bleed, and it excludes a scrollbar the way vw does not.
-    containerType: 'inline-size',
-    containerName: 'editor-header',
-  },
+  // container it sits in, so it inherits that zero. The padding arrives as
+  // Section's padding token rather than as a bare inset: Section renders an
+  // outer wrapper that escapes its parent's gutter and an inner one that
+  // holds the padding, and a class on the outer makes the bar bleed 12px
+  // past the window rather than inset its contents. The token is read on the
+  // inner element, where it also republishes --container-padding-inline-*.
+  // That second effect is the one that matters: it feeds the toolbar's edge
+  // compensation, which pulls ghost triggers back out by their own padding
+  // so the menu button's *icon* lines up on the gutter while its hover box
+  // still bleeds into it.
+  //
+  // Named so the tab strip can size against the bar rather than the window:
+  // cqw tracks this element, so it stays right if the bar ever stops being
+  // full-bleed, and it excludes a scrollbar the way vw does not.
+  headerBar: '[container-type:inline-size] [container-name:editor-header]',
   // The menu, the tabs and the add button. It has to be allowed to shrink or
   // the strip's own ceiling never binds — a flex item defaults to min-width
   // auto, which floors it at the tabs' combined width.
-  headerLead: {
-    minWidth: 0,
-  },
+  headerLead: 'min-w-0',
   // The open-document strip above the menubar. It scrolls rather than wraps:
   // a second row of tabs would move the menubar down, and the whole point of
   // the strip is that the chrome above the canvas has a fixed height.
-  tabStrip: {
-    minWidth: 0,
-    flexShrink: 1,
-    // The strip has to cap itself, which is the one thing HStack's maxWidth
-    // cannot say for it. It sits in Toolbar's start slot, and that slot is
-    // not the one built to give way — only the centre slot carries
-    // `min-width: 0`, so a start slot grows to its content and pushes the bar
-    // wider instead of squeezing. Widening the start slot in core would
-    // change every toolbar's behaviour to suit one page's tab strip, so the
-    // cap arrives as a maxWidth prop and this only has to let it shrink.
-    //
-    // The strip is short enough that a scrollbar would eat most of it, and
-    // the tabs are draggable-looking targets already.
-    scrollbarWidth: 'none',
-  },
+  //
+  // The strip has to cap itself, which is the one thing HStack's maxWidth
+  // cannot say for it. It sits in Toolbar's start slot, and that slot is
+  // not the one built to give way — only the centre slot carries
+  // `min-width: 0`, so a start slot grows to its content and pushes the bar
+  // wider instead of squeezing. Widening the start slot in core would
+  // change every toolbar's behaviour to suit one page's tab strip, so the
+  // cap arrives as a maxWidth prop and this only has to let it shrink.
+  //
+  // The strip is short enough that a scrollbar would eat most of it, and
+  // the tabs are draggable-looking targets already.
+  tabStrip: 'min-w-0 shrink [scrollbar-width:none]',
   // Folded by width, not by the View menu's toggles. Those record what the
   // user asked for; this records whether there is room to honour it, so the
   // panel comes back on its own when the window grows rather than leaving
   // the toggle switched off. Applied to the handle as well as the panel, or
   // a grip is left behind on a seam with nothing on the other side.
-  foldsAtRail: {display: {default: null, [HIDE_RAIL]: 'none'}},
-  foldsAtInspector: {display: {default: null, [HIDE_INSPECTOR]: 'none'}},
+  //
+  // The inspector is the wider of the two panels and the one whose absence
+  // costs least: the canvas still shows the artwork and the layers are still
+  // pickable. It folds at 1100px and the rail at 840px, since knowing what
+  // is on the canvas survives longer than being able to adjust it.
+  foldsAtRail: 'max-[839.98px]:hidden',
+  foldsAtInspector: 'max-[1099.98px]:hidden',
   // A short rule, not a full-height one: the strip has no columns to divide,
   // it only needs the smallest mark that reads as "these are separate tabs".
   // A vertical Divider takes its height from the row unless given one, and a
   // centred 16px keeps it clear of both the tab fill and the bar's own edges.
-  tabRule: {height: 16, alignSelf: 'center', flexShrink: 0},
-  tabRuleHidden: {visibility: 'hidden'},
+  tabRule: 'h-4 self-center shrink-0',
+  tabRuleHidden: 'invisible',
   // Everything a tab needs beyond an Item: a width ceiling and a tighter
   // measure. Item brings the 28px box, the radius, the fill when selected,
   // the inline padding, and the ellipsis on a string label.
-  tab: {
-    // Item spaces a list row, where 8px either side of the label is right
-    // because the rows are stacked and the eye reads down a column. A tab is
-    // read across, and at this ceiling those three 8px channels cost the
-    // name six characters: "Salzburg poster" needs 102px and would get 96.
-    // Back to the measure the strip had before, which clears it with 2px
-    // spare — the close end tighter still, because a bare 20px icon carries
-    // its own inset and an equal gap there reads as a wider one.
-    gap: 'var(--spacing-1-5)',
-    paddingInlineEnd: 'var(--spacing-1)',
-    // A width the tab is allowed to shrink under, which makes it a ceiling:
-    // it never grows, so it sits at this size until something squeezes it.
-    // It has to be `width` and not `flexBasis` — a basis does not raise an
-    // item's max-content contribution, so the strip above would size itself
-    // to the tabs' *content* and then squeeze them back under their basis,
-    // leaving every tab short even with the bar half empty.
-    flexGrow: 0,
-    flexShrink: 1,
-    width: TAB_MAX_WIDTH,
-    // A floor, so a crowded strip scrolls instead of grinding every tab down
-    // to an unreadable sliver. Enough for the mark, a few characters and the
-    // close; past it the strip's own overflow takes over.
-    minWidth: 96,
-  },
+  //
+  // The gap is tighter than the one Item uses on a list row, where 8px either
+  // side of the label is right because the rows are stacked and the eye reads
+  // down a column. A tab is read across, and at this ceiling those three 8px
+  // channels cost the name six characters: "Salzburg poster" needs 102px and
+  // would get 96. The close end is tighter still, because a bare 20px icon
+  // carries its own inset and an equal gap there reads as a wider one.
+  //
+  // 164px is the widest a tab may get: it holds the longest seeded name with
+  // its close showing, and tabs fall below it as the strip fills or the window
+  // narrows. The width is a ceiling the tab is allowed to shrink under, which
+  // is why it is `w-` and not `basis-`: a basis does not raise an item's max-content
+  // contribution, so the strip above would size itself to the tabs' *content*
+  // and then squeeze them back under their basis, leaving every tab short even
+  // with the bar half empty. `min-w-24` is the floor, so a crowded strip
+  // scrolls instead of grinding every tab down to an unreadable sliver.
+  tab: 'grow-0 shrink w-[164px] min-w-24 gap-[var(--spacing-1-5)] pe-[var(--spacing-1)]',
   // Item marks a selected row with --color-accent-muted, which this editor's
   // theme resolves to #262626 in dark — the exact colour of the header bar
   // the strip sits on, so the open document would read as no document at
   // all. The muted background is a step off the bar in both schemes, and it
   // is the fill hover already uses, so selection and hover agree.
-  tabSelected: {backgroundColor: 'var(--color-background-muted)'},
+  tabSelected: 'bg-[var(--color-background-muted)]',
   // Item paints a fill when selected but leaves hover to the list that owns
   // it, and the strip is not a list. The tab is a target on its own, so it
   // answers the pointer itself.
-  tabHover: {
-    backgroundColor: {
-      default: 'transparent',
-      ':hover': 'var(--color-background-muted)',
-    },
-  },
+  tabHover: 'bg-transparent hover:bg-[var(--color-background-muted)]',
   // Hold the label column at its set width. The fields beside it carry the
   // flex min-width reset, so without this the row spends its shrinkage on
   // whichever item gives way first and each label ends up a different width —
   // which is exactly the shared left edge the panel is built around.
-  labelColumn: {flexShrink: 0},
+  labelColumn: 'shrink-0',
   // An action nested *inside* a row, as opposed to one standing beside a
   // field. This is the only place a control drops below the 28px the rest
   // of the panel aligns to.
@@ -892,74 +825,41 @@ const styles = stylex.create({
   // <button> because the lock is a real action that has to remain
   // keyboard-reachable; it was the Button *component's* minimum that had to
   // go, not the element.
-  itemAction: {
-    // A full 28px button laid out as 20px. The row is 28px with a step of
-    // padding, so a control its own height would push it to 36; pulling that
-    // same step off every edge hands the padding back to the layout. The
-    // glyph does not move — centred in a 28px box that now starts a step
-    // early, it lands exactly where a 20px button would have put it — but
-    // the target it sits in is the full 28px the pointer expects.
-    //
-    // Stated against the row's own padding token rather than as -4px, so the
-    // two cannot drift apart.
-    margin: 'calc(-1 * var(--spacing-1))',
-    // Icon tokens, not the text ones a ghost Button reaches for. The two
-    // agree at the theme root but this editor's theme separates them, and a
-    // lock keyed to the text ramp came out darker than the layer glyphs
-    // sitting beside it on the same row.
-    color: {
-      default: 'var(--color-icon-secondary)',
-      ':hover': 'var(--color-icon-primary)',
-      ':disabled': 'var(--color-icon-disabled)',
-    },
-  },
+  //
+  // A full 28px button laid out as 20px. The row is 28px with a step of
+  // padding, so a control its own height would push it to 36; pulling that
+  // same step off every edge hands the padding back to the layout. The
+  // glyph does not move — centred in a 28px box that now starts a step
+  // early, it lands exactly where a 20px button would have put it — but
+  // the target it sits in is the full 28px the pointer expects.
+  //
+  // Stated against the row's own padding token rather than as -4px, so the
+  // two cannot drift apart. Icon tokens, not the text ones a ghost Button
+  // reaches for: the two agree at the theme root but this editor's theme
+  // separates them, and a lock keyed to the text ramp came out darker than
+  // the layer glyphs sitting beside it on the same row.
+  itemAction:
+    'm-[calc(-1*var(--spacing-1))] text-[var(--color-icon-secondary)] hover:text-[var(--color-icon-primary)] disabled:text-[var(--color-icon-disabled)]',
   // The colour chip that opens a picker. Square at the field's own height
   // and rounded to the field's own corner, so it reads as another control
   // on the row rather than a tile dropped beside one. --radius-element is
   // the token an input rounds to; --radius-inner is a step tighter and
-  // reads as a different family at this size.
-  swatch: {
-    width: 'var(--spacing-7)',
-    height: 'var(--spacing-7)',
-    flexShrink: 0,
-    padding: 0,
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: 'var(--color-border-emphasized)',
-    borderRadius: 'var(--radius-element)',
-    cursor: 'pointer',
-    // A chip for an unset slot reads as empty rather than as black.
-    backgroundImage:
-      'linear-gradient(45deg, transparent 45%, var(--color-border-emphasized) 45% 55%, transparent 55%)',
-  },
-  swatchFilled: {backgroundImage: 'none'},
+  // reads as a different family at this size. A chip for an unset slot reads
+  // as empty rather than as black.
+  swatch:
+    'w-[var(--spacing-7)] h-[var(--spacing-7)] shrink-0 p-0 border border-solid border-[var(--color-border-emphasized)] rounded-[var(--radius-element)] cursor-pointer bg-[linear-gradient(45deg,transparent_45%,var(--color-border-emphasized)_45%_55%,transparent_55%)]',
   // The saturation/value plane. White runs left to right and black bottom to
   // top over the pure hue, so every point in the square is one colour at
   // that hue.
-  plane: {
-    position: 'relative',
-    height: 160,
-    borderRadius: 'var(--radius-inner)',
-    backgroundImage:
-      'linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent)',
-    cursor: 'crosshair',
-    touchAction: 'none',
-  },
+  plane:
+    'relative h-40 rounded-[var(--radius-inner)] bg-[linear-gradient(to_top,#000,transparent),linear-gradient(to_right,#fff,transparent)] cursor-crosshair touch-none',
   // Both thumbs are positioned by their centre, so the translate is what
-  // keeps them on the value rather than beside it.
-  thumb: {
-    position: 'absolute',
-    width: 'var(--spacing-3)',
-    height: 'var(--spacing-3)',
-    borderWidth: '2px',
-    borderStyle: 'solid',
-    borderColor: '#fff',
-    borderRadius: 'var(--radius-full)',
-    boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.35)',
-    transform: 'translate(-50%, -50%)',
-    pointerEvents: 'none',
-  },
-  planeStack: {display: 'grid', gap: 'var(--spacing-3)'},
+  // keeps them on the value rather than beside it. The plane sits them with
+  // two variables the pointer writes, and paints the second thumb with the
+  // picked colour.
+  thumb:
+    'absolute w-[var(--spacing-3)] h-[var(--spacing-3)] border-2 border-solid border-white rounded-[var(--radius-full)] shadow-[0_0_0_1px_rgba(0,0,0,0.35)] [transform:translate(-50%,-50%)] pointer-events-none [inset-inline-start:var(--astryx-plane-x)] [inset-block-start:var(--astryx-plane-y)] [background-color:var(--astryx-plane-fill)]',
+  planeStack: 'grid gap-[var(--spacing-3)]',
   // Filter rows put the slider beside the number rather than under it, so
   // nine of them still read as one column.
   //
@@ -968,53 +868,69 @@ const styles = stylex.create({
   // draggable track gets the room. Fixed rather than hugging, so nine
   // read-outs share one right edge instead of stepping in and out as their
   // values change width.
-  filterValue: {flexShrink: 0, width: 64},
+  filterValue: 'shrink-0 w-16',
   // Thumbnail ships at 64px for media grids; here it is a control sitting in
   // a row of 28px controls, so it takes the same box as the colour swatches.
   // Width alone is enough — the picture is kept square by an aspect ratio.
-  sourceThumbnail: {width: 'var(--spacing-7)'},
-});
+  sourceThumbnail: 'w-[var(--spacing-7)]',
+} as const;
 
 /**
  * The enumerable half of a text layer's styling. These are closed sets, so
- * they compile to static classes picked by key rather than to a custom
- * property set at runtime.
+ * they stay literal classes picked by key rather than variables set at
+ * runtime.
  */
-const typeCase = stylex.create({
-  none: {textTransform: 'none'},
-  capitalize: {textTransform: 'capitalize'},
-  uppercase: {textTransform: 'uppercase'},
-  lowercase: {textTransform: 'lowercase'},
-});
+const typeCase = {
+  none: 'normal-case',
+  capitalize: 'capitalize',
+  uppercase: 'uppercase',
+  lowercase: 'lowercase',
+} as const;
 
-const typeLine = stylex.create({
-  none: {textDecorationLine: 'none'},
-  underline: {textDecorationLine: 'underline'},
-  'line-through': {textDecorationLine: 'line-through'},
-});
+const typeLine = {
+  none: 'no-underline',
+  underline: 'underline',
+  'line-through': 'line-through',
+} as const;
 
-const typeSlant = stylex.create({
-  normal: {fontStyle: 'normal'},
-  italic: {fontStyle: 'italic'},
-});
+const typeSlant = {normal: 'not-italic', italic: 'italic'} as const;
 
-const typeAlign = stylex.create({
-  start: {textAlign: 'start'},
-  center: {textAlign: 'center'},
-  end: {textAlign: 'end'},
-  justify: {textAlign: 'justify'},
-});
+const typeAlign = {
+  start: 'text-start',
+  center: 'text-center',
+  end: 'text-end',
+  justify: 'text-justify',
+} as const;
 
-/** Runtime values the painted controls need, kept out of the static sheet. */
-const paint = stylex.create({
-  photo: (filter: string) => ({filter}),
-  hue: (h: number) => ({backgroundColor: `hsl(${h} 100% 50%)`}),
-  planeThumb: (s: number, v: number) => ({
-    insetInlineStart: `${s}%`,
-    insetBlockStart: `${100 - v}%`,
-  }),
-  fill: (color: string) => ({backgroundColor: color}),
-});
+/**
+ * A style object that also carries one of this template's own variables, which
+ * is how a value that changes per interaction reaches a class.
+ */
+type StyleVars = React.CSSProperties &
+  Record<`--astryx-${string}`, string | number>;
+
+/**
+ * A text layer's runtime type values, written as the variables
+ * `styles.typeLayer` reads. They change per keystroke, so no class can name
+ * them.
+ */
+function typeVars(
+  size: number,
+  tracking: number,
+  line: number,
+  color: string,
+  stroke: number,
+  shadow: string,
+): StyleVars {
+  return {
+    '--astryx-type-size': `${size}px`,
+    '--astryx-type-tracking': `${tracking / 100}em`,
+    '--astryx-type-line': `${line}%`,
+    '--astryx-type-color': color,
+    '--astryx-type-stroke': `${stroke}px`,
+    '--astryx-type-shadow': shadow,
+  };
+}
 
 // =============================================================================
 // Panel building blocks
@@ -1043,7 +959,7 @@ function InspectorRow({
 }) {
   return (
     <HStack gap={2} vAlign="center">
-      <HStack width={labelWidth} xstyle={styles.labelColumn}>
+      <HStack width={labelWidth} className={styles.labelColumn}>
         <Text type="label" color="secondary" maxLines={1}>
           {label}
         </Text>
@@ -1153,7 +1069,7 @@ function FilterRow({
         value={value}
         onChange={onChange}
         isWheelEnabled={false}
-        controlXstyle={styles.filterValue}
+        controlClassName={styles.filterValue}
       />
     </InspectorRow>
   );
@@ -1198,7 +1114,6 @@ function ItemAction({
   icon,
   isDisabled,
   onClick,
-  xstyle,
   className,
   style,
 }: {
@@ -1206,7 +1121,6 @@ function ItemAction({
   icon: IconType;
   isDisabled?: boolean;
   onClick?: () => void;
-  xstyle?: stylex.StyleXStyles;
   className?: string;
   style?: React.CSSProperties;
 }) {
@@ -1222,8 +1136,7 @@ function ItemAction({
       size="sm"
       isDisabled={isDisabled}
       onClick={onClick}
-      xstyle={[styles.itemAction, xstyle]}
-      className={className}
+      className={[styles.itemAction, className].filter(Boolean).join(' ')}
       style={style}
     />
   );
@@ -1241,7 +1154,7 @@ function ItemAction({
  *
  * Not TabList: a Tab marks the open one with an underline rather than a
  * fill, sizes itself to its label with no way to cap it from out here, and
- * keeps both of those in spans an xstyle cannot reach.
+ * keeps both of those in spans a class cannot reach.
  *
  * The close follows the same rule as the layer rail's lock: hidden until the
  * tab is hovered or holds focus, and pinned open on the active tab, which is
@@ -1288,7 +1201,10 @@ function DocumentTab({
       }
       // Both fills land after Item's own, which is what lets the selected one
       // be replaced; they stay mutually exclusive so hover cannot erase it.
-      xstyle={[styles.tab, isActive ? styles.tabSelected : styles.tabHover]}
+      className={[
+        styles.tab,
+        isActive ? styles.tabSelected : styles.tabHover,
+      ].join(' ')}
     />
   );
 }
@@ -1358,7 +1274,7 @@ function ColorPicker({
   };
 
   return (
-    <div {...stylex.props(styles.planeStack)}>
+    <div className={styles.planeStack}>
       <div
         role="slider"
         tabIndex={0}
@@ -1369,13 +1285,19 @@ function ColorPicker({
         aria-valuemax={100}
         onKeyDown={nudge}
         {...planeTrack}
-        {...stylex.props(styles.plane, paint.hue(hsv.h))}>
+        className={styles.plane}
+        style={{backgroundColor: `hsl(${hsv.h} 100% 50%)`}}>
         <span
-          {...stylex.props(
-            styles.thumb,
-            paint.planeThumb(hsv.s, hsv.v),
-            paint.fill(hsvToHex(hsv)),
-          )}
+          className={styles.thumb}
+          // The plane's two thumb positions, plus the colour the second
+          // thumb paints. Per pointer move, so they ride variables.
+          style={
+            {
+              '--astryx-plane-x': `${hsv.s}%`,
+              '--astryx-plane-y': `${100 - hsv.v}%`,
+              '--astryx-plane-fill': hsvToHex(hsv),
+            } satisfies StyleVars
+          }
         />
       </div>
       {/* The hue rail is a real Slider with its track repainted, not a
@@ -1447,11 +1369,12 @@ function Swatch({
       <button
         type="button"
         aria-label={`${label}${value ? `, ${value}` : ', not set'}`}
-        {...stylex.props(
-          styles.swatch,
-          value != null && styles.swatchFilled,
-          value != null && paint.fill(value),
-        )}
+        className={styles.swatch}
+        style={
+          value != null
+            ? {backgroundColor: value, backgroundImage: 'none'}
+            : undefined
+        }
       />
     </Popover>
   );
@@ -1766,9 +1689,9 @@ export default function CanvasEditor() {
               // lands the menu button on the inset a ghost trigger wants, so
               // nothing has to be pulled back out again.
               padding={1}
-              xstyle={styles.headerBar}>
+              className={styles.headerBar}>
               <HStack gap={0.5} vAlign="center" hAlign="between">
-                <HStack gap={0.5} vAlign="center" xstyle={styles.headerLead}>
+                <HStack gap={0.5} vAlign="center" className={styles.headerLead}>
                   {/*
                     One button for every command in the editor, the way a
                     single-window design tool does it. A menubar spends the
@@ -1981,7 +1904,7 @@ export default function CanvasEditor() {
                     paddingBlock={1}
                     isScrollable
                     maxWidth={`calc(100cqw - ${TAB_STRIP_RESERVE}px)`}
-                    xstyle={styles.tabStrip}>
+                    className={styles.tabStrip}>
                     {tabs.map((tab, index) => {
                       // Tabs are all one width, so the rule marks a boundary
                       // rather than sitting midway between two labels. It is
@@ -1999,10 +1922,10 @@ export default function CanvasEditor() {
                           {previous != null ? (
                             <Divider
                               orientation="vertical"
-                              xstyle={[
+                              className={[
                                 styles.tabRule,
                                 isRuleHidden && styles.tabRuleHidden,
-                              ]}
+                              ].join(' ')}
                             />
                           ) : null}
                           <DocumentTab
@@ -2061,7 +1984,7 @@ export default function CanvasEditor() {
                         hasDivider
                         padding={2}
                         label="Layers and assets"
-                        xstyle={styles.foldsAtRail}>
+                        className={styles.foldsAtRail}>
                         <VStack gap={3}>
                           <SegmentedControl
                             label="Left panel"
@@ -2129,7 +2052,7 @@ export default function CanvasEditor() {
                         // where the drag actually happens.
                         pillPlacement="center"
                         label="Resize layers panel"
-                        xstyle={styles.foldsAtRail}
+                        className={styles.foldsAtRail}
                       />
                     </>
                   ) : undefined
@@ -2149,31 +2072,35 @@ export default function CanvasEditor() {
                               width="max-content"
                               height="max-content"
                               minHeight="100%"
-                              xstyle={styles.canvasStage}>
+                              className={styles.canvasStage}>
                               <Card
                                 padding={0}
                                 elevation="med"
                                 width={FRAME.width * scale}
                                 height={FRAME.height * scale}
-                                xstyle={[
+                                className={[
                                   styles.artboardFrame,
                                   styles.artboardCentered,
-                                ]}>
+                                ].join(' ')}>
                                 <Theme theme={canvasEditorTheme} mode="light">
                                   <AspectRatio
                                     ratio={FRAME.width / FRAME.height}
                                     fit="cover"
-                                    xstyle={styles.artboard(scale)}>
+                                    className={styles.artboard}
+                                    style={
+                                      {
+                                        width: FRAME.width,
+                                        '--astryx-artboard-scale': scale,
+                                      } satisfies StyleVars
+                                    }>
                                     <img
                                       src={PHOTO_LAYER_SRC}
                                       alt={photo.content}
-                                      {...stylex.props(
-                                        paint.photo(
-                                          filterCss(
-                                            photo.filters ?? NO_FILTERS,
-                                          ),
+                                      style={{
+                                        filter: filterCss(
+                                          photo.filters ?? NO_FILTERS,
                                         ),
-                                      )}
+                                      }}
                                     />
                                     {/* Both text layers share one column, so
                                     vertical alignment is a property of the
@@ -2184,19 +2111,12 @@ export default function CanvasEditor() {
                                       vAlign={
                                         V_ALIGN[headline.alignY ?? 'start']
                                       }
-                                      xstyle={styles.textLayers}>
+                                      className={styles.textLayers}>
                                       <Text
                                         type="supporting"
                                         display="block"
-                                        xstyle={[
-                                          styles.type(
-                                            dateline.size ?? 0,
-                                            dateline.tracking ?? 0,
-                                            dateline.line ?? 100,
-                                            dateline.color ?? '#111111',
-                                            dateline.stroke ?? 0,
-                                            shadowCss(dateline.textShadow),
-                                          ),
+                                        className={[
+                                          styles.typeLayer,
                                           typeAlign[dateline.alignX ?? 'start'],
                                           typeCase[
                                             dateline.transform ?? 'none'
@@ -2209,22 +2129,23 @@ export default function CanvasEditor() {
                                               ? 'italic'
                                               : 'normal'
                                           ],
-                                        ]}>
+                                        ].join(' ')}
+                                        style={typeVars(
+                                          dateline.size ?? 0,
+                                          dateline.tracking ?? 0,
+                                          dateline.line ?? 100,
+                                          dateline.color ?? '#111111',
+                                          dateline.stroke ?? 0,
+                                          shadowCss(dateline.textShadow),
+                                        )}>
                                         {dateline.content}
                                       </Text>
                                       <Heading
                                         level={2}
                                         type="display-1"
                                         textWrap="balance"
-                                        xstyle={[
-                                          styles.type(
-                                            headline.size ?? 0,
-                                            headline.tracking ?? 0,
-                                            headline.line ?? 100,
-                                            headline.color ?? '#111111',
-                                            headline.stroke ?? 0,
-                                            shadowCss(headline.textShadow),
-                                          ),
+                                        className={[
+                                          styles.typeLayer,
                                           typeAlign[headline.alignX ?? 'start'],
                                           typeCase[
                                             headline.transform ?? 'none'
@@ -2237,7 +2158,15 @@ export default function CanvasEditor() {
                                               ? 'italic'
                                               : 'normal'
                                           ],
-                                        ]}>
+                                        ].join(' ')}
+                                        style={typeVars(
+                                          headline.size ?? 0,
+                                          headline.tracking ?? 0,
+                                          headline.line ?? 100,
+                                          headline.color ?? '#111111',
+                                          headline.stroke ?? 0,
+                                          shadowCss(headline.textShadow),
+                                        )}>
                                         {headline.content}
                                       </Heading>
                                     </VStack>
@@ -2267,7 +2196,7 @@ export default function CanvasEditor() {
                                           icon={
                                             <Icon icon={Undo2} size={ICON} />
                                           }
-                                          xstyle={styles.toolBarControl}
+                                          className={styles.toolBarControl}
                                         />
                                         <IconButton
                                           label="Redo"
@@ -2276,11 +2205,11 @@ export default function CanvasEditor() {
                                           icon={
                                             <Icon icon={Redo2} size={ICON} />
                                           }
-                                          xstyle={styles.toolBarControl}
+                                          className={styles.toolBarControl}
                                         />
                                         <Divider
                                           orientation="vertical"
-                                          xstyle={styles.toolBarRule}
+                                          className={styles.toolBarRule}
                                         />
                                         <IconButton
                                           label="Add frame"
@@ -2289,7 +2218,7 @@ export default function CanvasEditor() {
                                           icon={
                                             <Icon icon={Frame} size={ICON} />
                                           }
-                                          xstyle={styles.toolBarControl}
+                                          className={styles.toolBarControl}
                                         />
                                         <IconButton
                                           label="Add text"
@@ -2298,7 +2227,7 @@ export default function CanvasEditor() {
                                           icon={
                                             <Icon icon={Type} size={ICON} />
                                           }
-                                          xstyle={styles.toolBarControl}
+                                          className={styles.toolBarControl}
                                         />
                                         <IconButton
                                           label="Add image"
@@ -2310,11 +2239,11 @@ export default function CanvasEditor() {
                                               size={ICON}
                                             />
                                           }
-                                          xstyle={styles.toolBarControl}
+                                          className={styles.toolBarControl}
                                         />
                                         <Divider
                                           orientation="vertical"
-                                          xstyle={styles.toolBarRule}
+                                          className={styles.toolBarRule}
                                         />
                                         <Selector
                                           label="Zoom"
@@ -2329,10 +2258,10 @@ export default function CanvasEditor() {
                                           // enough for the longest option
                                           // ("100%") to avoid truncation.
                                           width={92}
-                                          controlXstyle={[
+                                          controlClassName={[
                                             styles.toolBarControl,
                                             styles.toolBarTrailing,
-                                          ]}
+                                          ].join(' ')}
                                         />
                                       </>
                                     }
@@ -2355,7 +2284,7 @@ export default function CanvasEditor() {
                         isAlwaysVisible={false}
                         pillPlacement="center"
                         label="Resize properties panel"
-                        xstyle={styles.foldsAtInspector}
+                        className={styles.foldsAtInspector}
                       />
                       <LayoutPanel
                         resizable={inspector.props}
@@ -2363,7 +2292,7 @@ export default function CanvasEditor() {
                         padding={0}
                         isScrollable
                         label={`${selected.name} properties`}
-                        xstyle={styles.foldsAtInspector}>
+                        className={styles.foldsAtInspector}>
                         <InspectorSection title="Layout">
                           <InspectorRow label="Padding">
                             <AxisInput
@@ -2822,7 +2751,7 @@ export default function CanvasEditor() {
                                   alt={`Current image, ${imageName}`}
                                   label="Replace image"
                                   onClick={() => fileRef.current?.click()}
-                                  xstyle={styles.sourceThumbnail}
+                                  className={styles.sourceThumbnail}
                                 />
                               </InspectorRow>
                               <InspectorRow label="Fit">
