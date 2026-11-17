@@ -288,6 +288,7 @@ const DIR_TO_REGISTRY_KEY: Record<string, string> = {
   HoverCard: 'hover-card',
   Icon: 'icon',
   Item: 'item',
+  Layout: 'layout',
   NumberInput: 'number-input',
   Popover: 'popover',
   ProgressBar: 'progress-bar-mark',
@@ -379,6 +380,11 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // properties a theme author sets on the component.
   '--_thumbnail-hit-inset',
   '--_power-search-sheet-hit-inset',
+  // The content width again, read by the gutter padding that aligns a region to
+  // the capped content. Both sides derive from one value, so no single standard
+  // property maps onto it: a theme sets the cap through maxWidth and
+  // `--astryx-layout-content-width`, which this follows.
+  '--astryx-layout-alignment-width',
   // The border width a host draws where its touch hit layer reaches past,
   // such as a divided ListItem's divider (0 on the last row).
   // The ::after layer adds it to its offset, so the band starts past the

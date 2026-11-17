@@ -11,6 +11,8 @@ import {act, cleanup, render, renderHook, screen} from '@testing-library/react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import * as TableApi from '@astryxdesign/core/Table';
 import {Table} from '../../Table';
+import {TABLE_SCROLL_WRAPPER_BLOCK_VIEWPORT_CLASS} from '../../tableClasses';
+import {expectClassSet} from '../../../__tests__/classNameAssertions';
 import type {TableColumn} from '../../types';
 import {
   getTableVirtualizationConfig,
@@ -138,7 +140,10 @@ describe('actual Table virtualization', () => {
     const viewport = screen.getByRole('table').closest('[role="group"]');
     expect(viewport).not.toBeNull();
     expect(viewport?.getAttribute('style') ?? '').not.toContain('240px');
-    expect(getComputedStyle(viewport as Element).height).toContain('100%');
+    // The classes add the container's block bleed back to that height.
+    expectClassSet(viewport as Element, {
+      includes: TABLE_SCROLL_WRAPPER_BLOCK_VIEWPORT_CLASS.split(' '),
+    });
     cleanup();
   });
   it('takes its height from its parent: a sized parent windows, and a parent with no height renders every row', async () => {

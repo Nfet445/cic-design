@@ -17,6 +17,7 @@ import {colorVars} from '../../../theme/tokens.stylex';
 import {defineTheme} from '../../../theme/defineTheme';
 import {generateThemeCSS} from '../../../theme/generateThemeRules';
 import type {BodyRowRenderProps, TableColumn} from '../../types';
+import {expectClassSet} from '../../../__tests__/classNameAssertions';
 
 // =============================================================================
 // Test Data
@@ -265,6 +266,23 @@ describe('useTableSelection', () => {
     const headerRow = screen.getAllByRole('row')[0];
     const headers = within(headerRow).getAllByRole('columnheader');
     expect(headers).toHaveLength(3);
+  });
+
+  describe('layout classes', () => {
+    it('centers the selection control in the fixed-width column', () => {
+      render(<SelectionTable />);
+
+      const headerCell = screen.getAllByRole('columnheader')[0];
+      expectClassSet(headerCell.querySelector('div') as Element, {
+        includes: ['flex', 'items-center', 'justify-center'],
+      });
+
+      const [selectAll, firstRow] = screen.getAllByRole('checkbox');
+      expect(selectAll.closest('th')).toBe(headerCell);
+      expectClassSet(firstRow.closest('td')?.querySelector('div') as Element, {
+        includes: ['flex', 'items-center', 'justify-center'],
+      });
+    });
   });
 
   describe('hasRowHighlight', () => {

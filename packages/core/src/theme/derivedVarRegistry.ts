@@ -75,6 +75,11 @@ export const derivedVarRegistry: Record<string, DerivedVarEntry[]> = {
     {property: 'height', vars: ['--_icon-height'], replaces: true},
   ],
   item: [{property: 'paddingInline', vars: ['--_item-inset-inline']}],
+  layout: [
+    {property: 'maxWidth', vars: ['--astryx-layout-content-width']},
+    {property: 'height', vars: ['--astryx-layout-region-height']},
+    {property: 'width', vars: ['--astryx-layout-panel-width']},
+  ],
   'number-input': [
     {property: 'padding', expand: 'container'},
     {property: 'borderRadius', vars: ['--_field-radius']},

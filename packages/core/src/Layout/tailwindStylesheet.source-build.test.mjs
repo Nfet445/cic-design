@@ -113,6 +113,30 @@ import {tableCellClassName} from '../Table/tableCellClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
 import {tableRowClassName} from '../Table/tableRowClasses';
 import {
+  FILTER_INLINE_SLOT_CLASS,
+  FILTER_POPOVER_ACTIONS_CLASS,
+  FILTER_POPOVER_ACTIONS_SPACER_CLASS,
+  FILTER_POPOVER_CONTENT_CLASS,
+  FILTER_POPOVER_SLOT_CLASS,
+  filterPlaceholderClassName,
+  filterTriggerClassName,
+} from '../Table/plugins/filtering/filterClasses';
+import {SELECTION_CELL_CLASS} from '../Table/plugins/selection/selectionClasses';
+import {
+  TABLE_HEADER_LABEL_ROW_CLASS,
+  TABLE_SCROLL_WRAPPER_BLOCK_VIEWPORT_CLASS,
+  TABLE_SCROLL_WRAPPER_CLASS,
+  TABLE_SCROLL_WRAPPER_RING_INSET_CLASS,
+  tableClassName,
+  tableGapCellClassName,
+} from '../Table/tableClasses';
+import {
+  SORT_INDICATOR_CLASS,
+  SORT_INDICATOR_UNSORTED_CLASS,
+  SORT_RANK_CLASS,
+  sortButtonClassName,
+} from '../Table/plugins/sortable/sortClasses';
+import {
   textClassName,
   truncationTooltipContentClassName,
 } from '../Text/textClasses';
@@ -553,6 +577,31 @@ function familyClassNames() {
     add(textAreaCounterClassName({isOverLimit}));
   }
 
+  for (const align of [undefined, 'start', 'center', 'end']) {
+    add(sortButtonClassName(align));
+  }
+  add(SORT_INDICATOR_CLASS);
+  add(SORT_INDICATOR_UNSORTED_CLASS);
+  add(SORT_RANK_CLASS);
+  add(filterTriggerClassName(true));
+  add(filterTriggerClassName(false));
+  add(filterPlaceholderClassName(true));
+  add(filterPlaceholderClassName(false));
+  add(FILTER_POPOVER_SLOT_CLASS);
+  add(FILTER_POPOVER_CONTENT_CLASS);
+  add(FILTER_POPOVER_ACTIONS_CLASS);
+  add(FILTER_POPOVER_ACTIONS_SPACER_CLASS);
+  add(FILTER_INLINE_SLOT_CLASS);
+  add(SELECTION_CELL_CLASS);
+  add(tableClassName({isAutoLayout: true}));
+  add(tableClassName({isAutoLayout: false}));
+  add(tableGapCellClassName({isInline: true}));
+  add(tableGapCellClassName({isInline: false}));
+  add(TABLE_HEADER_LABEL_ROW_CLASS);
+  add(TABLE_SCROLL_WRAPPER_CLASS);
+  add(TABLE_SCROLL_WRAPPER_RING_INSET_CLASS);
+  add(TABLE_SCROLL_WRAPPER_BLOCK_VIEWPORT_CLASS);
+
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
   for (const mode of ['light', 'dark', 'system']) {
@@ -600,9 +649,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
   it('stays within the budget of its class maps', () => {
     // The layout primitives and the words in their comments produce about 190
     // rules, the Button map about 115, the Text map about 65, Section and
-    // Toolbar about 40, and the layout shell and region maps about 110. A
-    // scan that reaches component bodies or prose would add hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(560);
+    // Toolbar about 40, the layout shell and region maps about 110, the input
+    // field family about 60, and Table's sorting, filtering and selection maps
+    // about 60. A scan that reaches component bodies or prose would add
+    // hundreds more.
+    expect(stylesheet.rules.size).toBeLessThan(620);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
@@ -672,6 +723,33 @@ describe('dist/astryx-tailwind.css declarations', () => {
     expect(
       stylesheet.ruleFor('[border-bottom-width:var(--border-width)]'),
     ).toBe('border-bottom-width:var(--border-width);');
+  });
+
+  it('keeps the filter trigger a touch target only on a coarse pointer', () => {
+    expect(stylesheet.blockOf('pointer-coarse:[min-width:44px]')).toContain(
+      'min-width:44px;',
+    );
+    expect(stylesheet.blockOf('pointer-coarse:[min-width:44px]')).toContain(
+      '@media(pointer:coarse)',
+    );
+  });
+
+  it('sizes a windowed gap cell from its inline variable', () => {
+    // A windowed body keeps the place of the rows it unmounts, and the size
+    // it keeps is the one value no class can carry.
+    expect(
+      stylesheet.ruleFor('[block-size:var(--_table-gap-block-size)]'),
+    ).toBe('block-size:var(--_table-gap-block-size);');
+    expect(
+      stylesheet.ruleFor('[inline-size:var(--_table-gap-inline-size)]'),
+    ).toBe('inline-size:var(--_table-gap-inline-size);');
+  });
+
+  it('dims an unused header control until its header is hovered', () => {
+    expect(stylesheet.blockOf('opacity-[0.35]')).toContain('opacity:0.35;');
+    expect(stylesheet.blockOf('[&:is(th:hover_*)]:opacity-100')).toContain(
+      '&:is(th:hover*){',
+    );
   });
 
   it('stripes only the rows that are not detail panels', () => {

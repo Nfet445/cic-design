@@ -41,12 +41,46 @@ export const docs = {
   displayName: 'Layout',
   group: 'Layout',
   category: 'Layout',
-  keywords: ["layout","container","content","flex","box","wrapper","page","regions"],
+  keywords: [
+    'layout',
+    'container',
+    'content',
+    'flex',
+    'box',
+    'wrapper',
+    'page',
+    'regions',
+  ],
   playground: {
     defaults: {
-      header: {__element: 'LayoutHeader', props: {}, children: {__element: 'Heading', props: {level: 3}, children: 'Page Title'}},
-      content: {__element: 'LayoutContent', props: {}, children: {__element: 'Text', props: {type: 'body', color: 'secondary'}, children: 'Main content area. This is the scrollable center section of the layout.'}},
-      footer: {__element: 'LayoutFooter', props: {}, children: {__element: 'Text', props: {type: 'supporting', color: 'secondary'}, children: 'Footer: status bar or actions'}},
+      header: {
+        __element: 'LayoutHeader',
+        props: {},
+        children: {
+          __element: 'Heading',
+          props: {level: 3},
+          children: 'Page Title',
+        },
+      },
+      content: {
+        __element: 'LayoutContent',
+        props: {},
+        children: {
+          __element: 'Text',
+          props: {type: 'body', color: 'secondary'},
+          children:
+            'Main content area. This is the scrollable center section of the layout.',
+        },
+      },
+      footer: {
+        __element: 'LayoutFooter',
+        props: {},
+        children: {
+          __element: 'Text',
+          props: {type: 'supporting', color: 'secondary'},
+          children: 'Footer: status bar or actions',
+        },
+      },
     },
   },
   theming: {
@@ -57,8 +91,41 @@ export const docs = {
       {className: 'astryx-layout-header'},
       {className: 'astryx-layout-panel'},
     ],
+    vars: [
+      {
+        name: '--astryx-layout-content-width',
+        description:
+          'Width cap of the content region, set from the contentWidth prop',
+        default: 'none',
+      },
+      {
+        name: '--astryx-layout-alignment-width',
+        description:
+          'The content width again, read by the gutter padding that aligns a region to the capped content. A theme sets it through contentWidth',
+        default: 'none',
+        private: true,
+      },
+      {
+        name: '--astryx-layout-region-height',
+        description: 'Height of the header and footer regions',
+        default: 'auto',
+        private: true,
+      },
+      {
+        name: '--astryx-layout-panel-width',
+        description: 'Width of the start and end panels',
+        default: 'auto',
+        private: true,
+      },
+    ],
+    derived: [
+      {property: 'maxWidth', vars: ['--astryx-layout-content-width']},
+      {property: 'height', vars: ['--astryx-layout-region-height']},
+      {property: 'width', vars: ['--astryx-layout-panel-width']},
+    ],
   },
-  description: 'General five-slot layout primitive for arranging header, start, content, end, and footer regions.',
+  description:
+    'General five-slot layout primitive for arranging header, start, content, end, and footer regions.',
   props: [
     {
       name: 'content',
@@ -174,12 +241,36 @@ export const docs = {
     description:
       'Layout is a general five-slot primitive for arranging header, start, content, end, and footer regions within a page or bounded container. AppShell owns the page shell and app-wide navigation behavior; use HStack or VStack for simple directional stacking.',
     bestPractices: [
-      { guidance: true, description: 'Use Layout when content needs named header, start, content, end, or footer regions.' },
-      { guidance: true, description: 'Use HStack and VStack for simple directional stacking within a content area.' },
-      { guidance: true, description: 'Hide a region by passing `false`, `null`, or `undefined` to its slot, for example `isOpen && <LayoutPanel />`. The slot counts as empty, so the neighbouring regions move out to the layout edge.' },
-      { guidance: true, description: 'Give a region a landmark role and label on the region component when it is a page landmark, for example `<LayoutPanel role="navigation" label="Sections">`. Layout adds no role or name.' },
-      { guidance: false, description: 'Use Layout for simple stacking layouts; use HStack or VStack instead.' },
-      { guidance: false, description: 'Use Layout as the page shell or for app-wide navigation; use AppShell for that responsibility.' },
+      {
+        guidance: true,
+        description:
+          'Use Layout when content needs named header, start, content, end, or footer regions.',
+      },
+      {
+        guidance: true,
+        description:
+          'Use HStack and VStack for simple directional stacking within a content area.',
+      },
+      {
+        guidance: true,
+        description:
+          'Hide a region by passing `false`, `null`, or `undefined` to its slot, for example `isOpen && <LayoutPanel />`. The slot counts as empty, so the neighbouring regions move out to the layout edge.',
+      },
+      {
+        guidance: true,
+        description:
+          'Give a region a landmark role and label on the region component when it is a page landmark, for example `<LayoutPanel role="navigation" label="Sections">`. Layout adds no role or name.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use Layout for simple stacking layouts; use HStack or VStack instead.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use Layout as the page shell or for app-wide navigation; use AppShell for that responsibility.',
+      },
     ],
     anatomy,
   },
@@ -241,12 +332,36 @@ export const docsZh = {
     description:
       'Layout is a general five-slot primitive for arranging header, start, content, end, and footer regions within a page or bounded container. AppShell owns the page shell and app-wide navigation behavior; use HStack or VStack for simple directional stacking.',
     bestPractices: [
-      { guidance: true, description: 'Use Layout when content needs named header, start, content, end, or footer regions.' },
-      { guidance: true, description: 'Use HStack and VStack for simple directional stacking within a content area.' },
-      { guidance: true, description: 'Hide a region by passing `false`, `null`, or `undefined` to its slot, for example `isOpen && <LayoutPanel />`. The slot counts as empty, so the neighbouring regions move out to the layout edge.' },
-      { guidance: true, description: 'Give a region a landmark role and label on the region component when it is a page landmark, for example `<LayoutPanel role="navigation" label="Sections">`. Layout adds no role or name.' },
-      { guidance: false, description: 'Use Layout for simple stacking layouts; use HStack or VStack instead.' },
-      { guidance: false, description: 'Use Layout as the page shell or for app-wide navigation; use AppShell for that responsibility.' },
+      {
+        guidance: true,
+        description:
+          'Use Layout when content needs named header, start, content, end, or footer regions.',
+      },
+      {
+        guidance: true,
+        description:
+          'Use HStack and VStack for simple directional stacking within a content area.',
+      },
+      {
+        guidance: true,
+        description:
+          'Hide a region by passing `false`, `null`, or `undefined` to its slot, for example `isOpen && <LayoutPanel />`. The slot counts as empty, so the neighbouring regions move out to the layout edge.',
+      },
+      {
+        guidance: true,
+        description:
+          'Give a region a landmark role and label on the region component when it is a page landmark, for example `<LayoutPanel role="navigation" label="Sections">`. Layout adds no role or name.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use Layout for simple stacking layouts; use HStack or VStack instead.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use Layout as the page shell or for app-wide navigation; use AppShell for that responsibility.',
+      },
     ],
   },
 };
@@ -259,12 +374,36 @@ export const docsDense = {
     description:
       'Layout is a general five-slot primitive for arranging header, start, content, end, and footer regions within a page or bounded container. AppShell owns the page shell and app-wide navigation behavior; use HStack or VStack for simple directional stacking.',
     bestPractices: [
-      { guidance: true, description: 'Use Layout when content needs named header, start, content, end, or footer regions.' },
-      { guidance: true, description: 'Use HStack and VStack for simple directional stacking within a content area.' },
-      { guidance: true, description: 'Hide a region by passing `false`, `null`, or `undefined` to its slot, for example `isOpen && <LayoutPanel />`. The slot counts as empty, so the neighbouring regions move out to the layout edge.' },
-      { guidance: true, description: 'Give a region a landmark role and label on the region component when it is a page landmark, for example `<LayoutPanel role="navigation" label="Sections">`. Layout adds no role or name.' },
-      { guidance: false, description: 'Use Layout for simple stacking layouts; use HStack or VStack instead.' },
-      { guidance: false, description: 'Use Layout as the page shell or for app-wide navigation; use AppShell for that responsibility.' },
+      {
+        guidance: true,
+        description:
+          'Use Layout when content needs named header, start, content, end, or footer regions.',
+      },
+      {
+        guidance: true,
+        description:
+          'Use HStack and VStack for simple directional stacking within a content area.',
+      },
+      {
+        guidance: true,
+        description:
+          'Hide a region by passing `false`, `null`, or `undefined` to its slot, for example `isOpen && <LayoutPanel />`. The slot counts as empty, so the neighbouring regions move out to the layout edge.',
+      },
+      {
+        guidance: true,
+        description:
+          'Give a region a landmark role and label on the region component when it is a page landmark, for example `<LayoutPanel role="navigation" label="Sections">`. Layout adds no role or name.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use Layout for simple stacking layouts; use HStack or VStack instead.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use Layout as the page shell or for app-wide navigation; use AppShell for that responsibility.',
+      },
     ],
     anatomy,
   },

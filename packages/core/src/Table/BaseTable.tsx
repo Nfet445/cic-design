@@ -47,7 +47,6 @@ import {
 import {isRenderable} from '../utils/isRenderable';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 import type {
   BaseTableProps,
   TableColumn,
@@ -75,6 +74,12 @@ import {
 import {TableRow} from './TableRow';
 import {TableCell} from './TableCell';
 import {TableHeaderCell} from './TableHeaderCell';
+import {
+  TABLE_HEADER_LABEL_ROW_CLASS,
+  tableClassName,
+  tableGapCellClassName,
+  tableGapStyle,
+} from './tableClasses';
 import {TableHeader} from './TableHeader';
 import {TableBody} from './TableBody';
 import {mergeProps} from '../utils';
@@ -99,34 +104,10 @@ import english from '../i18n/generated-english/Table/BaseTable.generated';
 
 registerEnglishFallback(english);
 
+// A row the caller gives a height keeps it through the row's own style
+// channel, which carries StyleX until TableRow moves onto its class map.
 const styles = stylex.create({
-  spacer: (height: number) => ({
-    height,
-    padding: 0,
-    borderWidth: 0,
-    lineHeight: 0,
-  }),
   fixedRow: (height: number) => ({height}),
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    borderSpacing: '0',
-    tableLayout: 'fixed',
-  },
-  tableAutoLayout: {
-    tableLayout: 'auto',
-  },
-  /**
-   * Inline flex row that keeps the header label and any "after" slot content
-   * (sort icons, filter buttons, etc.) on the same line with a small gap.
-   * Applied only when `after` is present so plain cells are unaffected.
-   */
-  headerLabelRow: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    minWidth: 0,
-  },
 });
 
 /**
@@ -825,8 +806,12 @@ function BaseTableInner<T extends Record<string, unknown>>({
   // --- Plugin pipeline: table ---
   const tableRenderProps = applyPlugins(plugins, p => p.transformTable, {
     htmlProps: {},
-    xstyle: children ? [styles.table, styles.tableAutoLayout] : [styles.table],
+    xstyle: [],
   } satisfies TableRenderProps);
+  const tableClassNameValue = tableClassName({
+    // A caller writes the rows, so their content decides the column widths.
+    isAutoLayout: children != null,
+  });
   const mergedStyle: React.CSSProperties = {
     ...tableRenderProps.htmlProps.style,
     ...style,
@@ -909,7 +894,7 @@ function BaseTableInner<T extends Record<string, unknown>>({
         before != null || after != null || overlay != null || below != null;
 
       const labelRow = isRenderable(after) ? (
-        <div {...stylex.props(styles.headerLabelRow)}>
+        <div className={TABLE_HEADER_LABEL_ROW_CLASS}>
           {resolvedContent}
           {after}
         </div>
@@ -1020,7 +1005,7 @@ function BaseTableInner<T extends Record<string, unknown>>({
         {...mergeProps(
           themeProps('table'),
           stylex.props(...tableRenderProps.xstyle, xstyle),
-          [tableRenderProps.htmlProps.className, className]
+          [tableClassNameValue, tableRenderProps.htmlProps.className, className]
             .filter(Boolean)
             .join(' ') || undefined,
           tableStyle,
@@ -1077,7 +1062,10 @@ function BaseTableInner<T extends Record<string, unknown>>({
                           aria-hidden="true">
                           <td
                             colSpan={mountedCellCount}
-                            {...stylex.props(styles.spacer(segment.height))}
+                            className={tableGapCellClassName({
+                              isInline: false,
+                            })}
+                            style={tableGapStyle({blockSize: segment.height})}
                           />
                         </tr>,
                       ];
