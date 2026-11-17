@@ -879,8 +879,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // rules, the Button map about 115, the Text map about 65, Section and
     // Toolbar about 40, the layout shell and region maps about 110, the input
     // field family about 60, Table's sorting, filtering and selection maps
-    // about 60, and the link-and-item family about 100. A scan that reaches
-    // component bodies or prose would add hundreds more.
+    // about 60, the link-and-item family about 100 (Link, Citation,
+    // BreadcrumbItem, Token, Pagination and the avatar status dot), and the
+    // date and time inputs about 50. The sheet builds 685 rules. A scan that
+    // reaches component bodies or prose would add hundreds more.
     expect(stylesheet.rules.size).toBeLessThan(760);
   });
 
