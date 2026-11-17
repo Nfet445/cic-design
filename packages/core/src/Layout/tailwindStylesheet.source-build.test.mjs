@@ -229,6 +229,17 @@ import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {checkboxListItemClassName} from '../CheckboxList/checkboxListItemClasses';
 import {radioListClassName} from '../RadioList/radioListClasses';
 import {
+  checkboxInputClassName,
+  checkboxInputIndicatorSlotClassName,
+  checkboxInputLabelWrapperClassName,
+  checkboxInputNativeClassName,
+  checkboxInputPressOverlayClassName,
+  checkboxInputRowClassName,
+  checkboxInputRowPressImageClassName,
+  checkboxInputRowPressOverlayClassName,
+  checkboxInputWrapperClassName,
+} from '../CheckboxInput/checkboxInputClasses';
+import {
   radioListItemIndicatorSlotClassName,
   radioListItemInputClassName,
   radioListItemPressOverlayClassName,
@@ -2072,6 +2083,25 @@ function familyClassNames() {
     add(radioListItemWrapperClassName({size}));
     add(radioListItemInputClassName({size}));
   }
+  // CheckboxInput: the field root at both width states, the row in its four
+  // shape states, and the fixed pieces.
+  for (const width of [null, 240]) {
+    add(checkboxInputClassName({width}));
+  }
+  for (const isLabelHidden of [false, true]) {
+    for (const hasHitArea of [false, true]) {
+      add(checkboxInputRowClassName({isLabelHidden, hasHitArea}));
+    }
+  }
+  for (const size of ['sm', 'md']) {
+    add(checkboxInputWrapperClassName({size}));
+    add(checkboxInputNativeClassName({size}));
+  }
+  add(checkboxInputRowPressImageClassName);
+  add(checkboxInputRowPressOverlayClassName);
+  add(checkboxInputPressOverlayClassName);
+  add(checkboxInputIndicatorSlotClassName);
+  add(checkboxInputLabelWrapperClassName);
 
   return [...names].sort();
 }
@@ -2134,7 +2164,9 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // to literal classes: its surface, both viewport-fit states, the two sizing
     // classes, the anchor wrapper and both hidden close wrappers. The sheet
     // measures 1254, so the ceiling follows the sum rather than one side.
-    expect(stylesheet.rules.size).toBeLessThan(1260);
+    // The checkbox field's row, box, press layers and native input added six,
+    // so the ceiling follows it to 1266.
+    expect(stylesheet.rules.size).toBeLessThan(1266);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
