@@ -18,9 +18,11 @@
 import type {ReactNode, Ref} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {composeEventHandlers, mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {useOverlay} from './useOverlay';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
-import {overlayScope, overlayContainerStyles} from './overlay.markers.stylex';
+import {overlayScopeProps} from '../privateAttributes/overlayScope.stylex';
+import {overlayContainerClassName} from './overlayClasses';
 import {themeProps} from '../utils/themeProps';
 import type {BaseProps} from '../BaseProps';
 import type {
@@ -123,8 +125,10 @@ export function Overlay({
       ref={useMergedRefs(ref, overlay.containerRef)}
       {...mergeProps(
         themeProps('overlay'),
-        stylex.props(overlayScope, overlayContainerStyles.root, xstyle),
-        className,
+        xstyle == null
+          ? overlayScopeProps
+          : mergeProps(overlayScopeProps, stylex.props(xstyle)),
+        tw(overlayContainerClassName, className),
         style,
       )}
       // The touch toggle runs before the caller's handler: Overlay promises no

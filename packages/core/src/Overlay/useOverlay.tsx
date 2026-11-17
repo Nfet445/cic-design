@@ -26,10 +26,10 @@ import {
   useMemo,
   useSyncExternalStore,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {useClickableContainer} from '../hooks/useClickableContainer';
 import {matchesMediaQuery, watchMediaQuery} from '../utils/coarsePointer';
-import {overlayScope, overlayContainerStyles} from './overlay.markers.stylex';
+import {overlayScopeProps} from '../privateAttributes/overlayScope.stylex';
+import {overlayContainerClassName} from './overlayClasses';
 import {OverlayScrim} from './OverlayScrim';
 import type {
   OverlayScrimMode,
@@ -103,9 +103,12 @@ export interface UseOverlayOptions {
 }
 
 export interface OverlayContainerProps {
-  /** CSS class names for marker + positioning. */
-  className: string | undefined;
-  /** Inline styles for marker + positioning. */
+  /** The scope attribute a CSS-revealed scrim watches, and the box classes. */
+  className: string;
+  /**
+   * Always undefined: the container's paint is a class. Kept so a caller
+   * spreading these props onto an element keeps its type.
+   */
   style: React.CSSProperties | undefined;
   /** Touch tap-to-toggle handler. Only set on touch devices with full overlays. */
   onClick: ((e: MouseEvent<HTMLElement>) => void) | undefined;
@@ -204,16 +207,15 @@ export function useOverlay({
         : undefined;
 
   // Container styles (marker + positioning)
-  const resolved = stylex.props(overlayScope, overlayContainerStyles.root);
-
   const containerProps = useMemo<OverlayContainerProps>(
     () => ({
-      className: resolved.className ?? undefined,
-      style: resolved.style ?? undefined,
+      ...overlayScopeProps,
+      className: overlayContainerClassName,
+      style: undefined,
       onClick: needsTouchToggle ? onClick : undefined,
       onMouseUp: needsTouchToggle ? onMouseUp : undefined,
     }),
-    [resolved.className, resolved.style, needsTouchToggle, onClick, onMouseUp],
+    [needsTouchToggle, onClick, onMouseUp],
   );
 
   // Render function — matches tooltip's renderTooltip pattern

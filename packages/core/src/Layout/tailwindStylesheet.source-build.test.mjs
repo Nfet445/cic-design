@@ -589,6 +589,17 @@ import {
   overflowListMeasureIndicatorClassName,
 } from '../OverflowList/overflowListClasses';
 import {
+  overlayContainerClassName,
+  overlayScrimAlignClassName,
+  overlayScrimBaseClassName,
+  overlayScrimFocusRevealClassName,
+  overlayScrimHiddenClassName,
+  overlayScrimHoverRevealClassName,
+  overlayScrimPositionClassName,
+  overlayScrimShownClassName,
+  overlayScrimTintClassName,
+} from '../Overlay/overlayClasses';
+import {
   swipeEntryClassName,
   swipeEntryCoveredClassName,
   swipeEntryDisabledClassName,
@@ -1442,6 +1453,23 @@ function familyClassNames() {
   );
   add(scrollableAreaContentClassName);
   add(scrollableAreaContentWithInlineOverflowClassName);
+  // Overlay: the container, the scrim's box, its tint, and every reveal arm
+  // (controlled open and closed, always shown, hover and focus) per position.
+  add(overlayContainerClassName);
+  add(overlayScrimBaseClassName);
+  for (const position of ['fill', 'bottom', 'top']) {
+    add(overlayScrimPositionClassName[position]);
+    add(overlayScrimShownClassName({position}));
+    add(overlayScrimHiddenClassName({position}));
+    add(overlayScrimHoverRevealClassName({position}));
+    add(overlayScrimFocusRevealClassName({position}));
+  }
+  for (const align of ['start', 'center', 'end']) {
+    add(overlayScrimAlignClassName[align]);
+  }
+  add(overlayScrimTintClassName.dark);
+  add(overlayScrimTintClassName.light);
+
   // OverflowList: one line and wrapping rows, every gap step, and the hidden
   // measurement copy with the row cap that reads the measured variable.
   for (const isMultiRow of [false, true]) {
