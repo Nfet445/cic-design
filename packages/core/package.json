@@ -95,11 +95,6 @@
       "types": "./dist/Icon/IconSize.stylex.d.ts",
       "default": "./dist/Icon/IconSize.stylex.js"
     },
-    "./Indicator/indicator.markers.stylex": {
-      "source": "./src/Indicator/indicator.markers.stylex.ts",
-      "types": "./dist/Indicator/indicator.markers.stylex.d.ts",
-      "default": "./dist/Indicator/indicator.markers.stylex.js"
-    },
     "./Layer/layerAnimations.stylex": {
       "source": "./src/Layer/layerAnimations.stylex.ts",
       "types": "./dist/Layer/layerAnimations.stylex.d.ts",
@@ -837,11 +832,6 @@
       "source": "./src/Markdown/remark.ts",
       "types": "./dist/Markdown/remark.d.ts",
       "default": "./dist/Markdown/remark.js"
-    },
-    "./internal/indicatorPress.stylex": {
-      "source": "./src/internal/indicatorPress.stylex.ts",
-      "types": "./dist/internal/indicatorPress.stylex.d.ts",
-      "default": "./dist/internal/indicatorPress.stylex.js"
     },
     "./internal/reorder": {
       "source": "./src/internal/reorder.ts",
