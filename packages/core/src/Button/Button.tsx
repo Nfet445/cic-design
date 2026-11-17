@@ -64,7 +64,7 @@ import {themeProps} from '../utils/themeProps';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {
-  controlPressLayerStyles,
+  controlPressHeldClassName,
   rowPressLayerStyles,
 } from '../privateAttributes/press.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
@@ -519,7 +519,6 @@ export function Button({
     // release runs on the compositor.
     rowPressLayerStyles.cell,
     rowPressLayerStyles.cellOnImage,
-    controlPressLayerStyles.control,
     inputGroup != null && buttonGroup == null && inputGroupStyles.buttonAddon,
     xstyle,
   );
@@ -535,7 +534,12 @@ export function Button({
       }),
       sharedStylexProps,
     ),
-    {className: layoutClassName, style: widthStyle ?? undefined},
+    {
+      // Under a coarse primary pointer the button keeps its press layer from
+      // the touch to the end of the release (`controlPressHeldClassName`).
+      className: tw(layoutClassName, controlPressHeldClassName),
+      style: widthStyle ?? undefined,
+    },
     className,
     style,
   );

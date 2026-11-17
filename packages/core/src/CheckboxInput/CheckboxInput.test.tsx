@@ -16,7 +16,7 @@ import {readFileSync} from 'node:fs';
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {hasReleaseFade, rulesDeclaredFor} from '../__tests__/pressState';
+import {hasReleaseFade} from '../__tests__/pressState';
 import {CheckboxInput} from './CheckboxInput';
 import {Theme} from '../theme/Theme';
 import {defineTheme} from '../theme/defineTheme';
@@ -35,6 +35,7 @@ import {
   checkboxInputPressContentClassName,
   checkboxInputPressOverlayClassName,
 } from './checkboxInputClasses';
+import {indicatorPressPaintHandDownClassName} from '../privateAttributes/pressClasses';
 
 interface InjectedRule {
   selector: string;
@@ -1135,21 +1136,23 @@ describe('an indicator that paints its own press', () => {
       <CheckboxInput label="Accept terms" value={false} onChange={() => {}} />,
     );
     const {row} = partsOf(container);
-    const rules = rulesDeclaredFor(row).filter(rule =>
-      rule.includes('--_indicator-press-image'),
+    const handed = indicatorPressPaintHandDownClassName.split(' ');
+    expect(handed.length).toBeGreaterThan(0);
+    for (const name of handed) {
+      expect(row.classList.contains(name)).toBe(true);
+      // A pressed ancestor row hands nothing down: only the row's own states do.
+      expect(name).toMatch(/^\[&\[data-astryx-press=(on|fading)\]\]/);
+    }
+    const imageArms = handed.filter(name =>
+      name.includes('[--_indicator-press-image:var(--_press-paint-image)]'),
     );
-    const handing = rules.filter(rule =>
-      /--_indicator-press-image:\s*var\(--_press-paint-image\)/.test(rule),
-    );
-    expect(handing.length).toBeGreaterThan(0);
-    // A pressed ancestor row hands nothing down: only the row's own states do.
+    expect(imageArms.length).toBeGreaterThan(0);
+    // No default of its own: a default would print beside the arm and beat it.
     expect(
-      handing.every(rule => /\[data-astryx-press="(on|fading)"\]/.test(rule)),
-    ).toBe(true);
-    // No default of its own: a layered stylesheet ranks a default above arms.
-    expect(
-      rules.every(rule => /\[data-astryx-press="(on|fading)"\]/.test(rule)),
-    ).toBe(true);
+      row.className
+        .split(' ')
+        .filter(name => name.includes('--_indicator-press-image')),
+    ).toEqual(imageArms);
   });
 
   it('hands nothing down from a disabled checkbox', () => {
@@ -1162,11 +1165,10 @@ describe('an indicator that paints its own press', () => {
       />,
     );
     const {row} = partsOf(container);
-    expect(
-      rulesDeclaredFor(row).some(rule =>
-        rule.includes('--_indicator-press-image'),
-      ),
-    ).toBe(false);
+    for (const name of indicatorPressPaintHandDownClassName.split(' ')) {
+      expect(row.classList.contains(name)).toBe(false);
+    }
+    expect(row.className).not.toContain('--_indicator-press-image');
   });
 
   it('leaves its rounded-square press layer off over an indicator marked as painting its own press', () => {

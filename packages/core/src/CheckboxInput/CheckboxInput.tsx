@@ -57,7 +57,7 @@ import {themeProps} from '../utils/themeProps';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useTouchHitArea} from '../utils/touchHitArea';
 import {pressBoxProps} from '../privateAttributes/pressBox.stylex';
-import {indicatorPressPaintStyles} from '../privateAttributes/press.stylex';
+import {indicatorPressPaintHandDownClassName} from '../privateAttributes/press.stylex';
 import {registerBoxHold} from '../utils/boxHold';
 import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 import {
@@ -407,19 +407,20 @@ export function CheckboxInput({
               // An indicator in another package may not name the private press
               // attribute. So the row hands its press image down to an
               // indicator that paints its own press
-              // (`indicatorPressPaintStyles.handDown`).
+              // (`indicatorPressPaintHandDownClassName`). Under a row that owns
+              // the press, the box takes the row's painted strength instead.
               !isDisabled &&
                 isRowPressSurface &&
                 checkboxInputRowPressImageClassName,
+              !isDisabled &&
+                !isRowPressSurface &&
+                indicatorPressPaintHandDownClassName,
             ),
           },
           stylex.props(
             // Hover and focus reach the checkbox visual through the row's
             // scope attribute rather than props, so the whole row drives it.
             hasHitArea && touchHitAreaStyles.layer,
-            !isDisabled &&
-              !isRowPressSurface &&
-              indicatorPressPaintStyles.handDown,
             // The touch press's strength and release live on the row the
             // controller writes to; the layer over the checkbox box inherits
             // and paints it. Under a row that owns the press, the box inherits
