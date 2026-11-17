@@ -107,6 +107,11 @@ import {
   listItemRowClassName,
   listItemTaskMarkerContainerClassName,
 } from '../List/listItemClasses';
+import {
+  listReorderHandleClassName,
+  listReorderLineClassName,
+} from '../List/listReorderHandleClasses';
+import {listReorderHintButtonClassName} from '../List/listReorderHintClasses';
 
 import {
   fieldAttachedStatusLayerClassName,
@@ -1447,6 +1452,15 @@ function familyClassNames() {
   ]) {
     add(className);
   }
+
+  // The reorder machinery: the handle answers the row's `align`, and the
+  // list's insertion line and the mode hint's buttons carry no axis.
+  for (const rowAlign of [undefined, 'center', 'start', 'first-line']) {
+    add(listReorderHandleClassName({rowAlign}));
+  }
+  add(listReorderLineClassName);
+  add(listReorderHintButtonClassName({isText: false}));
+  add(listReorderHintButtonClassName({isText: true}));
 
   add(citationIconWrapClassName);
   add(citationIconClassName);
