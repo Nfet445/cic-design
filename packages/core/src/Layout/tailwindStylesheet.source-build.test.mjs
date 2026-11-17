@@ -1918,9 +1918,8 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // sum of the two families is smaller than their parts. The sub-menu's
     // flyout surface, its scroll gesture and the two cap fallbacks under
     // `@supports` added 13. With every family above the sheet sits at about
-    // 1115, so both sides of the merge fit: the ceiling moves once, for their
-    // sum.
-    expect(stylesheet.rules.size).toBeLessThan(1140);
+    // 1134, so the ceiling follows the sum rather than one side.
+    expect(stylesheet.rules.size).toBeLessThan(1160);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

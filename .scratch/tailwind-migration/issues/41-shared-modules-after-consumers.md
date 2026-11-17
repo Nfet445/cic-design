@@ -12,6 +12,12 @@ Move the seven `stylex.create` blocks that ticket 17 could not move: they set a 
 
 The seven, as ticket 17 listed them: `travellingStyles` (row, list, handle), `focusOwner`, `ownRing`, and the four that remain in `privateAttributes/**` once the press and reorder modules landed.
 
+Three more survivors joined the list as their families closed, each waiting on the same condition:
+
+- `packages/core/src/SideNav/SideNavItem.tsx` — `leftoverStyles.collapsedItem/Sm/Lg` and `indentStyles.sm/md/primary` set `width`, `paddingInline` and `paddingInlineStart` that the unlayered `navItemStyles` also paints, so they wait for `packages/core/src/NavItem/navItemStyles.ts`.
+- `packages/core/src/SideNav/SideNav.tsx:231` — `leftoverStyles.resizableHandle` keeps the ring inside the clipping wrapper, and `ResizeHandle` applies `focusOutlineStyles.focusVisible` unlayered, so it waits for the resizable handle in `49-overflow-and-gesture`.
+- `packages/core/src/Card/cardBorder.stylex.ts` — the border-inset `calc()` padding, because `container()` sets unlayered `padding` on the same element.
+
 ## Why it waits
 
 Each consumer must paint from classes first. Until then a moved module repaints the component in the browser even though every unit test stays green.

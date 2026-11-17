@@ -110,9 +110,9 @@ Window 3 (this branch, after merging `poc/tailwind-layout-primitives` once):
   both sides' reasoning and moved the ceiling once, to 1140, for their sum
   (1130 rules). `node --check` clean.
 - Tests: `pnpm exec vitest run packages/core/src/DropdownMenu
-  packages/core/src/ContextMenu packages/core/src/MoreMenu
-  packages/core/src/NavMenu
-  packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` — 609
+packages/core/src/ContextMenu packages/core/src/MoreMenu
+packages/core/src/NavMenu
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` — 609
   passed, no assertion weakened.
 
 Still in StyleX in this file, with the reason:
