@@ -41,9 +41,9 @@ const styles = {
   rowHeader: 'flex items-center gap-2 text-start min-w-0',
   emoji: 'text-[18px] shrink-0',
   fruitText: 'flex flex-col min-w-0',
-  cell: 'flex items-center justify-center h-9 border border-[var(--color-border)] rounded-[var(--radius-container)] bg-[var(--color-background-card)] text-[var(--color-text-secondary)] [font-family:inherit] cursor-pointer [@media(hover:hover)]:hover:border-[var(--color-border-emphasized)] [@media(hover:hover)]:hover:text-[var(--color-text-primary)]',
-  cellSelected:
-    'border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-on-accent)]',
+  // `aria-selected` drives the chosen cell, so two arbitrary-value utilities
+  // never have to fight over one property.
+  cell: 'flex items-center justify-center h-9 border border-[var(--color-border)] rounded-[var(--radius-container)] bg-[var(--color-background-card)] text-[var(--color-text-secondary)] [font-family:inherit] cursor-pointer [@media(hover:hover)]:hover:border-[var(--color-border-emphasized)] [@media(hover:hover)]:hover:text-[var(--color-text-primary)] aria-selected:border-[var(--color-accent)] aria-selected:bg-[var(--color-accent)] aria-selected:text-[var(--color-on-accent)]',
 } as const;
 
 function FruitRipenessGrid({
@@ -105,11 +105,7 @@ function FruitRipenessGrid({
                 aria-selected={isSelected || undefined}
                 tabIndex={isSelected ? 0 : -1}
                 onClick={() => onChange({fruit: fruit.id, ripeness: level.id})}
-                className={
-                  isSelected
-                    ? `${styles.cell} ${styles.cellSelected}`
-                    : styles.cell
-                }>
+                className={styles.cell}>
                 {level.shortLabel}
               </button>
             );
