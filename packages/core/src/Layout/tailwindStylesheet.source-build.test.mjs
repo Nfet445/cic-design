@@ -302,6 +302,11 @@ import {
   sectionOuterClassName,
 } from '../Section/sectionClasses';
 import {
+  scrollableAreaContentClassName,
+  scrollableAreaContentWithInlineOverflowClassName,
+  scrollableAreaViewportClassName,
+} from '../ScrollableArea/scrollableAreaClasses';
+import {
   SELECTOR_OPTION_EMBEDDED_CLASS,
   SELECTOR_ROW_CONTENT_CLASS,
   SELECTOR_ROW_MARK_COLUMN_CLASS,
@@ -811,6 +816,18 @@ function familyClassNames() {
       add(sectionInnerClassName({dividers, variant}));
     }
   }
+  add(scrollableAreaViewportClassName({isFullBleed: false}));
+  add(
+    scrollableAreaViewportClassName({
+      height: 200,
+      isFullBleed: true,
+      maxWidth: '64rem',
+      minHeight: 40,
+      width: '100%',
+    }),
+  );
+  add(scrollableAreaContentClassName);
+  add(scrollableAreaContentWithInlineOverflowClassName);
   add(sectionOuterClassName({}));
   add(
     sectionOuterClassName({
@@ -2187,9 +2204,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // to literal classes: its surface, both viewport-fit states, the two sizing
     // classes, the anchor wrapper and both hidden close wrappers. Spinner's box,
     // ring, rotor, circle, arc, track and its twelve size, shade and alpha
-    // classes, and AspectRatio's box, ratio, ellipse clip and four child arms,
-    // measured 1300, so the ceiling follows the sum rather than one side.
-    expect(stylesheet.rules.size).toBeLessThan(1330);
+    // classes, AspectRatio's box, ratio, ellipse clip and four child arms, then
+    // ScrollableArea's platform, inset and both fade arms measured 1330 with
+    // every family above registered, so the ceiling follows the sum.
+    expect(stylesheet.rules.size).toBeLessThan(1380);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
