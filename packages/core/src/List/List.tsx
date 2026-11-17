@@ -344,7 +344,7 @@ export function List({
         : null)}
       {...mergeProps(
         themeProps('list', {density, listStyle}),
-        stylex.props(reorderSession?.listStyle, xstyle),
+        stylex.props(xstyle),
         // The session's insertion line: its `::after` stays hidden until the
         // reorder machinery marks the list.
         tw(
