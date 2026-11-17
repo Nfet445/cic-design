@@ -26,8 +26,8 @@
  */
 
 import {useCallback} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {observeResize} from '../utils/sharedResizeObserver';
+import {tokenizerEndLaneReserveClassName} from './tokenizerClasses';
 
 /**
  * The measured lane width, published on the field wrapper and read by the
@@ -35,7 +35,7 @@ import {observeResize} from '../utils/sharedResizeObserver';
  * carries a measurement into CSS without carrying it through React, so a lane
  * that grows or shrinks repaints without re-rendering the field.
  */
-const LANE_RESERVE_VAR = '--_tokenizer-end-lane-reserve';
+const LANE_RESERVE_VAR = '--astryx-tokenizer-end-lane-reserve';
 
 // Keep the input's text and caret out from under the lane.
 //
@@ -51,11 +51,6 @@ const LANE_RESERVE_VAR = '--_tokenizer-end-lane-reserve';
 // That is what lets every input state read the property without knowing whether
 // a search is running. The rule stays static either way — it is never
 // regenerated as the lane changes.
-const reserveStyles = stylex.create({
-  reserve: {
-    paddingInlineEnd: `var(${LANE_RESERVE_VAR}, 0px)`,
-  },
-});
 
 /**
  * Keep a field's input clear of the lane at its inline end.
@@ -81,7 +76,7 @@ const reserveStyles = stylex.create({
  *
  * Takes the lane's inset from the field's inline-end border, as the CSS
  * expression that positions it. Returns a ref callback for the lane, and the
- * ordinary input reserve style. With tokens, Tokenizer's field wrapper reads the
+ * ordinary input reserve class. With tokens, Tokenizer's field wrapper reads the
  * same custom property directly so every token row, and the input after the
  * last token, stops before the lane.
  * With no lane mounted the variable is absent and either rule resolves to its
@@ -89,7 +84,7 @@ const reserveStyles = stylex.create({
  */
 export function useEndLaneReserve(
   laneInset: string,
-): [(node: HTMLElement | null) => void, stylex.StyleXStyles] {
+): [(node: HTMLElement | null) => void, string] {
   const laneRef = useCallback(
     (node: HTMLElement | null) => {
       if (node == null) {
@@ -143,5 +138,5 @@ export function useEndLaneReserve(
     [laneInset],
   );
 
-  return [laneRef, reserveStyles.reserve];
+  return [laneRef, tokenizerEndLaneReserveClassName];
 }

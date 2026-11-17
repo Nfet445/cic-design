@@ -44,6 +44,12 @@ import {Token} from '../Token/Token';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {__resetDevWarnings} from '../utils/devWarning';
 import {colorVars, sizeVars, spacingVars} from '../theme/tokens.stylex';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {
+  tokenizerSheetFieldDisabledClassName,
+  tokenizerSheetTriggerPlaceholderClassName,
+  tokenizerSheetTriggerPlaceholderDisabledClassName,
+} from './tokenizerClasses';
 import {inputWrapperStyles} from '../Field/inputStyles.stylex';
 import type {SearchSource, SearchableItem} from '../Typeahead/types';
 
@@ -2155,51 +2161,41 @@ describe('Tokenizer sheet presentation (single-sheet touch flow)', () => {
     expect(spy).toHaveBeenLastCalledWith([], {item: ITEMS[0], type: 'remove'});
   });
 
-  it('paints a disabled trigger, its placeholder, and its tokens GrayText in forced colors (AST-085 FR6)', () => {
+  it('paints a disabled field, its placeholder, and its tokens GrayText in forced colors (AST-085 FR6)', () => {
     const atoms = (style: stylex.StyleXStyles) =>
       stylex
         .props(style)
         .className!.split(' ')
         .filter(name => !name.includes('__'));
-    const forced = stylex.create({
-      trigger: {
-        borderColor: {
-          default: colorVars['--color-border-emphasized'],
-          '@media (forced-colors: active)': 'GrayText',
-        },
-        color: {default: null, '@media (forced-colors: active)': 'GrayText'},
-      },
+    const forcedToken = stylex.create({
       token: {
         color: {
           default: colorVars['--color-text-primary'],
           '@media (forced-colors: active)': 'GrayText',
         },
       },
-      placeholder: {
-        color: {
-          default: colorVars['--color-text-secondary'],
-          '@media (forced-colors: active)': 'GrayText',
-        },
-      },
     });
     const {unmount} = render(<Harness isDisabled />);
     const field = sheetField();
-    for (const name of atoms(forced.trigger)) {
-      expect(field).toHaveClass(name);
-    }
+    expectClassSet(field, {
+      includes: tokenizerSheetFieldDisabledClassName.split(/\s+/),
+    });
     const tokens = field.querySelectorAll('.astryx-token');
     expect(tokens).toHaveLength(2);
     for (const token of tokens) {
-      for (const name of atoms(forced.token)) {
+      for (const name of atoms(forcedToken.token)) {
         expect(token).toHaveClass(name);
       }
     }
     unmount();
     render(<Harness isDisabled initial={[]} />);
     const placeholder = screen.getByText('Add tags');
-    for (const name of atoms(forced.placeholder)) {
-      expect(placeholder).toHaveClass(name);
-    }
+    expectClassSet(placeholder, {
+      includes:
+        `${tokenizerSheetTriggerPlaceholderClassName} ${tokenizerSheetTriggerPlaceholderDisabledClassName}`.split(
+          /\s+/,
+        ),
+    });
   });
 
   it('renders a row without its action and warns once in development (FR19; AST-058 FR9)', async () => {

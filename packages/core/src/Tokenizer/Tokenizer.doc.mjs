@@ -322,6 +322,14 @@ export const docs = {
         states: ['disabled'],
       },
     ],
+    vars: [
+      {
+        name: '--astryx-tokenizer-end-lane-reserve',
+        description:
+          'Inline-end inset the field keeps clear for the controls in its end lane. The field writes it as the lane changes width; leave it unset to let the field manage it.',
+        default: '0px',
+      },
+    ],
   },
   usage: {
     description:
@@ -684,6 +692,14 @@ export const docsZh = {
         className: 'astryx-tokenizer',
         visualProps: ['size', 'status'],
         states: ['disabled'],
+      },
+    ],
+    vars: [
+      {
+        name: '--astryx-tokenizer-end-lane-reserve',
+        description:
+          'Inline-end inset the field keeps clear for the controls in its end lane. The field writes it as the lane changes width; leave it unset to let the field manage it.',
+        default: '0px',
       },
     ],
   },

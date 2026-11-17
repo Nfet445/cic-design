@@ -607,6 +607,30 @@ import {
   typeaheadInputDisabledClassName,
   typeaheadRowClassName,
 } from '../Typeahead/typeaheadClasses';
+import {
+  tokenizerEndLaneClassName,
+  tokenizerEndLaneInGroupClassName,
+  tokenizerEndLaneInGroupWithTokensClassName,
+  tokenizerEndLaneReserveClassName,
+  tokenizerEndLaneSizeClassName,
+  tokenizerGroupedTrackClassName,
+  tokenizerGroupedTrackContentClassName,
+  tokenizerGroupedTrackContentTruncatedClassName,
+  tokenizerGroupedTrackFadeBothClassName,
+  tokenizerGroupedTrackFadeEndClassName,
+  tokenizerGroupedTrackFadeStartClassName,
+  tokenizerIdleSpinnerClassName,
+  tokenizerLayerClassName,
+  tokenizerOverflowTextClassName,
+  tokenizerSheetFieldClassName,
+  tokenizerSheetFieldDisabledClassName,
+  tokenizerSheetTriggerClassName,
+  tokenizerSheetTriggerPlaceholderClassName,
+  tokenizerSheetTriggerPlaceholderDisabledClassName,
+  tokenizerSheetTriggerWithTokensClassName,
+  tokenizerStartIconWithTokensClassName,
+  tokenizerTokenClassName,
+} from '../Tokenizer/tokenizerClasses';
 import {tableCellClassName} from '../Table/tableCellClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
 import {tableRowClassName} from '../Table/tableRowClasses';
@@ -3347,6 +3371,37 @@ function familyClassNames() {
   add(markdownCenterAlignClassName);
   add(markdownBlockIndentClassName);
   add(markdownMarkerGutterClassName);
+
+  // Tokenizer's own boxes: the token pill and the wrapper a `renderToken`
+  // pill renders into, the start icon beside tokens, the end lane in both
+  // placements at every size, the grouped track with each edge fade, the
+  // collapsed summary, the expanded layer, and the bottom sheet's field,
+  // trigger and placeholder in both disabled states.
+  add(tokenizerTokenClassName);
+  add(tokenizerStartIconWithTokensClassName);
+  add(tokenizerEndLaneClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(tokenizerEndLaneSizeClassName(size));
+  }
+  add(tokenizerEndLaneInGroupClassName);
+  add(tokenizerEndLaneInGroupWithTokensClassName);
+  add(tokenizerEndLaneReserveClassName);
+  add(tokenizerIdleSpinnerClassName);
+  add(tokenizerOverflowTextClassName);
+  add(tokenizerGroupedTrackClassName);
+  add(tokenizerGroupedTrackContentClassName);
+  add(tokenizerGroupedTrackContentTruncatedClassName);
+  add(tokenizerGroupedTrackFadeStartClassName);
+  add(tokenizerGroupedTrackFadeEndClassName);
+  add(tokenizerGroupedTrackFadeBothClassName);
+  add(tokenizerLayerClassName);
+  add(tokenizerSheetFieldClassName(false));
+  add(tokenizerSheetFieldClassName(true));
+  add(tokenizerSheetFieldDisabledClassName);
+  add(tokenizerSheetTriggerClassName);
+  add(tokenizerSheetTriggerWithTokensClassName);
+  add(tokenizerSheetTriggerPlaceholderClassName);
+  add(tokenizerSheetTriggerPlaceholderDisabledClassName);
 
   return [...names].sort();
 }
