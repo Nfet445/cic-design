@@ -30,19 +30,22 @@ import {
   useId,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {usePopover} from '../Popover/usePopover';
 import {isPressInsideOwnedLayer, useOutsidePress} from '../Layer/outsidePress';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
 import {useHighlightedOptionScroll} from '../hooks/useHighlightedOptionScroll';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  typeScaleVars,
-  typographyVars,
-} from '../theme/tokens.stylex';
+import {spacingVars} from '../theme/tokens.stylex';
 import {mergeProps, groupItems, isImeKeyEvent} from '../utils';
+import {tw} from '../utils/tw';
+import {
+  chatTriggerMenuGroupHeadingClassName,
+  chatTriggerMenuListClassName,
+  chatTriggerMenuMessageClassName,
+  chatTriggerMenuRowClassName,
+  chatTriggerMenuRowHighlightedClassName,
+  chatTriggerMenuRowLabelClassName,
+  chatTriggerMenuSurfaceClassName,
+} from './chatClasses';
 import type {SearchableItem} from '../Typeahead/types';
 import {themeProps} from '../utils/themeProps';
 import type {ChatComposerTrigger, ChatComposerToken} from './ChatComposerInput';
@@ -114,71 +117,6 @@ export interface UseTriggerMenuReturn {
 // =============================================================================
 // Styles
 // =============================================================================
-
-const styles = stylex.create({
-  dropdown: {
-    boxSizing: 'border-box',
-    maxHeight: '240px',
-    overflowY: 'auto',
-    padding: spacingVars['--spacing-1'],
-    minWidth: '180px',
-  },
-  popoverSurface: {
-    minWidth: '180px',
-  },
-  item: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%',
-    padding: spacingVars['--spacing-2'],
-    borderRadius: radiusVars['--radius-element'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    outline: 'none',
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    textAlign: 'start' as const,
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-  },
-  itemHighlighted: {
-    backgroundColor: colorVars['--color-overlay-hover'],
-  },
-  itemLabel: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  emptyState: {
-    padding: spacingVars['--spacing-3'],
-    textAlign: 'center' as const,
-    fontSize: typeScaleVars['--text-supporting-size'],
-    color: colorVars['--color-text-secondary'],
-  },
-  loadingState: {
-    padding: spacingVars['--spacing-3'],
-    textAlign: 'center' as const,
-    fontSize: typeScaleVars['--text-supporting-size'],
-    color: colorVars['--color-text-secondary'],
-  },
-  groupHeading: {
-    paddingInline: spacingVars['--spacing-2'],
-    paddingBlockStart: spacingVars['--spacing-2'],
-    paddingBlockEnd: spacingVars['--spacing-1'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    userSelect: 'none',
-  },
-});
 
 // =============================================================================
 // Helpers
@@ -933,10 +871,12 @@ export function useTriggerMenu(
     let listContent: ReactNode;
     if (state.isLoading) {
       listContent = (
-        <div {...stylex.props(styles.loadingState)}>{loadingText}</div>
+        <div className={chatTriggerMenuMessageClassName}>{loadingText}</div>
       );
     } else if (state.items.length === 0 && state.isActive) {
-      listContent = <div {...stylex.props(styles.emptyState)}>{emptyText}</div>;
+      listContent = (
+        <div className={chatTriggerMenuMessageClassName}>{emptyText}</div>
+      );
     } else {
       const groups = groupItems(state.items);
       let flatIndex = 0;
@@ -955,14 +895,17 @@ export function useTriggerMenu(
                 selectItem(item);
               }}
               onMouseEnter={() => highlightOnHover(idx)}
-              {...stylex.props(
-                styles.item,
-                idx === state.highlightedIndex && styles.itemHighlighted,
+              className={tw(
+                chatTriggerMenuRowClassName,
+                idx === state.highlightedIndex &&
+                  chatTriggerMenuRowHighlightedClassName,
               )}>
               {activeTrigger.renderItem ? (
                 activeTrigger.renderItem(item)
               ) : (
-                <span {...stylex.props(styles.itemLabel)}>{item.label}</span>
+                <span className={chatTriggerMenuRowLabelClassName}>
+                  {item.label}
+                </span>
               )}
             </div>
           );
@@ -973,7 +916,9 @@ export function useTriggerMenu(
               key={`group-${group.heading}`}
               role="group"
               aria-label={group.heading}>
-              <div aria-hidden="true" {...stylex.props(styles.groupHeading)}>
+              <div
+                aria-hidden="true"
+                className={chatTriggerMenuGroupHeadingClassName}>
                 {group.heading}
               </div>
               {groupItems}
@@ -992,8 +937,8 @@ export function useTriggerMenu(
           activeTrigger.menuLabel ?? t('@astryx.chatTriggerMenu.suggestions')
         }
         {...mergeProps(
+          chatTriggerMenuListClassName,
           themeProps('trigger-menu'),
-          stylex.props(styles.dropdown),
         )}>
         {listContent}
       </div>,
@@ -1001,7 +946,7 @@ export function useTriggerMenu(
         placement: 'above',
         alignment: 'start',
         offset: spacingVars['--spacing-1'],
-        xstyle: styles.popoverSurface,
+        className: chatTriggerMenuSurfaceClassName,
       },
     );
   }, [

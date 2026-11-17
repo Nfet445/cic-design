@@ -9,7 +9,9 @@
  */
 
 import {tw} from '../utils/tw';
+import type {SpacingStep} from '../utils/types';
 import type {ChatDensity, ChatMessageSender} from './ChatContext';
+import type {ChatToolCallStatus} from './ChatToolCalls';
 
 /** The send button: circular, and it keeps its width in a tight composer. */
 export const chatSendButtonClassName =
@@ -401,6 +403,156 @@ export function chatLayoutDockInnerClassName(density: ChatDensity): string {
 }
 
 // ---------------------------------------------------------------------------
+// ChatMessageList
+// ---------------------------------------------------------------------------
+
+/**
+ * The log and the rows column inside it: both fill the area that scrolls them,
+ * and neither shrinks below its content.
+ */
+export const chatMessageListColumnClassName = 'flex flex-col flex-1 min-h-0';
+
+/** The density's own row gap, used when the caller sets no gap. */
+const chatMessageListDensityGapClassName: Record<ChatDensity, string> = {
+  compact: 'gap-2',
+  balanced: 'gap-4',
+  spacious: 'gap-6',
+};
+
+/** A caller's row gap, on the spacing scale. */
+const chatMessageListGapClassName: Record<SpacingStep, string> = {
+  0: 'gap-0',
+  0.5: 'gap-0.5',
+  1: 'gap-1',
+  1.5: 'gap-1.5',
+  2: 'gap-2',
+  3: 'gap-3',
+  4: 'gap-4',
+  5: 'gap-5',
+  6: 'gap-6',
+  8: 'gap-8',
+  10: 'gap-10',
+};
+
+/**
+ * The rows column: density states its own inset, and a caller's gap replaces
+ * the density's rather than competing with it, so only one gap class is ever
+ * present.
+ */
+export function chatMessageListInnerClassName({
+  density,
+  gap,
+}: {
+  density: ChatDensity;
+  gap: SpacingStep | undefined;
+}): string {
+  return tw(
+    chatMessageListColumnClassName,
+    density === 'compact'
+      ? 'px-3 py-2'
+      : density === 'spacious'
+        ? 'px-6 py-6'
+        : 'px-4 py-4',
+    gap == null
+      ? chatMessageListDensityGapClassName[density]
+      : chatMessageListGapClassName[gap],
+  );
+}
+
+/** The sentinel row at the top that asks for older messages. */
+export const chatMessageListLoadingClassName = 'flex justify-center py-3';
+
+/** The spacer that holds a short list against the composer. */
+export const chatMessageListSpacerClassName = 'flex-1 min-h-0';
+
+/** The accepted empty state, centered in the space the rows would fill. */
+export const chatMessageListEmptyStateClassName =
+  'flex items-center justify-center flex-1 min-h-0';
+
+// ---------------------------------------------------------------------------
+// ChatComposerDrawer
+// ---------------------------------------------------------------------------
+
+/**
+ * The drawer panel: it tucks behind the composer, so it ends with a negative
+ * margin one composer radius deep, and its own bottom inset clears that
+ * overlap. The muted tint is a background image over the surface colour, both
+ * in the element's own paint layer, so nothing needs a position or a z-index.
+ */
+export const chatComposerDrawerClassName = tw(
+  'relative z-[1] flex flex-col overflow-hidden px-4 pt-3',
+  'pb-[calc(var(--spacing-3)+var(--radius-chat))] -mb-[var(--radius-chat)]',
+  'bg-[var(--color-background-surface)]',
+  'bg-[linear-gradient(var(--color-background-muted),var(--color-background-muted))]',
+  'rounded-ss-[var(--radius-chat)] rounded-se-[var(--radius-chat)]',
+);
+
+/**
+ * The collapse toggle: one grid cell that stacks the summary and the handle,
+ * so they crossfade without moving the drawer.
+ */
+export const chatComposerDrawerToggleRowClassName = tw(
+  'grid grid-cols-[1fr] items-center h-5 px-4 -mx-4 cursor-pointer select-none',
+  'aria-disabled:cursor-default',
+);
+
+/** The collapsed summary, centered on the toggle row and hidden while open. */
+export function chatComposerDrawerToggleContentClassName(
+  isHidden: boolean,
+): string {
+  return tw(
+    'col-start-1 row-start-1 justify-self-start',
+    'inline-flex items-center pointer-events-none h-5 gap-2',
+    'rounded-[var(--radius-full)]',
+    'transition-opacity duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
+    isHidden ? 'opacity-0' : 'opacity-100',
+  );
+}
+
+/** The collapsed summary's word beside the count. */
+export const chatComposerDrawerLabelClassName = tw(
+  'text-[length:var(--text-body-size)] leading-5',
+  'text-[color:var(--color-text-secondary)]',
+  'transition-[color] duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
+);
+
+/** The grab handle: a bar centered in the toggle row, hidden while open. */
+export function chatComposerDrawerHandleClassName(isHidden: boolean): string {
+  return tw(
+    'col-start-1 row-start-1 justify-self-center self-start w-5 h-0.5',
+    'rounded-[var(--radius-full)] bg-[var(--color-icon-secondary)]',
+    'transition-[background-color,opacity] duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
+    isHidden ? 'opacity-0 pointer-events-none' : 'opacity-100',
+  );
+}
+
+/**
+ * The content area collapses through its own row track, so it keeps the height
+ * it animates from and the items stay in place.
+ */
+export function chatComposerDrawerContentGridClassName(
+  isCollapsed: boolean,
+): string {
+  return tw(
+    'grid transition-[grid-template-rows] duration-[var(--duration-medium)] ease-[var(--ease-standard)]',
+    isCollapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]',
+  );
+}
+
+/** The items inside the drawer: a wrapping row, fading with the row track. */
+export function chatComposerDrawerContentClassName(
+  isCollapsed: boolean,
+): string {
+  return tw(
+    'min-h-0 flex flex-wrap gap-1 items-start',
+    'transition-opacity ease-[var(--ease-standard)]',
+    isCollapsed
+      ? 'opacity-0 duration-[var(--duration-fast)] delay-0'
+      : 'opacity-100 duration-[var(--duration-medium)] delay-[var(--duration-fast)]',
+  );
+}
+
+// ---------------------------------------------------------------------------
 // ChatLayoutScrollButton
 // ---------------------------------------------------------------------------
 
@@ -491,3 +643,348 @@ export function chatDictationBarClassName(size: 'sm' | 'md'): string {
     size === 'sm' ? 'w-[2px]' : 'w-[2.5px]',
   );
 }
+
+// ---------------------------------------------------------------------------
+// ChatComposer
+// ---------------------------------------------------------------------------
+
+/**
+ * The shell. It owns the two numbers every nested radius and inset reads: the
+ * chat radius and the body padding, so a density change reaches both. The
+ * button radius is concentric with the shell, and it stays on its own variable
+ * so only buttons follow the shell's curve.
+ */
+export function chatComposerRootClassName(isDisabled: boolean): string {
+  return tw(
+    'relative z-0 isolate flex flex-col',
+    '[--_chat-composer-radius:var(--radius-chat)]',
+    '[--_chat-composer-padding:var(--spacing-3)]',
+    '[--_button-radius:max(var(--radius-element),calc(var(--_chat-composer-radius)-var(--_chat-composer-padding)))]',
+    isDisabled && 'opacity-60 pointer-events-none',
+  );
+}
+
+/**
+ * The body reads its padding from the shell's variable, and compact rewrites
+ * that variable rather than the padding, so the flat elevation's inset border
+ * calculation follows the same value.
+ */
+export function chatComposerBodyClassName(density: ChatDensity): string {
+  return tw(
+    'relative z-[2] flex flex-col p-[var(--_chat-composer-padding)]',
+    'rounded-[var(--_chat-composer-radius)] bg-[var(--color-background-popover)]',
+    'cursor-text [&:is(:disabled,[aria-disabled="true"])]:cursor-default',
+    'transition-[box-shadow,border-color] ease-[var(--ease-standard)]',
+    density === 'compact'
+      ? 'gap-1 [--_chat-composer-padding:var(--spacing-2)]'
+      : 'gap-2',
+  );
+}
+
+export const chatComposerHeaderClassName =
+  'flex items-center justify-between gap-2 min-h-7';
+
+export const chatComposerHeaderLeftClassName = 'flex items-center gap-1';
+
+/** The contextual slot: supporting type, pushed to the trailing edge. */
+export const chatComposerHeaderRightClassName = tw(
+  'flex items-center gap-2 ms-auto',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+export const chatComposerInputAreaClassName = 'flex flex-col';
+
+/** The footer row, as tall as the send button the slots are meant to hold. */
+export const chatComposerFooterClassName =
+  'flex items-center justify-between gap-2 min-h-8';
+
+export const chatComposerFooterLeftClassName = 'flex items-center gap-1';
+
+/**
+ * While a response streams the composer may block editing; the right side
+ * takes hit-testing back so its Stop action stays reachable.
+ */
+export function chatComposerFooterRightClassName(
+  isInterruptible: boolean,
+): string {
+  return tw(
+    'flex items-center gap-1',
+    isInterruptible && 'pointer-events-auto',
+  );
+}
+
+/**
+ * The status bar tucks under (or over) the body by one radius, so it shares the
+ * body's corners on that edge and reads the shell's padding.
+ */
+export function chatComposerStatusClassName(
+  position: 'top' | 'bottom',
+  type: 'error' | 'warning',
+): string {
+  return tw(
+    'relative z-0 flex items-center gap-2 px-4',
+    'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+    'font-[family-name:var(--font-family-body)]',
+    position === 'top'
+      ? tw(
+          'pt-[var(--_chat-composer-padding)]',
+          'pb-[calc(var(--_chat-composer-padding)+var(--_chat-composer-radius))]',
+          '-mb-[var(--_chat-composer-radius)]',
+          'rounded-ss-[var(--_chat-composer-radius)] rounded-se-[var(--_chat-composer-radius)]',
+        )
+      : tw(
+          'pt-[calc(var(--_chat-composer-padding)+var(--_chat-composer-radius))]',
+          'pb-[var(--_chat-composer-padding)]',
+          '-mt-[var(--_chat-composer-radius)]',
+          'rounded-es-[var(--_chat-composer-radius)] rounded-ee-[var(--_chat-composer-radius)]',
+        ),
+    type === 'error'
+      ? 'bg-[var(--color-error-muted)] text-[color:var(--color-on-error-muted)]'
+      : 'bg-[var(--color-warning-muted)] text-[color:var(--color-on-warning-muted)]',
+    // Forced colors replace the fill with Canvas; this boundary keeps its
+    // shape visible.
+    'forced-colors:outline-1 forced-colors:[outline-style:solid]',
+    'forced-colors:[outline-color:CanvasText] forced-colors:[outline-offset:-1px]',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// useTriggerMenu
+// ---------------------------------------------------------------------------
+
+/** The trigger menu's list: bounded height, and one inset around the rows. */
+export const chatTriggerMenuListClassName = tw(
+  'box-border max-h-60 overflow-y-auto p-1 min-w-[180px]',
+);
+
+/** The menu surface keeps the list's minimum width when the list is short. */
+export const chatTriggerMenuSurfaceClassName = 'min-w-[180px]';
+
+/** A menu row: a full-width option that reads as text, not as a button. */
+export const chatTriggerMenuRowClassName = tw(
+  'box-border flex items-center w-full p-2 text-start',
+  'rounded-[var(--radius-element)] border-0 outline-none bg-transparent',
+  'cursor-pointer [&:is(:disabled,[aria-disabled="true"])]:cursor-default',
+  'font-[family-name:var(--font-family-body)]',
+  'text-[length:var(--text-body-size)] leading-[var(--text-body-leading)]',
+  'text-[color:var(--color-text-primary)]',
+);
+
+/** The row the keyboard or the pointer points at. */
+export const chatTriggerMenuRowHighlightedClassName =
+  'bg-[var(--color-overlay-hover)]';
+
+/** The row's label: one ellided line, so a long item never widens the menu. */
+export const chatTriggerMenuRowLabelClassName = tw(
+  'flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap',
+);
+
+/** The loading and empty rows share one supporting-type centering. */
+export const chatTriggerMenuMessageClassName = tw(
+  'p-3 text-center text-[length:var(--text-supporting-size)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** A group's heading: supporting type, inset tighter at the bottom. */
+export const chatTriggerMenuGroupHeadingClassName = tw(
+  'px-2 pt-2 pb-1 select-none',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+// ---------------------------------------------------------------------------
+// ChatToolCalls
+// ---------------------------------------------------------------------------
+
+/** The tool-call block: a column of rows, one step below its message. */
+export const chatToolCallsRootClassName = 'flex flex-col mt-2';
+
+/** The wrench beside the group label. */
+export const chatToolCallsGroupIconClassName = tw(
+  'inline-flex items-center justify-center shrink-0 w-4 h-4',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+export const chatToolCallsGroupLabelClassName = tw(
+  'font-[family-name:var(--font-family-body)] font-medium',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/**
+ * The disclosure chevron. It animates its own rotation, so the transition
+ * names one property and the open state is a separate class.
+ */
+export const chatToolCallsChevronClassName = tw(
+  'inline-flex items-center justify-center shrink-0 w-3.5 h-3.5',
+  'text-[color:var(--color-text-secondary)]',
+  'transition-transform duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
+  'motion-reduce:transition-none',
+);
+
+/** The rotated chevron of an open group or an open result detail. */
+export const chatToolCallsChevronOpenClassName = 'rotate-180';
+
+/** The collapsing body: a row track, so the rows keep their height. */
+export function chatToolCallsGroupContentClassName(
+  isExpanded: boolean,
+): string {
+  return tw(
+    'grid transition-[grid-template-rows] duration-[var(--duration-medium)] ease-[var(--ease-standard)]',
+    'motion-reduce:transition-none',
+    isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+  );
+}
+
+/**
+ * The clip boundary of the row track. It mirrors the list's padding and
+ * negative margin so the rows' hover fills can overhang the text column
+ * without widening the layout, and so that overhang is absorbed here instead
+ * of being clipped by the height animation.
+ */
+export const chatToolCallsGroupContentInnerClassName =
+  'overflow-hidden min-h-0 px-1 -mx-1';
+
+export const chatToolCallsListClassName = 'flex flex-col px-1 -mx-1';
+
+/** One call row: an icon, the name, then whatever the call reports. */
+export const chatToolCallsRowClassName =
+  'flex items-center gap-1.5 min-h-6 py-0.5';
+
+/**
+ * A row with a detail to open. Its hover fill is the overlay, and the fill
+ * overhangs the text column by one padding step on each inline edge.
+ */
+export const chatToolCallsRowClickableClassName = tw(
+  'rounded-[var(--radius-element)] px-1 -mx-1',
+  'cursor-pointer [&:is(:disabled,[aria-disabled="true"])]:cursor-default',
+  'hover:[&:where(:not(:disabled,[aria-disabled="true"]))]:bg-[var(--color-overlay-hover)]',
+);
+
+/** A row that toggles without a detail: only the pointer changes. */
+export const chatToolCallsRowToggleClassName =
+  'cursor-pointer [&:is(:disabled,[aria-disabled="true"])]:cursor-default';
+
+/** The group header: a toggling row whose text does not drag on press. */
+export const chatToolCallsGroupHeaderClassName = tw(
+  chatToolCallsRowClassName,
+  chatToolCallsRowToggleClassName,
+  'select-none',
+);
+
+/** The status slot: a fixed square the spinner or the glyph sits in. */
+export const chatToolCallsStatusIconClassName = tw(
+  'relative inline-flex items-center justify-center shrink-0 w-4 h-4',
+  'rounded-[var(--radius-full)]',
+);
+
+/** The tool name: code type, one ellided line, never wider than 4ch. */
+export const chatToolCallsNameClassName = tw(
+  'font-[family-name:var(--font-family-code)] font-medium',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+  'whitespace-nowrap overflow-hidden text-ellipsis shrink min-w-[4ch]',
+);
+
+/** The target a call acted on: it gives way first, so it may collapse. */
+export const chatToolCallsTargetClassName = tw(
+  'font-[family-name:var(--font-family-body)]',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+  'whitespace-nowrap overflow-hidden text-ellipsis [flex-shrink:10] min-w-0',
+);
+
+export const chatToolCallsDurationClassName = tw(
+  'font-[family-name:var(--font-family-body)] shrink-0 whitespace-nowrap',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** A node badge keeps its width beside a long name. */
+export const chatToolCallsNodePillClassName = 'shrink-0';
+
+/** The diff counts: one supporting-type line that keeps its width. */
+export const chatToolCallsStatsClassName = tw(
+  'flex items-center gap-1 shrink-0',
+  'font-[family-name:var(--font-family-body)]',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+export const chatToolCallsStatsAdditionsClassName =
+  'text-[color:var(--color-text-success)]';
+
+export const chatToolCallsStatsDeletionsClassName =
+  'text-[color:var(--color-text-error)]';
+
+/** The detail chevron: pushed to the trailing edge of its row. */
+export const chatToolCallsDetailChevronClassName = tw(
+  'inline-flex items-center justify-center shrink-0 w-3.5 h-3.5 ms-auto',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** The detail block: inset to the text column, one step below its row. */
+export const chatToolCallsDetailContentClassName =
+  'ps-[calc(var(--spacing-4)+var(--spacing-1-5))] pb-2';
+
+/** The call count beside the group header's chevron. */
+export const chatToolCallsCountClassName = tw(
+  'inline-flex items-center gap-0.5 shrink-0',
+  'font-[family-name:var(--font-family-body)]',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** The status glyph colour, per status. */
+export const chatToolCallsStatusClassName: Record<ChatToolCallStatus, string> =
+  {
+    pending: 'text-[color:var(--color-text-disabled)]',
+    running: 'text-[color:var(--color-accent)]',
+    complete: 'text-[color:var(--color-icon-success)]',
+    error: 'text-[color:var(--color-icon-error)]',
+  };
+
+// ---------------------------------------------------------------------------
+// ChatComposerInput
+// ---------------------------------------------------------------------------
+
+/**
+ * The input shell. The editable and the placeholder are both one line tall at
+ * rest, so height: auto keeps the field from collapsing on its first layout.
+ */
+export function chatComposerInputRootClassName(isDisabled: boolean): string {
+  return tw(
+    'relative flex flex-col min-h-[22px]',
+    isDisabled && 'opacity-50 pointer-events-none',
+  );
+}
+
+/**
+ * The editable region. Its automatic minimum height is 0 as a scrolling flex
+ * item, so an empty one would lay out at 0px after a restyle and a click would
+ * no longer reach it; the height floor keeps it hit-testable. The 16px floor is
+ * iOS-only: iOS Safari zooms the page when a focused control sits under 16px,
+ * and only iOS WebKit implements the support query that gates it.
+ */
+export const chatComposerInputEditableClassName = tw(
+  'min-h-[22px] px-1 outline-none whitespace-pre-wrap break-words overflow-y-auto',
+  '[font-family:var(--font-family-body)] leading-[22px]',
+  'text-[length:var(--text-body-size)]',
+  'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
+  'text-[color:var(--color-text-primary)]',
+  '[caret-color:var(--color-accent)]',
+);
+
+/** The placeholder stands in the editable's box with the same type. */
+export const chatComposerInputPlaceholderClassName = tw(
+  'absolute top-0 start-0 end-0 px-1 pointer-events-none select-none',
+  '[font-family:var(--font-family-body)] leading-[22px]',
+  'text-[length:var(--text-body-size)]',
+  'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** A token chip: one line box tall, so it sits on the text baseline row. */
+export const chatComposerTokenSpanClassName =
+  'inline-flex items-center h-[1lh] align-top';

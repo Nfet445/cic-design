@@ -15,19 +15,11 @@ import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import * as stylex from '@stylexjs/stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {focusVars} from '../theme/tokens.stylex';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {chatFocusRingInsetClassName} from './chatClasses';
 import {ChatMessageList} from './ChatMessageList';
 import {Tooltip} from '../Tooltip';
 import {HoverCard} from '../HoverCard';
-
-const inset = stylex.create({
-  ring: {
-    outlineOffset: {
-      default: null,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-  },
-});
 
 // Debug class names name their source file; only the atoms matter.
 const atoms = (className: string | undefined) =>
@@ -49,10 +41,13 @@ describe('Astryx-made tab stops draw the shared focus ring', () => {
     );
     expectAtoms(
       screen.getByRole('log'),
-      atoms(
-        stylex.props(focusOutlineStyles.focusVisible, inset.ring).className,
-      ),
+      atoms(stylex.props(focusOutlineStyles.focusVisible).className),
     );
+    // The inset is a Tailwind class, so it is asserted by name rather than
+    // compiled from a StyleX map here.
+    expectClassSet(screen.getByRole('log'), {
+      includes: [chatFocusRingInsetClassName],
+    });
   });
 
   it('the text-only Tooltip trigger', () => {

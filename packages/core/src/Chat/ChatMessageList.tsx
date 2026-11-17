@@ -4,7 +4,7 @@
 
 /**
  * @file ChatMessageList.tsx
- * @input Uses React, StyleX, ChatListContext, theme tokens, spacing step utilities,
+ * @input Uses React, StyleX, Tailwind classes from chatClasses, ChatListContext,
  *   and isRenderable to preserve accepted empty-state content
  * @output Exports ChatMessageList component and ChatMessageListProps
  * @position Presentational message container — holds ChatMessage children
@@ -26,8 +26,16 @@
 
 import {type ReactNode, useEffect, useMemo, useRef, useTransition} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {focusVars, spacingVars} from '../theme/tokens.stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {tw} from '../utils/tw';
+import {
+  chatFocusRingInsetClassName,
+  chatMessageListColumnClassName,
+  chatMessageListEmptyStateClassName,
+  chatMessageListInnerClassName,
+  chatMessageListLoadingClassName,
+  chatMessageListSpacerClassName,
+} from './chatClasses';
 import {
   ChatListContext,
   type ChatDensity,
@@ -118,100 +126,6 @@ export interface ChatMessageListProps extends BaseProps<HTMLDivElement> {
 }
 
 // =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-  },
-  // The log fills the area that scrolls it, which clips at its edges, so its
-  // keyboard ring sits inside its own box instead of around it.
-  focusRingInset: {
-    outlineOffset: {
-      default: null,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-  },
-  inner: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-  },
-  gapCompact: {
-    gap: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-  },
-  gapBalanced: {
-    gap: spacingVars['--spacing-4'],
-    paddingBlock: spacingVars['--spacing-4'],
-    paddingInline: spacingVars['--spacing-4'],
-  },
-  gapSpacious: {
-    gap: spacingVars['--spacing-6'],
-    paddingBlock: spacingVars['--spacing-6'],
-    paddingInline: spacingVars['--spacing-6'],
-  },
-  spacer: {
-    flex: 1,
-    minHeight: 0,
-  },
-  loadingTop: {
-    display: 'flex',
-    justifyContent: 'center',
-    paddingBlock: spacingVars['--spacing-3'],
-  },
-  emptyState: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    minHeight: 0,
-  },
-});
-
-const gapStyles = stylex.create({
-  0: {
-    gap: spacingVars['--spacing-0'],
-  },
-  0.5: {
-    gap: spacingVars['--spacing-0-5'],
-  },
-  1: {
-    gap: spacingVars['--spacing-1'],
-  },
-  1.5: {
-    gap: spacingVars['--spacing-1-5'],
-  },
-  2: {
-    gap: spacingVars['--spacing-2'],
-  },
-  3: {
-    gap: spacingVars['--spacing-3'],
-  },
-  4: {
-    gap: spacingVars['--spacing-4'],
-  },
-  5: {
-    gap: spacingVars['--spacing-5'],
-  },
-  6: {
-    gap: spacingVars['--spacing-6'],
-  },
-  8: {
-    gap: spacingVars['--spacing-8'],
-  },
-  10: {
-    gap: spacingVars['--spacing-10'],
-  },
-});
-
-// =============================================================================
 // Component
 // =============================================================================
 
@@ -299,14 +213,6 @@ export function ChatMessageList({
 
   const contextValue = useMemo(() => ({density}), [density]);
 
-  const densityGapStyle =
-    density === 'compact'
-      ? styles.gapCompact
-      : density === 'spacious'
-        ? styles.gapSpacious
-        : styles.gapBalanced;
-  const gapOverrideStyle = gap == null ? null : gapStyles[gap];
-
   return (
     <ChatListContext value={contextValue}>
       <div
@@ -320,25 +226,29 @@ export function ChatMessageList({
         {...mergeProps(
           themeProps('chat-message-list', {density}),
           // A tab stop: the shared ring, which a theme restyles through the
-          // focus-outline tokens.
-          stylex.props(
-            styles.root,
-            focusOutlineStyles.focusVisible,
-            styles.focusRingInset,
-            xstyle,
+          // focus-outline tokens. The log fills the area that scrolls it,
+          // which clips at its edges, so the ring sits inside its own box.
+          mergeProps(
+            tw(
+              chatMessageListColumnClassName,
+              chatFocusRingInsetClassName,
+              xstyle && stylex.props(xstyle).className,
+            ),
+            stylex.props(focusOutlineStyles.focusVisible),
           ),
           className,
           style,
         )}>
         <div
           ref={innerRef}
-          {...stylex.props(styles.inner, densityGapStyle, gapOverrideStyle)}>
+          className={chatMessageListInnerClassName({density, gap})}>
           {/* Sentinel for infinite scroll */}
           {scrollToTopAction && <div ref={sentinelRef} aria-hidden />}
 
           {/* Loading spinner at top */}
           {isLoadingTop && (
-            <div {...stylex.props(styles.loadingTop)}>
+            // eslint-disable-next-line @astryx/no-style-only-wrapper -- the row centres the Spinner and holds the gap above it; the rule reads StyleX objects, not class text.
+            <div className={chatMessageListLoadingClassName}>
               <Spinner size="md" aria-hidden="true" />
             </div>
           )}
@@ -346,14 +256,16 @@ export function ChatMessageList({
           {/* Spacer pushes messages to bottom when the list isn't full.
               Omitted for top alignment so messages start at the top. */}
           {align === 'bottom' && (
-            <div {...stylex.props(styles.spacer)} aria-hidden />
+            <div className={chatMessageListSpacerClassName} aria-hidden />
           )}
 
           {/* Messages or empty state */}
           {hasChildren ? (
             children
           ) : isRenderable(emptyState) ? (
-            <div {...stylex.props(styles.emptyState)}>{emptyState}</div>
+            <div className={chatMessageListEmptyStateClassName}>
+              {emptyState}
+            </div>
           ) : null}
         </div>
       </div>

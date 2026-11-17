@@ -920,6 +920,63 @@ import {
   chatMessageChildrenClassName,
   chatMessageClassName,
   chatMessageContentClassName,
+  chatMessageListColumnClassName,
+  chatMessageListEmptyStateClassName,
+  chatMessageListInnerClassName,
+  chatMessageListLoadingClassName,
+  chatMessageListSpacerClassName,
+  chatComposerDrawerClassName,
+  chatComposerDrawerContentClassName,
+  chatComposerDrawerContentGridClassName,
+  chatComposerDrawerHandleClassName,
+  chatComposerDrawerLabelClassName,
+  chatComposerDrawerToggleContentClassName,
+  chatComposerDrawerToggleRowClassName,
+  chatComposerBodyClassName,
+  chatComposerFooterClassName,
+  chatComposerFooterLeftClassName,
+  chatComposerFooterRightClassName,
+  chatComposerHeaderClassName,
+  chatComposerHeaderLeftClassName,
+  chatComposerHeaderRightClassName,
+  chatComposerInputAreaClassName,
+  chatComposerInputEditableClassName,
+  chatComposerInputPlaceholderClassName,
+  chatComposerInputRootClassName,
+  chatComposerTokenSpanClassName,
+  chatComposerRootClassName,
+  chatComposerStatusClassName,
+  chatTriggerMenuGroupHeadingClassName,
+  chatTriggerMenuListClassName,
+  chatTriggerMenuMessageClassName,
+  chatTriggerMenuRowClassName,
+  chatTriggerMenuRowHighlightedClassName,
+  chatTriggerMenuRowLabelClassName,
+  chatTriggerMenuSurfaceClassName,
+  chatToolCallsChevronClassName,
+  chatToolCallsChevronOpenClassName,
+  chatToolCallsCountClassName,
+  chatToolCallsDetailChevronClassName,
+  chatToolCallsDetailContentClassName,
+  chatToolCallsDurationClassName,
+  chatToolCallsGroupContentClassName,
+  chatToolCallsGroupContentInnerClassName,
+  chatToolCallsGroupHeaderClassName,
+  chatToolCallsGroupIconClassName,
+  chatToolCallsGroupLabelClassName,
+  chatToolCallsListClassName,
+  chatToolCallsNameClassName,
+  chatToolCallsNodePillClassName,
+  chatToolCallsRootClassName,
+  chatToolCallsRowClassName,
+  chatToolCallsRowClickableClassName,
+  chatToolCallsRowToggleClassName,
+  chatToolCallsStatsAdditionsClassName,
+  chatToolCallsStatsClassName,
+  chatToolCallsStatsDeletionsClassName,
+  chatToolCallsStatusClassName,
+  chatToolCallsStatusIconClassName,
+  chatToolCallsTargetClassName,
   chatLayoutBlurLayerClassName,
   chatLayoutDockClassName,
   chatFocusRingInsetClassName,
@@ -2910,6 +2967,97 @@ function familyClassNames() {
   add(chatMessageMetadataSlotClassName);
   add(chatMessageChildrenClassName({density: 'compact', sender: 'assistant'}));
   add(chatMessageChildrenClassName({density: 'spacious', sender: 'user'}));
+  // ChatMessageList: the log and rows column, the density inset, a caller's
+  // gap at both ends of the scale, and the three fixed rows.
+  add(chatMessageListColumnClassName);
+  for (const density of ['compact', 'balanced', 'spacious']) {
+    add(chatMessageListInnerClassName({density, gap: undefined}));
+  }
+  add(chatMessageListInnerClassName({density: 'balanced', gap: 0}));
+  add(chatMessageListInnerClassName({density: 'balanced', gap: 1.5}));
+  add(chatMessageListInnerClassName({density: 'balanced', gap: 10}));
+  add(chatMessageListLoadingClassName);
+  add(chatMessageListSpacerClassName);
+  add(chatMessageListEmptyStateClassName);
+  // ChatComposerDrawer: the panel, the toggle row, the summary both ways, the
+  // label, the handle both ways and the collapsing content both ways.
+  add(chatComposerDrawerClassName);
+  add(chatComposerDrawerToggleRowClassName);
+  add(chatComposerDrawerToggleContentClassName(true));
+  add(chatComposerDrawerToggleContentClassName(false));
+  add(chatComposerDrawerLabelClassName);
+  add(chatComposerDrawerHandleClassName(true));
+  add(chatComposerDrawerHandleClassName(false));
+  add(chatComposerDrawerContentGridClassName(true));
+  add(chatComposerDrawerContentGridClassName(false));
+  add(chatComposerDrawerContentClassName(true));
+  add(chatComposerDrawerContentClassName(false));
+  // ChatComposer: the shell both ways, the body at both densities and the
+  // footer's interruptible arm, then the slot rows and the status bar in all
+  // four shapes.
+  add(chatComposerRootClassName(true));
+  add(chatComposerRootClassName(false));
+  add(chatComposerBodyClassName('compact'));
+  add(chatComposerBodyClassName('balanced'));
+  add(chatComposerHeaderClassName);
+  add(chatComposerHeaderLeftClassName);
+  add(chatComposerHeaderRightClassName);
+  add(chatComposerInputAreaClassName);
+  // ChatComposerInput: the shell both ways, the editable and its placeholder,
+  // and the token chip.
+  add(chatComposerInputRootClassName(true));
+  add(chatComposerInputRootClassName(false));
+  add(chatComposerInputEditableClassName);
+  add(chatComposerInputPlaceholderClassName);
+  add(chatComposerTokenSpanClassName);
+  add(chatComposerFooterClassName);
+  add(chatComposerFooterLeftClassName);
+  add(chatComposerFooterRightClassName(true));
+  add(chatComposerFooterRightClassName(false));
+  add(chatComposerStatusClassName('top', 'error'));
+  add(chatComposerStatusClassName('bottom', 'error'));
+  add(chatComposerStatusClassName('top', 'warning'));
+  add(chatComposerStatusClassName('bottom', 'warning'));
+  // useTriggerMenu: the list, its surface, a row at rest and highlighted, the
+  // label, the shared message row and the group heading.
+  add(chatTriggerMenuListClassName);
+  add(chatTriggerMenuSurfaceClassName);
+  add(chatTriggerMenuRowClassName);
+  add(chatTriggerMenuRowHighlightedClassName);
+  add(chatTriggerMenuRowLabelClassName);
+  add(chatTriggerMenuMessageClassName);
+  add(chatTriggerMenuGroupHeadingClassName);
+  // ChatToolCalls: the block, the group header, its icon and label, the
+  // chevron both ways, the collapsing track and its clip, the list, a row at
+  // rest, clickable and toggling, the status square in every status, the name,
+  // target, duration, node pill, the diff counts and the detail chevron and block.
+  add(chatToolCallsRootClassName);
+  add(chatToolCallsGroupHeaderClassName);
+  add(chatToolCallsGroupIconClassName);
+  add(chatToolCallsGroupLabelClassName);
+  add(chatToolCallsChevronClassName);
+  add(chatToolCallsChevronOpenClassName);
+  add(chatToolCallsGroupContentClassName(true));
+  add(chatToolCallsGroupContentClassName(false));
+  add(chatToolCallsGroupContentInnerClassName);
+  add(chatToolCallsListClassName);
+  add(chatToolCallsRowClassName);
+  add(chatToolCallsRowClickableClassName);
+  add(chatToolCallsRowToggleClassName);
+  add(chatToolCallsStatusIconClassName);
+  for (const status of Object.values(chatToolCallsStatusClassName)) {
+    add(status);
+  }
+  add(chatToolCallsNameClassName);
+  add(chatToolCallsTargetClassName);
+  add(chatToolCallsDurationClassName);
+  add(chatToolCallsNodePillClassName);
+  add(chatToolCallsStatsClassName);
+  add(chatToolCallsStatsAdditionsClassName);
+  add(chatToolCallsStatsDeletionsClassName);
+  add(chatToolCallsDetailChevronClassName);
+  add(chatToolCallsDetailContentClassName);
+  add(chatToolCallsCountClassName);
   // ChatLayout: the root in both scroll modes, the message area's density and
   // end room, the dock box, the frosted layer, the dock's own inset and its
   // inner column.
@@ -3299,9 +3447,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // type and copy control, every block's first, middle and last density
     // spacing, and the code, table, hr, image, inline and streaming marks
     // mostly reuse those same utilities; the eleven rules they add took the
-    // sheet to 1787, and the ceiling keeps its usual headroom above that
-    // number.
-    expect(stylesheet.rules.size).toBeLessThan(1900);
+    // sheet to 1787. The chat drawer's panel, toggle row, summary and
+    // collapsing content, then the composer's shell, body and status bar in
+    // their four shapes, added the next batch, and the ceiling keeps its usual
+    // headroom above the measured number.
+    expect(stylesheet.rules.size).toBeLessThan(1980);
   });
 
   it('keeps the scrim takeover pin under prefers-reduced-motion', () => {
