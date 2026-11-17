@@ -17,6 +17,8 @@ import {fileURLToPath} from 'node:url';
 import {buildTailwindStylesheet} from '../../build/src/tailwind-stylesheet.mjs';
 import {describeTailwindStylesheet} from '../../core/src/__tests__/classNameAssertions';
 import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
+import * as listInputClasses from './ListInput/listInputClasses';
+import * as transferListClasses from './TransferList/transferListClasses';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -36,7 +38,11 @@ function labClassNames() {
       }
     }
   };
-  for (const map of [chatUnreadDividerClasses]) {
+  for (const map of [
+    chatUnreadDividerClasses,
+    listInputClasses,
+    transferListClasses,
+  ]) {
     for (const [name, value] of Object.entries(map)) {
       if (name.endsWith('ClassName')) {
         add(value);
