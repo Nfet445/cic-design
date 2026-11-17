@@ -50,11 +50,16 @@ function entryCount(element: Element): number {
   return element.querySelector('[data-scroll-content]')?.children.length ?? 0;
 }
 
+const SHADOWS: [name: string, needle: string][] = [
+  ['shadowBoth', '--color-shadow),inset_0_-12px'],
+  ['shadowTop', 'inset_0_12px'],
+  ['shadowBottom', 'inset_0_-12px'],
+];
+
 function shadow(): string {
+  const className = panel().className;
   return (
-    panel()
-      .className.split(' ')
-      .find(name => name.startsWith('shadow')) ?? 'none'
+    SHADOWS.find(([, needle]) => className.includes(needle))?.[0] ?? 'none'
   );
 }
 

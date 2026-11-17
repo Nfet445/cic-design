@@ -15,7 +15,7 @@ import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {act, render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {CodeBlock} from './CodeBlock';
-import {rtlStyles} from '../utils';
+import {RTL_MIRROR_CLASS} from '../utils';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {dracula} from '../theme/syntax';
 import {InternationalizationProvider} from '../i18n';
@@ -408,11 +408,9 @@ describe('CodeBlock', () => {
   // design:bidirectionality DR4: the collapsed disclosure chevron points
   // toward the inline end, so it mirrors in RTL. jsdom does not apply the
   // compiled StyleX CSS, so this pins the structure the mirror relies on: the
-  // chevron renders inside an element carrying the shared rtlStyles.mirror.
+  // chevron renders inside an element carrying the shared RTL_MIRROR_CLASS.
   it('wraps the disclosure chevron in the shared RTL mirror', () => {
-    const {className: mirrorClassName} = stylex.props(rtlStyles.mirror);
-    const mirrorClasses = mirrorClassName?.split(' ') ?? [];
-    expect(mirrorClasses.length).toBeGreaterThan(0);
+    const mirrorClasses = RTL_MIRROR_CLASS.split(' ');
     render(
       <div dir="rtl">
         <CodeBlock

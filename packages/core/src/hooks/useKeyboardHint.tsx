@@ -25,7 +25,6 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Kbd} from '../Kbd';
 import {useLayer} from '../Layer/useLayer';
 import {useLayerDismissal} from '../Layer/useLayerDismissal';
@@ -34,7 +33,11 @@ import {
   useComponentTranslator,
 } from '../i18n/useComponentTranslator';
 import english from '../i18n/generated-english/hooks/useKeyboardHint.generated';
-import {anchoredHintStyles, renderAnchoredHint} from './anchoredHint';
+import {
+  anchoredHintKeysClassName,
+  anchoredHintLabelClassName,
+} from './anchoredHintClasses';
+import {renderAnchoredHint} from './anchoredHint';
 
 registerEnglishFallback(english);
 
@@ -301,7 +304,7 @@ export function useKeyboardHint(
   // --- Render the hint element ---
 
   const arrowContent = (
-    <span {...stylex.props(anchoredHintStyles.keys)}>
+    <span className={anchoredHintKeysClassName}>
       {ARROW_HINT_KEYS[orientation].map(key => (
         <Kbd key={key} keys={key} />
       ))}
@@ -312,7 +315,7 @@ export function useKeyboardHint(
     layer,
     <span aria-hidden="true">
       {arrowContent}
-      <span {...stylex.props(anchoredHintStyles.label)}>
+      <span className={anchoredHintLabelClassName}>
         {t('@astryx.keyboardHint.toNavigate')}
       </span>
     </span>,

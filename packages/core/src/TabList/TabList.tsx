@@ -35,7 +35,7 @@ import type {BaseProps} from '../BaseProps';
 import {TabListContext} from './TabListContext';
 import type {TabListSize} from './TabListContext';
 import {useSize} from '../SizeContext/SizeContext';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import {useListFocus} from '../hooks/useListFocus';
 import {useKeyboardHint} from '../hooks/useKeyboardHint';
 import {useScrollOverflow} from '../hooks/useScrollOverflow';
@@ -510,7 +510,7 @@ export function TabList({
               icon="chevronLeft"
               size="sm"
               color="inherit"
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           </button>
         )}
@@ -531,7 +531,7 @@ export function TabList({
               icon="chevronRight"
               size="sm"
               color="inherit"
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           </button>
         )}

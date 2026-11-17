@@ -6,7 +6,7 @@
  * @file Pagination.tsx
  * @input React, StyleX, Button, Icon, NumberInput, Selector, and Text. Button renders each
  *   control, as a link with getPageHref. useFocusAcrossSwap keeps focus on a control whose
- *   element Button replaces. rtlStyles.mirror mirrors the chevrons under RTL in CSS.
+ *   element Button replaces. RTL_MIRROR_CLASS mirrors the chevrons under RTL in CSS.
  * @output Exports Pagination, generatePageRange, PaginationProps, PaginationVariant, PaginationSize
  * @position Core implementation; consumed by index.ts, tested by Pagination.test.tsx
  *
@@ -32,7 +32,7 @@ import {useMergedRefs} from '../hooks/useMergedRefs';
 import {focusForLastInput} from '../utils/focusReturn';
 import {useFocusAcrossSwap} from '../utils/useFocusAcrossSwap';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import type {LinkComponentType} from '../Link/types';
 import {themeProps} from '../utils/themeProps';
@@ -844,7 +844,7 @@ export function Pagination({
               <Icon
                 icon="chevronsLeft"
                 size={isSm ? 'sm' : 'md'}
-                xstyle={rtlStyles.mirror}
+                className={RTL_MIRROR_CLASS}
               />
             }
             {...controlProps(1, hasPrevious)}
@@ -867,7 +867,7 @@ export function Pagination({
             <Icon
               icon="chevronLeft"
               size={isSm ? 'sm' : 'md'}
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           }
           {...controlProps(clampPage(linkPage - step), hasPrevious)}
@@ -886,7 +886,7 @@ export function Pagination({
             <Icon
               icon="chevronRight"
               size={isSm ? 'sm' : 'md'}
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           }
           {...controlProps(clampPage(linkPage + step), hasNext)}
@@ -904,7 +904,7 @@ export function Pagination({
               <Icon
                 icon="chevronsRight"
                 size={isSm ? 'sm' : 'md'}
-                xstyle={rtlStyles.mirror}
+                className={RTL_MIRROR_CLASS}
               />
             }
             {...controlProps(computedTotalPages ?? optimisticPage, hasNext)}

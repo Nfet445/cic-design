@@ -105,7 +105,7 @@ import {menuBottomSheetClassName} from './menuBottomSheetClasses';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
 import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
 import {spacingVars} from '../theme/tokens.stylex';
-import {isRenderable, mergeProps, rtlStyles} from '../utils';
+import {isRenderable, mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import {tw} from '../utils/tw';
 import {
   dropdownMenuInlineSizeVar,
@@ -725,7 +725,7 @@ function DropdownMenuBottomSheet({
                   <Icon
                     icon="chevronLeft"
                     size="sm"
-                    xstyle={rtlStyles.mirror}
+                    className={RTL_MIRROR_CLASS}
                   />
                 }
                 isIconOnly
