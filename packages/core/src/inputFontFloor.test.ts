@@ -50,7 +50,7 @@ const FLOORED_FLOOR_FILES = [
   'DateInput/TouchDateField.tsx',
   'DateTimeInput/DateTimeInput.tsx',
   'DateTimeInput/TouchDateTimeField.tsx',
-  'DateTimeInput/nativePickerSegmentStyles.ts',
+  'DateTimeInput/nativePickerSegmentClasses.ts',
   'Field/PanelSearchInput.tsx',
   'NumberInput/NumberInput.tsx',
   'Selector/Selector.tsx',

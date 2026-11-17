@@ -22,6 +22,8 @@ import {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {nativePickerSegmentSlotClassName} from './nativePickerSegmentClasses';
 import {DateTimeInput} from './DateTimeInput';
 import type {ISODateTimeString} from './DateTimeInput';
 import {resetDateSegmentProbe} from '../DateInput/nativeDateSegments';
@@ -172,7 +174,11 @@ describe('DateTimeInput nativePicker', () => {
     for (const input of [getNativeDateInput(), getNativeTimeInput()]) {
       const slot = input.parentElement;
       expect(slot).toBeInstanceOf(HTMLElement);
-      expectProbeClasses(slot as HTMLElement, nativeSizingProbe.slot);
+      // The slot is a class, so its identity is the class set rather than a
+      // probe drawn from the same declarations.
+      expectClassSet(slot as HTMLElement, {
+        includes: nativePickerSegmentSlotClassName.split(' '),
+      });
     }
   });
 
