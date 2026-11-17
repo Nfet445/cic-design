@@ -951,6 +951,25 @@ import {
   skeletonRadiusClassName,
 } from '../Skeleton/skeletonClasses';
 import {
+  thumbnailDisabledClassName,
+  thumbnailImageClassName,
+  thumbnailImageContainerClassName,
+  thumbnailInsetBorderClassName,
+  thumbnailInteractiveButtonClassName,
+  thumbnailInteractiveClassName,
+  thumbnailOverlayClassName,
+  thumbnailPlaceholderClassName,
+  thumbnailRemoveSlotClassName,
+  thumbnailRootClassName,
+  thumbnailUploadOverlayClassName,
+} from '../Thumbnail/thumbnailClasses';
+import {
+  toastRowClassName,
+  toastRowInnerClassName,
+  toastViewportClassName,
+  toastViewportOutletClassName,
+} from '../Toast/toastViewportClasses';
+import {
   bannerChevronClassName,
   bannerChevronExpandedClassName,
   bannerClassName,
@@ -2631,6 +2650,43 @@ function familyClassNames() {
   add(codeBlockSizeClassName('sm'));
   add(codeBlockSizeClassName('md'));
   add(codeBlockCopyButtonClassName);
+  // Thumbnail: the root, the image frame, the image, the inset border, the
+  // placeholder, the interactive frame with its hover and press layer, the
+  // remove slot, the disabled dimming and the upload overlay.
+  add(thumbnailRootClassName);
+  add(thumbnailImageContainerClassName);
+  add(thumbnailImageClassName);
+  add(thumbnailInsetBorderClassName);
+  add(thumbnailPlaceholderClassName);
+  add(thumbnailInteractiveClassName);
+  add(thumbnailInteractiveButtonClassName);
+  add(thumbnailOverlayClassName);
+  add(thumbnailRemoveSlotClassName);
+  add(thumbnailDisabledClassName);
+  add(thumbnailUploadOverlayClassName);
+  // ToastViewport: the popover reset with its safe-area gutters in both
+  // directions, the four placements, both empty and filled, the outlet that
+  // renders a portaled viewport in place of itself, and every row state.
+  for (const position of [
+    'topStart',
+    'topEnd',
+    'bottomStart',
+    'bottomEnd',
+  ]) {
+    for (const isEmpty of [true, false]) {
+      add(toastViewportClassName({position, isEmpty}));
+    }
+  }
+  add(toastViewportOutletClassName);
+  for (const isEntering of [true, false]) {
+    for (const isReversed of [true, false]) {
+      for (const isExiting of [true, false]) {
+        add(toastRowClassName({isEntering, isReversed, isExiting}));
+      }
+    }
+  }
+  add(toastRowInnerClassName(true));
+  add(toastRowInnerClassName(false));
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);

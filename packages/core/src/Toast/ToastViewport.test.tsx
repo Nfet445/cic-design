@@ -48,7 +48,7 @@ import {Button} from '../Button';
 import type {ToastProps} from './Toast';
 import {ToastViewport} from './ToastViewport';
 import {useToast} from './useToast';
-import {classesOf} from '../__tests__/classNameAssertions';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import type {ToastOptions} from './types';
 
 // jsdom reports no window focus until an element is focused, but a test page
@@ -237,23 +237,23 @@ describe('Toast responsive layout', () => {
 
     const viewport = screen.getByRole('region', {name: 'Notifications'});
 
-    const style = getComputedStyle(viewport);
     const viewportSource = readFileSync(
       'packages/core/src/Toast/ToastViewport.tsx',
       'utf8',
     );
     expect(viewportSource).not.toContain('100lvh - 100dvh');
-    expect(style.boxSizing).toBe('border-box');
-    expect(style.width).not.toBe('100%');
-    expect(style.paddingInlineEnd).not.toBe('0px');
-    // The viewport sits at the app-declared inset (spec:AST-059 FR6), 0px
-    // unless LayerProvider declares a bar on that edge.
-    expect(style.insetInlineStart).toBe(
-      'var(--astryx-layer-inset-inline-start,0px)',
-    );
-    expect(style.insetInlineEnd).toBe(
-      'var(--astryx-layer-inset-inline-end,0px)',
-    );
+    expectClassSet(viewport, {
+      includes: [
+        'box-border',
+        // The inline span is what constrains the stack, so the box is never
+        // full width, and the end gutter always clears the safe area.
+        '[inset-inline-start:var(--astryx-layer-inset-inline-start,0px)]',
+        '[inset-inline-end:var(--astryx-layer-inset-inline-end,0px)]',
+        '[padding-inline-end:var(--_toast-padding-inline-end)]',
+        '[--_toast-padding-inline-end:max(var(--spacing-4),env(safe-area-inset-right,0px))]',
+      ],
+      excludes: ['w-full'],
+    });
   });
 
   it('preserves custom start and end insets in LTR and RTL without forcing full width', () => {
@@ -276,7 +276,7 @@ describe('Toast responsive layout', () => {
     expect(viewport.style.bottom).toBe('24px');
     expect(viewport.style.insetInlineStart).toBe('24px');
     expect(viewport.style.insetInlineEnd).toBe('40px');
-    expect(getComputedStyle(viewport).width).not.toBe('100%');
+    expectClassSet(viewport, {excludes: ['w-full']});
 
     cleanup();
     renderWithDirection('rtl');
@@ -287,7 +287,7 @@ describe('Toast responsive layout', () => {
     expect(viewport.style.bottom).toBe('24px');
     expect(viewport.style.insetInlineStart).toBe('24px');
     expect(viewport.style.insetInlineEnd).toBe('40px');
-    expect(getComputedStyle(viewport).width).not.toBe('100%');
+    expectClassSet(viewport, {excludes: ['w-full']});
   });
 });
 
@@ -321,11 +321,14 @@ describe('ToastViewport placement', () => {
   it('defaults to bottomEnd with an end-aligned full-inline viewport', () => {
     const {viewport} = renderPlacement();
 
-    expect(getComputedStyle(viewport).bottom).toBe(
-      'var(--astryx-layer-inset-block-end,0px)',
-    );
-    expect(getComputedStyle(viewport).alignItems).toBe('flex-end');
-    expect(getComputedStyle(viewport).width).not.toBe('100%');
+    expectClassSet(viewport, {
+      includes: [
+        '[bottom:var(--astryx-layer-inset-block-end,0px)]',
+        'items-end',
+        'flex-col',
+        'w-auto',
+      ],
+    });
   });
 
   // The viewport is positioned by spanning the inline axis and aligning within
@@ -342,16 +345,18 @@ describe('ToastViewport placement', () => {
   it('resets the UA popover width so the viewport can span the inline axis', () => {
     const {viewport} = renderPlacement();
 
-    expect(getComputedStyle(viewport).width).toBe('auto');
+    expectClassSet(viewport, {includes: ['w-auto'], excludes: ['w-full']});
   });
 
   it('maps explicit top and bottom placements to their configured edge', () => {
     const top = renderPlacement({position: 'topEnd'});
-    expect(getComputedStyle(top.viewport).top).toBe(
-      'var(--astryx-layer-inset-block-start,0px)',
-    );
-    expect(getComputedStyle(top.viewport).alignItems).toBe('flex-end');
-    expect(getComputedStyle(top.viewport).flexDirection).toBe('column-reverse');
+    expectClassSet(top.viewport, {
+      includes: [
+        '[top:var(--astryx-layer-inset-block-start,0px)]',
+        'items-end',
+        'flex-col-reverse',
+      ],
+    });
     top.unmount();
 
     const bottom = renderPlacement({
@@ -359,10 +364,13 @@ describe('ToastViewport placement', () => {
       triggerLabel: 'Bottom trigger',
       body: 'Bottom start',
     });
-    expect(getComputedStyle(bottom.viewport).bottom).toBe(
-      'var(--astryx-layer-inset-block-end,0px)',
-    );
-    expect(getComputedStyle(bottom.viewport).alignItems).toBe('flex-start');
+    expectClassSet(bottom.viewport, {
+      includes: [
+        '[bottom:var(--astryx-layer-inset-block-end,0px)]',
+        'items-start',
+        'flex-col',
+      ],
+    });
     bottom.unmount();
   });
 });
@@ -416,13 +424,16 @@ it('keeps newest toasts nearest the configured edge in wide stacks', () => {
   const [bottom, top] = screen.getAllByRole('region', {
     name: 'Notifications',
   });
-  expect(getComputedStyle(bottom).flexDirection).toBe('column');
+  expectClassSet(bottom, {
+    includes: ['flex-col'],
+    excludes: ['flex-col-reverse'],
+  });
   expect(
     within(bottom)
       .getAllByText(/Bottom/)
       .map(el => el.textContent),
   ).toEqual(['Bottom first', 'Bottom second', 'Bottom third']);
-  expect(getComputedStyle(top).flexDirection).toBe('column-reverse');
+  expectClassSet(top, {includes: ['flex-col-reverse'], excludes: ['flex-col']});
   expect(
     within(top)
       .getAllByText(/Top/)
@@ -1599,18 +1610,8 @@ describe('Toast native motion contract', () => {
     };
   }
 
-  const normalizeCssList = (value: string): string =>
-    value
-      .split(',')
-      .map(part => part.trim())
-      .join(', ');
-
-  const normalizeCssFunction = (value: string): string =>
-    value.replace(/,\s*/g, ', ');
-
   it('uses tokenized transform and wrapper timing, with reduced motion kept eventful', () => {
     const {visualToast, wrapper} = renderMotionToast('bottomEnd');
-    const wrapperStyle = getComputedStyle(wrapper);
 
     expect(classesOf(visualToast)).toEqual(
       expect.arrayContaining([
@@ -1622,20 +1623,21 @@ describe('Toast native motion contract', () => {
         'motion-reduce:duration-[0.01ms]',
       ]),
     );
-    expect(normalizeCssList(wrapperStyle.transitionProperty)).toBe(
-      'grid-template-rows, padding',
-    );
-    expect(wrapperStyle.transitionDuration).toBe('var(--duration-fast)');
-    expect(wrapperStyle.transitionTimingFunction).toBe('var(--ease-standard)');
-    expect(wrapperStyle.width).toBe('100%');
-    expect(wrapperStyle.maxWidth).toBe('400px');
-    expect(wrapperStyle.minWidth).toBe('0');
-    expect(
-      getComputedStyle(wrapper.firstElementChild as HTMLElement).minHeight,
-    ).toBe('0');
-    expect(
-      getComputedStyle(wrapper.firstElementChild as HTMLElement).overflow,
-    ).toBe('hidden');
+    expectClassSet(wrapper, {
+      includes: [
+        'transition-[grid-template-rows,padding]',
+        'duration-[var(--duration-fast)]',
+        'ease-[var(--ease-standard)]',
+        'motion-reduce:duration-[0.01ms]',
+        'w-full',
+        'max-w-[400px]',
+        'min-w-0',
+      ],
+    });
+    expectClassSet(wrapper.firstElementChild as HTMLElement, {
+      includes: ['min-h-0', 'overflow-hidden'],
+      excludes: ['overflow-visible'],
+    });
   });
 
   it('releases the shadow clip only while the toast is settled', () => {
@@ -1643,12 +1645,18 @@ describe('Toast native motion contract', () => {
     const inner = wrapper.firstElementChild as HTMLElement;
 
     // Entry starts with main's original clip boundary.
-    expect(getComputedStyle(inner).overflow).toBe('hidden');
+    expectClassSet(inner, {
+      includes: ['overflow-hidden'],
+      excludes: ['overflow-visible'],
+    });
 
     act(() => {
       fireEvent.transitionEnd(wrapper, {propertyName: 'grid-template-rows'});
     });
-    expect(getComputedStyle(inner).overflow).toBe('visible');
+    expectClassSet(inner, {
+      includes: ['overflow-visible'],
+      excludes: ['overflow-hidden'],
+    });
 
     act(() => {
       fireEvent.click(
@@ -1659,8 +1667,11 @@ describe('Toast native motion contract', () => {
     // wrapper keeps its normal hit boundary, so a second click while the toast
     // is still visible is absorbed by the toast rather than falling through
     // to an obscured control underneath.
-    expect(getComputedStyle(inner).overflow).toBe('hidden');
-    expect(getComputedStyle(wrapper).pointerEvents).toBe('auto');
+    expectClassSet(inner, {
+      includes: ['overflow-hidden'],
+      excludes: ['overflow-visible'],
+    });
+    expectClassSet(wrapper, {includes: ['pointer-events-auto']});
   });
 
   it('updates a settled toast in place when an overwrite replaces it through uniqueID', () => {
@@ -1688,9 +1699,9 @@ describe('Toast native motion contract', () => {
     act(() => {
       fireEvent.transitionEnd(first, {propertyName: 'grid-template-rows'});
     });
-    expect(
-      getComputedStyle(first.firstElementChild as HTMLElement).overflow,
-    ).toBe('visible');
+    expectClassSet(first.firstElementChild as HTMLElement, {
+      includes: ['overflow-visible'],
+    });
 
     act(() => {
       fireEvent.click(screen.getByText('Show v2'));
@@ -1698,9 +1709,9 @@ describe('Toast native motion contract', () => {
     const second = getToastWrapperByText('Changes saved');
     expect(second).toBe(first);
     expect(second.getAttribute('data-toast-id')).not.toBe(firstId);
-    expect(
-      getComputedStyle(second.firstElementChild as HTMLElement).overflow,
-    ).toBe('visible');
+    expectClassSet(second.firstElementChild as HTMLElement, {
+      includes: ['overflow-visible'],
+    });
     expect(document.querySelectorAll('[data-toast-id]')).toHaveLength(1);
   });
 
@@ -1731,9 +1742,9 @@ describe('Toast native motion contract', () => {
     act(() => {
       fireEvent.transitionEnd(first, {propertyName: 'grid-template-rows'});
     });
-    expect(
-      getComputedStyle(first.firstElementChild as HTMLElement).overflow,
-    ).toBe('visible');
+    expectClassSet(first.firstElementChild as HTMLElement, {
+      includes: ['overflow-visible'],
+    });
 
     // Evicted: still in the list, no longer rendered.
     act(() => {
@@ -1754,17 +1765,17 @@ describe('Toast native motion contract', () => {
     });
 
     const resurfaced = getToastWrapperByText('First');
-    expect(
-      getComputedStyle(resurfaced.firstElementChild as HTMLElement).overflow,
-    ).toBe('hidden');
+    expectClassSet(resurfaced.firstElementChild as HTMLElement, {
+      includes: ['overflow-hidden'],
+    });
 
     // And it settles again on its own transition, rather than being stuck.
     act(() => {
       fireEvent.transitionEnd(resurfaced, {propertyName: 'grid-template-rows'});
     });
-    expect(
-      getComputedStyle(resurfaced.firstElementChild as HTMLElement).overflow,
-    ).toBe('visible');
+    expectClassSet(resurfaced.firstElementChild as HTMLElement, {
+      includes: ['overflow-visible'],
+    });
   });
 
   it('ignores a grid-template-rows transition bubbling from a descendant', () => {
@@ -1774,18 +1785,21 @@ describe('Toast native motion contract', () => {
     // during exit it unmounts the toast mid-collapse.
     const {wrapper} = renderMotionToast('bottomEnd', 'Bubbled transition');
     const inner = wrapper.firstElementChild as HTMLElement;
-    expect(getComputedStyle(inner).overflow).toBe('hidden');
+    expectClassSet(inner, {includes: ['overflow-hidden']});
 
     act(() => {
       fireEvent.transitionEnd(inner, {propertyName: 'grid-template-rows'});
     });
-    expect(getComputedStyle(inner).overflow).toBe('hidden');
+    expectClassSet(inner, {
+      includes: ['overflow-hidden'],
+      excludes: ['overflow-visible'],
+    });
 
     // The wrapper's own transition still settles it.
     act(() => {
       fireEvent.transitionEnd(wrapper, {propertyName: 'grid-template-rows'});
     });
-    expect(getComputedStyle(inner).overflow).toBe('visible');
+    expectClassSet(inner, {includes: ['overflow-visible']});
 
     // Same guard on the exit path: a descendant's event must not cut the
     // collapse short and unmount the toast early.
@@ -1810,8 +1824,8 @@ describe('Toast native motion contract', () => {
       'packages/core/src/Toast/toastClasses.ts',
       'utf8',
     );
-    const viewportSource = readFileSync(
-      'packages/core/src/Toast/ToastViewport.tsx',
+    const viewportClassesSource = readFileSync(
+      'packages/core/src/Toast/toastViewportClasses.ts',
       'utf8',
     );
 
@@ -1819,22 +1833,22 @@ describe('Toast native motion contract', () => {
     // exit cleanup would never run.
     expect(toastSource).toContain('motion-reduce:duration-[0.01ms]');
     expect(toastSource).not.toContain('motion-reduce:duration-0');
-    expect(viewportSource).toContain(
-      "'@media (prefers-reduced-motion: reduce)': '0.01ms'",
-    );
+    expect(viewportClassesSource).toContain('motion-reduce:duration-[0.01ms]');
   });
 
   it('slides from the top or bottom edge without adding corner or scale motion', () => {
     const bottom = renderMotionToast('bottomEnd');
-    expect(
-      getComputedStyle(bottom.wrapper).getPropertyValue('--_toast-slide-y'),
-    ).toBe('var(--spacing-2)');
+    expectClassSet(bottom.wrapper, {
+      includes: ['[--_toast-slide-y:var(--spacing-2)]'],
+      excludes: ['[--_toast-slide-y:calc(-1_*_var(--spacing-2))]'],
+    });
     bottom.unmount();
 
     const top = renderMotionToast('topStart');
-    expect(
-      getComputedStyle(top.wrapper).getPropertyValue('--_toast-slide-y'),
-    ).toBe('calc(-1 * var(--spacing-2))');
+    expectClassSet(top.wrapper, {
+      includes: ['[--_toast-slide-y:calc(-1_*_var(--spacing-2))]'],
+      excludes: ['[--_toast-slide-y:var(--spacing-2)]'],
+    });
     top.unmount();
 
     const toastSource = readFileSync(
@@ -1859,13 +1873,23 @@ describe('Toast native motion contract', () => {
     const viewport = screen.getByRole('region', {name: 'Notifications'});
     const wrappers = viewport.querySelectorAll<HTMLElement>('[data-toast-id]');
 
-    expect(getComputedStyle(wrappers[0]).paddingBottom).toBe(
-      'var(--spacing-2)',
-    );
-    expect(getComputedStyle(wrappers[1]).paddingBottom).toBe('0px');
-    expect(
-      normalizeCssFunction(getComputedStyle(viewport).paddingInlineEnd),
-    ).toBe('max(var(--spacing-4), env(safe-area-inset-right, 0px))');
+    // The gap is padding on every row; the row nearest the edge drops it, and
+    // the child that is nearest flips with the stack's direction.
+    for (const wrapper of wrappers) {
+      expectClassSet(wrapper, {
+        includes: [
+          '[padding-block-end:var(--spacing-2)]',
+          '[&:last-child]:[padding-block-end:0]',
+        ],
+        excludes: ['[&:first-child]:[padding-block-end:0]'],
+      });
+    }
+    expectClassSet(viewport, {
+      includes: [
+        '[padding-inline-end:var(--_toast-padding-inline-end)]',
+        '[--_toast-padding-inline-end:max(var(--spacing-4),env(safe-area-inset-right,0px))]',
+      ],
+    });
 
     cleanup();
     render(
@@ -1881,10 +1905,15 @@ describe('Toast native motion contract', () => {
     const topWrappers = screen
       .getByRole('region', {name: 'Notifications'})
       .querySelectorAll<HTMLElement>('[data-toast-id]');
-    expect(getComputedStyle(topWrappers[0]).paddingBottom).toBe('0px');
-    expect(getComputedStyle(topWrappers[1]).paddingBottom).toBe(
-      'var(--spacing-2)',
-    );
+    for (const wrapper of topWrappers) {
+      expectClassSet(wrapper, {
+        includes: [
+          '[padding-block-end:var(--spacing-2)]',
+          '[&:first-child]:[padding-block-end:0]',
+        ],
+        excludes: ['[&:last-child]:[padding-block-end:0]'],
+      });
+    }
   });
 
   it('collapses a dismissed Toast before unmounting it', () => {
@@ -1897,8 +1926,10 @@ describe('Toast native motion contract', () => {
     });
 
     expect(wrapper).toBeInTheDocument();
-    expect(getComputedStyle(wrapper).gridTemplateRows).toBe('0fr');
-    expect(getComputedStyle(wrapper).paddingBottom).toBe('0px');
+    expectClassSet(wrapper, {
+      includes: ['[grid-template-rows:0fr]', '[padding-block-end:0]'],
+      excludes: ['[grid-template-rows:1fr]'],
+    });
     act(() => {
       completeExit(id);
     });
@@ -3067,7 +3098,7 @@ describe('ToastViewport with no toasts', () => {
       fireEvent.click(screen.getByText('Trigger'));
     });
     const viewport = screen.getByRole('region', {name: 'Notifications'});
-    expect(getComputedStyle(viewport).display).toBe('flex');
+    expectClassSet(viewport, {includes: ['flex'], excludes: ['hidden']});
 
     const wrapper = getToastWrapperByText('Swipe toast');
     act(() => {
@@ -3076,16 +3107,17 @@ describe('ToastViewport with no toasts', () => {
       );
     });
     // The leaving toast keeps the box until its exit ends.
-    expect(getComputedStyle(viewport).display).toBe('flex');
+    expectClassSet(viewport, {includes: ['flex'], excludes: ['hidden']});
     act(() => {
       completeExit(wrapper.dataset.toastId ?? '');
     });
-    expect(getComputedStyle(viewport).display).toBe('none');
+    // An empty viewport has no box: Safari would keep coloring its toolbar.
+    expectClassSet(viewport, {includes: ['hidden'], excludes: ['flex']});
 
     act(() => {
       fireEvent.click(screen.getByText('Trigger'));
     });
-    expect(getComputedStyle(viewport).display).toBe('flex');
+    expectClassSet(viewport, {includes: ['flex'], excludes: ['hidden']});
   });
 });
 

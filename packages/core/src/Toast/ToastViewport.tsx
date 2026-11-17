@@ -29,9 +29,6 @@ import {
 import {useCommittedRefInto} from '../hooks/useCommittedRef';
 import type {ReactNode} from 'react';
 import {createPortal} from 'react-dom';
-import * as stylex from '@stylexjs/stylex';
-import {spacingVars, durationVars, easeVars} from '../theme/tokens.stylex';
-import {mergeProps} from '../utils';
 import {getNodeText} from '../utils/getNodeText';
 import {
   moveFocusLeftBehind,
@@ -57,6 +54,12 @@ import {
   type ModalOutletChange,
 } from '../Layer/modalOutlet';
 import {ToastSurface} from './Toast';
+import {
+  toastRowClassName,
+  toastRowInnerClassName,
+  toastViewportClassName,
+  toastViewportOutletClassName,
+} from './toastViewportClasses';
 import {ToastContext, type ToastContextValue} from './ToastContext';
 import type {ToastEntry, ToastPosition, ToastDismissReason} from './types';
 import {layerInsetProperties} from '../Layer/layerInset';
@@ -69,153 +72,6 @@ import {
 import english from '../i18n/generated-english/Toast/ToastViewport.generated';
 
 registerEnglishFallback(english);
-
-const SAFE_AREA_INLINE_START = `max(${spacingVars['--spacing-4']}, env(safe-area-inset-left, 0px))`;
-const SAFE_AREA_INLINE_END = `max(${spacingVars['--spacing-4']}, env(safe-area-inset-right, 0px))`;
-const SAFE_AREA_BLOCK_START = `max(${spacingVars['--spacing-4']}, env(safe-area-inset-top, 0px))`;
-// On an iPhone, a downward swipe that starts in the bottom inset can pull the
-// whole screen down. Keep the toast clear of that inset.
-const SAFE_AREA_BLOCK_END = `calc(${spacingVars['--spacing-4']} + env(safe-area-inset-bottom, 0px))`;
-// Safari reports the inset only to a page with `viewport-fit=cover`. Under a
-// coarse pointer the gutter clears 34 px anyway: a Face ID iPhone's bottom
-// inset in portrait.
-const SAFE_AREA_BLOCK_END_TOUCH = `calc(${spacingVars['--spacing-4']} + max(env(safe-area-inset-bottom, 0px), 34px))`;
-const TOAST_EDGE_DRIFT = spacingVars['--spacing-2'];
-const TOAST_EDGE_DRIFT_NEGATIVE = `calc(-1 * ${TOAST_EDGE_DRIFT})`;
-
-const styles = stylex.create({
-  rootOutlet: {
-    display: 'contents',
-  },
-  viewport: {
-    position: 'fixed',
-    zIndex: 500,
-    display: 'flex',
-    boxSizing: 'border-box',
-    flexDirection: 'column',
-    paddingBlockStart: SAFE_AREA_BLOCK_START,
-    paddingBlockEnd: {
-      default: SAFE_AREA_BLOCK_END,
-      '@media (pointer: coarse)': SAFE_AREA_BLOCK_END_TOUCH,
-    },
-    paddingInlineStart: {
-      default: SAFE_AREA_INLINE_START,
-      ':is([dir="rtl"] *)': SAFE_AREA_INLINE_END,
-    },
-    paddingInlineEnd: {
-      default: SAFE_AREA_INLINE_END,
-      ':is([dir="rtl"] *)': SAFE_AREA_INLINE_START,
-    },
-    pointerEvents: 'none',
-    // Reset popover styles — the popover attribute puts us in the top
-    // layer (above dialogs), but we don't want its default styles.
-    // UA stylesheet applies background-color: Canvas, margin: auto, etc.
-    inset: 'unset',
-    // `width` is part of that reset: the UA gives every popover
-    // `width: fit-content`, and this element is positioned by spanning the
-    // inline axis (`viewportInlineSpan` sets both inset-inline edges to 0) and
-    // then aligning within itself. A shrink-wrapped box cannot span, so both
-    // edges cannot be honoured — the box resolves against the start edge at
-    // its content width, and `align-items: flex-end` then aligns the toast to
-    // the right of a box that is itself sitting on the left. Measured in
-    // Chromium at 1200px wide: 438px box at x=0, end-positioned toast landing
-    // at x=19.
-    width: 'auto',
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    overflow: 'visible',
-  },
-  // iOS Safari colors its toolbar from a fixed element at the bottom edge. A
-  // toast that a swipe sends through that edge gives the viewport its color.
-  // Safari keeps that color while the viewport has a box, so an empty
-  // viewport has none.
-  viewportEmpty: {
-    display: 'none',
-  },
-  // The viewport sits at the inset the app declared on LayerProvider for a
-  // bar floating over that edge (spec:AST-059 FR6); unset, each reads 0px.
-  // A toast-only `inset` prop writes the same edges inline and wins.
-  viewportInlineSpan: {
-    insetInlineStart: 'var(--astryx-layer-inset-inline-start, 0px)',
-    insetInlineEnd: 'var(--astryx-layer-inset-inline-end, 0px)',
-  },
-  bottomEnd: {
-    bottom: 'var(--astryx-layer-inset-block-end, 0px)',
-    alignItems: 'flex-end',
-  },
-  bottomStart: {
-    bottom: 'var(--astryx-layer-inset-block-end, 0px)',
-    alignItems: 'flex-start',
-  },
-  topEnd: {
-    top: 'var(--astryx-layer-inset-block-start, 0px)',
-    alignItems: 'flex-end',
-    flexDirection: 'column-reverse',
-  },
-  topStart: {
-    top: 'var(--astryx-layer-inset-block-start, 0px)',
-    alignItems: 'flex-start',
-    flexDirection: 'column-reverse',
-  },
-  toastWrapper: {
-    pointerEvents: 'auto',
-    display: 'grid',
-    width: '100%',
-    maxWidth: 400,
-    minWidth: 0,
-    gridTemplateRows: '1fr',
-    transitionProperty: 'grid-template-rows, padding',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0.01ms',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  // A row opens from a closed track only when it first renders. A move to
-  // another modal outlet renders it again, and it must not open again.
-  toastWrapperEntering: {
-    '@starting-style': {
-      gridTemplateRows: '0fr',
-      paddingBlockEnd: 0,
-    },
-  },
-  toastWrapperFromBottom: {
-    '--_toast-slide-y': TOAST_EDGE_DRIFT,
-  },
-  toastWrapperFromTop: {
-    '--_toast-slide-y': TOAST_EDGE_DRIFT_NEGATIVE,
-  },
-  // The inter-toast gap is padding on each wrapper so it collapses with the
-  // grid track. The wrapper nearest the viewport edge drops that padding; the
-  // child flips because top stacks use column-reverse.
-  toastWrapperGap: {
-    paddingBlockEnd: {default: spacingVars['--spacing-2'], ':last-child': 0},
-  },
-  toastWrapperGapReversed: {
-    paddingBlockEnd: {default: spacingVars['--spacing-2'], ':first-child': 0},
-  },
-  toastWrapperExiting: {
-    gridTemplateRows: '0fr',
-    paddingBlockEnd: 0,
-  },
-  toastWrapperInner: {
-    width: '100%',
-    maxWidth: '100%',
-    minWidth: 0,
-    minHeight: 0,
-    // Clip while the grid row opens and closes so the toast reads as folding
-    // into the stack. Once the entry transition settles, the companion style
-    // below releases the clip so the card's shadow can paint. `hidden` works
-    // in every engine and restores the exact exit paint/hit boundary that the
-    // viewport shipped with before the shadow fix.
-    overflow: 'hidden',
-  },
-  toastWrapperInnerSettled: {
-    overflow: 'visible',
-  },
-});
 
 export interface ToastViewportProps {
   position?: ToastPosition;
@@ -326,13 +182,11 @@ function ToastRow({
     <div
       ref={watchEntry}
       data-toast-id={entry.id}
-      {...stylex.props(
-        styles.toastWrapper,
-        !hasEntryStarted && styles.toastWrapperEntering,
-        isReversed ? styles.toastWrapperFromTop : styles.toastWrapperFromBottom,
-        isReversed ? styles.toastWrapperGapReversed : styles.toastWrapperGap,
-        isExiting && styles.toastWrapperExiting,
-      )}
+      className={toastRowClassName({
+        isEntering: !hasEntryStarted,
+        isReversed,
+        isExiting,
+      })}
       onTransitionEnd={(e: React.TransitionEvent) => {
         // `grid-template-rows` is not private to this wrapper — any descendant
         // may animate its own grid, and transitionend bubbles. Only the row's
@@ -353,11 +207,7 @@ function ToastRow({
         setIsSettled(true);
         setHasEntryStarted(true);
       }}>
-      <div
-        {...stylex.props(
-          styles.toastWrapperInner,
-          isSettled && !isExiting && styles.toastWrapperInnerSettled,
-        )}>
+      <div className={toastRowInnerClassName(isSettled && !isExiting)}>
         <ToastSurface
           type={type}
           body={o.body}
@@ -958,14 +808,6 @@ export function ToastViewport({
     };
   }, [hasToasts, getFocusable]);
 
-  const posStyle =
-    position === 'topEnd'
-      ? styles.topEnd
-      : position === 'topStart'
-        ? styles.topStart
-        : position === 'bottomStart'
-          ? styles.bottomStart
-          : styles.bottomEnd;
   const isReversed = position === 'topEnd' || position === 'topStart';
 
   const viewport = (
@@ -993,18 +835,12 @@ export function ToastViewport({
       // keeps it above the latest open modal. Omitted when the caller
       // renders the viewport in place.
       popover={isTopLayer ? 'manual' : undefined}
-      {...mergeProps(
-        stylex.props(
-          styles.viewport,
-          styles.viewportInlineSpan,
-          posStyle,
-          !hasToasts && styles.viewportEmpty,
-        ),
-        {
-          className: tw(layerTextResetClassName, layerStructureResetClassName),
-          style: Object.keys(insetStyle).length > 0 ? insetStyle : undefined,
-        },
+      className={tw(
+        layerTextResetClassName,
+        layerStructureResetClassName,
+        toastViewportClassName({position, isEmpty: !hasToasts}),
       )}
+      style={Object.keys(insetStyle).length > 0 ? insetStyle : undefined}
       // Presses on toasts do not reach handlers around the viewport.
       {...layerClickBoundary()}>
       <LayerContentBoundary>
@@ -1031,7 +867,7 @@ export function ToastViewport({
       <Fragment>{children}</Fragment>
       {isTopLayer ? (
         <>
-          <div ref={rootOutletRef} {...stylex.props(styles.rootOutlet)} />
+          <div ref={rootOutletRef} className={toastViewportOutletClassName} />
           {host != null ? createPortal(viewport, host) : null}
         </>
       ) : (
