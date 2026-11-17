@@ -76,6 +76,7 @@ export {characterCount, firstCharacter, truncateCharacters} from './characters';
 
 export {mergeProps} from './mergeProps';
 export {mergeRefs} from './mergeRefs';
+export {tw} from './tw';
 export {isFocusDetached} from './isFocusDetached';
 export {composeEventHandlers} from './composeEventHandlers';
 export {themeProps, themeDataAttributes} from './themeProps';
@@ -114,6 +115,9 @@ export {
 // identical across packages, not copied.
 export {focusOutlineStyles, focusOutlineProps} from './focusOutline.stylex';
 
+// The same ring as a class arm, for a composer that draws it without StyleX.
+export {focusOutlineFocusVisibleClassName} from './focusOutlineClasses';
+
 export {isImeKeyEvent} from './ime';
 
 // The touch press model's one composable: the shared hover and pressed overlay
@@ -122,3 +126,6 @@ export {isImeKeyEvent} from './ime';
 // that paints and composes one of these on it; the controller, its attributes
 // and its clocks are internals.
 export {interactionOverlayStyles} from './interactionOverlay.stylex';
+// The same overlay as a class arm, for a surface that paints its own press
+// without StyleX.
+export {interactionOverlayBackgroundImageClassName} from './interactionOverlayClasses';

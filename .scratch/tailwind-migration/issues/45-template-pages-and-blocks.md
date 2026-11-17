@@ -1,7 +1,8 @@
 # template pages and blocks
 
-Status: done — every page and block template that could move is off StyleX; the
-four block files that wait on a class seam belong to `52-published-class-seams`.
+Status: done — every page and block template is off StyleX, the four block
+files that waited on a class seam landed with `52-published-class-seams`, and
+the guard test named below runs in `packages/core/src/templateStyleXGuard.test.ts`.
 Blocked by: 31
 Wave: 9
 Ticket: 45
@@ -483,3 +484,39 @@ convertible inside a template:
 
 `tw()` is still not exported from `@astryxdesign/core`, so every joined class
 in this window is a template literal or an array `.join(' ')`.
+
+Window 4 (`refactor(templates): последние четыре блока на классах Core`): the
+four files this ticket parked in window 2 moved to the seams ticket 52
+published, and the guard test landed with them.
+
+- `blocks/components/Hooks/useInputStatusIconHookUsage.tsx` draws its field with
+  `fieldInputWrapperClassName({status})` and joins the demo's own
+  `px-[var(--spacing-3)]` with `tw()`, so the status colour, the border width and
+  both rings come from `@astryxdesign/core/Field` and the input itself carries
+  `border-none`.
+- `blocks/components/Hooks/usePressFeedbackHookUsage.tsx` passes
+  `tw(interactionOverlayBackgroundImageClassName,
+focusOutlineFocusVisibleClassName)` as `className`; its test reads the ring
+  from the class seam instead of `stylex.props(focusOutlineStyles.focusVisible)`.
+- `blocks/components/DrawerHeader/DrawerHeaderShowcase.tsx` drops
+  `overlayPaddingReset` for `layoutPaddingResetClassName` and its `stylex.create`
+  map for a local `styles` of class literals.
+- `packages/core/src/templateStyleXGuard.test.ts` walks every file under
+  `packages/cli/assets/templates`, asserts the walk saw more than a hundred
+  files, and fails on `@stylexjs/stylex`, `xstyle` and `tokens.stylex`.
+
+`packages/cli/api/template/use-input-status-icon-hook-usage.test.tsx` follows
+the template: it asserts the published box and the status border instead of the
+StyleX composition it asserted before.
+
+Checks: `grep -rn 'stylex\|xstyle' packages/cli/assets/templates` is empty;
+`prettier --check` and `eslint` clean on the changed files;
+`vitest run --project node packages/cli/api/template` 64 files, 276 tests pass;
+the guard test passes in `--project ui`.
+
+Two class literals in the converted templates have no rule in
+`dist/astryx-tailwind.css` (`w-[360px]`, and `w-[320px]`/`min-h-10`/`w-[164px]`
+in templates converted earlier windows): the library build scans only
+`packages/core/src/**/*Classes.ts`, so a template-only arbitrary value reaches no
+rule and fails silently. Recorded here rather than invented into a core map; a
+template whose class must render needs the value in a published map.

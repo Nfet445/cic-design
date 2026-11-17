@@ -2,13 +2,22 @@
 
 /**
  * @file tw.ts
- * @input Receives the utility class values a component computes, including the
- *   false and null branches of a conditional
+ * @input The class values you compose, including the false and null branches of
+ *   a conditional
  * @output The non-empty values joined into one class attribute value
- * @position Shared helper for components whose own styles are Tailwind
- *   utilities instead of StyleX rules
+ * @position Public, exported from `@astryxdesign/core`: the joiner a caller
+ *   uses to add its own utilities to a published class map
  */
 
+/**
+ * Joins class values into one `class` attribute value. A false, null or
+ * undefined value is dropped, so a conditional arm needs no ternary of its
+ * own.
+ *
+ * ```
+ * <div className={tw(layoutInnerClassName, isFlush && 'p-0')} />
+ * ```
+ */
 export function tw(...values: (string | false | null | undefined)[]): string {
   let joined = '';
   for (const value of values) {

@@ -10,44 +10,27 @@
  *   app, compose DrawerHeader in a Layout header slot inside a Drawer.
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {DrawerHeader} from '@astryxdesign/core/Drawer';
 import {
   Layout,
   LayoutContent,
-  overlayPaddingReset,
+  layoutPaddingResetClassName,
 } from '@astryxdesign/core/Layout';
 import {Text} from '@astryxdesign/core/Text';
-import {
-  borderVars,
-  colorVars,
-  spacingVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
+import {tw} from '@astryxdesign/core/utils';
 
-const styles = stylex.create({
+const styles = {
   // A card-like panel with square corners, matching the drawer's own corners.
-  panel: {
-    width: 360,
-    maxWidth: '100%',
-    boxSizing: 'border-box',
-    backgroundColor: colorVars['--color-background-card'],
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-    borderRadius: 0,
-  },
-  body: {
-    padding: spacingVars['--spacing-4'],
-    backgroundColor: colorVars['--color-background-muted'],
-    borderRadius: 0,
-  },
-});
+  panel:
+    'w-[360px] max-w-full box-border bg-[var(--color-background-card)] border-[length:var(--border-width)] border-solid border-[color:var(--color-border)] rounded-none',
+  body: 'p-4 bg-[var(--color-background-muted)] rounded-none',
+} as const;
 
 export default function DrawerHeaderShowcase() {
   return (
     // Like the Drawer root, the panel is a padding boundary, so the Layout
     // regions inset by their own --spacing-4 default: the drawer's inset.
-    <div {...stylex.props(styles.panel, overlayPaddingReset.reset)}>
+    <div className={tw(styles.panel, layoutPaddingResetClassName)}>
       <Layout
         height="auto"
         header={
@@ -60,7 +43,7 @@ export default function DrawerHeaderShowcase() {
         }
         content={
           <LayoutContent>
-            <div {...stylex.props(styles.body)}>
+            <div className={styles.body}>
               <Text type="body" color="secondary">
                 Drawer body content goes here.
               </Text>
