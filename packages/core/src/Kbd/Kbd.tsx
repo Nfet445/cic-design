@@ -14,7 +14,9 @@
  */
 
 import React, {useSyncExternalStore} from 'react';
+import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {kbdKeyClassName, kbdWrapperClassName} from './kbdClasses';
 import {isApplePlatform} from '../utils/isApplePlatform';
 import type {BaseProps} from '../BaseProps';
@@ -189,9 +191,8 @@ export function Kbd({keys, ref, xstyle, className, style, ...rest}: KbdProps) {
       aria-label={accessibleName}
       {...mergeProps(
         themeProps('kbd'),
-        kbdWrapperClassName,
-        xstyle,
-        className,
+        stylex.props(xstyle),
+        tw(kbdWrapperClassName, className),
         style,
       )}>
       {parts.map(({key, reactKey}) => (
