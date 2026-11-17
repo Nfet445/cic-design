@@ -507,6 +507,14 @@ import {
   cardSizingClassName,
   cardVariantClassName,
 } from '../Card/cardClasses';
+import {
+  dividerClassName,
+  dividerFullBleedClassName,
+  dividerLabelClassName,
+  dividerLineClassName,
+  dividerLineVariantClassName,
+  dividerVerticalLabelClassName,
+} from '../Divider/dividerClasses';
 
 const sheet = await buildAstryxTailwindCss();
 const stylesheet = stylesheetOf(sheet);
@@ -1676,6 +1684,22 @@ function familyClassNames() {
   for (const value of Object.values(cardElevationClassName)) {
     add(value);
   }
+  // Divider: one row per orientation, one line per orientation and variant,
+  // the label, and the full-bleed arms that read the container padding.
+  for (const value of Object.values(dividerClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(dividerLineClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(dividerLineVariantClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(dividerFullBleedClassName)) {
+    add(value);
+  }
+  add(dividerLabelClassName);
+  add(dividerVerticalLabelClassName);
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);
@@ -1734,8 +1758,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // The display-and-feedback family added Card's thirteen variant
     // backgrounds, four elevation variables and its sizing classes, which took
     // the sheet from 1016 rules to 1042 — so the ceiling moved to 1050, not to
-    // a multiple of that family.
-    expect(stylesheet.rules.size).toBeLessThan(1050);
+    // a multiple of that family. Divider's row, line, weight, label and
+    // full-bleed classes added 8, which reached that ceiling, so it moved to
+    // 1060.
+    expect(stylesheet.rules.size).toBeLessThan(1060);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
