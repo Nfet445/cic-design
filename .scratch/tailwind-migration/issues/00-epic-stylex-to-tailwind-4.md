@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 24 of 44 tickets done, plus two waves (layout primitives,
+Progress: 26 of 44 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -75,7 +75,7 @@ buttons) that landed before the tickets were written.
 - [ ] `18-links-and-items` — links, rows, avatars, pagination, cards
 - [x] `19-tabs-and-headings` — `TabList`, nav tabs, tab menus, `SegmentedControl`
 - [ ] `20-side-nav` — `SideNav`, `TreeList`, the size cascade
-- [ ] `21-top-nav` — `TopNav` and its mega menus
+- [x] `21-top-nav` — `TopNav` and its mega menus
 
 ### Wave 7 — `family:overlay-dismissal` and `family:action-groups`
 
