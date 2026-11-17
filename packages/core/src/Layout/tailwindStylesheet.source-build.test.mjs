@@ -668,6 +668,16 @@ import {
   GROUPED_ROWS_LABEL_CLASS,
 } from '../Table/plugins/groupedRows/groupedRowsClasses';
 import {
+  TREE_CELL_CLASS,
+  TREE_CELL_INDENT_CLASS,
+  TREE_CHEVRON_GLYPH_CLASS,
+  TREE_CHEVRON_GLYPH_STATE_CLASS,
+  TREE_CLICKABLE_ROW_CLASS,
+  TREE_EXPANDER_CLASS,
+  TREE_HEADER_CELL_CLASS,
+  TREE_LEAF_SPACER_CLASS,
+} from '../Table/plugins/tree/treeClasses';
+import {
   SORT_INDICATOR_CLASS,
   SORT_INDICATOR_UNSORTED_CLASS,
   SORT_RANK_CLASS,
@@ -3391,6 +3401,19 @@ function familyClassNames() {
   add(GROUPED_ROWS_CHEVRON_GLYPH_CLASS.expanded);
   add(GROUPED_ROWS_LABEL_CLASS);
   add(GROUPED_ROWS_COUNT_CLASS);
+
+  // The tree plugin: the indented cell, the disclosure toggle, its glyph in
+  // both rotations, the leaf spacer, the header toggle row, and the row that
+  // a click expands.
+  add(TREE_CELL_CLASS);
+  add(TREE_CELL_INDENT_CLASS);
+  add(TREE_EXPANDER_CLASS);
+  add(TREE_CHEVRON_GLYPH_CLASS);
+  add(TREE_CHEVRON_GLYPH_STATE_CLASS.collapsed);
+  add(TREE_CHEVRON_GLYPH_STATE_CLASS.expanded);
+  add(TREE_LEAF_SPACER_CLASS);
+  add(TREE_HEADER_CELL_CLASS);
+  add(TREE_CLICKABLE_ROW_CLASS);
 
   return [...names].sort();
 }
