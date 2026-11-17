@@ -100,9 +100,10 @@ Three more files lost that one site but still hold `stylex.create` maps:
 
 Remaining, smallest first:
 
-- `blocks/components/Hooks/usePressFeedbackHookUsage.tsx` and its
-  `usePressFeedbackHookUsage.test.tsx` — the test asserts the focus-ring class
-  through `stylex.props(focusOutlineStyles.focusVisible)`, so it moves first.
+-~~`blocks/components/Hooks/usePressFeedbackHookUsage.tsx`~~ and its
+`usePressFeedbackHookUsage.test.tsx` — the test asserts the focus-ring class
+through `stylex.props(focusOutlineStyles.focusVisible)`, so it moves first.
+
 - `blocks/components/Hooks/{useContainerReveal,useScrollLock,useScrollableArea,useInputContainer,useInputStatusIcon,useOverflow,useScrollOverflow}HookUsage.tsx`
   — one `stylex.create` each, two or three declarations.
 - `blocks/components/DateTimeInput/DateTimeInputWithValidation.tsx`,
@@ -149,6 +150,20 @@ value:
 - `blocks/components/Hooks/useInputStatusIconHookUsage.tsx` reads
   `inputWrapperStyles` and `inputStatusBorderStyles` from `@astryxdesign/core/Field`,
   which are StyleX. Only `Field` can replace them with class names.
+
+Window 2 checks: `esbuild --loader:.tsx=tsx` parsed both changed templates,
+`prettier --check` clean, `eslint` no issues, `pnpm check:knowledge`
+aligned. Merging `poc/tailwind-layout-primitives` into this branch took one
+commit (`Chat`/`RadioList` classes and changesets); both templates re-parsed and
+re-linted after the merge, and the diff touches no template.
+
+Remaining, smallest first (23 `tokens.stylex` importers as measured above):
+`DrawerHeaderShowcase` and `useInputStatusIconHookUsage` are blocked on core
+classes, not on this ticket. Next convertible ones are
+`BaseTypeaheadShowcase`/`BaseTypeaheadCustomSearch` (field classes and the
+`:has(:focus-visible)` outline read `--focus-outline-*`), then
+`ScrollableArea*`, `usePanGesture/PanDraggableBox` (dynamic `translate` needs an
+inline `--astryx-*` variable plus a reading class), then the large pages.
 
 Window 1 checks: `esbuild --loader:.tsx=tsx` parsed all 15 changed templates,
 `prettier --check` clean, `eslint` on them reports one pre-existing warning in
