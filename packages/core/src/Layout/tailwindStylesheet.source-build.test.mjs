@@ -516,6 +516,18 @@ import {
   selectorOptionRowClassName,
 } from '../Selector/selectorOptionClasses';
 import {
+  selectorDividerClassName,
+  selectorEmptyStateClassName,
+  selectorListboxClassName,
+  selectorListboxHiddenClassName,
+  selectorListboxInputInsetClassName,
+  selectorListboxTouchClassName,
+  selectorListboxTouchScrollClassName,
+  selectorSearchPanelClassName,
+  selectorSearchRowInsetClassName,
+  selectorSectionHeadingClassName,
+} from '../Selector/selectorClasses';
+import {
   MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
   MULTI_SELECTOR_ACTION_CELL_CLASS,
   MULTI_SELECTOR_CHECKBOX_CLASS,
@@ -525,6 +537,10 @@ import {
   MULTI_SELECTOR_TRIGGER_SIZE_CLASS,
   multiSelectorOptionRowClassName,
 } from '../MultiSelector/multiSelectorOptionClasses';
+import {
+  multiSelectorListWrapperClassName,
+  multiSelectorOptionsClassName,
+} from '../MultiSelector/multiSelectorClasses';
 import {
   TYPEAHEAD_DEFAULT_ITEM_CLASS,
   TYPEAHEAD_ITEM_CONTENT_CLASS,
@@ -1863,6 +1879,18 @@ function familyClassNames() {
   for (const size of ['sm', 'md', 'lg']) {
     add(SELECTOR_TRIGGER_SIZE_CLASS[size]);
   }
+  // The option panel, its listbox in both scroll modes, the input trigger's
+  // inset, and the empty, heading and divider slots.
+  add(selectorSearchPanelClassName);
+  add(selectorListboxClassName);
+  add(selectorListboxTouchClassName);
+  add(selectorListboxTouchScrollClassName);
+  add(selectorListboxInputInsetClassName);
+  add(selectorListboxHiddenClassName);
+  add(selectorSearchRowInsetClassName);
+  add(selectorEmptyStateClassName);
+  add(selectorSectionHeadingClassName);
+  add(selectorDividerClassName);
   // The nav heading popover: its column, both row states at every size, and
   // the minimum width each size states as its own fallback.
   add(navHeadingMenuClassName);
@@ -1894,6 +1922,8 @@ function familyClassNames() {
       }
     }
   }
+  add(multiSelectorListWrapperClassName);
+  add(multiSelectorOptionsClassName);
   add(MULTI_SELECTOR_ROW_LABEL_CLASS);
   add(MULTI_SELECTOR_CHECKBOX_CLASS);
   add(MULTI_SELECTOR_CHECKBOX_END_CLASS);

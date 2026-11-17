@@ -42,7 +42,6 @@ import {
   inputWrapperStyles,
 } from '../Field';
 import {useKeepLayerOpenProps} from '../Layer/useLayer';
-import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import {InternalInputClearButton} from '../Field/InputClearButton';
 import {Divider} from '../Divider';
 import {Spinner} from '../Spinner';
@@ -76,6 +75,16 @@ import {useMultiCombobox} from './hooks';
 import {getInputARIA, isImeKeyEvent, mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {MULTI_SELECTOR_TRIGGER_SIZE_CLASS} from './multiSelectorOptionClasses';
+import {
+  multiSelectorListWrapperClassName,
+  multiSelectorOptionsClassName,
+} from './multiSelectorClasses';
+import {
+  selectorDividerClassName,
+  selectorEmptyStateClassName,
+  selectorSearchPanelClassName,
+  selectorSectionHeadingClassName,
+} from '../Selector/selectorClasses';
 import {joinAriaIDs} from '../utils/inputAria';
 import {
   disabledInteractionProps,
@@ -348,37 +357,9 @@ const styles = stylex.create({
     borderRadius: radiusVars['--radius-element'],
   },
 
-  // A panel with a search field, capped as a whole.
-  searchPanel: {
-    display: 'flex',
-    flexDirection: 'column',
-    // No taller than its layer's block-size cap, which folds in the software
-    // keyboard's. The search field's row keeps its height, and the list takes
-    // what is left.
-    maxHeight: stylex.firstThatWorks(
-      `calc(${layerViewportInset.maxBlockSize})`,
-      `calc(${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-  },
+  // A panel with a search field, capped as a whole.,
 
-  // Dropdown container
-  dropdown: {
-    boxSizing: 'border-box',
-    // In a search panel, the list shrinks below its content to fit the cap.
-    minHeight: 0,
-    // 300 px, and no taller than its layer's block-size cap, which folds in
-    // the software keyboard's: the list ends above the keyboard with the
-    // layer.
-    maxHeight: stylex.firstThatWorks(
-      `min(300px, ${layerViewportInset.maxBlockSize})`,
-      `min(300px, ${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-    overflowY: 'auto',
-    padding: spacingVars['--spacing-1'],
-  },
-  listbox: {
-    outline: 'none',
-  },
+  // Dropdown container,,
 
   // Popover container (for anchor positioning)
   popover: {
@@ -389,30 +370,11 @@ const styles = stylex.create({
   // DropdownMenu and CommandPaletteGroup already use for a group heading in a
   // panel list. A labeled Divider (line–text–line) reads as a separator, and
   // next to the search row's own divider it stacked two rules a few pixels
-  // apart.
-  sectionHeading: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    userSelect: 'none',
-  },
+  // apart.,
 
-  // Divider
-  divider: {
-    marginBlock: spacingVars['--spacing-1'],
-  },
+  // Divider,
 
-  // Empty state
-  emptyState: {
-    padding: spacingVars['--spacing-3'],
-    textAlign: 'center',
-    color: colorVars['--color-text-secondary'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-  },
+  // Empty state,
 });
 
 const RENDER_TRIGGER_PARTS_MESSAGE =
@@ -2187,7 +2149,8 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
           role="presentation"
           {...mergeProps(
             themeProps('multi-selector-empty-state'),
-            stylex.props(styles.emptyState),
+            undefined,
+            selectorEmptyStateClassName,
           )}>
           {searchQuery ? emptySearchText : emptyText}
         </div>,
@@ -2228,7 +2191,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             <Divider
               key={`divider-${i}`}
               aria-hidden="true"
-              xstyle={styles.divider}
+              className={selectorDividerClassName}
             />,
           );
         }
@@ -2262,7 +2225,8 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
                 aria-hidden="true"
                 {...mergeProps(
                   themeProps('multi-selector-section-heading'),
-                  stylex.props(styles.sectionHeading),
+                  undefined,
+                  selectorSectionHeadingClassName,
                 )}>
                 {option.title}
               </div>
@@ -2314,23 +2278,23 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
     surface.activePresentation === 'bottom-sheet' || hasExternalTrigger;
 
   const panelContent = hasSearch ? (
-    <div {...stylex.props(styles.searchPanel)}>
+    <div className={selectorSearchPanelClassName}>
       {renderSearch()}
       <Divider />
-      <div {...stylex.props(styles.dropdown)}>
+      <div className={multiSelectorListWrapperClassName}>
         <div
           ref={listboxRef}
           id={listboxId}
           role={isGrid ? 'grid' : 'listbox'}
           aria-multiselectable="true"
           {...listboxLabelProps}
-          {...stylex.props(styles.listbox)}>
+          className={multiSelectorOptionsClassName}>
           {renderOptions()}
         </div>
       </div>
     </div>
   ) : (
-    <div {...stylex.props(styles.dropdown)}>
+    <div className={multiSelectorListWrapperClassName}>
       <div
         ref={listboxRef}
         id={listboxId}
@@ -2347,7 +2311,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
         aria-activedescendant={activeDescendantId}
         tabIndex={listboxOwnsKeyboard ? 0 : undefined}
         onKeyDown={listboxOwnsKeyboard ? onKeyDown : undefined}
-        {...stylex.props(styles.listbox)}>
+        className={multiSelectorOptionsClassName}>
         {renderOptions()}
       </div>
     </div>
