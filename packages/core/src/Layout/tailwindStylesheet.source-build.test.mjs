@@ -74,7 +74,9 @@ import {
   sectionInnerClassName,
   sectionOuterClassName,
 } from '../Section/sectionClasses';
+import {tableCellClassName} from '../Table/tableCellClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
+import {tableRowClassName} from '../Table/tableRowClasses';
 import {
   textClassName,
   truncationTooltipContentClassName,
@@ -377,6 +379,17 @@ function familyClassNames() {
     add(radioDotClassName({size}));
   }
 
+  // The body row answers three axes, the body cell six. Both are walked over
+  // their cross product: a stripe or a divider is one utility per variant, so
+  // a combination nobody thought of would otherwise miss its rule.
+  for (const hasHover of [false, true]) {
+    for (const hasKnownPosition of [false, true]) {
+      for (const isStriped of [false, true]) {
+        add(tableRowClassName({hasHover, hasKnownPosition, isStriped}));
+      }
+    }
+  }
+
   for (const density of ['compact', 'balanced', 'spacious']) {
     for (const hasColumnDivider of [false, true]) {
       for (const hasContextMenu of [false, true]) {
@@ -387,6 +400,22 @@ function familyClassNames() {
             hasContextMenu,
           }),
         );
+        for (const hasRowDivider of [false, true]) {
+          for (const textOverflow of ['wrap', 'truncate']) {
+            for (const verticalAlign of ['middle', 'top', 'bottom']) {
+              add(
+                tableCellClassName({
+                  density,
+                  hasColumnDivider,
+                  hasContextMenu,
+                  hasRowDivider,
+                  textOverflow,
+                  verticalAlign,
+                }),
+              );
+            }
+          }
+        }
       }
     }
   }
@@ -486,6 +515,37 @@ describe('dist/astryx-tailwind.css declarations', () => {
     expect(
       stylesheet.ruleFor('[border-bottom-width:var(--border-width)]'),
     ).toBe('border-bottom-width:var(--border-width);');
+  });
+
+  it('stripes only the rows that are not detail panels', () => {
+    // A panel is a sibling row in the same body, so the stripe counts only
+    // rows that are not panels; an open panel cannot flip the parity.
+    const block = stylesheet.blockOf(
+      '[&:nth-child(even_of_:not([data-expansion-panel]))]:bg-[var(--color-background-muted)]',
+    );
+    expect(block).toContain('nth-child(evenof:not([data-expansion-panel]))');
+    expect(block).toContain('background-color:var(--color-background-muted)');
+  });
+
+  it('paints the row highlight only where a pointer can hover', () => {
+    expect(
+      stylesheet.blockOf(
+        '[@media(hover:hover)]:[&:hover:where(:not(:disabled,[aria-disabled=true]))]:bg-[var(--color-overlay-hover)]',
+      ),
+    ).toContain('@media(hover:hover)');
+  });
+
+  it('zeroes the row divider on the last row, paint and width alike', () => {
+    // The pinned-column plugin reads the published width, so the reset has to
+    // cover the variable as well as the border.
+    expect(
+      stylesheet.blockOf('[tr:last-child>&]:[--_table-row-divider-width:0px]'),
+    ).toContain('tr:last-child>&{--_table-row-divider-width:0px;}');
+    expect(
+      stylesheet.blockOf(
+        '[tr[data-table-final-row=true]>&]:[border-bottom-width:0]',
+      ),
+    ).toContain('tr[data-table-final-row=true]>&{border-bottom-width:0;}');
   });
 
   it('draws the section divider on one border width', () => {
