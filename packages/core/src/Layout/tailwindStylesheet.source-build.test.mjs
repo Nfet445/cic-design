@@ -185,6 +185,14 @@ import {
   nativeDateFieldOverlayValueClassName,
   nativeDateFieldSlotClassName,
   nativeDateFieldWrapperClassName,
+  scrollWheelBandClassName,
+  scrollWheelColumnClassName,
+  scrollWheelItemActiveClassName,
+  scrollWheelItemClassName,
+  scrollWheelItemFadeClassName,
+  scrollWheelItemInnerClassName,
+  scrollWheelItemInnerTipClassName,
+  scrollWheelScrollerClassName,
 } from '../DateInput/dateInputClasses';
 import {
   fileInputBoxClassName,
@@ -1474,8 +1482,18 @@ function familyClassNames() {
     nativeDateFieldOverlayClassName,
     nativeDateFieldOverlayValueClassName,
     nativeDateFieldOverlayPlaceholderClassName,
+    scrollWheelColumnClassName,
+    scrollWheelBandClassName,
+    scrollWheelScrollerClassName,
+    scrollWheelItemClassName,
+    scrollWheelItemFadeClassName,
+    scrollWheelItemActiveClassName,
+    scrollWheelItemInnerClassName,
   ]) {
     add(className);
+  }
+  for (const isDisabled of [false, true]) {
+    add(scrollWheelItemInnerTipClassName({isDisabled}));
   }
   for (const size of ['sm', 'md', 'lg']) {
     add(dateRangeInputSizeClassName({size}));
@@ -2458,7 +2476,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // notice and the metadata row share almost every utility those maps already
     // spell, and the checkbox field's row, box, press layers and native input
     // added six; the sheet measures 1318 here and the ceiling keeps headroom.
-    expect(stylesheet.rules.size).toBeLessThan(1380);
+    // The scroll wheel's column, band, scrollport, row, its colour fade and the
+    // three tip arms added 10 more — the pane and edge padding are literals it
+    // spells alone. Measures 1384; the ceiling keeps its headroom.
+    expect(stylesheet.rules.size).toBeLessThan(1400);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

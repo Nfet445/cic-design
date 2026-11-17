@@ -266,3 +266,93 @@ counts), `Wheel.tsx` (its four keyframes plus the source-text reads at
 `animation-timeline` and reduced-motion arms), `DateTimeInput/TouchDateTimeField.tsx`,
 `DateTimeInput/DateTimeInput.tsx` (with the `/\.inputInvalid\b/` assertion and
 the `input`/`inputDisabled`/`inputInvalid` triple), then `Calendar/styles.ts`.
+
+### Session 6 (branch `ticket/16-date-inputs`, merged with the POC once)
+
+Landed: `DateTimeInput/TouchDateTimeField.tsx` keeps no `stylex.create` — both
+maps (the former `:175` size map and the `:189` surface map) are gone. The new
+`DateTimeInput/dateTimeInputClasses.ts` carries 25 class maps/constants:
+the row (now `[inline-size:100%] [min-inline-size:0]`, which the deleted
+`touchRow` held in StyleX), the native row's 180px floor, the segment basis,
+the icon button, the icon, the typed control (with the iOS floor), the touch
+input's caret/selection arms, the sheet body, the surface, the stack, the panel
+and its hidden arm, the header, its title, the title text, the actions group,
+the arrows, the unavailable arrow, the arrow icon, the reset button, the
+weekday row and cell, the wheel spacer and the footer. The component still
+spreads `focusOutlineStyles`, `inputWrapperStyles`, the status styles and
+`rtlStyles` from StyleX through `mergeProps`/`stylex.props`; its own paint is
+the class, and the two arrow `xstyle` props became `className` (Button accepts
+one). `inputFontFloor.test.ts` now lists `DateTimeInput/dateTimeInputClasses.ts`
+instead of the component; the sheet's coverage block walks the three flag arms
+and the twenty constants; the panel-width test in `DateTimeInputTouch.test.tsx`
+reads the class strings instead of the component's source text, so its
+`styleBlock()` helper and the `responsiveLayoutProbe` StyleX probe are gone.
+
+Traps found this session:
+
+- `DateTimeInputTouch.test.tsx`'s `responsiveLayoutProbe` compared the rendered
+  element against `stylex.props(probe).className`. A class-based surface has no
+  StyleX class to match, so the probe and its helper had to go with the map,
+  not after it — the assertion becomes `toContain('flex-wrap')` and the basis
+  string.
+- `DateTimeInputTouch.test.tsx` also read `readFileSync` for two facts: the
+  panel-width style blocks and the `onFocus=` absence. Only the first is
+  replaced; the second still needs the import.
+- The live stylesheet is read at collection time, so a run in the same shell
+  command as `build-css-tailwind.mjs` can still assert against the previous
+  sheet: `DateTimeInput.fr10.test.tsx` failed twice on the combined run and
+  passed alone and on the rerun.
+
+Still open, in order (unchanged plan, not started this window):
+
+- `DateTimeInput/DateTimeInput.tsx:170` (`styles`: the closed row, both
+  segments, the icon button and icon, the input triple at `:233` including
+  `inputInvalid`, the popover list, the option rows), `:286`
+  (`timeOptionSizeStyles`) and `:301` (`sizeStyles`). `DateTimeInput.test.tsx:3971`
+  keeps the `/\.inputInvalid\b/` fallback until that map moves; drop it in the
+  same commit as the `input`/`inputDisabled`/`inputInvalid` triple.
+- `DateInput/TouchDateField.tsx` `styles` (about a dozen source-text reads in
+  `DateInputTouch.test.tsx`), `DateInput/Wheel.tsx` (four keyframes plus the
+  snap and reduced-motion reads), then `Calendar/styles.ts`.
+
+### Session 7 (branch `ticket/16-date-inputs`)
+
+Landed: `DateInput/Wheel.tsx` keeps no `stylex.create` and no
+`stylex.keyframes`. The scroll column's seven classes live in
+`dateInputClasses.ts` (`scrollWheelColumnClassName`,
+`scrollWheelBandClassName`, `scrollWheelScrollerClassName`,
+`scrollWheelItemClassName`, `scrollWheelItemFadeClassName`,
+`scrollWheelItemActiveClassName`, `scrollWheelItemInnerClassName`, plus
+`scrollWheelItemInnerTipClassName({isDisabled})`). The four frames moved to
+`packages/core/tailwind/astryx.input.css` as `astryxWheelTip`,
+`astryxWheelTipAndDim`, `astryxWheelDim` and `astryxWheelFade`.
+`DateInputTouch.test.tsx`'s six source-text reads became class assertions, and
+the `@supports` guard test now also walks the four frame names in the input
+stylesheet. `DateInput` is 164/164 green, the sheet test 54/54, typecheck
+passes.
+
+Traps found this session:
+
+- `stylex.create`'s `animationName` arms do not translate to two classes on one
+  element: equal specificity leaves the sheet to decide. The inner element's
+  base class carries `animation-timeline`/range/fill/duration/timing, and the
+  name is chosen once in JS — `motion-safe` for the enabled tip,
+  `motion-safe`/`motion-reduce` for the disabled tip-and-dim, so no two arms
+  ever set the same property.
+- The disabled row's colour is a variant (`[&[aria-disabled=true]]:`), not a
+  second class: it must beat the active arm's accent, and two plain colour
+  utilities are ordered by the sheet. `useWheelListbox` writes `aria-disabled`,
+  so the attribute is there to key off.
+- The pane size and edge padding are literals in the class (`[block-size:264px]`,
+  `[padding-block:118px]`): an interpolated class emits no rule. They mirror
+  `dateInputTouchGeometry` (6 × 44px, and (6 × 44 − 28) / 2) and the test
+  asserts the token beside the literal.
+- The sheet measured 1384 rules against a 1380 ceiling. The ceiling moved to
+  1400 with the measured number and the delta in its comment.
+
+Still open, in order: `DateInput/TouchDateField.tsx` `styles` (373 lines, about
+a dozen source-text reads in `DateInputTouch.test.tsx`), then
+`DateTimeInput/DateTimeInput.tsx` (`styles` 170, `timeOptionSizeStyles` 286,
+`sizeStyles` 301, and the `/.inputInvalid\b/` assertion at
+`DateTimeInput.test.tsx`), then `Calendar/styles.ts`. The changeset still names
+the same patch.

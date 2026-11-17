@@ -52,6 +52,12 @@ import {
   monthScrollerClassName,
   pickerWheelColumnClassName,
   pickerWheelRowClassName,
+  scrollWheelBandClassName,
+  scrollWheelItemClassName,
+  scrollWheelItemFadeClassName,
+  scrollWheelItemInnerClassName,
+  scrollWheelItemInnerTipClassName,
+  scrollWheelScrollerClassName,
 } from './dateInputClasses';
 import {
   toMonthIndex,
@@ -2982,58 +2988,78 @@ describe('DateInput — scroll CSS (definition-level)', () => {
     // Load-bearing: clientHeight is the pane height, the snap offsets and the
     // virtualization all at once.
     expect(monthScrollerClassName).toContain('box-border');
-    expect(read('Wheel.tsx')).toContain("boxSizing: 'border-box'");
+    expect(scrollWheelScrollerClassName).toContain('box-border');
   });
 
   it('sizes the wheel row tighter than a day cell, with larger text', () => {
     const tokens = read('tokens.stylex.ts');
     // Scroll-first rows: closer together than day cells and closer to the
-    // text they hold, the way a platform picker packs them.
+    // text they hold, the way a platform picker packs them. The row's class
+    // reads the token as a literal, so the two are checked together.
     expect(tokens).toContain("wheelItemSize: '28px'");
-    expect(read('Wheel.tsx')).toContain(
-      "fontSize: typeScaleVars['--text-large-size']",
+    expect(scrollWheelItemClassName).toContain('[block-size:28px]');
+    expect(scrollWheelItemClassName).toContain(
+      'text-[length:var(--text-large-size)]',
     );
   });
 
   it('centers wheel rows and pads both ends so either extreme can reach the band', () => {
-    const source = read('Wheel.tsx');
-    expect(source).toContain("scrollSnapType: 'y mandatory'");
-    expect(source).toContain("scrollSnapAlign: 'center'");
-    expect(source).toContain(
-      'paddingBlock: dateInputTouchGeometry.wheelEdgePadding',
+    // Six day rows of 44px, less one 28px option, halved.
+    expect(scrollWheelScrollerClassName).toContain('[block-size:264px]');
+    expect(scrollWheelScrollerClassName).toContain('[padding-block:118px]');
+    expect(scrollWheelScrollerClassName).toContain(
+      '[scroll-snap-type:y_mandatory]',
     );
+    expect(scrollWheelItemClassName).toContain('[scroll-snap-align:center]');
   });
 
   it('leaves a two-finger pinch to the page over the wheels', () => {
     // `pan-y` alone also refuses the browser's pinch-zoom over the wheel, so
     // the page could not be zoomed over an open picker. The real-engine proof
     // is WheelPinchZoom.a11y.chromium.spec.ts; jsdom computes no touch-action.
-    expect(declarations(read('Wheel.tsx'), 'scroller')).toContain(
-      "touchAction: 'pan-y pinch-zoom'",
+    expect(scrollWheelScrollerClassName).toContain(
+      '[touch-action:pan-y_pinch-zoom]',
     );
   });
 
   it('guards the scroll-driven falloff behind @supports', () => {
-    const source = read('Wheel.tsx');
     // Without the guard, a browser that does not understand animation-timeline
     // runs these keyframes once on the document timeline instead.
-    expect(source).toContain("'@supports (animation-timeline: view())'");
-    expect(source).toContain("animationTimeline: 'view(y)'");
-    expect(source).toContain("'@media (prefers-reduced-motion: reduce)'");
+    expect(scrollWheelItemInnerClassName).toContain(
+      '[animation-timeline:view(y)]',
+    );
+    for (const arm of [
+      scrollWheelItemInnerTipClassName({isDisabled: false}),
+      scrollWheelItemInnerTipClassName({isDisabled: true}),
+    ]) {
+      expect(arm).toContain('[@supports(animation-timeline:view())]');
+    }
+    expect(scrollWheelItemInnerTipClassName({isDisabled: true})).toContain(
+      'motion-reduce',
+    );
+    // The frames themselves live in the input stylesheet, because the build
+    // scans class maps only.
+    const sheet = read('../../tailwind/astryx.input.css');
+    for (const frame of [
+      'astryxWheelTip',
+      'astryxWheelTipAndDim',
+      'astryxWheelDim',
+      'astryxWheelFade',
+    ]) {
+      expect(sheet).toContain(`@keyframes ${frame} `);
+    }
   });
 
   it('keeps the falloff off the snap area itself', () => {
     // A transform moves the snap area, and the wheel then settles a few
     // pixels off the row it is showing.
-    const source = read('Wheel.tsx');
-    const itemInner = source.slice(source.indexOf('itemInner: {'));
-    expect(itemInner).toContain("animationTimeline: 'view(y)'");
-    const item = source.slice(
-      source.indexOf('  item: {'),
-      source.indexOf('itemInner: {'),
+    expect(scrollWheelItemInnerClassName).toContain(
+      '[animation-timeline:view(y)]',
     );
-    expect(item).not.toContain('animationTimeline');
-    expect(item).not.toContain("overflow: 'hidden'");
+    expect(scrollWheelItemClassName).not.toContain('animation-timeline');
+    expect(scrollWheelItemClassName).not.toContain('overflow-hidden');
+    // The colour fade rides the row, which is not the snapped box's geometry.
+    expect(scrollWheelItemFadeClassName).toContain('[animation-timeline:view');
   });
 
   it('keeps the published tokens module to its released names', async () => {
@@ -3238,12 +3264,10 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * sit under text.
    */
   it('gives the wheel band enough contrast for its fade to read', () => {
-    const source = read('Wheel.tsx');
-    const band = source.slice(
-      source.indexOf('  band: {'),
-      source.indexOf('});', source.indexOf('  band: {')),
+    expect(scrollWheelBandClassName).toContain(
+      'bg-[color:var(--color-neutral)]',
     );
-    expect(band).toContain("backgroundColor: colorVars['--color-neutral']");
+    expect(scrollWheelBandClassName).not.toContain('background-muted');
   });
 
   /**
