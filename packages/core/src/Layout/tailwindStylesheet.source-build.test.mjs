@@ -523,6 +523,10 @@ import {
   badgeVariantClassName,
 } from '../Badge/badgeClasses';
 import {
+  blockquoteCiteClassName,
+  blockquoteClassName,
+} from '../Blockquote/blockquoteClasses';
+import {
   codeClassName,
   codeColorClassName,
   codeInheritSizeClassName,
@@ -1806,6 +1810,9 @@ function familyClassNames() {
   }
   add(dividerLabelClassName);
   add(dividerVerticalLabelClassName);
+  // Blockquote: the quote and its attribution.
+  add(blockquoteClassName);
+  add(blockquoteCiteClassName);
   // Code: the inline element, one class per color, and the size arm that
   // adopts the surrounding type.
   add(codeClassName);
