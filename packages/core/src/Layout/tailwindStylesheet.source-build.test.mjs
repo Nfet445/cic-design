@@ -935,6 +935,12 @@ import {
   thumbnailUploadOverlayClassName,
 } from '../Thumbnail/thumbnailClasses';
 import {
+  toastRowClassName,
+  toastRowInnerClassName,
+  toastViewportClassName,
+  toastViewportOutletClassName,
+} from '../Toast/toastViewportClasses';
+import {
   bannerChevronClassName,
   bannerChevronExpandedClassName,
   bannerClassName,
@@ -2629,6 +2635,29 @@ function familyClassNames() {
   add(thumbnailRemoveSlotClassName);
   add(thumbnailDisabledClassName);
   add(thumbnailUploadOverlayClassName);
+  // ToastViewport: the popover reset with its safe-area gutters in both
+  // directions, the four placements, both empty and filled, the outlet that
+  // renders a portaled viewport in place of itself, and every row state.
+  for (const position of [
+    'topStart',
+    'topEnd',
+    'bottomStart',
+    'bottomEnd',
+  ]) {
+    for (const isEmpty of [true, false]) {
+      add(toastViewportClassName({position, isEmpty}));
+    }
+  }
+  add(toastViewportOutletClassName);
+  for (const isEntering of [true, false]) {
+    for (const isReversed of [true, false]) {
+      for (const isExiting of [true, false]) {
+        add(toastRowClassName({isEntering, isReversed, isExiting}));
+      }
+    }
+  }
+  add(toastRowInnerClassName(true));
+  add(toastRowInnerClassName(false));
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);
