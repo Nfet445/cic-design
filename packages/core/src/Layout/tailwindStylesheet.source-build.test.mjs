@@ -515,6 +515,28 @@ import {
   dividerLineVariantClassName,
   dividerVerticalLabelClassName,
 } from '../Divider/dividerClasses';
+import {
+  bannerChevronClassName,
+  bannerChevronExpandedClassName,
+  bannerClassName,
+  bannerContentAreaCardClassName,
+  bannerContentAreaClassName,
+  bannerDescriptionClassName,
+  bannerElevatedCardClassName,
+  bannerElevationClassName,
+  bannerEndAreaClassName,
+  bannerHeaderCardStandaloneClassName,
+  bannerHeaderCardWithContentClassName,
+  bannerHeaderCenteredClassName,
+  bannerHeaderClassName,
+  bannerHeaderContentClassName,
+  bannerHeaderContentWithEndContentClassName,
+  bannerIconWrapperClassName,
+  bannerStatusClassName,
+  bannerStatusControlClassName,
+  bannerStatusForegroundClassName,
+  bannerTitleClassName,
+} from '../Banner/bannerClasses';
 
 const sheet = await buildAstryxTailwindCss();
 const stylesheet = stylesheetOf(sheet);
@@ -1700,6 +1722,34 @@ function familyClassNames() {
   }
   add(dividerLabelClassName);
   add(dividerVerticalLabelClassName);
+  // Banner: the frame and its elevation, the status header and its fill, the
+  // text column, the end area, the content area and the chevron.
+  add(bannerClassName);
+  add(bannerElevatedCardClassName);
+  add(bannerHeaderClassName);
+  add(bannerHeaderCenteredClassName);
+  add(bannerHeaderCardStandaloneClassName);
+  add(bannerHeaderCardWithContentClassName);
+  add(bannerHeaderContentClassName);
+  add(bannerHeaderContentWithEndContentClassName);
+  add(bannerTitleClassName);
+  add(bannerDescriptionClassName);
+  add(bannerStatusForegroundClassName);
+  add(bannerIconWrapperClassName);
+  add(bannerEndAreaClassName);
+  add(bannerContentAreaClassName);
+  add(bannerContentAreaCardClassName);
+  add(bannerChevronClassName);
+  add(bannerChevronExpandedClassName);
+  for (const value of Object.values(bannerElevationClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(bannerStatusClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(bannerStatusControlClassName)) {
+    add(value);
+  }
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);
@@ -1760,8 +1810,9 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // the sheet from 1016 rules to 1042 — so the ceiling moved to 1050, not to
     // a multiple of that family. Divider's row, line, weight, label and
     // full-bleed classes added 8, which reached that ceiling, so it moved to
-    // 1060.
-    expect(stylesheet.rules.size).toBeLessThan(1060);
+    // 1060. Banner's status fills and their forced-colors outlines, the text
+    // column and the content area added 26, so it moved to 1080.
+    expect(stylesheet.rules.size).toBeLessThan(1080);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
