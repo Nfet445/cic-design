@@ -15,7 +15,11 @@ import {Button} from '../../Button/Button';
 import {Icon} from '../../Icon';
 import {useClipboard} from '../../hooks/useClipboard';
 import {useContainerReveal} from '../../hooks/useContainerReveal';
-import {mergeProps, rtlStyles} from '../../utils';
+import {mergeProps} from '../../utils';
+import {
+  rtlCenterInlineBlockOffsetClassName,
+  rtlCenterInlineClassName,
+} from '../../utils/rtlClasses';
 import {tw} from '../../utils/tw';
 import {
   markdownCenterAlignClassName,
@@ -132,10 +136,11 @@ export function HeadingLinksRenderer({
           }
           isIconOnly
           onClick={handleClick}
-          xstyle={[
-            markdownHeadingLinksCopyButtonStyles.overrides,
-            rtlStyles.centerInline('-50%'),
-          ]}
+          xstyle={markdownHeadingLinksCopyButtonStyles.overrides}
+          className={tw(
+            rtlCenterInlineClassName,
+            rtlCenterInlineBlockOffsetClassName.half,
+          )}
           {...getContentRevealProps({isLayoutPreserved: true})}
         />
       </span>

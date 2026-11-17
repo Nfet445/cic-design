@@ -10,9 +10,9 @@
  *
  * The thumbs and the fill travel by `translate` in container units (`cqi` /
  * `cqb`) of the travel box, read from the private properties the component
- * writes inline. So a moving thumb never lays out. `rtlStyles.centerInline`
- * (the sanctioned physical-centering idiom) and the shared focus ring stay
- * StyleX; the sheet prints no utility for them.
+ * writes inline. So a moving thumb never lays out. The inline centering of a
+ * vertical track comes from the shared `rtlCenterInlineClassName`
+ * (`utils/rtlClasses.ts`), and the shared focus ring stays StyleX.
  *
  * SYNC: When modified, update
  * - /packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs

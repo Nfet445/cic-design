@@ -488,7 +488,11 @@ import {
   anchoredHintLabelClassName,
 } from '../hooks/anchoredHintClasses';
 import {entryAnimationClassName} from '../hooks/entryAnimationClasses';
-import {RTL_MIRROR_CLASS} from '../utils/rtlClasses';
+import {
+  RTL_MIRROR_CLASS,
+  rtlCenterInlineBlockOffsetClassName,
+  rtlCenterInlineClassName,
+} from '../utils/rtlClasses';
 import {inputStatusIconButtonClassName} from '../hooks/inputStatusIconClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
@@ -3340,8 +3344,12 @@ function familyClassNames() {
   }
   // useInputStatusIcon: the tooltip-variant status button's chrome.
   add(inputStatusIconButtonClassName);
-  // utils: the RTL mirror every directional glyph shares.
+  // utils: the RTL mirror every directional glyph shares, and the inline
+  // centering with its block offsets.
   add(RTL_MIRROR_CLASS);
+  add(rtlCenterInlineClassName);
+  add(rtlCenterInlineBlockOffsetClassName.half);
+  add(rtlCenterInlineBlockOffsetClassName.full);
   // The anchored keyboard hint's key row and its label.
   add(anchoredHintKeysClassName);
   add(anchoredHintLabelClassName);
