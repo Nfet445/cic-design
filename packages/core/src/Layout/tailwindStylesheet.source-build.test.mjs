@@ -553,6 +553,15 @@ import {
 } from '../TreeList/treeListItemClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {
+  focusOwnerOverlayRingClassName,
+  focusOwnerRingClassName,
+} from '../privateAttributes/focusOwnerClasses';
+import {
+  controlPressHeldClassName,
+  indicatorPressPaintHandDownClassName,
+  rowPressPaintCheckboxRowClassName,
+} from '../privateAttributes/pressClasses';
+import {
   indicatorPressFillClassName,
   indicatorPressImageClassName,
 } from '../Indicator/indicatorClasses';
@@ -2310,6 +2319,15 @@ function familyClassNames() {
     add(className);
   }
   add(menuPressLitRowClassName);
+  // The focus ring a wrapper draws for its marked control, and the same ring
+  // as an overlay above the wrapper's content.
+  add(focusOwnerRingClassName);
+  add(focusOwnerOverlayRingClassName);
+  // The press paint a row hands down to a box, and the layer a coarse pointer
+  // keeps under a control for the whole release.
+  add(rowPressPaintCheckboxRowClassName);
+  add(indicatorPressPaintHandDownClassName);
+  add(controlPressHeldClassName);
   // The press over a selection control's indicator: the `:active` fill and the
   // controller's image, each named after the row's scope and press attributes.
   add(indicatorPressFillClassName);

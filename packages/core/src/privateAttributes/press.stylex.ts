@@ -7,11 +7,20 @@
  * @file privateAttributes/press.stylex.ts
  * @input StyleX, the overlay color tokens, the touch press strength
  *   (`pressVars`), the theme's exit motion tokens and the press attributes
- * @output Ready-made press styles for list rows, Button and the layer over a
- *   selection control's box. No package entry exports them.
+ * @output Ready-made press styles for list rows, and a RadioList row's own
+ *   mouse press paint. No package entry exports them.
  * @position Owner module of the private press attribute: the press controller
  *   (utils/pressFeedback.ts) writes it, and this file reads it.
  *   utils/interactionOverlay.cell.test.ts tests the row layer.
+ *
+ * The row layer and the RadioList paint stay here, where the class maps cannot
+ * go. The layer sets the same properties as the overlay utility
+ * (utils/interactionOverlay.stylex.ts) on the same element, and StyleX wins
+ * over a class on a property both set (privateAttributes/travellingClasses.ts
+ * relies on that). The RadioList arm is a `:has()` disjunction over nineteen
+ * controls, which RadioListItem.press.source-build.test.mjs holds equal to
+ * hooks/useClickableContainer.ts; class text would restate that list in a
+ * second dialect. privateAttributes/pressClasses.ts holds the rest.
  */
 
 import * as stylex from '@stylexjs/stylex';
@@ -23,6 +32,12 @@ import {
 } from '../theme/tokens.stylex';
 import {reducedMotionFadeConsts} from '../motion/reducedMotion.stylex';
 import {pressVars} from '../utils/interactionOverlay.stylex';
+
+export {
+  controlPressHeldClassName,
+  indicatorPressPaintHandDownClassName,
+  rowPressPaintCheckboxRowClassName,
+} from './pressClasses';
 
 // The overlay's arm selectors (interactionOverlay.stylex.ts), restated here:
 // StyleX resolves a style's keys within its own file.
@@ -369,35 +384,7 @@ export const rowPressLayerStyles = stylex.create({
   },
 });
 
-export const controlPressLayerStyles = stylex.create({
-  /**
-   * A control whose press lives on its own surface: Button (and the
-   * IconButton and ToggleButton built on it), composed after
-   * `rowPressLayerStyles.cell` and `cellOnImage`, which give it the row's
-   * compositor press layer under a coarse primary pointer. Button's press
-   * scale runs as a transition: the browser makes a layer for it and drops
-   * that layer at its end, which repaints the button. Under a coarse primary
-   * pointer, a layer kept from the touch to the end of the release keeps the
-   * release free of Paint. With any other pointer nothing here applies.
-   */
-  control: {
-    willChange: {
-      default: null,
-      [COARSE]: {default: null, [PRESSED_ANY]: 'transform'},
-    },
-  },
-});
-
 export const rowPressPaintStyles = stylex.create({
-  // A box reads its nearest row's value, so a list in a row's content keeps
-  // its own rows' paint.
-  checkboxRow: {
-    '--_checkbox-row-press-paint': {
-      default: 'none',
-      ':is([data-astryx-press="on"])': 'var(--_press-paint-image)',
-      ':is([data-astryx-press="fading"])': 'var(--_press-paint-image)',
-    },
-  },
   // A RadioList row declares the paint of a press the controller does not
   // paint. A press through a nested control is that control's, as the row's
   // container rule decides for the controller. The `:has()` is on the row
@@ -411,35 +398,6 @@ export const rowPressPaintStyles = stylex.create({
         default: colorVars['--color-overlay-pressed'],
         [COARSE]: 'transparent',
       },
-    },
-  },
-});
-
-/**
- * Ready-made press paint for a selection control. `handDown` goes on
- * CheckboxInput's row. The layer over the box or a RadioList option's circle
- * reads it, and the indicator paints its own press from
- * `Indicator/indicatorClasses.ts`.
- */
-export const indicatorPressPaintStyles = stylex.create({
-  // A row hands its press image down to an indicator that paints its own
-  // press, but only in the row's own press states. A pressed outer row hands
-  // down nothing, as for the built-in box. The property has no default: a
-  // layered stylesheet ranks a default above the arms. Only CheckboxInput's
-  // row declares it. A menu item paints its own press, so a mapped indicator
-  // there paints none.
-  handDown: {
-    '--_indicator-press-image': {
-      default: null,
-      [PRESSED_ON]: pressedOverlayImage,
-      [PRESSED_FADING]: pressedOverlayImage,
-    },
-    // While the controller paints the press, the indicator's `:active` fill
-    // stays off, so a mouse's press paints once.
-    '--_indicator-active-press': {
-      default: null,
-      [PRESSED_ON]: 'transparent',
-      [PRESSED_FADING]: 'transparent',
     },
   },
 });

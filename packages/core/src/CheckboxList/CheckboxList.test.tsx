@@ -1633,28 +1633,20 @@ describe('CheckboxListItem press surface', () => {
    * `data-astryx-press` arms (on the row itself, not an ancestor).
    */
   function declaresRowPressPaint(row: Element): boolean {
-    const rules = rulesFor(row, style =>
-      style.getPropertyValue('--_checkbox-row-press-paint'),
+    const declared = classesOf(row).filter(name =>
+      name.includes('--_checkbox-row-press-paint'),
     );
-    const rest = rules.filter(
-      rule =>
-        rule.conditions.length === 0 &&
-        !rule.selector.includes('data-astryx-press'),
+    const rest = declared.filter(name =>
+      name.includes('[--_checkbox-row-press-paint:none]'),
     );
-    const pressed = rules.filter(rule =>
-      rule.value.includes('var(--_press-paint-image)'),
+    const pressed = declared.filter(name =>
+      name.includes('var(--_press-paint-image)'),
     );
     return (
       rest.length > 0 &&
-      rest.every(rule => rule.value === 'none') &&
       pressed.length > 0 &&
-      pressed.every(
-        rule =>
-          /^\.[\w-]+(?:\.[\w-]+)*:is\(\[data-astryx-press="(?:on|fading)"\]\)(?::not\(#\\#\))*$/.test(
-            rule.selector,
-          ) &&
-          !rule.conditions.some(condition => condition.includes('pointer')),
-      )
+      pressed.length + rest.length === declared.length &&
+      pressed.every(name => /\[&\[data-astryx-press=(on|fading)\]\]/.test(name))
     );
   }
 

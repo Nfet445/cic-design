@@ -29,7 +29,7 @@ import {themeProps} from '../utils/themeProps';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {
   focusOwnerProps,
-  focusWithinOwner,
+  focusOwnerRingClassName,
 } from '../privateAttributes/focusOwner.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {tw} from '../utils/tw';
@@ -357,11 +357,7 @@ export function Token({
           }),
           // Rings for the token's own button or link only; the remove button
           // rings itself.
-          stylex.props(
-            focusWithinOwner,
-            interactionOverlayStyles.backgroundImage,
-            xstyle,
-          ),
+          stylex.props(interactionOverlayStyles.backgroundImage, xstyle),
           tw(
             tokenClassName({
               size,
@@ -369,6 +365,7 @@ export function Token({
               isInteractive: true,
               isDisabled,
             }),
+            focusOwnerRingClassName,
             className,
           ),
           style,
@@ -415,11 +412,7 @@ export function Token({
           }),
           // Rings for the token's own button or link only; the remove button
           // rings itself.
-          stylex.props(
-            focusWithinOwner,
-            interactionOverlayStyles.backgroundImage,
-            xstyle,
-          ),
+          stylex.props(interactionOverlayStyles.backgroundImage, xstyle),
           tw(
             tokenClassName({
               size,
@@ -427,6 +420,7 @@ export function Token({
               isInteractive: true,
               isDisabled,
             }),
+            focusOwnerRingClassName,
             className,
           ),
           style,

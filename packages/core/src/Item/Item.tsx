@@ -87,7 +87,7 @@ import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {
   focusOwnerGroupProps,
   focusOwnerProps,
-  focusWithinOwner,
+  focusOwnerRingClassName,
 } from '../privateAttributes/focusOwner.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {rowPressLayerStyles} from '../privateAttributes/press.stylex';
@@ -847,7 +847,7 @@ export function Item({
         // The row rings only for its own button or link. In delegation mode it
         // rings for the nested control. Other controls ring themselves.
         stylex.props(
-          isDelegate ? focusOutlineStyles.focusWithin : focusWithinOwner,
+          isDelegate ? focusOutlineStyles.focusWithin : null,
           // A row with a state fill keeps the fill as its background colour.
           // Its overlay paints as an image layer over the fill.
           isInteractive &&
@@ -880,6 +880,7 @@ export function Item({
             hasParentRole,
             isLinkRoot,
           }),
+          !isDelegate && focusOwnerRingClassName,
           className,
         ),
         style,

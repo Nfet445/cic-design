@@ -25,7 +25,8 @@ import {CheckboxInput} from '../CheckboxInput/CheckboxInput';
 import type {CheckboxInputProps} from '../CheckboxInput/CheckboxInput';
 import type {InputStatus} from '../Field/types';
 import {CheckboxRowPressContext} from '../CheckboxInput/CheckboxRowPressContext';
-import {rowPressPaintStyles} from '../privateAttributes/press.stylex';
+import {rowPressPaintCheckboxRowClassName} from '../privateAttributes/press.stylex';
+import {tw} from '../utils/tw';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {ListItem} from '../List/ListItem';
 import {ListContext} from '../List/ListContext';
@@ -362,8 +363,6 @@ export function CheckboxListItem({
       aria-busy={isBusy || undefined}
       xstyle={
         [
-          // The row's own press paint, which the layer over its box reads.
-          rowOwnsPress && rowPressPaintStyles.checkboxRow,
           // Item's row layer drops the strength's release, and the box paints
           // at that strength. So the row brings the release back, and the box
           // fades with the row.
@@ -371,10 +370,11 @@ export function CheckboxListItem({
           xstyle,
         ] as StyleXStyles
       }
-      className={checkboxListItemClassName({
-        isSelected: isCheckedRow,
-        className,
-      })}
+      className={tw(
+        checkboxListItemClassName({isSelected: isCheckedRow, className}),
+        // The row's own press paint, which the layer over its box reads.
+        rowOwnsPress && rowPressPaintCheckboxRowClassName,
+      )}
       style={style}
       startContent={
         // Only the row's own checkbox: a checkbox placed in the row's content
