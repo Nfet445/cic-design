@@ -16,6 +16,7 @@ import {cleanup, render, screen} from '@testing-library/react';
 import {createSwipe} from '../Swipe/createSwipe';
 import userEvent from '@testing-library/user-event';
 import {rulesDeclaredFor} from '../__tests__/pressState';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {swipeLayerLoaded} from '../Item/__tests__/swipeLayerLoaded';
 
 /**
@@ -334,6 +335,8 @@ describe('List', () => {
   }
 
   const ZERO_INSET = /--_item-inset-inline:\s*0(px)?\s*;/;
+  /** The item's own inset, a class the row always carries. */
+  const DEFAULT_INSET_CLASS = '[--_item-inset-inline:var(--spacing-2)]';
   const LIST_REACH = [
     'margin-inline-start:calc(-1*var(--container-padding-inline-start,0px))',
     'margin-inline-end:calc(-1*var(--container-padding-inline-end,0px))',
@@ -368,8 +371,10 @@ describe('List', () => {
     const {ul, items} = renderEdge({});
     for (const item of items) {
       expect(item.className).not.toMatch(/edge(Flush|Outset|Bleed)/);
-      expect(insetDeclarations(item)).toHaveLength(1);
-      expect(insetDeclarations(item)[0]).not.toMatch(ZERO_INSET);
+      expectClassSet(item, {includes: [DEFAULT_INSET_CLASS]});
+      expect(insetDeclarations(item).some(rule => ZERO_INSET.test(rule))).toBe(
+        false,
+      );
     }
     expect(ul.className).not.toContain('reachesContainerPadding');
     expect(edgeContext(ul)).toBe('padded');
@@ -426,7 +431,10 @@ describe('List', () => {
       expect(css).not.toContain(
         'margin-inline-end:max(var(--container-padding-inline-start',
       );
-      expect(insetDeclarations(item)[0]).not.toMatch(ZERO_INSET);
+      expect(insetDeclarations(item).some(rule => ZERO_INSET.test(rule))).toBe(
+        false,
+      );
+      expectClassSet(item, {includes: [DEFAULT_INSET_CLASS]});
     }
   });
 

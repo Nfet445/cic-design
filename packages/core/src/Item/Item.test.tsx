@@ -21,6 +21,11 @@ import {
 } from 'vitest';
 import {act, cleanup, fireEvent, render, screen} from '@testing-library/react';
 import {layerOnlyWhilePressed, rulesDeclaredFor} from '../__tests__/pressState';
+import {
+  classesOf,
+  expectClassSet,
+  expectVariable,
+} from '../__tests__/classNameAssertions';
 import {swipeLayerLoaded} from './__tests__/swipeLayerLoaded';
 import userEvent from '@testing-library/user-event';
 import {LinkProvider} from '../Link/LinkProvider';
@@ -925,17 +930,6 @@ describe('Item', () => {
   });
 
   it('truncates the label and description to the lines it is given', () => {
-    // The clamp count reaches CSS through a custom property, so resolve it.
-    const lineClamp = (element: HTMLElement) => {
-      const value = getComputedStyle(element)
-        .getPropertyValue('-webkit-line-clamp')
-        .trim();
-      const variable = /^var\((--[^),]+)\)$/.exec(value)?.[1];
-      return variable == null
-        ? value
-        : getComputedStyle(element).getPropertyValue(variable).trim() ||
-            element.style.getPropertyValue(variable).trim();
-    };
     // A node label wraps by default, so one line comes from labelLines.
     const {rerender} = render(
       <Item
@@ -946,10 +940,12 @@ describe('Item', () => {
       />,
     );
     for (const text of ['A long label', 'A long description']) {
-      const style = getComputedStyle(screen.getByText(text).parentElement!);
-      expect(style.overflow).toBe('hidden');
-      expect(style.textOverflow).toBe('ellipsis');
-      expect(style.whiteSpace).toBe('nowrap');
+      const line = screen.getByText(text).parentElement!;
+      expectClassSet(line, {
+        includes: ['overflow-hidden', 'text-ellipsis', 'whitespace-nowrap'],
+        excludes: ['[-webkit-line-clamp:var(--astryx-item-line-clamp)]'],
+      });
+      expectVariable(line, '--astryx-item-line-clamp', '');
     }
     rerender(
       <Item
@@ -962,13 +958,19 @@ describe('Item', () => {
     const label = screen.getByText('A long label');
     const description = screen.getByText('A long description');
     for (const element of [label, description]) {
-      const style = getComputedStyle(element);
-      expect(style.overflow).toBe('hidden');
-      expect(style.display).toBe('-webkit-box');
-      expect(style.whiteSpace).not.toBe('nowrap');
+      expectClassSet(element, {
+        includes: [
+          'overflow-hidden',
+          '[display:-webkit-box]',
+          '[-webkit-box-orient:vertical]',
+          '[-webkit-line-clamp:var(--astryx-item-line-clamp)]',
+        ],
+        excludes: ['whitespace-nowrap'],
+      });
     }
-    expect(lineClamp(label)).toBe('3');
-    expect(lineClamp(description)).toBe('2');
+    // The clamp count is the variable the clamp class reads.
+    expectVariable(label, '--astryx-item-line-clamp', '3');
+    expectVariable(description, '--astryx-item-line-clamp', '2');
   });
 
   it('reflects highlighted, selected, and disabled on the item theme target', () => {
@@ -1011,15 +1013,15 @@ describe('Item', () => {
 
   it('aligns the row on first baselines only under first-line', () => {
     const {rerender} = render(<Item label="Item" data-testid="item" />);
-    const declares = (value: string) =>
-      rulesDeclaredFor(screen.getByTestId('item')).some(rule =>
-        rule.includes(`align-items: ${value}`),
-      );
-    expect(declares('baseline')).toBe(false);
+    const declares = (className: string) =>
+      classesOf(screen.getByTestId('item')).includes(className);
+    expect(declares('items-baseline')).toBe(false);
     rerender(<Item label="Item" align="start" data-testid="item" />);
-    expect(declares('baseline')).toBe(false);
+    expect(declares('items-baseline')).toBe(false);
+    expect(declares('items-start')).toBe(true);
     rerender(<Item label="Item" align="first-line" data-testid="item" />);
-    expect(declares('baseline')).toBe(true);
+    expect(declares('items-baseline')).toBe(true);
+    expect(declares('items-start')).toBe(false);
   });
 
   it('gives each first-line slot a strut with no accessible text', () => {
@@ -1033,10 +1035,11 @@ describe('Item', () => {
     );
     for (const id of ['start', 'end']) {
       const slot = screen.getByTestId(id).parentElement!;
-      const before = rulesDeclaredFor(slot).filter(rule =>
-        rule.slice(0, rule.indexOf('{')).includes('::before'),
+      const before = classesOf(slot).filter(className =>
+        className.startsWith('before:content-'),
       );
-      expect(before.some(rule => rule.includes('/ ""'))).toBe(true);
+      // A zero-width space, with `''` as its accessible alternative.
+      expect(before).toContain("before:content-['​'_/_'']");
     }
   });
 
@@ -1045,8 +1048,8 @@ describe('Item', () => {
       <Item label="Item" startContent={<span data-testid="start">S</span>} />,
     );
     const hasStrut = () =>
-      rulesDeclaredFor(screen.getByTestId('start').parentElement!).some(rule =>
-        rule.slice(0, rule.indexOf('{')).includes('::before'),
+      classesOf(screen.getByTestId('start').parentElement!).some(className =>
+        className.startsWith('before:'),
       );
     expect(hasStrut()).toBe(false);
     rerender(
