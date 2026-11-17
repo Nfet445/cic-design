@@ -39,9 +39,7 @@ import {
   use,
   type Ref,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '@stylexjs/stylex';
-import {colorVars, durationVars, easeVars} from '../theme/tokens.stylex';
 import type {Elevation, SizeValue, SpacingStep} from '../utils/types';
 import {isImeKeyEvent, mergeProps} from '../utils';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
@@ -54,6 +52,15 @@ import {themeProps} from '../utils/themeProps';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
+import {tw} from '../utils/tw';
+import {
+  selectableCardDisabledClassName,
+  selectableCardInputClassName,
+  selectableCardInteractiveClassName,
+  selectableCardOverlayClassName,
+  selectableCardRingClassName,
+} from './selectableCardClasses';
+import {selectableCardSelectionStyles} from './selectableCardSelection.stylex';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {SelectableCardInputContext} from './selectableCardInput';
@@ -61,238 +68,49 @@ import {SelectableCardInputContext} from './selectableCardInput';
 // Styles — selection + interaction; Card handles the rest
 // =============================================================================
 
-// The touch press's paint, declared by the shared overlay styles on the
-// element the controller writes to (`pressedAlpha`) at the press's strength,
-// 1 while on and 1 → 0 over the release, and inherited resolved by the
-// `::after` that paints it. See interactionOverlay.stylex.ts.
-const pressedOverlayImage = 'var(--_press-paint-image)';
-/** Written by the press controller while it paints a press. */
-const PRESSED_ON = '[data-astryx-press="on"]';
-/** Written by the press controller for the press's release. */
-const PRESSED_FADING = '[data-astryx-press="fading"]';
-
-const styles = stylex.create({
-  interactive: {
-    // Declared here, on the element that carries the `astryx-selectable-card`
-    // target, so a theme has something to override — the ring for a variant
-    // only the theme knows about reads it (see selectedUnknown).
-    '--selectable-card-ring-color': colorVars['--color-accent'],
-    position: 'relative',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    transitionProperty: {
-      default: 'box-shadow, border-color',
-      // Under reduced motion a selection's ring and border change at once.
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-        'opacity',
-    },
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      // Under reduced motion a fine pointer gets no transition. A touch
-      // screen's opacity fade, such as a disabled card's dimming, takes
-      // 200 ms at most.
-      '@media (prefers-reduced-motion: reduce) and (not (pointer: coarse))':
-        '0s',
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)': `min(${durationVars['--duration-exit']}, 200ms)`,
-    },
-    transitionTimingFunction: {
-      default: easeVars['--ease-standard'],
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-        easeVars['--ease-exit'],
-    },
-  },
-  // Hover and pressed overlay. Hover is guarded by @media (hover: hover) so
-  // touch devices don't show a stuck hover state; the press has two arms,
-  // `:active` for a mouse and `data-astryx-press` for the press controller.
-  overlay: {
-    // The `::after` layer paints the hover and mouse states as its colour,
-    // `--_press-overlay`, which their arms set on the element itself (same
-    // enabled guard as the shared overlay utility). The press the controller
-    // paints (a finger's, and on a touch-first device a mouse's or a key's)
-    // is the same layer's image, keyed on the `data-astryx-press` attribute
-    // the controller writes. Every arm of that press is a plain property of
-    // the `::after`, which outranks the layer's own defaults in a layered
-    // stylesheet and a flat one alike. A custom property's attribute arm
-    // does not: a layered build emits the property's default outside the
-    // priority layers its attribute arms land in, and the default wins.
-    '--_press-overlay': {
-      default: 'transparent',
-      ':where(:not(:disabled,[aria-disabled="true"]))': {
-        default: null,
-        ':active': {
-          default: colorVars['--color-overlay-pressed'],
-          '@media (pointer: coarse)': 'transparent',
-        },
-        '@media (hover: hover)': {
-          default: null,
-          ':hover:where(:not(:disabled,[aria-disabled="true"]))':
-            colorVars['--color-overlay-hover'],
-          ':active': colorVars['--color-overlay-pressed'],
-        },
-      },
-    },
-    '::after': {
-      content: '""',
-      position: 'absolute',
-      inset: 0,
-      borderRadius: 'inherit',
-      pointerEvents: 'none',
-      // A press the controller paints shows on its first frame and fades on
-      // its strength's own animation, so the colour it replaces drops out at
-      // once rather than crossfading: no transition while it paints. The
-      // mouse states keep the fast fade.
-      transitionProperty: {
-        default: 'background-color',
-        [PRESSED_ON]: 'none',
-        [PRESSED_FADING]: 'none',
-        // Under reduced motion a colour changes at once. Only opacity may
-        // still fade on a touch screen.
-        '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-          'opacity',
-      },
-      transitionDuration: {
-        default: durationVars['--duration-fast'],
-        // Under reduced motion a fine pointer gets no transition. A touch
-        // screen's fade keeps the exit tokens, within 200 ms.
-        '@media (prefers-reduced-motion: reduce) and (not (pointer: coarse))':
-          '0s',
-        // The 200 ms bound copies reducedMotionFadeConsts.duration. That
-        // module is internal, and a swizzled component imports only exported
-        // paths. reducedMotionValues.test.ts keeps the copies equal.
-        '@media (prefers-reduced-motion: reduce) and (pointer: coarse)': `min(${durationVars['--duration-exit']}, 200ms)`,
-      },
-      transitionTimingFunction: {
-        default: easeVars['--ease-standard'],
-        '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-          easeVars['--ease-exit'],
-      },
-      // While the controller paints, the colour yields to the image: a
-      // touchscreen beside a fine pointer still matches `:active` under a
-      // finger, and the press would otherwise paint twice.
-      backgroundColor: {
-        default: 'var(--_press-overlay)',
-        [PRESSED_ON]: 'transparent',
-        [PRESSED_FADING]: 'transparent',
-      },
-      // The press at its strength, which the card's `pressedAlpha` arms own:
-      // 1 on the first frame of a believed press, then 1 → 0 over the
-      // release. The `::after` inherits the resolved paint and repaints with
-      // it on every frame of the fade. Read only inside this element's own
-      // arms, so a pressed ancestor's strength never paints here.
-      backgroundImage: {
-        default: null,
-        [PRESSED_ON]: pressedOverlayImage,
-        [PRESSED_FADING]: pressedOverlayImage,
-      },
-    },
-  },
-  disabled: {
-    cursor: 'default',
-    opacity: 0.5,
-  },
-  srOnly: {
-    position: 'absolute',
-    width: '1px',
-    height: '1px',
-    padding: 0,
-    margin: '-1px',
-    overflow: 'hidden',
-    clip: 'rect(0, 0, 0, 0)',
-    whiteSpace: 'nowrap',
-    borderWidth: 0,
-  },
-  // Selection indicator — an inset ring drawn via the card's --_card-ring
-  // shadow slot (zero layout jitter) plus a borderColor change on the card's
-  // own border for a cohesive look. Routing the ring through --_card-ring
-  // (rather than box-shadow directly) lets it compose with the card's
-  // elevation instead of clobbering it.
-  selected: {
-    borderColor: colorVars['--color-accent'],
-    '--_card-ring': `inset 0 0 0 2px ${colorVars['--color-accent']}`,
-  },
-  selectedBlue: {
-    borderColor: colorVars['--color-border-blue'],
-    '--_card-ring': `inset 0 0 0 2px ${colorVars['--color-border-blue']}`,
-  },
-  selectedCyan: {
-    borderColor: colorVars['--color-border-cyan'],
-    '--_card-ring': `inset 0 0 0 2px ${colorVars['--color-border-cyan']}`,
-  },
-  selectedGray: {
-    borderColor: colorVars['--color-border-gray'],
-    '--_card-ring': `inset 0 0 0 2px ${colorVars['--color-border-gray']}`,
-  },
-  selectedGreen: {
-    borderColor: colorVars['--color-border-green'],
-    '--_card-ring': `inset 0 0 0 2px ${colorVars['--color-border-green']}`,
-  },
-  selectedOrange: {
-    borderColor: colorVars['--color-border-orange'],
-    '--_card-ring': `inset 0 0 0 2px ${colorVars['--color-border-orange']}`,
-  },
-  selectedPink: {
-    borderColor: colorVars['--color-border-pink'],
-    '--_card-ring': `inset 0 0 0 2px ${colorVars['--color-border-pink']}`,
-  },
-  selectedPurple: {
-    borderColor: colorVars['--color-border-purple'],
-    '--_card-ring': `inset 0 0 0 2px ${colorVars['--color-border-purple']}`,
-  },
-  selectedRed: {
-    borderColor: colorVars['--color-border-red'],
-    '--_card-ring': `inset 0 0 0 2px ${colorVars['--color-border-red']}`,
-  },
-  selectedTeal: {
-    borderColor: colorVars['--color-border-teal'],
-    '--_card-ring': `inset 0 0 0 2px ${colorVars['--color-border-teal']}`,
-  },
-  selectedYellow: {
-    borderColor: colorVars['--color-border-yellow'],
-    '--_card-ring': `inset 0 0 0 2px ${colorVars['--color-border-yellow']}`,
-  },
-  // A theme-added variant paints with colours the component cannot know, so no
-  // token is guaranteed to contrast with it — an accent ring disappears against
-  // an accent fill, and an outset one is no better. The theme that supplied the
-  // fill is the only thing that can pick a ring, so it gets a lever beside it;
-  // the var defaults to the accent, keeping every built-in unchanged.
-  selectedUnknown: {
-    '--_card-ring': 'inset 0 0 0 2px var(--selectable-card-ring-color)',
-  },
-});
-
-const selectedStyleForVariant = (variant: CardVariant) => {
+/**
+ * A selected card shows an accent border and an inset accent ring, drawn
+ * through the card's own border and shadow slots. The ring class reads one key
+ * per built-in variant; a variant the theme added falls back to the unknown
+ * entry, which paints with the lever the theme sets beside it.
+ */
+const selectedKeyForVariant = (variant: CardVariant): string => {
   switch (variant) {
     case 'default':
     case 'transparent':
     case 'muted':
-      return styles.selected;
+      return 'accent';
     case 'blue':
-      return styles.selectedBlue;
     case 'cyan':
-      return styles.selectedCyan;
     case 'gray':
-      return styles.selectedGray;
     case 'green':
-      return styles.selectedGreen;
     case 'orange':
-      return styles.selectedOrange;
     case 'pink':
-      return styles.selectedPink;
     case 'purple':
-      return styles.selectedPurple;
     case 'red':
-      return styles.selectedRed;
     case 'teal':
-      return styles.selectedTeal;
     case 'yellow':
-      return styles.selectedYellow;
+      return variant;
     // CardVariant is open — a theme can add a variant this switch has never
     // seen, and it still has to look selected.
     default:
-      return styles.selectedUnknown;
+      return 'unknown';
   }
+};
+
+const selectedBorderColor: Record<string, string> = {
+  accent: 'var(--color-accent)',
+  blue: 'var(--color-border-blue)',
+  cyan: 'var(--color-border-cyan)',
+  gray: 'var(--color-border-gray)',
+  green: 'var(--color-border-green)',
+  orange: 'var(--color-border-orange)',
+  pink: 'var(--color-border-pink)',
+  purple: 'var(--color-border-purple)',
+  red: 'var(--color-border-red)',
+  teal: 'var(--color-border-teal)',
+  yellow: 'var(--color-border-yellow)',
+  unknown: 'var(--selectable-card-ring-color)',
 };
 
 // =============================================================================
@@ -450,6 +268,7 @@ export function SelectableCard({
   ...props
 }: SelectableCardProps) {
   const pressable = usePressFeedback();
+  const selectedKey = selectedKeyForVariant(variant);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const interactiveRef = useRef<HTMLInputElement | null>(null);
 
@@ -553,18 +372,23 @@ export function SelectableCard({
         classNameProp,
         style,
       )}
-      xstyle={
-        [
-          styles.interactive,
-          isSelected && selectedStyleForVariant(variant),
-          !isDisabled && styles.overlay,
-          // The touch press's strength and release, on the element the
-          // controller writes to; the `::after` above paints off it.
-          !isDisabled && interactionOverlayStyles.pressedAlpha,
-          isDisabled && styles.disabled,
-          xstyleProp,
-        ] as unknown as StyleXStyles
-      }
+      className={tw(
+        selectableCardInteractiveClassName,
+        isSelected && selectableCardRingClassName[selectedKey],
+        !isDisabled && selectableCardOverlayClassName,
+        isDisabled && selectableCardDisabledClassName,
+        classNameProp,
+      )}
+      xstyle={[
+        isSelected &&
+          selectableCardSelectionStyles.selected(
+            selectedBorderColor[selectedKey],
+          ),
+        // The touch press's strength and release, on the element the
+        // controller writes to; the `::after` above paints off it.
+        !isDisabled && interactionOverlayStyles.pressedAlpha,
+        xstyleProp,
+      ]}
       onClick={!isDisabled ? composedOnClick : undefined}
       onMouseUp={!isDisabled ? composedOnMouseUp : undefined}
       onPointerDown={
@@ -605,7 +429,7 @@ export function SelectableCard({
           requestChange();
         }}
         onKeyDown={handleKeyDown}
-        {...stylex.props(styles.srOnly)}
+        className={selectableCardInputClassName}
       />
       {children}
     </Card>
