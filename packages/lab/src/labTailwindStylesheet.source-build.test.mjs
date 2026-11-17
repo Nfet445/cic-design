@@ -16,6 +16,7 @@ import {fileURLToPath} from 'node:url';
 
 import {buildTailwindStylesheet} from '../../build/src/tailwind-stylesheet.mjs';
 import {describeTailwindStylesheet} from '../../core/src/__tests__/classNameAssertions';
+import * as chatEmojiPickerClasses from './Chat/chatEmojiPickerClasses';
 import * as chatReactionBarClasses from './Chat/chatReactionBarClasses';
 import * as chatReasoningClasses from './ChatReasoning/chatReasoningClasses';
 import * as chatTypingIndicatorClasses from './Chat/chatTypingIndicatorClasses';
@@ -44,6 +45,7 @@ function labClassNames() {
     }
   };
   for (const map of [
+    chatEmojiPickerClasses,
     chatReactionBarClasses,
     chatReasoningClasses,
     chatTypingIndicatorClasses,
