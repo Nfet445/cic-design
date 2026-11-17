@@ -9,7 +9,7 @@
  * what it did. Shared core discovery, component listing and the module graph
  * (which modules the copy holds and how each import reads) come from
  * api/swizzle/_adapter.mjs; owner resolution, where each file lands, reuse of
- * existing helpers, StyleX detection and maintainer feedback are here. Errors
+ * existing helpers, the stylesheet the copy needs and maintainer feedback are here. Errors
  * throw AstryxError (stable code + suggestions). All human prose /
  * package-manager prefixing lives in the CLI renderer.
  */
@@ -570,7 +570,9 @@ export async function swizzleCopy(component, options = {}) {
     outputDir: relOutput,
     filesCopied: copied,
     files: outputs.map(o => toPosix(path.relative(outputDir, o.dest))),
-    usesStyleX: outputs.some(o => o.content.includes('@stylexjs/stylex')),
+    // The class maps travel with the copied source; Core ships the sheet that
+    // carries their rules, so the copy names one import either way.
+    stylesheet: '@astryxdesign/core/astryx-tailwind.css',
     dependencies: plan.dependencies,
   };
   data.marker = marksOutputBase
