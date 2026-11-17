@@ -78,14 +78,33 @@ import {useLocale} from '../i18n/useLocale';
 import {useCalendarSystem} from '../i18n/useCalendarSystem';
 import {SheetConfirmation} from '../internal/SheetConfirmation';
 import {useDismissSearchOnTouchDrag} from '../internal/useDismissSearchOnTouchDrag';
-import {
-  colorVars,
-  fontWeightVars,
-  radiusVars,
-  spacingVars,
-} from '../theme/tokens.stylex';
 import {isImeKeyEvent} from '../utils/ime';
 import {rtlStyles} from '../utils/rtlStyles';
+import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {
+  powerSearchSheetBodyClassName,
+  powerSearchSheetClassName,
+  powerSearchSheetControlSectionClassName,
+  powerSearchSheetEditorInputClassName,
+  powerSearchSheetEmptyClassName,
+  powerSearchSheetEmptyStateClassName,
+  powerSearchSheetFixedFooterClassName,
+  powerSearchSheetFooterClassName,
+  powerSearchSheetFooterEqualActionClassName,
+  powerSearchSheetFooterSoleActionClassName,
+  powerSearchSheetHeaderClassName,
+  powerSearchSheetHeaderRowClassName,
+  powerSearchSheetHeaderScrollsToTopClassName,
+  powerSearchSheetHeaderTextClassName,
+  powerSearchSheetNestedEditorContainerClassName,
+  powerSearchSheetRowValueClassName,
+  powerSearchSheetScrollContentClassName,
+  powerSearchSheetScrollViewportClassName,
+  powerSearchSheetTouchActionClassName,
+  powerSearchSheetTouchHitAreaClassName,
+  powerSearchSheetWithFixedFooterClassName,
+} from './powerSearchSheetClasses';
 import {formatTokenValueText} from './formatTokenValue';
 
 function resolveRelativeDateLabel(
@@ -343,169 +362,6 @@ function PlusIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-const styles = stylex.create({
-  // 44px touch targets for every sheet action, without resizing inputs.
-  touchAction: {
-    minHeight: 44,
-  },
-  // A sheet action drawn smaller than 44px keeps its drawn size and grows
-  // only its hit area to 44px, under a coarse pointer. The custom properties
-  // carry the media condition because StyleX allows plain values inside a
-  // pseudo-element. On a fine pointer the overlay is not generated, so it
-  // never takes hover from the action's own content.
-  touchHitArea: {
-    '--_power-search-sheet-hit-inset': {
-      default: '0px',
-      '@media (pointer: coarse)': 'min(0px, calc((100% - 44px) / 2))',
-    },
-    '--_power-search-sheet-hit-content': {
-      default: 'none',
-      '@media (pointer: coarse)': '""',
-    },
-    '::after': {
-      content: 'var(--_power-search-sheet-hit-content)',
-      position: 'absolute',
-      inset: 'var(--_power-search-sheet-hit-inset)',
-    },
-  },
-  // Scopes the sticky header's and footer's layer to this sheet's content:
-  // the List rows are `position: relative` and come after the header, so
-  // without a layer of its own the header is painted under the rows that
-  // scroll beneath it. Isolating the content keeps that z-index inside it, so
-  // the sheet's grab handle (z-index 1 on the panel, outside this wrapper)
-  // still paints above.
-  sheet: {
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: '100%',
-    isolation: 'isolate',
-  },
-  // The Filters and Add filter sheets fill the panel and scroll only their
-  // viewport, so the header and footer stay fixed.
-  sheetWithFixedFooter: {
-    height: '100%',
-    overflow: 'hidden',
-  },
-  header: {
-    position: 'sticky',
-    insetBlockStart: 0,
-    // Above the rows that scroll under it, within the isolated sheet content.
-    zIndex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-3'],
-    paddingBlockEnd: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-    backgroundColor: colorVars['--color-background-surface'],
-  },
-  // The value sheet scrolls its whole content, so its sticky header can reach
-  // the sheet's top. The header rises into the band that the sheet keeps
-  // under its grab bar and keeps its own padding there, so it clears the bar
-  // at rest and while stuck. The Filters and Add filter sheets do not scroll
-  // their header, and the band alone clears the bar.
-  headerScrollsToTop: {
-    marginBlockStart: `calc(-1 * ${spacingVars['--spacing-6']})`,
-    paddingBlockStart: spacingVars['--spacing-6'],
-  },
-  headerRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-  },
-  headerText: {
-    minWidth: 0,
-    flexGrow: 1,
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  // The body pads the sheet's content and publishes that inline padding as
-  // the container padding its lists read: with `edge="bleed"` their rows run
-  // edge to edge (full-bleed dividers) while row text keeps this inset, so
-  // row text, group headings and the sheet title share one edge.
-  body: {
-    flexGrow: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-4'],
-    paddingInline: spacingVars['--spacing-4'],
-    paddingBlockEnd: spacingVars['--spacing-4'],
-  },
-  // The viewport reaches the sheet edge, so its scrollbar does too; the
-  // content inside it carries the body's padding.
-  scrollViewport: {
-    flexGrow: 1,
-    minHeight: 0,
-    overflowY: 'auto',
-    overscrollBehaviorY: 'contain',
-  },
-  scrollContent: {
-    minHeight: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-4'],
-    paddingInline: spacingVars['--spacing-4'],
-    paddingBlockEnd: spacingVars['--spacing-4'],
-  },
-  footer: {
-    position: 'sticky',
-    insetBlockEnd: 0,
-    zIndex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-    backgroundColor: colorVars['--color-background-surface'],
-  },
-  fixedFooter: {
-    position: 'relative',
-    insetBlockEnd: 'auto',
-    flexShrink: 0,
-  },
-  footerEqualAction: {
-    flexGrow: 1,
-    flexBasis: 0,
-    minWidth: 0,
-    minHeight: 44,
-  },
-  footerSoleAction: {
-    flexGrow: 1,
-  },
-  empty: {
-    paddingBlock: spacingVars['--spacing-6'],
-    textAlign: 'center',
-  },
-  emptyState: {
-    flexGrow: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  // With more than one section in the value step, each section is a muted
-  // container.
-  controlSection: {
-    padding: spacingVars['--spacing-3'],
-    borderRadius: radiusVars['--radius-container'],
-    backgroundColor: colorVars['--color-background-muted'],
-  },
-  // The built-in nested editor's sub-filter rows collapse from one line to
-  // wrapped lines under a container query on the popover's own container;
-  // the sheet renders no such container, so the editor's tree root is the
-  // query container here, and at phone widths the rows wrap instead of
-  // running past the sheet's edge.
-  nestedEditorContainer: {
-    containerType: 'inline-size',
-    overflow: 'hidden',
-  },
-  rowValue: {
-    fontWeight: fontWeightVars['--font-weight-bold'],
-  },
-  editorInput: {
-    paddingBlockStart: spacingVars['--spacing-1'],
-  },
-});
-
 // =============================================================================
 // Draft state
 // =============================================================================
@@ -630,7 +486,7 @@ function SheetEmptyMessage({
   const ref = useRef<HTMLDivElement>(null);
   useAnnounceRenderedText(ref, isShown, occasion);
   return (
-    <div ref={ref} id={id} {...stylex.props(styles.empty)}>
+    <div ref={ref} id={id} className={powerSearchSheetEmptyClassName}>
       <Text type="supporting" color="secondary">
         {message}
       </Text>
@@ -791,7 +647,7 @@ function SheetValueEditor({
     case 'entity_list':
     case 'custom':
       return (
-        <div {...stylex.props(styles.editorInput)}>
+        <div className={powerSearchSheetEditorInputClassName}>
           <PowerSearchValueEditor
             operatorValue={operatorValue}
             filterValue={filterValue}
@@ -1854,7 +1710,7 @@ export function PowerSearchBottomSheet({
       displayLabel = (
         <>
           {before}
-          <span {...stylex.props(styles.rowValue)}>{value}</span>
+          <span className={powerSearchSheetRowValueClassName}>{value}</span>
           {after}
         </>
       );
@@ -1912,15 +1768,17 @@ export function PowerSearchBottomSheet({
       : t('@astryx.powersearch.sheet.addFilter'));
 
   // Every sheet body: padded, and publishing that padding to its lists.
-  const bodyProps = stylex.props(
-    styles.body,
-    containerPaddingInlineVarStyles[4],
+  const bodyProps = mergeProps(
+    powerSearchSheetBodyClassName,
+    stylex.props(containerPaddingInlineVarStyles[4]),
   );
-  const scrollContentProps = stylex.props(
-    styles.scrollContent,
-    containerPaddingInlineVarStyles[4],
+  const scrollContentProps = mergeProps(
+    powerSearchSheetScrollContentClassName,
+    stylex.props(containerPaddingInlineVarStyles[4]),
   );
-  const controlSectionProps = stylex.props(styles.controlSection);
+  const controlSectionProps = {
+    className: powerSearchSheetControlSectionClassName,
+  };
 
   // A vertical touch drag on the Add filter rows moves focus off a focused
   // search to the sheet, so the software keyboard leaves and the rows can be
@@ -2034,7 +1892,7 @@ export function PowerSearchBottomSheet({
         maxMenuItems={maxOperatorMenuItems}
         timezoneID={timezoneID}
         isReadOnly={isEditorDisabled}
-        xstyle={styles.nestedEditorContainer}
+        className={powerSearchSheetNestedEditorContainerClassName}
       />
     ) : (
       <SheetValueEditor
@@ -2064,13 +1922,16 @@ export function PowerSearchBottomSheet({
         <div
           ref={manageSheetRef}
           onFocus={noteSheetFocus('manage')}
-          {...stylex.props(styles.sheet, styles.sheetWithFixedFooter)}>
+          className={tw(
+            powerSearchSheetClassName,
+            powerSearchSheetWithFixedFooterClassName,
+          )}>
           {step === 'manage' && (
             <SheetAnnouncer onAnnounceChange={handleAnnounceChange} />
           )}
-          <div {...stylex.props(styles.header)}>
-            <div {...stylex.props(styles.headerRow)}>
-              <div {...stylex.props(styles.headerText)}>
+          <div className={powerSearchSheetHeaderClassName}>
+            <div className={powerSearchSheetHeaderRowClassName}>
+              <div className={powerSearchSheetHeaderTextClassName}>
                 <Heading level={3}>
                   {t('@astryx.powersearch.sheet.filtersTitle')}
                 </Heading>
@@ -2083,13 +1944,13 @@ export function PowerSearchBottomSheet({
                   isIconOnly
                   variant="secondary"
                   size="md"
-                  xstyle={styles.touchHitArea}
+                  className={powerSearchSheetTouchHitAreaClassName}
                   onClick={openFieldList}
                 />
               )}
             </div>
           </div>
-          <div {...stylex.props(styles.scrollViewport)}>
+          <div className={powerSearchSheetScrollViewportClassName}>
             <div {...scrollContentProps}>
               {filterRows.length === 0 ? (
                 // With no filter the single thing to do is the only visible
@@ -2107,7 +1968,7 @@ export function PowerSearchBottomSheet({
                     )}
                     headingLevel={4}
                     icon={<Icon icon="funnel" size="lg" color="secondary" />}
-                    xstyle={styles.emptyState}
+                    className={powerSearchSheetEmptyStateClassName}
                     actions={
                       isInteractive ? (
                         <Button
@@ -2116,7 +1977,7 @@ export function PowerSearchBottomSheet({
                           icon={<Icon icon={PlusIcon} size="sm" />}
                           variant="primary"
                           size="lg"
-                          xstyle={styles.touchHitArea}
+                          className={powerSearchSheetTouchHitAreaClassName}
                           onClick={openFieldList}
                         />
                       ) : undefined
@@ -2167,7 +2028,7 @@ export function PowerSearchBottomSheet({
                               icon={<Icon icon="close" size="sm" />}
                               variant="ghost"
                               size="md"
-                              xstyle={styles.touchHitArea}
+                              className={powerSearchSheetTouchHitAreaClassName}
                               onClick={event => {
                                 event.stopPropagation();
                                 handleRemoveFilter(row.index);
@@ -2186,14 +2047,18 @@ export function PowerSearchBottomSheet({
               filters: an emptied draft still needs Done to apply the
               removals. */}
           {(filterRows.length > 0 || isDraftDirty) && (
-            <div {...stylex.props(styles.footer, styles.fixedFooter)}>
+            <div
+              className={tw(
+                powerSearchSheetFooterClassName,
+                powerSearchSheetFixedFooterClassName,
+              )}>
               {isClearAllShown && (
                 <Button
                   ref={clearAllButtonRef}
                   label={t('@astryx.powersearch.sheet.clearAll')}
                   variant="secondary"
                   size="lg"
-                  xstyle={styles.footerEqualAction}
+                  className={powerSearchSheetFooterEqualActionClassName}
                   onClick={() => setIsClearConfirmationOpen(true)}
                 />
               )}
@@ -2201,10 +2066,13 @@ export function PowerSearchBottomSheet({
                 label={t('@astryx.powersearch.sheet.done')}
                 variant="primary"
                 size="lg"
-                xstyle={
+                className={
                   isClearAllShown
-                    ? styles.footerEqualAction
-                    : [styles.footerSoleAction, styles.touchHitArea]
+                    ? powerSearchSheetFooterEqualActionClassName
+                    : tw(
+                        powerSearchSheetFooterSoleActionClassName,
+                        powerSearchSheetTouchHitAreaClassName,
+                      )
                 }
                 onClick={commitAndClose}
                 width={isClearAllShown ? undefined : '100%'}
@@ -2225,13 +2093,16 @@ export function PowerSearchBottomSheet({
           ref={fieldsSheetCallbackRef}
           onFocus={noteSheetFocus('fields')}
           onKeyDown={hasContentSearch ? handleContentListKeyDown : undefined}
-          {...stylex.props(styles.sheet, styles.sheetWithFixedFooter)}>
+          className={tw(
+            powerSearchSheetClassName,
+            powerSearchSheetWithFixedFooterClassName,
+          )}>
           {step === 'fields' && (
             <SheetAnnouncer onAnnounceChange={handleAnnounceChange} />
           )}
-          <div {...stylex.props(styles.header)}>
-            <div {...stylex.props(styles.headerRow)}>
-              <div {...stylex.props(styles.headerText)}>
+          <div className={powerSearchSheetHeaderClassName}>
+            <div className={powerSearchSheetHeaderRowClassName}>
+              <div className={powerSearchSheetHeaderTextClassName}>
                 <Heading level={3}>
                   {t('@astryx.powersearch.sheet.addFilter')}
                 </Heading>
@@ -2282,7 +2153,7 @@ export function PowerSearchBottomSheet({
             ) : null}
           </div>
           <div
-            {...stylex.props(styles.scrollViewport)}
+            className={powerSearchSheetScrollViewportClassName}
             {...fieldPickerDragProps}>
             <div {...scrollContentProps}>
               {hasContentSearch ? (
@@ -2320,7 +2191,7 @@ export function PowerSearchBottomSheet({
                         )}
                         headingLevel={4}
                         isCompact
-                        xstyle={styles.emptyState}
+                        className={powerSearchSheetEmptyStateClassName}
                       />
                     )}
                   </div>
@@ -2344,7 +2215,7 @@ export function PowerSearchBottomSheet({
                     )}
                     headingLevel={4}
                     isCompact
-                    xstyle={styles.emptyState}
+                    className={powerSearchSheetEmptyStateClassName}
                   />
                 )
               ) : (
@@ -2395,12 +2266,16 @@ export function PowerSearchBottomSheet({
             </div>
           </div>
           {isFieldPickerDirectEntry && (
-            <div {...stylex.props(styles.footer, styles.fixedFooter)}>
+            <div
+              className={tw(
+                powerSearchSheetFooterClassName,
+                powerSearchSheetFixedFooterClassName,
+              )}>
               <Button
                 label={t('@astryx.powersearch.sheet.done')}
                 variant="primary"
                 width="100%"
-                xstyle={styles.touchAction}
+                className={powerSearchSheetTouchActionClassName}
                 onClick={commitAndClose}
               />
             </div>
@@ -2416,10 +2291,14 @@ export function PowerSearchBottomSheet({
         height="tall"
         padding={0}
         purpose="info">
-        <div {...stylex.props(styles.sheet)}>
-          <div {...stylex.props(styles.header, styles.headerScrollsToTop)}>
-            <div {...stylex.props(styles.headerRow)}>
-              <div {...stylex.props(styles.headerText)}>
+        <div className={powerSearchSheetClassName}>
+          <div
+            className={tw(
+              powerSearchSheetHeaderClassName,
+              powerSearchSheetHeaderScrollsToTopClassName,
+            )}>
+            <div className={powerSearchSheetHeaderRowClassName}>
+              <div className={powerSearchSheetHeaderTextClassName}>
                 <Heading level={3} maxLines={1}>
                   {editorTitle}
                 </Heading>
@@ -2493,14 +2372,17 @@ export function PowerSearchBottomSheet({
                   )
                 )}
               </div>
-              <div {...stylex.props(styles.footer)}>
+              <div className={powerSearchSheetFooterClassName}>
                 {isReadOnly ? (
                   <Button
                     ref={cancelButtonRef}
                     label={t('@astryx.powersearch.editor.cancel')}
                     variant="secondary"
                     width="100%"
-                    xstyle={[styles.footerSoleAction, styles.touchHitArea]}
+                    className={tw(
+                      powerSearchSheetFooterSoleActionClassName,
+                      powerSearchSheetTouchHitAreaClassName,
+                    )}
                     onClick={returnFromValue}
                   />
                 ) : (
@@ -2510,7 +2392,7 @@ export function PowerSearchBottomSheet({
                       label={t('@astryx.powersearch.editor.cancel')}
                       variant="secondary"
                       size="lg"
-                      xstyle={styles.footerEqualAction}
+                      className={powerSearchSheetFooterEqualActionClassName}
                       onClick={returnFromValue}
                     />
                     {isDraftRenderable && (
@@ -2519,7 +2401,7 @@ export function PowerSearchBottomSheet({
                         variant="primary"
                         size="lg"
                         isDisabled={isSaveDisabled}
-                        xstyle={styles.footerEqualAction}
+                        className={powerSearchSheetFooterEqualActionClassName}
                         onClick={handleSave}
                       />
                     )}

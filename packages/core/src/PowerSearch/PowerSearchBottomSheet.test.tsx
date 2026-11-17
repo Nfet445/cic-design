@@ -49,6 +49,23 @@ import type {SearchableItem, SearchSource} from '../Typeahead/types';
 import {COMPACT_TOUCH_PRESENTATION_QUERY} from '../hooks/useAdaptivePresentation';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import * as stylex from '@stylexjs/stylex';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
+import {LIST_REACHES_CONTAINER_PADDING} from '../List/listClasses';
+import {listRowEdgeOf} from '../privateAttributes/listRow.stylex';
+import {
+  powerSearchSheetBodyClassName,
+  powerSearchSheetControlSectionClassName,
+  powerSearchSheetFixedFooterClassName,
+  powerSearchSheetFooterClassName,
+  powerSearchSheetFooterEqualActionClassName,
+  powerSearchSheetHeaderClassName,
+  powerSearchSheetRowValueClassName,
+  powerSearchSheetScrollContentClassName,
+  powerSearchSheetScrollViewportClassName,
+  powerSearchSheetTouchActionClassName,
+  powerSearchSheetTouchHitAreaClassName,
+  powerSearchSheetClassName,
+} from './powerSearchSheetClasses';
 import {Dialog} from '../Dialog/Dialog';
 import userEvent from '@testing-library/user-event';
 import {rtlStyles} from '../utils';
@@ -508,6 +525,23 @@ function removeButton(fieldLabel: string): HTMLElement {
   });
 }
 
+/** The nearest ancestor, `from` included, that carries every class in the string. */
+function closestWithClasses(
+  from: Element | null,
+  classString: string,
+): HTMLElement | null {
+  const tokens = classString.split(' ');
+  let el = from instanceof HTMLElement ? from : null;
+  while (el != null) {
+    const carried = classesOf(el);
+    if (tokens.every(token => carried.includes(token))) {
+      return el;
+    }
+    el = el.parentElement;
+  }
+  return null;
+}
+
 /**
  * The sheet bodies pad their content and publish that padding as container
  * padding; each list in them runs edge to edge with `edge="bleed"`, so row
@@ -515,14 +549,20 @@ function removeButton(fieldLabel: string): HTMLElement {
  * reach the sheet's sides. No private Item variable is set.
  */
 function expectBleedRowsOnBodyInset(list: HTMLElement): void {
-  expect(list.className).toContain('reachesContainerPadding');
+  expectClassSet(list, {
+    includes: LIST_REACHES_CONTAINER_PADDING.split(' '),
+  });
   const rows = list.querySelectorAll('li');
   expect(rows.length).toBeGreaterThan(0);
   for (const row of rows) {
-    expect(row.className).toMatch(/edgeBleed/);
+    expect(listRowEdgeOf(row)).toBe('bleed');
     expect(row.getAttribute('style') ?? '').not.toContain('--_item-inset');
   }
-  const body = list.closest('[class*="scrollContent"], [class*="body"]');
+  // The viewport sheets nest the scroll content in the body, and both carry
+  // the class that publishes the padding.
+  const body =
+    closestWithClasses(list, powerSearchSheetScrollContentClassName) ??
+    closestWithClasses(list, powerSearchSheetBodyClassName);
   expect(body).not.toBeNull();
   const computed = getComputedStyle(body!);
   expect(computed.getPropertyValue('--container-padding-inline-start')).toBe(
@@ -667,19 +707,21 @@ describe('PowerSearch sheet trigger (FR11)', () => {
 
   it('exposes the selected filters in the trigger name', () => {
     setup({filters: [openFilter, authorFilter]});
-    // Token text with no inline whitespace between label and value reads
-    // "is Open" or "isOpen" depending on the name computation.
+    // A token's label and value sit side by side in classes, so the name
+    // computation cannot tell how much whitespace it inserts between them.
     expect(trigger()).toHaveAccessibleName(
-      /^Search Status: is ?Open Author: is ?Ada$/,
+      /^Search\s*Status:\s*is\s*Open\s*Author:\s*is\s*Ada$/,
     );
   });
 
   it('renders display-only tokens with bold values and no remove controls', () => {
     setup({filters: [openFilter, authorFilter]});
     expect(within(field()).getByText('Status: is')).toBeTruthy();
-    expect(within(field()).getByText('Open')).toHaveStyle({
-      fontWeight: 'var(--font-weight-bold)',
-    });
+    // jsdom cannot resolve the built sheet, so assert the class the token
+    // value asked for.
+    expect(classesOf(within(field()).getByText('Open'))).toContain(
+      '[font-weight:var(--font-weight-bold)]',
+    );
     expect(within(field()).getByText('Author: is')).toBeTruthy();
     expect(within(field()).queryByRole('button', {name: /^Remove/})).toBeNull();
     expect(screen.queryByRole('button', {name: 'Clear all'})).toBeNull();
@@ -699,8 +741,8 @@ describe('PowerSearch sheet trigger (FR11)', () => {
   it('wraps tokens without reserving a row for the trigger', () => {
     setup({filters: [openFilter, authorFilter]});
     const button = trigger();
-    expect(getComputedStyle(button.parentElement!).flexWrap).toBe('wrap');
-    expect(getComputedStyle(button).position).toBe('absolute');
+    expect(classesOf(button.parentElement!)).toContain('flex-wrap');
+    expect(classesOf(button)).toContain('absolute');
   });
 
   it('stays focusable while disabled, with aria-disabled and no native disabled, and does not open', () => {
@@ -1458,8 +1500,8 @@ describe('PowerSearch Filters sheet (FR12)', () => {
     openSheet();
     const list = within(sheet()).getByRole('list');
     const row = within(list).getByRole('button', {name: 'Status is Open'});
-    expect(within(row).getByText('Open')).toHaveStyle({
-      fontWeight: 'var(--font-weight-bold)',
+    expectClassSet(within(row).getByText('Open'), {
+      includes: [powerSearchSheetRowValueClassName],
     });
     const remove = within(list).getByRole('button', {
       name: 'Remove Status filter',
@@ -1572,43 +1614,44 @@ describe('PowerSearch Filters sheet (FR12)', () => {
     expect(add.textContent).toBe('');
     expect(done).toHaveAttribute('data-variant', 'primary');
     expect(clearAll).toHaveAttribute('data-variant', 'secondary');
-    expect(getComputedStyle(clearAll).flexGrow).toBe('1');
-    expect(getComputedStyle(done).flexGrow).toBe('1');
+    expectClassSet(clearAll, {
+      includes: powerSearchSheetFooterEqualActionClassName.split(' '),
+    });
+    expectClassSet(done, {
+      includes: powerSearchSheetFooterEqualActionClassName.split(' '),
+    });
     // Only the rows scroll: the footer is outside the viewport.
     const footer = clearAll.parentElement!;
-    expect(getComputedStyle(footer).position).toBe('relative');
-    const viewport = list.closest<HTMLElement>('[class*="scrollViewport"]')!;
+    expectClassSet(footer, {
+      includes: [
+        ...powerSearchSheetFooterClassName.split(' '),
+        ...powerSearchSheetFixedFooterClassName.split(' '),
+      ],
+    });
+    const viewport = closestWithClasses(
+      list,
+      powerSearchSheetScrollViewportClassName,
+    );
     expect(viewport).not.toBeNull();
-    expect(getComputedStyle(viewport).overflowY).toBe('auto');
-    expect(viewport.contains(footer)).toBe(false);
-    expect(viewport.contains(heading)).toBe(false);
+    expectClassSet(viewport!, {
+      includes: powerSearchSheetScrollViewportClassName.split(' '),
+    });
+    expect(viewport!.contains(footer)).toBe(false);
+    expect(viewport!.contains(heading)).toBe(false);
   });
 
   it('grows each icon-sized action to a 44px hit area under a coarse pointer, without resizing it (AR5)', () => {
     setup({filters: [openFilter]});
     openSheet();
-    const rules: string[] = [];
-    for (const styleSheet of Array.from(document.styleSheets)) {
-      for (const rule of Array.from(styleSheet.cssRules)) {
-        rules.push(rule.cssText);
-      }
-    }
-    const hasRule = (element: HTMLElement, pattern: RegExp) =>
-      Array.from(element.classList).some(className =>
-        rules.some(
-          text => text.includes(`.${className}`) && pattern.test(text),
-        ),
-      );
     for (const action of [
       within(sheet()).getByRole('button', {name: 'Add filter'}),
       removeButton('Status'),
     ]) {
-      expect(
-        hasRule(action, /--_power-search-sheet-hit-inset:\s*min\(0px/),
-      ).toBe(true);
-      expect(hasRule(action, /--_power-search-sheet-hit-content:\s*none/)).toBe(
-        true,
-      );
+      expectClassSet(action, {
+        includes: powerSearchSheetTouchHitAreaClassName.split(' '),
+        // The drawn box keeps its icon size; only the overlay grows.
+        excludes: [powerSearchSheetTouchActionClassName],
+      });
     }
   });
 
@@ -2579,39 +2622,22 @@ describe('PowerSearch Add filter (FR13)', () => {
     const title = within(sheet()).getByRole('heading', {name: 'Status'});
     // The title sits in the sticky header; the header's parent is the sheet
     // content wrapper.
-    let header: HTMLElement | null = title;
-    while (header && getComputedStyle(header).position !== 'sticky') {
-      header = header.parentElement;
-    }
+    const header = closestWithClasses(title, powerSearchSheetHeaderClassName);
     expect(header).not.toBeNull();
     const content = header!.parentElement!;
-    let footer: HTMLElement | null = within(sheet()).getByRole('button', {
-      name: 'Apply',
-    });
-    while (footer && getComputedStyle(footer).position !== 'sticky') {
-      footer = footer.parentElement;
+    const footer = closestWithClasses(
+      within(sheet()).getByRole('button', {name: 'Apply'}),
+      powerSearchSheetFooterClassName,
+    );
+    // The header and footer each keep a layer above the List rows (position:
+    // relative, z-index auto) that pass between them...
+    for (const pinned of [header!, footer!]) {
+      expectClassSet(pinned, {includes: ['sticky', 'z-[1]']});
     }
-    // jsdom resolves the injected StyleX rules: the header and footer have a
-    // layer above the List rows (position: relative, z-index auto) between
-    // them...
-    expect(getComputedStyle(header!).zIndex).toBe('1');
-    expect(footer).not.toBeNull();
-    expect(getComputedStyle(footer!).zIndex).toBe('1');
     // ...scoped to the sheet content, so the panel's grab handle (z-index 1,
     // outside this wrapper) still paints above the header.
-    const rules: string[] = [];
-    for (const styleSheet of Array.from(document.styleSheets)) {
-      for (const rule of Array.from(styleSheet.cssRules)) {
-        rules.push(rule.cssText);
-      }
-    }
-    const isolated = Array.from(content.classList).some(className =>
-      rules.some(
-        text =>
-          text.includes(`.${className}`) && /isolation:\s*isolate/.test(text),
-      ),
-    );
-    expect(isolated).toBe(true);
+    expect(content.firstElementChild).toBe(header);
+    expectClassSet(content, {includes: powerSearchSheetClassName.split(' ')});
   });
 
   it('opens directly to Add filter when no filters are selected', () => {
@@ -2880,7 +2906,9 @@ describe('PowerSearch value step (FR14–FR16)', () => {
     // sheet's surface, its rows on the body's inset.
     tapRow('Labels');
     const group = within(sheet()).getByRole('group', {name: 'Labels'});
-    expect(group.closest('[class*="controlSection"]')).toBeNull();
+    expect(
+      closestWithClasses(group, powerSearchSheetControlSectionClassName),
+    ).toBeNull();
   });
 
   it('puts the Operator group and the editor each in a muted section when the field has several operators (FR14)', () => {
@@ -2891,18 +2919,20 @@ describe('PowerSearch value step (FR14–FR16)', () => {
       name: 'Operator',
     });
     const values = within(sheet()).getByRole('radiogroup', {name: 'Status'});
-    const operatorSection = operators.closest<HTMLElement>(
-      '[class*="controlSection"]',
+    const operatorSection = closestWithClasses(
+      operators,
+      powerSearchSheetControlSectionClassName,
     );
-    const valueSection = values.closest<HTMLElement>(
-      '[class*="controlSection"]',
+    const valueSection = closestWithClasses(
+      values,
+      powerSearchSheetControlSectionClassName,
     );
     expect(operatorSection).not.toBeNull();
     expect(valueSection).not.toBeNull();
     expect(operatorSection).not.toBe(valueSection);
-    expect(getComputedStyle(valueSection!).backgroundColor).toBe(
-      'var(--color-background-muted)',
-    );
+    expectClassSet(valueSection!, {
+      includes: powerSearchSheetControlSectionClassName.split(' '),
+    });
   });
 
   it('stages an enum selection and commits it with exact add metadata', () => {
@@ -4169,7 +4199,11 @@ describe('PowerSearch content search (FR13)', () => {
     expect(input).not.toHaveFocus();
     input.focus();
     const results = within(dialog).getByRole('list', {name: 'Search results'});
-    const viewport = results.closest<HTMLElement>('[class*="scrollViewport"]')!;
+    const viewport = closestWithClasses(
+      results,
+      powerSearchSheetScrollViewportClassName,
+    )!;
+    expect(viewport).not.toBeNull();
     // A scroll alone (filtering can clamp it) and a small move leave focus.
     fireEvent.scroll(viewport);
     expect(input).toHaveFocus();
@@ -4975,8 +5009,8 @@ describe('PowerSearch sheet value text', () => {
         const row = within(sheet()).getByRole('button', {
           name: `Created is after ${day}`,
         });
-        expect(within(row).getByText(day)).toHaveStyle({
-          fontWeight: 'var(--font-weight-bold)',
+        expectClassSet(within(row).getByText(day), {
+          includes: [powerSearchSheetRowValueClassName],
         });
         // And the removal announcement names the row's text.
         fireEvent.click(removeButton('Created'));
@@ -5153,8 +5187,8 @@ describe('PowerSearch sheet value text', () => {
       const row = within(sheet()).getByRole('button', {
         name: 'Open (Status is)',
       });
-      expect(within(row).getByText('Open')).toHaveStyle({
-        fontWeight: 'var(--font-weight-bold)',
+      expectClassSet(within(row).getByText('Open'), {
+        includes: [powerSearchSheetRowValueClassName],
       });
       fireEvent.click(removeButton('Status'));
       const filtersDialog = sheet();
