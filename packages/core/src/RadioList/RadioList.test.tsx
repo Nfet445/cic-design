@@ -18,7 +18,6 @@ import userEvent from '@testing-library/user-event';
 import {
   hasReleaseFade,
   readsPressStrength,
-  rulesDeclaredFor,
   rulesWithSelector,
 } from '../__tests__/pressState';
 import {RadioList} from './RadioList';
@@ -1157,9 +1156,11 @@ describe('forced colors (WCAG 1.4.11)', () => {
 });
 
 /** Does the element's own CSS paint the row's mouse press (`--_radio-row-press`)? */
+// The layer reads the row's press paint through a class, and jsdom has no
+// sheet to resolve it; the class token is the assertion.
 function readsRowPress(el: Element): boolean {
-  return rulesDeclaredFor(el).some(rule =>
-    rule.includes('var(--_radio-row-press'),
+  return classesOf(el).some(className =>
+    className.includes('var(--_radio-row-press'),
   );
 }
 
