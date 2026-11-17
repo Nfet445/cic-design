@@ -76,6 +76,7 @@ export {characterCount, firstCharacter, truncateCharacters} from './characters';
 
 export {mergeProps} from './mergeProps';
 export {mergeRefs} from './mergeRefs';
+export {tw} from './tw';
 export {isFocusDetached} from './isFocusDetached';
 export {composeEventHandlers} from './composeEventHandlers';
 export {themeProps, themeDataAttributes} from './themeProps';
