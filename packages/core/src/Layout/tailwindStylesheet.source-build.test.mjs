@@ -649,6 +649,13 @@ import {
   tableClassName,
   tableGapCellClassName,
 } from '../Table/tableClasses';
+import {TABLE_ROW_INDEX_CLASS} from '../Table/plugins/rowIndex/rowIndexClasses';
+import {
+  TABLE_ROW_STATUS_DOT_CLASS,
+  TABLE_ROW_STATUS_ICON_CLASS,
+  TABLE_ROW_STATUS_WRAP_CLASS,
+} from '../Table/plugins/rowStatus/rowStatusClasses';
+import {tablePaginationWrapperClassName} from '../Table/plugins/pagination/paginationClasses';
 import {
   SORT_INDICATOR_CLASS,
   SORT_INDICATOR_UNSORTED_CLASS,
@@ -3347,6 +3354,18 @@ function familyClassNames() {
   add(markdownCenterAlignClassName);
   add(markdownBlockIndentClassName);
   add(markdownMarkerGutterClassName);
+
+  // The Table plugins: the row number, the status marker, and the pagination
+  // wrapper on each side at each alignment.
+  add(TABLE_ROW_INDEX_CLASS);
+  add(TABLE_ROW_STATUS_WRAP_CLASS);
+  add(TABLE_ROW_STATUS_DOT_CLASS);
+  add(TABLE_ROW_STATUS_ICON_CLASS);
+  for (const side of ['above', 'below']) {
+    for (const align of ['start', 'center', 'end']) {
+      add(tablePaginationWrapperClassName({side, align}));
+    }
+  }
 
   return [...names].sort();
 }

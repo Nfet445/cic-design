@@ -4,7 +4,7 @@
 
 /**
  * @file useTableRowStatus.tsx
- * @input React, StyleX, Icon, i18n, dev warnings, VisuallyHidden, Table types
+ * @input React, Icon, i18n, dev warnings, VisuallyHidden, Tailwind utilities, Table types
  * @output Exports useTableRowStatus hook + config type
  * @position Row-status plugin; consumed by Table via plugins prop
  *
@@ -17,7 +17,6 @@
  */
 
 import {useMemo} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Icon, type IconColor, type IconName} from '../../../Icon';
 import {Tooltip} from '../../../Tooltip';
 import {warnOnce} from '../../../utils/devWarning';
@@ -29,6 +28,13 @@ import {
   useComponentTranslator,
 } from '../../../i18n/useComponentTranslator';
 import english from '../../../i18n/generated-english/Table/plugins/rowStatus/useTableRowStatus.generated';
+import {tw} from '../../../utils/tw';
+import {
+  TABLE_ROW_STATUS_COLOR_VARIABLE,
+  TABLE_ROW_STATUS_DOT_CLASS,
+  TABLE_ROW_STATUS_ICON_CLASS,
+  TABLE_ROW_STATUS_WRAP_CLASS,
+} from './rowStatusClasses';
 
 // Bundlers replace this value at build time. The declaration lets a product
 // without Node's types type-check this file.
@@ -176,22 +182,6 @@ function resolveTableRowStatus(
   return {variant: 'dot', color: resolveColor(untypedValue.color)};
 }
 
-const styles = stylex.create({
-  wrap: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  customIcon: (color: string) => ({color}),
-  dot: (color: string) => ({
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    backgroundColor: color,
-    flexShrink: 0,
-  }),
-});
-
 /**
  * Returns a {@link TablePlugin} that prepends a narrow column signaling per-row
  * status. A semantic `status` resolves a themed glyph and tone; a custom
@@ -237,9 +227,21 @@ export function useTableRowStatus<T extends Record<string, unknown>>(
           return null;
         }
 
+        // The colour is per instance: one inline property the marker reads.
+        const customColor =
+          'customColor' in resolvedStatus
+            ? resolvedStatus.customColor
+            : undefined;
+        const colorStyle = {
+          [TABLE_ROW_STATUS_COLOR_VARIABLE as string]:
+            'color' in resolvedStatus ? resolvedStatus.color : customColor,
+        };
+        const paintsCustomColor =
+          resolvedStatus.variant === 'icon' && customColor != null;
+
         const signifier =
           resolvedStatus.variant === 'dot' ? (
-            <span {...stylex.props(styles.dot(resolvedStatus.color))} />
+            <span className={TABLE_ROW_STATUS_DOT_CLASS} style={colorStyle} />
           ) : (
             <Icon
               icon={resolvedStatus.icon}
@@ -255,12 +257,11 @@ export function useTableRowStatus<T extends Record<string, unknown>>(
         return (
           <Tooltip content={status.label}>
             <span
-              {...stylex.props(
-                styles.wrap,
-                resolvedStatus.variant === 'icon' &&
-                  'customColor' in resolvedStatus &&
-                  styles.customIcon(resolvedStatus.customColor),
+              className={tw(
+                TABLE_ROW_STATUS_WRAP_CLASS,
+                paintsCustomColor && TABLE_ROW_STATUS_ICON_CLASS,
               )}
+              style={paintsCustomColor ? colorStyle : undefined}
               role="img"
               aria-label={status.label}>
               {signifier}
