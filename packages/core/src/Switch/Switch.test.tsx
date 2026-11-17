@@ -28,6 +28,7 @@ import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {act, render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {Switch} from './Switch';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {
   getAllInjectedCss,
   getForcedColorsRules,
@@ -339,10 +340,13 @@ describe('Switch', () => {
       />,
     );
     const row = screen.getByRole('switch').parentElement!.parentElement!;
-    expect(getComputedStyle(row).gap).toMatch(/^0(px)?$/);
+    // The gap is a class: jsdom resolves no declaration from the built sheet.
+    // `tw` keeps both gap classes when the row hides its label, and `gap-0`
+    // prints after `gap-2`, so its presence is the hidden state.
+    expect(classesOf(row)).toContain('gap-0');
 
     rerender(<Switch label="Toggle row" value={false} onChange={() => {}} />);
-    expect(getComputedStyle(row).gap).not.toMatch(/^0(px)?$/);
+    expect(classesOf(row)).not.toContain('gap-0');
   });
 
   // Retained: the shared contract binds a hidden-label state and a described
