@@ -16,6 +16,8 @@ import React, {useState} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {colorVars} from '../theme/tokens.stylex';
 import {TimeInput, type TimeInputEntryError} from './TimeInput';
+import {timeInputClassName} from './timeInputClasses';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {InputGroup, InputGroupText} from '../InputGroup';
 import {InternationalizationProvider} from '../i18n';
 import type {ISOTimeString} from '../utils';
@@ -1375,10 +1377,18 @@ describe('TimeInput rejected entries', () => {
 
   describe('entryErrorBehavior', () => {
     const min = '14:00' as ISOTimeString;
+    // The rejected arm is a class the control's own map computes, so the
+    // assertion names that class instead of a StyleX debug name.
+    const rejectedArmClass = timeInputClassName({
+      isDisabled: false,
+      isRejected: true,
+    })
+      .split(' ')
+      .find(name => name.includes('aria-invalid'))!;
     const signals = (container: HTMLElement, input: HTMLElement) => ({
       status: statusText(container),
       isInvalid: input.getAttribute('aria-invalid') === 'true',
-      isStyledInvalid: /\.inputInvalid\b/.test(input.className),
+      isStyledInvalid: classesOf(input).includes(rejectedArmClass),
     });
     const clean = {status: null, isInvalid: false, isStyledInvalid: false};
     const shown = {

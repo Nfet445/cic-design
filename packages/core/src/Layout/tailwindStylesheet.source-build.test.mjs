@@ -55,6 +55,29 @@ import {
   textInputClassName,
   textInputHeightClassName,
 } from '../TextInput/textInputClasses';
+import {
+  dateRangeInputCalendarPaneClassName,
+  dateRangeInputIconButtonClassName,
+  dateRangeInputPopoverLayoutClassName,
+  dateRangeInputPopoverScrollClassName,
+  dateRangeInputPresetButtonClassName,
+  dateRangeInputPresetSidebarClassName,
+  dateRangeInputSizeClassName,
+  dateRangeInputTriggerClassName,
+} from '../DateRangeInput/dateRangeInputClasses';
+import {
+  timeInputClassName,
+  timeInputIconClassName,
+  timeInputSizeClassName,
+} from '../TimeInput/timeInputClasses';
+import {
+  touchTimeFieldFooterClassName,
+  touchTimeFieldIconButtonClassName,
+  touchTimeFieldInputClassName,
+  touchTimeFieldSheetBodyClassName,
+  touchTimeFieldSizeClassName,
+  touchTimeFieldWheelsClassName,
+} from '../TimeInput/touchTimeFieldClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
@@ -517,6 +540,38 @@ function familyClassNames() {
   add(textInputClassName({isDisabled: true}));
   for (const size of ['sm', 'md', 'lg']) {
     add(textAreaSizeClassName(size));
+  }
+  // The date range field: the closed trigger, its calendar button, the
+  // popover body and the preset column.
+  for (const size of ['sm', 'md', 'lg']) {
+    add(dateRangeInputSizeClassName({size}));
+    add(timeInputSizeClassName({size}));
+    add(touchTimeFieldSizeClassName({size}));
+  }
+  for (const hasValue of [false, true]) {
+    for (const isDisabled of [false, true]) {
+      add(dateRangeInputTriggerClassName({hasValue, isDisabled}));
+    }
+  }
+  for (const isDisabled of [false, true]) {
+    add(dateRangeInputIconButtonClassName({isDisabled}));
+    add(dateRangeInputPresetButtonClassName({isDisabled}));
+    add(timeInputClassName({isDisabled, isRejected: false}));
+    add(timeInputClassName({isDisabled, isRejected: true}));
+    add(touchTimeFieldIconButtonClassName({isDisabled}));
+    add(touchTimeFieldInputClassName({isDisabled}));
+  }
+  for (const className of [
+    dateRangeInputPopoverScrollClassName,
+    dateRangeInputPopoverLayoutClassName,
+    dateRangeInputPresetSidebarClassName,
+    dateRangeInputCalendarPaneClassName,
+    timeInputIconClassName,
+    touchTimeFieldSheetBodyClassName,
+    touchTimeFieldWheelsClassName,
+    touchTimeFieldFooterClassName,
+  ]) {
+    add(className);
   }
   for (const isDisabled of [false, true]) {
     for (const hasStartIcon of [false, true]) {
