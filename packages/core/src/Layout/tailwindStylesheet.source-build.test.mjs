@@ -29,6 +29,10 @@ import {
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
+  breadcrumbsListClassName,
+  breadcrumbsNavClassName,
+} from '../Breadcrumbs/breadcrumbsClasses';
+import {
   markdownBlockIndentClassName,
   markdownBlockSpacingClassName,
   markdownBlockWidthClassName,
@@ -3337,6 +3341,10 @@ function familyClassNames() {
       }
     }
   }
+  // Breadcrumbs: the trail frame and its wrapping list row.
+  add(breadcrumbsNavClassName);
+  add(breadcrumbsListClassName);
+
   add(markdownCodeBlockWrapperClassName);
   add(markdownTableWrapperClassName);
   add(markdownHrClassName);

@@ -332,6 +332,10 @@ const PRIVATE_SYSTEM_VARS = new Set([
   // publication beside container().
   '--_container-corner-block-start',
   '--_container-corner-block-end',
+  // The software keyboard's height, measured when the sheet opens and written
+  // inline on the panel. The space it takes is a device fact, not a design
+  // decision, so a theme cannot set it.
+  '--astryx-bottom-sheet-keyboard-inset',
 ]);
 
 const CROSS_COMPONENT_VARS: Record<string, string[]> = {
