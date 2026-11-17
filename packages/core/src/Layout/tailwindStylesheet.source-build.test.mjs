@@ -22,6 +22,11 @@ import {
   buttonForcedColorsEdgeClassName,
   buttonPressClassName,
 } from '../Button/buttonClasses';
+import {
+  avatarStatusDotClassName,
+  avatarStatusDotIconClassName,
+  avatarStatusDotVariantClassName,
+} from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
   fieldAttachedStatusLayerClassName,
@@ -782,6 +787,12 @@ function familyClassNames() {
     paginationPageSizeSelectorClassName,
   ]) {
     add(className);
+  }
+
+  add(avatarStatusDotClassName);
+  add(avatarStatusDotIconClassName);
+  for (const variant of ['success', 'neutral', 'error']) {
+    add(avatarStatusDotVariantClassName[variant]);
   }
 
   add(citationIconWrapClassName);

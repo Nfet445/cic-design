@@ -19,11 +19,19 @@
 import React, {use, useCallback, useMemo, type ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import {colorVars, radiusVars} from '../theme/tokens.stylex';
 import {AvatarSizeContext} from './AvatarSizeContext';
 import {AvatarStatusLabelContext} from './AvatarStatusLabelContext';
 import {isRenderable, mergeProps, mergeRefs} from '../utils';
+import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
+import {
+  avatarStatusDotClassName,
+  avatarStatusDotIconClassName,
+  avatarStatusDotVariantClassName,
+  STATUS_DOT_BORDER_VARIABLE,
+  STATUS_DOT_ICON_VARIABLE,
+  STATUS_DOT_SIZE_VARIABLE,
+} from './avatarStatusDotClasses';
 import type {AvatarStatusDotVariantMap} from './index';
 
 /**
@@ -121,63 +129,6 @@ export interface AvatarStatusDotProps extends BaseProps<HTMLDivElement> {
    */
   icon?: ReactNode;
 }
-
-const styles = stylex.create({
-  dot: {
-    borderRadius: radiusVars['--radius-full'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-background-surface'],
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  // Each variant sets both the plate colour and the ink colour. Everything
-  // drawn on the dot — the shape glyph and any user `icon` — paints from
-  // `currentColor`, so the two can never drift out of contrast.
-  success: {
-    backgroundColor: colorVars['--color-success'],
-    color: colorVars['--color-on-success'],
-  },
-  // The ring variant inverts: a hollow shape only reads as hollow if its
-  // interior is not the variant colour, so the plate is surface and the
-  // colour moves to the stroke. This also keeps a user `icon` legible on
-  // it — surface ink on a surface plate would be invisible.
-  neutral: {
-    backgroundColor: colorVars['--color-background-surface'],
-    color: colorVars['--color-text-secondary'],
-  },
-  error: {
-    backgroundColor: colorVars['--color-error'],
-    color: colorVars['--color-on-error'],
-  },
-  icon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    lineHeight: 0,
-  },
-});
-
-const dynamicStyles = stylex.create({
-  size: (dotSize: number, borderWidth: number) => ({
-    width: dotSize,
-    height: dotSize,
-    borderWidth,
-  }),
-  iconSize: (size: number) => ({
-    width: size,
-    height: size,
-  }),
-});
-
-const variantStyleMap: Partial<
-  Record<AvatarStatusDotVariant, stylex.StyleXStyles>
-> = {
-  success: styles.success,
-  neutral: styles.neutral,
-  error: styles.error,
-};
 
 /**
  * Built-in shape glyph per variant, so each status differs by shape and not
@@ -351,19 +302,27 @@ export function AvatarStatusDot({
       {...(label ? {role: 'img', 'aria-label': label} : undefined)}
       {...mergeProps(
         themeProps('avatar-status-dot', {variant}),
-        stylex.props(
-          styles.dot,
-          variantStyleMap[variant],
-          dynamicStyles.size(dotSize, borderWidth),
-          xstyle,
+        stylex.props(xstyle),
+        tw(
+          avatarStatusDotClassName,
+          avatarStatusDotVariantClassName[variant],
+          className,
         ),
-        className,
-        style,
+        {
+          ...style,
+          [STATUS_DOT_SIZE_VARIABLE]: `${dotSize}px`,
+          [STATUS_DOT_BORDER_VARIABLE]: `${borderWidth}px`,
+        },
       )}>
       {showsIcon && (
         <span
           aria-hidden="true"
-          {...stylex.props(styles.icon, dynamicStyles.iconSize(iconSize))}>
+          className={avatarStatusDotIconClassName}
+          style={
+            {
+              [STATUS_DOT_ICON_VARIABLE]: `${iconSize}px`,
+            } as React.CSSProperties
+          }>
           {icon}
         </span>
       )}
