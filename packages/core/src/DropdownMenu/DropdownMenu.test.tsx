@@ -33,6 +33,8 @@ import {DropdownMenuSubMenu} from './DropdownMenuSubMenu';
 import {Divider} from '../Divider';
 import {Tooltip} from '../Tooltip/Tooltip';
 import {rtlStyles} from '../utils';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {itemDensityClassName} from '../Item/itemClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {spacingVars} from '../theme/tokens.stylex';
@@ -312,11 +314,18 @@ describe('DropdownMenu', () => {
     });
     // The root heading stands alone, with no row wrapper.
     expect(heading.parentElement).toBe(content);
-    expect(
-      screen.getByRole('button', {name: 'Edit project'}).closest('li'),
-    ).toHaveStyle({
-      paddingInline: 'var(--_item-inset-inline)',
-      '--_item-inset-inline': 'var(--spacing-3)',
+    // The sheet's rows are spacious, and a spacious row widens its own inset
+    // to the sheet's content padding line. The row pads itself by that
+    // variable, so the two classes move the text together.
+    const row = screen
+      .getByRole('button', {name: 'Edit project'})
+      .closest('li')!;
+    expect(row).toHaveAttribute('data-density', 'spacious');
+    expectClassSet(row, {
+      includes: [
+        'px-[var(--_item-inset-inline)]',
+        ...itemDensityClassName.spacious.split(' '),
+      ],
     });
   });
 

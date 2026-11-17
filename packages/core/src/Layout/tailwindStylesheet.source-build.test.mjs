@@ -70,6 +70,30 @@ import {
 } from '../Item/itemClasses';
 
 import {
+  LIST_ITEM_BAND_RAISED,
+  LIST_ITEM_BLEED,
+  LIST_ITEM_COUNTER,
+  LIST_ITEM_DIVIDED_RADIUS,
+  LIST_ITEM_DIVIDER,
+  LIST_ITEM_DIVIDER_END_WIDTH,
+  LIST_ITEM_DIVIDER_LAST_RESET,
+  LIST_ITEM_FLUSH_INSET,
+  LIST_ITEM_NUMBER_COLUMNS,
+  LIST_ITEM_OUTSET_END,
+  LIST_ITEM_OUTSET_START,
+  LIST_ITEM_SPAN_COLUMNS,
+  listItemMarkerCircleClassName,
+  listItemMarkerContainerClassName,
+  listItemMarkerCounterClassName,
+  listItemMarkerDotClassName,
+  listItemMarkerGutterHangClassName,
+  listItemMarkerNumberClassName,
+  listItemMarkerSquareClassName,
+  listItemRowClassName,
+  listItemTaskMarkerContainerClassName,
+} from '../List/listItemClasses';
+
+import {
   fieldAttachedStatusLayerClassName,
   fieldClassName,
   fieldHorizontalLabelAlignClassName,
@@ -1159,6 +1183,58 @@ function familyClassNames() {
     add(className);
   }
 
+  // A List row answers its edge treatment and four list-driven flags: the
+  // walk crosses every edge with and without dividers, then turns the row's
+  // whole machinery on at once.
+  for (const edge of ['padded', 'flush', 'outset', 'bleed']) {
+    for (const hasDividers of [false, true]) {
+      add(
+        listItemRowClassName({
+          edge,
+          hasDividers,
+          hasMarkers: false,
+          isTouchTargetInList: false,
+          spansNumberColumns: false,
+          usesNumberColumns: false,
+        }),
+      );
+      add(
+        listItemRowClassName({
+          edge,
+          hasDividers,
+          hasMarkers: true,
+          isTouchTargetInList: true,
+          spansNumberColumns: true,
+          usesNumberColumns: true,
+        }),
+      );
+    }
+  }
+  for (const className of [
+    LIST_ITEM_NUMBER_COLUMNS,
+    LIST_ITEM_SPAN_COLUMNS,
+    LIST_ITEM_COUNTER,
+    LIST_ITEM_FLUSH_INSET,
+    LIST_ITEM_OUTSET_START,
+    LIST_ITEM_OUTSET_END,
+    LIST_ITEM_BLEED,
+    LIST_ITEM_DIVIDER,
+    LIST_ITEM_DIVIDED_RADIUS,
+    LIST_ITEM_BAND_RAISED,
+    listItemMarkerContainerClassName,
+    listItemMarkerDotClassName,
+    listItemMarkerCircleClassName,
+    listItemMarkerSquareClassName,
+    listItemMarkerNumberClassName,
+    listItemMarkerCounterClassName.decimal,
+    listItemMarkerCounterClassName['lower-alpha'],
+    listItemMarkerCounterClassName['lower-roman'],
+    listItemMarkerGutterHangClassName,
+    listItemTaskMarkerContainerClassName,
+  ]) {
+    add(className);
+  }
+
   add(citationIconWrapClassName);
   add(citationIconClassName);
   add(citationLabelTextClassName);
@@ -1592,6 +1668,75 @@ describe('dist/astryx-tailwind.css declarations', () => {
     );
     expect(marked).toContain('display:block;');
     expect(marked).not.toContain('content');
+  });
+
+  it('draws the list row divider and clears it after the last row', () => {
+    // The divider is the row's block-end border, so the last row clears it on
+    // the same longhand: a reset the row could not cancel would leave a line
+    // under the list's last row.
+    expect(stylesheet.ruleFor(LIST_ITEM_DIVIDER_END_WIDTH)).toBe(
+      'border-block-end-width:var(--border-width);',
+    );
+    expect(stylesheet.blockOf(LIST_ITEM_DIVIDER_LAST_RESET)).toContain(
+      'border-block-end-width:0px;',
+    );
+  });
+
+  it('keys the row edge treatments on the edge the row carries', () => {
+    // The row and the Item frame style one box, and the sheet decides a tie
+    // between two plain utilities. Every declaration that has to win is keyed
+    // on the edge attribute, and an attribute selector outranks a utility.
+    expect(stylesheet.blockOf(LIST_ITEM_FLUSH_INSET)).toBe(
+      '&[data-astryx-list-edge=flush]{--_item-inset-inline:0px;}',
+    );
+    // The outset only sets margins, which the frame leaves alone, so it needs
+    // no key: each edge reads its own container padding variable.
+    expect(stylesheet.ruleFor(LIST_ITEM_OUTSET_START)).toBe(
+      'margin-inline-start:max(var(--container-padding-inline-start,0px)-var(--_item-inset-inline),0px);',
+    );
+    expect(stylesheet.blockOf(LIST_ITEM_OUTSET_END)).toContain(
+      'margin-inline-end:max(var(--container-padding-inline-end,0px)-var(--_item-inset-inline),0px);',
+    );
+  });
+
+  it('fills a bled row and squares it, keeping the container corners on the ends', () => {
+    const bleed = stylesheet.blockOf(
+      '[&[data-astryx-list-edge=bleed]]:ps-[max(var(--container-padding-inline-start,0px),var(--_item-inset-inline))]',
+    );
+    expect(bleed).toContain(
+      'padding-inline-start:max(var(--container-padding-inline-start,0px),var(--_item-inset-inline));',
+    );
+    // A row that meets the container's straight sides takes no radius, and the
+    // first and last rows take the corners the list publishes.
+    expect(stylesheet.blockOf(LIST_ITEM_DIVIDED_RADIUS)).toContain(
+      'border-radius:0px;',
+    );
+    const corner =
+      '[&[data-astryx-list-edge=bleed]:first-child]:[border-start-start-radius:var(--_list-corner-start-start,0px)]';
+    expect(stylesheet.blockOf(corner)).toContain(
+      'border-start-start-radius:var(--_list-corner-start-start,0px);',
+    );
+  });
+
+  it('raises the touch band only under a finger', () => {
+    // The band rises above the rows after it, so a later row does not
+    // hit-test over it; the row box itself stays no stacking context.
+    expect(stylesheet.blockOf(LIST_ITEM_BAND_RAISED)).toBe(
+      '@media(pointer:coarse){&::after{z-index:1;}}',
+    );
+  });
+
+  it('counts a row in and hangs its counter from the row inset', () => {
+    expect(stylesheet.ruleFor(LIST_ITEM_COUNTER)).toBe(
+      'counter-increment:astryx-list;',
+    );
+    // The period after the number, then the hang into the row's inset.
+    expect(
+      stylesheet.blockOf('[&::before]:[content:counter(astryx-list)_"."]'),
+    ).toBe('&::before{content:counter(astryx-list)".";}');
+    expect(
+      stylesheet.blockOf('[&::before]:ms-[calc(var(--_item-inset-inline)*-1)]'),
+    ).toContain('margin-inline-start:calc(var(--_item-inset-inline)*-1);');
   });
 
   it('declares no theme variable of its own', () => {
