@@ -27,6 +27,8 @@ import {hydrateRoot} from 'react-dom/client';
 import {renderToString} from 'react-dom/server';
 import {BottomSheet} from './BottomSheet';
 import {BottomSheetSwitcher} from './BottomSheetSwitcher';
+import {bottomSheetScrimReducedMotionDurationClassName} from './bottomSheetClasses';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {
   isScrollLockActive,
   subscribeScrollLock,
@@ -1697,19 +1699,14 @@ describe('BottomSheetSwitcher', () => {
       expect(flow).toBe(confirmDialog.parentElement);
       // The wrapper is the isolated surface for the flow (`spec:AST-027`
       // FR2) and carries the one overlay value the shared shell carried.
-      expect(getComputedStyle(flow).isolation).toBe('isolate');
-      expect(getComputedStyle(flow).zIndex).toBe('1000');
+      expectClassSet(flow, {includes: ['isolate', 'z-[1000]', 'fixed']});
 
       fireEvent.click(screen.getByRole('button', {name: 'Continue'}));
       expect(openDialogs()).toEqual([detailsDialog, confirmDialog]);
       // Inside it the dialogs use local values only: the interactive sheet
-      // on top at 1, the retained sheet at auto. Neither is in a page band.
-      expect(getComputedStyle(confirmDialog).zIndex).toBe('1');
-      // jsdom reports an unset z-index as '' where a browser says 'auto'.
-      expect(['', 'auto']).toContain(getComputedStyle(detailsDialog).zIndex);
-      for (const dialog of [detailsDialog, confirmDialog]) {
-        expect(Number(getComputedStyle(dialog).zIndex) >= 1000).toBe(false);
-      }
+      // on top at 1, the retained sheet at none. Neither is in a page band.
+      expectClassSet(confirmDialog, {includes: ['z-1']});
+      expectClassSet(detailsDialog, {excludes: ['z-1', 'z-[1000]']});
     });
 
     it('applies the switcher dialog props to each sheet dialog, with a consumer role kept unless a required step forces alertdialog', () => {
@@ -1780,30 +1777,12 @@ describe('BottomSheetSwitcher', () => {
 
     it('keeps the scrim takeover pin under prefers-reduced-motion: the reduced duration reads the pinned variable', () => {
       render(<HostFlow initialSheet="details" />);
-      // jsdom evaluates neither @media nor ::backdrop; read the compiled
-      // rules the dialog's scrim class produced. The reduced-motion rule for
-      // the backdrop's transition-duration must defer to the takeover pin
-      // (`--_sheet-scrim-duration: 0s` for one style flush); a literal 0.01s
-      // there would win the cascade and paint a frame with no scrim.
-      const rules: string[] = [];
-      for (const sheet of Array.from(document.styleSheets)) {
-        for (const rule of Array.from(sheet.cssRules)) {
-          rules.push(rule.cssText);
-        }
-      }
-      const reducedBackdropDurations = rules.filter(
-        text =>
-          text.includes('prefers-reduced-motion: reduce') &&
-          text.includes('::backdrop') &&
-          text.includes('transition-duration'),
-      );
-      expect(reducedBackdropDurations.length).toBeGreaterThan(0);
-      for (const text of reducedBackdropDurations) {
-        expect(text).toMatch(
-          /transition-duration:\s*var\(--_sheet-scrim-duration,\s*0?\.01s\)/,
-        );
-        expect(text).not.toMatch(/transition-duration:\s*0?\.01s/);
-      }
+      // jsdom evaluates neither @media nor ::backdrop, and the class is the
+      // pin's only reader: its compiled rule is asserted against the built
+      // sheet in Layout/tailwindStylesheet.source-build.test.mjs.
+      expectClassSet(getSheetDialog('details-sheet'), {
+        includes: [bottomSheetScrimReducedMotionDurationClassName],
+      });
     });
 
     it('paints one scrim through a handoff and hands it over without a fade', () => {

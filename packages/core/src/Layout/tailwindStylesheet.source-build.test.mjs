@@ -66,6 +66,12 @@ import {
 } from '../Drawer/drawerClasses';
 import {bottomSheetEdgeTintClassName} from '../BottomSheet/bottomSheetEdgeTintClasses';
 import {
+  bottomSheetDialogClassName,
+  bottomSheetPositionerClassName,
+  bottomSheetScrimReducedMotionDurationClassName,
+  bottomSheetSwitcherFlowClassName,
+} from '../BottomSheet/bottomSheetClasses';
+import {
   popoverAnchorWrapperClassName,
   popoverCloseButtonWrapperClassName,
   popoverContentWrapperClassName,
@@ -1057,6 +1063,39 @@ function familyClassNames() {
   // The bottom sheet's edge tint: the strip WebKit samples for the iOS toolbar
   // colour.
   add(bottomSheetEdgeTintClassName);
+  // The bottom sheet's host dialog: each presentation arm, its scrim in the
+  // settled and leaving entries, the switcher's positioner and flow wrapper.
+  for (const isPresented of [false, true]) {
+    for (const isPanelHost of [false, true]) {
+      for (const hasScrim of [false, true]) {
+        for (const isNonModalTop of [false, true]) {
+          for (const [isEntrySettled, isExiting] of [
+            [false, false],
+            [true, false],
+            [false, true],
+          ]) {
+            add(
+              bottomSheetDialogClassName({
+                hasScrim,
+                isEntrySettled,
+                isExiting,
+                isNonModalTop,
+                isPanelHost,
+                isPresented,
+              }),
+            );
+          }
+          add(
+            bottomSheetPositionerClassName({
+              isPresented,
+              isTop: isNonModalTop,
+            }),
+          );
+        }
+      }
+    }
+    add(bottomSheetSwitcherFlowClassName({isNonModal: isPresented}));
+  }
 
   // The popover: its surface and content wrapper, the anchor wrapper, both
   // viewport-fit states, the two sizing classes and both hidden close
@@ -2534,8 +2573,18 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // field, row, track, thumb and press layers, the sensor's date-time row and
     // segments, the bottom-sheet panel and the selector's size arms measured
     // 1402 with every family above registered, so the ceiling carries the usual
-    // headroom above that number rather than below it.
+    // headroom above that number rather than below it. The sheet host's dialog,
+    // its scrim arms, the switcher positioner and flow wrapper then measured
+    // 1424, inside that headroom.
     expect(stylesheet.rules.size).toBeLessThan(1460);
+  });
+
+  it('keeps the scrim takeover pin under prefers-reduced-motion', () => {
+    // Ten percent-of-duration on the reduced arm would win the cascade over
+    // the pin the stack writes for the frame a scrim changes hands.
+    expect(
+      stylesheet.blockOf(bottomSheetScrimReducedMotionDurationClassName),
+    ).toContain('transition-duration:var(--_sheet-scrim-duration,0.01s);');
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

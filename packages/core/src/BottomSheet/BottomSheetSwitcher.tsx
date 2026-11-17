@@ -58,7 +58,7 @@ import {
 } from 'react';
 import {useIsHydrating} from '../hooks/useIsHydrating';
 import {useSettledOpen} from '../hooks/useSettledOpen';
-import * as stylex from '@stylexjs/stylex';
+import {bottomSheetSwitcherFlowClassName} from './bottomSheetClasses';
 import type {BaseProps} from '../BaseProps';
 import type {DialogPurpose} from '../Dialog';
 import {useScrollLock} from '../hooks/useScrollLock';
@@ -94,29 +94,6 @@ import {
   type BottomSheetSwitcherPhase,
   type BottomSheetSwitcherTransitionEvent,
 } from './BottomSheetSwitcherContext';
-
-const styles = stylex.create({
-  // A scrim flow's dialogs live in the top layer; the wrapper has no box.
-  flow: {
-    display: 'contents',
-  },
-  // show() leaves a no-scrim flow in the normal rendering tree, where DOM
-  // order would decide which dialog paints in front. So the wrapper is the
-  // flow's isolated surface: the dialogs order themselves inside it, and the
-  // wrapper keeps the one overlay value of the old shared shell. It
-  // passes pointer input through, and each panel opts back in. Consumers of
-  // this mode must avoid transformed or clipping ancestors.
-  flowNonModal: {
-    display: 'block',
-    position: 'fixed',
-    inset: 0,
-    width: '100%',
-    height: '100%',
-    pointerEvents: 'none',
-    isolation: 'isolate',
-    zIndex: 1000,
-  },
-});
 
 type RetainedSheetPhase = 'covered' | 'aligning' | 'fading' | 'exiting';
 
@@ -1077,10 +1054,9 @@ export function BottomSheetSwitcher({
     <BottomSheetSwitcherContext value={contextValue}>
       <div
         ref={flowRef}
-        {...stylex.props(
-          styles.flow,
-          !hasScrim && isFlowVisible && styles.flowNonModal,
-        )}>
+        className={bottomSheetSwitcherFlowClassName({
+          isNonModal: !hasScrim && isFlowVisible,
+        })}>
         {children}
       </div>
     </BottomSheetSwitcherContext>

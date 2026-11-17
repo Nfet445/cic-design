@@ -36,7 +36,10 @@ import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {useMediaQuery} from '../hooks/useMediaQuery';
-import {useScrollableArea} from '../hooks/useScrollableArea';
+import {
+  type ScrollableElementProps,
+  useScrollableArea,
+} from '../hooks/useScrollableArea';
 import {mergeProps} from '../utils/mergeProps';
 import {
   bottomSheetBodyClassName,
@@ -1043,6 +1046,8 @@ export function BottomSheetPanel({
           {...whilePresented(
             isPresented,
             getContentProps<HTMLDivElement>(
+              // mergeProps widens its result to a props bag; this wrapper
+              // takes the typed props of the element it becomes.
               mergeProps(
                 stylex.props(
                   ...container(
@@ -1081,7 +1086,7 @@ export function BottomSheetPanel({
                       '--astryx-bottom-sheet-keyboard-inset': `${keyboardInset}px`,
                     } as BottomSheetPanelInstanceStyle)
                   : {},
-              ),
+              ) as ScrollableElementProps<HTMLDivElement>,
             ),
           )}>
           <LayerContentBoundary>{children}</LayerContentBoundary>
