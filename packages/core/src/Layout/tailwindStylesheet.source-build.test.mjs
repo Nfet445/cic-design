@@ -582,6 +582,16 @@ import {
   emptyStateTitleClassName,
   emptyStateTitleCompactClassName,
 } from '../EmptyState/emptyStateClasses';
+import {timestampClassName} from '../Timestamp/timestampClasses';
+import {
+  timestampHoverCardActionClassName,
+  timestampHoverCardGridTemplateClassName,
+  timestampHoverCardLabelClassName,
+  timestampHoverCardListClassName,
+  timestampHoverCardRowClassName,
+  timestampHoverCardValueCellsClassName,
+  timestampHoverCardValueClassName,
+} from '../Timestamp/timestampHoverCardClasses';
 import {
   skeletonAnimateClassName,
   skeletonClassName,
@@ -1916,6 +1926,18 @@ function familyClassNames() {
   add(emptyStateDescriptionCompactClassName);
   add(emptyStateActionsClassName);
   add(emptyStateActionsCompactClassName);
+  // Timestamp: the `<time>` reset and the hover card's list, row, label, value
+  // and action cells with its four grid templates.
+  add(timestampClassName);
+  add(timestampHoverCardListClassName);
+  add(timestampHoverCardRowClassName);
+  add(timestampHoverCardLabelClassName);
+  add(timestampHoverCardValueClassName);
+  add(timestampHoverCardValueCellsClassName);
+  add(timestampHoverCardActionClassName);
+  for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
+    add(value);
+  }
   // Skeleton: the placeholder, the pulse, the two utility classes that read
   // the props' variables, and one class per radius.
   add(skeletonClassName);
