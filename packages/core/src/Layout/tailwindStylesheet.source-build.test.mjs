@@ -3173,9 +3173,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // wrap states, its numbered divider, the row in every number and diff
     // combination, every tint, the marker and the two size and cluster classes
     // reuse almost every code font, spacing and border utility the siblings
-    // already spell. The ceiling keeps its usual headroom above the measured
-    // number.
-    expect(stylesheet.rules.size).toBeLessThan(1760);
+    // already spell. The thumbnail frame and the toast viewport's wrapper,
+    // column and lane then took it to 1706, the calendar's month grid and day
+    // states to 1745, and the avatar group with its overlap and the chat
+    // dock's ring to 1776. The ceiling keeps its usual headroom above the
+    // measured number.
+    expect(stylesheet.rules.size).toBeLessThan(1840);
   });
 
   it('keeps the scrim takeover pin under prefers-reduced-motion', () => {
