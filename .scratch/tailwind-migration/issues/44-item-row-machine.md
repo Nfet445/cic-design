@@ -32,3 +32,13 @@ Ticket 18 finished `Link`, `Citation`, `BreadcrumbItem`, `Token`, `Pagination` a
 - `pnpm exec vitest run packages/core/src/Item packages/core/src/List`
 - `node packages/core/scripts/build-css-tailwind.mjs`
 - `pnpm -F @astryxdesign/core typecheck`
+
+## Result
+
+`Item` and `ListItem` are class maps (`Item/itemClasses.ts`,
+`List/listItemClasses.ts`), merged `395ef989b` and `c945bd80e`. A later fix
+made each density state its own `--_item-inset-inline`: the `spacious` inset
+had keyed off a `data-density` attribute nothing rendered.
+
+Left: `List.tsx` (2 `stylex.create`), `ListReorderHandle.tsx` (2) and
+`listReorderEngine.tsx` (1).
