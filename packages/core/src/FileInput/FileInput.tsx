@@ -26,17 +26,6 @@ import {
   type DragEvent,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  sizeVars,
-  spacingVars,
-  radiusVars,
-  typographyVars,
-  typeScaleVars,
-  borderVars,
-  durationVars,
-  easeVars,
-} from '../theme/tokens.stylex';
 import {Field, InputClearButton, type InputStatus} from '../Field';
 import {Icon} from '../Icon';
 import {Spinner} from '../Spinner';
