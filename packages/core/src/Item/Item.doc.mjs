@@ -51,6 +51,13 @@ export const docs = {
         private: true,
       },
       {
+        name: '--astryx-item-line-clamp',
+        description:
+          'Line count the label or description clamps to when labelLines or descriptionLines is greater than 1. Item sets it inline on the text line it clamps.',
+        default: 'unset (one line)',
+        private: true,
+      },
+      {
         name: '--_item-inset-inline',
         description:
           'Inline inset of the row. Item derives its paddingInline from this variable, and List reads it to place rows for its edge treatments (edge="flush", "outset", and "bleed"). Set paddingInline on `item` in a theme and both stay in sync.',

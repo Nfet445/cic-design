@@ -29,6 +29,31 @@ import {
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
+  itemAlignClassName,
+  itemClassName,
+  itemContentClassName,
+  itemDescriptionClassName,
+  itemDisabledContentClassName,
+  itemDensityClassName,
+  itemEndContentClassName,
+  itemFirstLineSlotClassName,
+  itemHighlightedClassName,
+  itemInlineContentClassName,
+  itemInlineDescriptionClassName,
+  itemInlineLabelClassName,
+  itemInteractiveClassName,
+  itemInvisibleAnchorClassName,
+  itemInvisibleButtonClassName,
+  itemLabelClassName,
+  itemLinkRootClassName,
+  itemMarkerContentClassName,
+  itemMarkerContentFirstLineClassName,
+  itemMultiLineTruncateClassName,
+  itemSelectedClassName,
+  itemSingleLineTruncateClassName,
+  itemStartContentClassName,
+} from '../Item/itemClasses';
+import {
   fieldAttachedStatusLayerClassName,
   fieldClassName,
   fieldHorizontalLabelAlignClassName,
@@ -943,6 +968,77 @@ function familyClassNames() {
   add(avatarStatusDotIconClassName);
   for (const variant of ['success', 'neutral', 'error']) {
     add(avatarStatusDotVariantClassName[variant]);
+  }
+
+  // A row's frame answers alignment, density and four state flags; the walk
+  // crosses every pair a caller can reach and turns each flag on alone.
+  for (const align of ['center', 'start', 'first-line']) {
+    add(itemAlignClassName[align]);
+    for (const density of ['compact', 'balanced', 'spacious']) {
+      add(itemDensityClassName[density]);
+      add(
+        itemClassName({
+          align,
+          density,
+          hasParentRole: false,
+          isDisabled: false,
+          isHighlighted: false,
+          isInteractive: false,
+          isLinkRoot: false,
+          isSelected: false,
+        }),
+      );
+      for (const [isInteractive, isHighlighted, isSelected, isDisabled] of [
+        [true, false, false, false],
+        [false, true, false, false],
+        [false, false, true, false],
+        [false, false, false, true],
+        [true, true, false, false],
+        [true, false, true, false],
+        [true, false, false, true],
+      ]) {
+        for (const hasParentRole of [false, true]) {
+          for (const isLinkRoot of [false, true]) {
+            add(
+              itemClassName({
+                align,
+                density,
+                hasParentRole,
+                isDisabled,
+                isHighlighted,
+                isInteractive,
+                isLinkRoot,
+                isSelected,
+              }),
+            );
+          }
+        }
+      }
+    }
+  }
+  for (const className of [
+    itemContentClassName,
+    itemInlineContentClassName,
+    itemInlineLabelClassName,
+    itemInlineDescriptionClassName,
+    itemLabelClassName,
+    itemDescriptionClassName,
+    itemSingleLineTruncateClassName,
+    itemMultiLineTruncateClassName,
+    itemInteractiveClassName,
+    itemHighlightedClassName,
+    itemSelectedClassName,
+    itemLinkRootClassName,
+    itemDisabledContentClassName,
+    itemInvisibleButtonClassName,
+    itemInvisibleAnchorClassName,
+    itemStartContentClassName,
+    itemEndContentClassName,
+    itemFirstLineSlotClassName,
+    itemMarkerContentClassName,
+    itemMarkerContentFirstLineClassName,
+  ]) {
+    add(className);
   }
 
   add(citationIconWrapClassName);

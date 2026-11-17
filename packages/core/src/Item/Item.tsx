@@ -42,15 +42,28 @@ import {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  radiusVars,
-  spacingVars,
-  durationVars,
-  easeVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import type {BaseProps} from '../BaseProps';
+import {tw} from '../utils/tw';
+import {
+  itemClassName,
+  itemContentClassName,
+  itemDescriptionClassName,
+  itemDisabledContentClassName,
+  itemEndContentClassName,
+  itemFirstLineSlotClassName,
+  itemInlineContentClassName,
+  itemInlineDescriptionClassName,
+  itemInlineLabelClassName,
+  itemInvisibleAnchorClassName,
+  itemInvisibleButtonClassName,
+  itemLabelClassName,
+  itemLineClampVars,
+  itemMarkerContentClassName,
+  itemMarkerContentFirstLineClassName,
+  itemMultiLineTruncateClassName,
+  itemSingleLineTruncateClassName,
+  itemStartContentClassName,
+} from './itemClasses';
 import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
@@ -106,6 +119,12 @@ const DeprecatedSwipeLayer = lazy(
 
 export type ItemAlign = 'center' | 'start' | 'first-line';
 export type ItemDensity = 'compact' | 'balanced' | 'spacious';
+
+/** The inline style that carries a multi-line clamp's line count. */
+type ClampStyle = React.CSSProperties &
+  Partial<
+    Record<(typeof itemLineClampVars)[keyof typeof itemLineClampVars], string>
+  >;
 
 export type {ItemSwipeActionVariant, ItemSwipeBehavior};
 
@@ -396,213 +415,6 @@ export function servesSwipeActions({
 }
 
 // =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    // The inline inset is published as --_item-inset-inline and the padding
-    // derives from it, so consumers that need to compensate for the inset
-    // (List's edge treatments) read the var instead of mirroring the values.
-    // Themes that set paddingInline on `item` also feed this var via the
-    // derived var registry, keeping padding and compensation in sync.
-    '--_item-inset-inline': spacingVars['--spacing-2'],
-    paddingInline: 'var(--_item-inset-inline)',
-    position: 'relative',
-    boxSizing: 'border-box',
-    textAlign: 'start',
-    borderRadius: radiusVars['--radius-element'],
-  },
-  // One content cell beside the marker. Its slots retain the row's flex
-  // alignment and gap, including first-line alignment and tall start content.
-  // A numbered List can then subgrid the row into marker/content columns.
-  markerContent: {
-    display: 'flex',
-    flex: 1,
-    minWidth: 0,
-    alignItems: 'inherit',
-    alignSelf: 'stretch',
-    gap: 'inherit',
-  },
-  markerContentFirstLine: {
-    // A tall start/end slot moves the first text baseline down. The marker
-    // must follow that baseline, not the stretched group's top edge.
-    alignSelf: 'baseline',
-  },
-  alignStart: {
-    alignItems: 'flex-start',
-  },
-  // `first-line`: the row aligns its children on their first baselines. The
-  // label's first baseline is its first line's; each slot gets the same
-  // baseline from its strut (below), which the slot centers against its
-  // content. So each slot's center lands on the first line's center for any
-  // slot height, and a taller slot pushes the text down instead of leaving
-  // the row. Pure CSS: no measurement.
-  alignFirstLine: {
-    alignItems: 'baseline',
-  },
-  // A zero-width line of label text inside the slot: same size and leading as
-  // the label, so its line box is the label's first line box. The slot centers
-  // it against the slot's content, and the row's baseline alignment puts it on
-  // the label's first line. Its content carries empty alternative text so
-  // assistive technology reads nothing from it.
-  firstLineSlot: {
-    alignItems: 'center',
-    '::before': {
-      content: stylex.firstThatWorks('"\\200B" / ""', '"\\200B"'),
-      inlineSize: 0,
-      overflow: 'hidden',
-      fontSize: typeScaleVars['--text-body-size'],
-      lineHeight: typeScaleVars['--text-body-leading'],
-    },
-  },
-  interactive: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    transitionProperty: 'background-color',
-    transitionDuration: durationVars['--duration-fast-min'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  highlighted: {
-    backgroundColor: colorVars['--color-overlay-hover'],
-  },
-  selected: {
-    backgroundColor: colorVars['--color-accent-muted'],
-  },
-  disabled: {
-    cursor: 'default',
-    pointerEvents: 'none' as const,
-  },
-  // A row whose root is the link: the browser's anchor paint stays out of it.
-  linkRoot: {
-    color: 'inherit',
-    textDecoration: 'none',
-  },
-  disabledContent: {
-    opacity: 0.5,
-  },
-  invisibleButton: {
-    cursor: {
-      default: 'inherit',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    color: 'inherit',
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minWidth: 0,
-    textAlign: 'start',
-    outline: 'none',
-  },
-  invisibleAnchor: {
-    cursor: {
-      default: 'inherit',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    color: 'inherit',
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minWidth: 0,
-    textAlign: 'start',
-    textDecoration: 'none',
-    outline: 'none',
-  },
-  content: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minWidth: 0,
-    textAlign: 'start',
-  },
-  // `layout="inline"`: label and description share one line, so the row fits a
-  // fixed-height host such as a Selector trigger inside an InputGroup.
-  inlineContent: {
-    flexDirection: 'row',
-    // Centered, not baseline-aligned: two different font sizes on a shared
-    // baseline make a line box taller than either line, which would push a
-    // fixed-height host (a Selector trigger) a pixel off its size token.
-    alignItems: 'center',
-    columnGap: spacingVars['--spacing-1'],
-  },
-  inlineLabel: {
-    flexShrink: 0,
-  },
-  // The description yields width first, so the label — the part that identifies
-  // the item — is the last thing to ellipsize.
-  inlineDescription: {
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  label: {
-    // Falls back to the primary text token; a parent (e.g. a destructive menu
-    // item) can recolor the label by setting --_item-label-color.
-    color: `var(--_item-label-color, ${colorVars['--color-text-primary']})`,
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-  },
-  labelSingleTruncate: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  labelMultiTruncate: {
-    overflow: 'hidden',
-    display: '-webkit-box',
-    WebkitBoxOrient: 'vertical' as const,
-  },
-  description: {
-    // Companion to --_item-label-color for the secondary line.
-    color: `var(--_item-description-color, ${colorVars['--color-text-secondary']})`,
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-  },
-  descriptionSingleTruncate: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  descriptionMultiTruncate: {
-    overflow: 'hidden',
-    display: '-webkit-box',
-    WebkitBoxOrient: 'vertical' as const,
-  },
-  startContent: {
-    flex: '0 0 auto',
-    display: 'flex',
-  },
-  endContent: {
-    flex: '0 0 auto',
-    display: 'flex',
-    marginInlineStart: 'auto',
-  },
-});
-
-const dynamicStyles = stylex.create({
-  lineClamp: (lines: number) => ({
-    WebkitLineClamp: lines,
-  }),
-});
-
-const densityStyles = stylex.create({
-  compact: {
-    paddingBlock: spacingVars['--spacing-1'],
-  },
-  balanced: {
-    paddingBlock: spacingVars['--spacing-2'],
-  },
-  spacious: {
-    paddingBlock: spacingVars['--spacing-3'],
-    '--_item-inset-inline': spacingVars['--spacing-3'],
-  },
-});
-
-// =============================================================================
 // Component
 // =============================================================================
 
@@ -794,53 +606,56 @@ export function Item({
   const isStringLabel = typeof label === 'string';
   const isStringDescription = typeof description === 'string';
 
-  const labelTruncateStyle =
+  const labelTruncateClassName =
     labelLines != null
       ? labelLines === 1
-        ? styles.labelSingleTruncate
-        : styles.labelMultiTruncate
+        ? itemSingleLineTruncateClassName
+        : itemMultiLineTruncateClassName
       : isStringLabel
-        ? styles.labelSingleTruncate
+        ? itemSingleLineTruncateClassName
         : null;
 
   // Inline rows are one line by definition, so the description always
   // ellipsizes there — a ReactNode description cannot wrap the row open.
   const isInline = layout === 'inline' && hasRenderableDescription;
 
-  const descriptionTruncateStyle =
+  const descriptionTruncateClassName =
     descriptionLines != null
       ? descriptionLines === 1
-        ? styles.descriptionSingleTruncate
-        : styles.descriptionMultiTruncate
+        ? itemSingleLineTruncateClassName
+        : itemMultiLineTruncateClassName
       : isStringDescription || isInline
-        ? styles.descriptionSingleTruncate
+        ? itemSingleLineTruncateClassName
         : null;
+
+  // A clamp count is a per-instance number no class names, so it reaches CSS
+  // as the variable the clamp class reads.
+  const lineClampStyle = (lines: number | undefined): ClampStyle | undefined =>
+    lines != null && lines > 1
+      ? {[itemLineClampVars.clamp]: String(lines)}
+      : undefined;
 
   const labelAndDescription = (
     <>
       <span
         id={publishedLabelID ?? undefined}
-        {...stylex.props(
-          styles.label,
-          isInline && styles.inlineLabel,
-          labelTruncateStyle,
-          labelLines != null &&
-            labelLines > 1 &&
-            dynamicStyles.lineClamp(labelLines),
-        )}>
+        className={tw(
+          itemLabelClassName,
+          isInline && itemInlineLabelClassName,
+          labelTruncateClassName,
+        )}
+        style={lineClampStyle(labelLines)}>
         {label}
       </span>
       {hasRenderableDescription && (
         <span
           id={descriptionID}
-          {...stylex.props(
-            styles.description,
-            isInline && styles.inlineDescription,
-            descriptionTruncateStyle,
-            descriptionLines != null &&
-              descriptionLines > 1 &&
-              dynamicStyles.lineClamp(descriptionLines),
-          )}>
+          className={tw(
+            itemDescriptionClassName,
+            isInline && itemInlineDescriptionClassName,
+            descriptionTruncateClassName,
+          )}
+          style={lineClampStyle(descriptionLines)}>
           {description}
         </span>
       )}
@@ -887,9 +702,9 @@ export function Item({
     <>
       {isRenderable(startContent) && (
         <span
-          {...stylex.props(
-            styles.startContent,
-            align === 'first-line' && styles.firstLineSlot,
+          className={tw(
+            itemStartContentClassName,
+            align === 'first-line' && itemFirstLineSlotClassName,
           )}>
           {startContent}
         </span>
@@ -900,10 +715,10 @@ export function Item({
         // keyboard access lives on the nested control, so no invisible
         // button/anchor is rendered and the row adds no second tab stop.
         <span
-          {...stylex.props(
-            styles.content,
-            isInline && styles.inlineContent,
-            isDisabled && styles.disabledContent,
+          className={tw(
+            itemContentClassName,
+            isInline && itemInlineContentClassName,
+            isDisabled && itemDisabledContentClassName,
           )}>
           {labelAndDescription}
         </span>
@@ -914,10 +729,10 @@ export function Item({
             ? {role: 'link', 'aria-disabled': true, tabIndex: 0}
             : {href, target, rel})}
           {...focusOwnerProps}
-          {...stylex.props(
-            styles.invisibleAnchor,
-            isInline && styles.inlineContent,
-            isDisabled && styles.disabledContent,
+          className={tw(
+            itemInvisibleAnchorClassName,
+            isInline && itemInlineContentClassName,
+            isDisabled && itemDisabledContentClassName,
           )}>
           {labelAndDescription}
         </RowAnchor>
@@ -931,19 +746,19 @@ export function Item({
             ? disabledInteractionProps<HTMLButtonElement>()
             : null)}
           {...focusOwnerProps}
-          {...stylex.props(
-            styles.invisibleButton,
-            isInline && styles.inlineContent,
-            isDisabled && styles.disabledContent,
+          className={tw(
+            itemInvisibleButtonClassName,
+            isInline && itemInlineContentClassName,
+            isDisabled && itemDisabledContentClassName,
           )}>
           {labelAndDescription}
         </button>
       ) : (
         <span
-          {...stylex.props(
-            styles.content,
-            isInline && styles.inlineContent,
-            isDisabled && styles.disabledContent,
+          className={tw(
+            itemContentClassName,
+            isInline && itemInlineContentClassName,
+            isDisabled && itemDisabledContentClassName,
           )}>
           {labelAndDescription}
         </span>
@@ -951,10 +766,10 @@ export function Item({
 
       {isRenderable(endContent) && (
         <span
-          {...stylex.props(
-            styles.endContent,
-            align === 'first-line' && styles.firstLineSlot,
-            isDisabled && styles.disabledContent,
+          className={tw(
+            itemEndContentClassName,
+            align === 'first-line' && itemFirstLineSlotClassName,
+            isDisabled && itemDisabledContentClassName,
           )}>
           {endContent}
         </span>
@@ -1033,11 +848,6 @@ export function Item({
         // rings for the nested control. Other controls ring themselves.
         stylex.props(
           isDelegate ? focusOutlineStyles.focusWithin : focusWithinOwner,
-          styles.root,
-          densityStyles[density],
-          align === 'start' && styles.alignStart,
-          align === 'first-line' && styles.alignFirstLine,
-          isInteractive && styles.interactive,
           // A row with a state fill keeps the fill as its background colour.
           // Its overlay paints as an image layer over the fill.
           isInteractive &&
@@ -1055,15 +865,23 @@ export function Item({
             (isSelected
               ? rowPressLayerStyles.cellOnImage
               : rowPressLayerStyles.cellOnImagePressOnly),
-          isLinkRoot && styles.linkRoot,
-          isHighlighted && styles.highlighted,
-          isSelected && styles.selected,
-          isDisabled && !hasParentRole && styles.disabled,
           swipeAttachment?.rootStyle,
           hasDeprecatedSwipe && swipeHostStyles.root,
           xstyle,
         ),
-        className,
+        tw(
+          itemClassName({
+            align,
+            density,
+            isInteractive,
+            isHighlighted,
+            isSelected,
+            isDisabled,
+            hasParentRole,
+            isLinkRoot,
+          }),
+          className,
+        ),
         style,
       )}
       role={role}
@@ -1080,9 +898,10 @@ export function Item({
                     // The row's own button or link sits in this cell, so the
                     // row's ring reaches it here.
                     {...focusOwnerGroupProps}
-                    {...stylex.props(
-                      styles.markerContent,
-                      align === 'first-line' && styles.markerContentFirstLine,
+                    className={tw(
+                      itemMarkerContentClassName,
+                      align === 'first-line' &&
+                        itemMarkerContentFirstLineClassName,
                     )}>
                     {content}
                   </span>
