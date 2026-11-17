@@ -17,26 +17,10 @@
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import {colorVars, sizeVars} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
-
-/**
- * NavIcon styles
- */
-const styles = stylex.create({
-  base: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '50%',
-    backgroundColor: colorVars['--color-accent'],
-    color: colorVars['--color-on-accent'],
-    flexShrink: 0,
-    width: sizeVars['--size-element-md'],
-    height: sizeVars['--size-element-md'],
-  },
-});
+import {tw} from '../utils/tw';
+import {navIconClassName} from './navIconClasses';
 
 export interface NavIconProps extends BaseProps<HTMLSpanElement> {
   /** Ref forwarded to the root element */
@@ -80,8 +64,8 @@ export function NavIcon({
       ref={ref}
       {...mergeProps(
         themeProps('nav-icon'),
-        stylex.props(styles.base, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(navIconClassName, className),
         style,
       )}
       {...props}>
