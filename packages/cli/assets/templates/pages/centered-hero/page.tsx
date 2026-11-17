@@ -9,7 +9,6 @@ import {Button} from '@astryxdesign/core/Button';
 import {Icon} from '@astryxdesign/core/Icon';
 import {AspectRatio} from '@astryxdesign/core/AspectRatio';
 import {Section} from '@astryxdesign/core/Section';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {ArrowRightIcon} from '@heroicons/react/20/solid';
 
 const IMAGE_URL = '/template-assets/light-scene-horizontal-1.png';
@@ -59,7 +58,7 @@ export default function CenteredHero() {
                       icon={ArrowRightIcon}
                       size="sm"
                       color="inherit"
-                      xstyle={rtlStyles.mirror}
+                      className="rtl:[transform:scaleX(-1)]"
                     />
                   }
                 />
