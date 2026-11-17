@@ -1,6 +1,6 @@
 # form controls and family leftovers
 
-Status: ready-for-agent
+Status: done
 Blocked by: 14, 15
 Wave: 8
 Ticket: 47
@@ -373,3 +373,12 @@ Measured on `599b30183`, for the next window to size itself:
 Window close: `poc/tailwind-layout-primitives` already equals this branch's tip
 (`git merge` reports «Уже актуально»), so no merge commit and no sheet-test
 conflict this window. Nothing pushed.
+
+## Comments
+
+- 2026-11-17: closed. Every form control draws from a class map, and the four survivors are named with their reason.
+- `NumberInput`'s wrapper stays at `packages/core/src/NumberInput/NumberInput.tsx:100`: it is the same element as the shared field base, whose unlayered `paddingBlock`/`paddingInline` shorthands outrank any utility in `astryx-base`, and it writes per-side paddings because the stepper column cancels the block padding edge by edge.
+- `MultiSelector`'s `triggerContainer` (`packages/core/src/MultiSelector/MultiSelector.tsx:175`) and `ComplexSelector`'s (`packages/core/src/ComplexSelector/ComplexSelector.tsx:101`) stay for the same reason, and their `popover` arm stays because `usePopover` accepts a StyleX value only.
+- `AppShell` keeps one map for the skip link and the main focus-target arms, because `:focus` variants and `focusOutlineProps.focusVisible` take StyleX styles. The safe-area padding, the sticky header's `z-[1]`, the area fills and the frame read classes from `packages/core/src/AppShell/appShellClasses.ts`.
+- Tests that read computed styles moved to class sets: five in `packages/core/src/AppShell/AppShellSafeArea.test.tsx` and the sticky-header stacking case in `packages/core/src/AppShell/AppShell.test.tsx`. The input wrapper's `position: relative` still comes from `packages/core/src/Field/inputStyles.stylex.ts`, so that read stays computed.
+- `Icon`, `ToggleButtonGroup`, `SelectorOption` and `MultiSelector`'s rows are classes; the remaining `stylex.create` mentions in their files are doc examples.
