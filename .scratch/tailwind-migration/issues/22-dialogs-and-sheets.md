@@ -1,6 +1,6 @@
 # dialogs and sheets
 
-Status: done for this ticket's scope — `Dialog`, `DialogHeader`, `AlertDialog`, `Drawer`, its header, its scrim and its content safe area, `MobileNav`, the bottom-sheet edge tint and now `Popover/` (surface, viewport fit, sizing, anchor wrapper, both hidden close controls) are classes. `grep -rn "stylex.create(" packages/core/src/Popover` finds none; `BottomSheet` and `Lightbox` moved to ticket 50.
+Status: done — `Dialog`, `DialogHeader`, `AlertDialog`, `Drawer` with its header, scrim and content safe area, `MobileNav`, the bottom-sheet edge tint and `Popover` are classes. `BottomSheet` host and `Lightbox` live in ticket 50.
 Blocked by: 11,17
 Wave: 7
 Family: `family:overlay-dismissal`
