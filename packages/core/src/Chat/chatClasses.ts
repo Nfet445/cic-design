@@ -747,3 +747,47 @@ export function chatComposerStatusClassName(
     'forced-colors:[outline-color:CanvasText] forced-colors:[outline-offset:-1px]',
   );
 }
+
+// ---------------------------------------------------------------------------
+// useTriggerMenu
+// ---------------------------------------------------------------------------
+
+/** The trigger menu's list: bounded height, and one inset around the rows. */
+export const chatTriggerMenuListClassName = tw(
+  'box-border max-h-60 overflow-y-auto p-1 min-w-[180px]',
+);
+
+/** The menu surface keeps the list's minimum width when the list is short. */
+export const chatTriggerMenuSurfaceClassName = 'min-w-[180px]';
+
+/** A menu row: a full-width option that reads as text, not as a button. */
+export const chatTriggerMenuRowClassName = tw(
+  'box-border flex items-center w-full p-2 text-start',
+  'rounded-[var(--radius-element)] border-0 outline-none bg-transparent',
+  'cursor-pointer [&:is(:disabled,[aria-disabled="true"])]:cursor-default',
+  'font-[family-name:var(--font-family-body)]',
+  'text-[length:var(--text-body-size)] leading-[var(--text-body-leading)]',
+  'text-[color:var(--color-text-primary)]',
+);
+
+/** The row the keyboard or the pointer points at. */
+export const chatTriggerMenuRowHighlightedClassName =
+  'bg-[var(--color-overlay-hover)]';
+
+/** The row's label: one ellided line, so a long item never widens the menu. */
+export const chatTriggerMenuRowLabelClassName = tw(
+  'flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap',
+);
+
+/** The loading and empty rows share one supporting-type centering. */
+export const chatTriggerMenuMessageClassName = tw(
+  'p-3 text-center text-[length:var(--text-supporting-size)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** A group's heading: supporting type, inset tighter at the bottom. */
+export const chatTriggerMenuGroupHeadingClassName = tw(
+  'px-2 pt-2 pb-1 select-none',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);

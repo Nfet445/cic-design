@@ -862,6 +862,13 @@ import {
   chatComposerInputAreaClassName,
   chatComposerRootClassName,
   chatComposerStatusClassName,
+  chatTriggerMenuGroupHeadingClassName,
+  chatTriggerMenuListClassName,
+  chatTriggerMenuMessageClassName,
+  chatTriggerMenuRowClassName,
+  chatTriggerMenuRowHighlightedClassName,
+  chatTriggerMenuRowLabelClassName,
+  chatTriggerMenuSurfaceClassName,
   chatLayoutBlurLayerClassName,
   chatLayoutDockClassName,
   chatFocusRingInsetClassName,
@@ -2827,6 +2834,15 @@ function familyClassNames() {
   add(chatComposerStatusClassName('bottom', 'error'));
   add(chatComposerStatusClassName('top', 'warning'));
   add(chatComposerStatusClassName('bottom', 'warning'));
+  // useTriggerMenu: the list, its surface, a row at rest and highlighted, the
+  // label, the shared message row and the group heading.
+  add(chatTriggerMenuListClassName);
+  add(chatTriggerMenuSurfaceClassName);
+  add(chatTriggerMenuRowClassName);
+  add(chatTriggerMenuRowHighlightedClassName);
+  add(chatTriggerMenuRowLabelClassName);
+  add(chatTriggerMenuMessageClassName);
+  add(chatTriggerMenuGroupHeadingClassName);
   // ChatLayout: the root in both scroll modes, the message area's density and
   // end room, the dock box, the frosted layer, the dock's own inset and its
   // inner column.
