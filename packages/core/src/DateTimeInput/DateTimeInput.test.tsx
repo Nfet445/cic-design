@@ -23,6 +23,7 @@ import userEvent from '@testing-library/user-event';
 import * as stylex from '@stylexjs/stylex';
 import {colorVars} from '../theme/tokens.stylex';
 import {getButton, queryButton} from '../__tests__/fastRoleQueries';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {DateTimeInput, type DateTimeInputProps} from './DateTimeInput';
 import type {ISODateTimeString} from './DateTimeInput';
 import type {DateInputEntryError} from './DateTimeInput';
@@ -31,6 +32,7 @@ import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {InternationalizationProvider} from '../i18n';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
+import {nativePickerSegmentInvalidClassName} from './nativePickerSegmentClasses';
 
 function politeRegion(): HTMLElement | null {
   return document.querySelector('[data-astryx-live-region="polite"]');
@@ -3961,7 +3963,12 @@ describe('DateTimeInput entryErrorBehavior', () => {
       status:
         container.querySelector('.astryx-field-status')?.textContent ?? '',
       isInvalid: input.getAttribute('aria-invalid') === 'true',
-      isStyledInvalid: /\.inputInvalid\b/.test(input.className),
+      // The native segment renders its invalid style as a class. The Astryx
+      // text field still renders its own through StyleX, so both spellings
+      // count until that map moves.
+      isStyledInvalid:
+        classesOf(input).includes(nativePickerSegmentInvalidClassName) ||
+        /\.inputInvalid\b/.test(input.className),
     };
   }
 

@@ -708,7 +708,7 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // field family about 60, and Table's sorting, filtering and selection maps
     // about 60. A scan that reaches component bodies or prose would add
     // hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(620);
+    expect(stylesheet.rules.size).toBeLessThan(640);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

@@ -30,17 +30,17 @@ const FLOORED_CONTROLS = [
   'DateInput/DateInput.tsx',
   'DateInput/NativeDateField.tsx',
   'DateInput/TouchDateField.tsx',
-  'DateRangeInput/DateRangeInput.tsx',
+  'DateRangeInput/dateRangeInputClasses.ts',
   'DateTimeInput/DateTimeInput.tsx',
   'DateTimeInput/TouchDateTimeField.tsx',
-  'DateTimeInput/nativePickerSegmentStyles.ts',
+  'DateTimeInput/nativePickerSegmentClasses.ts',
   'Field/PanelSearchInput.tsx',
-  'FileInput/FileInput.tsx',
+  'FileInput/fileInputClasses.ts',
   'NumberInput/NumberInput.tsx',
   'Selector/Selector.tsx',
-  'TextArea/TextArea.tsx',
-  'TextInput/TextInput.tsx',
-  'TimeInput/TimeInput.tsx',
+  'TextArea/textAreaClasses.ts',
+  'TextInput/textInputClasses.ts',
+  'TimeInput/timeInputClasses.ts',
   'Typeahead/BaseTypeahead.tsx',
   // The rich-text package carries the same floor; its path is relative to
   // packages/core/src.
@@ -50,9 +50,16 @@ const FLOORED_CONTROLS = [
 /** A font floor applied to every coarse pointer, iOS or not. */
 const BARE_COARSE_FLOOR = `'@media (pointer: coarse)': \`max(1rem`;
 
+/** A class floor with no iOS gate: the coarse-pointer rule alone. */
+const BARE_COARSE_FLOOR_CLASS = /pointer-coarse:text-\[length:max\(1rem/;
+
 /** The same floor, gated to iOS WebKit inside the coarse-pointer query. */
 const IOS_GATED_FLOOR =
   /'@media \(pointer: coarse\)': \{\s*'@supports \(-webkit-touch-callout: none\)': `max\(1rem, \$\{typeScaleVars\['--text-(?:body|label)-size'\]\}\)`/;
+
+/** The same floor once it is a Tailwind class rather than a StyleX entry. */
+const IOS_GATED_FLOOR_CLASS =
+  /pointer-coarse:\[@supports\(-webkit-touch-callout:none\)\]:text-\[length:max\(1rem,var\(--text-(?:body|label)-size\)\)\]/;
 
 /** Collect every non-test component source under `dir`, recursively. */
 function componentSources(dir: string): string[] {
@@ -80,8 +87,12 @@ describe('the 16px input floor', () => {
     expect(FLOORED_CONTROLS.length).toBeGreaterThanOrEqual(18);
     for (const file of FLOORED_CONTROLS) {
       const source = readFileSync(path.resolve(__dirname, file), 'utf8');
-      expect(source, file).toMatch(IOS_GATED_FLOOR);
+      expect(
+        source.match(IOS_GATED_FLOOR) ?? source.match(IOS_GATED_FLOOR_CLASS),
+        file,
+      ).not.toBeNull();
       expect(source, file).not.toContain(BARE_COARSE_FLOOR);
+      expect(source, file).not.toMatch(BARE_COARSE_FLOOR_CLASS);
     }
   });
 
@@ -99,7 +110,11 @@ describe('the 16px input floor', () => {
         file,
         source: readFileSync(file, 'utf8'),
       }))
-      .filter(({source}) => source.includes(BARE_COARSE_FLOOR))
+      .filter(
+        ({source}) =>
+          source.includes(BARE_COARSE_FLOOR) ||
+          BARE_COARSE_FLOOR_CLASS.test(source),
+      )
       .map(({file}) => path.relative(__dirname, file));
     expect(offenders).toEqual([]);
   });
