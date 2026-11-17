@@ -609,6 +609,12 @@ import {
 } from '../EmptyState/emptyStateClasses';
 import {timestampClassName} from '../Timestamp/timestampClasses';
 import {
+  chatMessageMetadataAssistantClassName,
+  chatMessageMetadataClassName,
+  chatMessageMetadataStatusErrorClassName,
+  chatMessageMetadataStatusPulseClassName,
+  chatMessageMetadataStatusRowClassName,
+  chatMessageMetadataUserClassName,
   chatPastedTextFooterClassName,
   chatPastedTextMetaClassName,
   chatPastedTextPreviewClassName,
@@ -2079,6 +2085,12 @@ function familyClassNames() {
   add(chatSystemMessageDividerClassName);
   add(chatSystemMessageIconClassName);
   add(chatSystemMessageContentClassName);
+  add(chatMessageMetadataClassName);
+  add(chatMessageMetadataUserClassName);
+  add(chatMessageMetadataAssistantClassName);
+  add(chatMessageMetadataStatusRowClassName);
+  add(chatMessageMetadataStatusErrorClassName);
+  add(chatMessageMetadataStatusPulseClassName);
   for (const orientation of ['vertical', 'horizontal']) {
     add(radioListClassName({orientation}));
   }

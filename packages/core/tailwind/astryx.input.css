@@ -344,3 +344,15 @@
     opacity: 0.925;
   }
 }
+
+/* Chat message metadata: the "sending" status breathes while the message is in
+   flight. The frames live here because the build scans class maps only. */
+@keyframes astryxChatStatusPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

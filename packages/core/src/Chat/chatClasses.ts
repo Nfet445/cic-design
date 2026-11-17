@@ -63,3 +63,34 @@ export const chatSystemMessageIconClassName =
 /** The notice's text row: the icon and the words sit six pixels apart. */
 export const chatSystemMessageContentClassName =
   'inline-flex items-center gap-1.5';
+
+/** The metadata row under a message: supporting text, one step below it. */
+export const chatMessageMetadataClassName = tw(
+  'flex items-center gap-1 mt-1',
+  'text-[length:var(--text-supporting-size)] font-normal',
+  'leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** A user message reads from the writer's edge, so its row reverses. */
+export const chatMessageMetadataUserClassName = 'flex-row-reverse';
+
+/** An assistant message keeps the row in reading order. */
+export const chatMessageMetadataAssistantClassName = 'flex-row';
+
+/** The delivery status: an icon and its word, four pixels apart. */
+export const chatMessageMetadataStatusRowClassName =
+  'inline-flex items-center gap-1';
+
+/** A failed delivery takes the error colour. */
+export const chatMessageMetadataStatusErrorClassName =
+  'text-[color:var(--color-text-error)]';
+
+/**
+ * A message in flight breathes; the motion arm yields to a reader who asked
+ * for less movement.
+ */
+export const chatMessageMetadataStatusPulseClassName = tw(
+  'animate-[astryxChatStatusPulse_1.5s_ease-in-out_infinite]',
+  'motion-reduce:animate-none',
+);
