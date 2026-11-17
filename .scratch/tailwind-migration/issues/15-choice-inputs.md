@@ -44,3 +44,11 @@ Second form slice: `Selector/` (13), `MultiSelector/` (10), `ComplexSelector/` a
   - `Typeahead/TypeaheadItem.test.tsx` — the two enabled/disabled `opacity` reads that went through the `stylexDeclarations` helper.
 - Deliberately left on StyleX: every trigger in the three components (`trigger*`, `statusButton`), and every popup surface — `dropdown`, `popover`, `listbox`, `searchPanel`, `groupHeading`, `emptyState`, `loadingStatus` — which belongs to the wave-7 overlay tickets. `ComplexSelector` is left whole: its map holds trigger chrome and the popup's `content` and `popover` surface, and it owns no option row, so this ticket had nothing to move there. `Typeahead`'s popup and its `input` frame are likewise untouched.
 - Windows High Contrast: the rows draw an outline only where they drew one before. `Selector`'s keyboard ring and `Typeahead`'s highlighted row still outline from the theme's focus tokens, and the `Typeahead` highlight keeps its `@media (forced-colors: active)` system outline — now through `forced-colors:[--_typeahead-row-outline-*]` classes, whose compiled rules the sheet test covers. A manual pass over the family in a High Contrast session is still owed, and the family's browser check page is still owed with the rest of `family:input-fields` (see ticket 14).
+
+## Closing notes
+
+- `e9fc11537` Selector rows, `607bf9851` MultiSelector rows, `f05a3a1a0` Typeahead rows; merged as `5b8c1c575`. `Selector`, `MultiSelector`, `ComplexSelector`, `Typeahead` and the sheet test passed 1028 tests.
+- `ComplexSelector` stayed whole on purpose: it is an orchestrator over Selector and MultiSelector parts, and its own three maps only place those parts, so moving them would duplicate the child maps rather than replace anything.
+- Two assertions in `TypeaheadItem.test.tsx` read `declaredValue(root, 'opacity')`; they now assert the class set, because a Tailwind utility cannot reach `getComputedStyle` in jsdom.
+- The row maps key a highlighted or selected row on vibrancy-safe literals with their own variants, not on class order, since `@layer astryx-base` resolves ties by rule order.
+- `705b9a4c1` of the worker's own merge closed the ticket and widened the changeset to cover Typeahead.
