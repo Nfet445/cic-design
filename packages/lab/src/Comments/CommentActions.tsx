@@ -4,7 +4,7 @@
 
 /**
  * @file CommentActions.tsx
- * @input Uses React, React DOM flushSync, StyleX, Core's internal
+ * @input Uses React, React DOM flushSync, Core's internal
  *   useClipboardCopy, IconButton,
  *   Button, Tooltip, ToggleButton, OverflowList, DropdownMenu, Popover, Text
  * @output Exports CommentActions (a comment's header actions), ReactionSummary
@@ -15,7 +15,6 @@
 
 import {useCallback, useRef, useState, type ReactNode} from 'react';
 import {flushSync} from 'react-dom';
-import * as stylex from '@stylexjs/stylex';
 import {Button} from '@astryxdesign/core/Button';
 import {
   DropdownMenu,
@@ -32,27 +31,16 @@ import {ToggleButton} from '@astryxdesign/core/ToggleButton';
 import {Tooltip} from '@astryxdesign/core/Tooltip';
 import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {useLocale, useTranslator} from '@astryxdesign/core/i18n';
+import {
+  commentActionsListClassName,
+  commentActionsReactionToggleClassName,
+} from './commentActionsClasses';
 import {reactionDescription} from './i18n';
 import {CommentIcon} from './icons';
 import {commentAnchorId, type AnyComment} from './utils';
 import type {CommentReaction, CommentReactionOption} from './types';
 
 const MORE_MENU_MIN_WIDTH = `calc(${spacingVars['--spacing-8']} * 5)`;
-
-const styles = stylex.create({
-  actionsList: {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minWidth: 0,
-    justifyContent: 'flex-end',
-  },
-  // Every reaction-row control carries one spacing step of inline padding.
-  reactionToggle: {
-    aspectRatio: 'auto',
-    paddingInline: spacingVars['--spacing-2'],
-  },
-});
 
 export type CommentActionId = 'resolve' | 'reopen' | 'react' | 'reply' | 'link';
 
@@ -146,7 +134,7 @@ export function ReactionSummary({
             isPressed={reaction.reactedByViewer === true}
             isDisabled={!canReact}
             data-comment-reaction={reaction.key}
-            xstyle={styles.reactionToggle}
+            className={commentActionsReactionToggleClassName}
             onPressedChange={() => {
               if (!isBusy) {
                 onReact(comment, reaction.key);
@@ -394,7 +382,7 @@ export function CommentActions({
         gap={0.5}
         collapseFrom="end"
         onOverflowChange={changeOverflow}
-        xstyle={styles.actionsList}
+        className={commentActionsListClassName}
         data-comment-actions-list="true">
         {/* First, so it is the last to collapse. */}
         {resolveAction?.kind === 'resolve' ? (

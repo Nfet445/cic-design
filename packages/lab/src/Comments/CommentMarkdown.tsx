@@ -4,7 +4,7 @@
 
 /**
  * @file CommentMarkdown.tsx
- * @input Uses React, StyleX, Markdown, Lightbox, ChatTokenizedText, Avatar
+ * @input Uses React, Markdown, Lightbox, ChatTokenizedText, Avatar
  * @output Exports CommentMarkdown (a comment body's Markdown, with images that
  *   open in a Lightbox and agent commands shown as chips) and agentToken
  * @position Internal body renderer shared by comment rows and the edit
@@ -12,7 +12,6 @@
  */
 
 import {createContext, useContext, useMemo, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Avatar} from '@astryxdesign/core/Avatar';
 import {
   ChatTokenizedText,
@@ -21,28 +20,9 @@ import {
 import {Lightbox, type LightboxMedia} from '@astryxdesign/core/Lightbox';
 import {Markdown, type MarkdownInlinePlugin} from '@astryxdesign/core/Markdown';
 import type {MarkdownPluginEntry} from '@astryxdesign/core/Markdown/plugins';
-import {focusVars, spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {focusOutlineProps, mergeProps} from '@astryxdesign/core/utils';
+import {commentMarkdownImageClassName} from './commentMarkdownClasses';
 import type {CommentAgentCommand} from './types';
-
-const styles = stylex.create({
-  image: {
-    display: 'block',
-    maxWidth: '100%',
-    height: 'auto',
-    marginBlock: spacingVars['--spacing-2'],
-    cursor: {
-      default: 'zoom-in',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    outlineStyle: {
-      default: 'none',
-      ':focus-visible': focusVars['--focus-outline-style'],
-    },
-    outlineWidth: focusVars['--focus-outline-width'],
-    outlineColor: focusVars['--focus-outline-color'],
-    outlineOffset: focusVars['--focus-outline-offset'],
-  },
-});
 
 /** An agent's chip: what the composer's `/` menu inserts, and what a posted
  *  comment shows in place of the command. */
@@ -114,7 +94,10 @@ function CommentImage({src, alt}: {src: string; alt: string}) {
       tabIndex={0}
       aria-haspopup="dialog"
       data-comment-image="lightbox"
-      {...stylex.props(styles.image)}
+      {...mergeProps(
+        focusOutlineProps.focusVisible(),
+        commentMarkdownImageClassName,
+      )}
       onClick={event => {
         // An image is its own control, not a press on the thread.
         event.stopPropagation();
