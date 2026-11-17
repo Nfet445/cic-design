@@ -32,6 +32,8 @@
  * - /packages/core/src/Layer/useLayerKeyboardClearance.ts
  * - /packages/core/src/Layer/layerViewportInset.test.ts
  * - /docs/specs/AST-059-layer-viewport-inset/spec.md
+ * @deprecated Internal geometry seam: it is not a public API and it
+ *   disappears when StyleX leaves the package.
  */
 
 import * as stylex from '@stylexjs/stylex';

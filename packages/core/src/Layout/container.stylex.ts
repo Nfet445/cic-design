@@ -38,6 +38,10 @@
  * `overlayPaddingReset` in padding.stylex.ts.
  *
  * SYNC: When modified, update /packages/core/src/Layout/Layout.doc.mjs
+ * @deprecated A container publishes its padding as
+ *   `--astryx-<component>-padding*` variables that the class maps read.
+ *   This module keeps the unlayered arm a padding utility must lose to,
+ *   and it disappears when StyleX leaves the package.
  */
 
 import * as stylex from '@stylexjs/stylex';
