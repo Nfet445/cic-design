@@ -340,6 +340,7 @@ import {
 } from '../RadioList/radioListItemClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {kbdKeyClassName, kbdWrapperClassName} from '../Kbd/kbdClasses';
+import {infoTipTriggerClassName} from '../InfoTip/infoTipClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
   iconColorClassName,
@@ -2638,6 +2639,8 @@ function familyClassNames() {
   // Kbd: the shortcut row and the one badge shape both platforms show.
   add(kbdWrapperClassName);
   add(kbdKeyClassName);
+  // InfoTip: the one info button, whatever its size.
+  add(infoTipTriggerClassName);
   // Switch: the field root at both width states, the row in its four shape
   // states, the track box per size, the label column and the status gap.
   for (const width of [null, 240]) {
