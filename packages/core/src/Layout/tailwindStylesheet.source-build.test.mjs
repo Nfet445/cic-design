@@ -29,6 +29,10 @@ import {
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
+  alertDialogActionsRowClassName,
+  alertDialogStackedActionClassName,
+} from '../AlertDialog/alertDialogClasses';
+import {
   dialogInlineClassName,
   dialogInnerClassName,
   dialogRootClassName,
@@ -459,6 +463,11 @@ function familyClassNames() {
       );
     }
   }
+
+  // The alert dialog adds only the row's gesture policy and the stacked width;
+  // Button already caps an action at `min-w-0 max-w-full`.
+  add(alertDialogActionsRowClassName);
+  add(alertDialogStackedActionClassName);
 
   // The layout family: the shell frame, then every region combination. A
   // region edge publishes its inset and reads it back, so each combination
