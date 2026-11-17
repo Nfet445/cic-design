@@ -922,6 +922,19 @@ import {
   skeletonRadiusClassName,
 } from '../Skeleton/skeletonClasses';
 import {
+  thumbnailDisabledClassName,
+  thumbnailImageClassName,
+  thumbnailImageContainerClassName,
+  thumbnailInsetBorderClassName,
+  thumbnailInteractiveButtonClassName,
+  thumbnailInteractiveClassName,
+  thumbnailOverlayClassName,
+  thumbnailPlaceholderClassName,
+  thumbnailRemoveSlotClassName,
+  thumbnailRootClassName,
+  thumbnailUploadOverlayClassName,
+} from '../Thumbnail/thumbnailClasses';
+import {
   bannerChevronClassName,
   bannerChevronExpandedClassName,
   bannerClassName,
@@ -2602,6 +2615,20 @@ function familyClassNames() {
   add(codeBlockSizeClassName('sm'));
   add(codeBlockSizeClassName('md'));
   add(codeBlockCopyButtonClassName);
+  // Thumbnail: the root, the image frame, the image, the inset border, the
+  // placeholder, the interactive frame with its hover and press layer, the
+  // remove slot, the disabled dimming and the upload overlay.
+  add(thumbnailRootClassName);
+  add(thumbnailImageContainerClassName);
+  add(thumbnailImageClassName);
+  add(thumbnailInsetBorderClassName);
+  add(thumbnailPlaceholderClassName);
+  add(thumbnailInteractiveClassName);
+  add(thumbnailInteractiveButtonClassName);
+  add(thumbnailOverlayClassName);
+  add(thumbnailRemoveSlotClassName);
+  add(thumbnailDisabledClassName);
+  add(thumbnailUploadOverlayClassName);
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);
