@@ -15,6 +15,8 @@ import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MoreMenu} from './MoreMenu';
 import {DropdownMenu} from '../DropdownMenu/DropdownMenu';
+import {dropdownMenuTriggerOpenClassName} from '../DropdownMenu/dropdownMenuClasses';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {SizeProvider} from '../SizeContext/SizeContext';
 import {warmMenuBottomSheet} from '../DropdownMenu/__tests__/warmMenuBottomSheet';
 
@@ -120,11 +122,11 @@ describe('MoreMenu', () => {
     render(<MoreMenu items={defaultItems} />);
 
     const trigger = screen.getByRole('button', {name: 'More options'});
-    expect(trigger.className).not.toContain('DropdownMenu__styles.triggerOpen');
+    expectClassSet(trigger, {excludes: [dropdownMenuTriggerOpenClassName]});
 
     await user.click(trigger);
 
-    expect(trigger.className).toContain('DropdownMenu__styles.triggerOpen');
+    expectClassSet(trigger, {includes: [dropdownMenuTriggerOpenClassName]});
   });
 
   it('forwards BottomSheet presentation to DropdownMenu', async () => {
