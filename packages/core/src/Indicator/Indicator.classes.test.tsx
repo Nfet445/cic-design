@@ -6,7 +6,7 @@
  *   the class assertions harness
  * @output Verifies the class set each indicator state paints — one class per
  *   property, the size step, the state colors, the disabled opacity — and that
- *   the hover tint still comes from the indicator marker scope
+ *   the hover tint reads the owning row's scope attribute
  * @position Unit layer of the styling contract (FR8); the built sheet asserts
  *   the declarations these classes carry
  *   (Layout/tailwindStylesheet.source-build.test.mjs)
@@ -22,7 +22,6 @@ import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {CheckIndicator} from './CheckIndicator';
 import {CheckboxIndicator} from './CheckboxIndicator';
 import {RadioIndicator} from './RadioIndicator';
-import {indicatorHoverProps} from './indicatorHover.stylex';
 
 /** The chrome a checkbox box and a radio circle share. */
 const BOX_CHROME = [
@@ -39,6 +38,15 @@ const BOX_CHROME = [
   'motion-reduce:duration-0',
 ];
 
+/**
+ * The hover tint. Each class names the row's scope attribute as an ancestor, so
+ * one row drives the box and the circle.
+ */
+const HOVER_BORDER_CHECKED =
+  '[@media(hover:hover)]:[[data-astryx-indicator-scope]:hover_&]:border-[color:color-mix(in_srgb,var(--color-accent),var(--color-tint-hover)_15%)]';
+const HOVER_FILL_CHECKED =
+  '[@media(hover:hover)]:[[data-astryx-indicator-scope]:hover_&]:bg-[color:color-mix(in_srgb,var(--color-accent),var(--color-tint-hover)_15%)]';
+
 /** The state colors, one class per property. */
 const UNCHECKED_BORDER = 'border-[color:var(--color-border-emphasized)]';
 const CHECKED_BORDER = 'border-[color:var(--color-accent)]';
@@ -54,27 +62,6 @@ function elementOf(container: HTMLElement, selector: string): HTMLElement {
     throw new Error(`no element matches ${selector}`);
   }
   return element as HTMLElement;
-}
-
-/**
- * Every rule text in the document, nested ones included. jsdom drops the
- * `color-mix()` declaration itself, so a test can read a selector here but not
- * a value; the built sheet covers the values.
- */
-function ruleTexts(): string[] {
-  const texts: string[] = [];
-  const walk = (list: CSSRuleList) => {
-    for (const rule of Array.from(list)) {
-      texts.push(rule.cssText);
-      if (rule instanceof CSSMediaRule) {
-        walk(rule.cssRules);
-      }
-    }
-  };
-  for (const sheet of Array.from(document.styleSheets)) {
-    walk(sheet.cssRules);
-  }
-  return texts;
 }
 
 describe('CheckboxIndicator classes', () => {
@@ -193,38 +180,24 @@ describe('CheckboxIndicator classes', () => {
     expectClassSet(bar(), {includes: ['w-3'], excludes: ['w-2.5']});
   });
 
-  it('takes its hover tint from the indicator marker scope', () => {
+  it("reads its hover tint from the owning row's scope attribute", () => {
     const {container} = render(<CheckboxIndicator state="checked" size="sm" />);
-    const box = elementOf(container, '.astryx-checkbox-indicator');
-    const hover = indicatorHoverProps({isChecked: true, isDisabled: false});
-    // StyleX's dev build adds a readable debug name beside each class; the
-    // harness drops those, so only the atomic ones are checked.
-    const hoverClasses = (hover.className ?? '')
-      .split(/\s+/)
-      .filter(name => name !== '' && !name.includes('__'));
-
-    // The resting border and fill are the class map's; the tint is the one
-    // paint that reads the ancestor marker, so each of its classes carries the
-    // hover rule under a hover-capable pointer, and the box applies them.
-    expect(hoverClasses.length).toBeGreaterThan(0);
-    expectClassSet(box, {includes: hoverClasses});
-    for (const name of hoverClasses) {
-      const selector = new RegExp(
-        `\\.${name}\\.${name}\\.${name}:where\\([^)]*:hover \\*\\)`,
-      );
-      const rules = ruleTexts().filter(
-        text => text.includes('(hover: hover)') && selector.test(text),
-      );
-      expect(rules, `no marker hover rule for ${name}`).toHaveLength(1);
-    }
+    // The resting border and fill are this map's classes; a variant of each
+    // deepens them while the row that carries the scope attribute is hovered.
+    expectClassSet(elementOf(container, '.astryx-checkbox-indicator'), {
+      includes: [HOVER_BORDER_CHECKED, HOVER_FILL_CHECKED],
+    });
   });
 
   it('composes no hover tint while the box is disabled', () => {
-    // The owner drops the indicator marker while disabled, so a disabled box
+    // The owner drops the scope attribute while disabled, so a disabled box
     // has nothing to tint and nothing to reset.
-    expect(
-      indicatorHoverProps({isChecked: false, isDisabled: true}).className,
-    ).toBeUndefined();
+    const {container} = render(
+      <CheckboxIndicator state="checked" size="sm" isDisabled />,
+    );
+    expectClassSet(elementOf(container, '.astryx-checkbox-indicator'), {
+      excludes: [HOVER_BORDER_CHECKED, HOVER_FILL_CHECKED],
+    });
   });
 });
 

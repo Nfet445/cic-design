@@ -16,15 +16,8 @@ import {readFileSync} from 'node:fs';
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {
-  hasPressedArm,
-  hasReleaseFade,
-  readsPressStrength,
-  rulesDeclaredFor,
-  rulesWithSelector,
-} from '../__tests__/pressState';
+import {hasReleaseFade, rulesDeclaredFor} from '../__tests__/pressState';
 import {CheckboxInput} from './CheckboxInput';
-import * as publicMarkers from '../Indicator/indicator.markers.stylex';
 import {Theme} from '../theme/Theme';
 import {defineTheme} from '../theme/defineTheme';
 import {expectClassSet} from '../__tests__/classNameAssertions';
@@ -34,6 +27,14 @@ import {
 } from '../utils/rtlClasses';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {FOCUS_OUTLINE_PARTS} from '../utils/focusOutline.stylex';
+import {
+  indicatorPressFillClassName,
+  indicatorPressImageClassName,
+} from '../Indicator/indicatorClasses';
+import {
+  checkboxInputPressContentClassName,
+  checkboxInputPressOverlayClassName,
+} from './checkboxInputClasses';
 
 interface InjectedRule {
   selector: string;
@@ -1048,8 +1049,13 @@ describe('pressed state', () => {
       throw new Error('the checkbox has no indicator wrapper to press');
     }
     // The owner paints over the resolved indicator, so the treatment survives a
-    // theme replacement that does not forward style props.
-    expect(hasPressedArm(wrapper)).toBe(true);
+    // theme replacement that does not forward style props. The classes name
+    // the row's scope and press attributes as ancestors, so the fill is the
+    // mouse's press and the image the press the controller paints.
+    expect(wrapper.classList.contains(indicatorPressFillClassName)).toBe(true);
+    for (const name of indicatorPressImageClassName.split(' ')) {
+      expect(wrapper.classList.contains(name)).toBe(true);
+    }
   });
 
   it('does not expose a pressed arm on a disabled checkbox', () => {
@@ -1066,7 +1072,10 @@ describe('pressed state', () => {
     if (wrapper == null) {
       throw new Error('the checkbox has no indicator wrapper');
     }
-    expect(hasPressedArm(wrapper)).toBe(false);
+    expect(wrapper.classList.contains(indicatorPressFillClassName)).toBe(false);
+    for (const name of indicatorPressImageClassName.split(' ')) {
+      expect(wrapper.classList.contains(name)).toBe(false);
+    }
   });
 
   it('fades the touch press out from the row, with the overlay reading its strength', () => {
@@ -1083,24 +1092,29 @@ describe('pressed state', () => {
     // release, and the owner-drawn layer over the indicator paints the pressed
     // token at that strength on both touch arms.
     expect(hasReleaseFade(row)).toBe(true);
-    expect(readsPressStrength(wrapper, '[data-astryx-press="on"]')).toBe(true);
-    expect(readsPressStrength(wrapper)).toBe(true);
+    // The image arm names both the on and the fading state of the row, so the
+    // layer paints through the whole release at the strength the row runs.
+    for (const name of indicatorPressImageClassName.split(' ')) {
+      expect(wrapper.classList.contains(name)).toBe(true);
+    }
+    expect(indicatorPressImageClassName).toContain(
+      '[data-astryx-press=fading]',
+    );
   });
 });
 
 describe('an indicator that paints its own press', () => {
-  it('keeps its marker internal: no public entry exports it', () => {
-    expect(Object.keys(publicMarkers)).not.toContain('indicatorPressScope');
-    // The marker's module is under src/internal, which the API surface leaves
-    // out, and the package barrel does not name it. The one rule that reads
-    // the marker is the press overlay's `content`, which stays beside this
-    // component.
+  it('keeps its attribute internal: no public entry exports it', () => {
+    // The attribute's module is under src/internal, which the API surface
+    // leaves out, and the package barrel does not name it. The one rule that
+    // reads the attribute is the press layer's `content`, which stays beside
+    // this component.
     expect(
       readFileSync(
-        'packages/core/src/CheckboxInput/checkboxInputPress.stylex.ts',
+        'packages/core/src/privateAttributes/indicatorPress.stylex.ts',
         'utf8',
       ),
-    ).toContain("from '../internal/indicatorPress.stylex'");
+    ).toContain("'data-astryx-indicator-press'");
     expect(readFileSync('packages/core/src/index.ts', 'utf8')).not.toContain(
       'indicatorPress',
     );
@@ -1160,21 +1174,15 @@ describe('an indicator that paints its own press', () => {
       <CheckboxInput label="Accept terms" value={false} onChange={() => {}} />,
     );
     const {wrapper} = partsOf(container);
-    // The layer reads the marked indicator as a descendant (`:has()`).
-    const off = rulesWithSelector(wrapper, ':has(');
-    expect(
-      off.some(
-        rule => rule.includes('::after') && /content:\s*none/.test(rule),
-      ),
-    ).toBe(true);
-    // Without such an indicator the layer stays on.
-    expect(
-      rulesDeclaredFor(wrapper).some(
-        rule =>
-          rule.includes('::after') &&
-          !rule.includes(':has(') &&
-          /content:\s*("")/.test(rule),
-      ),
-    ).toBe(true);
+    // The layer's content turns off over an indicator marked as painting its
+    // own press (`:has()`), and the layer itself is on.
+    const content = checkboxInputPressContentClassName.split(' ');
+    expect(content.some(name => name.includes('has-[['))).toBe(true);
+    for (const name of content) {
+      expect(wrapper.classList.contains(name)).toBe(true);
+    }
+    for (const name of checkboxInputPressOverlayClassName.split(' ')) {
+      expect(wrapper.classList.contains(name)).toBe(true);
+    }
   });
 });

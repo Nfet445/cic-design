@@ -29,8 +29,6 @@ export type {
 
 export {useIndicator} from './useIndicator';
 
-export {indicatorScope} from './indicator.markers.stylex';
-
 export type {
   IndicatorComponent,
   IndicatorFamily,

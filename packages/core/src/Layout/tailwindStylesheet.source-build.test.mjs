@@ -552,6 +552,10 @@ import {
   treeListItemDensityClassName,
 } from '../TreeList/treeListItemClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
+import {
+  indicatorPressFillClassName,
+  indicatorPressImageClassName,
+} from '../Indicator/indicatorClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {reorderingHandleCursorClassName} from '../privateAttributes/reorderingClasses';
 import {
@@ -2275,6 +2279,10 @@ function familyClassNames() {
     add(className);
   }
   add(menuPressLitRowClassName);
+  // The press over a selection control's indicator: the `:active` fill and the
+  // controller's image, each named after the row's scope and press attributes.
+  add(indicatorPressFillClassName);
+  add(indicatorPressImageClassName);
   add(reorderLineClassName);
   add(reorderingHandleCursorClassName);
   add(travellingRowClassName);

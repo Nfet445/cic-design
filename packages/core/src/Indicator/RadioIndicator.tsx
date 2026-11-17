@@ -13,7 +13,6 @@ import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
 import {radioCircleClassName, radioDotClassName} from './indicatorClasses';
-import {indicatorHoverProps} from './indicatorHover.stylex';
 import type {IndicatorProps} from './types';
 
 /**
@@ -69,11 +68,7 @@ export function RadioIndicator({
             className: radioCircleClassName({isChecked, isDisabled, size}),
           },
         ),
-        // The hover tint reads the indicator marker, so it stays on StyleX.
-        mergeProps(
-          indicatorHoverProps({isChecked, isDisabled}),
-          stylex.props(xstyle),
-        ),
+        stylex.props(xstyle),
         className,
         style,
       )}>
