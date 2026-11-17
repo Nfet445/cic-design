@@ -4,7 +4,7 @@
 
 /**
  * @file Field.tsx
- * @input Uses React, StyleX, BaseProps, FieldLabel/FieldStatus, FormLayoutContext, Text, VisuallyHidden, theme/status utilities
+ * @input Uses React, the Field class map, BaseProps, FieldLabel/FieldStatus, FormLayoutContext, Text, VisuallyHidden, theme/status utilities
  * @output Exports Field component, FieldProps
  * @position Core implementation; consumed by index.ts, tested by Field.test.tsx
  *
@@ -23,7 +23,14 @@ import type {SizeValue} from '../utils/types';
 import {FieldLabel} from './FieldLabel';
 import {FieldStatus} from '../FieldStatus/FieldStatus';
 import {useFieldStatusAnnouncement} from '../FieldStatus/useFieldStatusAnnouncement';
-import {spacingVars, borderVars, sizeVars} from '../theme/tokens.stylex';
+import {
+  fieldAttachedStatusLayerClassName,
+  fieldClassName,
+  fieldHorizontalLabelAlignClassName,
+  fieldHorizontalLabelsClassName,
+  fieldInputStatusWrapperClassName,
+  fieldSizeStyle,
+} from './fieldClasses';
 import type {IconType} from '../Icon';
 import {mergeProps} from '../utils/mergeProps';
 import {useDevWarning} from '../hooks/useDevWarning';
@@ -32,61 +39,6 @@ import {Text} from '../Text/Text';
 import {VisuallyHidden} from '../VisuallyHidden/VisuallyHidden';
 import {themeProps} from '../utils/themeProps';
 import type {FieldStatusPlacement} from './fieldStatusPlacement';
-
-const styles = stylex.create({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    // The Field root owns the local stacking boundary (AST-027): the input
-    // wrapper's z-index (1, above the attached status box) and the attached
-    // status layer (-1) order parts inside this surface only. Without this,
-    // detached/tooltip fields — whose input wrapper renders outside the
-    // attached-status wrapper — compete with page-level stacking (#5689).
-    isolation: 'isolate',
-    // The Field root is the flex/grid item a row actually sizes. With the
-    // automatic minimum it held a filter bar at its controls' intrinsic
-    // widths (a native input's ~20ch, a Selector's full value), so the row
-    // overflowed on phones; the reset lets the row shrink the whole field.
-    minWidth: 0,
-  },
-  containerGap: {
-    gap: spacingVars['--spacing-1'],
-  },
-  horizontalLabels: {
-    display: 'contents',
-  },
-  horizontalLabelAlign: {
-    // Align label text with input text by matching the input wrapper's
-    // top border + top padding. Works for both single-line inputs and
-    // textareas (labels stay top-aligned, not vertically centered).
-    paddingTop: `calc(${borderVars['--border-width']} + ${spacingVars['--spacing-1']})`,
-  },
-  inputStatusWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    isolation: 'isolate',
-    // Extend an attached FieldStatus behind the lower half of the control.
-    // Half-height is the maximum effective corner radius CSS can render, even
-    // when a theme uses a pill value such as --radius-full (9999px).
-    '--_field-status-overlap': {
-      default: `calc(${sizeVars['--size-element-md']} / 2)`,
-      ':has(> [data-size="sm"])': `calc(${sizeVars['--size-element-sm']} / 2)`,
-      ':has(> [data-size="lg"])': `calc(${sizeVars['--size-element-lg']} / 2)`,
-    },
-  },
-  attachedStatusLayer: {
-    // Keep the overlapping background below both Astryx inputs and custom
-    // controls. The isolated wrapper contains this negative stacking layer.
-    position: 'relative',
-    zIndex: -1,
-  },
-});
-
-// Dynamic style for the consumer-controlled field width. Numbers are treated
-// as pixels by StyleX; strings (e.g. '100%') are used as-is.
-const dynamicStyles = stylex.create({
-  width: (width: SizeValue | null) => ({width}),
-});
 
 export type {SizeValue} from '../utils/types';
 
@@ -284,8 +236,10 @@ export function Field({
         message={status.message}
         id={resolvedMessageID}
         variant={statusVariant}
-        xstyle={
-          statusVariant === 'attached' ? styles.attachedStatusLayer : undefined
+        className={
+          statusVariant === 'attached'
+            ? fieldAttachedStatusLayerClassName
+            : undefined
         }
       />
     ) : null;
@@ -301,13 +255,15 @@ export function Field({
         ref={ref}
         {...props}
         {...mergeProps(
-          themeProps('field', {layout: 'horizontal-labels'}),
-          stylex.props(styles.horizontalLabels, xstyle),
+          mergeProps(themeProps('field', {layout: 'horizontal-labels'}), {
+            className: fieldHorizontalLabelsClassName,
+          }),
+          stylex.props(xstyle),
           className,
           style,
         )}>
-        <div {...stylex.props(styles.horizontalLabelAlign)}>{labelNode}</div>
-        <div {...stylex.props(styles.inputStatusWrapper)}>
+        <div className={fieldHorizontalLabelAlignClassName}>{labelNode}</div>
+        <div className={fieldInputStatusWrapperClassName}>
           {description &&
             (isLabelHidden ? (
               <VisuallyHidden id={resolvedDescriptionID}>
@@ -333,20 +289,17 @@ export function Field({
     <div
       ref={ref}
       {...mergeProps(
-        themeProps('field'),
-        stylex.props(
-          styles.container,
-          !isLabelHidden && styles.containerGap,
-          width != null && dynamicStyles.width(width),
-          xstyle,
-        ),
+        mergeProps(themeProps('field'), {
+          className: fieldClassName({isLabelHidden, width}),
+        }),
+        stylex.props(xstyle),
         className,
-        style,
+        {...fieldSizeStyle(width), ...style},
       )}
       {...props}>
       {labelNode}
       {statusVariant === 'attached' ? (
-        <div {...stylex.props(styles.inputStatusWrapper)}>
+        <div className={fieldInputStatusWrapperClassName}>
           {children}
           {statusNode}
         </div>

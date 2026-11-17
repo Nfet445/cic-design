@@ -19,6 +19,7 @@ import path from 'node:path';
 import {describe, it, expect, vi, afterEach} from 'vitest';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import * as stylex from '@stylexjs/stylex';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {
   InputClearButton,
   InternalInputClearButton,
@@ -207,7 +208,9 @@ describe('InputClearButton', () => {
     // The button pins a 20px box of its own (tighter than Button's sm
     // default); the coarse-pointer overlay below grows the hit area from it.
     render(<InputClearButton label="Clear" onClick={() => {}} />);
-    expect(declaredValue(screen.getByRole('button'), 'height')).toBe('20px');
+    expectClassSet(screen.getByRole('button'), {
+      includes: ['h-5', 'shrink-0'],
+    });
   });
 
   it('applies the caller xstyle to the button', () => {
