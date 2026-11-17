@@ -299,6 +299,12 @@ import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {sideNavClassName} from '../SideNav/sideNavClasses';
 import {sideNavHeadingClassName} from '../SideNav/sideNavHeadingClasses';
+import {
+  navHeadingMenuClassName,
+  navHeadingMenuItemClassName,
+  navHeadingMenuItemContentClassName,
+  navHeadingMenuMinWidthClassName,
+} from '../NavMenu/navHeadingMenuClasses';
 import {sideNavItemClassName} from '../SideNav/sideNavItemClasses';
 import {
   treeListItemClassName,
@@ -324,6 +330,29 @@ import {
   scrollableAreaContentWithInlineOverflowClassName,
   scrollableAreaViewportClassName,
 } from '../ScrollableArea/scrollableAreaClasses';
+import {
+  overflowListContainerClassName,
+  overflowListFillParentClassName,
+  overflowListGapClassName,
+  overflowListMaxHeightClassName,
+  overflowListMeasureContainerClassName,
+  overflowListMeasureIndicatorClassName,
+} from '../OverflowList/overflowListClasses';
+import {
+  swipeEntryClassName,
+  swipeEntryCoveredClassName,
+  swipeEntryDisabledClassName,
+  swipeEntryVariantClassName,
+  swipeOuterEntryClassName,
+  swipeOuterEntryLeadingClassName,
+  swipeOuterEntryTrailingClassName,
+  swipePanelClassName,
+  swipeTrackClassName,
+  swipeTrackCoveredClassName,
+  swipeTrackFillClassName,
+  swipeTrackLeadingClassName,
+  swipeTrackTrailingClassName,
+} from '../Swipe/swipeActionsLayerClasses';
 import {
   SELECTOR_OPTION_EMBEDDED_CLASS,
   SELECTOR_ROW_CONTENT_CLASS,
@@ -877,6 +906,35 @@ function familyClassNames() {
   );
   add(scrollableAreaContentClassName);
   add(scrollableAreaContentWithInlineOverflowClassName);
+  // OverflowList: one line and wrapping rows, every gap step, and the hidden
+  // measurement copy with the row cap that reads the measured variable.
+  for (const isMultiRow of [false, true]) {
+    add(overflowListContainerClassName(isMultiRow));
+  }
+  for (const gap of [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10]) {
+    add(overflowListGapClassName[gap]);
+  }
+  add(overflowListFillParentClassName);
+  add(overflowListMaxHeightClassName);
+  add(overflowListMeasureContainerClassName);
+  add(overflowListMeasureIndicatorClassName);
+  // Swipe: both sides' windows, tracks and outermost entries, an entry in each
+  // variant, and the cover and disabled states.
+  add(swipePanelClassName);
+  add(swipeTrackClassName);
+  add(swipeTrackLeadingClassName);
+  add(swipeTrackTrailingClassName);
+  add(swipeTrackCoveredClassName);
+  add(swipeEntryClassName);
+  add(swipeEntryCoveredClassName);
+  add(swipeEntryDisabledClassName);
+  add(swipeOuterEntryClassName);
+  add(swipeOuterEntryLeadingClassName);
+  add(swipeOuterEntryTrailingClassName);
+  for (const variant of ['neutral', 'accent', 'destructive']) {
+    add(swipeEntryVariantClassName[variant]);
+    add(swipeTrackFillClassName[variant]);
+  }
   add(sectionOuterClassName({}));
   add(
     sectionOuterClassName({
@@ -1495,6 +1553,15 @@ function familyClassNames() {
   add(SELECTOR_ROW_CONTENT_CLASS);
   add(SELECTOR_ROW_MARK_COLUMN_CLASS);
   add(SELECTOR_OPTION_EMBEDDED_CLASS);
+  // The nav heading popover: its column, both row states at every size, and
+  // the minimum width each size states as its own fallback.
+  add(navHeadingMenuClassName);
+  add(navHeadingMenuItemContentClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(navHeadingMenuMinWidthClassName[size]);
+    add(navHeadingMenuItemClassName({isDisabled: false, size}));
+    add(navHeadingMenuItemClassName({isDisabled: true, size}));
+  }
 
   // MultiSelector rows: both row kinds (option and Select All) across every
   // size, the grid layout and each runtime state.

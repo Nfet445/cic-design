@@ -329,3 +329,86 @@ Still open for this ticket, in this order:
    menus the family still owns.
 3. `menuTouchAction.stylex.ts` and its six foreign call sites in one commit,
    when a window is allowed to edit those families.
+
+### Window 7
+
+One commit per component, both in `NavMenu/`:
+
+- `NavHeadingMenu.tsx` — `a07208a02`. Its two creates are
+  `NavMenu/navHeadingMenuClasses.ts` now: `navHeadingMenuClassName` (the rows'
+  column and the menu's gap) and `navHeadingMenuMinWidthClassName`, one per
+  size. `minWidth` no longer writes an inline `minWidth` beside a class that
+  also sets the property: the prop sets
+  `--astryx-nav-heading-menu-min-inline-size` and each size class reads it with
+  its own fallback, so `min-width` keeps one owner. The variable is in
+  `NavMenu.doc.mjs` (`theming.vars`) and in the
+  `derivedVarRegistry.test.ts` allowlist with its reason.
+  `NavHeadingMenu.test.tsx`'s "applies minWidth override via inline style"
+  asserted `menu.style.minWidth`, which only existed as an inline declaration;
+  it reads the variable through `expectVariable` and the class through
+  `expectClassSet`, and a second case asserts the column classes.
+- `NavHeadingMenuItem.tsx` — `36504ab4b`. The row box, its `:focus` and hover
+  fill, the disabled opacity and the three sizes are
+  `navHeadingMenuItemClassName({isDisabled, size})`; the label-and-description
+  track is `navHeadingMenuItemContentClassName`, a plain `className` because
+  the span sets no StyleX. `xstyle` stays in `stylex.props` and `className`
+  follows the map inside `tw(...)`, as `DropdownMenu.tsx:1730` does.
+- Coverage: both maps in the `familyClassNames()` block, every size crossed
+  with the disabled state. The sheet grew by 10 rules for the three minimum
+  widths, the row state arms and the content box; 186.0 kB raw, still inside
+  the 1380 ceiling, so the constant did not move.
+- `menuTouchAction.stylex.ts` call sites left alone: the menu hands its pair to
+  `stylex.props` beside `xstyle` (`NavHeadingMenu.tsx:213`), which the
+  documented survivor keeps.
+
+Verification: `node packages/core/scripts/build-css-tailwind.mjs` (186.0 kB),
+`pnpm exec vitest run packages/core/src/NavMenu packages/core/src/Selector
+packages/core/src/MultiSelector
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` — 22 files,
+728 passed; `pnpm exec vitest run packages/core/src/theme` — 1821 passed;
+prettier and eslint clean on the touched files;
+`pnpm -F @astryxdesign/core typecheck` clean.
+
+The merge of `poc/tailwind-layout-primitives` at the window's end carried
+ticket 47's Switch map (`82d950466`). Git auto-merged
+`Layout/tailwindStylesheet.source-build.test.mjs` this time — the two sides'
+imports and coverage statements did not overlap and both survived, `node
+--check` is clean — so no conflict needed resolving. The sheet measures
+186.2 kB with both maps and 844 tests pass; the ceiling stays 1380, the
+number the form-controls ticket set with its own measurement.
+
+Still open for this ticket, with what each needs:
+
+1. `Selector/Selector.tsx:143` — the `styles` create, 31 keys: the trigger
+   frame, button, placeholder, label, value, icon and its rotation, the three
+   variants with their press transform and `LAYER_OPEN` transition arm, the
+   status button, `searchPanel` and `dropdown` (both `stylex.firstThatWorks`
+   caps over `layerViewportInset`, so they take the
+   `[@supports_not_(block-size:100dvb)]:` idiom at
+   `DateRangeInput/dateRangeInputClasses.ts:107`), `dropdownInput` and
+   `searchRowInput` (a padding `calc()` with `--border-width`), the two touch
+   actions, `dropdownHidden` (an opacity longhand beside `transitionProperty:
+none`), `popover` (`anchor-size(width)`), `emptyState`, `sectionHeading` and
+   `divider`. The last two already have an exact owner:
+   `dropdownMenuGroupHeadingClassName` and `dropdownMenuDividerClassName`, so
+   they should reuse it rather than add a second vocabulary.
+2. `Selector/Selector.tsx:507` — `sizeStyles`, three keys: `minHeight` plus a
+   `lineHeight` and `paddingBlock` computed from the same size token and
+   `--border-width`. One class per size, and the three values stay in one rule
+   so the trigger's height contract (`max(min(...))` capped by the token) keeps
+   its current shape.
+3. `Selector/SelectorBottomSheet.tsx:24` — two keys: `content` (`width: 100%`)
+   and `heading` (the margins around the sheet's `Heading`). Both are plain
+   literals, so this one is a `selectorBottomSheetClasses.ts` away.
+4. `MultiSelector/MultiSelector.tsx:154` — the `styles` create, about 25 keys:
+   the same trigger frame and button, `triggerContent`, `triggerText`,
+   `triggerBadges`, `triggerOverflow`, the icon wrapper, its rotation and open
+   transform, the three variants with the press transform and the `LAYER_OPEN`
+   arm, `triggerGhostDisabled`, `triggerReadOnly`, `triggerGhostReadOnly`, the
+   status button, `searchPanel`, `dropdown` (both caps), `listbox`, `popover`,
+   `sectionHeading`, `divider` and `emptyState`. The two option maps already
+   hold the row vocabulary, so only the trigger half needs a new file.
+5. `MultiSelector/MultiSelector.tsx:418` — `sizeStyles`, three keys, the
+   trigger's `height` per size.
+6. `menuTouchAction.stylex.ts` and its six foreign call sites in one commit,
+   when a window is allowed to edit those families.
