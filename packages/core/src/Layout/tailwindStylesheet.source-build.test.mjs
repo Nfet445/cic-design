@@ -115,6 +115,15 @@ import {
   SELECTOR_ROW_MARK_COLUMN_CLASS,
   selectorOptionRowClassName,
 } from '../Selector/selectorOptionClasses';
+import {
+  MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
+  MULTI_SELECTOR_ACTION_CELL_CLASS,
+  MULTI_SELECTOR_CHECKBOX_CLASS,
+  MULTI_SELECTOR_CHECKBOX_END_CLASS,
+  MULTI_SELECTOR_OPTION_CELL_CLASS,
+  MULTI_SELECTOR_ROW_LABEL_CLASS,
+  multiSelectorOptionRowClassName,
+} from '../MultiSelector/multiSelectorOptionClasses';
 import {tableCellClassName} from '../Table/tableCellClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
 import {tableRowClassName} from '../Table/tableRowClasses';
@@ -632,6 +641,34 @@ function familyClassNames() {
   add(SELECTOR_ROW_CONTENT_CLASS);
   add(SELECTOR_ROW_MARK_COLUMN_CLASS);
   add(SELECTOR_OPTION_EMBEDDED_CLASS);
+
+  // MultiSelector rows: both row kinds (option and Select All) across every
+  // size, the grid layout and each runtime state.
+  for (const size of ['sm', 'md', 'lg']) {
+    for (const isSelectAll of [false, true]) {
+      for (const isGrid of [false, true]) {
+        for (const isHighlighted of [false, true]) {
+          for (const isDisabled of [false, true]) {
+            add(
+              multiSelectorOptionRowClassName({
+                isDisabled,
+                isGrid,
+                isHighlighted,
+                isSelectAll,
+                size,
+              }),
+            );
+          }
+        }
+      }
+    }
+  }
+  add(MULTI_SELECTOR_ROW_LABEL_CLASS);
+  add(MULTI_SELECTOR_CHECKBOX_CLASS);
+  add(MULTI_SELECTOR_CHECKBOX_END_CLASS);
+  add(MULTI_SELECTOR_OPTION_CELL_CLASS);
+  add(MULTI_SELECTOR_ACTION_CELL_CLASS);
+  add(MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS);
 
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
