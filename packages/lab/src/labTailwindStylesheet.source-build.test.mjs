@@ -16,10 +16,12 @@ import {fileURLToPath} from 'node:url';
 
 import {buildTailwindStylesheet} from '../../build/src/tailwind-stylesheet.mjs';
 import {describeTailwindStylesheet} from '../../core/src/__tests__/classNameAssertions';
+import * as chatEmojiPickerClasses from './Chat/chatEmojiPickerClasses';
 import * as chatReactionBarClasses from './Chat/chatReactionBarClasses';
 import * as chatReasoningClasses from './ChatReasoning/chatReasoningClasses';
 import * as chatTypingIndicatorClasses from './Chat/chatTypingIndicatorClasses';
 import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
+import * as diffViewerClasses from './DiffViewer/diffViewerClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
 import * as transferListClasses from './TransferList/transferListClasses';
@@ -43,10 +45,12 @@ function labClassNames() {
     }
   };
   for (const map of [
+    chatEmojiPickerClasses,
     chatReactionBarClasses,
     chatReasoningClasses,
     chatTypingIndicatorClasses,
     chatUnreadDividerClasses,
+    diffViewerClasses,
     listInputClasses,
     loadingMessageClasses,
     transferListClasses,

@@ -207,12 +207,80 @@ KB), `pnpm exec vitest run` on the four component directories plus
 `packages/lab/src/labTailwindStylesheet` → 5 files, 40 tests pass; prettier and
 eslint clean on every touched file.
 
-Remaining `stylex.create` sites in `packages/lab/src`, per file (34 files, 47
+## Result, window 4 (DiffViewer and ChatEmojiPicker)
+
+Commits on `ticket/30-lab`, one per component:
+
+- `23aeb4b9a` `refactor(diff-viewer): перевести строки и подсветку на классы Tailwind`
+  — `DiffViewer/DiffViewer.tsx` (2098 lines, the largest file left) →
+  `DiffViewer/diffViewerClasses.ts`; its three maps (the table, the annotation
+  cells, the per-instance sizes) became one class map. Four private variables
+  carry the per-instance values the classes read:
+  `--astryx-diff-viewer-pin-offset`, `--astryx-diff-viewer-column-width`,
+  `--astryx-diff-viewer-split-rows`,
+  `--astryx-diff-viewer-pane-columns`, each set inline next to the class that
+  consumes it. `rtlStyles.mirror` became
+  `[&:is([dir="rtl"]_*)]:[transform:scaleX(-1)]`. The focus ring stays on
+  `focusOutlineProps` and joins the map class through `mergeProps`, so the ring
+  is not dropped by a later `className`.
+
+- `5d1bd89b6` `refactor(chat-emoji-picker): перевести панель, сетку и ячейки на классы Tailwind`
+  — `Chat/ChatEmojiPicker.tsx` → `Chat/chatEmojiPickerClasses.ts`. The grid is
+  `grid-cols-8` (it was `repeat(${GRID_COLUMNS}, 1fr)`), a cell is `size-8`, and
+  the panel's computed `GRID_COLUMNS * 34 + 8` is the literal `w-[280px]`. The
+  cell names no base background — the hover paint sits alone inside
+  `[@media(hover:hover)]` — and its inset ring is
+  `outline-offset-0 focus-visible:outline-offset-[-2px]`, the pair
+  `TransferList` already ships.
+
+What this file taught the rule: a same-property pair has to become one complete
+class even when it reads like an override chain. The line-number column's base
+colour, the marker column's base colour and `break-normal` all lost to a second
+class in the built sheet — `text-[color:var(--color-syntax-punctuation)]` sorts
+after `…-added-marker`, and `break-normal` sets `overflow-wrap: normal` back
+over `[overflow-wrap:anywhere]`. So the gutter ships three complete colour
+classes, the marker's colour moved onto the `+`/`-` glyph, and the wrapped
+variants keep `whitespace-pre-wrap` plus `[overflow-wrap:anywhere]` only. A
+throwaway test that builds the sheet and lists every class entry declaring one
+property twice now reports only the benign pairs:
+`transition-[transform]` lands before `duration-[…]`/`ease-[…]` (so the
+explicit pair wins, as intended), and a pinned cell's background-image tint
+sits beside the sticky class's background-color.
+
+Verified: `node packages/core/scripts/build-css-tailwind.mjs`,
+`node packages/lab/scripts/build-css-tailwind.mjs`
+(`dist/lab-tailwind.css` 19.1 → 27.2 kB), prettier and eslint clean,
+`pnpm exec vitest run packages/lab/src/DiffViewer
+packages/lab/src/Chat packages/lab/src/labTailwindStylesheet.source-build.test.mjs`
+→ 10 files, 106 tests pass, `pnpm exec tsc --noEmit -p packages/core` reports only the
+pre-existing `BottomSheet/BottomSheetPanel.tsx:1046` `PropsObject` error.
+
+The class map strings themselves are what the tests read: a space-separated
+list is not one token, so a test needs every token, not `classList.contains` of
+the whole entry.
+
+The DiffViewer tests read the class map directly through a local `carries(elt,
+mapClassName)` helper that checks every space-separated token, rather than
+core's `classesOf`: they stay inside lab's `rootDir`, so `tsc -p packages/lab`
+would not reach a TS6059 once `packages/core/dist` exists. Three tests are new:
+the changed row and its changed words, the pinned line number's private
+variable, and the complete class a wrapped or narrow-indicator variant needs.
+A fourth pins that the shared focus ring survives next to the map class.
+
+Deviations to review:
+
+- `DiffViewer.doc.mjs` is unchanged. The new `--astryx-*` names are private
+  plumbing between the component and its sheet, not a theming surface, and no
+  lab doc records `theming.vars` yet; windows 2 and 3 left theirs undocumented
+  the same way.
+- No changeset: `@astryxdesign/lab` is private, and `check-changesets` rejects
+  a changeset that names it.
+
+Remaining `stylex.create` sites in `packages/lab/src`, per file (32 files, 43
 maps), smallest first:
 
 | maps | file                                            |
 | ---- | ----------------------------------------------- |
-| 1    | `Chat/ChatEmojiPicker.tsx`                      |
 | 1    | `Chat/ChatVirtualizer.tsx`                      |
 | 1    | `CircleCheckIndicator/CircleCheckIndicator.tsx` |
 | 1    | `CodeEditor/CodeEditor.tsx`                     |
@@ -243,7 +311,6 @@ maps), smallest first:
 | 2    | `SVGIcon/weighted.stylex.ts`                    |
 | 2    | `internal/useScrollEdgeEffect.ts`               |
 | 3    | `CircularProgress/CircularProgress.tsx`         |
-| 3    | `DiffViewer/DiffViewer.tsx`                     |
 | 3    | `Stat/Stat.tsx`                                 |
 | 3    | `TransferList/transferListOverrides.stylex.ts`  |
 
