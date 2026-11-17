@@ -522,7 +522,7 @@ describe('useMenuPress — the row a held press lights (spec:AST-094 FR27, FR43)
     expect(lit()).toEqual([]);
   });
 
-  it('paints every menu row family: each composes the lit style and reads its variable', () => {
+  it('paints every menu row family: each composes the lit class and reads its variable', () => {
     for (const family of [
       'DropdownMenuItem',
       'DropdownMenuCheckboxItem',
@@ -533,7 +533,7 @@ describe('useMenuPress — the row a held press lights (spec:AST-094 FR27, FR43)
         resolve(__dirname, `../DropdownMenu/${family}.tsx`),
         'utf8',
       );
-      expect(source).toContain('menuPressLitRowStyle,');
+      expect(source).toContain('menuPressLitRowClassName,');
       expect(source).toContain('var(--_menu-row-focus-paint, ');
     }
     // The one family with an :active background reads its variable there.

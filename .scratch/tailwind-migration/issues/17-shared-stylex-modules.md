@@ -1,6 +1,6 @@
 # shared stylex modules
 
-Status: ready-for-agent
+Status: partly done — three of ten modules, the rest waits on its consumers (see Result)
 Blocked by: 11
 Wave: 5
 Ticket: 17
@@ -32,6 +32,32 @@ Retire the last modules that still hand a StyleX style object to components: foc
 
 - `pnpm exec vitest run packages/core/src/Button packages/core/src/ButtonGroup packages/core/src/ToggleButton`
 - `node packages/core/scripts/build-css-tailwind.mjs`
+
+## Result
+
+Landed: `Icon/iconBoxClasses.ts`, `privateAttributes/menuPressLitClasses.ts` and
+`privateAttributes/reorderLineClasses.ts` hold the classes, and the modules that
+exported the styles now re-export them (`iconBoxSizeStyles`, `menuPressLitRowClassName`,
+`reorderLineClassName`). Three of the ten `stylex.create` are gone.
+
+The other seven wait for the ticket that migrates their consumers. A Tailwind
+utility prints in `@layer astryx-base`, StyleX output prints unlayered, and an
+unlayered declaration beats a layered one whatever the order. Each of those
+modules sets a property that its consumer's own StyleX style also sets on the
+same element, so moving the module alone would change what a browser paints:
+
+| module                                                               | property it shares                         | consumer still on StyleX                                                                      |
+| -------------------------------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `travelling.stylex.ts`                                               | `zIndex` under `@media (pointer: coarse)`  | `List/ListItem.tsx:255` sets 1 there, the travelling row asks for 2 (ticket 18)               |
+| `focusOwner.stylex.ts`, `ownRing.stylex.ts`                          | the four outline longhands                 | `Item/Item.tsx:1035` composes `focusWithinOwner` beside `focusOutlineStyles` (tickets 15, 18) |
+| `Selector/selectorPresentation.stylex.ts`                            | `borderColor`, `boxShadow`, `outlineWidth` | `Selector.tsx:2333`, `MultiSelector.tsx:2665` (ticket 15)                                     |
+| `internal/touchHitArea.stylex.ts`                                    | `::after` and `::before`                   | `CheckboxInput.tsx:513`, `InfoTip.tsx:211`, `ButtonGroup.tsx:199`                             |
+| `press.stylex.ts` (four creates, two keyframes)                      | press paint and transform layers           | every row and control consumer above                                                          |
+| `utils/focusOutline.stylex.ts`, `utils/interactionOverlay.stylex.ts` | outline and background                     | Token, Carousel, Selector, ListItem                                                           |
+| `InputGroup/groupStyles.ts`, `NavItem/navItemStyles.stylex.ts`       | radius, height, `zIndex`, item surface     | the InputGroup consumers and SideNav                                                          |
+
+`reorderLine.stylex.ts` was the one remaining module whose only declaration
+(`::after` `display`) no consumer also set.
 
 ## Census (checked against the tree at `ccb97ef02`)
 

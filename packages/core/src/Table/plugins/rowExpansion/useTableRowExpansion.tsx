@@ -41,7 +41,8 @@ import {panelDividerFor} from '../../rowDivider';
 import {useTheme, useThemeName} from '../../../theme/useTheme';
 import {Icon} from '../../../Icon';
 import {ComponentIcon} from '../../../Icon/ComponentIcon';
-import {iconBoxSizeStyles} from '../../../Icon/IconSize.stylex';
+import {iconBoxClassName} from '../../../Icon/iconBoxClasses';
+import {tw} from '../../../utils/tw';
 import {VisuallyHidden} from '../../../VisuallyHidden';
 import {resolveContextActions} from '../../tableContextMenu';
 import {useTableContext} from '../../useTableCellStyles';
@@ -396,6 +397,15 @@ function ExpansionChevron({
       ? t('@astryx.tableRowExpansion.collapseRow')
       : t('@astryx.tableRowExpansion.expandRow');
   const ctx = useTableContext();
+  // The chevron's box is sized by the icon box's step, so a themed glyph size
+  // or a hidden glyph keeps the row height.
+  const chevronProps = stylex.props(
+    expansionStyles.glyphBox,
+    expansionStyles.chevron,
+    isExpanded
+      ? expansionStyles.chevronExpanded
+      : expansionStyles.chevronCollapsed,
+  );
   return (
     <button
       type="button"
@@ -411,14 +421,8 @@ function ExpansionChevron({
       aria-label={ariaLabel}
       aria-expanded={isExpanded}>
       <span
-        {...stylex.props(
-          expansionStyles.glyphBox,
-          iconBoxSizeStyles.xsm,
-          expansionStyles.chevron,
-          isExpanded
-            ? expansionStyles.chevronExpanded
-            : expansionStyles.chevronCollapsed,
-        )}>
+        {...chevronProps}
+        className={tw(iconBoxClassName.xsm, chevronProps.className)}>
         <span {...stylex.props(expansionStyles.glyphCenter)}>
           <ComponentIcon
             slot="table-row-expand"
