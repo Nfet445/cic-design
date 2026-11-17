@@ -14,6 +14,13 @@ import {getForcedColorsRules} from '../__tests__/forcedColors';
 import {readFileSync} from 'node:fs';
 import path from 'node:path';
 import {
+  classesOf,
+  expectClassSet,
+  stylesheetOf,
+  type Stylesheet,
+} from '../__tests__/classNameAssertions';
+import {buildAstryxTailwindCss} from '../../scripts/build-css-tailwind.mjs';
+import {
   progressBar,
   registerProgressBarTable,
 } from '../motion/uikit/progressBar';
@@ -31,9 +38,17 @@ import {timing} from '../motion/uikit/timing';
 // aria-describedby) is present synchronously on first render, keeping these
 // tests deterministic rather than racing the dynamic import's default 1s
 // Suspense timeout.
+let sheet: Stylesheet;
+
 beforeAll(async () => {
   await import('./ProgressBarMarkTooltip');
+  sheet = stylesheetOf(await buildAstryxTailwindCss());
 });
+
+/** The StyleX atomic classes on an element — the ones a `*.stylex.ts` rule owns. */
+function stylexClasses(el: Element): string[] {
+  return classesOf(el).filter(className => /^x[a-z0-9]+$/.test(className));
+}
 
 describe('ProgressBar', () => {
   it('renders visible label by default', () => {
@@ -245,37 +260,28 @@ describe('ProgressBar', () => {
     });
 
     it('drives a direction-aware indeterminate slide (mirrored keyframe under RTL)', () => {
-      // StyleX injects the keyframes + the atomic rule that swaps the
-      // animation-name under `[dir="rtl"]`. Scan the injected CSS so we can
-      // assert the RTL branch exists without relying on jsdom animation.
-      function injectedCss(): string {
-        let out = '';
-        for (const sheet of Array.from(document.styleSheets)) {
-          try {
-            for (const rule of Array.from(sheet.cssRules)) {
-              out += rule.cssText + '\n';
-            }
-          } catch {
-            // ignore cross-origin sheets
-          }
-        }
-        out += Array.from(document.querySelectorAll('style'))
-          .map(s => s.textContent || '')
-          .join('\n');
-        return out;
-      }
-
       render(<ProgressBar isIndeterminate label="Loading" />);
-      const css = injectedCss();
-      // LTR keyframe slides physically left → right (−100% → 250%).
-      expect(css).toMatch(/translateX\(-100%\)/);
-      expect(css).toMatch(/translateX\(250%\)/);
-      // RTL keyframe mirrors it (100% → −250%) so the bar travels along the
-      // reading flow (inline-start → inline-end, i.e. right → left).
-      expect(css).toMatch(/translateX\(100%\)/);
-      expect(css).toMatch(/translateX\(-250%\)/);
-      // The animation-name is swapped specifically under `[dir="rtl"]`.
-      expect(css).toMatch(/:is\(\[dir="rtl"\][^)]*\)[^{]*\{\s*animation-name:/);
+      const fill = screen.getByRole('progressbar')
+        .firstElementChild as HTMLElement;
+      // One animation per direction; the reduced-motion pulse outranks both,
+      // so it also names the stacked key for an RTL subtree.
+      expectClassSet(fill, {
+        includes: [
+          'animate-[astryxProgressBarSlide_1.5s_ease-in-out_infinite]',
+          'rtl:[animation-name:astryxProgressBarSlideRtl]',
+          'motion-reduce:[animation-name:astryxProgressBarPulse]',
+          'rtl:motion-reduce:[animation-name:astryxProgressBarPulse]',
+        ],
+      });
+      // LTR keyframe slides physically left → right (−100% → 250%); the RTL
+      // frame mirrors it (100% → −250%) so the bar travels along the reading
+      // flow (inline-start → inline-end, i.e. right → left).
+      expect(sheet.css).toMatch(
+        /@keyframes astryxProgressBarSlide \{\s*from \{\s*transform: translateX\(-100%\)/,
+      );
+      expect(sheet.css).toMatch(
+        /@keyframes astryxProgressBarSlideRtl \{\s*from \{\s*transform: translateX\(100%\)/,
+      );
     });
   });
 
@@ -287,8 +293,8 @@ describe('ProgressBar', () => {
     // theme classes and the bare variant/placement tokens — so a comparison
     // reflects the resolved styles, not the reflected props.
     function styleClasses(el: HTMLElement): string {
-      return Array.from(el.classList)
-        .filter(c => /^x[a-z0-9]+$/.test(c))
+      return classesOf(el)
+        .filter(className => className.includes('bg-[color:'))
         .sort()
         .join(' ');
     }
@@ -684,24 +690,13 @@ describe('ProgressBar', () => {
       const progressbar = screen.getByRole('progressbar');
       const marks = Array.from(container.querySelectorAll<HTMLElement>(MARK));
       expect(marks).toHaveLength(1);
-      let css = '';
-      for (const sheet of Array.from(document.styleSheets)) {
-        for (const rule of Array.from(sheet.cssRules)) {
-          css += rule.cssText + '\n';
-        }
-      }
-      const clips = (el: Element) =>
-        Array.from(el.classList).some(cls =>
-          new RegExp(`\\.${cls}\\b[^{]*\\{[^}]*overflow:\\s*hidden`, 'i').test(
-            css,
-          ),
-        );
+      expectClassSet(progressbar, {includes: ['overflow-hidden']});
       for (const mark of marks) {
         expect(progressbar.contains(mark)).toBe(false);
         // No ancestor between the mark and the bar's root clips it.
         let node = mark.parentElement;
         while (node != null && node !== container) {
-          expect(clips(node)).toBe(false);
+          expect(classesOf(node)).not.toContain('overflow-hidden');
           node = node.parentElement;
         }
       }
@@ -711,24 +706,9 @@ describe('ProgressBar', () => {
       // The determinate fill spans the whole track and is moved back by the
       // unfilled share; the track's clip keeps the moved-out part hidden.
       render(<ProgressBar value={30} label="Progress" />);
-      const progressbar = screen.getByRole('progressbar');
-      let css = '';
-      for (const sheet of Array.from(document.styleSheets)) {
-        try {
-          for (const rule of Array.from(sheet.cssRules)) {
-            css += rule.cssText + '\n';
-          }
-        } catch {
-          // ignore cross-origin sheets
-        }
-      }
-      const trackHasOverflowHidden = Array.from(progressbar.classList).some(
-        cls =>
-          new RegExp(`\\.${cls}\\b[^{]*\\{[^}]*overflow:\\s*hidden`, 'i').test(
-            css,
-          ),
-      );
-      expect(trackHasOverflowHidden).toBe(true);
+      expectClassSet(screen.getByRole('progressbar'), {
+        includes: ['overflow-hidden'],
+      });
     });
 
     it('moves the determinate fill with a transform, not its width, except under forced colors', () => {
@@ -763,7 +743,7 @@ describe('ProgressBar', () => {
         collect(sheet.cssRules, false);
       }
       const declarationsIn = (text: string) =>
-        Array.from(fill.classList)
+        stylexClasses(fill)
           .flatMap(cls =>
             Array.from(
               text.matchAll(new RegExp(`\\.${cls}\\b[^{]*\\{([^}]*)\\}`, 'g')),
@@ -800,35 +780,14 @@ describe('ProgressBar', () => {
       // 250%, deliberately overshooting the track, and relies on the track
       // clipping it to the visible window.
       render(<ProgressBar isIndeterminate label="Loading" />);
-      const progressbar = screen.getByRole('progressbar');
-      let css = '';
-      for (const sheet of Array.from(document.styleSheets)) {
-        try {
-          for (const rule of Array.from(sheet.cssRules)) {
-            css += rule.cssText + '\n';
-          }
-        } catch {
-          // ignore cross-origin sheets
-        }
-      }
-      css += Array.from(document.querySelectorAll('style'))
-        .map(s => s.textContent || '')
-        .join('\n');
-      const trackHasOverflowHidden = Array.from(progressbar.classList).some(
-        cls => {
-          const re = new RegExp(
-            `\\.${cls}\\b[^{]*\\{[^}]*overflow:\\s*hidden`,
-            'i',
-          );
-          return re.test(css);
-        },
-      );
-      expect(trackHasOverflowHidden).toBe(true);
+      expectClassSet(screen.getByRole('progressbar'), {
+        includes: ['overflow-hidden'],
+      });
     });
 
     it('sizes the mark through the derived vars, so a theme override cannot lose the cascade', () => {
-      // width/height are declared as `var(--_progressbar-mark-*)` and nothing
-      // else declares those vars, so the value a theme sets on the
+      // width/height read `var(--_progressbar-mark-*)` and nothing else
+      // declares those vars, so the value a theme sets on the
       // `progress-bar-mark` target lands even in a consumer whose StyleX is
       // unlayered and would otherwise outrank `@layer astryx-theme`.
       const {container} = render(
@@ -839,38 +798,19 @@ describe('ProgressBar', () => {
         />,
       );
       const mark = container.querySelector<HTMLElement>(MARK)!;
-      let css = '';
-      for (const sheet of Array.from(document.styleSheets)) {
-        try {
-          for (const rule of Array.from(sheet.cssRules)) {
-            css += rule.cssText + '\n';
-          }
-        } catch {
-          // ignore cross-origin sheets
-        }
-      }
-      css += Array.from(document.querySelectorAll('style'))
-        .map(s => s.textContent || '')
-        .join('\n');
-      const markRules = Array.from(mark.classList)
-        .filter(cls => /^x[a-z0-9]+$/.test(cls))
-        .flatMap(
-          cls =>
-            css.match(new RegExp(`\\.${cls}\\b[^{]*\\{[^}]*\\}`, 'g')) ?? [],
-        );
-      expect(markRules.join('\n')).toMatch(
-        /width:\s*var\(--_progressbar-mark-width,\s*2px\)/,
-      );
-      expect(markRules.join('\n')).toMatch(
-        /height:\s*var\(--_progressbar-mark-height,\s*8px\)/,
-      );
+      expectClassSet(mark, {
+        includes: [
+          'w-[var(--_progressbar-mark-width,2px)]',
+          'h-[var(--_progressbar-mark-height,8px)]',
+        ],
+      });
     });
 
     it('renders the mark on the stable progress-bar-mark target, centered for symmetric overhang', () => {
       // The mark's width/height/color are directly overridable via the
-      // `progress-bar-mark` theme target. It is centered
-      // on the track (translate -50%,-50%) so a themed taller tick overhangs the
-      // bar symmetrically above and below without being clipped.
+      // `progress-bar-mark` theme target. It is centered on the track
+      // (translate -50%,-50%) so a themed taller tick overhangs the bar
+      // symmetrically above and below without being clipped, mirrored in RTL.
       const {container} = render(
         <ProgressBar
           value={50}
@@ -880,21 +820,14 @@ describe('ProgressBar', () => {
       );
       const mark = container.querySelector<HTMLElement>(MARK)!;
       expect(mark.className).toContain('astryx-progress-bar-mark');
-      let css = '';
-      for (const sheet of Array.from(document.styleSheets)) {
-        try {
-          for (const rule of Array.from(sheet.cssRules)) {
-            css += rule.cssText + '\n';
-          }
-        } catch {
-          // ignore cross-origin sheets
-        }
-      }
-      css += Array.from(document.querySelectorAll('style'))
-        .map(s => s.textContent || '')
-        .join('\n');
-      // Centered so any themed overhang stays symmetric.
-      expect(css).toMatch(/translate\(-50%,\s*-50%\)/);
+      expectClassSet(mark, {
+        includes: [
+          'absolute',
+          'top-1/2',
+          '[transform:translate(-50%,-50%)]',
+          'rtl:[transform:translate(50%,-50%)]',
+        ],
+      });
       expect(container.querySelectorAll(MARK)).toHaveLength(1);
     });
   });
@@ -1087,8 +1020,9 @@ describe('ProgressBar under a finger: UIProgressView', () => {
   const fillOf = () =>
     screen.getByRole('progressbar').firstElementChild as HTMLElement;
   const moveOf = () => fillOf().style.getPropertyValue('--_progress-bar-move');
+  // The fill's rule lives in the tiny StyleX exception beside the classes.
   const source = () =>
-    readFileSync(path.resolve(__dirname, 'ProgressBar.tsx'), 'utf8');
+    readFileSync(path.resolve(__dirname, 'progressBarFill.stylex.ts'), 'utf8');
 
   it('styles a mark the minimum fill covers as on the fill', () => {
     // A finger, as the touch presentation resolver reads it, and
@@ -1180,9 +1114,11 @@ describe('ProgressBar under a finger: UIProgressView', () => {
   it('never draws shorter than two track heights above zero, and paints nothing at zero', () => {
     const {rerender} = render(<ProgressBar value={0} label="Upload" />);
     const track = screen.getByRole('progressbar');
-    const trackHeight = Number.parseFloat(
-      valueOf(rulesOf(track, null), 'height')[0],
+    // The track's height is a class, so read it from the class name.
+    const heightClass = classesOf(track).find(className =>
+      /^h-\[\d+px\]$/.test(className),
     );
+    const trackHeight = Number.parseFloat(heightClass!.slice(3));
     const minimum = view.minimumFillHeights * trackHeight;
     expect(TOUCH_MIN_FILL_PX).toBe(minimum);
     expect(fillOf().style.getPropertyValue('--_progress-bar-min')).toBe(
@@ -1267,27 +1203,34 @@ describe('ProgressBar under a finger: UIProgressView', () => {
 describe('ProgressBar under reduced motion: the indeterminate pulse', () => {
   const fillOf = () =>
     screen.getByRole('progressbar').firstElementChild as HTMLElement;
-  const source = () =>
-    readFileSync(path.resolve(__dirname, 'ProgressBar.tsx'), 'utf8');
 
   for (const coarse of [false, true]) {
     it(`spans the track and only pulses its opacity, with ${coarse ? 'a finger' : 'a mouse'}`, () => {
       render(<ProgressBar isIndeterminate label="Loading" />);
       const fill = fillOf();
-      const reduce = {coarse, reduce: true};
-      expect(valueUnder(fill, 'width', reduce)).toBe('100%');
-      expect(valueUnder(fill, 'animation-duration', reduce)).toMatch(
-        /^var\(--_progress-bar-pulse\)$/,
-      );
-      expect(valueUnder(fill, 'animation-timing-function', reduce)).toMatch(
-        /^var\(--_progress-bar-pulse-curve\)$/,
-      );
-      expect(valueUnder(fill, 'animation-direction', reduce)).toBe('alternate');
-      // Without reduced motion the 40% segment still slides.
-      const motion = {coarse, reduce: false};
-      expect(valueUnder(fill, 'width', motion)).toBe('40%');
-      expect(valueUnder(fill, 'animation-duration', motion)).toBe('1.5s');
-      expect(valueUnder(fill, 'animation-direction', motion)).toBeUndefined();
+      // The pointer does not change the pulse: the reduced-motion classes
+      // carry no pointer variant, so both cases run the same class set. The
+      // 40% segment slides otherwise, with its own duration in the class.
+      expectClassSet(fill, {
+        includes: [
+          'w-[40%]',
+          'animate-[astryxProgressBarSlide_1.5s_ease-in-out_infinite]',
+          'motion-reduce:w-full',
+          'motion-reduce:[animation-name:astryxProgressBarPulse]',
+          'motion-reduce:[animation-duration:var(--_progress-bar-pulse)]',
+          'motion-reduce:[animation-timing-function:var(--_progress-bar-pulse-curve)]',
+          'motion-reduce:[animation-direction:alternate]',
+        ],
+      });
+      expect(
+        sheet.ruleFor('motion-reduce:w-full') ??
+          sheet.blockOf('motion-reduce:w-full'),
+      ).toMatch(/width:100%/);
+      expect(
+        sheet.blockOf(
+          'motion-reduce:[animation-duration:var(--_progress-bar-pulse)]',
+        ),
+      ).toMatch(/prefers-reduced-motion:reduce/);
     });
   }
 
@@ -1297,15 +1240,13 @@ describe('ProgressBar under reduced motion: the indeterminate pulse', () => {
       String(progressBar.reducedMotionPulseFloor),
     );
     expect(progressBar.reducedMotionPulseFloor).toBe(0.84);
-    // jsdom has no CSSKeyframesRule global: match the rule's text.
-    const frames = Array.from(document.styleSheets)
-      .flatMap(sheet => Array.from(sheet.cssRules))
-      .map(rule => rule.cssText.replace(/\s+/g, ''))
-      .filter(text => text.startsWith('@keyframes'))
+    // The frames live in the built package sheet, not an injected one.
+    const frames = sheet.css
+      .split('@keyframes')
       .filter(text => text.includes('--_progress-bar-pulse-floor'));
     expect(frames).toHaveLength(1);
-    expect(frames[0]).toMatch(/opacity:1/);
-    expect(frames[0]).toMatch(/opacity:var\(--_progress-bar-pulse-floor\)/);
+    expect(frames[0]).toMatch(/opacity:\s*1/);
+    expect(frames[0]).toMatch(/opacity:\s*var\(--_progress-bar-pulse-floor\)/);
     // The pulse never moves the fill.
     expect(frames[0]).not.toMatch(/transform/);
   });
@@ -1324,22 +1265,16 @@ describe('ProgressBar under reduced motion: the indeterminate pulse', () => {
     expect(motionRole('progress.reducedMotionPulseMs')?.value).toBe(
       progressBar.reducedMotionPulseMs,
     );
-    // A busy loop: nothing in the indeterminate fill reads the theme's tempo,
-    // and its reduced-motion keys play no literal.
-    const text = source();
-    const block = text.slice(
-      text.indexOf('  indeterminateFill: {'),
-      text.indexOf('  // A mark is a vertical tick'),
-    );
-    expect(block).not.toContain('--_astryx-motion-tempo');
-    const reduceValues = [
-      ...block.matchAll(
-        /'@media \(prefers-reduced-motion: reduce\)':\s*([^,\n]+)/g,
-      ),
-    ].map(match => match[1].trim());
+    // A busy loop: no class on the indeterminate fill reads the theme's tempo,
+    // and its reduced-motion keys name a value, never a literal.
+    const block = fillOf().className;
+    expect(block).not.toContain('motion-tempo');
+    const reduceValues = classesOf(fill)
+      .filter(className => className.startsWith('motion-reduce:'))
+      .map(className => className.replace(/^motion-reduce:/, ''));
     expect(reduceValues.length).toBeGreaterThan(0);
     for (const value of reduceValues) {
-      expect(value).not.toMatch(/^'\d+(\.\d+)?m?s'$|cubic-bezier|ease/);
+      expect(value).not.toMatch(/^\[animation-(duration|timing-function):\d/);
     }
   });
 });
