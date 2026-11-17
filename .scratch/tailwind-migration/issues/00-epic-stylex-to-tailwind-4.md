@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 26 of 44 tickets done, plus two waves (layout primitives,
+Progress: 26 of 45 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -95,7 +95,8 @@ buttons) that landed before the tickets were written.
 ### Wave 9 — themes, consumers, removal
 
 - [x] `31-themes` — the bridge keeps its names, only its shape changes
-- [ ] `32-cli-docs-and-templates` — docs and 51 templates stop teaching StyleX
+- [ ] `32-cli-docs-and-templates` — consumer styling docs stop teaching StyleX
+- [ ] `45-template-pages-and-blocks` — the shipped page and block templates become class-based
 - [ ] `33-storybook-and-vibe-tests` — both load the sheet
 - [ ] `34-swizzle-and-render-pipeline` — ejected source states its stylesheet
 - [ ] `35-deprecate-stylex-subpaths` — 80 export entries, one release
