@@ -40,6 +40,13 @@ import {
 } from '../Field/fieldLabelClasses';
 import {inputClearButtonClassName} from '../Field/inputClearButtonClasses';
 import {
+  textAreaClassName,
+  textAreaCounterClassName,
+  textAreaEndSlotClassName,
+  textAreaSizeClassName,
+  textAreaStartIconClassName,
+} from '../TextArea/textAreaClasses';
+import {
   textInputClassName,
   textInputHeightClassName,
 } from '../TextInput/textInputClasses';
@@ -447,6 +454,37 @@ function familyClassNames() {
   }
   add(textInputClassName({isDisabled: false}));
   add(textInputClassName({isDisabled: true}));
+  for (const size of ['sm', 'md', 'lg']) {
+    add(textAreaSizeClassName(size));
+  }
+  for (const isDisabled of [false, true]) {
+    for (const hasStartIcon of [false, true]) {
+      for (const hasCounter of [false, true]) {
+        // The busy overlay replaces the status icon's inset, so the two never
+        // appear together and the pairs below are every reachable overlay.
+        for (const [isBusy, hasStatusIcon] of [
+          [false, false],
+          [false, true],
+          [true, true],
+        ]) {
+          add(
+            textAreaClassName({
+              isDisabled,
+              hasStartIcon,
+              hasCounter,
+              isBusy,
+              hasStatusIcon,
+            }),
+          );
+        }
+      }
+    }
+  }
+  add(textAreaStartIconClassName);
+  add(textAreaEndSlotClassName);
+  for (const isOverLimit of [false, true]) {
+    add(textAreaCounterClassName({isOverLimit}));
+  }
 
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
