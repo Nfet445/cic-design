@@ -314,6 +314,31 @@ import {
   topNavStartRegionClassName,
 } from '../TopNav/topNavClasses';
 import {
+  topNavHeadingChevronGlyphClassName,
+  topNavHeadingChevronWithGlyphClassName,
+  topNavHeadingClassName,
+  topNavHeadingColumnsClassName,
+  topNavHeadingEndContentClassName,
+  topNavHeadingInteractiveClassName,
+  topNavHeadingLinkedLineClassName,
+  topNavHeadingLogoClassName,
+  topNavHeadingMenuTriggerClassName,
+  topNavHeadingPopoverAnchorClassName,
+  topNavHeadingPopoverChevronWithGlyphClassName,
+  topNavHeadingPopoverContentClassName,
+  topNavHeadingPopoverHeadingClassName,
+  topNavHeadingSupportingLineClassName,
+  topNavHeadingTextContainerClassName,
+  topNavHeadingTitleClassName,
+  topNavHeadingTitleLinkClassName,
+  topNavHeadingTitleRowClassName,
+} from '../TopNav/topNavHeadingClasses';
+import {
+  topNavItemClassName,
+  topNavItemIconOnlyClassName,
+  topNavItemSelectedClassName,
+} from '../TopNav/topNavItemClasses';
+import {
   topNavFeaturedCardBodyClassName,
   topNavFeaturedCardClassName,
   topNavFeaturedCardDescriptionClassName,
@@ -322,6 +347,26 @@ import {
   topNavFeaturedCardLinkClassName,
   topNavFeaturedCardTitleClassName,
 } from '../TopNav/topNavMegaMenuFeaturedCardClasses';
+import {
+  topNavMenuChevronClassName,
+  topNavMenuChevronOpenClassName,
+  topNavMenuContainerClassName,
+  topNavMenuDrawerHeaderClassName,
+  topNavMenuDrawerItemClassName,
+  topNavMenuDrawerItemDescriptionClassName,
+  topNavMenuDrawerItemIconClassName,
+  topNavMenuDrawerItemTextClassName,
+  topNavMenuDrawerItemsClassName,
+  topNavMenuDrawerItemsInnerClassName,
+  topNavMenuDrawerSectionClassName,
+  topNavMenuItemClassName,
+  topNavMenuItemContentClassName,
+  topNavMenuItemDescriptionClassName,
+  topNavMenuItemIconClassName,
+  topNavMenuItemTitleClassName,
+  topNavMenuTriggerClassName,
+  topNavMenuTriggerOpenClassName,
+} from '../TopNav/topNavMenuClasses';
 import {
   hoverCardContentClassName,
   hoverCardHoverIndicationClassName,
@@ -606,6 +651,70 @@ function familyClassNames() {
     topNavFeaturedCardDescriptionClassName,
     topNavFeaturedCardLinkClassName,
     topNavFeaturedCardLinkArrowClassName,
+  ]) {
+    add(className());
+  }
+
+  // The horizontal item carries its selected fill keyed off `aria-current`,
+  // so both state classes ship with the base one.
+  add(topNavItemClassName());
+  add(topNavItemSelectedClassName());
+  add(topNavItemIconOnlyClassName());
+
+  // The heading picks one column track per render path, so every track ships.
+  add(topNavHeadingClassName());
+  for (const columns of [
+    'withLogo',
+    'text',
+    'withLogoAndLinks',
+    'withLinks',
+    'withLogoAndMenu',
+    'withMenu',
+  ]) {
+    add(topNavHeadingColumnsClassName(columns));
+  }
+  for (const className of [
+    topNavHeadingMenuTriggerClassName,
+    topNavHeadingInteractiveClassName,
+    topNavHeadingLogoClassName,
+    topNavHeadingTextContainerClassName,
+    topNavHeadingSupportingLineClassName,
+    topNavHeadingTitleClassName,
+    topNavHeadingTitleRowClassName,
+    topNavHeadingTitleLinkClassName,
+    topNavHeadingLinkedLineClassName,
+    topNavHeadingChevronWithGlyphClassName,
+    topNavHeadingChevronGlyphClassName,
+    topNavHeadingEndContentClassName,
+    topNavHeadingPopoverContentClassName,
+    topNavHeadingPopoverHeadingClassName,
+    topNavHeadingPopoverChevronWithGlyphClassName,
+    topNavHeadingPopoverAnchorClassName,
+  ]) {
+    add(className());
+  }
+
+  // The menu trigger keeps its open fill and the drawer its collapse, both
+  // keyed off the `aria-expanded` and `aria-hidden` the menu already writes.
+  for (const className of [
+    topNavMenuTriggerClassName,
+    topNavMenuTriggerOpenClassName,
+    topNavMenuChevronClassName,
+    topNavMenuChevronOpenClassName,
+    topNavMenuContainerClassName,
+    topNavMenuItemClassName,
+    topNavMenuItemIconClassName,
+    topNavMenuItemContentClassName,
+    topNavMenuItemTitleClassName,
+    topNavMenuItemDescriptionClassName,
+    topNavMenuDrawerSectionClassName,
+    topNavMenuDrawerHeaderClassName,
+    topNavMenuDrawerItemsClassName,
+    topNavMenuDrawerItemsInnerClassName,
+    topNavMenuDrawerItemClassName,
+    topNavMenuDrawerItemIconClassName,
+    topNavMenuDrawerItemTextClassName,
+    topNavMenuDrawerItemDescriptionClassName,
   ]) {
     add(className());
   }
@@ -1380,8 +1489,9 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // and time inputs about 50, the dialog family about 35, the top-nav family
     // about 45, the item row machine about 45, and the tab family — TabList's
     // strip, masks and arrows, TabMenu, SegmentedControl — about 120. A scan
-    // that reaches component bodies or prose would add hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(940);
+    // that reaches component bodies or prose would add hundreds more. The
+    // top-nav menus and the row machine brought the sheet to about 975.
+    expect(stylesheet.rules.size).toBeLessThan(1020);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
