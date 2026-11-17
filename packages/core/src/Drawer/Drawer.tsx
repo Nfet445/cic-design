@@ -94,6 +94,7 @@ import {
   drawerRootClassName,
   drawerWidthVar,
 } from './drawerClasses';
+import {drawerContentSafeAreaStyles} from './drawerContentSafeArea.stylex';
 import {useDrawerDialogPresence} from './useDrawerDialogPresence';
 
 type PointerHandler = (event: React.PointerEvent<HTMLDialogElement>) => void;
@@ -108,21 +109,6 @@ type PointerHandler = (event: React.PointerEvent<HTMLDialogElement>) => void;
 const MOBILE_PAGE_REVEAL = 56;
 const MOBILE_WIDTH_FULL = '100dvw';
 
-// The content area is the drawer's container, so its padding comes from the
-// layout container rules. They are unlayered, and an unlayered declaration
-// beats any `@layer astryx-base` class, so the safe-area composition that has
-// to win on the block-end edge stays here beside them.
-const styles = stylex.create({
-  // Block-end inset of the content area = container padding + the home
-  // indicator's safe area, so the last row of content stays clear of the
-  // indicator in every padding mode. The published
-  // --container-padding-block-end keeps the safe area OUT, so a bleed child
-  // subtracts only the container inset and the safe area survives below it.
-  contentSafeArea: {
-    paddingBlockEnd:
-      'calc(var(--container-padding-block-end, 0px) + env(safe-area-inset-bottom, 0px))',
-  },
-});
 // =============================================================================
 // Types
 // =============================================================================
@@ -497,7 +483,7 @@ export function Drawer({
                   !usesThemePadding &&
                     effectivePadding !== 4 &&
                     containerPaddingBlockEndVarStyles[effectivePadding],
-                  styles.contentSafeArea,
+                  drawerContentSafeAreaStyles.contentSafeArea,
                 ),
                 {className: drawerContentClassName},
               )}>
