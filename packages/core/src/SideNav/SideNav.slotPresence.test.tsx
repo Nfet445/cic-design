@@ -20,6 +20,7 @@ import {SideNavItem} from './SideNavItem';
 import {SideNavSection} from './SideNavSection';
 import {classesOf} from '../__tests__/classNameAssertions';
 import {sideNavClassName} from './sideNavClasses';
+import {sideNavItemClassName} from './sideNavItemClasses';
 import {SideNavCollapseContext} from './SideNavCollapseContext';
 import {SideNavRenderContext} from './SideNavRenderContext';
 import {AppShellMobileContext} from '../AppShell/AppShellMobileContext';
@@ -69,8 +70,8 @@ function zeroIsInside(classNames: string): boolean {
 
 /**
  * Whether the "0" sits inside an element whose StyleX debug name matches
- * `style`. SideNavHeading and SideNavItem still paint with StyleX, so their
- * slots carry no class to find until each moves to a class map.
+ * `style`. SideNavHeading still paints with StyleX, so its slots carry no
+ * class to find until it moves to a class map.
  */
 function zeroIsInsideStyleXSlot(style: string): boolean {
   return zeroParent(document.body)?.closest(`[class*="${style}"]`) != null;
@@ -240,13 +241,13 @@ describe('SideNavItem and SideNavSection endContent follow isRenderable', () => 
     'SideNavItem renders no end content for %s',
     (_l, v) => {
       render(<SideNavItem label="Inbox" href="/inbox" endContent={v} />);
-      expect(document.querySelector('[class*="endContent"]')).toBeNull();
+      expect(slotsOf(sideNavItemClassName.endContent)).toHaveLength(0);
     },
   );
 
   it('SideNavItem renders an endContent of 0 inside its slot', () => {
     render(<SideNavItem label="Inbox" href="/inbox" endContent={0} />);
-    expect(zeroIsInsideStyleXSlot('endContent')).toBe(true);
+    expect(zeroIsInside(sideNavItemClassName.endContent)).toBe(true);
   });
 
   it.each(EMPTY_VALUES)(

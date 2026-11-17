@@ -224,6 +224,7 @@ import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {sideNavClassName} from '../SideNav/sideNavClasses';
+import {sideNavItemClassName} from '../SideNav/sideNavItemClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {stackClassName} from '../Stack/stackClasses';
@@ -1670,6 +1671,9 @@ function familyClassNames() {
   add(sideNavClassName.resizableContainer);
   add(sideNavClassName.topbar);
   add(sideNavClassName.topbarIcons);
+  for (const value of Object.values(sideNavItemClassName)) {
+    add(value);
+  }
 
   return [...names].sort();
 }
@@ -1703,9 +1707,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // about 45, the item row machine about 45, and the tab family — TabList's
     // strip, masks and arrows, TabMenu, SegmentedControl — about 120. A scan
     // that reaches component bodies or prose would add hundreds more. The
-    // top-nav menus and the row machine brought the sheet to about 975, and the
-    // drawer panel — two sides, two painting states, two direction arms and the
-    // scrim — about 60 more.
+    // top-nav menus and the row machine brought the sheet to about 975; the
+    // side-nav row's class map added its own transition and popover utilities,
+    // and the drawer panel — two sides, two painting states, two direction arms
+    // and the scrim — about 60 more.
     expect(stylesheet.rules.size).toBeLessThan(1050);
   });
 
