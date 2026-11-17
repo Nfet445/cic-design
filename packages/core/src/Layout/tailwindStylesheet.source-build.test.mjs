@@ -29,16 +29,20 @@ import {
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
+  alertDialogActionsRowClassName,
+  alertDialogStackedActionClassName,
+} from '../AlertDialog/alertDialogClasses';
+import {
   dialogInlineClassName,
   dialogInnerClassName,
   dialogRootClassName,
 } from '../Dialog/dialogClasses';
 import {
-  dialogHeaderActionsClassName,
-  dialogHeaderContainerClassName,
-  dialogHeaderSlotClassName,
-  dialogHeaderTitleBlockClassName,
-} from '../Dialog/dialogHeaderClasses';
+  layerHeaderActionsClassName,
+  layerHeaderContainerClassName,
+  layerHeaderSlotClassName,
+  layerHeaderTitleBlockClassName,
+} from '../Layer/layerHeaderClasses';
 import {
   itemAlignClassName,
   itemClassName,
@@ -472,19 +476,24 @@ function familyClassNames() {
     add(dialogInlineClassName({isFullscreen}));
   }
   add(dialogInnerClassName);
-  add(dialogHeaderContainerClassName);
-  add(dialogHeaderSlotClassName);
-  add(dialogHeaderTitleBlockClassName);
+  add(layerHeaderContainerClassName);
+  add(layerHeaderSlotClassName);
+  add(layerHeaderTitleBlockClassName);
   for (const hasBlockCompensation of [false, true]) {
     for (const hasInlineCompensation of [false, true]) {
       add(
-        dialogHeaderActionsClassName({
+        layerHeaderActionsClassName({
           hasBlockCompensation,
           hasInlineCompensation,
         }),
       );
     }
   }
+
+  // The alert dialog adds only the row's gesture policy and the stacked width;
+  // Button already caps an action at `min-w-0 max-w-full`.
+  add(alertDialogActionsRowClassName);
+  add(alertDialogStackedActionClassName);
 
   // The layout family: the shell frame, then every region combination. A
   // region edge publishes its inset and reads it back, so each combination

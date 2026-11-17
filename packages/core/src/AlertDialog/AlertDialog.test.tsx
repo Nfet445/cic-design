@@ -32,6 +32,7 @@ import {getGestureHost} from '../gestures/GestureHost';
 import {isInHeldLayer} from '../Layer/inputHold';
 import {isTrackedByGroup} from '../privateAttributes/pressGroupItem.stylex';
 import {AlertDialog} from './AlertDialog';
+import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
 import {useImperativeAlertDialog} from './useImperativeAlertDialog';
 import {getFocusableElements} from '../hooks/useFocusTrap';
 
@@ -260,9 +261,11 @@ describe('AlertDialog', () => {
       const dialog = screen.getByRole('alertdialog');
       const buttons = within(dialog).getAllByRole('button');
       const footerStack = buttons[0].parentElement!;
-      expect(dialog.getAttribute('style')).toContain('--x-width: 400px');
-      expect(dialog.getAttribute('style')).toContain(
-        '--x-maxWidth: min(100%, calc(100dvw - var(--spacing-4) - var(--spacing-4)))',
+      expectVariable(dialog, '--astryx-dialog-width', '400px');
+      expectVariable(
+        dialog,
+        '--astryx-dialog-max-width',
+        'min(100%, calc(100dvw - var(--spacing-4) - var(--spacing-4)))',
       );
       expect(buttons.map(button => button.textContent)).toEqual([
         'Cancel',
@@ -300,7 +303,12 @@ describe('AlertDialog', () => {
         expect(button.className).toContain(
           'h-[max(var(--size-element-md),1lh)]',
         );
-        expect(getComputedStyle(button).maxWidth).toBe('100%');
+        // The button keeps its own cap; jsdom cannot resolve the class into a
+        // declaration, so the class set is the contract.
+        expectClassSet(button, {
+          includes: ['max-w-full'],
+          excludes: ['w-full'],
+        });
       }
     });
 
@@ -325,16 +333,16 @@ describe('AlertDialog', () => {
       const dialog = screen.getByRole('alertdialog');
       const buttons = within(dialog).getAllByRole('button');
       const footerStack = buttons[0].parentElement!;
-      expect(dialog.getAttribute('style')).toContain('--x-width: 400px');
+      expectVariable(dialog, '--astryx-dialog-width', '400px');
       expect(buttons.map(button => button.textContent)).toEqual([
         longActionLabel,
         longCancelLabel,
       ]);
       expect(footerStack.className).toContain('flex-col');
       for (const button of buttons) {
-        expect(button.className).toContain('whitespace-nowrap');
-        expect(getComputedStyle(button).width).toBe('100%');
-        expect(getComputedStyle(button).maxWidth).toBe('100%');
+        expectClassSet(button, {
+          includes: ['whitespace-nowrap', 'w-full', 'max-w-full'],
+        });
       }
     });
 
@@ -359,15 +367,14 @@ describe('AlertDialog', () => {
       const dialog = screen.getByRole('alertdialog');
       const buttons = within(dialog).getAllByRole('button');
       // On a phone the alert takes iOS's width; the layout stays the same.
-      expect(dialog.getAttribute('style')).toContain('--x-width: 320px');
+      expectVariable(dialog, '--astryx-dialog-width', '320px');
       expect(buttons.map(button => button.textContent)).toEqual([
         'Permanently delete workspace',
         'Keep this workspace',
       ]);
-      expect(buttons[0].className).toContain('whitespace-nowrap');
-      expect(getComputedStyle(buttons[0]).width).toBe('100%');
-      expect(buttons[1].className).toContain('whitespace-nowrap');
-      expect(getComputedStyle(buttons[1]).width).toBe('100%');
+      for (const button of buttons) {
+        expectClassSet(button, {includes: ['whitespace-nowrap', 'w-full']});
+      }
     });
 
     it('keeps narrow visual, DOM, and tab order aligned while autofocus stays on cancel', async () => {
@@ -853,24 +860,24 @@ describe('AlertDialog touch motion', () => {
   });
 
   it("takes iOS's 320 px width on a phone, a caller's width there, and 400 on a wider touch screen or with a mouse", () => {
-    const widthOf = () => screen.getByRole('alertdialog').getAttribute('style');
+    const widthOf = () => screen.getByRole('alertdialog');
     renderOpen();
-    expect(widthOf()).toContain('--x-width: 320px');
+    expectVariable(widthOf(), '--astryx-dialog-width', '320px');
     cleanup();
     vi.unstubAllGlobals();
     renderOpen({width: 360});
     expect(window.matchMedia('(pointer: coarse)').matches).toBe(true);
-    expect(widthOf()).toContain('--x-width: 360px');
+    expectVariable(widthOf(), '--astryx-dialog-width', '360px');
     cleanup();
     vi.unstubAllGlobals();
     renderOpen({smallScreen: false});
     expect(window.matchMedia('(pointer: coarse)').matches).toBe(true);
-    expect(widthOf()).toContain('--x-width: 400px');
+    expectVariable(widthOf(), '--astryx-dialog-width', '400px');
     cleanup();
     vi.unstubAllGlobals();
     renderOpen({touch: false});
     expect(window.matchMedia('(pointer: coarse)').matches).toBe(false);
-    expect(widthOf()).toContain('--x-width: 400px');
+    expectVariable(widthOf(), '--astryx-dialog-width', '400px');
   });
 
   it('stays open under a finger while it fades out after the caller closes it', async () => {

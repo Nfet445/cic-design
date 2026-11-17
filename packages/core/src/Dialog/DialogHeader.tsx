@@ -27,11 +27,11 @@ import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
 import {
-  dialogHeaderActionsClassName,
-  dialogHeaderContainerClassName,
-  dialogHeaderSlotClassName,
-  dialogHeaderTitleBlockClassName,
-} from './dialogHeaderClasses';
+  layerHeaderActionsClassName,
+  layerHeaderContainerClassName,
+  layerHeaderSlotClassName,
+  layerHeaderTitleBlockClassName,
+} from '../Layer/layerHeaderClasses';
 import {useDialogContext} from './DialogContext';
 import {
   registerEnglishFallback,
@@ -180,19 +180,19 @@ export function DialogHeader({
       {...rest}>
       <div
         {...mergeProps(themeProps('dialog-header'), {
-          className: dialogHeaderContainerClassName,
+          className: layerHeaderContainerClassName,
         })}>
         {hasStartContent && (
           <div
             {...mergeProps(themeProps('dialog-header-start-content'), {
-              className: dialogHeaderSlotClassName,
+              className: layerHeaderSlotClassName,
             })}>
             {startContent}
           </div>
         )}
         <div
           {...mergeProps(themeProps('dialog-header-title-block'), {
-            className: dialogHeaderTitleBlockClassName,
+            className: layerHeaderTitleBlockClassName,
           })}>
           <Heading
             ref={titleRef}
@@ -212,7 +212,7 @@ export function DialogHeader({
         {(hasEndContent || onOpenChange != null) && (
           <div
             {...mergeProps(themeProps('dialog-header-end-content'), {
-              className: dialogHeaderActionsClassName({
+              className: layerHeaderActionsClassName({
                 hasBlockCompensation: shouldCompensateEndBlock,
                 hasInlineCompensation: shouldCompensateEndInline,
               }),
