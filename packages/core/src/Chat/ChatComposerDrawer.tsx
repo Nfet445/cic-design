@@ -39,7 +39,6 @@ import {
   chatComposerDrawerToggleContentClassName,
   chatComposerDrawerToggleRowClassName,
 } from './chatClasses';
-import {chatComposerDrawerHoverStyles} from './ChatComposerDrawer.stylex';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -104,15 +103,6 @@ export interface ChatComposerDrawerProps extends BaseProps<HTMLDivElement> {
   style?: React.CSSProperties;
   'data-testid'?: string;
 }
-
-const labelClassName = tw(
-  chatComposerDrawerLabelClassName,
-  stylex.props(chatComposerDrawerHoverStyles.label).className,
-);
-
-const handleHoverClassName = stylex.props(
-  chatComposerDrawerHoverStyles.handle,
-).className;
 
 /**
  * Collapsible drawer panel for a chat composer.
@@ -209,18 +199,15 @@ export function ChatComposerDrawer({
             {collapsedSummary === undefined ? (
               <>
                 <Badge variant="neutral" label={count} />
-                <span className={labelClassName}>{label}</span>
+                <span className={chatComposerDrawerLabelClassName}>
+                  {label}
+                </span>
               </>
             ) : (
               collapsedSummary
             )}
           </div>
-          <div
-            className={tw(
-              chatComposerDrawerHandleClassName(isCollapsed),
-              handleHoverClassName,
-            )}
-          />
+          <div className={chatComposerDrawerHandleClassName(isCollapsed)} />
         </div>
       )}
 

@@ -489,11 +489,18 @@ export const chatComposerDrawerClassName = tw(
 
 /**
  * The collapse toggle: one grid cell that stacks the summary and the handle,
- * so they crossfade without moving the drawer.
+ * so they crossfade without moving the drawer. Its hover repaints the label
+ * and the handle, so it publishes both paints as variables the children read;
+ * an ancestor marker would need a StyleX class, and a variable keeps the
+ * hover to those two children instead of every descendant of the row.
  */
 export const chatComposerDrawerToggleRowClassName = tw(
   'grid grid-cols-[1fr] items-center h-5 px-4 -mx-4 cursor-pointer select-none',
   'aria-disabled:cursor-default',
+  '[--_chat-drawer-label-color:var(--color-text-secondary)]',
+  '[--_chat-drawer-handle-color:var(--color-icon-secondary)]',
+  '[@media(hover:hover)]:hover:[--_chat-drawer-label-color:var(--color-text-primary)]',
+  '[@media(hover:hover)]:hover:[--_chat-drawer-handle-color:var(--color-icon-primary)]',
 );
 
 /** The collapsed summary, centered on the toggle row and hidden while open. */
@@ -509,10 +516,13 @@ export function chatComposerDrawerToggleContentClassName(
   );
 }
 
-/** The collapsed summary's word beside the count. */
+/**
+ * The collapsed summary's word beside the count. Its colour is the toggle
+ * row's variable, so the row's hover reaches this text and nothing else.
+ */
 export const chatComposerDrawerLabelClassName = tw(
   'text-[length:var(--text-body-size)] leading-5',
-  'text-[color:var(--color-text-secondary)]',
+  'text-[color:var(--_chat-drawer-label-color)]',
   'transition-[color] duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
 );
 
@@ -520,7 +530,7 @@ export const chatComposerDrawerLabelClassName = tw(
 export function chatComposerDrawerHandleClassName(isHidden: boolean): string {
   return tw(
     'col-start-1 row-start-1 justify-self-center self-start w-5 h-0.5',
-    'rounded-[var(--radius-full)] bg-[var(--color-icon-secondary)]',
+    'rounded-[var(--radius-full)] bg-[var(--_chat-drawer-handle-color)]',
     'transition-[background-color,opacity] duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
     isHidden ? 'opacity-0 pointer-events-none' : 'opacity-100',
   );
@@ -659,7 +669,7 @@ export function chatComposerRootClassName(isDisabled: boolean): string {
     'relative z-0 isolate flex flex-col',
     '[--_chat-composer-radius:var(--radius-chat)]',
     '[--_chat-composer-padding:var(--spacing-3)]',
-    '[--_button-radius:max(var(--radius-element),calc(var(--_chat-composer-radius)-var(--_chat-composer-padding)))]',
+    '[--_button-radius:max(var(--radius-element),calc(var(--_chat-composer-radius)_-_var(--_chat-composer-padding)))]',
     isDisabled && 'opacity-60 pointer-events-none',
   );
 }
@@ -667,11 +677,12 @@ export function chatComposerRootClassName(isDisabled: boolean): string {
 /**
  * The body reads its padding from the shell's variable, and compact rewrites
  * that variable rather than the padding, so the flat elevation's inset border
- * calculation follows the same value.
+ * calculation follows the same value. The padding itself belongs to the
+ * elevation class, which alone knows whether it must subtract a border.
  */
 export function chatComposerBodyClassName(density: ChatDensity): string {
   return tw(
-    'relative z-[2] flex flex-col p-[var(--_chat-composer-padding)]',
+    'relative z-[2] flex flex-col',
     'rounded-[var(--_chat-composer-radius)] bg-[var(--color-background-popover)]',
     'cursor-text [&:is(:disabled,[aria-disabled="true"])]:cursor-default',
     'transition-[box-shadow,border-color] ease-[var(--ease-standard)]',
@@ -679,6 +690,35 @@ export function chatComposerBodyClassName(density: ChatDensity): string {
       ? 'gap-1 [--_chat-composer-padding:var(--spacing-2)]'
       : 'gap-2',
   );
+}
+
+/**
+ * The composer body's resting elevation. It owns the body's padding too,
+ * because the flat case draws its border *inside* the padding: its width is
+ * subtracted from every side (like Card), so total inset matches the elevated
+ * case and content geometry is unchanged. One class per presentation, so no
+ * two padding utilities compete. The flat border, its hover ring and its
+ * focus ring mirror TextInput's shared `inputWrapperStyles.base` treatment.
+ * The WCAG focus indicator is the shared ring, gated to keyboard focus.
+ */
+export function chatComposerElevationClassName(
+  elevation: 'low' | 'none',
+): string {
+  return elevation === 'none'
+    ? tw(
+        'border-[length:var(--border-width)] border-solid',
+        'border-[color:var(--color-border-emphasized)]',
+        'focus-within:border-[color:var(--color-accent)]',
+        'p-[calc(var(--_chat-composer-padding)_-_var(--border-width))]',
+        '[@media(hover:hover)]:[&:hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))]:shadow-[inset_0px_0px_0px_2px_color-mix(in_srgb,var(--color-border-emphasized)_30%,transparent)]',
+        'focus-within:shadow-[inset_0px_0px_0px_2px_var(--color-accent-muted)]',
+      )
+    : tw(
+        'p-[var(--_chat-composer-padding)]',
+        'shadow-[var(--shadow-low)]',
+        '[@media(hover:hover)]:[&:hover:where(:not(:disabled,[aria-disabled="true"]))]:shadow-[var(--shadow-med)]',
+        'focus-within:shadow-[var(--shadow-med)]',
+      );
 }
 
 export const chatComposerHeaderClassName =
@@ -729,12 +769,12 @@ export function chatComposerStatusClassName(
     position === 'top'
       ? tw(
           'pt-[var(--_chat-composer-padding)]',
-          'pb-[calc(var(--_chat-composer-padding)+var(--_chat-composer-radius))]',
+          'pb-[calc(var(--_chat-composer-padding)_+_var(--_chat-composer-radius))]',
           '-mb-[var(--_chat-composer-radius)]',
           'rounded-ss-[var(--_chat-composer-radius)] rounded-se-[var(--_chat-composer-radius)]',
         )
       : tw(
-          'pt-[calc(var(--_chat-composer-padding)+var(--_chat-composer-radius))]',
+          'pt-[calc(var(--_chat-composer-padding)_+_var(--_chat-composer-radius))]',
           'pb-[var(--_chat-composer-padding)]',
           '-mt-[var(--_chat-composer-radius)]',
           'rounded-es-[var(--_chat-composer-radius)] rounded-ee-[var(--_chat-composer-radius)]',
