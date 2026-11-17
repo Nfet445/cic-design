@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 23 of 44 tickets done, plus two waves (layout primitives,
+Progress: 24 of 44 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -89,7 +89,7 @@ buttons) that landed before the tickets were written.
 - [x] `26-data-tables-record` — write `docs/families/data-tables.md` first
 - [x] `27-table-structure` — header, rows, cells
 - [x] `28-table-behaviour` — sorting, filtering, selection, virtualised body
-- [ ] `29-charts-and-richtext` — two packages get their own sheets
+- [x] `29-charts-and-richtext` — two packages get their own sheets
 - [ ] `30-lab` — 58 creations in two halves
 
 ### Wave 9 — themes, consumers, removal
