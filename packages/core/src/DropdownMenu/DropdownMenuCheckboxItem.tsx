@@ -40,54 +40,33 @@ import {useDropdownMenuContext} from './DropdownMenuContext';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLit.stylex';
 import {tw} from '../utils/tw';
+import {
+  dropdownMenuCheckableRowClassName,
+  dropdownMenuMarkerClassName,
+} from './dropdownMenuClasses';
 import {focusMenuItemOnHover} from './menuItemHover';
-import {colorVars, focusVars, spacingVars} from '../theme/tokens.stylex';
+import {colorVars, focusVars} from '../theme/tokens.stylex';
 import {composeEventHandlers, mergeProps, themeProps} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {keepDisabledRowUnfocused} from './menuItemRoles';
 
-const styles = stylex.create({
-  root: {
-    width: '100%',
-    borderRadius: `max(0px, calc(var(--_dropdown-menu-radius, ${spacingVars['--spacing-2']}) - var(--_dropdown-menu-padding, ${spacingVars['--spacing-1']})))`,
-    color: colorVars['--color-text-primary'],
+const menuRowStateStyles = stylex.create({
+  row: {
+    // The row's paint stays unlayered. Item's own hover and press overlays are
+    // unlayered too, and a layered utility loses to them whatever the class
+    // order says, so the focused fill reads its paint here.
     backgroundColor: {
       default: 'transparent',
       // menuPressLitRowClassName sets the variable on the row a held finger or pen
       // lights.
       ':focus': `var(--_menu-row-focus-paint, ${colorVars['--color-overlay-hover']})`,
     },
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
     // Rows show focus with a translucent overlay, which forced colors replace
     // with the page color. The standard focus ring (focusOutlineStyles), drawn
     // inside the row by its own width, marks the focused row in every mode.
+    // The ring and its offset share one tier, so the row's offset outranks the
+    // shared one only beside it, unlayered.
     outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
-  },
-  disabled: {
-    opacity: 0.5,
-    cursor: 'default',
-  },
-  // Rendered in Item's `marker` slot as a raw flex child, so `order` moves it
-  // relative to the label within the row. On touch it moves to the inline-end.
-  // `aria-hidden` + `inert` + pointer-events:none keep the composed checkbox
-  // indicator decorative: it adds no accessible name, and clicks fall through to the row,
-  // which owns the role and activation.
-  // Placement of the marker within the row. The indicator draws its own box
-  // (size, fill, border) — these are only the rules the MENU owns: where the
-  // marker sits in the row, and that it never takes the pointer.
-  marker: {
-    pointerEvents: 'none',
-    order: {
-      default: 0,
-      '@media (pointer: coarse)': 1,
-    },
-    marginInlineStart: {
-      default: 0,
-      '@media (pointer: coarse)': 'auto',
-    },
   },
 });
 
@@ -225,7 +204,7 @@ export function DropdownMenuCheckboxItem({
           state={value ? 'checked' : 'unchecked'}
           size={controlSize}
           isDisabled={isDisabled}
-          xstyle={styles.marker}
+          className={dropdownMenuMarkerClassName}
         />
       }
       startContent={
@@ -238,14 +217,13 @@ export function DropdownMenuCheckboxItem({
       endContent={endContent}
       onClick={handleClick}
       isDisabled={isDisabled}
-      xstyle={[
-        focusOutlineStyles.focusVisible,
-        styles.root,
-        isDisabled && styles.disabled,
-        xstyle,
-      ]}
+      xstyle={[focusOutlineStyles.focusVisible, menuRowStateStyles.row, xstyle]}
       {...mergeProps(themeProps('dropdown-menu-item', {size: menuSize}), {
-        className: tw(menuPressLitRowClassName, className),
+        className: tw(
+          dropdownMenuCheckableRowClassName({isDisabled}),
+          menuPressLitRowClassName,
+          className,
+        ),
         style,
       })}
     />

@@ -311,9 +311,13 @@ describe('DropdownMenu', () => {
     // keeps under its grab bar, 4px at the sides.
     const content = heading.closest('.astryx-dropdown-menu');
     expect(content?.parentElement?.closest('.astryx-section')).toBeNull();
-    expect(content).toHaveStyle({
-      paddingTop: '0px',
-      paddingInline: 'var(--spacing-1)',
+    // jsdom parses no stylesheet, so the box is read off the class set.
+    expectClassSet(content!, {
+      includes: [
+        '[padding-block:0]',
+        '[padding-inline:var(--spacing-1)]',
+        '[--container-padding-inline-start:var(--spacing-1)]',
+      ],
     });
     // The root heading stands alone, with no row wrapper.
     expect(heading.parentElement).toBe(content);
