@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 40 of 50 tickets done, plus two waves (layout primitives,
+Progress: 41 of 50 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -110,7 +110,7 @@ buttons) that landed before the tickets were written.
 - [x] `39-layout-regions-page` — a check page that does not contradict the classes
 - [x] `40-integration-regressions` — repair the wave's merged failures
 - [ ] `41-shared-modules-after-consumers` — the seven creations whose consumers own the property
-- [ ] `42-table-plugin-styles` — the table plugins and the cells they borrow
+- [x] `42-table-plugin-styles` — the table plugins and the cells they borrow
 - [x] `43-full-suite-green` — the full core suite back to its known-failing count
 - [ ] `36-remove-stylex` — `@stylexjs` leaves the repository
 
