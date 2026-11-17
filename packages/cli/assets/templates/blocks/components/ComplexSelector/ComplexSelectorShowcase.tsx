@@ -3,16 +3,9 @@
 'use client';
 
 import {useEffect, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {ComplexSelector} from '@astryxdesign/core/ComplexSelector';
 import {Text} from '@astryxdesign/core/Text';
 import {useGridFocus} from '@astryxdesign/core/hooks';
-import {
-  borderVars,
-  colorVars,
-  radiusVars,
-  spacingVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 
 type Fruit = 'Apple' | 'Pear' | 'Peach' | 'Plum';
 type Ripeness = 'Crisp' | 'Tender' | 'Juicy' | 'Peak';
@@ -42,61 +35,16 @@ const ripenessLevels: Array<{
 
 const GRID_CELL_SELECTOR = '[role="gridcell"]';
 
-const styles = stylex.create({
-  grid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-1'],
-    minWidth: 280,
-  },
-  row: {
-    display: 'grid',
-    gridTemplateColumns: 'minmax(150px, 1fr) repeat(4, 44px)',
-    alignItems: 'center',
-    columnGap: spacingVars['--spacing-1'],
-  },
-  rowHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    textAlign: 'start',
-    minWidth: 0,
-  },
-  emoji: {
-    fontSize: 18,
-    flexShrink: 0,
-  },
-  fruitText: {
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-  },
-  cell: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 36,
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-    borderRadius: radiusVars['--radius-container'],
-    backgroundColor: colorVars['--color-background-card'],
-    color: colorVars['--color-text-secondary'],
-    fontFamily: 'inherit',
-    cursor: 'pointer',
-    ':hover': {
-      '@media (hover: hover)': {
-        borderColor: colorVars['--color-border-emphasized'],
-        color: colorVars['--color-text-primary'],
-      },
-    },
-  },
-  cellSelected: {
-    borderColor: colorVars['--color-accent'],
-    backgroundColor: colorVars['--color-accent'],
-    color: colorVars['--color-on-accent'],
-  },
-});
+const styles = {
+  grid: 'flex flex-col gap-1 min-w-[280px]',
+  row: 'grid [grid-template-columns:minmax(150px,1fr)_repeat(4,44px)] items-center gap-x-1',
+  rowHeader: 'flex items-center gap-2 text-start min-w-0',
+  emoji: 'text-[18px] shrink-0',
+  fruitText: 'flex flex-col min-w-0',
+  cell: 'flex items-center justify-center h-9 border border-[var(--color-border)] rounded-[var(--radius-container)] bg-[var(--color-background-card)] text-[var(--color-text-secondary)] [font-family:inherit] cursor-pointer [@media(hover:hover)]:hover:border-[var(--color-border-emphasized)] [@media(hover:hover)]:hover:text-[var(--color-text-primary)]',
+  cellSelected:
+    'border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-on-accent)]',
+} as const;
 
 function FruitRipenessGrid({
   value,
@@ -131,14 +79,14 @@ function FruitRipenessGrid({
       aria-label="Fruit ripeness choices"
       onKeyDown={handleKeyDown}
       onFocus={handleFocus}
-      {...stylex.props(styles.grid)}>
+      className={styles.grid}>
       {fruits.map(fruit => (
-        <div key={fruit.id} role="row" {...stylex.props(styles.row)}>
-          <div role="rowheader" {...stylex.props(styles.rowHeader)}>
-            <span aria-hidden="true" {...stylex.props(styles.emoji)}>
+        <div key={fruit.id} role="row" className={styles.row}>
+          <div role="rowheader" className={styles.rowHeader}>
+            <span aria-hidden="true" className={styles.emoji}>
               {fruit.emoji}
             </span>
-            <span {...stylex.props(styles.fruitText)}>
+            <span className={styles.fruitText}>
               <Text type="body">{fruit.id}</Text>
               <Text type="supporting" color="secondary">
                 {fruit.description}
@@ -157,10 +105,11 @@ function FruitRipenessGrid({
                 aria-selected={isSelected || undefined}
                 tabIndex={isSelected ? 0 : -1}
                 onClick={() => onChange({fruit: fruit.id, ripeness: level.id})}
-                {...stylex.props(
-                  styles.cell,
-                  isSelected && styles.cellSelected,
-                )}>
+                className={
+                  isSelected
+                    ? `${styles.cell} ${styles.cellSelected}`
+                    : styles.cell
+                }>
                 {level.shortLabel}
               </button>
             );
