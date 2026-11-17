@@ -26,28 +26,11 @@
 
 import {useId, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
 import {isRenderable} from '../utils/isRenderable';
-
-const styles = stylex.create({
-  heading: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    userSelect: 'none',
-  },
-});
+import {dropdownMenuGroupHeadingClassName} from './dropdownMenuClasses';
 
 export interface DropdownMenuGroupProps extends Omit<
   BaseProps<HTMLDivElement>,
@@ -111,10 +94,9 @@ export function DropdownMenuGroup({
       {hasTitle && (
         <div
           id={headingId}
-          {...mergeProps(
-            themeProps('dropdown-menu-section-heading'),
-            stylex.props(styles.heading),
-          )}>
+          {...mergeProps(themeProps('dropdown-menu-section-heading'), {
+            className: dropdownMenuGroupHeadingClassName,
+          })}>
           {title}
         </div>
       )}
