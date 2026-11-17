@@ -35,17 +35,24 @@ import React, {
   type MouseEvent,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  radiusVars,
-  fontWeightVars,
-} from '../theme/tokens.stylex';
+import {radiusVars, spacingVars} from '../theme/tokens.stylex';
 import {BreadcrumbContext, type BreadcrumbsVariant} from './Breadcrumbs';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {mergeProps, rtlStyles} from '../utils';
+import {tw} from '../utils/tw';
+import {
+  breadcrumbButtonResetClassName,
+  breadcrumbChevronClassName,
+  breadcrumbCurrentClassName,
+  breadcrumbCurrentColorClassName,
+  breadcrumbItemClassName,
+  breadcrumbLinkClassName,
+  breadcrumbLinkColorClassName,
+  breadcrumbSeparatorClassName,
+  breadcrumbSizeClassName,
+  breadcrumbStartIconClassName,
+} from './breadcrumbItemClasses';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
@@ -149,101 +156,9 @@ export interface BreadcrumbItemProps extends Omit<
 // Styles
 // =============================================================================
 
-const itemStyles = stylex.create({
-  root: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    margin: 0,
-    '--separator-display': {
-      default: 'flex',
-      ':first-child': 'none',
-    },
-  },
-  defaultSize: {
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-  },
-  supportingSize: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-  },
-  contentWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  link: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    paddingBlock: spacingVars['--spacing-1'],
-    textDecoration: {
-      default: 'none',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': 'underline',
-      },
-    },
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // Reset native button styles so onClick-only items match link appearance.
-  // paddingInline rather than padding: a blanket `padding` also overrides the
-  // paddingBlock `link` sets above, which shrank the button crumbs to 20px
-  // against their sibling links' 28px.
-  buttonReset: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    paddingInline: 0,
-    margin: 0,
-    font: 'inherit',
-  },
-  defaultLink: {
-    color: colorVars['--color-text-secondary'],
-  },
-  supportingLink: {
-    color: colorVars['--color-text-secondary'],
-  },
-  current: {
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  defaultCurrent: {
-    color: colorVars['--color-text-primary'],
-  },
-  supportingCurrent: {
-    color: colorVars['--color-text-secondary'],
-  },
-  icon: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  chevron: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-    // Sized off supporting text (12px) — exactly Icon's `xsm` box at the
-    // default type scale. Width/height stay on the token so the box and the
-    // glyph keep matching if a theme retunes the supporting step.
-    width: typeScaleVars['--text-supporting-size'],
-    height: typeScaleVars['--text-supporting-size'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-  },
-  separator: {
-    display: 'var(--separator-display)',
-    alignItems: 'center',
-    color: colorVars['--color-text-secondary'],
-    paddingBlock: spacingVars['--spacing-1'],
-    userSelect: 'none',
-  },
-});
-
 function BreadcrumbSeparator({separator}: {separator: ReactNode}) {
   return (
-    <span aria-hidden="true" {...stylex.props(itemStyles.separator)}>
+    <span aria-hidden="true" className={breadcrumbSeparatorClassName}>
       {separator === '/' ? (
         <span {...stylex.props(rtlStyles.mirror)}>/</span>
       ) : (
@@ -395,7 +310,7 @@ export function BreadcrumbItem({
   const content = (
     <>
       {isRenderable(startIcon) && (
-        <span {...stylex.props(itemStyles.icon)}>{startIcon}</span>
+        <span className={breadcrumbStartIconClassName}>{startIcon}</span>
       )}
       {children}
     </>
@@ -407,12 +322,12 @@ export function BreadcrumbItem({
         ref={mergedItemRef}
         {...mergeProps(
           themeProps('breadcrumb-item', {variant: ctx.variant}),
-          stylex.props(
-            itemStyles.root,
-            isSupporting ? itemStyles.supportingSize : itemStyles.defaultSize,
-            xstyle,
+          stylex.props(xstyle),
+          tw(
+            breadcrumbItemClassName,
+            breadcrumbSizeClassName[isSupporting ? 'supporting' : 'default'],
+            className,
           ),
-          className,
           style,
         )}
         data-testid={testId}
@@ -431,12 +346,11 @@ export function BreadcrumbItem({
           </BreadcrumbMenuTrigger>
         ) : (
           <span
-            {...stylex.props(
-              itemStyles.contentWrapper,
-              itemStyles.current,
-              isSupporting
-                ? itemStyles.supportingCurrent
-                : itemStyles.defaultCurrent,
+            className={tw(
+              breadcrumbCurrentClassName,
+              breadcrumbCurrentColorClassName[
+                isSupporting ? 'supporting' : 'default'
+              ],
             )}
             aria-current="page">
             {content}
@@ -453,12 +367,12 @@ export function BreadcrumbItem({
       ref={mergedItemRef}
       {...mergeProps(
         themeProps('breadcrumb-item', {variant: ctx.variant}),
-        stylex.props(
-          itemStyles.root,
-          isSupporting ? itemStyles.supportingSize : itemStyles.defaultSize,
-          xstyle,
+        stylex.props(xstyle),
+        tw(
+          breadcrumbItemClassName,
+          breadcrumbSizeClassName[isSupporting ? 'supporting' : 'default'],
+          className,
         ),
-        className,
         style,
       )}
       data-testid={testId}
@@ -477,10 +391,8 @@ export function BreadcrumbItem({
           ref={contentRef}
           href={href}
           onClick={handleActivate}
-          {...focusOutlineProps.focusVisible(
-            itemStyles.link,
-            isSupporting ? itemStyles.supportingLink : itemStyles.defaultLink,
-          )}>
+          {...focusOutlineProps.focusVisible()}
+          className={tw(breadcrumbLinkClassName, breadcrumbLinkColorClassName)}>
           {content}
         </LinkComponent>
       ) : onClick != null ? (
@@ -488,22 +400,22 @@ export function BreadcrumbItem({
           ref={contentRef as React.RefObject<HTMLButtonElement | null>}
           type="button"
           onClick={handleActivate}
-          {...focusOutlineProps.focusVisible(
-            itemStyles.link,
-            itemStyles.buttonReset,
-            isSupporting ? itemStyles.supportingLink : itemStyles.defaultLink,
+          {...focusOutlineProps.focusVisible()}
+          className={tw(
+            breadcrumbLinkClassName,
+            breadcrumbButtonResetClassName,
+            breadcrumbLinkColorClassName,
           )}>
           {content}
         </button>
       ) : (
         <span
           ref={contentRef}
-          {...stylex.props(
-            itemStyles.contentWrapper,
-            itemStyles.current,
-            isSupporting
-              ? itemStyles.supportingCurrent
-              : itemStyles.defaultCurrent,
+          className={tw(
+            breadcrumbCurrentClassName,
+            breadcrumbCurrentColorClassName[
+              isSupporting ? 'supporting' : 'default'
+            ],
           )}>
           {content}
         </span>
@@ -546,7 +458,6 @@ function BreadcrumbMenuTrigger({
   const menuId = useId();
   const triggerId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const isSupporting = variant === 'supporting';
   // The menu's rows move focus with the last input
   // (`architecture:interaction-modality` INV1); this menu has no press model
   // to activate the tracking they read, so it activates it itself.
@@ -696,22 +607,23 @@ function BreadcrumbMenuTrigger({
           // spread replaces the className themeProps() built, which is how the
           // documented breadcrumb-item-menu-trigger target came to render on
           // nothing.
-          focusOutlineProps.focusVisible(
-            itemStyles.link,
-            itemStyles.buttonReset,
-            isSupporting ? itemStyles.supportingLink : itemStyles.defaultLink,
+          focusOutlineProps.focusVisible(),
+          tw(
+            breadcrumbLinkClassName,
+            breadcrumbButtonResetClassName,
+            breadcrumbLinkColorClassName,
           ),
         )}>
         {children}
         <Icon
           icon="chevronDown"
           // 0.75rem — the 12px supporting-text box the bare glyph already
-          // rendered at; `itemStyles.chevron` keeps that box on the token.
+          // rendered at; the chevron class keeps that box on the token.
           size="xsm"
           // The chevron reads as part of the link label, so it takes the
           // trigger's link color rather than an icon color.
           color="inherit"
-          xstyle={itemStyles.chevron}
+          className={breadcrumbChevronClassName}
         />
       </button>
 

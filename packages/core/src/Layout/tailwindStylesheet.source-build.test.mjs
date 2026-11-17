@@ -22,6 +22,11 @@ import {
   buttonForcedColorsEdgeClassName,
   buttonPressClassName,
 } from '../Button/buttonClasses';
+import {
+  avatarStatusDotClassName,
+  avatarStatusDotIconClassName,
+  avatarStatusDotVariantClassName,
+} from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
   fieldAttachedStatusLayerClassName,
@@ -127,6 +132,13 @@ import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses'
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {stackClassName} from '../Stack/stackClasses';
+import {
+  tokenClassName,
+  tokenInvisibleButtonClassName,
+  tokenLabelClassName,
+  tokenLabelHiddenClassName,
+  tokenRemoveButtonClassName,
+} from '../Token/tokenClasses';
 import {stackItemClassName} from '../Stack/stackItemClasses';
 import {
   sectionInnerClassName,
@@ -169,6 +181,27 @@ import {
   filterPlaceholderClassName,
   filterTriggerClassName,
 } from '../Table/plugins/filtering/filterClasses';
+import {
+  paginationActivePageClassName,
+  paginationCompactFirstClassName,
+  paginationCompactLastClassName,
+  paginationControlsClassName,
+  paginationDotActiveClassName,
+  paginationDotClassName,
+  paginationDotDisabledClassName,
+  paginationDotSmClassName,
+  paginationDotsContainerClassName,
+  paginationEllipsisClassName,
+  paginationEllipsisSmClassName,
+  paginationInfoTextClassName,
+  paginationInputGroupClassName,
+  paginationInputLabelClassName,
+  paginationInputLabelSmClassName,
+  paginationInputTotalClassName,
+  paginationInputTotalSmClassName,
+  paginationPageSizeSelectorClassName,
+  paginationRootClassName,
+} from '../Pagination/paginationClasses';
 import {SELECTION_CELL_CLASS} from '../Table/plugins/selection/selectionClasses';
 import {
   TABLE_HEADER_LABEL_ROW_CLASS,
@@ -204,6 +237,31 @@ import {mediaThemeClassName} from '../theme/mediaThemeClasses';
 import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
 import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
 import {describe, expect, it} from 'vitest';
+import {
+  breadcrumbButtonResetClassName,
+  breadcrumbChevronClassName,
+  breadcrumbContentClassName,
+  breadcrumbCurrentClassName,
+  breadcrumbCurrentColorClassName,
+  breadcrumbItemClassName,
+  breadcrumbLinkClassName,
+  breadcrumbLinkColorClassName,
+  breadcrumbSeparatorClassName,
+  breadcrumbSizeClassName,
+  breadcrumbStartIconClassName,
+} from '../Breadcrumbs/breadcrumbItemClasses';
+import {
+  citationClassName,
+  citationIconClassName,
+  citationIconWrapClassName,
+  citationLabelTextClassName,
+} from '../Citation/citationClasses';
+import {
+  linkClassName,
+  linkColorClassName,
+  linkExternalIconInClampedTextClassName,
+  linkLabelClassName,
+} from '../Link/linkClasses';
 
 const sheet = await buildAstryxTailwindCss();
 const stylesheet = stylesheetOf(sheet);
@@ -776,6 +834,121 @@ function familyClassNames() {
   add(layerTextResetClassName);
   add(layerStructureResetClassName);
 
+  // A link's root reads six inputs, so its map is walked over every
+  // combination; its colour map adds one arm per text colour.
+  for (const color of Object.keys(linkColorClassName)) {
+    add(linkColorClassName[color]);
+  }
+  for (const hasUnderline of [false, true]) {
+    for (const isDisabled of [false, true]) {
+      for (const isButton of [false, true]) {
+        for (const isInClampedText of [false, true]) {
+          for (const isStandalone of [false, true]) {
+            for (const isTruncating of [false, true]) {
+              add(
+                linkClassName({
+                  hasUnderline,
+                  isDisabled,
+                  isButton,
+                  isInClampedText,
+                  isStandalone,
+                  isTruncating,
+                }),
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+  add(linkLabelClassName);
+  add(linkExternalIconInClampedTextClassName);
+
+  // A citation is a label pill or a number badge, with or without a source
+  // icon, linked or inert.
+  for (const variant of ['label', 'number']) {
+    for (const hasIcon of [false, true]) {
+      for (const isLink of [false, true]) {
+        add(citationClassName({variant, hasIcon, isLink}));
+      }
+    }
+  }
+  for (const variant of ['default', 'supporting']) {
+    add(breadcrumbSizeClassName[variant]);
+    add(breadcrumbCurrentColorClassName[variant]);
+  }
+  add(breadcrumbItemClassName);
+  add(breadcrumbContentClassName);
+  add(breadcrumbLinkClassName);
+  add(breadcrumbButtonResetClassName);
+  add(breadcrumbLinkColorClassName);
+  add(breadcrumbCurrentClassName);
+  add(breadcrumbStartIconClassName);
+  add(breadcrumbSeparatorClassName);
+  add(breadcrumbChevronClassName);
+
+  for (const size of ['sm', 'md', 'lg']) {
+    for (const color of [
+      'default',
+      'red',
+      'orange',
+      'yellow',
+      'green',
+      'teal',
+      'cyan',
+      'blue',
+      'purple',
+      'pink',
+      'gray',
+    ]) {
+      add(
+        tokenClassName({size, color, isInteractive: true, isDisabled: false}),
+      );
+      add(tokenClassName({size, color, isInteractive: true, isDisabled: true}));
+      add(
+        tokenClassName({size, color, isInteractive: false, isDisabled: false}),
+      );
+    }
+  }
+  add(tokenInvisibleButtonClassName);
+  add(tokenLabelClassName);
+  add(tokenLabelHiddenClassName);
+  add(tokenRemoveButtonClassName);
+
+  for (const className of [
+    paginationRootClassName,
+    paginationControlsClassName,
+    paginationCompactFirstClassName,
+    paginationCompactLastClassName,
+    paginationEllipsisClassName,
+    paginationEllipsisSmClassName,
+    paginationInfoTextClassName,
+    paginationDotsContainerClassName,
+    paginationDotClassName,
+    paginationDotSmClassName,
+    paginationDotActiveClassName,
+    paginationDotDisabledClassName,
+    paginationActivePageClassName,
+    paginationInputGroupClassName,
+    paginationInputLabelClassName,
+    paginationInputLabelSmClassName,
+    paginationInputTotalClassName,
+    paginationInputTotalSmClassName,
+    paginationPageSizeSelectorClassName,
+  ]) {
+    add(className);
+  }
+
+  add(avatarStatusDotClassName);
+  add(avatarStatusDotIconClassName);
+  for (const variant of ['success', 'neutral', 'error']) {
+    add(avatarStatusDotVariantClassName[variant]);
+  }
+
+  add(citationIconWrapClassName);
+  add(citationIconClassName);
+  add(citationLabelTextClassName);
+
   return [...names].sort();
 }
 
@@ -801,11 +974,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // rules, the Button map about 115, the Text map about 65, Section and
     // Toolbar about 40, the layout shell and region maps about 110, the input
     // field family about 60, Table's sorting, filtering and selection maps
-    // about 60, and the choice-input rows of Selector, MultiSelector and
-    // Typeahead about 85. A scan that reaches component bodies or prose would
-    // add hundreds more. The budget covers the date-range and time-field maps
-    // merged alongside them.
-    expect(stylesheet.rules.size).toBeLessThan(660);
+    // about 60, the choice-input rows of Selector, MultiSelector and Typeahead
+    // about 85, the link-and-item family about 100 (Link, Citation,
+    // BreadcrumbItem, Token, Pagination and the avatar status dot), and the
+    // date and time inputs about 50. A scan that reaches component bodies or
+    // prose would add hundreds more.
+    expect(stylesheet.rules.size).toBeLessThan(820);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

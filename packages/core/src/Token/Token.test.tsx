@@ -13,6 +13,8 @@ import {describe, it, expect, vi} from 'vitest';
 import {render, screen, fireEvent} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {Token} from './Token';
+import {tokenRemoveButtonClassName} from './tokenClasses';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import type {TokenColor} from './Token';
 
 describe('Token', () => {
@@ -130,7 +132,9 @@ describe('Token', () => {
       const removeButton = screen.getByRole('button', {
         name: 'Remove Location: Ho Chi Minh City',
       });
-      expect(getComputedStyle(removeButton).flexShrink).toBe('0');
+      expectClassSet(removeButton, {
+        includes: tokenRemoveButtonClassName.split(' '),
+      });
     },
   );
 

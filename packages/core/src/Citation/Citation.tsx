@@ -19,16 +19,13 @@
 import type React from 'react';
 import type {ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
+import {tw} from '../utils/tw';
 import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  typeScaleVars,
-  fontWeightVars,
-  borderVars,
-  durationVars,
-  easeVars,
-} from '../theme/tokens.stylex';
+  citationClassName,
+  citationIconClassName,
+  citationIconWrapClassName,
+  citationLabelTextClassName,
+} from './citationClasses';
 import {mergeProps} from '../utils';
 import {isSafeUrl} from '../utils/safeUrl';
 import type {BaseProps} from '../BaseProps';
@@ -71,117 +68,6 @@ export interface CitationProps extends BaseProps<HTMLElement> {
   number: number;
   variant?: 'label' | 'number';
 }
-
-const styles = stylex.create({
-  label: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    verticalAlign: 'baseline',
-    height: spacingVars['--spacing-5'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: typeScaleVars['--text-supporting-weight'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    borderRadius: radiusVars['--radius-element'],
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-    paddingInline: spacingVars['--spacing-2'],
-    marginInlineStart: spacingVars['--spacing-0-5'],
-    textDecoration: 'none',
-    transitionProperty: 'background-color, border-color, color',
-    transitionDuration: durationVars['--duration-fast-max'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    maxWidth: '15em',
-    overflow: 'hidden',
-  },
-  labelWithIcon: {
-    paddingInlineStart: spacingVars['--spacing-0-5'],
-  },
-  labelText: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
-  },
-  labelInteractive: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  labelHover: {
-    backgroundColor: {
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    color: {
-      // Explicit default: without it, this hover-only conditional replaces
-      // the base secondary color from `label` (last-wins property merge),
-      // leaving linked citations to inherit the surrounding text color.
-      default: colorVars['--color-text-secondary'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-text-primary'],
-      },
-    },
-  },
-  number: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    verticalAlign: 'super',
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    backgroundColor: colorVars['--color-accent-muted'],
-    borderRadius: radiusVars['--radius-full'],
-    minWidth: spacingVars['--spacing-5'],
-    height: spacingVars['--spacing-5'],
-    paddingInline: spacingVars['--spacing-1'],
-    textDecoration: 'none',
-    transitionProperty: 'background-color',
-    transitionDuration: durationVars['--duration-fast-max'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  numberInteractive: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  numberHover: {
-    backgroundColor: {
-      // Explicit default for the same reason as labelHover's color: a
-      // hover-only conditional replaces the base accent-muted pill from
-      // `number` on merge, leaving linked badges transparent.
-      default: colorVars['--color-accent-muted'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-  },
-  iconWrap: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: spacingVars['--spacing-4'],
-    height: spacingVars['--spacing-4'],
-    borderRadius: radiusVars['--radius-full'],
-    backgroundColor: colorVars['--color-background-surface'],
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-    overflow: 'hidden',
-    flexShrink: 0,
-  },
-  icon: {
-    width: spacingVars['--spacing-3'],
-    height: spacingVars['--spacing-3'],
-  },
-});
 
 export function Citation({
   ref,
@@ -239,13 +125,15 @@ export function Citation({
         {...linkProps}
         {...mergeProps(
           themeProps('citation', {variant}),
-          stylex.props(
-            styles.number,
-            href != null && styles.numberHover,
-            href != null && styles.numberInteractive,
-            xstyle,
+          stylex.props(xstyle),
+          tw(
+            citationClassName({
+              variant,
+              hasIcon,
+              isLink: href != null,
+            }),
+            className,
           ),
-          className,
           style,
         )}>
         {number}
@@ -263,26 +151,27 @@ export function Citation({
       {...linkProps}
       {...mergeProps(
         themeProps('citation', {variant}),
-        stylex.props(
-          styles.label,
-          hasIcon && styles.labelWithIcon,
-          href != null && styles.labelHover,
-          href != null && styles.labelInteractive,
-          xstyle,
+        stylex.props(xstyle),
+        tw(
+          citationClassName({
+            variant,
+            hasIcon,
+            isLink: href != null,
+          }),
+          className,
         ),
-        className,
         style,
       )}>
       {hasIcon && (
-        <span aria-hidden="true" {...stylex.props(styles.iconWrap)}>
+        <span aria-hidden="true" className={citationIconWrapClassName}>
           {iconNode != null ? (
             renderIconSlot(iconNode, {size: 'sm'})
           ) : (
-            <img src={imageSrc} alt="" {...stylex.props(styles.icon)} />
+            <img src={imageSrc} alt="" className={citationIconClassName} />
           )}
         </span>
       )}
-      <span {...stylex.props(styles.labelText)}>{title}</span>
+      <span className={citationLabelTextClassName}>{title}</span>
     </Tag>
   );
 }
