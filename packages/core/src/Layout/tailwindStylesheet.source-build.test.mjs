@@ -499,6 +499,15 @@ import {
   linkExternalIconInClampedTextClassName,
   linkLabelClassName,
 } from '../Link/linkClasses';
+import {
+  cardBorderClassName,
+  cardClassName,
+  cardCornersClassName,
+  cardElevationClassName,
+  cardOverflowClassName,
+  cardSizingClassName,
+  cardVariantClassName,
+} from '../Card/cardClasses';
 
 const sheet = await buildAstryxTailwindCss();
 const stylesheet = stylesheetOf(sheet);
@@ -1654,6 +1663,20 @@ function familyClassNames() {
     add(value);
   }
 
+  // Card: one background per variant, one variable per elevation, and the
+  // sizing classes that read a variable.
+  add(cardClassName);
+  add(cardCornersClassName);
+  add(cardBorderClassName);
+  add(cardOverflowClassName({hasFixedHeight: false}));
+  add(cardOverflowClassName({hasFixedHeight: true}));
+  add(cardSizingClassName({height: 1, maxWidth: 1, minHeight: 1, width: 1}));
+  for (const value of Object.values(cardVariantClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(cardElevationClassName)) {
+    add(value);
+  }
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);
@@ -1712,7 +1735,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // that reaches component bodies or prose would add hundreds more. The
     // top-nav menus and the row machine brought the sheet to about 975; the
     // side-nav row's class map added its own transition and popover utilities.
-    expect(stylesheet.rules.size).toBeLessThan(1040);
+    // The display-and-feedback family added Card's thirteen variant
+    // backgrounds, four elevation variables and its sizing classes, which took
+    // the sheet from 1016 rules to 1042 — so the ceiling moved to 1050, not to
+    // a multiple of that family.
+    expect(stylesheet.rules.size).toBeLessThan(1050);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

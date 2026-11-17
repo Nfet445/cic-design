@@ -102,3 +102,12 @@ Left, with the traps that will bite the next worker:
   text control to iOS alone" fails on `../../richtext/src/RichTextEditor.tsx` at
   HEAD (reproduced with this ticket's diff stashed); it arrived with the
   rich-text merge.
+
+## Added scope: Calendar
+
+`packages/core/src/Calendar/styles.ts` still holds four creations
+(`calendarStyles`, `monthGridStyles`, and two more), read by `Calendar.tsx` and
+`Calendar.test.tsx`. It belongs to this family, so it moves in the same ticket.
+Do it last: the calendar's grid geometry is the one place where a row height and
+a month grid meet, and the wheel work above already established the variable
+pattern (`--astryx-date-wheel-*`) this file should reuse rather than reinvent.
