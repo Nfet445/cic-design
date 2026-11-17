@@ -525,6 +525,36 @@ import {
   cardSizingClassName,
   cardVariantClassName,
 } from '../Card/cardClasses';
+import {
+  dividerClassName,
+  dividerFullBleedClassName,
+  dividerLabelClassName,
+  dividerLineClassName,
+  dividerLineVariantClassName,
+  dividerVerticalLabelClassName,
+} from '../Divider/dividerClasses';
+import {
+  bannerChevronClassName,
+  bannerChevronExpandedClassName,
+  bannerClassName,
+  bannerContentAreaCardClassName,
+  bannerContentAreaClassName,
+  bannerDescriptionClassName,
+  bannerElevatedCardClassName,
+  bannerElevationClassName,
+  bannerEndAreaClassName,
+  bannerHeaderCardStandaloneClassName,
+  bannerHeaderCardWithContentClassName,
+  bannerHeaderCenteredClassName,
+  bannerHeaderClassName,
+  bannerHeaderContentClassName,
+  bannerHeaderContentWithEndContentClassName,
+  bannerIconWrapperClassName,
+  bannerStatusClassName,
+  bannerStatusControlClassName,
+  bannerStatusForegroundClassName,
+  bannerTitleClassName,
+} from '../Banner/bannerClasses';
 
 const sheet = await buildAstryxTailwindCss();
 const stylesheet = stylesheetOf(sheet);
@@ -1749,6 +1779,50 @@ function familyClassNames() {
   for (const value of Object.values(cardElevationClassName)) {
     add(value);
   }
+  // Divider: one row per orientation, one line per orientation and variant,
+  // the label, and the full-bleed arms that read the container padding.
+  for (const value of Object.values(dividerClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(dividerLineClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(dividerLineVariantClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(dividerFullBleedClassName)) {
+    add(value);
+  }
+  add(dividerLabelClassName);
+  add(dividerVerticalLabelClassName);
+  // Banner: the frame and its elevation, the status header and its fill, the
+  // text column, the end area, the content area and the chevron.
+  add(bannerClassName);
+  add(bannerElevatedCardClassName);
+  add(bannerHeaderClassName);
+  add(bannerHeaderCenteredClassName);
+  add(bannerHeaderCardStandaloneClassName);
+  add(bannerHeaderCardWithContentClassName);
+  add(bannerHeaderContentClassName);
+  add(bannerHeaderContentWithEndContentClassName);
+  add(bannerTitleClassName);
+  add(bannerDescriptionClassName);
+  add(bannerStatusForegroundClassName);
+  add(bannerIconWrapperClassName);
+  add(bannerEndAreaClassName);
+  add(bannerContentAreaClassName);
+  add(bannerContentAreaCardClassName);
+  add(bannerChevronClassName);
+  add(bannerChevronExpandedClassName);
+  for (const value of Object.values(bannerElevationClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(bannerStatusClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(bannerStatusControlClassName)) {
+    add(value);
+  }
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);
@@ -1809,16 +1883,20 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // side-nav row's class map added its own transition and popover utilities.
     // The display-and-feedback family added Card's thirteen variant
     // backgrounds, four elevation variables and its sizing classes, which took
-    // the sheet from 1016 rules to 1042. The side-nav heading and the tree row
-    // reuse almost every utility their own families already spell, and their
-    // few new ones (the indent column's padding, the chevron's rotate pair)
-    // took the sheet to 1055. The drawer panel added two sides, two painting
-    // states, two direction arms and the scrim — about 60 — and the mobile nav
-    // about 30: its dialog, the scrim's fade, both drawer edges in both motion
-    // states, and the header. Card's four elevation variables were reused by
-    // the dialog family maps, so the sum of the two families is smaller than
-    // their parts. With every family above the sheet sits at about 1075.
-    expect(stylesheet.rules.size).toBeLessThan(1090);
+    // backgrounds, four elevation variables and its sizing classes, which took
+    // the sheet from 1016 rules to 1042. Divider's row, line, weight, label
+    // and full-bleed classes added 8, Banner's status fills and their
+    // forced-colors outlines, the text column and the content area added 26.
+    // The side-nav heading and the tree row reuse almost every utility their
+    // own families already spell, and their few new ones (the indent column's
+    // padding, the chevron's rotate pair) took the sheet to 1055. The drawer
+    // panel added two sides, two painting states, two direction arms and the
+    // scrim — about 60 — and the mobile nav about 30: its dialog, the scrim's
+    // fade, both drawer edges in both motion states, and the header. Card's
+    // four elevation variables were reused by the dialog family maps, so the
+    // sum of the two families is smaller than their parts. With every family
+    // above the sheet sits at about 1100.
+    expect(stylesheet.rules.size).toBeLessThan(1120);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

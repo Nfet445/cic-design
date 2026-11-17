@@ -4,7 +4,8 @@
 
 /**
  * @file Divider.tsx
- * @input Uses React, stylex, spacing and color tokens
+ * @input Uses React, the divider class map, and stylex for the consumer's
+ *   `xstyle`
  * @output Exports Divider component and DividerProps
  * @position Divider component; provides visual separation with optional label
  *
@@ -20,14 +21,17 @@ import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
 
 import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  borderVars,
-} from '../theme/tokens.stylex';
+  dividerClassName,
+  dividerFullBleedClassName,
+  dividerLabelClassName,
+  dividerLineClassName,
+  dividerLineVariantClassName,
+  dividerVerticalLabelClassName,
+} from './dividerClasses';
 import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
 import type {DividerVariantMap} from './index';
 
 /**
@@ -67,69 +71,6 @@ export interface DividerProps extends BaseProps<HTMLDivElement> {
   isFullBleed?: boolean;
 }
 
-const baseStyles = stylex.create({
-  horizontal: {
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%',
-  },
-  vertical: {
-    display: 'inline-flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    height: '100%',
-  },
-});
-
-const lineStyles = stylex.create({
-  horizontalLine: {
-    height: borderVars['--border-width'],
-    flexGrow: 1,
-    flexShrink: 1,
-  },
-  verticalLine: {
-    width: borderVars['--border-width'],
-    flexGrow: 1,
-    flexShrink: 1,
-  },
-  subtle: {
-    backgroundColor: colorVars['--color-border'],
-  },
-  strong: {
-    backgroundColor: colorVars['--color-border-emphasized'],
-  },
-});
-
-const labelStyles = stylex.create({
-  label: {
-    flexShrink: 0,
-    paddingInline: spacingVars['--spacing-3'],
-    // Small secondary text styling
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-  },
-  verticalLabel: {
-    paddingInline: 0,
-    paddingBlock: spacingVars['--spacing-3'],
-  },
-});
-
-const fullBleedStyles = stylex.create({
-  horizontal: {
-    marginInlineStart: 'calc(-1 * var(--container-padding-inline-start, 0px))',
-    marginInlineEnd: 'calc(-1 * var(--container-padding-inline-end, 0px))',
-    width:
-      'calc(100% + var(--container-padding-inline-start, 0px) + var(--container-padding-inline-end, 0px))',
-  },
-  vertical: {
-    marginBlockStart: 'calc(-1 * var(--container-padding-block-start, 0px))',
-    marginBlockEnd: 'calc(-1 * var(--container-padding-block-end, 0px))',
-    height:
-      'calc(100% + var(--container-padding-block-start, 0px) + var(--container-padding-block-end, 0px))',
-  },
-});
-
 /**
  * Divider component for visual separation of content.
  *
@@ -157,6 +98,10 @@ export function Divider({
   const isHorizontal = orientation === 'horizontal';
   const hasLabel = isRenderable(label);
   const labelId = useId();
+  const lineClassName = tw(
+    dividerLineClassName[orientation],
+    dividerLineVariantClassName[variant],
+  );
 
   // A separator does not derive its accessible name from its content, so the
   // rendered label must be referenced explicitly via aria-labelledby to be
@@ -174,42 +119,28 @@ export function Divider({
       aria-label={ariaLabel}
       aria-labelledby={resolvedLabelledBy}
       {...mergeProps(
-        themeProps('divider', {variant, orientation}),
-        stylex.props(
-          isHorizontal ? baseStyles.horizontal : baseStyles.vertical,
-          isFullBleed &&
-            (isHorizontal
-              ? fullBleedStyles.horizontal
-              : fullBleedStyles.vertical),
-          xstyle,
-        ),
+        mergeProps(themeProps('divider', {variant, orientation}), {
+          className: tw(
+            dividerClassName[orientation],
+            isFullBleed && dividerFullBleedClassName[orientation],
+            xstyle && stylex.props(xstyle).className,
+          ),
+        }),
         className,
         style,
       )}>
-      <div
-        {...stylex.props(
-          isHorizontal ? lineStyles.horizontalLine : lineStyles.verticalLine,
-          lineStyles[variant],
-        )}
-      />
+      <div className={lineClassName} />
       {hasLabel && (
         <div
           id={labelId}
-          {...stylex.props(
-            labelStyles.label,
-            !isHorizontal && labelStyles.verticalLabel,
+          className={tw(
+            dividerLabelClassName,
+            !isHorizontal && dividerVerticalLabelClassName,
           )}>
           {label}
         </div>
       )}
-      {hasLabel && (
-        <div
-          {...stylex.props(
-            isHorizontal ? lineStyles.horizontalLine : lineStyles.verticalLine,
-            lineStyles[variant],
-          )}
-        />
-      )}
+      {hasLabel && <div className={lineClassName} />}
     </div>
   );
 }

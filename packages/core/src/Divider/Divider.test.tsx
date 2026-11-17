@@ -12,6 +12,14 @@
 import {describe, it, expect, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {Divider} from './Divider';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {
+  dividerClassName,
+  dividerFullBleedClassName,
+  dividerLineClassName,
+  dividerLabelClassName,
+  dividerLineVariantClassName,
+} from './dividerClasses';
 
 describe('Divider', () => {
   it('renders horizontal by default', () => {
@@ -46,23 +54,59 @@ describe('Divider', () => {
     expect(children.length).toBe(3);
   });
 
-  it('applies isFullBleed styles', () => {
+  it('applies the full-bleed classes', () => {
     render(<Divider isFullBleed data-testid="divider" />);
-    const element = screen.getByTestId('divider');
-    expect(element).toBeInTheDocument();
-    // isFullBleed is applied via stylex, we verify component renders without error
+    expectClassSet(screen.getByTestId('divider'), {
+      includes: dividerFullBleedClassName.horizontal.split(' '),
+    });
   });
 
-  it('applies subtle variant by default', () => {
+  it('leaves the full-bleed classes off by default', () => {
     render(<Divider data-testid="divider" />);
-    const element = screen.getByTestId('divider');
-    expect(element).toBeInTheDocument();
+    expectClassSet(screen.getByTestId('divider'), {
+      excludes: dividerFullBleedClassName.horizontal.split(' '),
+    });
   });
 
-  it('applies strong variant when specified', () => {
-    render(<Divider variant="strong" data-testid="divider" />);
-    const element = screen.getByTestId('divider');
-    expect(element).toBeInTheDocument();
+  it('applies the horizontal line and subtle variant by default', () => {
+    render(<Divider data-testid="divider" />);
+    expectClassSet(screen.getByTestId('divider').children[0], {
+      includes: [
+        ...dividerLineClassName.horizontal.split(' '),
+        dividerLineVariantClassName.subtle as string,
+      ],
+      excludes: [dividerLineVariantClassName.strong as string],
+    });
+  });
+
+  it('applies the vertical line and strong variant when specified', () => {
+    render(<Divider variant="strong" orientation="vertical" />);
+    const line = screen.getByRole('separator').children[0];
+    expectClassSet(line, {
+      includes: [
+        ...dividerLineClassName.vertical.split(' '),
+        dividerLineVariantClassName.strong as string,
+      ],
+    });
+  });
+
+  it('applies the label classes, and the stacked padding when vertical', () => {
+    render(<Divider label="or" data-testid="divider" />);
+    const label = screen.getByText('or');
+    expectClassSet(label, {
+      includes: dividerLabelClassName.split(' '),
+      excludes: ['py-[var(--spacing-3)]'],
+    });
+    expectClassSet(screen.getByTestId('divider'), {
+      includes: dividerClassName.horizontal.split(' '),
+    });
+  });
+
+  it('stacks the label padding on the block axis when vertical', () => {
+    render(<Divider label="or" orientation="vertical" />);
+    expectClassSet(screen.getByText('or'), {
+      includes: ['py-[var(--spacing-3)]', 'px-0'],
+    });
   });
 
   it('forwards ref correctly', () => {
