@@ -3,42 +3,41 @@
 /**
  * @file modalBackdrop.test.tsx
  * @input Dialog, Drawer, MobileNav and BottomSheet rendered open, and the
- *   StyleX rules vitest injects into the document (`runtimeInjection`)
- * @output Every modal `::backdrop` paints the theme's `--color-overlay` and
+ *   literal class maps they render from
+ * @output Every modal's `::backdrop` paints the theme's `--color-overlay` and
  *   none blurs the page, under any pointer. In forced colors, Dialog draws an
  *   edge, and Drawer and MobileNav keep their anchored-side border.
  * @position Cross-component regression test for the shared modal backdrop.
  *   jsdom has no top layer and drops `backdrop-filter`, so this test pins the
- *   declarations as StyleX hands them to the style sheet. Real browsers prove
- *   the computed colours in ModalBackdrop.a11y.browser.spec.ts.
+ *   classes those declarations come from; the built sheet proves each class
+ *   has a rule, and a real browser resolves the colours in
+ *   ModalBackdrop.a11y.browser.spec.ts.
  * SYNC: When a component gains a modal ::backdrop, add it here.
  */
+
+import {readFileSync} from 'node:fs';
+import {join} from 'node:path';
 
 import {render} from '@testing-library/react';
 import type {ReactElement} from 'react';
 import {beforeAll, describe, expect, it} from 'vitest';
 
-/** Every rule StyleX inserted, as the raw text it handed to `insertRule`. */
-const rawRules: string[] = [];
+import {classesOf, stylesheetOf, type Stylesheet} from './classNameAssertions';
 
-// StyleX injects a component's rules when its module loads: record them
-// first, then load the modals. The file loads them before any test runs, so
-// no hook's time limit covers the load.
-const insertRule = CSSStyleSheet.prototype.insertRule;
-CSSStyleSheet.prototype.insertRule = function (
-  this: CSSStyleSheet,
-  rule: string,
-  index?: number,
-) {
-  rawRules.push(rule);
-  return insertRule.call(this, rule, index);
-};
 const {BottomSheet} = await import('../BottomSheet/BottomSheet');
 const {Dialog} = await import('../Dialog/Dialog');
 const {Drawer} = await import('../Drawer/Drawer');
 const {MobileNav} = await import('../MobileNav/MobileNav');
 
-// jsdom does not implement showModal/close on <dialog>.
+const SHEET_PATH = join(__dirname, '../../dist/astryx-tailwind.css');
+
+/** The built sheet, read once: the backdrop classes must have rules. */
+function builtSheet(): Stylesheet {
+  return stylesheetOf(readFileSync(SHEET_PATH, 'utf8'));
+}
+
+// jsdom does not implement showModal/close on <dialog>, and it applies
+// `dialog:not([open]) {display: none}` to a dialog shown as a popover.
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal =
     HTMLDialogElement.prototype.showModal ||
@@ -50,63 +49,18 @@ beforeAll(() => {
     function (this: HTMLDialogElement) {
       this.removeAttribute('open');
     };
+  const style = document.createElement('style');
+  style.textContent = 'dialog:not([open]) {display: block}';
+  document.head.appendChild(style);
 });
 
-/**
- * The declarations that the element's StyleX classes make on its `::backdrop`,
- * by property. With `pseudo: ''`, they are the declarations on the element.
- * `where` selects the rules outside any at-rule, or inside one media query
- * alone: `(pointer: coarse)` or `(forced-colors: active)`. StyleX minifies
- * values, so the test compares them without spaces.
- */
-function backdropDeclarations(
-  el: Element,
-  where: 'default' | 'touch' | 'forcedColors',
-  pseudo = '::backdrop',
-): Map<string, string> {
-  const declarations = new Map<string, string>();
-  for (const className of el.className.split(/\s+/).filter(Boolean)) {
-    for (const raw of rawRules) {
-      let rule = raw;
-      const atRules: string[] = [];
-      for (let match; (match = /^(@[^{]+)\{(.*)\}$/s.exec(rule));) {
-        atRules.push(match[1].trim());
-        rule = match[2];
-      }
-      const isTouch =
-        atRules.length === 1 && atRules[0] === '@media (pointer: coarse)';
-      const isForcedColors =
-        atRules.length === 1 && atRules[0] === '@media (forced-colors: active)';
-      const matchesWhere =
-        where === 'default'
-          ? atRules.length === 0
-          : where === 'touch'
-            ? isTouch
-            : isForcedColors;
-      if (!matchesWhere) {
-        continue;
-      }
-      // StyleX raises a pseudo-element rule's specificity with repeated
-      // classes and `:not(#\#)`: `.x1abc.x1abc:not(#\#)…::backdrop{…}`.
-      const match = new RegExp(
-        `^(?:\\.${className})+(?::not\\(#\\\\#\\))*${pseudo}\\{([^}]*)\\}$`,
-      ).exec(rule);
-      if (match == null) {
-        continue;
-      }
-      for (const declaration of match[1].split(';')) {
-        const colon = declaration.indexOf(':');
-        if (colon > 0) {
-          declarations.set(
-            declaration.slice(0, colon).trim(),
-            declaration.slice(colon + 1).replace(/\s+/g, ''),
-          );
-        }
-      }
-    }
-  }
-  return declarations;
+/** Whether any class of `element` matches `pattern`. */
+function anyClass(element: Element, pattern: RegExp): boolean {
+  return classesOf(element).some(className => pattern.test(className));
 }
+
+/** The shorthand that would erase the focus ring's longhands. */
+const OUTLINE_SHORTHAND = /^outline$|:outline$/;
 
 const modals: ReadonlyArray<[string, () => ReactElement]> = [
   [
@@ -159,13 +113,16 @@ describe('modal backdrop', () => {
       render(element());
       const dialog = document.querySelector('dialog');
       expect(dialog).not.toBeNull();
+      const sheet = builtSheet();
+      expect(classesOf(dialog!)).toContain(
+        'backdrop:bg-[var(--color-overlay)]',
+      );
       expect(
-        backdropDeclarations(dialog!, 'default').get('background-color'),
-      ).toBe('var(--color-overlay)');
+        sheet.hasRule('backdrop:bg-[var(--color-overlay)]'),
+        'the overlay class has no rule in the built sheet',
+      ).toBe(true);
       // No colour change under a finger.
-      expect(
-        backdropDeclarations(dialog!, 'touch').has('background-color'),
-      ).toBe(false);
+      expect(anyClass(dialog!, /pointer-coarse:.*backdrop:bg-/)).toBe(false);
     },
   );
 
@@ -175,12 +132,7 @@ describe('modal backdrop', () => {
       render(element());
       const dialog = document.querySelector('dialog');
       expect(dialog).not.toBeNull();
-      expect(
-        backdropDeclarations(dialog!, 'default').has('backdrop-filter'),
-      ).toBe(false);
-      expect(
-        backdropDeclarations(dialog!, 'touch').has('backdrop-filter'),
-      ).toBe(false);
+      expect(anyClass(dialog!, /backdrop-filter/)).toBe(false);
     },
   );
 
@@ -189,18 +141,20 @@ describe('modal backdrop', () => {
     render(element());
     const dialog = document.querySelector('dialog');
     expect(dialog).not.toBeNull();
-    const edge = backdropDeclarations(dialog!, 'forcedColors', '');
-    expect(edge.get('border-width')).toBe('1px');
-    expect(edge.get('border-style')).toBe('solid');
-    expect(edge.get('border-color')).toBe('CanvasText');
-    // Not an outline: the focus ring owns the outline longhands. An `outline`
-    // shorthand loses to them in the prebuilt style sheet. Where StyleX
-    // applies styles in order, the shorthand erases the ring.
-    for (const where of ['default', 'touch', 'forcedColors'] as const) {
-      expect(backdropDeclarations(dialog!, where, '').has('outline')).toBe(
-        false,
-      );
+    expect(classesOf(dialog!)).toContain('forced-colors:border');
+    expect(classesOf(dialog!)).toContain(
+      'forced-colors:[border-color:CanvasText]',
+    );
+    const sheet = builtSheet();
+    for (const className of [
+      'forced-colors:border',
+      'forced-colors:[border-color:CanvasText]',
+    ]) {
+      expect(sheet.hasRule(className), className).toBe(true);
     }
+    // Not an outline: the focus ring owns the outline longhands. An `outline`
+    // shorthand would erase the ring.
+    expect(anyClass(dialog!, OUTLINE_SHORTHAND)).toBe(false);
   });
 
   it('a full-screen Dialog covers the page and draws no edge in forced colors', () => {
@@ -215,12 +169,8 @@ describe('modal backdrop', () => {
     );
     const dialog = document.querySelector('dialog');
     expect(dialog).not.toBeNull();
-    expect(
-      backdropDeclarations(dialog!, 'forcedColors', '').has('border-width'),
-    ).toBe(false);
-    expect(
-      backdropDeclarations(dialog!, 'default', '').get('border-width'),
-    ).toMatch(/^0(px)?$/);
+    expect(anyClass(dialog!, /forced-colors:border/)).toBe(false);
+    expect(classesOf(dialog!)).toContain('border-0');
   });
 
   it.each(modals.filter(([name]) => name === 'Drawer' || name === 'MobileNav'))(
@@ -232,20 +182,11 @@ describe('modal backdrop', () => {
       const surface = surfaceOf(name, dialog!);
       // The panel's side facing the page has a solid border, which forced
       // colors paint CanvasText: one 1px edge already, so no outline.
-      const declarations = [
-        ...backdropDeclarations(surface, 'default', '').entries(),
-      ];
       expect(
-        declarations.some(
-          ([property, value]) =>
-            /^border-inline-(start|end)-style$/.test(property) &&
-            value === 'solid',
-        ),
-        JSON.stringify(declarations),
+        anyClass(surface, /^\[border-inline-(start|end)-style:solid\]$/),
+        JSON.stringify(classesOf(surface)),
       ).toBe(true);
-      expect(
-        backdropDeclarations(surface, 'forcedColors', '').has('outline'),
-      ).toBe(false);
+      expect(anyClass(surface, OUTLINE_SHORTHAND)).toBe(false);
     },
   );
 });

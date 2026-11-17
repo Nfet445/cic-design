@@ -2,8 +2,8 @@
 
 /**
  * @file CodeEditor.tsx
- * @input Uses React, StyleX, theme tokens, CSS Custom Highlight API,
- *   VisuallyHidden (core)
+ * @input Uses React, Tailwind class maps, theme tokens, CSS Custom Highlight
+ *   API, VisuallyHidden (core)
  * @output Exports CodeEditor component and CodeEditorProps
  * @position Core implementation; editable code input (lab/experimental)
  *
@@ -26,15 +26,6 @@ import {
 import type {BaseProps} from '@astryxdesign/core';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  textSizeVars,
-  typographyVars,
-  typeScaleVars,
-  borderVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import {mergeProps} from '@astryxdesign/core/utils';
 import {
   tokenize,
@@ -47,86 +38,18 @@ import {
   ensureHighlightStyles,
   applyHighlightRangesFlat,
 } from '@astryxdesign/core/CodeBlock';
-
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
-const styles = stylex.create({
-  root: {
-    position: 'relative',
-    display: 'flex',
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: colorVars['--color-background-muted'],
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-    overflow: 'hidden',
-  },
-  rootFocused: {
-    borderColor: colorVars['--color-accent'],
-    boxShadow: `0 0 0 1px ${colorVars['--color-accent']}`,
-  },
-  gutter: {
-    flexShrink: 0,
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInlineStart: spacingVars['--spacing-4'],
-    paddingInlineEnd: spacingVars['--spacing-3'],
-    textAlign: 'end',
-    userSelect: 'none',
-    color: colorVars['--color-text-disabled'],
-    borderRightWidth: borderVars['--border-width'],
-    borderRightStyle: 'solid',
-    borderRightColor: colorVars['--color-border'],
-  },
-  gutterLine: {
-    fontFamily: typographyVars['--font-family-code'],
-    lineHeight: typeScaleVars['--text-code-leading'],
-  },
-  editorContainer: {
-    display: 'flex',
-    flex: 1,
-    overflow: 'auto',
-  },
-  editor: {
-    display: 'block',
-    minHeight: '3em',
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-    margin: 0,
-    fontFamily: typographyVars['--font-family-code'],
-    color: colorVars['--color-text-primary'],
-    tabSize: 2,
-    whiteSpace: 'pre',
-    wordBreak: 'normal',
-    overflowWrap: 'normal',
-    outline: 'none',
-    caretColor: colorVars['--color-text-primary'],
-    lineHeight: typeScaleVars['--text-code-leading'],
-  },
-  placeholder: {
-    position: 'absolute',
-    top: spacingVars['--spacing-3'],
-    left: spacingVars['--spacing-4'],
-    color: colorVars['--color-text-disabled'],
-    fontFamily: typographyVars['--font-family-code'],
-    lineHeight: typeScaleVars['--text-code-leading'],
-    pointerEvents: 'none',
-    userSelect: 'none',
-  },
-  sizeSm: {
-    fontSize: textSizeVars['--font-size-sm'],
-  },
-  sizeMd: {
-    fontSize: textSizeVars['--font-size-base'],
-  },
-  gutterSm: {
-    fontSize: textSizeVars['--font-size-sm'],
-  },
-  gutterMd: {
-    fontSize: textSizeVars['--font-size-base'],
-  },
-});
+import {
+  codeEditorClassName,
+  codeEditorCodeClassName,
+  codeEditorFocusedClassName,
+  codeEditorGutterClassName,
+  codeEditorGutterLineClassName,
+  codeEditorPlaceholderClassName,
+  codeEditorScrollerClassName,
+  codeEditorSizeClassNames,
+  codeEditorTextBlockClassName,
+} from './codeEditorClasses';
+import {tw} from '../tw';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -228,6 +151,10 @@ function setCaretAtTextOffset(el: HTMLElement, offset: number): void {
   sel.removeAllRanges();
   sel.addRange(range);
 }
+
+/** The scroller's height cap rides a private variable its class reads. */
+type ScrollerStyle = React.CSSProperties &
+  Record<'--astryx-code-editor-max-height', string>;
 
 let editorInstanceCounter = 0;
 
@@ -542,12 +469,14 @@ export function CodeEditor({
     handleInput();
   }, [handleInput]);
 
-  const sizeStyle = size === 'sm' ? styles.sizeSm : styles.sizeMd;
-  const gutterSizeStyle = size === 'sm' ? styles.gutterSm : styles.gutterMd;
+  const sizeClassName = codeEditorSizeClassNames[size];
   const showPlaceholder = placeholder && value === '';
 
-  const containerStyle: React.CSSProperties | undefined = maxHeight
-    ? {maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight}
+  const containerStyle: ScrollerStyle | undefined = maxHeight
+    ? {
+        '--astryx-code-editor-max-height':
+          typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight,
+      }
     : undefined;
 
   return (
@@ -555,8 +484,11 @@ export function CodeEditor({
       ref={ref}
       {...mergeProps(
         themeProps('codeeditor', {size, language}),
-        stylex.props(styles.root, focused && styles.rootFocused, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(
+          focused ? codeEditorFocusedClassName : codeEditorClassName,
+          className,
+        ),
         style,
       )}
       {...props}>
@@ -565,24 +497,26 @@ export function CodeEditor({
           and indent correctly, and a long line scrolls from its start. */}
       <div
         dir="ltr"
-        {...stylex.props(styles.editorContainer)}
+        className={codeEditorScrollerClassName}
         style={containerStyle}>
         {hasLineNumbers && (
           <div
-            {...stylex.props(styles.gutter, gutterSizeStyle)}
+            className={tw(codeEditorGutterClassName, sizeClassName)}
             aria-hidden="true">
             {lines.map((_, i) => (
-              <div key={i} {...stylex.props(styles.gutterLine)}>
+              <div key={i} className={codeEditorGutterLineClassName}>
                 {i + 1}
               </div>
             ))}
           </div>
         )}
-        <div style={{position: 'relative', flex: 1}}>
+        <div className={codeEditorTextBlockClassName}>
           {showPlaceholder && (
             // The placeholder is prose, not code: it takes its own text's
             // direction, so an Arabic or Hebrew hint still reads correctly.
-            <div dir="auto" {...stylex.props(styles.placeholder, sizeStyle)}>
+            <div
+              dir="auto"
+              className={tw(codeEditorPlaceholderClassName, sizeClassName)}>
               {placeholder}
             </div>
           )}
@@ -611,7 +545,7 @@ export function CodeEditor({
             }}
             onCompositionStart={handleCompositionStart}
             onCompositionEnd={handleCompositionEnd}
-            {...stylex.props(styles.editor, sizeStyle)}
+            className={tw(codeEditorCodeClassName, sizeClassName)}
           />
           {!isReadOnly && (
             <VisuallyHidden id={hintId}>{escapeHint}</VisuallyHidden>

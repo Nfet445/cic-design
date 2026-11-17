@@ -78,8 +78,13 @@ describe('the radio marks', () => {
   });
 
   it('draw the pressed layer over the circle at 50%', async () => {
-    const css = await compiledCss('../RadioList/RadioListItem.tsx');
-    expect(radii(css)).toContain('50%');
-    expect(css).not.toMatch(/radius-full/);
+    // The pressed layer paints from the class map, so the circle's radius is
+    // read there and confirmed in the built sheet rather than compiled here.
+    const map = await fs.readFile(
+      path.join(__dirname, 'indicatorClasses.ts'),
+      'utf8',
+    );
+    // Two entries: the circle itself and the pressed layer over it.
+    expect(map.match(/'rounded-\[50%\]'/g) ?? []).toHaveLength(2);
   });
 });

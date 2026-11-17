@@ -32,6 +32,10 @@ const GUTTER_OWNERS = new Set([
   'Drawer/drawerContentSafeArea.stylex.ts',
   'Stepper/Step.tsx',
   'Tokenizer/useEndLaneReserve.ts',
+  // Class maps that now hold the same surfaces' safe-area padding.
+  'AppShell/appShellClasses.ts',
+  'BottomSheet/bottomSheetPanelClasses.ts',
+  'Lightbox/lightboxClasses.ts',
 ]);
 
 function sourceFiles(dir: string): string[] {
