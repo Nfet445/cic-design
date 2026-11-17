@@ -1086,9 +1086,14 @@ describe('an indicator that paints its own press', () => {
   it('keeps its marker internal: no public entry exports it', () => {
     expect(Object.keys(publicMarkers)).not.toContain('indicatorPressScope');
     // The marker's module is under src/internal, which the API surface leaves
-    // out, and the package barrel does not name it.
+    // out, and the package barrel does not name it. The one rule that reads
+    // the marker is the press overlay's `content`, which stays beside this
+    // component.
     expect(
-      readFileSync('packages/core/src/CheckboxInput/CheckboxInput.tsx', 'utf8'),
+      readFileSync(
+        'packages/core/src/CheckboxInput/checkboxInputPress.stylex.ts',
+        'utf8',
+      ),
     ).toContain("from '../internal/indicatorPress.stylex'");
     expect(readFileSync('packages/core/src/index.ts', 'utf8')).not.toContain(
       'indicatorPress',

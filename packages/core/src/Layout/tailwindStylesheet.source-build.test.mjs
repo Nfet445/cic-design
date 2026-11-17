@@ -229,6 +229,17 @@ import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {checkboxListItemClassName} from '../CheckboxList/checkboxListItemClasses';
 import {radioListClassName} from '../RadioList/radioListClasses';
 import {
+  checkboxInputClassName,
+  checkboxInputIndicatorSlotClassName,
+  checkboxInputLabelWrapperClassName,
+  checkboxInputNativeClassName,
+  checkboxInputPressOverlayClassName,
+  checkboxInputRowClassName,
+  checkboxInputRowPressImageClassName,
+  checkboxInputRowPressOverlayClassName,
+  checkboxInputWrapperClassName,
+} from '../CheckboxInput/checkboxInputClasses';
+import {
   radioListItemIndicatorSlotClassName,
   radioListItemInputClassName,
   radioListItemPressOverlayClassName,
@@ -614,7 +625,21 @@ import {
 } from '../EmptyState/emptyStateClasses';
 import {timestampClassName} from '../Timestamp/timestampClasses';
 import {
+  chatMessageMetadataAssistantClassName,
+  chatMessageMetadataClassName,
+  chatMessageMetadataStatusErrorClassName,
+  chatMessageMetadataStatusPulseClassName,
+  chatMessageMetadataStatusRowClassName,
+  chatMessageMetadataUserClassName,
+  chatPastedTextFooterClassName,
+  chatPastedTextMetaClassName,
+  chatPastedTextPreviewClassName,
+  chatPastedTextPreviewTextClassName,
   chatSendButtonClassName,
+  chatSystemMessageClassName,
+  chatSystemMessageContentClassName,
+  chatSystemMessageDividerClassName,
+  chatSystemMessageIconClassName,
   chatTokenizedTextClassName,
   chatTokenizedTextTokenClassName,
 } from '../Chat/chatClasses';
@@ -627,6 +652,29 @@ import {
   timestampHoverCardValueCellsClassName,
   timestampHoverCardValueClassName,
 } from '../Timestamp/timestampHoverCardClasses';
+import {
+  aspectRatioChildCenterClassName,
+  aspectRatioChildClassName,
+  aspectRatioChildContainClassName,
+  aspectRatioChildCoverClassName,
+  aspectRatioChildFillClassName,
+  aspectRatioClassName,
+  aspectRatioEllipseClassName,
+  aspectRatioRatioClassName,
+} from '../AspectRatio/aspectRatioClasses';
+import {
+  spinnerArcClassName,
+  spinnerCircleClassName,
+  spinnerClassName,
+  spinnerRingClassName,
+  spinnerRotorBoxClassName,
+  spinnerRotorTurnClassName,
+  spinnerShadeClassName,
+  spinnerSizeClassName,
+  spinnerTrackClassName,
+  spinnerTrackOpacityClassName,
+  spinnerWrapperClassName,
+} from '../Spinner/spinnerClasses';
 import {
   skeletonAnimateClassName,
   skeletonClassName,
@@ -2012,6 +2060,36 @@ function familyClassNames() {
   for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
     add(value);
   }
+  // AspectRatio: the box, its ratio reading the private variable, the ellipse
+  // clip, the child wrapper and its three fit arms.
+  add(aspectRatioClassName);
+  add(aspectRatioRatioClassName);
+  add(aspectRatioEllipseClassName);
+  add(aspectRatioChildClassName);
+  add(aspectRatioChildCenterClassName);
+  add(aspectRatioChildFillClassName);
+  add(aspectRatioChildCoverClassName);
+  add(aspectRatioChildContainClassName);
+  // Spinner: the wrapper, the box with its three geometry variables, the ring,
+  // the rotor's box and its one animation shorthand, the circle, the arc, the
+  // track and one class per size, per shade and per track alpha.
+  add(spinnerWrapperClassName);
+  add(spinnerClassName);
+  add(spinnerRingClassName);
+  add(spinnerRotorBoxClassName);
+  add(spinnerRotorTurnClassName);
+  add(spinnerCircleClassName);
+  add(spinnerArcClassName);
+  add(spinnerTrackClassName);
+  for (const value of Object.values(spinnerSizeClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(spinnerShadeClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(spinnerTrackOpacityClassName)) {
+    add(value);
+  }
   // Skeleton: the placeholder, the pulse, the two utility classes that read
   // the props' variables, and one class per radius.
   add(skeletonClassName);
@@ -2080,6 +2158,20 @@ function familyClassNames() {
   add(chatTokenizedTextClassName);
   add(chatTokenizedTextTokenClassName);
   add(chatSendButtonClassName);
+  add(chatPastedTextPreviewClassName);
+  add(chatPastedTextPreviewTextClassName);
+  add(chatPastedTextFooterClassName);
+  add(chatPastedTextMetaClassName);
+  add(chatSystemMessageClassName);
+  add(chatSystemMessageDividerClassName);
+  add(chatSystemMessageIconClassName);
+  add(chatSystemMessageContentClassName);
+  add(chatMessageMetadataClassName);
+  add(chatMessageMetadataUserClassName);
+  add(chatMessageMetadataAssistantClassName);
+  add(chatMessageMetadataStatusRowClassName);
+  add(chatMessageMetadataStatusErrorClassName);
+  add(chatMessageMetadataStatusPulseClassName);
   for (const orientation of ['vertical', 'horizontal']) {
     add(radioListClassName({orientation}));
   }
@@ -2089,6 +2181,25 @@ function familyClassNames() {
     add(radioListItemWrapperClassName({size}));
     add(radioListItemInputClassName({size}));
   }
+  // CheckboxInput: the field root at both width states, the row in its four
+  // shape states, and the fixed pieces.
+  for (const width of [null, 240]) {
+    add(checkboxInputClassName({width}));
+  }
+  for (const isLabelHidden of [false, true]) {
+    for (const hasHitArea of [false, true]) {
+      add(checkboxInputRowClassName({isLabelHidden, hasHitArea}));
+    }
+  }
+  for (const size of ['sm', 'md']) {
+    add(checkboxInputWrapperClassName({size}));
+    add(checkboxInputNativeClassName({size}));
+  }
+  add(checkboxInputRowPressImageClassName);
+  add(checkboxInputRowPressOverlayClassName);
+  add(checkboxInputPressOverlayClassName);
+  add(checkboxInputIndicatorSlotClassName);
+  add(checkboxInputLabelWrapperClassName);
 
   return [...names].sort();
 }
@@ -2145,15 +2256,19 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // mostly one rule each, with the marker's two coarse-pointer arms and the
     // row's three radius parts already spelled elsewhere. Skeleton's map added
     // 25 — the placeholder, the pulse, the two classes that read the props'
-    // variables, and one per radius. With every family above the sheet sits at
+    // variables, and one per radius. With every family above the sheet sat at
     // 1212, and the windows merged since — the menu surface, EmptyState,
     // Timestamp — carried it further. The popover's map then moved from StyleX
     // to literal classes: its surface, both viewport-fit states, the two sizing
-    // classes, the anchor wrapper and both hidden close wrappers. The sheet
-    // measured 1254 there; the windows merged into this branch since carry it
-    // to 1267, measured with every family above registered. The ceiling
-    // follows the sum rather than one side.
-    expect(stylesheet.rules.size).toBeLessThan(1300);
+    // classes, the anchor wrapper and both hidden close wrappers. Spinner's box,
+    // ring, rotor, circle, arc, track and its twelve size, shade and alpha
+    // classes, AspectRatio's box, ratio, ellipse clip and four child arms, then
+    // ScrollableArea's platform, inset and both fade arms measured 1330 with
+    // every family above registered. The chat pasted-text preview, the system
+    // notice and the metadata row share almost every utility those maps already
+    // spell, and the checkbox field's row, box, press layers and native input
+    // added six; the sheet measures 1318 here and the ceiling keeps headroom.
+    expect(stylesheet.rules.size).toBeLessThan(1380);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

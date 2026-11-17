@@ -4,7 +4,7 @@
 
 /**
  * @file ChatSystemMessage.tsx
- * @input Uses React, StyleX, theme tokens
+ * @input Uses React, StyleX for the caller's xstyle, the class map
  * @output Exports ChatSystemMessage component and ChatSystemMessageProps
  * @position Centered, wrapping system/notice message in a chat thread
  *
@@ -21,18 +21,18 @@
 
 import type {ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  fontWeightVars,
-  typographyVars,
-} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
 import {isRenderable} from '../utils/isRenderable';
 import {Divider} from '../Divider';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {
+  chatSystemMessageClassName,
+  chatSystemMessageContentClassName,
+  chatSystemMessageDividerClassName,
+  chatSystemMessageIconClassName,
+} from './chatClasses';
 
 export type ChatSystemMessageVariant = 'default' | 'divider';
 
@@ -59,40 +59,6 @@ export interface ChatSystemMessageProps extends BaseProps<HTMLDivElement> {
    */
   icon?: ReactNode;
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-1'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    color: colorVars['--color-text-secondary'],
-    textAlign: 'center',
-  },
-  dividerWrap: {
-    width: '100%',
-  },
-  // Icon
-  icon: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  // Content wrapper
-  content: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1-5'],
-  },
-});
 
 // =============================================================================
 // Component
@@ -132,7 +98,10 @@ export function ChatSystemMessage({
         ref={ref}
         {...mergeProps(
           themeProps('chat-system-message', {variant}),
-          stylex.props(styles.dividerWrap, xstyle),
+          tw(
+            chatSystemMessageDividerClassName,
+            xstyle && stylex.props(xstyle).className,
+          ),
           className,
           styleProp,
         )}
@@ -147,14 +116,17 @@ export function ChatSystemMessage({
       ref={ref}
       {...mergeProps(
         themeProps('chat-system-message', {variant}),
-        stylex.props(styles.root, xstyle),
+        tw(
+          chatSystemMessageClassName,
+          xstyle && stylex.props(xstyle).className,
+        ),
         className,
         styleProp,
       )}
       {...rest}>
-      <span {...stylex.props(styles.content)}>
+      <span className={chatSystemMessageContentClassName}>
         {isRenderable(icon) && (
-          <span {...stylex.props(styles.icon)}>{icon}</span>
+          <span className={chatSystemMessageIconClassName}>{icon}</span>
         )}
         {children}
       </span>

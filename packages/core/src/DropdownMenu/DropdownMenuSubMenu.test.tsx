@@ -24,8 +24,13 @@ import {DropdownMenuItem} from './DropdownMenuItem';
 import {DropdownMenuSubMenu} from './DropdownMenuSubMenu';
 import {
   dropdownMenuSubMenuFlyoutClassName,
+  dropdownMenuSubMenuFlyoutViewportClassName,
   dropdownMenuSubMenuScrollClassName,
 } from './dropdownMenuSubMenuClasses';
+import {
+  dropdownMenuPopoverFixedWidthClassName,
+  dropdownMenuPopoverViewportClassName,
+} from './dropdownMenuClasses';
 import {expectClassSet} from '../__tests__/classNameAssertions';
 import {warmMenuBottomSheet} from './__tests__/warmMenuBottomSheet';
 import {IconButton} from '../IconButton';
@@ -120,17 +125,21 @@ describe('DropdownMenuSubMenu', () => {
 
     const flyout = screen.getByRole('menu', {name: /Move to/, hidden: true});
     const popover = flyout.closest('[popover]');
-    expect(popover?.className).toContain(
-      'DropdownMenuSubMenu__flyoutStyles.popoverViewport',
-    );
+    // jsdom cannot parse the built sheet, so the layer's cap and width are
+    // read as the classes it carries and the variable it sets.
+    expectClassSet(popover as HTMLElement, {
+      includes: dropdownMenuSubMenuFlyoutViewportClassName.split(' '),
+    });
     expect(popover).not.toHaveStyle(
       'margin-inline-start: max(var(--spacing-2),env(safe-area-inset-left,0px))',
     );
     expect(popover).not.toHaveStyle(
       'margin-inline-end: max(var(--spacing-2),env(safe-area-inset-right,0px))',
     );
-    expect(popover).toHaveStyle({minWidth: 'var(--x-minWidth)'});
-    expect(popover?.getAttribute('style')).toContain('min(640px, calc(100vw');
+    expect(popover?.getAttribute('style')).toContain(
+      // The width is the caller's, clamped by the runtime's inline cap.
+      '--astryx-dropdown-menu-inline-size: min(640px, calc(100vw',
+    );
     // jsdom cannot parse the built sheet, so the flyout's own cap and its
     // scroll are read as the classes it carries.
     expectClassSet(flyout, {
@@ -171,14 +180,15 @@ describe('DropdownMenuSubMenu', () => {
 
       const flyout = screen.getByRole('menu', {name: /Move to/, hidden: true});
       const popover = flyout.closest('[popover]');
-      expect(popover?.className).toContain(
-        'DropdownMenuSubMenu__flyoutStyles.popoverCustomIntrinsicWidth',
+      expectClassSet(popover as HTMLElement, {
+        includes: [
+          ...dropdownMenuSubMenuFlyoutViewportClassName.split(' '),
+          ...dropdownMenuPopoverFixedWidthClassName.split(' '),
+        ],
+      });
+      expect(popover?.getAttribute('style')).toContain(
+        `--astryx-dropdown-menu-inline-size: ${menuWidth}`,
       );
-      expect(popover?.getAttribute('style')).toContain(menuWidth);
-      expect(popover?.className).toContain(
-        'DropdownMenuSubMenu__flyoutStyles.popoverViewport',
-      );
-      expect(popover?.getAttribute('style')).not.toContain(`min(${menuWidth},`);
     },
   );
 
@@ -2741,7 +2751,11 @@ describe('DropdownMenuSubMenu header and footer', () => {
 
     it("a drilled-in view with a header or footer caps at the root's menuMaxHeight, as the plain view does", async () => {
       const {dialog} = await openLabels({menuMaxHeight: 560});
-      expect(dialog.getAttribute('style')).toContain('min(560px');
+      // The view caps through the variable the root's cap reads, so it needs no
+      // rule of its own.
+      expectClassSet(dialog, {
+        includes: dropdownMenuPopoverViewportClassName.split(' '),
+      });
     });
 
     it('Tab in the drilled-in view wraps through its own regions', async () => {
