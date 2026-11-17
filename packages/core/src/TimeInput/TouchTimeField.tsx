@@ -410,7 +410,7 @@ export function TouchTimeField({
         <div ref={sheetBodyRef} className={touchTimeFieldSheetBodyClassName}>
           <div
             className={touchTimeFieldWheelsClassName}
-            style={touchTimeFieldWheelsInlineStyle()}>
+            style={touchTimeFieldWheelsInlineStyle}>
             {isTouch ? (
               <TimeWheels
                 time={parsedWheelTime}

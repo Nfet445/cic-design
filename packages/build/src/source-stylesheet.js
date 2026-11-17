@@ -466,6 +466,25 @@ function generatedSheetCss(name, from) {
 }
 
 /**
+ * The generated declaration sheets of the package that owns `file`, or '' when
+ * it has none. The package is the nearest directory above the file with a
+ * `package.json`, so this finds a workspace source tree that no `node_modules`
+ * entry names — the Vite plugin aliases package sources, and a stylesheet it
+ * splits from those sources needs the same declarations.
+ */
+function generatedSheetsFor(file) {
+  let dir = path.dirname(file);
+  for (;;) {
+    if (fs.existsSync(path.join(dir, 'package.json'))) {
+      return generatedSheets({name: readManifest(dir).name, dir});
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) return '';
+    dir = parent;
+  }
+}
+
+/**
  * Print a package's rules as its prebuilt stylesheet prints them, or nothing
  * when there are no rules. Each block carries the order, so the order holds
  * whichever block or chunk loads first. The product needs no line of its own.
@@ -505,6 +524,7 @@ module.exports = {
   STYLEX_MODULE,
   GENERATED_SHEETS,
   generatedSheetCss,
+  generatedSheetsFor,
   LAYER_ORDER,
   prebuiltStylesheet,
   findPackageDir,

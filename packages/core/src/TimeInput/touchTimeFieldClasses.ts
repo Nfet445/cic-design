@@ -94,18 +94,14 @@ export const touchTimeFieldSheetBodyClassName = tw(
 /**
  * The wheel row's block size is one month pane, which the date and time touch
  * surfaces share. It is a geometry constant, so the class reads it as a
- * property and the element carries the value.
+ * variable and the element writes the value inline.
  */
-export const touchTimeFieldWheelsStyle = {
-  blockSize: '--astryx-time-wheels-block-size',
-} as const;
+export type TouchTimeFieldWheelsStyle = CSSProperties &
+  Partial<Record<'--astryx-time-wheels-block-size', string>>;
 
-/** The inline property the wheel row's block-size class reads. */
-export function touchTimeFieldWheelsInlineStyle(): CSSProperties {
-  return {
-    [touchTimeFieldWheelsStyle.blockSize]: dateInputTouchGeometry.paneBlockSize,
-  } as CSSProperties;
-}
+export const touchTimeFieldWheelsInlineStyle: TouchTimeFieldWheelsStyle = {
+  '--astryx-time-wheels-block-size': dateInputTouchGeometry.paneBlockSize,
+};
 
 /** The wheels' row: one pane tall, one gutter apart. */
 export const touchTimeFieldWheelsClassName = tw(
