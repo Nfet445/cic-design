@@ -45,6 +45,7 @@ import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
 import * as logStreamClasses from './LogStream/logStreamClasses';
 import * as scheduleClasses from './Schedule/scheduleClasses';
+import * as navigationStackClasses from './NavigationStack/navigationStackClasses';
 import * as pageControlClasses from './PageControl/pageControlClasses';
 import * as radialChartClasses from './Radial/radialChartClasses';
 import * as selectableCardGroupClasses from './SelectableCardGroup/selectableCardGroupClasses';
@@ -93,6 +94,7 @@ function labClassNames() {
     listInputClasses,
     loadingMessageClasses,
     logStreamClasses,
+    navigationStackClasses,
     pageControlClasses,
     radialChartClasses,
     scheduleClasses,

@@ -22,6 +22,12 @@ import {
   NavigationStack,
   useNavigationStack,
 } from './NavigationStack';
+import {
+  navigationStackCardClassName,
+  navigationStackCardHiddenClassName,
+  navigationStackDimColorClassName,
+  navigationStackScrollerClassName,
+} from './navigationStackClasses';
 
 function Root() {
   const nav = useNavigationStack<string>();
@@ -285,8 +291,27 @@ describe('NavigationStack', () => {
     render(<Harness initial={['General', 'General › About']} />);
     // Root, General (under the top) and About (top) are mounted; the root,
     // two below the top, keeps its state but is not rendered.
-    expect(screenCard('Settings')?.className).toMatch(/cardHidden/);
-    expect(screenCard('General')?.className).not.toMatch(/cardHidden/);
+    expect(screenCard('Settings')?.className).toContain(
+      navigationStackCardHiddenClassName,
+    );
+    expect(screenCard('General')?.className).not.toContain(
+      navigationStackCardHiddenClassName,
+    );
+  });
+
+  it('lays the screen out from its classes, the dim from its alpha', () => {
+    render(<Harness />);
+    const card = screenCard('Settings');
+    expect(card?.className).toContain(navigationStackCardClassName);
+    const scroller = card?.firstElementChild;
+    expect(scroller?.className).toContain(navigationStackScrollerClassName);
+    // The dimming's black is UIKit's table alpha, a runtime value the class
+    // reads off the element.
+    const dim = card?.querySelector<HTMLElement>(
+      ':scope > [aria-hidden]:not([data-navigation-scroll-edge])',
+    );
+    expect(dim?.className).toContain(navigationStackDimColorClassName);
+    expect(dim?.style.getPropertyValue('--_navigation-dim-alpha')).not.toBe('');
   });
 
   it('returns focus to a row’s end control that pushed', async () => {

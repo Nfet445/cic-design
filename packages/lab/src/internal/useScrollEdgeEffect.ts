@@ -77,11 +77,18 @@ export interface UseScrollEdgeEffectOptions {
   readonly color?: string;
   /** Extra styles for the layer, e.g. its stacking order. */
   readonly layerXstyle?: StyleXStyles;
+  /** Extra classes for the layer, e.g. its stacking order. */
+  readonly layerClassName?: string;
   /**
    * Extra styles for the sentinel. Insets of `auto` leave it at its static
    * position, the top of the content, with no positioned wrapper.
    */
   readonly sentinelXstyle?: StyleXStyles;
+  /**
+   * Extra classes for the sentinel. In a caller that has left StyleX, its
+   * insets of `auto` keep it at its static position.
+   */
+  readonly sentinelClassName?: string;
   /** The fades' springs: a bar's are `bars.scrollEdgeEffect`'s. */
   readonly springs: {
     readonly appear: SpringDescription;
@@ -135,7 +142,9 @@ export function useScrollEdgeEffect({
   edge,
   color = colorVars['--color-background-body'],
   layerXstyle,
+  layerClassName,
   sentinelXstyle,
+  sentinelClassName,
   springs,
 }: UseScrollEdgeEffectOptions): UseScrollEdgeEffectResult {
   const {isTouch} = useTouchPresentation();
@@ -304,6 +313,7 @@ export function useScrollEdgeEffect({
       className: tw(
         scrollEdgeLayerClassName,
         scrollEdgeLayerMaskClassName,
+        layerClassName,
         layerXstyle != null && stylex.props(layerXstyle).className,
       ),
       style: {
@@ -319,6 +329,7 @@ export function useScrollEdgeEffect({
       'aria-hidden': true,
       className: tw(
         scrollEdgeSentinelClassName,
+        sentinelClassName,
         sentinelXstyle != null && stylex.props(sentinelXstyle).className,
       ),
     },
