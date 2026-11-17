@@ -38,6 +38,7 @@ import * as scheduleClasses from './Schedule/scheduleClasses';
 import * as pageControlClasses from './PageControl/pageControlClasses';
 import * as radialChartClasses from './Radial/radialChartClasses';
 import * as selectableCardGroupClasses from './SelectableCardGroup/selectableCardGroupClasses';
+import * as tabBarClasses from './TabBar/tabBarClasses';
 import * as statClasses from './Stat/statClasses';
 import * as transferListClasses from './TransferList/transferListClasses';
 
@@ -82,6 +83,7 @@ function labClassNames() {
     radialChartClasses,
     scheduleClasses,
     statClasses,
+    tabBarClasses,
     transferListClasses,
   ]) {
     for (const [name, value] of Object.entries(map)) {

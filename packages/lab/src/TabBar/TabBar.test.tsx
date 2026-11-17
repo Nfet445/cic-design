@@ -17,6 +17,26 @@ import {InternationalizationProvider} from '@astryxdesign/core/i18n';
 import {TOUCH_QUERY} from '@astryxdesign/core/internal/touch';
 import {TabBar, TabBarItem, type TabBarProps} from './TabBar';
 import {TabBarMoreList} from '../TabBarMoreList/TabBarMoreList';
+import {
+  tabBarBadgeClassName,
+  tabBarCapsuleClassName,
+  tabBarCapsuleSizeClassName,
+  tabBarColumnClassName,
+  tabBarItemBoxClassName,
+  tabBarItemClassName,
+  tabBarItemDisabledClassName,
+  tabBarItemSelectedLookClassName,
+  tabBarLabelClassName,
+  tabBarLensClassName,
+  tabBarLensRestClassName,
+  tabBarRootClassName,
+} from './tabBarClasses';
+
+/** A map entry is a space-separated list, so every token has to be present. */
+function carries(element: Element | null | undefined, mapClassName: string) {
+  const classes = new Set(element?.classList);
+  return mapClassName.split(' ').every(className => classes.has(className));
+}
 
 function Glyph({name}: {name: string}) {
   return <svg data-testid={`icon-${name}`} />;
@@ -722,5 +742,52 @@ describe('TabBar More tab', () => {
     expect(onChange).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', {name: /Settings/}));
     expect(onChange).toHaveBeenCalledWith('settings');
+  });
+});
+
+describe('TabBar class map', () => {
+  it('holds the class map on the bar, the capsule and the item', () => {
+    render(<Bar />);
+    const capsule = screen.getByRole('tablist');
+    expect(carries(capsule.parentElement, tabBarRootClassName)).toBe(true);
+    expect(carries(capsule, tabBarCapsuleClassName)).toBe(true);
+    expect(carries(capsule, tabBarCapsuleSizeClassName)).toBe(true);
+    // The capsule holds the geometry its descendants inherit.
+    expect(
+      capsule.style.getPropertyValue('--astryx-tab-bar-capsule-height'),
+    ).not.toBe('');
+    expect(
+      capsule.style.getPropertyValue('--astryx-tab-bar-label-top'),
+    ).not.toBe('');
+
+    const tab = screen.getAllByRole('tab')[0];
+    expect(carries(tab, tabBarItemClassName)).toBe(true);
+    expect(carries(tab, tabBarColumnClassName)).toBe(true);
+    expect(
+      tab.style.getPropertyValue('--astryx-tab-bar-column-start'),
+    ).not.toBe('');
+    expect(carries(tab.firstElementChild, tabBarItemBoxClassName)).toBe(true);
+    expect(carries(screen.getByText('Home'), tabBarLabelClassName)).toBe(true);
+  });
+
+  it('gives a tab one look class, and the lens its own offset', () => {
+    render(<Bar initial="home" />);
+    const selected = screen.getAllByRole('tab')[0];
+    const look = selected.firstElementChild;
+    expect(carries(look, tabBarItemSelectedLookClassName)).toBe(true);
+    expect(carries(look, tabBarItemDisabledClassName)).toBe(false);
+
+    const lens = document.querySelector('[data-tab-bar-lens]');
+    expect(carries(lens, tabBarLensClassName)).toBe(true);
+    expect(carries(lens, tabBarLensRestClassName)).toBe(true);
+    expect(lens?.getAttribute('style')).toContain(
+      '--astryx-tab-bar-lens-offset',
+    );
+  });
+
+  it('keeps a badge class map on the badge', () => {
+    render(<Bar badges={{library: 3}} />);
+    const badge = document.querySelector('[data-tab-bar-badge="library"]');
+    expect(carries(badge, tabBarBadgeClassName)).toBe(true);
   });
 });

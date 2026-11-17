@@ -4,7 +4,8 @@
 
 /**
  * @file TabBar.tsx
- * @input React, StyleX, Core's theme tokens and hooks, TabBar's touch layer
+ * @input React, StyleX (the item marker only), Core's hooks, the class map in
+ *   tabBarClasses.ts, TabBar's touch layer
  *   (TabBarTouch.ts), its geometry (tabBarModel.ts), its UIKit values
  *   (uikitTabBar.ts) and its panel scroll (panelScroll.ts)
  * @output TabBar (iOS 26's floating tab bar), TabBarItem, and the tab reading
@@ -29,20 +30,40 @@ import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {useListFocus, useMergedRefs} from '@astryxdesign/core/hooks';
 import {useTouchPresentation} from '@astryxdesign/core/internal/touch';
-import {
-  colorVars,
-  durationVars,
-  easeVars,
-  focusVars,
-  fontWeightVars,
-  radiusVars,
-  shadowVars,
-  typographyVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {Icon} from '@astryxdesign/core/Icon';
 import {mergeProps, themeProps} from '@astryxdesign/core/utils';
-import {tabBarItemMarker} from './tabBar.stylex';
+import {tw} from '../tw';
+import {tabBarItemMarker, tabBarMarkerStyles} from './tabBar.stylex';
+import {
+  tabBarBadgeClassName,
+  tabBarBadgeGeometryClassName,
+  tabBarBadgesClassName,
+  tabBarBoxClassName,
+  tabBarCapsuleClassName,
+  tabBarCapsuleSizeClassName,
+  tabBarColumnClassName,
+  tabBarCopyInnerClassName,
+  tabBarCopyItemClassName,
+  tabBarCopyOuterClassName,
+  tabBarCopyOuterGeometryClassName,
+  tabBarCopyRestClassName,
+  tabBarIconClassName,
+  tabBarItemBoxClassName,
+  tabBarItemClassName,
+  tabBarItemDisabledClassName,
+  tabBarItemSelectedLookClassName,
+  tabBarLabelClassName,
+  tabBarLabelGeometryClassName,
+  tabBarLabelSelectedClassName,
+  tabBarLensBodyClassName,
+  tabBarLensClassName,
+  tabBarLensClipClassName,
+  tabBarLensRestClassName,
+  tabBarLensUnderClassName,
+  tabBarRootClassName,
+  tabBarRootInsetClassName,
+} from './tabBarClasses';
 import {tabBar} from './uikitTabBar';
 import {useTabBarLens} from './TabBarTouch';
 import {itemWidthCss, naturalWidth} from './tabBarModel';
@@ -232,263 +253,54 @@ function lensOffset(index: number, count: number): string {
 }
 
 // =============================================================================
-// Styles
+// Per-instance geometry
 // =============================================================================
 
-const styles = stylex.create({
-  root: {
-    position: 'fixed',
-    insetInline: 0,
-    bottom: 0,
-    // No page-level stacking rank: the lens and the badges order inside the
-    // bar's own stacking context.
-    isolation: 'isolate',
-    display: 'flex',
-    justifyContent: 'center',
-    boxSizing: 'border-box',
-    pointerEvents: 'none',
-  },
-  rootInset: (inset: string) => ({
-    paddingInline: inset,
-    paddingBottom: inset,
-  }),
-  capsule: {
-    position: 'relative',
-    flexGrow: 1,
-    minWidth: 0,
-    containerType: 'inline-size',
-    pointerEvents: 'auto',
-    borderRadius: radiusVars['--radius-full'],
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-background-popover']} 78%, transparent)`,
-    backdropFilter: 'blur(16px) saturate(180%)',
-    boxShadow: shadowVars['--shadow-med'],
-    touchAction: 'manipulation',
-    WebkitTapHighlightColor: 'transparent',
-  },
-  capsuleSize: (height: string, maxWidth: string) => ({height, maxWidth}),
-  item: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    margin: 0,
-    padding: 0,
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    color: colorVars['--color-text-primary'],
-    font: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    outline: 'none',
-    WebkitTapHighlightColor: 'transparent',
-  },
-  column: (start: string, width: string) => ({
-    insetInlineStart: start,
-    width,
-  }),
-  itemBox: {
-    position: 'absolute',
-    display: 'block',
-    borderRadius: radiusVars['--radius-full'],
-    outlineStyle: {
-      default: 'none',
-      [stylex.when.ancestor(':focus-visible', tabBarItemMarker)]:
-        focusVars['--focus-outline-style'],
-    },
-    outlineWidth: focusVars['--focus-outline-width'],
-    outlineColor: focusVars['--focus-outline-color'],
-    outlineOffset: focusVars['--focus-outline-offset'],
-    // With no tab selected, a held finger paints its tab at once
-    // (useTabBarLens.ts writes the attribute). The paint is a layer, and only
-    // its opacity fades after the lift, so the compositor runs the fade. It
-    // plays the theme's exit duration and curve. Under Reduce Motion the fade
-    // stays within 200 ms, whatever the theme's tempo.
-    '::before': {
-      content: '""',
-      position: 'absolute',
-      inset: 0,
-      borderRadius: 'inherit',
-      backgroundColor: colorVars['--color-overlay-pressed'],
-      pointerEvents: 'none',
-      opacity: {
-        default: 0,
-        [stylex.when.ancestor('[data-tab-bar-pressed]', tabBarItemMarker)]: 1,
-      },
-      transitionProperty: 'opacity',
-      transitionDuration: {
-        default: durationVars['--duration-exit'],
-        '@media (prefers-reduced-motion: reduce)': `min(${durationVars['--duration-exit']}, 200ms)`,
-        // Repeated inside the Reduce Motion branch, where a media rule
-        // outranks the plain one, so the onset stays at once there too.
-        [stylex.when.ancestor('[data-tab-bar-pressed]', tabBarItemMarker)]: {
-          default: '0s',
-          '@media (prefers-reduced-motion: reduce)': '0s',
-        },
-      },
-      transitionTimingFunction: easeVars['--ease-exit'],
-    },
-  },
-  box: (start: string, top: string, width: string, height: string) => ({
-    insetInlineStart: start,
-    top,
-    width,
-    height,
-  }),
-  icon: {
-    position: 'absolute',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    position: 'absolute',
-    insetInline: 0,
-    overflow: 'hidden',
-    textAlign: 'center',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    fontFamily: typographyVars['--font-family-body'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  labelGeometry: (top: string, height: string, fontSize: string) => ({
-    top,
-    height,
-    fontSize,
-    lineHeight: height,
-  }),
-  labelSelected: {
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  lens: {
-    position: 'absolute',
-    pointerEvents: 'none',
-    transitionProperty: 'translate',
-    transitionDuration: {
-      default: durationVars['--duration-medium'],
-      // Under a finger the animator moves it (TabBarTouch.ts); under Reduce
-      // Motion a touch screen cross-fades it there and a mouse jumps.
-      '@media (pointer: coarse)': '0s',
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)': '0s',
-      '@media (prefers-reduced-motion: reduce) and (not (pointer: coarse))':
-        '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  // At rest the lens is the pill under the selected item, which draws its own
-  // selected look. While it slides it carries the copy over the items.
-  lensUnder: {
-    zIndex: -1,
-  },
-  lensRest: (offset: string) => ({
-    translate: {
-      default: `${offset} 0`,
-      ':is([dir="rtl"] *)': `calc(-1 * ${offset}) 0`,
-    },
-  }),
-  lensBody: {
-    position: 'absolute',
-    inset: 0,
-    // The lifted lens's shadow, outside the clip: the animator fades it in.
-    '::before': {
-      content: '""',
-      position: 'absolute',
-      inset: 0,
-      borderRadius: radiusVars['--radius-full'],
-      boxShadow: shadowVars['--shadow-med'],
-      opacity: 0,
-      // The animator promotes it while it moves (core's animator.ts).
-      willChange: 'var(--astryx-motion-will-change-before, auto)',
-    },
-  },
-  lensClip: {
-    position: 'absolute',
-    inset: 0,
-    overflow: 'hidden',
-    borderRadius: radiusVars['--radius-full'],
-    // Opaque: while it slides it hides the plain items under the copy.
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-text-primary']} 9%, ${colorVars['--color-background-popover']})`,
-    // The lifted lens: the capsule's own surface with a light rim, opaque so
-    // the plain copy under it stays hidden; the animator fades it in.
-    '::before': {
-      content: '""',
-      position: 'absolute',
-      inset: 0,
-      borderRadius: radiusVars['--radius-full'],
-      backgroundColor: colorVars['--color-background-popover'],
-      boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${colorVars['--color-text-primary']} 10%, transparent)`,
-      opacity: 0,
-      // The animator promotes it while it moves (core's animator.ts).
-      willChange: 'var(--astryx-motion-will-change-before, auto)',
-    },
-  },
-  copyInner: {
-    position: 'absolute',
-    inset: 0,
-  },
-  // Mounted only while the lens slides under a finger, where the animator
-  // moves it: no transition of its own.
-  copyOuter: {
-    position: 'absolute',
-    width: '100cqw',
-  },
-  copyOuterGeometry: (inset: string, height: string) => ({
-    insetInlineStart: `calc(-1 * ${inset})`,
-    top: `calc(-1 * ${inset})`,
-    height,
-  }),
-  copyRest: (offset: string) => ({
-    translate: {
-      default: `calc(-1 * ${offset}) 0`,
-      ':is([dir="rtl"] *)': `${offset} 0`,
-    },
-  }),
-  copyItem: {
-    position: 'absolute',
-    color: colorVars['--color-accent'],
-  },
-  // The selected tab's own look at rest: the copy's accent.
-  itemSelectedLook: {
-    color: colorVars['--color-accent'],
-  },
-  itemDisabled: {
-    color: colorVars['--color-text-disabled'],
-  },
-  badges: {
-    position: 'absolute',
-    inset: 0,
-    pointerEvents: 'none',
-  },
-  badge: {
-    position: 'absolute',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxSizing: 'border-box',
-    whiteSpace: 'nowrap',
-    fontFamily: typographyVars['--font-family-body'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    fontVariantNumeric: 'tabular-nums',
-    backgroundColor: colorVars['--color-error'],
-    color: colorVars['--color-on-error'],
-  },
-  badgeGeometry: (
-    start: string,
-    top: string,
-    height: string,
-    paddingInline: string,
-    fontSize: string,
-  ) => ({
-    insetInlineStart: start,
-    top,
-    height,
-    minWidth: height,
-    paddingInline,
-    borderRadius: `calc(${height} / 2)`,
-    fontSize,
-    lineHeight: height,
-  }),
-});
+/** The bar's geometry arrives as private variables its classes read. */
+type TabBarVars = React.CSSProperties &
+  Record<`--astryx-tab-bar-${string}`, string>;
+
+/** The capsule holds the geometry every descendant reads by inheritance. */
+function capsuleVars(count: number): TabBarVars {
+  return {
+    '--astryx-tab-bar-capsule-height': px(tabBar.barHeight),
+    '--astryx-tab-bar-capsule-max-width': px(naturalWidth(count)),
+    '--astryx-tab-bar-inset': px(tabBar.itemInset),
+    '--astryx-tab-bar-label-top': px(tabBar.labelTop),
+    '--astryx-tab-bar-label-height': px(tabBar.labelSize * 1.2),
+    '--astryx-tab-bar-label-size': px(tabBar.labelSize),
+    '--astryx-tab-bar-badge-top': px(tabBar.itemInset + tabBar.badge.offsetY),
+    '--astryx-tab-bar-badge-height': px(tabBar.badge.height),
+    '--astryx-tab-bar-badge-padding-inline': px(tabBar.badge.paddingInline),
+    '--astryx-tab-bar-badge-font-size': px(tabBar.badge.fontSize),
+  };
+}
+
+/** One box: an item, the lens, an item's icon, a copy. */
+function rootVars(style: React.CSSProperties | undefined): TabBarVars {
+  return {
+    ...style,
+    '--astryx-tab-bar-root-inset': px(tabBar.barInset),
+  };
+}
+
+function badgeVars(start: string): TabBarVars {
+  return {'--astryx-tab-bar-badge-start': start};
+}
+
+function boxVars(
+  start: string,
+  top: string,
+  width: string,
+  height: string,
+): TabBarVars {
+  return {
+    '--astryx-tab-bar-box-start': start,
+    '--astryx-tab-bar-box-top': top,
+    '--astryx-tab-bar-box-width': width,
+    '--astryx-tab-bar-box-height': height,
+  };
+}
 
 // =============================================================================
 // Pieces
@@ -499,9 +311,6 @@ const ITEM_HEIGHT = px(tabBar.itemHeight);
 const ICON_START = `calc(50% - ${px(tabBar.iconSize / 2)})`;
 const ICON_TOP = px(tabBar.iconCenterY - tabBar.iconSize / 2);
 const ICON_SIZE = px(tabBar.iconSize);
-const LABEL_TOP = px(tabBar.labelTop);
-const LABEL_HEIGHT = px(tabBar.labelSize * 1.2);
-const LABEL_SIZE = px(tabBar.labelSize);
 
 /**
  * An item's icon and label, in the plain or the selected look; the lens's
@@ -520,18 +329,16 @@ function ItemFace({
     <>
       <span
         aria-hidden
-        {...stylex.props(
-          styles.icon,
-          styles.box(ICON_START, ICON_TOP, ICON_SIZE, ICON_SIZE),
-        )}>
+        className={tw(tabBarIconClassName, tabBarBoxClassName)}
+        style={boxVars(ICON_START, ICON_TOP, ICON_SIZE, ICON_SIZE)}>
         {isSelectedLook ? (item.selectedIcon ?? item.icon) : item.icon}
       </span>
       <span
         aria-hidden={isCopy || undefined}
-        {...stylex.props(
-          styles.label,
-          styles.labelGeometry(LABEL_TOP, LABEL_HEIGHT, LABEL_SIZE),
-          isSelectedLook && styles.labelSelected,
+        className={tw(
+          tabBarLabelClassName,
+          tabBarLabelGeometryClassName,
+          isSelectedLook && tabBarLabelSelectedClassName,
         )}>
         {item.label}
       </span>
@@ -662,13 +469,9 @@ export function TabBar({
       ref={ref}
       {...mergeProps(
         themeProps('tab-bar'),
-        stylex.props(
-          styles.root,
-          styles.rootInset(px(tabBar.barInset)),
-          xstyle,
-        ),
-        className,
-        style,
+        stylex.props(xstyle),
+        tw(tabBarRootClassName, tabBarRootInsetClassName, className),
+        rootVars(style),
       )}
       {...props}>
       <div
@@ -679,10 +482,8 @@ export function TabBar({
         aria-orientation="horizontal"
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}
-        {...stylex.props(
-          styles.capsule,
-          styles.capsuleSize(px(tabBar.barHeight), px(naturalWidth(count))),
-        )}>
+        className={tw(tabBarCapsuleClassName, tabBarCapsuleSizeClassName)}
+        style={capsuleVars(count)}>
         {items.map((item, index) => {
           const isSelected = index === selectedIndex;
           const isDisabled = isDisabledItem(item);
@@ -707,21 +508,30 @@ export function TabBar({
                 themeProps('tab-bar-item', {
                   selected: isSelected ? 'selected' : null,
                 }),
-                stylex.props(
-                  tabBarItemMarker,
-                  styles.item,
-                  styles.column(start, width),
-                ),
+                stylex.props(tabBarItemMarker),
+                tw(tabBarItemClassName, tabBarColumnClassName),
+                {
+                  '--astryx-tab-bar-column-start': start,
+                  '--astryx-tab-bar-column-width': width,
+                },
               )}>
               <span
                 {...stylex.props(
-                  styles.itemBox,
+                  tabBarMarkerStyles.itemBox,
+                  tabBarMarkerStyles.pressLayer,
+                )}
+                className={tw(
+                  tabBarItemBoxClassName,
                   // At rest the tab draws its selected look; while the lens
-                  // slides, the copy inside it does.
-                  isSelected && !lens.isCopyShown && styles.itemSelectedLook,
-                  isDisabled && styles.itemDisabled,
-                  styles.box(itemStart, ITEM_TOP, itemSize, ITEM_HEIGHT),
-                )}>
+                  // slides, the copy inside it does. A disabled tab is dimmed
+                  // whether or not it is selected, so its class comes last.
+                  isDisabled
+                    ? tabBarItemDisabledClassName
+                    : isSelected &&
+                        !lens.isCopyShown &&
+                        tabBarItemSelectedLookClassName,
+                )}
+                style={boxVars(itemStart, ITEM_TOP, itemSize, ITEM_HEIGHT)}>
                 <ItemFace
                   item={item}
                   isSelectedLook={
@@ -736,48 +546,48 @@ export function TabBar({
           <div
             aria-hidden
             data-tab-bar-lens=""
-            {...stylex.props(
-              styles.lens,
-              !lens.isCopyShown && styles.lensUnder,
-              styles.box(capsuleInset, capsuleInset, itemSize, ITEM_HEIGHT),
-              styles.lensRest(lensOffset(restIndex, count)),
-            )}>
+            className={tw(
+              tabBarLensClassName,
+              !lens.isCopyShown && tabBarLensUnderClassName,
+              tabBarLensRestClassName,
+            )}
+            style={{
+              ...boxVars(capsuleInset, capsuleInset, itemSize, ITEM_HEIGHT),
+              '--astryx-tab-bar-lens-offset': lensOffset(restIndex, count),
+            }}>
             <div
               ref={lens.body}
               data-tab-bar-lens-body=""
-              {...stylex.props(styles.lensBody)}>
+              className={tabBarLensBodyClassName}>
               <div
                 ref={lens.clip}
                 data-tab-bar-lens-clip=""
-                {...stylex.props(styles.lensClip)}>
+                className={tabBarLensClipClassName}>
                 {lens.isCopyShown ? (
                   <div
                     ref={lens.copy}
                     data-tab-bar-copy=""
-                    {...stylex.props(styles.copyInner)}>
+                    className={tabBarCopyInnerClassName}>
                     <div
-                      {...stylex.props(
-                        styles.copyOuter,
-                        styles.copyOuterGeometry(
-                          capsuleInset,
-                          px(tabBar.barHeight),
-                        ),
-                        styles.copyRest(lensOffset(restIndex, count)),
+                      className={tw(
+                        tabBarCopyOuterClassName,
+                        tabBarCopyOuterGeometryClassName,
+                        tabBarCopyRestClassName,
                       )}>
                       {items.map((item, index) => (
                         <span
                           key={item.value}
                           ref={lens.copyItem(index)}
                           data-tab-bar-copy-item={item.value}
-                          {...stylex.props(
-                            styles.copyItem,
-                            styles.box(
-                              `calc(${center(index, count)} - ${itemWidthCss(count)} / 2)`,
-                              ITEM_TOP,
-                              itemSize,
-                              ITEM_HEIGHT,
-                            ),
-                            isDisabledItem(item) && styles.itemDisabled,
+                          className={tw(
+                            tabBarCopyItemClassName,
+                            isDisabledItem(item) && tabBarItemDisabledClassName,
+                          )}
+                          style={boxVars(
+                            `calc(${center(index, count)} - ${itemWidthCss(count)} / 2)`,
+                            ITEM_TOP,
+                            itemSize,
+                            ITEM_HEIGHT,
                           )}>
                           <ItemFace
                             item={item}
@@ -793,21 +603,18 @@ export function TabBar({
             </div>
           </div>
         ) : null}
-        <div aria-hidden {...stylex.props(styles.badges)}>
+        <div aria-hidden className={tabBarBadgesClassName}>
           {items.map((item, index) =>
             hasBadge(item.badge) ? (
               <span
                 key={item.value}
                 data-tab-bar-badge={item.value}
-                {...stylex.props(
-                  styles.badge,
-                  styles.badgeGeometry(
-                    `calc(${center(index, count)} + ${px(tabBar.badge.offsetX)})`,
-                    px(tabBar.itemInset + tabBar.badge.offsetY),
-                    px(tabBar.badge.height),
-                    px(tabBar.badge.paddingInline),
-                    px(tabBar.badge.fontSize),
-                  ),
+                className={tw(
+                  tabBarBadgeClassName,
+                  tabBarBadgeGeometryClassName,
+                )}
+                style={badgeVars(
+                  `calc(${center(index, count)} + ${px(tabBar.badge.offsetX)})`,
                 )}>
                 {item.badge}
               </span>
