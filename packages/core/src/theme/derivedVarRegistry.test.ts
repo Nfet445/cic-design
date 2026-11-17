@@ -393,6 +393,12 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // wheel shares with its touch siblings; the colour and weight are read from
   // the text tokens, so a theme changes those tokens, not these vars.
   '--astryx-date-pane-block-size',
+  // The month scroller's measured geometry: where each pane sits, how wide it
+  // is, and the whole strip's width. All three are written from the scrollport
+  // the scroller measured, so no theme value stands behind them.
+  '--astryx-date-pane-inline-start',
+  '--astryx-date-pane-inline-size',
+  '--astryx-date-spacer-inline-size',
   '--astryx-date-wheel-item-size',
   '--astryx-date-wheel-row-offset',
   '--astryx-date-wheel-row-color',
@@ -443,6 +449,10 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   '--tree-list-indent',
   '--_tree-indent',
   '--tree-list-row-gap',
+  // Published by TreeListBranches on each row's guide column: how far that
+  // branch's connector sits from the row's inline start. It is measured per
+  // depth from the indent above, so a theme sets the indent, not this.
+  '--astryx-tree-list-branch-offset',
   // Published by each treeitem while it has keyboard focus and read as its
   // row's z-index, so the focused row paints above the guide lines. Focus
   // state, not a value a theme author sets.

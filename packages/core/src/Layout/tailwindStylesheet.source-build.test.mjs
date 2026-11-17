@@ -534,6 +534,27 @@ import {
   linkLabelClassName,
 } from '../Link/linkClasses';
 import {
+  badgeClassName,
+  badgeGrowsClassName,
+  badgeLabelClassName,
+  badgeVariantClassName,
+} from '../Badge/badgeClasses';
+import {
+  statusDotClassName,
+  statusDotIconClassName,
+  statusDotPulsingClassName,
+  statusDotVariantClassName,
+} from '../StatusDot/statusDotClasses';
+import {
+  blockquoteCiteClassName,
+  blockquoteClassName,
+} from '../Blockquote/blockquoteClasses';
+import {
+  codeClassName,
+  codeColorClassName,
+  codeInheritSizeClassName,
+} from '../Code/codeClasses';
+import {
   cardBorderClassName,
   cardClassName,
   cardCornersClassName,
@@ -1812,6 +1833,32 @@ function familyClassNames() {
   }
   add(dividerLabelClassName);
   add(dividerVerticalLabelClassName);
+  // StatusDot: the plate, its icon field, the pulse, and one class per
+  // variant.
+  add(statusDotClassName);
+  add(statusDotIconClassName);
+  add(statusDotPulsingClassName);
+  for (const value of Object.values(statusDotVariantClassName)) {
+    add(value);
+  }
+  // Blockquote: the quote and its attribution.
+  add(blockquoteClassName);
+  add(blockquoteCiteClassName);
+  // Code: the inline element, one class per color, and the size arm that
+  // adopts the surrounding type.
+  add(codeClassName);
+  add(codeInheritSizeClassName);
+  for (const value of Object.values(codeColorClassName)) {
+    add(value);
+  }
+  // Badge: the pill, the arm that grows with the label, the label, and one
+  // class per variant.
+  add(badgeClassName);
+  add(badgeGrowsClassName);
+  add(badgeLabelClassName);
+  for (const value of Object.values(badgeVariantClassName)) {
+    add(value);
+  }
   // Banner: the frame and its elevation, the status header and its fill, the
   // text column, the end area, the content area and the chevron.
   add(bannerClassName);
@@ -1939,9 +1986,15 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // four elevation variables were reused by the dialog family maps, so the
     // sum of the two families is smaller than their parts. The sub-menu's
     // flyout surface, its scroll gesture and the two cap fallbacks under
-    // `@supports` added 13. With every family above the sheet sits at about
-    // 1134, so the ceiling follows the sum rather than one side.
-    expect(stylesheet.rules.size).toBeLessThan(1160);
+    // `@supports` added 13. The display-and-feedback family's Badge, Code,
+    // Blockquote and StatusDot maps added about 45 more. The menu's checkable
+    // rows, its marker placement, the radio group's column, the sheet's
+    // content box and action list, and the two drill-in wrappers added 18:
+    // mostly one rule each, with the marker's two coarse-pointer arms and the
+    // row's three radius parts already spelled elsewhere. With every family
+    // above the sheet sits at 1187, so the ceiling follows the sum rather
+    // than one side.
+    expect(stylesheet.rules.size).toBeLessThan(1200);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

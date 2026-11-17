@@ -1350,16 +1350,14 @@ export function DropdownMenuSubMenu(
                   {...menuPress.menuProps}
                   {...mergeProps(
                     themeProps('dropdown-menu', {presentation: 'popover'}),
-                    {
-                      className: tw(
-                        dropdownMenuSubMenuFlyoutClassName,
-                        hasOverflow
-                          ? dropdownMenuSubMenuTouchClassName
-                          : dropdownMenuSubMenuTouchPinchClassName,
-                        hasOverflow && dropdownMenuSubMenuScrollClassName,
-                        layerAnimations.end,
-                      ),
-                    },
+                    tw(
+                      dropdownMenuSubMenuFlyoutClassName,
+                      hasOverflow
+                        ? dropdownMenuSubMenuTouchClassName
+                        : dropdownMenuSubMenuTouchPinchClassName,
+                      hasOverflow && dropdownMenuSubMenuScrollClassName,
+                      layerAnimations.end,
+                    ),
                   )}>
                   {nestedContent}
                 </div>

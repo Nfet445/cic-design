@@ -45,15 +45,26 @@ import * as stylex from '@stylexjs/stylex';
 import {useCalendarDays} from '../Calendar/hooks/useCalendarDays';
 import {useDirection} from '../i18n/useDirection';
 import {useLocale} from '../i18n/useLocale';
-import {
-  colorVars,
-  radiusVars,
-  fontWeightVars,
-  typeScaleVars,
-  durationVars,
-  borderVars,
-} from '../theme/tokens.stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {mergeProps} from '../utils/mergeProps';
+import {tw} from '../utils/tw';
+import {
+  dateInputMonthPaneStyle,
+  dateInputMonthSpacerStyle,
+  dateInputPaneInlineStyle,
+  monthCellClassName,
+  monthDayClassName,
+  monthDayDisabledClassName,
+  monthDayOutsideClassName,
+  monthDayPuckClassName,
+  monthDayPuckHoverableClassName,
+  monthDayPuckSelectedClassName,
+  monthDayPuckTodayClassName,
+  monthPaneClassName,
+  monthRowClassName,
+  monthScrollerClassName,
+  monthScrollerSpacerClassName,
+} from './dateInputClasses';
 import type {DayOfWeek, ISODateString, PlainDate} from '../utils/dateTypes';
 import {
   plainDateAddDays,
@@ -74,7 +85,6 @@ import {
   formatCalendarMonthLabel,
   isInCalendarMonth,
 } from '../utils/calendarSystem';
-import {dateInputTouchSizes, dateInputTouchGeometry} from './tokens.stylex';
 import {useOwnScrollGesture} from './useOwnScrollGesture';
 import {useScrollSettle, useScrollSteer} from './useScrollSettle';
 import {
@@ -84,8 +94,6 @@ import {
   rowsIn,
   scrollOffsetForRow,
 } from './monthGeometry';
-
-const DAY_SIZE = dateInputTouchSizes.daySize;
 
 /**
  * Panes mounted on each side of the visible one. Sized against a fast fling:
@@ -98,187 +106,6 @@ const OVERSCAN = 3;
 
 /** Every listener on the scroller is passive; one options object serves all. */
 const PASSIVE: AddEventListenerOptions = {passive: true};
-
-const styles = stylex.create({
-  scroller: {
-    position: 'relative',
-    blockSize: dateInputTouchGeometry.paneBlockSize,
-    // Stated, not inherited from the reset: the pane size, the snap offsets
-    // and the virtualization all key off the measured box, so a consumer
-    // without reset.css (or with a stray box-sizing rule — the reset's is
-    // zero-specificity `:where`) must not be able to change what it means.
-    boxSizing: 'border-box',
-    overflowX: 'auto',
-    overflowY: 'hidden',
-    // The paging behaviour, now along the inline axis. Every snap area is a
-    // full pane, so there is exactly one resting position per month.
-    scrollSnapType: 'x mandatory',
-    // Keeps a fling inside the picker rather than handing it to the page.
-    overscrollBehavior: 'contain',
-    scrollbarWidth: 'none',
-    // pan-x, so the browser keeps horizontal pans here and hands VERTICAL
-    // ones straight to the sheet. That is why this scroller no longer claims
-    // the gesture the way the wheels do: with the axes separated there is
-    // nothing to fight over, and a downward drag on the calendar can go back
-    // to meaning swipe-to-dismiss.
-    touchAction: 'pan-x',
-  },
-  spacer: {
-    position: 'relative',
-    blockSize: '100%',
-  },
-  pane: {
-    position: 'absolute',
-    insetBlock: 0,
-    blockSize: dateInputTouchGeometry.paneBlockSize,
-    scrollSnapAlign: 'start',
-    // No `scroll-snap-stop: always`. It would cap every fling at one month,
-    // which is tidy but stops the surface being continuous — "three months
-    // ahead" should be one throw, not three flicks. Momentum carrying past
-    // several panes is why OVERSCAN is what it is.
-    display: 'grid',
-    gridTemplateColumns: 'repeat(7, 1fr)',
-    gridTemplateRows: dateInputTouchGeometry.paneRows,
-  },
-  row: {
-    display: 'contents',
-  },
-  cell: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  day: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    inlineSize: '100%',
-    blockSize: '100%',
-    minInlineSize: DAY_SIZE,
-    minBlockSize: DAY_SIZE,
-    padding: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: colorVars['--color-text-primary'],
-    fontSize: typeScaleVars['--text-body-size'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    // A tap on a 44px target should not also select the number inside it.
-    userSelect: 'none',
-    WebkitTapHighlightColor: 'transparent',
-  },
-  /**
-   * The circular hit/selection puck inside the tap target. Sizing the puck
-   * rather than the button keeps the touch target at the full cell while the
-   * visual stays a tidy circle.
-   */
-  puck: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    inlineSize: `calc(${DAY_SIZE} - 8px)`,
-    blockSize: `calc(${DAY_SIZE} - 8px)`,
-    borderRadius: radiusVars['--radius-full'],
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: 'transparent',
-    backgroundColor: 'transparent',
-    transitionProperty: 'background-color, color, border-color',
-    transitionDuration: durationVars['--duration-fast'],
-  },
-  puckHoverable: {
-    // Two guards, for two different failure modes.
-    //
-    // `@media (hover: hover)`: on a touch screen a :hover tint sticks to the
-    // last tapped day until something else is tapped.
-    //
-    // `:where(:not(:disabled,[aria-disabled="true"]))`: a browser suppresses a
-    // disabled control's EVENTS, not its hover styling, so an unguarded
-    // :hover tints a day you cannot pick. The day's disabled state lives on
-    // the button (as `aria-disabled`, which keeps it focusable) and this puck
-    // is the span inside it, so today the working mechanism is the JS gate at
-    // the call site — this guard is what keeps the rule true if the styles
-    // ever move onto the button itself.
-    backgroundColor: {
-      default: 'transparent',
-      '@media (hover: hover)': {
-        default: 'transparent',
-        ':hover:where(:not(:disabled,[aria-disabled="true"]))':
-          colorVars['--color-overlay-hover'],
-      },
-    },
-  },
-  puckToday: {
-    borderColor: colorVars['--color-border-emphasized'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  puckSelected: {
-    backgroundColor: {
-      default: colorVars['--color-accent'],
-      // Holds the accent through hover, overriding puckHoverable's tint.
-      // Same guarded selector, so the two have equal specificity and
-      // application order decides — which is what puts this one on top.
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))':
-        colorVars['--color-accent'],
-    },
-    borderColor: colorVars['--color-accent'],
-    color: colorVars['--color-on-accent'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  /**
-   * A day belonging to the month either side of this pane. Muted the way
-   * Calendar mutes its own, and unselectable for the same reason it is
-   * there: it exists to show where the month ends, not to offer a date. A
-   * pane is one month, and tapping out of it would move the calendar under
-   * your thumb; the swipe or the arrow says "next month" without ambiguity.
-   *
-   * It needs no special handling for the roving tab order: `tabbableISO` is
-   * resolved per pane and only ever names a date in THAT pane's own month,
-   * so an outside cell can never match it. Which is the property that keeps
-   * a date from having two tab stops — the pane that owns it, and the
-   * neighbour that merely shows it.
-   */
-  dayOutside: {
-    // Exactly what the desktop calendar does to its own spill days: the
-    // secondary text colour AND half opacity, which is what makes them read
-    // as background rather than as dimmer choices. (Calendar splits these
-    // across two style objects — `dayOutside` in its theme layer carries the
-    // colour, the one in its structural layer the opacity — so applying only
-    // the colour, as this did at first, was half the treatment.)
-    color: colorVars['--color-text-secondary'],
-    opacity: 0.5,
-  },
-  dayDisabled: {
-    // The desktop's disabled treatment, and deliberately not a disabled
-    // COLOUR: it fades whatever colour the day already had (0.3), so an
-    // in-month day and a spilled one stay a step apart while disabled, and
-    // both land LIGHTER than an enabled spill day rather than darker.
-    //
-    // A flat `--color-text-disabled` is what this had, and it put an enabled
-    // adjacent day at ~168 against a disabled in-month day at ~163 on white:
-    // five levels apart, which is no difference at all. That is the whole
-    // reason the two were hard to tell apart.
-    opacity: 0.3,
-    cursor: 'default',
-  },
-});
-
-const dynamic = stylex.create({
-  spacer: (inlineSize: number) => ({
-    inlineSize: `${inlineSize}px`,
-  }),
-  // insetInlineStart, not left: under RTL the panes have to lay out from the
-  // right, and the scroll math mirrors with them (see scrollOffsetForRow).
-  pane: (insetInlineStart: number, inlineSize: number) => ({
-    insetInlineStart: `${insetInlineStart}px`,
-    inlineSize: `${inlineSize}px`,
-  }),
-});
 
 export interface MonthScrollerHandle {
   /** Bring a month to rest at the top of the scrollport. */
@@ -846,9 +673,11 @@ export function MonthScroller({
     <div
       ref={scrollerRef}
       data-scroller="months"
-      {...stylex.props(styles.scroller)}>
+      className={monthScrollerClassName}
+      style={dateInputPaneInlineStyle}>
       <div
-        {...stylex.props(styles.spacer, dynamic.spacer(rowCount * paneSize))}>
+        className={monthScrollerSpacerClassName}
+        style={dateInputMonthSpacerStyle(rowCount * paneSize)}>
         {paneSize > 0 &&
           rowsIn(visibleRows).map(row => (
             <MonthPane
@@ -946,12 +775,10 @@ function MonthPane({
       role="grid"
       aria-label={monthLabel}
       data-month={monthLabel}
-      {...stylex.props(
-        styles.pane,
-        dynamic.pane(insetInlineStart, inlineSize),
-      )}>
+      className={monthPaneClassName}
+      style={dateInputMonthPaneStyle({insetInlineStart, inlineSize})}>
       {weeks.map(week => (
-        <div key={week[0].iso} role="row" {...stylex.props(styles.row)}>
+        <div key={week[0].iso} role="row" className={monthRowClassName}>
           {week.map(day => {
             // A spilled day is context, not a choice. Calendar computes the
             // same thing as `effectivelyDisabled: isDisabled || isOutside`,
@@ -973,7 +800,7 @@ function MonthPane({
                 key={day.iso}
                 role="gridcell"
                 aria-selected={isSelected || undefined}
-                {...stylex.props(styles.cell)}>
+                className={monthCellClassName}>
                 <button
                   type="button"
                   data-date={day.iso}
@@ -994,22 +821,28 @@ function MonthPane({
                   }}
                   onFocus={() => onDayFocus(day.date)}
                   onKeyDown={event => onDayKeyDown(event, day.date)}
-                  {...stylex.props(
-                    styles.day,
-                    focusOutlineStyles.focusVisible,
-                    // Outside FIRST, so disabled wins where both apply: a
-                    // spilled day past the range is unselectable, and must
-                    // not be painted more available than the in-month days
-                    // beside it.
-                    day.isOutside && styles.dayOutside,
-                    isDisabled && styles.dayDisabled,
+                  {...mergeProps(
+                    stylex.props(focusOutlineStyles.focusVisible),
+                    {
+                      // Outside FIRST, so disabled wins where both apply: a
+                      // spilled day past the range is unselectable, and must
+                      // not be painted more available than the in-month days
+                      // beside it.
+                      className: tw(
+                        monthDayClassName,
+                        day.isOutside && monthDayOutsideClassName,
+                        isDisabled && monthDayDisabledClassName,
+                      ),
+                    },
                   )}>
                   <span
-                    {...stylex.props(
-                      styles.puck,
-                      !isDisabled && styles.puckHoverable,
-                      isToday && styles.puckToday,
-                      isSelected && styles.puckSelected,
+                    className={tw(
+                      monthDayPuckClassName,
+                      !isDisabled &&
+                        !isSelected &&
+                        monthDayPuckHoverableClassName,
+                      isToday && monthDayPuckTodayClassName,
+                      isSelected && monthDayPuckSelectedClassName,
                     )}>
                     {plainDateFormatDayNumber(day.dayNumber, locale)}
                   </span>

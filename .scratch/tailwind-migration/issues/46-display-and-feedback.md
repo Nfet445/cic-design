@@ -136,52 +136,117 @@ the class map plus a token variable reaches the same pixels.
   `@source` scan already covered the new maps, so the coverage test passed at
   the first build.
 
+- `Badge` paints with Tailwind classes (`Badge/badgeClasses.ts`): the pill
+  (inline flex, the theme's height token, the supporting type scale, the full
+  radius, `max-w-full` with `min-w-0`), the `min-h-[1lh]` arm that grows with a
+  label, the label's ellipsis and bidi isolation, and one class per variant. A
+  semantic variant carries its fill and its forced-colors outline in the same
+  class, the way Banner's status does. No rule needed a `.stylex.ts`
+  exception.
+- Moved assertion in `Badge/Badge.test.tsx`: the forced-colors test read the
+  compiled rule through `getForcedColorsRules`; it now asserts the three
+  `forced-colors:` classes on the pill and checks every semantic variant
+  carries them and a tint variant does not.
+- `Code` paints with Tailwind classes (`Code/codeClasses.ts`): the monospace
+  face, the code type size, the muted background, the inline padding, the inner
+  radius, the break rules, one class per color and the `inherit` size arm. No
+  test moved: `Code.test.tsx` only ever read theme-target class names.
+- `Blockquote` paints with Tailwind classes (`Blockquote/blockquoteClasses.ts`):
+  the inline-start rule with `border-solid` (the other three sides keep a zero
+  width, so only the start rule paints), the start padding, the secondary text
+  and `m-0` on the quote; the block attribution with its supporting type and
+  `not-italic`. No test moved.
+- `StatusDot` paints with Tailwind classes (`StatusDot/statusDotClasses.ts`):
+  the eight-pixel plate, the icon field, the pulse and one class per variant,
+  where the three semantic plates carry their forced-colors outline. The pulse
+  is the first component keyframe after the rotor: `@keyframes
+astryxStatusDotPulse` sits in `packages/core/tailwind/astryx.input.css` and
+  the class names it as `animate-[astryxStatusDotPulse_2s_ease-in-out_infinite]`
+  with `motion-reduce:animate-none`.
+- Two assertions moved in `StatusDot/StatusDot.test.tsx`: the forced-colors
+  test now reads the three classes on the dot (and checks each semantic
+  variant, plus a tint variant's absence), and the "variant ink" test dropped
+  its StyleX probe — it compares the dot against
+  `statusDotVariantClassName[variant]` instead of a local `stylex.create`
+  map's atomic classes.
+- The sheet ceiling moved 1160 → 1180 for the four maps above: they added about
+  45 rules and the sheet sits at 1159. The reason is in the test's comment.
+
 ## Left
 
-`Card`, `Divider` and `Banner` are done. The rest of the ticket's files still
-carry their `stylex.create` maps:
+`Card`, `Divider`, `Banner`, `Badge`, `Code`, `Blockquote` and `StatusDot` are
+done. The rest of the ticket's files still carry their `stylex.create` maps:
 
-- `Badge` (2), `Code` (3), `CodeBlock` (3), `Blockquote` (1), `Spinner` (4) plus
-  `Spinner/spinnerRotor.ts` (1), `ProgressBar` (4), `Skeleton` (3),
-  `StatusDot` (2), `EmptyState` (1), `Outline` (3), `AspectRatio` (2),
-  `Thumbnail` (1), `MetadataList`/`MetadataListItem` (3), `Timer` (1),
-  `Timestamp`/`TimestampHoverCard` (3), `Toast`/`ToastViewport` (2),
+- `CodeBlock` (3), `Spinner` (4) plus `Spinner/spinnerRotor.ts` (1),
+  `ProgressBar` (4), `Skeleton` (3), `EmptyState` (1), `Outline` (3),
+  `AspectRatio` (2), `Thumbnail` (1), `MetadataList`/`MetadataListItem` (3),
+  `Timer` (1), `Timestamp`/`TimestampHoverCard` (3), `Toast`/`ToastViewport` (2),
   `Carousel` (3), `Markdown` (5) plus `Markdown/plugins/HeadingLinksRenderer.tsx`
   (2).
-- `spinnerRotor.ts` is the first keyframe: `@keyframes astryxSpinnerRotor` goes
-  into `packages/core/tailwind/astryx.input.css`, and the rotor class names it.
+- Two keyframes are still inside `.ts` files and must move to
+  `packages/core/tailwind/astryx.input.css` before their component converts:
+  `Spinner/spinnerRotor.ts` (`rotation`, 100 turns per iteration, so
+  `@keyframes astryxSpinnerRotor`) and `Skeleton.tsx` (`skeletonFade`, the ten
+  stepped holds that climb 0.25 → 0.925 and alternate). `StatusDot` is the
+  worked example: `@keyframes astryxStatusDotPulse` in the input sheet, the
+  class `animate-[astryxStatusDotPulse_2s_ease-in-out_infinite]` plus
+  `motion-reduce:animate-none`. `animate-[…]` is one class string, so the
+  rotor's duration, which reads
+  `--_astryx-pre-tempo-duration-slow-min` times 100, will need care: it is a
+  `calc()` over a token, so the arbitrary value has to be spelled out in the
+  class (an interpolated value would emit nothing).
+- `Skeleton`'s tests are the heaviest in this ticket. `pulse` reads
+  `declarationsOf` over `getAllInjectedCss()` and parses the keyframes out of
+  that sheet to check the ten opacity steps, the `linear` timing and the
+  absence of `steps()`; all of it has to be rewritten against the built
+  stylesheet (`stylesheetOf`/`buildAstryxTailwindCss`, as
+  `Layout/tailwindStylesheet.source-build.test.mjs` does) or the class set.
+  Its forced-colors read has to move to classes, as Banner's and Badge's did.
+- `ProgressBar` computes its fill width and its mark position from props, so
+  those go through a class plus an inline `--astryx-*` variable, and its test
+  reads computed geometry.
+- `Spinner`'s `sizeStyles` and `shadeStyles` declare the four public
+  `--spinner-*` vars, and `theme-var-reachability.js` finds a var by the
+  element that declares it — the converted classes must keep declaring them on
+  the same element (`!hasLabel ? span : wrapper`), or the guard reads the var
+  as unreachable.
 - Card's remaining test `getComputedStyle` read is the consumer-`xstyle` one
   named above.
-- The manual Windows High Contrast check for Card, Divider and Banner is not
-  done. Banner now carries its boundary as a `forced-colors:` outline class on
-  the header, and its test asserts the class rather than the compiled rule, so
-  the manual check is the only place the boundary is seen. Divider draws a
-  border-width line, so it is in the same list.
+- The manual Windows High Contrast check for Card, Divider, Banner, Badge and
+  StatusDot is not done. All five carry their boundary as a `forced-colors:`
+  outline class and their tests assert the class rather than the compiled
+  rule, so the manual check is the only place the boundary is seen. Divider
+  draws a border-width line, so it is in the same list.
 - The family browser check page does not exist yet.
-- The next window should start with `Badge` (2 maps), then `Code`,
-  `CodeBlock`, `Blockquote`, `Spinner` (plus the first keyframe,
-  `@keyframes astryxSpinnerRotor`), `ProgressBar`, `Skeleton` and `StatusDot`.
-  `Banner` showed the shape a status-driven map takes: one class per status
-  holding the fill and its forced-colors outline, and a second map for the
-  variable a built-in control rewrites.
 
 ## Result
 
-`Card`, `Divider` and `Banner` are converted, verified and committed, one
-commit each:
+`Card`, `Divider`, `Banner`, `Badge`, `Code`, `Blockquote` and `StatusDot` are
+converted, verified and committed, one commit each:
 
 - `refactor(card): перевести стили карточки на Tailwind-классы`
 - `refactor(divider): перевести стили разделителя на Tailwind-классы`
 - `refactor(banner): перевести стили баннера на Tailwind-классы`
+- `refactor(badge): перевести стили бейджа на Tailwind-классы`
+- `refactor(code): перевести стили встроенного кода на Tailwind-классы`
+- `refactor(blockquote): перевести стили цитаты на Tailwind-классы`
+- `refactor(status-dot): перевести стили точки статуса на Tailwind-классы`
 
-The window ran out after `Banner`; the rest is listed under Left. The changeset
-`.changeset/card-tailwind-classes.md` covers all three components.
+This window ran out after `StatusDot`; the rest is listed under Left. The
+changeset `.changeset/card-tailwind-classes.md` covers all seven components.
 
-The merge of `poc/tailwind-layout-primitives` auto-merged the sheet test with
-both sides intact (this ticket's Card, Divider and Banner registrations and the
-branch's `DropdownMenu` menu-leaf registrations), `node --check` passes, and
-after the merge `node packages/core/scripts/build-css-tailwind.mjs` plus
-`pnpm exec vitest run packages/core/src/Divider packages/core/src/Banner
-packages/core/src/Card packages/core/src/DropdownMenu
+The merge of `poc/tailwind-layout-primitives` conflicted once, in the sheet
+test's ceiling. Both sides were kept: the branch's sub-menu paragraph and its
+13 rules, and this ticket's four new maps and their ~45. The merged build
+measures 1169 rules, so the comment names that number and the ceiling is
+`toBeLessThan(1180)`. `node --check` passes on the test file.
+
+After the merge `node packages/core/scripts/build-css-tailwind.mjs` plus
+`pnpm exec vitest run packages/core/src/Badge packages/core/src/Code
+packages/core/src/CodeBlock packages/core/src/Blockquote
+packages/core/src/Spinner packages/core/src/ProgressBar packages/core/src/Skeleton
+packages/core/src/StatusDot
 packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` is green
-(560 tests). `pnpm check:repo` exits 0. Nothing is pushed.
+(431 tests). A wider run over the converted family plus the branch's menus
+(`Card`, `Divider`, `Banner`, `DropdownMenu`) is also green (791 tests).
+Nothing is pushed.
