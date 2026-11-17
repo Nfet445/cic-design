@@ -21,7 +21,7 @@ import React, {
   type ReactNode,
 } from 'react';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
-import * as stylex from '@stylexjs/stylex';
+import {tw} from '../utils/tw';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {
   useTooltip,
@@ -29,24 +29,12 @@ import {
   type TooltipTouchTrigger,
 } from './useTooltip';
 import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
-import {colorVars} from '../theme/tokens.stylex';
+import {
+  tooltipHoverIndicationClassName,
+  tooltipWrapperClassName,
+} from './tooltipClasses';
 
 export type {TooltipFocusTrigger, TooltipTouchTrigger} from './useTooltip';
-
-const styles = stylex.create({
-  wrapperContents: {
-    display: 'contents',
-  },
-  wrapperInline: {
-    display: 'inline',
-  },
-  hoverIndication: {
-    textDecorationLine: 'underline',
-    textDecorationStyle: 'dashed',
-    textDecorationColor: colorVars['--color-border-emphasized'],
-    textUnderlineOffset: '2px',
-  },
-});
 
 export interface TooltipProps {
   /**
@@ -340,17 +328,20 @@ export function Tooltip({
 
   // For text-only children: use inline span with ref on wrapper
   if (textOnly) {
+    // The span is a tab stop Astryx adds: it draws the shared ring, which a
+    // theme restyles through the focus-outline tokens.
+    const focusProps = focusOutlineProps.focusVisible();
     return (
       <>
         <span
           ref={tooltip.ref}
           tabIndex={0}
           aria-describedby={tooltip.describedBy}
-          // The span is a tab stop Astryx adds: it draws the shared ring,
-          // which a theme restyles through the focus-outline tokens.
-          {...focusOutlineProps.focusVisible(
-            styles.wrapperInline,
-            showHoverIndication && styles.hoverIndication,
+          {...focusProps}
+          className={tw(
+            focusProps.className,
+            tooltipWrapperClassName.inline,
+            showHoverIndication && tooltipHoverIndicationClassName,
           )}>
           {children}
         </span>
@@ -362,7 +353,7 @@ export function Tooltip({
   // For element children: use display:contents, ref on first child
   return (
     <>
-      <div ref={wrapperRef} {...stylex.props(styles.wrapperContents)}>
+      <div ref={wrapperRef} className={tooltipWrapperClassName.contents}>
         {children}
       </div>
       {tooltip.renderTooltip(content)}

@@ -298,6 +298,18 @@ import {
   topNavFeaturedCardLinkClassName,
   topNavFeaturedCardTitleClassName,
 } from '../TopNav/topNavMegaMenuFeaturedCardClasses';
+import {
+  hoverCardContentClassName,
+  hoverCardHoverIndicationClassName,
+  hoverCardSurfaceClassName,
+  hoverCardWrapperClassName,
+} from '../HoverCard/hoverCardClasses';
+import {
+  tooltipContentClassName,
+  tooltipHoverIndicationClassName,
+  tooltipSurfaceClassName,
+  tooltipWrapperClassName,
+} from '../Tooltip/tooltipClasses';
 import {mediaThemeClassName} from '../theme/mediaThemeClasses';
 import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
 import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
@@ -565,6 +577,23 @@ function familyClassNames() {
     topNavFeaturedCardLinkArrowClassName,
   ]) {
     add(className());
+  }
+
+  // The tooltip and hover-card surfaces, their content padding and the
+  // trigger's dashed hint.
+  for (const className of [
+    tooltipSurfaceClassName,
+    tooltipContentClassName,
+    tooltipHoverIndicationClassName,
+    tooltipWrapperClassName.contents,
+    tooltipWrapperClassName.inline,
+    hoverCardSurfaceClassName,
+    hoverCardContentClassName,
+    hoverCardHoverIndicationClassName,
+    hoverCardWrapperClassName.contents,
+    hoverCardWrapperClassName.inline,
+  ]) {
+    add(className);
   }
 
   // The layout family: the shell frame, then every region combination. A
