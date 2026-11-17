@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 39 of 50 tickets done, plus two waves (layout primitives,
+Progress: 40 of 50 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -82,7 +82,7 @@ buttons) that landed before the tickets were written.
 - [x] `22-dialogs-and-sheets` — `Dialog`, `AlertDialog`, `Drawer`, `BottomSheet`, `MobileNav`, `Lightbox`
 - [ ] `23-menus` — `DropdownMenu`, `ContextMenu`, `MoreMenu`, option menus
 - [x] `49-overflow-and-gesture` — scroll shadows, overflow measurement, swipe, resize
-- [ ] `50-bottom-sheet-host` — the `BottomSheet` host and `Lightbox`, split out of ticket 22 because their tests own about twenty computed-style reads
+- [x] `50-bottom-sheet-host` — the `BottomSheet` host and `Lightbox`, split out of ticket 22 because their tests own about twenty computed-style reads
 - [x] `24-tooltip-hovercard` — `Tooltip`, `HoverCard`
 - [x] `25-search-surfaces` — `CommandPalette`, `PowerSearch`, `Tokenizer`, composer popup
 

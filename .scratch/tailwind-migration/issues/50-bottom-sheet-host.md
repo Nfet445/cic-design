@@ -1,6 +1,6 @@
 # bottom sheet host and lightbox
 
-Status: ready-for-agent
+Status: done
 Blocked by: 22
 Wave: 6
 Ticket: 50
@@ -164,3 +164,9 @@ test.mjs`, reading `stylesheet.blockOf(...)` for
 - A depth recede or a travel arm that must outrank a layer utility stays in its own tiny `*.stylex.ts`, following `packages/core/src/Card/cardBorder.stylex.ts`.
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`; its `Traps that cost a window each` section is the list this migration already paid for.
 - Manual Windows High Contrast check is part of this ticket's checklist when the component draws a border, an outline or a focus ring.
+
+## Comments
+
+- 2026-11-17: closed. `BottomSheet` host, panel, switcher, scrim and `Lightbox` draw from class maps.
+- Survivors, each with its reason in the file: `packages/core/src/Lightbox/lightboxOverrides.stylex.ts` keeps the zoom button's inset focus ring and the on-dark chrome, because two utilities for one property in one layer settle by sheet order; `packages/core/src/BottomSheet/bottomSheetPanelMotion.stylex.ts`, `bottomSheetStackMotion.stylex.ts` and `bottomSheetPanelPadding.stylex.ts` keep the entry, exit and stack motion plus the block-start padding past the grab bar, because a layer utility loses to the unlayered rules they must beat.
+- Lightbox page geometry travels as `--astryx-lightbox-page-offset`, and the caption toggle's measured width and line count as `--astryx-lightbox-caption-toggle-width`/`-lines` plus `--_lightbox-caption-place-lines` for the generated place; they are listed in `packages/core/src/theme/derivedVarRegistry.test.ts`.
