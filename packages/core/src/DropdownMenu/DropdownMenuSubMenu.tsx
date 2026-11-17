@@ -86,7 +86,6 @@ import {
   durationVars,
   easeVars,
   shadowVars,
-  focusVars,
 } from '../theme/tokens.stylex';
 import {
   composeEventHandlers,
@@ -97,6 +96,7 @@ import {
 } from '../utils';
 import {visibleText} from '../utils/accessibleName';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {menuRowStateStyles} from './menuRowState.stylex';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLit.stylex';
 import {
   dropdownMenuSubMenuDrillInClassName,
@@ -144,26 +144,9 @@ const MENU_BLOCK_CAP = '300px';
 const MENU_MAX_BLOCK_SIZE = `min(${MENU_BLOCK_CAP}, ${layerViewportInset.maxBlockSize})`;
 const MENU_MAX_BLOCK_SIZE_FALLBACK = `min(${MENU_BLOCK_CAP}, ${layerViewportInset.maxBlockSizeFallback})`;
 
-// The row's paint stays unlayered, as on every other menu row: Item's hover
-// and press overlays and the shared focus ring are unlayered too, so a utility
-// inside `astryx-base` loses to them whatever the class order says. The row's
-// box, its open paint and its disabled look are
-// `dropdownMenuSubMenuTriggerClassName`'s.
+// The caret is a slot wrapper, kept here: its box is structural, and the rule
+// against a style-only wrapper reads that from the style it applies.
 const triggerStyles = stylex.create({
-  row: {
-    backgroundColor: {
-      default: 'transparent',
-      // menuPressLitRowClassName sets the variable on the row a held finger or pen
-      // lights.
-      ':focus': `var(--_menu-row-focus-paint, ${colorVars['--color-overlay-hover']})`,
-    },
-    // Rows show focus with a translucent overlay, which forced colors replace
-    // with the page color. The standard focus ring (focusOutlineStyles), drawn
-    // inside the row by its own width, marks the focused row in every mode.
-    outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
-  },
-  // The caret is a slot wrapper, kept here: its box is structural, and the
-  // rule against a style-only wrapper reads that from the style it applies.
   caret: {
     display: 'flex',
     alignItems: 'center',
@@ -1208,7 +1191,11 @@ export function DropdownMenuSubMenu(
         onClick={handleRowClick}
         onKeyDown={composeEventHandlers(handleTriggerKeyDown, onKeyDown)}
         isDisabled={isDisabled}
-        xstyle={[focusOutlineStyles.focusVisible, triggerStyles.row, xstyle]}
+        xstyle={[
+          focusOutlineStyles.focusVisible,
+          menuRowStateStyles.paintedRow,
+          xstyle,
+        ]}
         {...mergeProps(themeProps('dropdown-menu-item', {size: menuSize}), {
           className: tw(
             dropdownMenuSubMenuTriggerClassName({
