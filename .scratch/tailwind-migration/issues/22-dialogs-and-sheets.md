@@ -278,6 +278,76 @@ packages/core/src/TreeList packages/core/src/Card packages/core/src/MobileNav`
   before the merge of the Divider/`SideNav`/`TreeList`/`Banner` class maps).
 - Prettier and ESLint on every touched file — clean.
 
+Fourth window (`6fa34afa2`, merge `e98456473`): no class landed. The window
+owed four sites; two minutes of reading showed none of them fits beside its
+assertion moves, and the edit window closed before any of them was green. What
+this window buys the next one is the exact seam for each, below. Nothing in the
+tree changed, so the sheet, the class sets and every assertion are identical.
+
+### Measured cost of each remaining site
+
+- `BottomSheet/` — 4 sites, and `BottomSheetStacking.test.tsx` (3260 lines) plus
+  `BottomSheetPanel.test.tsx` (1056) hold 20 `getComputedStyle`/
+  `document.styleSheets` reads between them. This is the `59`-failure lesson's
+  scope, not one window's.
+- `Lightbox/Lightbox.tsx` — 2 blocks, ~1300 lines of styles, one test read
+  (`Lightbox.test.tsx`). Cheap on assertions, expensive on style volume.
+- `Popover/` — 2 blocks, 6 + 3 style keys, and only one test read. Smallest of
+  the three, with the one prescription the ticket already carries.
+
+### `Popover/` seam, read off the code
+
+- **The caps cannot travel through `xstyle`.** `Popover.tsx:588-592` hands
+  `styles.surfaceViewportFit` and `styles.surfaceScrollable` to
+  `usePopoverInternal({xstyle: [...]})`; that option is typed `StyleXStyles`
+  and lands in `focusOutlineProps.focusVisible(...)` and `stylex.props()` at
+  `usePopover.tsx:715-720`. A class there reaches no stylesheet. The class seam
+  is `usePopover`'s own `className` option (`usePopover.tsx:167`), which
+  `Popover.tsx:597` already uses for `layerAnimations[placement]`.
+- So the cap class and its `--astryx-popover-max-inline-size` value ride
+  `className` and `style`, and `xstyle` keeps only the caller's `xstyle`.
+- **`popoverSizeXstyle` (`Popover.tsx:1054`) is not a surface style.** It goes
+  to `popover.render(...)`'s `xstyle` (`Popover.tsx:1110`), i.e. the layer's
+  positioned element, so its `matchTrigger`/`customWidth` do not sit on the
+  same element as `surfaceViewportFit` and must not be folded into the class
+  that carries it.
+- **The anchor chain collapses to one arm without a behavior change.**
+  `firstThatWorks`' third arm `'anchor-size(width)'` and the `…Fallback` arms
+  cover engines without anchor positioning or `env()`: there both
+  `min(anchor-size(width), …)` and its fallback parse to nothing, so
+  `min-width` stays `auto` either way. One
+  `[min-width:min(anchor-size(width),var(--astryx-popover-max-inline-size))]`
+  is equivalent, and it needs no `stylex.create`.
+- **Three new variables, not one.** `--astryx-popover-max-inline-size`,
+  `--astryx-popover-max-block-size` (`surfaceViewportFit` has both axes) and
+  `--astryx-popover-width` (the per-instance `customWidth`). Each needs a
+  `Popover.doc.mjs` entry and a line in
+  `packages/core/src/theme/derivedVarRegistry.test.ts`.
+- **`usePopover.tsx`'s own `surface`, `contentWrapper` and
+  `closeButtonWrapper` stay StyleX beside retained StyleX neighbours:**
+  `focusOutlineProps.focusVisible(...)` and `paddingStyles[padding]` are
+  `Layout`/`utils`-owned and unlayered, so the three classes join
+  `mergeProps`' third argument (`usePopover.tsx:712-714`) and
+  `stylex.props(rtlStyles.centerInline('100%'))` stays at
+  `usePopover.tsx:723-726`.
+- **`usePopover.forcedColorsEdge.test.tsx` goes vacuous once `surface` is a
+  class.** It walks `document.styleSheets` and matches class names, so it
+  finds no rule and its `toEqual([])` passes without proving anything. Move it
+  to `expectClassSet` over the three `forced-colors:` border classes.
+
+### This window's verification (merge `e98456473`, no conflict)
+
+- `node packages/core/scripts/build-css-tailwind.mjs` — 166.5 kB (158.8 kB at
+  `1be004522`; the tickets folded in between (`DropdownMenu`, `DateInput`,
+  `StatusDot`, `Blockquote`, `Code`, `Badge`) own the difference).
+- `pnpm exec vitest run packages/core/src/BottomSheet packages/core/src/Lightbox
+packages/core/src/Popover packages/core/src/Dialog
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` — 1158
+  passed, 32 files.
+- The merge of `poc/tailwind-layout-primitives` (`e98456473`) brought one docs
+  commit and no sheet-test conflict, so there was nothing to keep on both
+  sides; `git status` is clean and no file was staged.
+
 Left for the next window, unchanged by this one:
 
 - `BottomSheetPanel.tsx` (the `pastGrabBarStyles` map at `:286` and the
