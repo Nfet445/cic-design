@@ -145,3 +145,44 @@ Merge of `poc/tailwind-layout-primitives` into this branch was clean: no
 conflict in `tailwindStylesheet.source-build.test.mjs`, so the conflict-keeper
 rule did not have to be applied. Sheet after the merge: 168.7 kB raw; the size
 gate stayed green.
+
+### 2026-11-17, window 2
+
+Group A only, in the agreed order; one file reached before the window closed.
+
+Done and committed:
+
+- `RadioList/RadioListItem` — `radioListItemClasses.ts` holds the wrapper, its
+  inherited press overlay (`after:*` reading `--_radio-row-press`), the native
+  input (`disabled:`/`aria-disabled:`/`pointer-coarse:` variants, so no second
+  utility has to outrank the base one) and the indicator slot. `styles` and
+  `wrapperSizeStyles` are gone.
+  - Survivor, with its reason in the file header:
+    `RadioList/radioListItemRow.stylex.ts` keeps the zeroed
+    padding/radius/background. Item writes `px-[var(--_item-inset-inline)]` and
+    `py-*` in the same layer, and Tailwind prints those after `p-0`, so a class
+    cannot win; the rule has to outrank a sibling declaration and stay StyleX.
+    `rtlStyles.centerInline('-50%')` also stays StyleX on the input, as the one
+    sanctioned home of the physical centering idiom.
+  - Assertion moved: `RadioList.test.tsx`'s `readsRowPress` walked
+    `document.styleSheets` for the overlay's `var(--_radio-row-press`; it now
+    reads the same text from `classesOf(wrapper)`. The row-declares-press half
+    of that test is untouched (its rule is the press owner's).
+  - New exports registered in `familyClassNames()` of
+    `tailwindStylesheet.source-build.test.mjs`.
+
+Not started: `CheckboxInput` (next in order), `Slider`, `Stepper`,
+`Collapsible`, `SelectableCard` and the rest. `Switch` still needs its own
+window: its three marker-scoped paints stay in
+`Switch/switchHoverPress.stylex.ts` and its 1820-line test plus
+`Switch.focusRing.source-build.test.mjs` convert with it.
+
+Measured: sheet 174.3 kB raw after the build (`node
+packages/core/scripts/build-css-tailwind.mjs`), rule count inside the 1260
+ceiling, so the gate stayed green with no constant change.
+
+Guards: all of `packages/core/src/theme` green (1825 passed, 1 skipped), no
+exception added or deleted. `pnpm -F @astryxdesign/core typecheck` fails on
+`src/DropdownMenu/DropdownMenu.doc.mjs(170,7)`: `ComponentThemingVar` wants a
+`default`, missing on the branch tip before this window's edit. Not this
+ticket's file; recorded, not touched.
