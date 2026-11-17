@@ -55,6 +55,32 @@ Window 1 (branch `ticket/50-bottom-sheet`, merged `poc/tailwind-layout-primitive
 tailwindStylesheet.source-build` 851 passed, `pnpm -F @astryxdesign/core
 typecheck` clean.
 
+Window 2 (commit `5bb4e806b`; `poc/tailwind-layout-primitives` was already
+merged, so no sheet-test conflict appeared):
+
+- Done: `BottomSheetPanel.tsx:286` (`pastGrabBarStyles`) and the `clearsGrabBar`
+  rule of the map at `:332`. They moved — unchanged — to
+  `packages/core/src/BottomSheet/bottomSheetPanelPadding.stylex.ts` as
+  `bottomSheetPastGrabBarStyles` / `bottomSheetClearsGrabBarStyles`, with the
+  reason in the file header. They cannot be classes: the content box is a
+  layout container, so `Layout/container.stylex.ts:71` applies
+  `padding-block-start: var(--container-padding-block-start)` and `:259`
+  publishes the theme's block-start inset, all unlayered. An unlayered
+  declaration beats a `@layer astryx-base` class, so a class for either side
+  would be dead. This is a deliberate survivor of the same shape as
+  `bottomSheetStackMotion.stylex.ts`, not a deferral.
+- Assertions moved: none, and none needed to move. `BottomSheetPanel.test.tsx`
+  reads the computed values the padding chain produces (`:967` returns the
+  content box, `:1050` reads the panel's `--container-padding-inline-start`),
+  and both sides of that chain are still StyleX rules that jsdom injects. The
+  `document.styleSheets` walks at `:845`/`:866` and the `getComputedStyle` spy
+  at `:627-634` still pass and still read the sheet, so they belong to the
+  window that moves `sheet`/`sheetClosing`.
+- Verified: `node packages/core/scripts/build-css-tailwind.mjs` (184.6 kB, same
+  before and after the change — the survivor adds no Tailwind class),
+  `vitest run BottomSheet Lightbox tailwindStylesheet.source-build` 851 passed,
+  prettier, eslint, `pnpm -F @astryxdesign/core typecheck` clean.
+
 ## What is left
 
 - `BottomSheet.tsx:132` — the dialog host: `dialog`, `dialogOpen`,
@@ -64,9 +90,32 @@ typecheck` clean.
   → `var(--_sheet-scrim-easing, linear)`), because two classes of one property
   are ordered by the sheet, not by the map. `--_sheet-scrim-opacity` /
   `--_sheet-scrim-duration` stay inline variables the classes read.
-- `BottomSheetPanel.tsx:286` (`pastGrabBarStyles`) and `:332` (`styles`), then
-  `BottomSheetPanel.test.tsx:627-634` (a `getComputedStyle` spy), `:738`,
-  `:742`, `:845`, `:866` (`document.styleSheets` walks), `:967`, `:1050`.
+- The rest of `BottomSheetPanel.tsx`'s map at `:332` — `sheet`, `sheetSettled`,
+  `sheetClosing`, `sheetClosingCrossFade`, `sheetFading`, `sheetInactive`,
+  `handleBar`, `body`, `content`, `tallKeyboardBody`, `tallKeyboardContent`,
+  `keyboardInset(inset)`, `budget`, `hugHeight` — then the reads that asserts
+  it: `BottomSheetPanel.test.tsx:627-634` (a `getComputedStyle` spy keyed on
+  `astryx-bottom-sheet`; it survives, it models a rendered `transition: none`),
+  `:738`, `:742`, `:845`, `:866` (`document.styleSheets` walks for the exit and
+  coarse-pointer curves — these move to a `buildAstryxTailwindCss()` sheet
+  case), `:967`, `:1050`. Note for that window: the three source-string tests at
+  `:744-830` (`handleBar`, `sheet`, `body` read out of the `.tsx` text with a
+  `/handleBar: \{…\}/` regex) must be repointed at the new class file or
+  replaced by class assertions, or they throw "handle bar not found" shape
+  errors.
+- Shape the panel map must take: `mergeProps`'s third argument is already a
+  class string in this component (`tw(layerTextResetClassName,
+layerStructureResetClassName, className)`), so the sheet chain drops in
+  there. The body and content boxes go through
+  `useScrollableArea.ts:773` (`getContentProps`) and `:669`
+  (`getViewportProps`), which pass `xstyle` to `stylex.props` — a class map
+  cannot ride them, so those two need `mergeProps` at the call site instead.
+- Duration and transform are properties with several arms in one map
+  (`--duration-medium` vs `0.01s`, `translateY(0)` vs `translateY(100%)`), and
+  two classes of one property are ordered by the sheet, not by the map. Choose
+  one arm in a class function (as `drawerClasses.ts` does with
+  `panelTransition(opensSettled)`), and keep `motion-safe:` on the travel so a
+  reduced-motion environment resolves no transform at all.
 - `BottomSheetSwitcher.tsx:98` (`flow`, `flowNonModal`), then
   `BottomSheetSwitcher.test.tsx:1626` (transition duration), `:1700-1711`
   (`isolation` / `zIndex`), `:1789` (sheet walk).
