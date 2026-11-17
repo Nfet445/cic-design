@@ -869,6 +869,30 @@ import {
   chatTriggerMenuRowHighlightedClassName,
   chatTriggerMenuRowLabelClassName,
   chatTriggerMenuSurfaceClassName,
+  chatToolCallsChevronClassName,
+  chatToolCallsChevronOpenClassName,
+  chatToolCallsCountClassName,
+  chatToolCallsDetailChevronClassName,
+  chatToolCallsDetailContentClassName,
+  chatToolCallsDurationClassName,
+  chatToolCallsGroupContentClassName,
+  chatToolCallsGroupContentInnerClassName,
+  chatToolCallsGroupHeaderClassName,
+  chatToolCallsGroupIconClassName,
+  chatToolCallsGroupLabelClassName,
+  chatToolCallsListClassName,
+  chatToolCallsNameClassName,
+  chatToolCallsNodePillClassName,
+  chatToolCallsRootClassName,
+  chatToolCallsRowClassName,
+  chatToolCallsRowClickableClassName,
+  chatToolCallsRowToggleClassName,
+  chatToolCallsStatsAdditionsClassName,
+  chatToolCallsStatsClassName,
+  chatToolCallsStatsDeletionsClassName,
+  chatToolCallsStatusClassName,
+  chatToolCallsStatusIconClassName,
+  chatToolCallsTargetClassName,
   chatLayoutBlurLayerClassName,
   chatLayoutDockClassName,
   chatFocusRingInsetClassName,
@@ -2843,6 +2867,37 @@ function familyClassNames() {
   add(chatTriggerMenuRowLabelClassName);
   add(chatTriggerMenuMessageClassName);
   add(chatTriggerMenuGroupHeadingClassName);
+  // ChatToolCalls: the block, the group header, its icon and label, the
+  // chevron both ways, the collapsing track and its clip, the list, a row at
+  // rest, clickable and toggling, the status square in every status, the name,
+  // target, duration, node pill, the diff counts and the detail chevron and block.
+  add(chatToolCallsRootClassName);
+  add(chatToolCallsGroupHeaderClassName);
+  add(chatToolCallsGroupIconClassName);
+  add(chatToolCallsGroupLabelClassName);
+  add(chatToolCallsChevronClassName);
+  add(chatToolCallsChevronOpenClassName);
+  add(chatToolCallsGroupContentClassName(true));
+  add(chatToolCallsGroupContentClassName(false));
+  add(chatToolCallsGroupContentInnerClassName);
+  add(chatToolCallsListClassName);
+  add(chatToolCallsRowClassName);
+  add(chatToolCallsRowClickableClassName);
+  add(chatToolCallsRowToggleClassName);
+  add(chatToolCallsStatusIconClassName);
+  for (const status of Object.values(chatToolCallsStatusClassName)) {
+    add(status);
+  }
+  add(chatToolCallsNameClassName);
+  add(chatToolCallsTargetClassName);
+  add(chatToolCallsDurationClassName);
+  add(chatToolCallsNodePillClassName);
+  add(chatToolCallsStatsClassName);
+  add(chatToolCallsStatsAdditionsClassName);
+  add(chatToolCallsStatsDeletionsClassName);
+  add(chatToolCallsDetailChevronClassName);
+  add(chatToolCallsDetailContentClassName);
+  add(chatToolCallsCountClassName);
   // ChatLayout: the root in both scroll modes, the message area's density and
   // end room, the dock box, the frosted layer, the dock's own inset and its
   // inner column.

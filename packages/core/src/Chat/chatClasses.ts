@@ -11,6 +11,7 @@
 import {tw} from '../utils/tw';
 import type {SpacingStep} from '../utils/types';
 import type {ChatDensity, ChatMessageSender} from './ChatContext';
+import type {ChatToolCallStatus} from './ChatToolCalls';
 
 /** The send button: circular, and it keeps its width in a tight composer. */
 export const chatSendButtonClassName =
@@ -791,3 +792,155 @@ export const chatTriggerMenuGroupHeadingClassName = tw(
   'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
   'text-[color:var(--color-text-secondary)]',
 );
+
+// ---------------------------------------------------------------------------
+// ChatToolCalls
+// ---------------------------------------------------------------------------
+
+/** The tool-call block: a column of rows, one step below its message. */
+export const chatToolCallsRootClassName = 'flex flex-col mt-2';
+
+/** The wrench beside the group label. */
+export const chatToolCallsGroupIconClassName = tw(
+  'inline-flex items-center justify-center shrink-0 w-4 h-4',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+export const chatToolCallsGroupLabelClassName = tw(
+  'font-[family-name:var(--font-family-body)] font-medium',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/**
+ * The disclosure chevron. It animates its own rotation, so the transition
+ * names one property and the open state is a separate class.
+ */
+export const chatToolCallsChevronClassName = tw(
+  'inline-flex items-center justify-center shrink-0 w-3.5 h-3.5',
+  'text-[color:var(--color-text-secondary)]',
+  'transition-transform duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
+  'motion-reduce:transition-none',
+);
+
+/** The rotated chevron of an open group or an open result detail. */
+export const chatToolCallsChevronOpenClassName = 'rotate-180';
+
+/** The collapsing body: a row track, so the rows keep their height. */
+export function chatToolCallsGroupContentClassName(
+  isExpanded: boolean,
+): string {
+  return tw(
+    'grid transition-[grid-template-rows] duration-[var(--duration-medium)] ease-[var(--ease-standard)]',
+    'motion-reduce:transition-none',
+    isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+  );
+}
+
+/**
+ * The clip boundary of the row track. It mirrors the list's padding and
+ * negative margin so the rows' hover fills can overhang the text column
+ * without widening the layout, and so that overhang is absorbed here instead
+ * of being clipped by the height animation.
+ */
+export const chatToolCallsGroupContentInnerClassName =
+  'overflow-hidden min-h-0 px-1 -mx-1';
+
+export const chatToolCallsListClassName = 'flex flex-col px-1 -mx-1';
+
+/** One call row: an icon, the name, then whatever the call reports. */
+export const chatToolCallsRowClassName =
+  'flex items-center gap-1.5 min-h-6 py-0.5';
+
+/**
+ * A row with a detail to open. Its hover fill is the overlay, and the fill
+ * overhangs the text column by one padding step on each inline edge.
+ */
+export const chatToolCallsRowClickableClassName = tw(
+  'rounded-[var(--radius-element)] px-1 -mx-1',
+  'cursor-pointer [&:is(:disabled,[aria-disabled="true"])]:cursor-default',
+  'hover:[&:where(:not(:disabled,[aria-disabled="true"]))]:bg-[var(--color-overlay-hover)]',
+);
+
+/** A row that toggles without a detail: only the pointer changes. */
+export const chatToolCallsRowToggleClassName =
+  'cursor-pointer [&:is(:disabled,[aria-disabled="true"])]:cursor-default';
+
+/** The group header: a toggling row whose text does not drag on press. */
+export const chatToolCallsGroupHeaderClassName = tw(
+  chatToolCallsRowClassName,
+  chatToolCallsRowToggleClassName,
+  'select-none',
+);
+
+/** The status slot: a fixed square the spinner or the glyph sits in. */
+export const chatToolCallsStatusIconClassName = tw(
+  'relative inline-flex items-center justify-center shrink-0 w-4 h-4',
+  'rounded-[var(--radius-full)]',
+);
+
+/** The tool name: code type, one ellided line, never wider than 4ch. */
+export const chatToolCallsNameClassName = tw(
+  'font-[family-name:var(--font-family-code)] font-medium',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+  'whitespace-nowrap overflow-hidden text-ellipsis shrink min-w-[4ch]',
+);
+
+/** The target a call acted on: it gives way first, so it may collapse. */
+export const chatToolCallsTargetClassName = tw(
+  'font-[family-name:var(--font-family-body)]',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+  'whitespace-nowrap overflow-hidden text-ellipsis [flex-shrink:10] min-w-0',
+);
+
+export const chatToolCallsDurationClassName = tw(
+  'font-[family-name:var(--font-family-body)] shrink-0 whitespace-nowrap',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** A node badge keeps its width beside a long name. */
+export const chatToolCallsNodePillClassName = 'shrink-0';
+
+/** The diff counts: one supporting-type line that keeps its width. */
+export const chatToolCallsStatsClassName = tw(
+  'flex items-center gap-1 shrink-0',
+  'font-[family-name:var(--font-family-body)]',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+export const chatToolCallsStatsAdditionsClassName =
+  'text-[color:var(--color-text-success)]';
+
+export const chatToolCallsStatsDeletionsClassName =
+  'text-[color:var(--color-text-error)]';
+
+/** The detail chevron: pushed to the trailing edge of its row. */
+export const chatToolCallsDetailChevronClassName = tw(
+  'inline-flex items-center justify-center shrink-0 w-3.5 h-3.5 ms-auto',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** The detail block: inset to the text column, one step below its row. */
+export const chatToolCallsDetailContentClassName =
+  'ps-[calc(var(--spacing-4)+var(--spacing-1-5))] pb-2';
+
+/** The call count beside the group header's chevron. */
+export const chatToolCallsCountClassName = tw(
+  'inline-flex items-center gap-0.5 shrink-0',
+  'font-[family-name:var(--font-family-body)]',
+  'text-[length:var(--text-supporting-size)] leading-[var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** The status glyph colour, per status. */
+export const chatToolCallsStatusClassName: Record<ChatToolCallStatus, string> =
+  {
+    pending: 'text-[color:var(--color-text-disabled)]',
+    running: 'text-[color:var(--color-accent)]',
+    complete: 'text-[color:var(--color-icon-success)]',
+    error: 'text-[color:var(--color-icon-error)]',
+  };
