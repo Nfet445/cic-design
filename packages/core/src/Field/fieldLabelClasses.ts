@@ -128,3 +128,19 @@ export const fieldLabelStatusClassName = tw(
   '[line-height:var(--text-supporting-leading)]',
   'text-[color:var(--color-text-secondary)]',
 );
+
+/**
+ * A hidden label's info button takes no layout slot. While it has keyboard
+ * focus it moves into flow above the control, where nothing covers or clips
+ * it. It stays positioned, because the touch band needs a positioned host.
+ *
+ * The info button sets `relative` itself, and two classes in one layer resolve
+ * by sheet order, so the parked state carries its own selector instead.
+ */
+export const fieldLabelHiddenInfoTipClassName = tw(
+  '[&:not(:focus-visible)]:absolute focus-visible:relative',
+  'self-start',
+  '[clip:rect(0,0,0,0)] focus-visible:[clip:auto]',
+  'overflow-hidden focus-visible:overflow-visible',
+  'whitespace-nowrap',
+);

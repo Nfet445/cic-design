@@ -47,96 +47,17 @@ import {InputClearButton} from './InputClearButton';
 import {mergeProps} from '../utils/mergeProps';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 import {useMergedRefs} from '../hooks/useMergedRefs';
-import {
-  colorVars,
-  durationVars,
-  easeVars,
-  radiusVars,
-  spacingVars,
-  typeScaleVars,
-  typographyVars,
-} from '../theme/tokens.stylex';
+import {tw} from '../utils/tw';
 import type {BaseProps} from '../BaseProps';
 import {textEntryTraitAttributes} from './textEntryTraits';
 import {inputWrapperStyles} from './inputStyles.stylex';
-
-const styles = stylex.create({
-  // Gutter only. Matches the option list's own padding so the field below
-  // lines up with the option rows rather than with the panel edge.
-  wrapper: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-1'],
-  },
-  // The field proper — the same box an option row draws: `--radius-element`
-  // corners and, at md, a 6/8 padding pair that lands it on the option row's
-  // 32px height. Focus rings THIS, not the full-width row.
-  field: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    paddingBlock: spacingVars['--spacing-1-5'],
-    paddingInline: spacingVars['--spacing-2'],
-    borderRadius: radiusVars['--radius-element'],
-    transitionProperty: 'box-shadow',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  // The focus ring, applied only while focus was taken by keyboard (see
-  // `isKeyboardFocus`). `:has(input:focus-visible)` stays the CSS condition —
-  // the browser's heuristic still decides, this only narrows it — and rings
-  // the field rather than the bare <input> so the magnifier and the clear
-  // button sit inside it, and so tabbing ONTO the clear button does not
-  // re-ring the field.
-  //
-  // Inset, not the shared 3px-offset outline: the field is inset 4-5px from
-  // the panel edge, so an outline at that offset would land on the panel's own
-  // border and the divider. Measured, not guessed.
-  fieldKeyboardFocus: {
-    boxShadow: {
-      default: 'none',
-      ':has(input:focus-visible)': `inset 0 0 0 2px ${colorVars['--color-accent']}`,
-    },
-  },
-  // The icon span needs explicit flex centering to avoid a line-height offset.
-  icon: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  input: {
-    flexGrow: 1,
-    flexShrink: 1,
-    minWidth: 0,
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: colorVars['--color-text-primary'],
-    fontFamily: typographyVars['--font-family-body'],
-    // Matches the option rows below it, so the query reads as the first line of
-    // the list. The floor keeps iOS from zooming on focus — keyed to iOS
-    // alone, since only iOS WebKit implements -webkit-touch-callout.
-    fontSize: {
-      default: typeScaleVars['--text-label-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-label-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-label-leading'],
-    // The field draws the focus ring (see `field`), so the bare input must not
-    // draw a second one inside it.
-    outline: 'none',
-    '::placeholder': {
-      color: colorVars['--color-text-secondary'],
-    },
-  },
-});
+import {
+  panelSearchInputFieldClassName,
+  panelSearchInputIconClassName,
+  panelSearchInputInputClassName,
+  panelSearchInputKeyboardFocusClassName,
+  panelSearchInputWrapperClassName,
+} from './panelSearchInputClasses';
 
 export interface PanelSearchInputProps extends Omit<
   BaseProps<HTMLInputElement>,
@@ -272,17 +193,30 @@ export function PanelSearchInput({
   return (
     <div
       onKeyDown={onContainerKeyDown}
-      {...mergeProps(stylex.props(styles.wrapper, xstyle), className, style)}>
+      {...mergeProps(
+        stylex.props(xstyle),
+        tw(panelSearchInputWrapperClassName, className),
+        style,
+      )}>
       <div
         data-keyboard-focus={isKeyboardFocus ? 'true' : undefined}
-        {...stylex.props(
-          styles.field,
-          isKeyboardFocus && styles.fieldKeyboardFocus,
-          hasInputBox && inputWrapperStyles.base,
-          hasInputBox && inputWrapperStyles.textField,
-          fieldXstyle,
+        {...mergeProps(
+          stylex.props(
+            hasInputBox && inputWrapperStyles.base,
+            hasInputBox && inputWrapperStyles.textField,
+            fieldXstyle,
+          ),
+          tw(
+            panelSearchInputFieldClassName,
+            isKeyboardFocus && panelSearchInputKeyboardFocusClassName,
+          ),
         )}>
-        <Icon icon="search" size="sm" color="secondary" xstyle={styles.icon} />
+        <Icon
+          icon="search"
+          size="sm"
+          color="secondary"
+          className={panelSearchInputIconClassName}
+        />
         <input
           ref={mergedInputRef}
           type="text"
@@ -298,8 +232,8 @@ export function PanelSearchInput({
           onKeyDown={onKeyDown}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          {...stylex.props(styles.input)}
           {...props}
+          className={panelSearchInputInputClassName}
         />
         {value !== '' && (
           <InputClearButton label={clearLabel} onClick={handleClear} />

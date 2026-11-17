@@ -342,6 +342,14 @@ import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {kbdKeyClassName, kbdWrapperClassName} from '../Kbd/kbdClasses';
 import {infoTipTriggerClassName} from '../InfoTip/infoTipClasses';
 import {
+  panelSearchInputFieldClassName,
+  panelSearchInputIconClassName,
+  panelSearchInputInputClassName,
+  panelSearchInputKeyboardFocusClassName,
+  panelSearchInputWrapperClassName,
+} from '../Field/panelSearchInputClasses';
+import {fieldLabelHiddenInfoTipClassName} from '../Field/fieldLabelClasses';
+import {
   fieldStatusAttachedClassName,
   fieldStatusBaseClassName,
   fieldStatusColorClassName,
@@ -2652,6 +2660,13 @@ function familyClassNames() {
   // FieldStatus: the message box in both placements, the detached content row
   // and glyph, and one fill per status type.
   add(fieldStatusBaseClassName);
+  // Field: the hidden label's info button and the panel search row.
+  add(fieldLabelHiddenInfoTipClassName);
+  add(panelSearchInputWrapperClassName);
+  add(panelSearchInputFieldClassName);
+  add(panelSearchInputKeyboardFocusClassName);
+  add(panelSearchInputIconClassName);
+  add(panelSearchInputInputClassName);
   add(fieldStatusAttachedClassName);
   add(fieldStatusDetachedClassName);
   add(fieldStatusDetachedContentClassName);
