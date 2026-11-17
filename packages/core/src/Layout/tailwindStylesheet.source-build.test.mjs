@@ -523,6 +523,12 @@ import {
   badgeVariantClassName,
 } from '../Badge/badgeClasses';
 import {
+  statusDotClassName,
+  statusDotIconClassName,
+  statusDotPulsingClassName,
+  statusDotVariantClassName,
+} from '../StatusDot/statusDotClasses';
+import {
   blockquoteCiteClassName,
   blockquoteClassName,
 } from '../Blockquote/blockquoteClasses';
@@ -1810,6 +1816,14 @@ function familyClassNames() {
   }
   add(dividerLabelClassName);
   add(dividerVerticalLabelClassName);
+  // StatusDot: the plate, its icon field, the pulse, and one class per
+  // variant.
+  add(statusDotClassName);
+  add(statusDotIconClassName);
+  add(statusDotPulsingClassName);
+  for (const value of Object.values(statusDotVariantClassName)) {
+    add(value);
+  }
   // Blockquote: the quote and its attribution.
   add(blockquoteClassName);
   add(blockquoteCiteClassName);
@@ -1928,8 +1942,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // fade, both drawer edges in both motion states, and the header. Card's
     // four elevation variables were reused by the dialog family maps, so the
     // sum of the two families is smaller than their parts. With every family
-    // above the sheet sits at 1121.
-    expect(stylesheet.rules.size).toBeLessThan(1160);
+    // above the sheet sits at 1121. The display-and-feedback family's Badge,
+    // Code, Blockquote and StatusDot maps added about 45 more, which took the
+    // sheet to 1159.
+    expect(stylesheet.rules.size).toBeLessThan(1180);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
