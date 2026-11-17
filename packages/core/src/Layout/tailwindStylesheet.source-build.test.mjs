@@ -28,6 +28,29 @@ import {
   avatarStatusDotVariantClassName,
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
+import {commandPaletteEmptyClassName} from '../CommandPalette/commandPaletteEmptyClasses';
+import {
+  commandPaletteFooterClassName,
+  commandPaletteFooterHintClassName,
+} from '../CommandPalette/commandPaletteFooterClasses';
+import {
+  commandPaletteGroupClassName,
+  commandPaletteGroupHeadingClassName,
+} from '../CommandPalette/commandPaletteGroupClasses';
+import {commandPaletteListClassName} from '../CommandPalette/commandPaletteListClasses';
+import {
+  commandPaletteItemClassName,
+  commandPaletteItemDisabledClassName,
+  commandPaletteItemHighlightedClassName,
+  commandPaletteItemSelectedClassName,
+} from '../CommandPalette/commandPaletteItemClasses';
+import {
+  commandPaletteInputEndClassName,
+  commandPaletteInputFieldClassName,
+  commandPaletteInputIconClassName,
+  commandPaletteInputSpinnerClassName,
+  commandPaletteInputWrapperClassName,
+} from '../CommandPalette/commandPaletteInputClasses';
 import {
   dropdownMenuCheckableRowClassName,
   dropdownMenuDividerClassName,
@@ -2462,6 +2485,26 @@ function familyClassNames() {
     }
   }
   add(switchStatusClassName);
+
+  // The command palette: the empty box, the footer row and its hints, the
+  // group column and heading, the scrolling list, the item row with its three
+  // state fills, and the search input's wrapper, icon, end slot, delayed
+  // spinner and field.
+  add(commandPaletteEmptyClassName);
+  add(commandPaletteFooterClassName);
+  add(commandPaletteFooterHintClassName);
+  add(commandPaletteGroupClassName);
+  add(commandPaletteGroupHeadingClassName);
+  add(commandPaletteListClassName);
+  add(commandPaletteItemClassName);
+  add(commandPaletteItemHighlightedClassName);
+  add(commandPaletteItemSelectedClassName);
+  add(commandPaletteItemDisabledClassName);
+  add(commandPaletteInputWrapperClassName);
+  add(commandPaletteInputIconClassName);
+  add(commandPaletteInputEndClassName);
+  add(commandPaletteInputSpinnerClassName);
+  add(commandPaletteInputFieldClassName);
 
   return [...names].sort();
 }
