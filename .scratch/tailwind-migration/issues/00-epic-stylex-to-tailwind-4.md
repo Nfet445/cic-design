@@ -94,7 +94,7 @@ buttons) that landed before the tickets were written.
 - [x] `29-charts-and-richtext` — two packages get their own sheets
 - [ ] `30-lab` — 58 creations in two halves
 - [x] `46-display-and-feedback` — Card, Divider, Markdown, Code, Spinner, Toast, Carousel
-- [ ] `47-form-controls-and-leftovers` — Switch, Checkbox, Radio, Slider, Stepper, and the family leftovers
+- [x] `47-form-controls-and-leftovers` — Switch, Checkbox, Radio, Slider, Stepper, and the family leftovers
 - [x] `48-chat-surface` — thirteen files and twenty-three creations
 
 ### Wave 9 — themes, consumers, removal
