@@ -209,6 +209,7 @@ import {
   touchTimeFieldWheelsClassName,
 } from '../TimeInput/touchTimeFieldClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
+import {checkboxListItemClassName} from '../CheckboxList/checkboxListItemClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
@@ -1936,6 +1937,10 @@ function familyClassNames() {
         isOpen,
       }),
     );
+  }
+
+  for (const isSelected of [true, false]) {
+    add(checkboxListItemClassName({isSelected, className: undefined}));
   }
 
   return [...names].sort();
