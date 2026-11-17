@@ -8,10 +8,9 @@
  * @position Style primitives; scanned by the Tailwind build
  *
  * Each state picks one class per property, so two classes here never paint the
- * same declaration and the sheet order never decides between them. The one
- * paint a class cannot carry is the ancestor hover tint: it reads the StyleX
- * marker class, so it stays in `indicatorHover.stylex.ts` and overrides the
- * border and fill these maps set at rest.
+ * same declaration and the sheet order never decides between them. The hover
+ * tint is a variant of the border and fill, one level deeper than the rest
+ * class, so its selector outranks the rest declaration in the same layer.
  *
  * No per-instance value reaches an indicator — size and state are a fixed set —
  * so no class here reads an `--astryx-*` variable.
@@ -50,6 +49,25 @@ const ENABLED_BORDER_CLASSES = {
 } as const;
 
 const DISABLED_BORDER_CLASSES = 'border-[color:var(--color-border)]';
+
+/**
+ * The hover tint the owning control's row paints, under a pointer that can
+ * hover. The row marks itself with `data-astryx-indicator-scope`, so the
+ * variant names an ancestor, not this element.
+ */
+const HOVER_BORDER_CLASSES = {
+  unchecked:
+    '[@media(hover:hover)]:[[data-astryx-indicator-scope]:hover_&]:border-[color:color-mix(in_srgb,var(--color-border-emphasized),var(--color-tint-hover)_20%)]',
+  checked:
+    '[@media(hover:hover)]:[[data-astryx-indicator-scope]:hover_&]:border-[color:color-mix(in_srgb,var(--color-accent),var(--color-tint-hover)_15%)]',
+} as const;
+
+const HOVER_FILL_CLASSES = {
+  unchecked:
+    '[@media(hover:hover)]:[[data-astryx-indicator-scope]:hover_&]:bg-[color:color-mix(in_srgb,var(--color-background-surface),var(--color-tint-hover)_5%)]',
+  checked:
+    '[@media(hover:hover)]:[[data-astryx-indicator-scope]:hover_&]:bg-[color:color-mix(in_srgb,var(--color-accent),var(--color-tint-hover)_15%)]',
+} as const;
 
 /** The fill. Only the unchecked disabled box takes the muted surface. */
 const FILL_CLASSES = {
@@ -102,6 +120,8 @@ export function checkboxBoxClassName({
       : isDisabled
         ? FILL_CLASSES.disabledUnchecked
         : FILL_CLASSES.unchecked,
+    !isDisabled && HOVER_BORDER_CLASSES[isChecked ? 'checked' : 'unchecked'],
+    !isDisabled && HOVER_FILL_CLASSES[isChecked ? 'checked' : 'unchecked'],
     isDisabled && 'opacity-50',
   );
 }
@@ -171,6 +191,8 @@ export function radioCircleClassName({
       : isDisabled
         ? FILL_CLASSES.disabledUnchecked
         : FILL_CLASSES.unchecked,
+    !isDisabled && HOVER_BORDER_CLASSES[isChecked ? 'checked' : 'unchecked'],
+    !isDisabled && HOVER_FILL_CLASSES[isChecked ? 'checked' : 'unchecked'],
     isDisabled && 'opacity-50',
   );
 }

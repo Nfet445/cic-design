@@ -24,6 +24,7 @@ import {RadioList} from './RadioList';
 import {RadioListItem} from './RadioListItem';
 import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
+import {indicatorPressImageClassName} from '../privateAttributes/pressClasses';
 
 // A disabled row blocks pointers with a class, and jsdom has no sheet to
 // compute it from; find the row that carries the block instead.
@@ -1230,8 +1231,14 @@ describe('pressed state', () => {
     // release, and the owner-drawn layer over the circle paints the pressed
     // token at that strength on both touch arms.
     expect(hasReleaseFade(row)).toBe(true);
-    expect(readsPressStrength(wrapper, '[data-astryx-press="on"]')).toBe(true);
-    expect(readsPressStrength(wrapper)).toBe(true);
+    // The image arm names both press states of the row, so the layer paints
+    // through the whole release at the strength the row runs.
+    for (const name of indicatorPressImageClassName.split(' ')) {
+      expect(wrapper.classList.contains(name)).toBe(true);
+    }
+    expect(indicatorPressImageClassName).toContain(
+      '[data-astryx-press=fading]',
+    );
     // The row itself paints nothing under a finger, as under a mouse: only
     // the circle answers.
     expect(readsPressStrength(row, '[data-astryx-press="on"]')).toBe(false);

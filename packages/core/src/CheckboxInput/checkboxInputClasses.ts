@@ -122,12 +122,20 @@ export function checkboxInputWrapperClassName({
 /**
  * The press layer the owner paints over the resolved indicator, so a plain
  * theme replacement keeps the pressed feedback. Its paint comes from
- * `indicatorPressPaintStyles`, which reads the press attribute off the scope
- * marker; its `content` arm lives in `checkboxInputPress.stylex.ts`.
+ * `pressClasses.ts`, which reads the scope and press attributes off the row.
  */
 export const checkboxInputPressOverlayClassName = tw(
   'after:pointer-events-none after:absolute after:inset-0',
   'after:rounded-[var(--radius-inner)]',
+);
+
+/**
+ * The press layer exists only over an indicator that does not paint its own
+ * press: the circle mark draws its own.
+ */
+export const checkboxInputPressContentClassName = tw(
+  "after:content-['']",
+  'has-[[data-astryx-indicator-press]]:after:content-none',
 );
 
 /** Holds only the indicator, so the focus ring has one unambiguous target. */

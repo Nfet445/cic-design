@@ -18,7 +18,6 @@ import type * as stylex from '@stylexjs/stylex';
 import {describe, expect, expectTypeOf, it} from 'vitest';
 import * as dateInputTokens from '@astryxdesign/core/DateInput/tokens.stylex';
 import * as iconSize from '@astryxdesign/core/Icon/IconSize.stylex';
-import * as indicatorMarkers from '@astryxdesign/core/Indicator/indicator.markers.stylex';
 import * as layerAnimations from '@astryxdesign/core/Layer/layerAnimations.stylex';
 import * as layerTextReset from '@astryxdesign/core/Layer/layerTextReset.stylex';
 import * as layerViewportInset from '@astryxdesign/core/Layer/layerViewportInset.stylex';
@@ -30,7 +29,6 @@ import * as selectorPresentation from '@astryxdesign/core/Selector/selectorPrese
 import * as stack from '@astryxdesign/core/Stack/stack.stylex';
 import * as stackItem from '@astryxdesign/core/Stack/stackItem.stylex';
 import * as text from '@astryxdesign/core/Text/text.stylex';
-import * as indicatorPress from '@astryxdesign/core/internal/indicatorPress.stylex';
 import * as touchHitArea from '@astryxdesign/core/internal/touchHitArea.stylex';
 import * as dataTokens from '@astryxdesign/core/theme/dataTokens.stylex';
 import * as tokens from '@astryxdesign/core/theme/tokens.stylex';
@@ -144,7 +142,6 @@ type NoKeys<Namespaces> = {[Name in keyof Namespaces]: never};
 const styleNamespacesBySubpath = {
   './DateInput/tokens.stylex': [],
   './Icon/IconSize.stylex': ['iconSizeStyles'],
-  './Indicator/indicator.markers.stylex': [],
   './Layer/layerAnimations.stylex': [],
   './Layer/layerTextReset.stylex': [],
   './Layer/layerViewportInset.stylex': [],
@@ -189,7 +186,6 @@ const styleNamespacesBySubpath = {
     'weightStyles',
     'wordBreakStyles',
   ],
-  './internal/indicatorPress.stylex': [],
   './internal/touchHitArea.stylex': ['touchHitAreaStyles'],
   './theme/dataTokens.stylex': [],
   './theme/tokens.stylex': [],
@@ -202,7 +198,6 @@ const modulesBySubpath: Readonly<
 > = {
   './DateInput/tokens.stylex': dateInputTokens,
   './Icon/IconSize.stylex': iconSize,
-  './Indicator/indicator.markers.stylex': indicatorMarkers,
   './Layer/layerAnimations.stylex': layerAnimations,
   './Layer/layerTextReset.stylex': layerTextReset,
   './Layer/layerViewportInset.stylex': layerViewportInset,
@@ -214,7 +209,6 @@ const modulesBySubpath: Readonly<
   './Stack/stack.stylex': stack,
   './Stack/stackItem.stylex': stackItem,
   './Text/text.stylex': text,
-  './internal/indicatorPress.stylex': indicatorPress,
   './internal/touchHitArea.stylex': touchHitArea,
   './theme/dataTokens.stylex': dataTokens,
   './theme/tokens.stylex': tokens,

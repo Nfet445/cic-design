@@ -17,7 +17,6 @@ import {
   checkboxCheckmarkClassName,
   checkboxIndeterminateClassName,
 } from './indicatorClasses';
-import {indicatorHoverProps} from './indicatorHover.stylex';
 import type {IndicatorProps} from './types';
 
 /**
@@ -79,14 +78,7 @@ export function CheckboxIndicator({
             }),
           },
         ),
-        // The hover tint reads the indicator marker, so it stays on StyleX.
-        mergeProps(
-          indicatorHoverProps({
-            isChecked: isCheckedOrIndeterminate,
-            isDisabled,
-          }),
-          stylex.props(xstyle),
-        ),
+        stylex.props(xstyle),
         className,
         style,
       )}>

@@ -19,7 +19,6 @@ import {
   waitFor,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
 import {CheckboxList} from './CheckboxList';
 import {CheckboxListItem} from './CheckboxListItem';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
@@ -27,7 +26,6 @@ import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {List} from '../List/List';
 import {CheckboxInput} from '../CheckboxInput/CheckboxInput';
 import {FormLayout} from '../FormLayout/FormLayout';
-import {indicatorScope} from '../Indicator/indicator.markers.stylex';
 import {stubMatchMedia} from '../__tests__/stubMatchMedia';
 import {
   declaresPressPaint,
@@ -1560,8 +1558,6 @@ describe('CheckboxList group disabled state', () => {
 });
 
 describe('CheckboxListItem press surface', () => {
-  const hoverScopeClass = stylex.props(indicatorScope).className ?? '';
-
   // The row owns its checkbox's press under every primary pointer: a
   // finger's, a mouse's and a pen's.
   afterEach(() => {
@@ -1682,7 +1678,6 @@ describe('CheckboxListItem press surface', () => {
         <CheckboxListItem label="SMS" value="sms" description="Rates apply" />
       </CheckboxList>,
     );
-    expect(hoverScopeClass).not.toBe('');
     for (const name of ['Email', 'SMS']) {
       const row = rowOf(name);
       const {wrapper, control} = parts(row);
@@ -1700,10 +1695,11 @@ describe('CheckboxListItem press surface', () => {
       expect(hasReleaseFade(row)).toBe(true);
       expect(declaresRowPressPaint(row)).toBe(true);
       expect(readsRowPressPaint(wrapper)).toBe(true);
-      // Hover stays the checkbox's own. The row paints every press, so the
-      // box draws no `:active` fill.
-      expect(classesOf(control)).toContain(hoverScopeClass);
-      expect(classesOf(row)).not.toContain(hoverScopeClass);
+      // Hover stays the checkbox's own: the control marks its own hover
+      // scope, so the row's hover does not reach the box. The row paints every
+      // press, so the box draws no `:active` fill.
+      expect(control).toHaveAttribute('data-astryx-indicator-scope');
+      expect(row).not.toHaveAttribute('data-astryx-indicator-scope');
       expect(hasPressedArm(wrapper)).toBe(false);
     }
   });

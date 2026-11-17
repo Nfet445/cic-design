@@ -6,8 +6,7 @@
 /**
  * @file privateAttributes/press.stylex.ts
  * @input StyleX, the overlay color tokens, the touch press strength
- *   (`pressVars`), the theme's exit motion tokens and the indicator scope
- *   marker
+ *   (`pressVars`), the theme's exit motion tokens and the press attributes
  * @output Ready-made press styles for list rows, Button and the layer over a
  *   selection control's box. No package entry exports them.
  * @position Owner module of the private press attribute: the press controller
@@ -24,7 +23,6 @@ import {
 } from '../theme/tokens.stylex';
 import {reducedMotionFadeConsts} from '../motion/reducedMotion.stylex';
 import {pressVars} from '../utils/interactionOverlay.stylex';
-import {indicatorScope} from '../Indicator/indicator.markers.stylex';
 
 // The overlay's arm selectors (interactionOverlay.stylex.ts), restated here:
 // StyleX resolves a style's keys within its own file.
@@ -419,9 +417,8 @@ export const rowPressPaintStyles = stylex.create({
 
 /**
  * Ready-made press paint for a selection control. `handDown` goes on
- * CheckboxInput's row. `activeFill` and `image` go on the layer over the box
- * or a RadioList option's circle. They read the press attribute off the
- * indicator scope marker, as the hover tint does.
+ * CheckboxInput's row. The layer over the box or a RadioList option's circle
+ * reads it, and paints the press from `pressClasses.ts`.
  */
 export const indicatorPressPaintStyles = stylex.create({
   // A row hands its press image down to an indicator that paints its own
@@ -442,34 +439,6 @@ export const indicatorPressPaintStyles = stylex.create({
       default: null,
       [PRESSED_ON]: 'transparent',
       [PRESSED_FADING]: 'transparent',
-    },
-  },
-  // The `:active` fill, only for a press the controller does not paint. Under
-  // a coarse pointer it is dropped.
-  activeFill: {
-    '::after': {
-      backgroundColor: {
-        default: 'transparent',
-        [stylex.when.ancestor(ACTIVE_UNPAINTED, indicatorScope)]: {
-          default: colorVars['--color-overlay-pressed'],
-          [COARSE]: 'transparent',
-        },
-      },
-    },
-  },
-  // The controller's press paints as an image layer over the colour. An image
-  // change is discrete, so no transition can delay the onset. Only the
-  // strength moves: the row's `pressedAlpha` arms set it to 1 while on, and
-  // 1 → 0 over the release. This holds for every pointer, because the
-  // controller writes the attribute only for a press it paints.
-  image: {
-    '::after': {
-      backgroundImage: {
-        default: null,
-        [stylex.when.ancestor(PRESSED_ON, indicatorScope)]: pressedOverlayImage,
-        [stylex.when.ancestor(PRESSED_FADING, indicatorScope)]:
-          pressedOverlayImage,
-      },
     },
   },
 });

@@ -43,7 +43,7 @@ import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
 import {rtlStyles} from '../utils/rtlStyles';
 import {withholdCallerHandlers} from '../utils/disabledInteraction';
-import {indicatorScope} from '../Indicator/indicator.markers.stylex';
+import {indicatorScopeProps} from '../Indicator/indicatorScope';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {useIndicatorFocusRing} from '../hooks/useIndicatorFocusRing';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
@@ -63,12 +63,16 @@ import {
 } from '../i18n/useComponentTranslator';
 import english from '../i18n/generated-english/CheckboxInput/CheckboxInput.generated';
 import {CheckboxRowPressContext} from './CheckboxRowPressContext';
-import {pressOverlayStyles} from './checkboxInputPress.stylex';
+import {
+  indicatorPressFillClassName,
+  indicatorPressImageClassName,
+} from '../privateAttributes/pressClasses';
 import {
   checkboxInputClassName,
   checkboxInputIndicatorSlotClassName,
   checkboxInputLabelWrapperClassName,
   checkboxInputNativeClassName,
+  checkboxInputPressContentClassName,
   checkboxInputPressOverlayClassName,
   checkboxInputRowClassName,
   checkboxInputRowPressImageClassName,
@@ -392,6 +396,7 @@ export function CheckboxInput({
         onPointerDown={hasHitArea ? handleRowPointerDown : undefined}
         onClick={hasHitArea ? handleRowClick : undefined}
         {...(ownsPress ? pressable : undefined)}
+        {...(!isDisabled ? indicatorScopeProps : undefined)}
         {...mergeProps(
           {
             className: tw(
@@ -406,10 +411,9 @@ export function CheckboxInput({
             ),
           },
           stylex.props(
-            // Hover and focus reach the checkbox visual through this ancestor
-            // marker rather than props, so the whole row drives it.
+            // Hover and focus reach the checkbox visual through the row's
+            // scope attribute rather than props, so the whole row drives it.
             hasHitArea && touchHitAreaStyles.layer,
-            !isDisabled && indicatorScope,
             !isDisabled &&
               !isRowPressSurface &&
               indicatorPressPaintStyles.handDown,
@@ -425,33 +429,26 @@ export function CheckboxInput({
           // click. The press controller holds the row's selection for a press
           // on the marked box, and checks it if no click comes.
           {...(isDisabled ? undefined : pressBoxProps)}
-          {...mergeProps(
-            {
-              className: tw(
-                checkboxInputWrapperClassName({size}),
-                // Under a row that owns the press, the row's own overlay paints
-                // instead of the owner's press paint.
-                !isDisabled &&
-                  isRowPressSurface &&
-                  checkboxInputRowPressOverlayClassName,
-                // The owner paints the press layer over the resolved indicator,
-                // so a plain theme replacement keeps the pressed feedback.
-                !isDisabled &&
-                  !isRowPressSurface &&
-                  checkboxInputPressOverlayClassName,
-              ),
-            },
-            stylex.props(
-              // The layer's `content` arm reads the press-scope marker, the
-              // way the hover tint reads its scope marker.
-              !isDisabled && pressOverlayStyles.content,
+          {...mergeProps({
+            className: tw(
+              checkboxInputWrapperClassName({size}),
+              // Under a row that owns the press, the row's own overlay paints
+              // instead of the owner's press paint.
               !isDisabled &&
-                !isRowPressSurface && [
-                  indicatorPressPaintStyles.activeFill,
-                  indicatorPressPaintStyles.image,
-                ],
+                isRowPressSurface &&
+                checkboxInputRowPressOverlayClassName,
+              // The owner paints the press layer over the resolved indicator,
+              // so a plain theme replacement keeps the pressed feedback.
+              !isDisabled && checkboxInputPressContentClassName,
+              !isDisabled &&
+                !isRowPressSurface &&
+                checkboxInputPressOverlayClassName,
+              // The layer reads the press attributes off the row, so a mouse
+              // press paints the fill and the controller's press the image.
+              !isDisabled && !isRowPressSurface && indicatorPressFillClassName,
+              !isDisabled && !isRowPressSurface && indicatorPressImageClassName,
             ),
-          )}
+          })}
           {...focusProps}>
           <input
             // A disabled checkbox stays focusable, so it still receives key and

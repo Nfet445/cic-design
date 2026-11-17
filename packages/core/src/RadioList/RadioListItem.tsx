@@ -29,7 +29,7 @@ import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
 import {rtlStyles} from '../utils/rtlStyles';
-import {indicatorScope} from '../Indicator/indicator.markers.stylex';
+import {indicatorScopeProps} from '../Indicator/indicatorScope';
 import {useIndicatorFocusRing} from '../hooks/useIndicatorFocusRing';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -41,10 +41,10 @@ import {useIndicator} from '../Indicator/useIndicator';
 import {Item, type ItemAlign} from '../Item/Item';
 import {themeProps} from '../utils/themeProps';
 import {
-  indicatorPressPaintStyles,
   rowPressLayerStyles,
   rowPressPaintStyles,
 } from '../privateAttributes/press.stylex';
+import {indicatorPressImageClassName} from '../privateAttributes/pressClasses';
 import {rowStyles} from './radioListItemRow.stylex';
 import {
   radioListItemIndicatorSlotClassName,
@@ -215,8 +215,10 @@ export function RadioListItem({
         tw(
           radioListItemWrapperClassName({size}),
           !isDisabled && radioListItemPressOverlayClassName,
+          // The circle reads the controller's press off the row, as the
+          // checkbox's layer does.
+          !isDisabled && indicatorPressImageClassName,
         ),
-        stylex.props(!isDisabled && indicatorPressPaintStyles.image),
       )}
       {...focusProps}>
       <input
@@ -292,6 +294,7 @@ export function RadioListItem({
     <Item
       ref={mergedRowRef}
       {...(isDisabled ? undefined : pressable)}
+      {...(isDisabled ? undefined : indicatorScopeProps)}
       startContent={mediaContent}
       // Delegate row-surface clicks (label text, description, and the empty
       // hover area) to the radio input. The input stays the option's sole
@@ -308,11 +311,8 @@ export function RadioListItem({
       align={align}
       xstyle={
         [
-          // Hover reaches the radio visual through this ancestor marker rather
-          // than props, so hovering the row tints the control. The marker rides
-          // the painting row element (Item), the same element that carries the
-          // theme target, so a theme's hover styling stays in step with the tint.
-          !isDisabled && indicatorScope,
+          // Hover reaches the radio visual through the row's scope attribute
+          // rather than props, so hovering the row tints the control.
           // The row keeps no press paint of its own: the circle paints, and
           // reads the strength whose release the row keeps.
           rowPressLayerStyles.cellWithoutLayer,

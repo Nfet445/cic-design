@@ -540,6 +540,10 @@ import {
   treeListItemDensityClassName,
 } from '../TreeList/treeListItemClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
+import {
+  indicatorPressFillClassName,
+  indicatorPressImageClassName,
+} from '../privateAttributes/pressClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {stackClassName} from '../Stack/stackClasses';
 import {
@@ -2250,6 +2254,10 @@ function familyClassNames() {
     add(className);
   }
   add(menuPressLitRowClassName);
+  // The press over a selection control's indicator: the `:active` fill and the
+  // controller's image, each named after the row's scope and press attributes.
+  add(indicatorPressFillClassName);
+  add(indicatorPressImageClassName);
   add(reorderLineClassName);
   for (const placement of ['above', 'below', 'start', 'end']) {
     add(layerAnimations[placement]);
