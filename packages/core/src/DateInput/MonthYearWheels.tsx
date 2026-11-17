@@ -25,25 +25,18 @@
  */
 
 import {useMemo} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {useLocale} from '../i18n/useLocale';
 import {
   calendarYearSpansEras,
   formatCalendarMonthName,
   formatCalendarYearLabel,
 } from '../utils/calendarSystem';
-import {spacingVars} from '../theme/tokens.stylex';
-import {dateInputTouchGeometry} from './tokens.stylex';
+import {
+  dateInputPaneInlineStyle,
+  monthYearWheelsClassName,
+} from './dateInputClasses';
 import {Wheel, type WheelOption} from './Wheel';
 import {clampIndex, type MonthModel} from './monthGeometry';
-
-const styles = stylex.create({
-  wheels: {
-    display: 'flex',
-    blockSize: dateInputTouchGeometry.paneBlockSize,
-    gap: spacingVars['--spacing-2'],
-  },
-});
 
 export interface MonthYearWheelsProps {
   /** The calendar's months, by index. */
@@ -141,7 +134,7 @@ export function MonthYearWheels({
   );
 
   return (
-    <div {...stylex.props(styles.wheels)}>
+    <div className={monthYearWheelsClassName} style={dateInputPaneInlineStyle}>
       <Wheel
         label={monthLabel}
         options={monthOptions}

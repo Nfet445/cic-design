@@ -36,17 +36,21 @@ import {resolveMotion} from '../motion/resolveMotion';
 import {picker} from '../motion/uikit/picker';
 import {registerScrollTable, scroll} from '../motion/uikit/scroll';
 import {registerSpringsTable, springs} from '../motion/uikit/springs';
-import {
-  colorVars,
-  fontWeightVars,
-  radiusVars,
-  spacingVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {mergeProps} from '../utils/mergeProps';
 import {mod, nearestLoopCopy} from '../hooks/usePager';
 import {lockSelection} from '../gestures/selectionLock';
-import {dateInputTouchGeometry, dateInputTouchSizes} from './tokens.stylex';
+import {
+  dateInputWheelInlineStyle,
+  dateInputWheelRowInlineStyle,
+  dateInputWheelRowMarkStyle,
+  pickerWheelBandClassName,
+  pickerWheelColumnClassName,
+  pickerWheelFadeClassName,
+  pickerWheelRowClassName,
+  pickerWheelStripClassName,
+  type DateInputWheelStyle,
+} from './dateInputClasses';
 import {useOwnScrollGesture} from './useOwnScrollGesture';
 import {useWheelListbox} from './useWheelListbox';
 import {createWheelStrip, type PlayOptions} from './wheelStrip';
@@ -86,88 +90,20 @@ const RUBBER_BAND_DIMENSION = picker.geometry.rubberBandDimension * UIKIT_SCALE;
 const DRAWN_PAST_BAND = 10;
 
 /**
- * The rows' opacity at the column's edges. At 0.7 the row four from the band
- * keeps 5:1 or more in every shipped theme, a margin over WCAG AA's 4.5:1.
+ * Writes a row's inline properties. A row's mark and its place along the strip
+ * ride variables, because the gesture painter moves them while the strip
+ * travels and a class cannot change mid-flight.
  */
-const FADE_FLOOR = 0.7;
-
-const styles = stylex.create({
-  // The scrolling column's box, band and rows (Wheel.tsx), moved by the
-  // gesture system and the compositor instead of a native scroller.
-  column: {
-    position: 'relative',
-    flex: '1 1 0',
-    minInlineSize: 0,
-    blockSize: dateInputTouchGeometry.paneBlockSize,
-    overflow: 'hidden',
-    outline: 'none',
-    WebkitTapHighlightColor: 'transparent',
-  },
-  // The rows fade toward the column's edges. A static mask: nothing paints it
-  // again as the strip moves. It sits inside the column, so it never clips the
-  // column's focus ring.
-  fade: {
-    position: 'absolute',
-    inset: 0,
-    pointerEvents: 'none',
-    maskImage: `linear-gradient(to bottom, rgb(0 0 0 / ${FADE_FLOOR}), rgb(0 0 0) 50%, rgb(0 0 0 / ${FADE_FLOOR}))`,
-  },
-  /**
-   * The selection band: a centred row-height plate behind the rows.
-   * Decorative: the committed value is announced by `aria-selected`.
-   */
-  band: {
-    position: 'absolute',
-    insetInline: 0,
-    insetBlockStart: `calc(50% - (${dateInputTouchSizes.wheelItemSize} / 2))`,
-    blockSize: dateInputTouchSizes.wheelItemSize,
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: colorVars['--color-neutral'],
-    pointerEvents: 'none',
-  },
-  /**
-   * The strip holds the rows at their places along the wheel, with its top on
-   * the band's row. It moves by minus the wheel's offset, and the animator
-   * writes its `translate`. Also what a reduced-motion cross-fade fades.
-   */
-  strip: {
-    position: 'absolute',
-    insetInline: 0,
-    insetBlockStart: `calc(50% - (${dateInputTouchSizes.wheelItemSize} / 2))`,
-    pointerEvents: 'none',
-  },
-  /** One row: an option at its place along the strip, flat. */
-  row: {
-    position: 'absolute',
-    insetInline: 0,
-    blockSize: dateInputTouchSizes.wheelItemSize,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingInline: spacingVars['--spacing-2'],
-    boxSizing: 'border-box',
-    fontSize: typeScaleVars['--text-large-size'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    color: colorVars['--color-text-primary'],
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    userSelect: 'none',
-    // The mark has no transition, unlike the scrolling column's. A colour or
-    // weight that animates lays out and paints every frame on the main thread.
-    // A mark set as a drag lets go would do so through the coast.
-  },
-  /** The row under the band, as the scrolling column marks it. */
-  rowActive: {
-    color: colorVars['--color-text-accent'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  rowDisabled: {
-    color: colorVars['--color-text-disabled'],
-  },
-  /** A row at its place along the strip. */
-  rowAt: (top: string) => ({insetBlockStart: top}),
-});
+function applyWheelRowStyle(
+  row: HTMLElement,
+  style: DateInputWheelStyle,
+): void {
+  for (const [property, value] of Object.entries(style)) {
+    if (value != null) {
+      row.style.setProperty(property, value);
+    }
+  }
+}
 
 /**
  * The motion tables the wheel resolves its springs from: the scroll bounce
@@ -349,10 +285,15 @@ export function PickerWheel({
           continue;
         }
         const row = document.createElement('div');
-        row.className =
-          stylex.props(styles.row, option.isDisabled && styles.rowDisabled)
-            .className ?? '';
-        row.style.insetBlockStart = `${position * ROW_HEIGHT}px`;
+        row.className = pickerWheelRowClassName;
+        applyWheelRowStyle(
+          row,
+          dateInputWheelRowInlineStyle({
+            isActive: false,
+            isDisabled: option.isDisabled,
+            offsetPx: position * ROW_HEIGHT,
+          }),
+        );
         row.textContent = option.label;
         container.append(row);
         drawn.set(position, row);
@@ -406,8 +347,8 @@ export function PickerWheel({
       const active = position == null ? null : rowAt(position);
       const painted = paintedRef.current;
       for (const row of painted) {
-        row.style.removeProperty('color');
-        row.style.removeProperty('font-weight');
+        row.style.removeProperty('--astryx-date-wheel-row-color');
+        row.style.removeProperty('--astryx-date-wheel-row-weight');
       }
       painted.clear();
       const selected = currentOptions.findIndex(
@@ -418,10 +359,13 @@ export function PickerWheel({
         // The committed row's own mark gives way while another row is under
         // the band.
         const row = own;
-        row.style.color = currentOptions[selected]?.isDisabled
-          ? colorVars['--color-text-disabled']
-          : colorVars['--color-text-primary'];
-        row.style.fontWeight = fontWeightVars['--font-weight-normal'];
+        applyWheelRowStyle(
+          row,
+          dateInputWheelRowMarkStyle({
+            isActive: false,
+            isDisabled: currentOptions[selected]?.isDisabled ?? false,
+          }),
+        );
         painted.add(row);
       }
       if (active == null || position == null) {
@@ -429,10 +373,13 @@ export function PickerWheel({
       }
       // A copy shows the option it copies.
       const option = optionReader()(position);
-      active.style.color = option?.isDisabled
-        ? colorVars['--color-text-disabled']
-        : colorVars['--color-text-accent'];
-      active.style.fontWeight = fontWeightVars['--font-weight-semibold'];
+      applyWheelRowStyle(
+        active,
+        dateInputWheelRowMarkStyle({
+          isActive: true,
+          isDisabled: option?.isDisabled ?? false,
+        }),
+      );
       painted.add(active);
     },
     [optionReader],
@@ -1008,25 +955,29 @@ export function PickerWheel({
       ref={columnRef}
       {...listboxProps}
       data-wheel=""
-      {...stylex.props(styles.column, focusOutlineStyles.focusVisible)}>
-      <div data-wheel-fade="" {...stylex.props(styles.fade)}>
-        <div aria-hidden="true" {...stylex.props(styles.band)} />
+      style={dateInputWheelInlineStyle}
+      {...mergeProps(
+        stylex.props(focusOutlineStyles.focusVisible),
+        pickerWheelColumnClassName,
+      )}>
+      <div data-wheel-fade="" className={pickerWheelFadeClassName}>
+        <div aria-hidden="true" className={pickerWheelBandClassName} />
         <div
           ref={attachStrip}
           data-wheel-strip=""
-          {...stylex.props(styles.strip)}>
+          className={pickerWheelStripClassName}>
           {options.map((option, index) => (
             <div
               key={option.value}
               {...optionProps(option, index)}
               data-wheel-row=""
               data-label={option.label}
-              {...stylex.props(
-                styles.row,
-                styles.rowAt(`${index * ROW_HEIGHT}px`),
-                index === selectedIndex && styles.rowActive,
-                option.isDisabled && styles.rowDisabled,
-              )}>
+              className={pickerWheelRowClassName}
+              style={dateInputWheelRowInlineStyle({
+                isActive: index === selectedIndex,
+                isDisabled: option.isDisabled,
+                offsetPx: index * ROW_HEIGHT,
+              })}>
               {option.label}
             </div>
           ))}
