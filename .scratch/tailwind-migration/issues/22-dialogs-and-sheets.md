@@ -1,6 +1,6 @@
 # dialogs and sheets
 
-Status: partly done — Dialog, DialogHeader, AlertDialog and DrawerHeader have class maps; `Drawer/` (the panel), `BottomSheet/` (6 files), `MobileNav/` and `Lightbox/` still hold StyleX (see Result)
+Status: partly done — Dialog, DialogHeader, AlertDialog, DrawerHeader and the `Drawer` panel (plus its content area) have class maps; `BottomSheet/` (6 files), `MobileNav/` and `Lightbox/` still hold StyleX (see Result)
 Blocked by: 11,17
 Wave: 7
 Family: `family:overlay-dismissal`
@@ -53,6 +53,35 @@ changeset `.changeset/dialog-tailwind-classes.md` and a coverage block in
 - `8abbf4056` — `Layer/layerHeaderClasses.ts` (was `Dialog/dialogHeaderClasses.ts`):
   the dialog and drawer headers lay out the same row, so one map serves both, and
   `DrawerHeader` lost its own `stylex.create`.
+- `fa312e375` — `Drawer/drawerClasses.ts`: the panel, its side arms, the open
+  transform with its `@starting-style` first frame, the `::backdrop` scrim and
+  its fade, the settled-open collapse, and the scrolling content area. The
+  widths ride `--astryx-drawer-width` and `--astryx-drawer-mobile-width`, read
+  by the class; `dynamicStyles.inlineSize` is gone.
+
+### Drawer notes
+
+- **`display` is one class, not a state pair.** `hidden` and `flex` both live in
+  one layer and sort by property, not by the order they are written, so a base
+  utility plus an override cannot be relied on. React already owns whether the
+  panel paints (`isRendered`), so the map prints `flex` or `hidden`, never both.
+- **Direction reads `:dir(rtl)` on the element.** Tailwind's `rtl:` variant
+  expands to `:where(:dir(rtl), [dir="rtl"], [dir="rtl"] *)`, and the last arm
+  also matches a drawer that overrides an RTL ancestor with `dir="ltr"`. The map
+  uses `[&:dir(rtl)]` instead, so the nearest resolved direction wins, and
+  `DrawerDirection.test.tsx` asserts that shape rather than a computed transform.
+- **Mobile width keeps the inclusive breakpoint** as an arbitrary media variant
+  (`[@media(max-width:640px)]`), because `max-[640px]:` compiles to
+  `width < 640px` and would drop the 640px edge the StyleX rule covered.
+- **`contentSafeArea` stays on StyleX.** It must beat `container()`'s own
+  block-end padding, and the container rules are unlayered: an unlayered
+  declaration outranks any `@layer astryx-base` class. Same class of reason as
+  the Dialog fullscreen padding above.
+- **Four focus tests query with `hidden: true`.** jsdom's UA sheet hides a
+  popover host that is not `:popover-open`, and the stand-in that file installs
+  tracks that state outside the cascade, so the panel's own `flex` class (which
+  the shipped sheet carries) never reaches the accessibility tree there. The
+  assertions themselves (focus return, StrictMode remount) are unchanged.
 
 Deliberately left on StyleX:
 
@@ -92,13 +121,30 @@ max-w-full`.
 Still StyleX-backed and unchanged: the two fullscreen safe-area padding
 assertions and the container-padding isolation test in `Dialog.test.tsx`.
 
-Verification on the merged tree (`ced593a88`):
+Still to do in a follow-up pass on this ticket:
 
-- `pnpm exec vitest run packages/core/src/Dialog packages/core/src/AlertDialog
-packages/core/src/BottomSheet packages/core/src/Drawer` — 967 passed.
+- `BottomSheet/BottomSheet.tsx`, `BottomSheetPanel.tsx` (2 `stylex.create`
+  blocks), `BottomSheetEdgeTint.tsx`, `BottomSheetSwitcher.tsx`.
+- `MobileNav/MobileNav.tsx` (2 blocks) and `Lightbox/Lightbox.tsx` (2 blocks).
+- `Popover/` — still the last item, with the `firstThatWorks` cap chain and the
+  `Layer/layerViewportInset` constants to express through a `--_astryx-*`
+  indirection; the sheet budget will need its own raise then.
+
+The sheet budget rose from 1020 to 1050 rules: the drawer panel contributes
+about 60 (two sides, two painting states, two direction arms, the scrim).
+
+Verification on the merged tree (`ced593a88`, then after the Drawer pass on the
+merge of `poc/tailwind-layout-primitives` `4737a5bfe`, which needed no conflict
+resolution):
+
+- `pnpm exec vitest run packages/core/src/Drawer packages/core/src/BottomSheet
+packages/core/src/MobileNav packages/core/src/Lightbox packages/core/src/Dialog
+packages/core/src/AlertDialog
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` — 1319
+  passed, 50 files.
 - `pnpm exec vitest run packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`
-  — 42 passed, rule budget 860, sheet 94.7 kB.
-- `node packages/core/scripts/build-css-tailwind.mjs` — 94.7 kB.
+  — 54 passed, rule budget 1050, sheet 149.1 kB.
+- `node packages/core/scripts/build-css-tailwind.mjs` — 149.1 kB.
 - `pnpm -F @astryxdesign/core typecheck` — exit 0.
 - Prettier and ESLint on every touched file — clean.
 
