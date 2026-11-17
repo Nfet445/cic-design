@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 45 of 50 tickets done, plus two waves (layout primitives,
+Progress: 46 of 52 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -101,7 +101,7 @@ buttons) that landed before the tickets were written.
 
 - [x] `31-themes` — the bridge keeps its names, only its shape changes
 - [x] `32-cli-docs-and-templates` — consumer styling docs stop teaching StyleX
-- [ ] `45-template-pages-and-blocks` — the shipped page and block templates become class-based
+- [x] `45-template-pages-and-blocks` — the shipped page and block templates become class-based
 - [x] `33-storybook-and-vibe-tests` — both load the sheet
 - [x] `34-swizzle-and-render-pipeline` — ejected source states its stylesheet
 - [x] `35-deprecate-stylex-subpaths` — 80 export entries, one release
@@ -144,3 +144,5 @@ buttons) that landed before the tickets were written.
 - OQ1 (the fate of `astryx.css`), OQ2 (whether the class set is a promise) and
   OQ4 (swizzle) stay open on `spec:AST-119`; OQ3 is answered: the consumer's
   `xstyle` stays unlayered.
+- [ ] `51-consumer-assertions` — tests that still read what only StyleX injected
+- [ ] `52-published-class-seams` — publish the class seams templates and markers still reach through StyleX

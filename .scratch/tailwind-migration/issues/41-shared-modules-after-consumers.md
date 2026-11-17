@@ -1,7 +1,8 @@
 # shared modules whose consumers own the property
 
-Status: ready-for-agent
-Blocked by: 14, 15, 21, 23
+Status: in-progress — most modules are classes; what is left needs the marker
+flip (ticket 07) and the published focus-ring seam (ticket 52).
+Blocked by: 07
 Wave: 7
 Ticket: 41
 Parent: `00-epic-stylex-to-tailwind-4`
@@ -37,3 +38,22 @@ Re-check each of the seven against its consumers: if the consumer no longer writ
 - `pnpm exec vitest run packages/core/src/privateAttributes packages/core/src/utils packages/core/src/List packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`
 - `node packages/core/scripts/build-css-tailwind.mjs`
 - `pnpm -F @astryxdesign/core typecheck`
+
+## Comments
+
+Window 3 (merged) took `utils/rtlStyles.ts` out of the tree: `rtlClasses.ts`
+holds the centre-inline class and the store-size mirror, and
+`privateAttributes/reorderingClasses.ts` holds the handle's cursor, so
+`reordering.stylex.ts` keeps only the mark's owner functions.
+
+What is left is eleven `stylex.create` calls in five modules, and none of them
+is a paint a class can express today:
+
+- `privateAttributes/press.stylex.ts` (4) reads the indicator and press
+  attributes as ancestors; a Tailwind arm needs the marker flip of ticket 07.
+- `privateAttributes/{ownRing,focusOwner}.stylex.ts` (1 + 1) read the same
+  ancestors.
+- `utils/focusOutline.stylex.ts` (3) and `utils/interactionOverlay.stylex.ts`
+  (2) are the ring and the overlay image: they back `focusOutlineProps`, which
+  composes `stylex.props`, so the class arm belongs to ticket 52 with the rest
+  of the published seams.

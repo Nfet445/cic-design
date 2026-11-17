@@ -38,7 +38,8 @@ import {Field} from '../Field/Field';
 import {useTooltip} from '../Tooltip';
 import {VisuallyHidden} from '../VisuallyHidden';
 import type {InputStatus} from '../Field/types';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps} from '../utils';
+import {rtlCenterInlineClassName} from '../utils/rtlClasses';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {withholdCallerHandlers} from '../utils/disabledInteraction';
 import {joinAriaIDs} from '../utils/inputAria';
@@ -1422,8 +1423,10 @@ export function Slider({ref, ...props}: SliderProps) {
               aria-hidden="true"
               {...mergeProps(
                 themeProps('slider-track', {orientation}),
-                stylex.props(!isHorizontal && rtlStyles.centerInline('0px')),
-                sliderTrackClassName({isHorizontal}),
+                tw(
+                  !isHorizontal && rtlCenterInlineClassName,
+                  sliderTrackClassName({isHorizontal}),
+                ),
               )}
             />
 
@@ -1431,8 +1434,10 @@ export function Slider({ref, ...props}: SliderProps) {
             <div
               aria-hidden="true"
               {...mergeProps(
-                stylex.props(!isHorizontal && rtlStyles.centerInline('0px')),
-                sliderFillClipClassName({isHorizontal}),
+                tw(
+                  !isHorizontal && rtlCenterInlineClassName,
+                  sliderFillClipClassName({isHorizontal}),
+                ),
               )}>
               <div
                 ref={fillMoverRef}

@@ -24,7 +24,12 @@ import {
   spacingVars,
 } from '../theme/tokens.stylex';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {
+  rtlCenterInlineBlockOffsetClassName,
+  rtlCenterInlineClassName,
+} from '../utils/rtlClasses';
 import {
   endResizeAt,
   getCollapseControls,
@@ -181,9 +186,9 @@ const styles = stylex.create({
     },
   },
   // The grab zone sits centred on the Handle whatever `pillPlacement` says,
-  // which only places the pill. Inline centering comes from
-  // rtlStyles.centerInline at the call site (correct in LTR and RTL); this
-  // block owns only the block axis.
+  // which only places the pill. The inline centering comes from
+  // rtlCenterInlineClassName at the call site; this block owns only the block
+  // axis.
   hitAreaCenteredY: {
     insetBlockStart: '50%',
     transform: 'translateY(-50%)',
@@ -721,22 +726,23 @@ export function ResizeHandle({
       }}>
       {/* Wider invisible hit area for pointer interaction */}
       <div
-        {...stylex.props(
-          styles.hitArea,
-          isHorizontal ? styles.hitAreaHorizontal : styles.hitAreaVertical,
-          isHorizontal
-            ? rtlStyles.centerInline('0px')
-            : styles.hitAreaCenteredY,
-          isOverlay &&
-            (isHorizontal
-              ? styles.hitAreaWithinHandleX
-              : styles.hitAreaWithinHandleY),
-          !isOverlay &&
-            paneLength != null &&
-            (isHorizontal
-              ? dynamicStyles.hitAreaLengthX(paneLength)
-              : dynamicStyles.hitAreaLengthY(paneLength)),
-          isDisabled && styles.disabled,
+        {...mergeProps(
+          stylex.props(
+            styles.hitArea,
+            isHorizontal ? styles.hitAreaHorizontal : styles.hitAreaVertical,
+            !isHorizontal && styles.hitAreaCenteredY,
+            isOverlay &&
+              (isHorizontal
+                ? styles.hitAreaWithinHandleX
+                : styles.hitAreaWithinHandleY),
+            !isOverlay &&
+              paneLength != null &&
+              (isHorizontal
+                ? dynamicStyles.hitAreaLengthX(paneLength)
+                : dynamicStyles.hitAreaLengthY(paneLength)),
+            isDisabled && styles.disabled,
+          ),
+          isHorizontal ? rtlCenterInlineClassName : undefined,
         )}
         {...grabHandlers}
       />
@@ -748,15 +754,14 @@ export function ResizeHandle({
             stylex.props(
               styles.pill,
               isHorizontal ? styles.pillHorizontal : styles.pillVertical,
-              effectiveSide === 'center'
-                ? rtlStyles.centerInline('-50%')
-                : isHorizontal
+              effectiveSide !== 'center' &&
+                (isHorizontal
                   ? dynamicStyles.pillOffsetX(
                       effectiveSide === 'start' ? -1 : 1,
                     )
                   : dynamicStyles.pillOffsetY(
                       effectiveSide === 'start' ? -1 : 1,
-                    ),
+                    )),
               isHorizontal
                 ? styles.pillGrabHorizontal
                 : styles.pillGrabVertical,
@@ -774,6 +779,12 @@ export function ResizeHandle({
               isDragging && styles.pillActive,
               isDisabled && styles.disabled,
             ),
+            effectiveSide === 'center'
+              ? tw(
+                  rtlCenterInlineClassName,
+                  rtlCenterInlineBlockOffsetClassName.half,
+                )
+              : undefined,
           )}
           {...grabHandlers}
         />

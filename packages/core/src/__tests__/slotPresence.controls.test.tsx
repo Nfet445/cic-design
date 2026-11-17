@@ -15,10 +15,19 @@
 import {beforeAll, describe, it, expect} from 'vitest';
 import {render} from '@testing-library/react';
 import {Avatar} from '../Avatar/Avatar';
+import {avatarStatusCircleClassName} from '../Avatar/avatarClasses';
 import type {ReactNode} from 'react';
+import {
+  buttonEndContentClassName,
+  buttonIconWrapperClassName,
+} from '../Button/buttonClasses';
 import {Breadcrumbs} from '../Breadcrumbs/Breadcrumbs';
 import {BreadcrumbItem} from '../Breadcrumbs/BreadcrumbItem';
+import {breadcrumbStartIconClassName} from '../Breadcrumbs/breadcrumbItemClasses';
 import {Button} from '../Button/Button';
+import {lightboxCaptionClassName} from '../Lightbox/lightboxClasses';
+import {SEGMENT_ICON_CLASS} from '../SegmentedControl/segmentedControlClasses';
+import {TAB_END_CONTENT_CLASS, TAB_ICON_CLASS} from '../TabList/tabListClasses';
 import {Lightbox} from '../Lightbox/Lightbox';
 import {SegmentedControl} from '../SegmentedControl/SegmentedControl';
 import {SegmentedControlItem} from '../SegmentedControl/SegmentedControlItem';
@@ -72,17 +81,17 @@ const SLOTS: ReadonlyArray<SlotCase> = [
         <BreadcrumbItem>Page</BreadcrumbItem>
       </Breadcrumbs>
     ),
-    'itemStyles.icon',
+    breadcrumbStartIconClassName,
   ],
   [
     'Button icon',
     value => <Button label="Save" icon={value} />,
-    'inline-flex items-center justify-center shrink-0',
+    buttonIconWrapperClassName,
   ],
   [
     'Button endContent',
     value => <Button label="Save" endContent={value} />,
-    'inline-flex items-center [color:inherit]',
+    buttonEndContentClassName,
   ],
   [
     'Lightbox caption',
@@ -93,7 +102,7 @@ const SLOTS: ReadonlyArray<SlotCase> = [
         media={{src: '/photo.jpg', alt: 'Photo', caption: value}}
       />
     ),
-    'styles.caption',
+    lightboxCaptionClassName,
   ],
   [
     'SegmentedControlItem icon',
@@ -102,7 +111,7 @@ const SLOTS: ReadonlyArray<SlotCase> = [
         <SegmentedControlItem value="list" label="List" icon={value} />
       </SegmentedControl>
     ),
-    'styles.icon',
+    SEGMENT_ICON_CLASS,
   ],
   [
     'Tab icon',
@@ -111,7 +120,7 @@ const SLOTS: ReadonlyArray<SlotCase> = [
         <Tab value="a" label="Overview" icon={value} />
       </TabList>
     ),
-    'styles.icon',
+    TAB_ICON_CLASS,
   ],
   [
     'Tab selectedIcon',
@@ -120,7 +129,7 @@ const SLOTS: ReadonlyArray<SlotCase> = [
         <Tab value="a" label="Overview" icon="x" selectedIcon={value} />
       </TabList>
     ),
-    'styles.icon',
+    TAB_ICON_CLASS,
   ],
   [
     'Tab endContent',
@@ -129,7 +138,7 @@ const SLOTS: ReadonlyArray<SlotCase> = [
         <Tab value="a" label="Overview" endContent={value} />
       </TabList>
     ),
-    'styles.endContentWrapper',
+    TAB_END_CONTENT_CLASS,
   ],
 ];
 
@@ -204,13 +213,17 @@ describe('Avatar status renders for a truthy value only', () => {
     'renders no status slot and no stray "0" for %s',
     (_label, value) => {
       render(<Avatar name="Ada Lovelace" status={value} />);
-      expect(document.querySelector('[class*="styles.status"]')).toBeNull();
+      expect(
+        document.querySelector(`[class*="${avatarStatusCircleClassName}"]`),
+      ).toBeNull();
       expect(zeroParent()).toBeNull();
     },
   );
 
   it('renders the status slot for a truthy value', () => {
     render(<Avatar name="Ada Lovelace" status={<span>Online</span>} />);
-    expect(document.querySelector('[class*="styles.status"]')).not.toBeNull();
+    expect(
+      document.querySelector(`[class*="${avatarStatusCircleClassName}"]`),
+    ).not.toBeNull();
   });
 });

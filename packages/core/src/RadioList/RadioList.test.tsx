@@ -23,6 +23,10 @@ import {
 import {RadioList} from './RadioList';
 import {RadioListItem} from './RadioListItem';
 import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
+import {
+  rtlCenterInlineBlockOffsetClassName,
+  rtlCenterInlineClassName,
+} from '../utils/rtlClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {indicatorPressImageClassName} from '../privateAttributes/pressClasses';
 
@@ -1115,24 +1119,26 @@ describe('RadioList', () => {
       ['sm', 'rtl'],
       ['md', 'ltr'],
       ['md', 'rtl'],
-    ] as const)(
-      'applies centerInline styling to native input (size: %s, dir: %s)',
-      (size, dir) => {
-        const {container} = render(
-          <div dir={dir}>
-            <RadioList size={size} label="Choice" value="" onChange={() => {}}>
-              <RadioListItem label="Option A" value="a" />
-            </RadioList>
-          </div>,
-        );
+    ] as const)('centers the native input (size: %s, dir: %s)', (size, dir) => {
+      const {container} = render(
+        <div dir={dir}>
+          <RadioList size={size} label="Choice" value="" onChange={() => {}}>
+            <RadioListItem label="Option A" value="a" />
+          </RadioList>
+        </div>,
+      );
 
-        const input = container.querySelector(
-          'input[type="radio"]',
-        ) as HTMLInputElement;
-        expect(input).toBeInTheDocument();
-        expect(input.className).toContain('centerInline');
-      },
-    );
+      const input = container.querySelector(
+        'input[type="radio"]',
+      ) as HTMLInputElement;
+      expect(input).toBeInTheDocument();
+      expectClassSet(input, {
+        includes: [
+          ...rtlCenterInlineClassName.split(' '),
+          rtlCenterInlineBlockOffsetClassName.half,
+        ],
+      });
+    });
   });
 });
 

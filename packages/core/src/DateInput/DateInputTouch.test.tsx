@@ -42,6 +42,8 @@ import {fileURLToPath} from 'node:url';
 import {useState} from 'react';
 import type {ISODateString} from '../utils';
 import {classesOf} from '../__tests__/classNameAssertions';
+import {dayButtonClassName} from '../Calendar/calendarClasses';
+import type {DayButtonState} from '../Calendar/calendarClasses';
 import {InputGroup} from '../InputGroup';
 import {InternationalizationProvider} from '../i18n';
 import {DateInput} from './DateInput';
@@ -2861,32 +2863,12 @@ describe('DateInput — scroll CSS (definition-level)', () => {
   const dir = path.dirname(fileURLToPath(import.meta.url));
   const read = (file: string) => readFileSync(path.join(dir, file), 'utf8');
 
-  /**
-   * The declarations inside one named style object, comments stripped and
-   * trailing commas removed.
-   *
-   * Crude on purpose — a nested value object contributes its own inner lines
-   * too. Every caller looks for a specific property prefix, so the noise is
-   * harmless, and a real parser here would be more machinery than the
-   * question deserves.
-   */
-  const declarations = (source: string, object: string) => {
-    const open = source.indexOf(`  ${object}: {`);
-    expect(open).toBeGreaterThan(-1);
-    return source
-      .slice(open, source.indexOf('\n  },', open))
-      .replace(/\/\/.*$/gm, '')
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.endsWith(','))
-      .map(line => line.slice(0, -1));
-  };
-
-  /** The same, scoped to one `export const <group> = stylex.create({...})`. */
-  const declarationsIn = (source: string, group: string, object: string) => {
-    const at = source.indexOf(`export const ${group}`);
-    expect(at).toBeGreaterThan(-1);
-    return declarations(source.slice(at), object);
+  /** A day button's classes, less the ones a plainer state already carries. */
+  const addedClasses = (state: DayButtonState, next: DayButtonState) => {
+    const plainer = dayButtonClassName(state).split(' ');
+    return dayButtonClassName(next)
+      .split(' ')
+      .filter(className => !plainer.includes(className));
   };
 
   it('pages the month scroller one whole pane at a time, horizontally', () => {
@@ -2934,30 +2916,26 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * with the tap that produced it.
    */
   it('mutes adjacent days exactly as the desktop calendar does', () => {
-    // The desktop's two halves, read out of its own source rather than
-    // restated here — so the check follows the desktop if its treatment
+    // The desktop's own class for the state, read from its class map rather
+    // than restated here — so the check follows the desktop if its treatment
     // moves, instead of freezing today's values into this file.
-    const desktop = read('../Calendar/styles.ts');
-    const structural = declarationsIn(desktop, 'dayCellStyles', 'dayOutside');
-    const theme = declarationsIn(desktop, 'dayCellTheme', 'dayOutside');
-    // Both halves must have found something, or the parity check below is
-    // `arrayContaining([])` and passes on anything at all.
-    expect(structural.length).toBeGreaterThan(0);
-    expect(theme.length).toBeGreaterThan(0);
+    const inMonth: DayButtonState = {
+      isOutside: false,
+      isTodayRing: false,
+      isTodayInRangeRing: false,
+      isSelected: false,
+      isDisabled: false,
+    };
+    const added = addedClasses(inMonth, {...inMonth, isOutside: true});
+    // Something must have changed, or the parity check below passes on
+    // anything at all.
+    expect(added.length).toBeGreaterThan(0);
 
-    // And the touch pane encodes all of it, in its one class.
-    const colour = theme.find(declaration => declaration.startsWith('color:'));
-    expect(colour).toBeDefined();
-    const colourVar = /colorVars\['([^']+)'\]/.exec(colour!)?.[1];
-    expect(colourVar).toBeDefined();
-    expect(monthDayOutsideClassName).toContain(`var(${colourVar})`);
-
-    const fade = structural.find(declaration =>
-      declaration.startsWith('opacity:'),
-    );
-    expect(fade).toBeDefined();
-    const fadePercent = Number(/opacity:\s*([\d.]+)/.exec(fade!)![1]) * 100;
-    expect(monthDayOutsideClassName).toContain(`opacity-${fadePercent}`);
+    // The touch pane encodes all of it, in its one class.
+    for (const className of added) {
+      expect(className).toMatch(/^(opacity-|text-\[color:)/);
+      expect(monthDayOutsideClassName).toContain(className);
+    }
   });
 
   /**
@@ -2974,22 +2952,25 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * ordering a calendar needs.
    */
   it('fades disabled days as the desktop does, rather than recolouring them', () => {
-    const desktop = read('../Calendar/styles.ts');
-    const theme = declarationsIn(desktop, 'dayCellTheme', 'dayDisabled');
+    // The desktop's disabled arm adds the fade and nothing else.
+    const enabled: DayButtonState = {
+      isOutside: false,
+      isTodayRing: false,
+      isTodayInRangeRing: false,
+      isSelected: false,
+      isDisabled: false,
+    };
+    const added = addedClasses(enabled, {...enabled, isDisabled: true});
+    expect(added).toHaveLength(1);
+    expect(added[0]).toMatch(/^opacity-/);
 
     // Whatever opacity the desktop fades to, this pane fades to the same one.
-    const fade = theme.find(d => d.startsWith('opacity:'));
-    expect(fade).toBeDefined();
-    const fadePercent = Number(/opacity:\s*([\d.]+)/.exec(fade!)![1]) * 100;
-    expect(monthDayDisabledClassName).toContain(`opacity-${fadePercent}`);
+    expect(monthDayDisabledClassName).toContain(added[0]);
 
     // And no colour of its own: a colour would override the secondary one a
     // spilled day carries, collapsing "disabled" and "disabled and adjacent"
     // into a single shade.
     expect(monthDayDisabledClassName).not.toMatch(/text-\[color:/);
-    // Parity, not a rule of this pane's own — if the desktop ever starts
-    // recolouring a disabled day, this fires and says to follow it.
-    expect(theme.some(d => d.startsWith('color:'))).toBe(false);
   });
 
   /**

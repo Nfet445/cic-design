@@ -48,7 +48,7 @@ import {
   ownRingProps,
 } from '../privateAttributes/ownRing.stylex';
 import {listReorderHandleProps} from '../privateAttributes/listReorder.stylex';
-import {reorderingHandleStyles} from '../privateAttributes/reordering.stylex';
+import {reorderingHandleCursorClassName} from '../privateAttributes/reordering.stylex';
 import {useTouchHitArea} from '../utils/touchHitArea';
 import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 import {
@@ -241,11 +241,11 @@ export function ListReorderHandle({
           event.stopPropagation();
         }
       }}
-      {...focusOutlineProps.focusVisible(
-        reorderingHandleStyles.cursor,
-        touchHitAreaStyles.layer,
+      {...focusOutlineProps.focusVisible(touchHitAreaStyles.layer)}
+      className={tw(
+        listReorderHandleClassName({rowAlign}),
+        reorderingHandleCursorClassName,
       )}
-      className={tw(listReorderHandleClassName({rowAlign}))}
     />
   );
 }

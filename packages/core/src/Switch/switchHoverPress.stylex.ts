@@ -14,9 +14,10 @@
  * sheet order, so the hover tint and the mouse press land over the fills
  * `switchClasses.ts` sets at rest.
  *
- * The input's box is here for another reason: it is composed after
- * `rtlStyles.centerInline`, whose `transform` it replaces. Unlayered StyleX
- * outranks every layer, so a utility could not replace it.
+ * The input's box is here for another reason: the centering class
+ * (`utils/rtlClasses.ts`) puts the box at the inline center, and this
+ * `transform` adds the vertical half and the hit insets. Unlayered StyleX
+ * outranks every layer, so the class's own transform yields to it.
  *
  * The two releases are frames in tailwind/astryx.input.css. Only the marker's
  * arms can name them, so the clock and its Reduce Motion cap stay here.
@@ -65,7 +66,7 @@ export const switchHoverPressStyles = stylex.create({
   // utils/hitArea measures, each side stopping at half the gap to a
   // neighbouring target. Its center moves with any uneven side, and nothing
   // visible grows. The insets are 0 until measured. Physical left and
-  // translate, as centerInline: the insets are physical sides.
+  // translate, as rtlCenterInlineClassName: the insets are physical sides.
   inputBox: {
     width: {
       default: '100%',

@@ -104,11 +104,14 @@ export type {RGBA} from './color';
 
 export {devWarn, devError, warnOnce, formatDevMessage} from './devWarning';
 
-export {rtlStyles} from './rtlStyles';
-export {RTL_MIRROR_CLASS} from './rtlClasses';
+export {
+  RTL_MIRROR_CLASS,
+  rtlCenterInlineClassName,
+  rtlCenterInlineBlockOffsetClassName,
+} from './rtlClasses';
 
-// The shared focus ring, exported for @astryxdesign/lab — same reason
-// rtlStyles is: a style that must be identical across packages, not copied.
+// The shared focus ring, exported for @astryxdesign/lab — a style that must be
+// identical across packages, not copied.
 export {focusOutlineStyles, focusOutlineProps} from './focusOutline.stylex';
 
 export {isImeKeyEvent} from './ime';

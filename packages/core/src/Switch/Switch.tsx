@@ -35,9 +35,10 @@ import type {IconType} from '../Icon';
 import type {InputStatus} from '../Field/types';
 import {Spinner} from '../Spinner';
 import {useTooltip} from '../Tooltip';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps} from '../utils';
 import {switchFocusInput, switchScope} from './switch.markers.stylex';
 import type {BaseProps} from '../BaseProps';
+import {rtlCenterInlineClassName} from '../utils/rtlClasses';
 import type {SizeValue} from '../utils/types';
 import {tw} from '../utils/tw';
 import {
@@ -430,12 +431,11 @@ export function Switch({
         }
         aria-busy={isBusy || undefined}
         {...mergeProps(
-          tw(switchInputClassName({isBusy})),
-          stylex.props(
-            rtlStyles.centerInline('-50%'),
-            switchHoverPressStyles.inputBox,
-            switchFocusInput,
-          ),
+          // The box and the hit area inside it own the transform
+          // (switchHoverPress.stylex.ts), so only the inline anchor and the
+          // inline half of the centering come from the shared class.
+          tw(switchInputClassName({isBusy}), rtlCenterInlineClassName),
+          stylex.props(switchHoverPressStyles.inputBox, switchFocusInput),
         )}
       />
       <div ref={trackRef} aria-hidden="true" {...trackPropsFor(isOn)}>

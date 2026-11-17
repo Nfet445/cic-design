@@ -21,6 +21,8 @@ import {CheckboxListItem} from '../CheckboxList/CheckboxListItem';
 import {RadioList} from '../RadioList/RadioList';
 import {RadioListItem} from '../RadioList/RadioListItem';
 import {HIT_INSET_PROPERTIES, resetHitAreaForTests} from '../utils/hitArea';
+import {checkboxInputRowClassName} from '../CheckboxInput/checkboxInputClasses';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 
 interface Declared {
@@ -122,12 +124,17 @@ describe('CheckboxInput under a finger', () => {
     // The row's own height is the row's, never the band's: the band is a
     // pseudo-element, so no min-height utility appears at either pointer.
     expect(
-      Array.from(row.classList).filter(name => /min-h-/.test(name)),
+      Array.from(row.classList).filter(name => name.includes('min-h-')),
     ).toEqual([]);
     expect(hasHitLayer(row)).toBe(true);
-    // The row anchors the band only under a finger; a mouse sees no change.
-    expect(row.classList.contains('pointer-coarse:relative')).toBe(true);
-    expect(row.classList.contains('relative')).toBe(false);
+    // The row holds the band only under a finger; a mouse sees no change.
+    const rowClass = checkboxInputRowClassName({
+      isLabelHidden: false,
+      hasHitArea: true,
+    });
+    expect(rowClass.split(' ')).toContain('pointer-coarse:relative');
+    expect(classesOf(row)).toEqual(expect.arrayContaining(rowClass.split(' ')));
+    expect(classesOf(row)).not.toContain('relative');
   });
 
   it('gives a label-hidden, disabled or read-only checkbox no hit band', () => {

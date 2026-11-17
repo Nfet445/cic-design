@@ -19,6 +19,8 @@ import {act, render, renderHook, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {StrictMode, useRef, type ReactNode} from 'react';
 import {Collapsible} from '../Collapsible/Collapsible';
+import {collapsibleContentHiddenClassName} from '../Collapsible/collapsibleClasses';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {CollapsibleGroup} from '../Collapsible/CollapsibleGroup';
 import {TreeList} from '../TreeList/TreeList';
 import type {TreeListItemData} from '../TreeList/TreeListTypes';
@@ -453,12 +455,12 @@ describe("a close plays the content's exit (spec:AST-105 FR4)", () => {
     await flush();
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     // Still on screen for the exit, out of reach, giving up its space.
-    expect(getComputedStyle(content).display).not.toBe('none');
+    expect(classesOf(content)).not.toContain(collapsibleContentHiddenClassName);
     expect(content).toHaveAttribute('inert');
     expect(content.style.getPropertyValue('margin-block-end')).not.toBe('');
     expect(animated).toContain(screen.getByTestId('after'));
     act(() => finishes.get(content)?.());
-    expect(getComputedStyle(content).display).toBe('none');
+    expect(classesOf(content)).toContain(collapsibleContentHiddenClassName);
     expect(content).not.toHaveAttribute('inert');
     expect(content.style.getPropertyValue('margin-block-end')).toBe('');
   });
@@ -671,7 +673,7 @@ describe("a close plays the content's exit (spec:AST-105 FR4)", () => {
     const content = document.getElementById(
       trigger.getAttribute('aria-controls') ?? '',
     ) as HTMLElement;
-    expect(getComputedStyle(content).display).toBe('none');
+    expect(classesOf(content)).toContain(collapsibleContentHiddenClassName);
     expect(content).not.toHaveAttribute('inert');
   });
 });

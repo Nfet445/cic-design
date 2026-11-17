@@ -143,6 +143,15 @@ export const docs = {
       {className: 'astryx-table-cell', visualProps: ['density']},
       {className: 'astryx-table-header-cell', visualProps: ['density']},
     ],
+    vars: [
+      {
+        name: '--astryx-table-row-height',
+        description:
+          'Height of a row the caller sized; a virtualized body hands each row its own height. Table sets it inline on that row.',
+        default: 'unset (the row keeps its content height)',
+        private: true,
+      },
+    ],
     componentIcons: [
       {
         slot: 'table-sort-indicator',

@@ -21,6 +21,10 @@ import {CheckboxInput} from './CheckboxInput';
 import {Theme} from '../theme/Theme';
 import {defineTheme} from '../theme/defineTheme';
 import {expectClassSet} from '../__tests__/classNameAssertions';
+import {
+  rtlCenterInlineBlockOffsetClassName,
+  rtlCenterInlineClassName,
+} from '../utils/rtlClasses';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {FOCUS_OUTLINE_PARTS} from '../utils/focusOutline.stylex';
 import {
@@ -878,27 +882,29 @@ describe('CheckboxInput', () => {
       ['sm', 'rtl'],
       ['md', 'ltr'],
       ['md', 'rtl'],
-    ] as const)(
-      'applies centerInline styling to native input (size: %s, dir: %s)',
-      (size, dir) => {
-        const {container} = render(
-          <div dir={dir}>
-            <CheckboxInput
-              label="Option"
-              size={size}
-              value={false}
-              onChange={() => {}}
-            />
-          </div>,
-        );
+    ] as const)('centers the native input (size: %s, dir: %s)', (size, dir) => {
+      const {container} = render(
+        <div dir={dir}>
+          <CheckboxInput
+            label="Option"
+            size={size}
+            value={false}
+            onChange={() => {}}
+          />
+        </div>,
+      );
 
-        const input = container.querySelector(
-          'input[type="checkbox"]',
-        ) as HTMLInputElement;
-        expect(input).toBeInTheDocument();
-        expect(input.className).toContain('centerInline');
-      },
-    );
+      const input = container.querySelector(
+        'input[type="checkbox"]',
+      ) as HTMLInputElement;
+      expect(input).toBeInTheDocument();
+      expectClassSet(input, {
+        includes: [
+          ...rtlCenterInlineClassName.split(' '),
+          rtlCenterInlineBlockOffsetClassName.half,
+        ],
+      });
+    });
   });
 });
 

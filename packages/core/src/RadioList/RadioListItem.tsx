@@ -28,7 +28,10 @@ import {joinAriaIDs} from '../utils/inputAria';
 import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
-import {rtlStyles} from '../utils/rtlStyles';
+import {
+  rtlCenterInlineBlockOffsetClassName,
+  rtlCenterInlineClassName,
+} from '../utils/rtlClasses';
 import {indicatorScopeProps} from '../Indicator/indicatorScope';
 import {useIndicatorFocusRing} from '../hooks/useIndicatorFocusRing';
 import {usePressFeedback} from '../hooks/usePressFeedback';
@@ -266,10 +269,12 @@ export function RadioListItem({
           hasDescription ? descriptionID : undefined,
           disabledReasonID,
         )}
-        {...mergeProps(
-          radioListItemInputClassName({size}),
-          stylex.props(rtlStyles.centerInline('-50%')),
-        )}
+        {...mergeProps(radioListItemInputClassName({size}), {
+          className: tw(
+            rtlCenterInlineClassName,
+            rtlCenterInlineBlockOffsetClassName.half,
+          ),
+        })}
       />
       <span ref={indicatorRef} className={radioListItemIndicatorSlotClassName}>
         <RadioControl

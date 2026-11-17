@@ -29,6 +29,7 @@ import {act, render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {Switch} from './Switch';
 import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
+import {rtlCenterInlineClassName} from '../utils/rtlClasses';
 import {
   getAllInjectedCss,
   getForcedColorsRules,
@@ -1427,27 +1428,28 @@ describe('Switch', () => {
       ['sm', 'rtl'],
       ['md', 'ltr'],
       ['md', 'rtl'],
-    ] as const)(
-      'applies centerInline styling to native input (size: %s, dir: %s)',
-      (size, dir) => {
-        const {container} = render(
-          <div dir={dir}>
-            <Switch
-              label="Dark mode"
-              size={size}
-              value={false}
-              onChange={() => {}}
-            />
-          </div>,
-        );
+    ] as const)('centers the native input (size: %s, dir: %s)', (size, dir) => {
+      const {container} = render(
+        <div dir={dir}>
+          <Switch
+            label="Dark mode"
+            size={size}
+            value={false}
+            onChange={() => {}}
+          />
+        </div>,
+      );
 
-        const input = container.querySelector(
-          'input[type="checkbox"]',
-        ) as HTMLInputElement;
-        expect(input).toBeInTheDocument();
-        expect(input.className).toContain('centerInline');
-      },
-    );
+      const input = container.querySelector(
+        'input[type="checkbox"]',
+      ) as HTMLInputElement;
+      expect(input).toBeInTheDocument();
+      // The input's box owns the transform, so only the inline half of the
+      // centering shows here.
+      expectClassSet(input, {
+        includes: rtlCenterInlineClassName.split(' '),
+      });
+    });
   });
 });
 
