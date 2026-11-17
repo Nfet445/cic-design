@@ -7,6 +7,11 @@ import {ChatMessage} from './ChatMessage';
 import {ChatMessageBubble} from './ChatMessageBubble';
 import {ChatMessageList} from './ChatMessageList';
 import {ChatMessageMetadata} from './ChatMessageMetadata';
+import {
+  classesOf,
+  expectClassSet,
+  expectVariable,
+} from '../__tests__/classNameAssertions';
 
 /**
  * Classes shared between two elements. StyleX emits one atomic class per
@@ -222,11 +227,14 @@ describe('ChatMessageBubble', () => {
     const capped = screen.getByTestId('capped');
     const full = screen.getByTestId('full');
 
-    // Default bubbles keep the cap; a width bubble replaces it with none.
-    expect(getComputedStyle(capped).maxWidth).toMatch(/^max\(80%,\s*280px\)$/);
-    expect(getComputedStyle(full).maxWidth).toBe('none');
-    // The dynamic width value is set on the element (string passes through).
-    expect(full.getAttribute('style')).toContain('100%');
+    // Default bubbles keep the cap; a width bubble replaces it with none, and
+    // reads the width from its inline variable so a consumer class still wins.
+    expectClassSet(capped, {includes: ['max-w-[max(80%,280px)]']});
+    expectClassSet(full, {
+      includes: ['max-w-none', 'w-[var(--astryx-chat-bubble-width)]'],
+      excludes: ['max-w-[max(80%,280px)]'],
+    });
+    expectVariable(full, '--astryx-chat-bubble-width', '100%');
   });
 
   it('numeric width is treated as pixels', () => {
@@ -237,8 +245,39 @@ describe('ChatMessageBubble', () => {
         </ChatMessageBubble>
       </ChatMessage>,
     );
-    expect(screen.getByTestId('fixed').getAttribute('style')).toContain(
+    expectVariable(
+      screen.getByTestId('fixed'),
+      '--astryx-chat-bubble-width',
       '420px',
+    );
+  });
+
+  it('states the radius and the sender surface as classes', () => {
+    render(
+      <ChatMessage sender="user" density="compact">
+        <ChatMessageBubble data-testid="compact">Hi</ChatMessageBubble>
+        <ChatMessageBubble variant="ghost" data-testid="ghost">
+          Ghost
+        </ChatMessageBubble>
+      </ChatMessage>,
+    );
+
+    expectClassSet(screen.getByTestId('compact'), {
+      includes: [
+        'rounded-[var(--radius-container)]',
+        'bg-[var(--color-neutral)]',
+        'px-4',
+        'py-3',
+      ],
+    });
+    expectClassSet(screen.getByTestId('ghost'), {
+      includes: ['bg-transparent', 'py-0'],
+    });
+    expectClassSet(screen.getByTestId('compact'), {
+      excludes: ['rounded-[var(--radius-chat)]'],
+    });
+    expect(classesOf(screen.getByTestId('ghost'))).not.toContain(
+      'bg-[var(--color-neutral)]',
     );
   });
 });

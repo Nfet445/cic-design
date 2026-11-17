@@ -706,12 +706,27 @@ import {
   metadataListItemValueClassName,
 } from '../MetadataList/metadataListItemClasses';
 import {
+  chatMessageBubbleAlignEndClassName,
+  chatMessageBubbleClassName,
+  chatMessageBubbleGroupClassName,
+  chatMessageBubbleMetadataRowClassName,
+  chatMessageBubbleNameRowClassName,
+  chatMessageBubblePaddingClassName,
+  chatMessageBubbleSlotPaddingClassName,
+  chatMessageBubbleSurfaceClassName,
+  chatMessageBubbleTextClassName,
+  chatMessageAvatarWrapClassName,
+  chatMessageChildrenClassName,
+  chatMessageClassName,
+  chatMessageContentClassName,
   chatMessageMetadataAssistantClassName,
   chatMessageMetadataClassName,
   chatMessageMetadataStatusErrorClassName,
   chatMessageMetadataStatusPulseClassName,
   chatMessageMetadataStatusRowClassName,
+  chatMessageMetadataSlotClassName,
   chatMessageMetadataUserClassName,
+  chatMessageNameClassName,
   chatPastedTextFooterClassName,
   chatPastedTextMetaClassName,
   chatPastedTextPreviewClassName,
@@ -2347,6 +2362,45 @@ function familyClassNames() {
   add(chatMessageMetadataStatusRowClassName);
   add(chatMessageMetadataStatusErrorClassName);
   add(chatMessageMetadataStatusPulseClassName);
+  // ChatMessageBubble: the surface, the sender fill, the density inset, the
+  // grouped corners and the two aligned slots.
+  add(chatMessageBubbleClassName({hasWidth: false, isCompact: false}));
+  add(chatMessageBubbleClassName({hasWidth: true, isCompact: true}));
+  add(chatMessageBubbleTextClassName);
+  add(chatMessageBubbleSurfaceClassName({isGhost: false}));
+  add(chatMessageBubbleSurfaceClassName({isGhost: true}));
+  for (const density of ['compact', 'spacious']) {
+    add(chatMessageBubblePaddingClassName({density, isGhost: false}));
+    add(chatMessageBubbleSlotPaddingClassName(density));
+  }
+  add(chatMessageBubblePaddingClassName({density: 'balanced', isGhost: true}));
+  for (const group of ['first', 'middle', 'last']) {
+    add(chatMessageBubbleGroupClassName.assistant[group]);
+    add(chatMessageBubbleGroupClassName.user[group]);
+  }
+  add(chatMessageBubbleNameRowClassName);
+  add(chatMessageBubbleMetadataRowClassName);
+  add(chatMessageBubbleAlignEndClassName);
+  // ChatMessage: the article, its avatar slot, the content column, the name
+  // row, the children stack read sender and density separately.
+  add(
+    chatMessageClassName({density: 'compact', hasAvatar: true, sender: 'user'}),
+  );
+  add(
+    chatMessageClassName({
+      density: 'spacious',
+      hasAvatar: false,
+      sender: 'system',
+    }),
+  );
+  add(chatMessageAvatarWrapClassName);
+  add(chatMessageContentClassName('system'));
+  add(chatMessageContentClassName('user'));
+  add(chatMessageContentClassName('assistant'));
+  add(chatMessageNameClassName);
+  add(chatMessageMetadataSlotClassName);
+  add(chatMessageChildrenClassName({density: 'compact', sender: 'assistant'}));
+  add(chatMessageChildrenClassName({density: 'spacious', sender: 'user'}));
   for (const orientation of ['vertical', 'horizontal']) {
     add(radioListClassName({orientation}));
   }

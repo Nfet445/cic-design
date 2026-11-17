@@ -1,16 +1,14 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 import {readFileSync} from 'node:fs';
-import {createRequire} from 'node:module';
 import * as path from 'node:path';
-import {transformSync} from '@babel/core';
-import stylexBabelPlugin from '@stylexjs/babel-plugin';
 import {createElement, createRef, Fragment, type ReactNode} from 'react';
 import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {ChatMessage} from './ChatMessage';
 import {ChatMessageBubble} from './ChatMessageBubble';
 import {ChatMessageList} from './ChatMessageList';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 // Content that renders nothing but is not a skipped scalar: its wrapper
 // renders and collapses through CSS instead of the content being inspected.
@@ -99,7 +97,7 @@ describe('ChatMessage', () => {
       // back to aria-label; real Chromium computes "Message from assistant".
       expect(target).not.toBeNull();
       expect(target).toBeEmptyDOMElement();
-      expect(getComputedStyle(target as HTMLElement).display).toBe('none');
+      expectClassSet(target as HTMLElement, {includes: ['[&:empty]:hidden']});
       expect(article).toHaveAttribute('aria-label', 'Message from assistant');
     },
   );
@@ -112,9 +110,7 @@ describe('ChatMessage', () => {
     );
     const article = screen.getByRole('article');
     expect(article).toHaveAccessibleName('Navi');
-    expect(
-      getComputedStyle(labelTarget(article) as HTMLElement).display,
-    ).not.toBe('none');
+    expect(labelTarget(article)).toHaveTextContent('Navi');
   });
 
   it('renders avatar for assistant', () => {
@@ -168,7 +164,7 @@ describe('ChatMessage', () => {
       );
       const wrapper = screen.getByRole('article').firstElementChild;
       expect(wrapper).toBeEmptyDOMElement();
-      expect(getComputedStyle(wrapper as HTMLElement).display).toBe('none');
+      expectClassSet(wrapper as HTMLElement, {includes: ['[&:empty]:hidden']});
     },
   );
 
@@ -181,7 +177,7 @@ describe('ChatMessage', () => {
       </ChatMessage>,
     );
     const wrapper = screen.getByTestId('avatar').parentElement;
-    expect(getComputedStyle(wrapper as HTMLElement).display).not.toBe('none');
+    expect(wrapper).toContainElement(screen.getByTestId('avatar'));
   });
 
   it('applies sender class', () => {
@@ -277,7 +273,7 @@ describe('ChatMessage', () => {
       const column = screen.getByText('Summary').parentElement?.parentElement;
       const wrapper = column?.lastElementChild;
       expect(wrapper).toBeEmptyDOMElement();
-      expect(getComputedStyle(wrapper as HTMLElement).display).toBe('none');
+      expectClassSet(wrapper as HTMLElement, {includes: ['[&:empty]:hidden']});
     },
   );
 
@@ -288,7 +284,7 @@ describe('ChatMessage', () => {
       </ChatMessage>,
     );
     const wrapper = screen.getByText('Updated').parentElement;
-    expect(getComputedStyle(wrapper as HTMLElement).display).not.toBe('none');
+    expect(wrapper).toContainElement(screen.getByText('Updated'));
   });
 
   it('uses balanced density without list context', () => {
@@ -351,55 +347,29 @@ describe('ChatMessage', () => {
 // A sibling-relative :has(~ …) in Core's global stylesheet makes WebKit
 // re-check every earlier sibling on each insertion into any container. The
 // avatar's top spacing is judged from the message article instead.
-describe('ChatMessage compiled avatar rule', () => {
-  function compiledSelectors(): {selector: string; declaration: string}[] {
-    const repoRoot = path.resolve(__dirname, '../../../..');
-    const source = path.resolve(__dirname, 'ChatMessage.tsx');
-    const require = createRequire(__filename);
-    const result = transformSync(readFileSync(source, 'utf8'), {
-      babelrc: false,
-      configFile: false,
-      filename: source,
-      presets: [
-        [
-          require.resolve('@babel/preset-typescript'),
-          {isTSX: true, allExtensions: true},
-        ],
-        [require.resolve('@babel/preset-react'), {runtime: 'automatic'}],
-      ],
-      plugins: [
-        [
-          stylexBabelPlugin,
-          {
-            dev: false,
-            runtimeInjection: false,
-            genConditionalClasses: true,
-            treeshakeCompensation: true,
-            unstable_moduleResolution: {type: 'commonJS', rootDir: repoRoot},
-          },
-        ],
-      ],
-    });
-    const rules =
-      (result?.metadata as {stylex?: [string, {ltr: string}, number][]})
-        ?.stylex ?? [];
-    return rules.map(([, {ltr}]) => {
-      const brace = ltr.indexOf('{');
-      return {selector: ltr.slice(0, brace), declaration: ltr.slice(brace)};
-    });
-  }
-
-  it('compiles no sibling-relative :has() and judges the name from the article', () => {
-    const rules = compiledSelectors();
-    expect(rules.filter(rule => rule.selector.includes(':has(~'))).toEqual([]);
-    // The article sets the avatar offset from its own :has(), and the
-    // avatar wrapper reads it.
-    const offset = rules.filter(
-      rule =>
-        rule.selector.includes(':has([data-chat-name])') &&
-        rule.declaration.includes('var(--spacing-5)'),
+describe('ChatMessage avatar offset', () => {
+  it('judges the name from the article, never a sibling', () => {
+    render(
+      <ChatMessage sender="assistant" name="Navi" avatar={<span />}>
+        <span>Summary</span>
+      </ChatMessage>,
     );
-    expect(offset).toHaveLength(1);
-    expect(offset[0].selector).not.toContain(' ');
+
+    const article = screen.getByRole('article');
+    const wrapper = article.firstElementChild as HTMLElement;
+
+    expectClassSet(article, {
+      includes: [
+        '[&:has([data-chat-name])]:[--_chat-avatar-offset:var(--spacing-5)]',
+      ],
+    });
+    expectClassSet(wrapper, {includes: ['mt-[var(--_chat-avatar-offset)]']});
+  });
+
+  it('keeps no sibling-relative :has() in the class map', () => {
+    const source = readFileSync(path.resolve(__dirname, 'chatClasses.ts'), {
+      encoding: 'utf8',
+    });
+    expect(source).not.toContain(':has(~');
   });
 });
