@@ -294,6 +294,15 @@ export function AvatarStatusDot({
   // A rendered icon is itself a non-colour mark; overlaying both cutouts in
   // the dot's small inner field would make each illegible.
   const glyphShape = showsIcon ? undefined : glyphShapeMap[variant];
+  // The icon box is sized per instance, so it rides a custom property rather
+  // than an inline width and height.
+  const iconCustomProperties: Record<string, string> = {
+    [STATUS_DOT_ICON_VARIABLE]: `${iconSize}px`,
+  };
+  const sizeCustomProperties: Record<string, string> = {
+    [STATUS_DOT_SIZE_VARIABLE]: `${dotSize}px`,
+    [STATUS_DOT_BORDER_VARIABLE]: `${borderWidth}px`,
+  };
 
   return (
     <div
@@ -308,21 +317,13 @@ export function AvatarStatusDot({
           avatarStatusDotVariantClassName[variant],
           className,
         ),
-        {
-          ...style,
-          [STATUS_DOT_SIZE_VARIABLE]: `${dotSize}px`,
-          [STATUS_DOT_BORDER_VARIABLE]: `${borderWidth}px`,
-        },
+        {...sizeCustomProperties, ...style},
       )}>
       {showsIcon && (
         <span
           aria-hidden="true"
           className={avatarStatusDotIconClassName}
-          style={
-            {
-              [STATUS_DOT_ICON_VARIABLE]: `${iconSize}px`,
-            } as React.CSSProperties
-          }>
+          style={iconCustomProperties}>
           {icon}
         </span>
       )}
