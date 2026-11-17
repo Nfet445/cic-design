@@ -715,10 +715,19 @@ describe('dist/astryx-tailwind.css declarations', () => {
 
   it('sizes the icon box on its four steps', () => {
     // Button and the Table row expansion put the box beside the glyph, so the
-    // size is a length of its own rather than the icon's variable.
-    expect(stylesheet.ruleFor('[width:0.75rem]')).toBe('width:0.75rem;');
-    expect(stylesheet.ruleFor('[height:1.5rem]')).toBe('height:1.5rem;');
-    expect(stylesheet.ruleFor('[font-size:1rem]')).toBe('font-size:1rem;');
+    // box reads the theme's vars too and each step's rem value is the
+    // fallback. The glyph's own size class reads the same vars.
+    expect(stylesheet.ruleFor('[width:var(--_icon-width,0.75rem)]')).toBe(
+      'width:var(--_icon-width,0.75rem);',
+    );
+    expect(stylesheet.ruleFor('[height:var(--_icon-height,1.5rem)]')).toBe(
+      'height:var(--_icon-height,1.5rem);',
+    );
+    expect(
+      stylesheet.ruleFor(
+        '[font-size:min(var(--_icon-width,1rem),var(--_icon-height,1rem))]',
+      ),
+    ).toBe('font-size:min(var(--_icon-width,1rem),var(--_icon-height,1rem));');
   });
 
   it('paints the lit menu row from the mark it carries', () => {
