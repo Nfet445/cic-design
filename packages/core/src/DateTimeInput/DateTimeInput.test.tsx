@@ -23,7 +23,7 @@ import userEvent from '@testing-library/user-event';
 import * as stylex from '@stylexjs/stylex';
 import {colorVars} from '../theme/tokens.stylex';
 import {getButton, queryButton} from '../__tests__/fastRoleQueries';
-import {classesOf} from '../__tests__/classNameAssertions';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {DateTimeInput, type DateTimeInputProps} from './DateTimeInput';
 import type {ISODateTimeString} from './DateTimeInput';
 import type {DateInputEntryError} from './DateTimeInput';
@@ -45,31 +45,6 @@ afterEach(() => {
 function generateThemeTestCSS(theme: Parameters<typeof generateThemeCSS>[0]) {
   const {prose, component} = generateThemeCSS(theme);
   return [prose, component].filter(Boolean).join('\n\n');
-}
-
-// jsdom does not perform flex layout, so these probe classes verify the
-// declarations that switch between horizontal and stacked intrinsic layouts.
-const responsiveLayoutProbe = stylex.create({
-  responsiveRow: {
-    flexWrap: 'wrap',
-  },
-  responsiveSegment: {
-    flexBasis: 196,
-    minWidth: 0,
-  },
-});
-
-function expectResponsiveProbeClasses(
-  element: HTMLElement,
-  style: (typeof responsiveLayoutProbe)[keyof typeof responsiveLayoutProbe],
-): void {
-  const classes = (stylex.props(style).className ?? '')
-    .split(' ')
-    .filter(className => className !== '' && !className.includes('__'));
-  expect(classes.length).toBeGreaterThan(0);
-  for (const className of classes) {
-    expect(element).toHaveClass(className);
-  }
 }
 
 describe('DateTimeInput', () => {
@@ -225,7 +200,10 @@ describe('DateTimeInput', () => {
       '.astryx-date-time-input',
     ) as HTMLElement;
     expect(row).not.toBeNull();
-    expectResponsiveProbeClasses(row, responsiveLayoutProbe.responsiveRow);
+    // jsdom performs no flex layout, so the class set is the evidence: the row
+    // wraps, and each segment carries the 196px basis that makes wrapping
+    // reachable at 400px.
+    expectClassSet(row, {includes: ['flex', 'flex-wrap', 'gap-2']});
   });
 
   it('gives both segments the intrinsic wrap threshold and allows them to shrink', () => {
@@ -238,14 +216,11 @@ describe('DateTimeInput', () => {
     const timeSegment = container.querySelector(
       '.astryx-date-time-input-time-segment',
     ) as HTMLElement;
-    expectResponsiveProbeClasses(
-      dateSegment,
-      responsiveLayoutProbe.responsiveSegment,
-    );
-    expectResponsiveProbeClasses(
-      timeSegment,
-      responsiveLayoutProbe.responsiveSegment,
-    );
+    for (const segment of [dateSegment, timeSegment]) {
+      expectClassSet(segment, {
+        includes: ['flex-1', '[flex-basis:196px]', '[min-inline-size:0]'],
+      });
+    }
   });
 
   it('does not commit the date on a composing Enter (IME)', () => {

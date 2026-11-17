@@ -278,3 +278,61 @@ export const dateTimeTouchFooterClassName = tw(
   '[margin-block-start:auto]',
   'pt-1',
 );
+
+/**
+ * Padding for one preset time at a size. Chosen here, once per option, rather
+ * than layered: two utilities of one property are ordered by the sheet, not by
+ * the class attribute, so a base padding beside a size override would pick a
+ * winner nobody wrote.
+ */
+const TIME_OPTION_PADDING: Record<DateTimeInputFieldSize, string> = {
+  sm: tw('py-1', 'px-2'),
+  md: tw('py-0.5', 'px-2'),
+  lg: tw('py-2', 'px-2'),
+};
+
+/**
+ * The preset-time list. Paddings and states mirror BaseTypeahead's dropdown
+ * and Selector's options, so every list in the system reads the same. The
+ * width follows the control it hangs off.
+ */
+export const dateTimeInputTimeListboxClassName = tw(
+  'box-border',
+  'max-h-[300px]',
+  'overflow-y-auto',
+  'p-1',
+  '[min-width:anchor-size(width)]',
+);
+
+/**
+ * One preset time. Highlight and selection are ternaries for the reason the
+ * padding is: a colour and a weight utility would otherwise sit beside the
+ * base rule that already sets them.
+ */
+export function dateTimeInputTimeOptionClassName({
+  size,
+  isHighlighted,
+  isSelected,
+}: {
+  size: DateTimeInputFieldSize;
+  isHighlighted: boolean;
+  isSelected: boolean;
+}): string {
+  return tw(
+    'box-border',
+    'flex',
+    'items-center',
+    'w-full',
+    TIME_OPTION_PADDING[size],
+    'rounded-[var(--radius-element)]',
+    'cursor-pointer',
+    '[&[aria-disabled=true]]:cursor-default',
+    'text-start',
+    'font-[family-name:var(--font-family-body)]',
+    'text-[length:var(--text-body-size)]',
+    '[line-height:var(--text-body-leading)]',
+    'text-[color:var(--color-text-primary)]',
+    isHighlighted ? 'bg-[color:var(--color-overlay-hover)]' : 'bg-transparent',
+    isSelected ? 'font-medium' : 'font-normal',
+  );
+}
