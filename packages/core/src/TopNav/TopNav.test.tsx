@@ -17,8 +17,13 @@ import {__resetMenuPressForTest} from '../hooks/useMenuPress';
 import {expectNativeLinkClicks} from '../hooks/__tests__/menuLinkClicks';
 import {NavHeadingMenu, NavHeadingMenuItem} from '../NavMenu';
 import userEvent from '@testing-library/user-event';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {TopNav} from './TopNav';
 import {TopNavRenderContext} from './TopNavRenderContext';
+import {
+  topNavHeadingSlotClassName,
+  topNavMobileHeadingTextClassName,
+} from './topNavClasses';
 import {TopNavHeading} from './TopNavHeading';
 import {NavIcon} from '../NavIcon';
 import {TopNavItem} from './TopNavItem';
@@ -91,7 +96,9 @@ describe('TopNav', () => {
     );
     const text = screen.getByText('Northwind Internal Usage Analytics');
     expect(text.tagName).toBe('SPAN');
-    expect(text.className).toContain('mobileBarHeadingText');
+    expectClassSet(text, {
+      includes: topNavMobileHeadingTextClassName().split(' '),
+    });
   });
 
   it('passes an element heading through unwrapped in mobile-bar mode', () => {
@@ -101,9 +108,13 @@ describe('TopNav', () => {
       </TopNavRenderContext>,
     );
     expect(screen.getByTestId('title-content')).toBeInTheDocument();
-    expect(
-      document.querySelector('[class*="mobileBarHeadingText"]'),
-    ).toBeNull();
+    const oneLineBoxes = Array.from(document.querySelectorAll('span')).filter(
+      element =>
+        topNavMobileHeadingTextClassName()
+          .split(' ')
+          .every(name => element.classList.contains(name)),
+    );
+    expect(oneLineBoxes).toEqual([]);
   });
 
   it('renders heading slot content', () => {
@@ -246,7 +257,7 @@ describe('TopNav', () => {
       />,
     );
     const column = screen.getByText('A very long product name').parentElement!;
-    expect(getComputedStyle(column).flexShrink).toBe('1');
+    expectClassSet(column, {includes: topNavHeadingSlotClassName().split(' ')});
   });
 });
 

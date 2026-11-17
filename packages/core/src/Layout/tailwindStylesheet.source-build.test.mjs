@@ -274,6 +274,30 @@ import {
   toolbarStartSlotClassName,
   toolbarTabIndicatorClassName,
 } from '../Toolbar/toolbarClasses';
+import {
+  topNavCenterRegionClassName,
+  topNavClassName,
+  topNavDrawerDividerClassName,
+  topNavDrawerItemsClassName,
+  topNavEndContentClassName,
+  topNavEndRegionClassName,
+  topNavHeadingSlotClassName,
+  topNavMobileBarClassName,
+  topNavMobileEndClassName,
+  topNavMobileHeadingClassName,
+  topNavMobileHeadingTextClassName,
+  topNavStartContentClassName,
+  topNavStartRegionClassName,
+} from '../TopNav/topNavClasses';
+import {
+  topNavFeaturedCardBodyClassName,
+  topNavFeaturedCardClassName,
+  topNavFeaturedCardDescriptionClassName,
+  topNavFeaturedCardImageClassName,
+  topNavFeaturedCardLinkArrowClassName,
+  topNavFeaturedCardLinkClassName,
+  topNavFeaturedCardTitleClassName,
+} from '../TopNav/topNavMegaMenuFeaturedCardClasses';
 import {mediaThemeClassName} from '../theme/mediaThemeClasses';
 import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
 import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
@@ -494,6 +518,33 @@ function familyClassNames() {
   // Button already caps an action at `min-w-0 max-w-full`.
   add(alertDialogActionsRowClassName);
   add(alertDialogStackedActionClassName);
+
+  // The top-nav family: the bar, its heading and three regions, and the mobile
+  // bar and drawer rows.
+  for (const className of [
+    topNavClassName,
+    topNavMobileBarClassName,
+    topNavHeadingSlotClassName,
+    topNavStartRegionClassName,
+    topNavStartContentClassName,
+    topNavCenterRegionClassName,
+    topNavEndRegionClassName,
+    topNavEndContentClassName,
+    topNavMobileHeadingClassName,
+    topNavMobileHeadingTextClassName,
+    topNavMobileEndClassName,
+    topNavDrawerItemsClassName,
+    topNavDrawerDividerClassName,
+    topNavFeaturedCardClassName,
+    topNavFeaturedCardImageClassName,
+    topNavFeaturedCardBodyClassName,
+    topNavFeaturedCardTitleClassName,
+    topNavFeaturedCardDescriptionClassName,
+    topNavFeaturedCardLinkClassName,
+    topNavFeaturedCardLinkArrowClassName,
+  ]) {
+    add(className());
+  }
 
   // The layout family: the shell frame, then every region combination. A
   // region edge publishes its inset and reads it back, so each combination
