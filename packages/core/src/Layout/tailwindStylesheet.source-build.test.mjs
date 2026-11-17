@@ -220,6 +220,7 @@ import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {sideNavClassName} from '../SideNav/sideNavClasses';
+import {sideNavHeadingClassName} from '../SideNav/sideNavHeadingClasses';
 import {sideNavItemClassName} from '../SideNav/sideNavItemClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
@@ -1645,6 +1646,10 @@ function familyClassNames() {
   add(sideNavClassName.topbar);
   add(sideNavClassName.topbarIcons);
   for (const value of Object.values(sideNavItemClassName)) {
+    add(value);
+  }
+
+  for (const value of Object.values(sideNavHeadingClassName)) {
     add(value);
   }
 
