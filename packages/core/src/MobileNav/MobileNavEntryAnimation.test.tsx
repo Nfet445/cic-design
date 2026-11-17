@@ -44,9 +44,7 @@
 
 import {describe, it, expect, beforeAll} from 'vitest';
 import {render, screen} from '@testing-library/react';
-import {readFileSync} from 'node:fs';
-import {join} from 'node:path';
-import ts from 'typescript';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {MobileNav} from './MobileNav';
 
 // jsdom doesn't implement showModal/close on <dialog>, so we mock them
@@ -63,99 +61,37 @@ beforeAll(() => {
     };
 });
 
-/** Every CSS rule StyleX has injected into the document, as text. */
-function injectedRules(): string[] {
-  const rules: string[] = [];
-  for (const sheet of Array.from(document.styleSheets)) {
-    let cssRules: CSSRuleList;
-    try {
-      cssRules = sheet.cssRules;
-    } catch {
-      continue;
-    }
-    for (const rule of Array.from(cssRules)) {
-      rules.push(rule.cssText);
-    }
-  }
-  return rules;
+function renderNav(isOpen: boolean, side?: 'start' | 'end') {
+  render(
+    <MobileNav
+      isOpen={isOpen}
+      onOpenChange={() => {}}
+      side={side}
+      data-testid="mobile-nav">
+      <span>Nav content</span>
+    </MobileNav>,
+  );
+  return screen.getByTestId('mobile-nav');
+}
+
+function drawerClasses(isOpen: boolean, side?: 'start' | 'end'): string[] {
+  renderNav(isOpen, side);
+  const drawer = screen
+    .getByTestId('mobile-nav')
+    .querySelector('[tabindex="-1"]');
+  expect(drawer).not.toBeNull();
+  return classesOf(drawer as Element);
 }
 
 describe('MobileNav scrim fades in', () => {
   it('gives the ::backdrop a transparent starting style', () => {
-    render(
-      <MobileNav isOpen onOpenChange={() => {}} data-testid="mobile-nav">
-        <span>Nav content</span>
-      </MobileNav>,
-    );
-
-    const classes = Array.from(screen.getByTestId('mobile-nav').classList);
     // Without this the scrim is opaque in the frame the dialog enters the top
     // layer, so it has nothing to fade from and snaps in behind the drawer.
-    const startingStyleForThisDialog = injectedRules().filter(
-      rule =>
-        rule.startsWith('@starting-style') &&
-        rule.includes('::backdrop') &&
-        classes.some(cls => rule.includes(`.${cls}`)),
+    expect(classesOf(renderNav(true))).toContain(
+      '[@starting-style]:backdrop:opacity-0',
     );
-
-    expect(startingStyleForThisDialog).toHaveLength(1);
-    expect(startingStyleForThisDialog[0]).toMatch(/opacity:\s*0/);
   });
 });
-
-// =============================================================================
-// Drawer slide-in — asserted on the style definition
-// =============================================================================
-
-const SOURCE = readFileSync(join(__dirname, 'MobileNav.tsx'), 'utf8');
-
-/**
- * The object literal a `styles.<name>` key is defined with, e.g. the value of
- * `drawerStartOpen` inside the file's `stylex.create({...})` call.
- */
-function styleDefinition(name: string): ts.ObjectLiteralExpression {
-  const file = ts.createSourceFile(
-    'MobileNav.tsx',
-    SOURCE,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TSX,
-  );
-
-  let found: ts.ObjectLiteralExpression | undefined;
-  const visit = (node: ts.Node) => {
-    if (
-      ts.isPropertyAssignment(node) &&
-      ts.isIdentifier(node.name) &&
-      node.name.text === name &&
-      ts.isObjectLiteralExpression(node.initializer)
-    ) {
-      found = node.initializer;
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(file);
-
-  if (!found) {
-    throw new Error(`No style named "${name}" in MobileNav.tsx`);
-  }
-  return found;
-}
-
-/** The value of one property of a style definition, as source text. */
-function property(style: ts.ObjectLiteralExpression, key: string): string {
-  const prop = style.properties.find(
-    p =>
-      ts.isPropertyAssignment(p) &&
-      (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) &&
-      p.name.text === key,
-  );
-
-  if (!prop) {
-    throw new Error(`No "${key}" in ${style.getText().slice(0, 40)}…`);
-  }
-  return (prop as ts.PropertyAssignment).initializer.getText();
-}
 
 describe('MobileNav dialog does not become a scroll container', () => {
   it('clips the off-screen drawer with `clip`, not `hidden`', () => {
@@ -164,49 +100,57 @@ describe('MobileNav dialog does not become a scroll container', () => {
     // well, so it is an easy "harmless tidy-up" to make. It is not harmless —
     // it makes the dialog a scroll container, and the entry animation then
     // ticks in the CSSOM without ever painting. See the file header.
-    expect(property(styleDefinition('dialog'), 'overflow')).toBe("'clip'");
+    const classes = classesOf(renderNav(true));
+    expect(classes).toContain('overflow-clip');
+    expect(classes).not.toContain('overflow-hidden');
   });
 });
 
 describe.each([
   {
-    name: 'drawerStartOpen',
-    offscreen: 'translateX(-100%)',
-    offscreenRtl: 'translateX(100%)',
+    side: 'start' as const,
+    open: [
+      '[transform:translateX(0)]',
+      '[@starting-style]:[transform:translateX(-100%)]',
+      '[@starting-style]:[&:dir(rtl)]:[transform:translateX(100%)]',
+    ],
+    closed: [
+      '[transform:translateX(-100%)]',
+      '[&:dir(rtl)]:[transform:translateX(100%)]',
+    ],
   },
   {
-    name: 'drawerEndOpen',
-    offscreen: 'translateX(100%)',
-    offscreenRtl: 'translateX(-100%)',
+    side: 'end' as const,
+    open: [
+      '[transform:translateX(0)]',
+      '[@starting-style]:[transform:translateX(100%)]',
+      '[@starting-style]:[&:dir(rtl)]:[transform:translateX(-100%)]',
+    ],
+    closed: [
+      '[transform:translateX(100%)]',
+      '[&:dir(rtl)]:[transform:translateX(-100%)]',
+    ],
   },
-])('MobileNav drawer slides in ($name)', ({name, offscreen, offscreenRtl}) => {
+])('MobileNav drawer slides in ($side)', ({side, open, closed}) => {
   it('opens to the on-screen transform', () => {
-    expect(property(styleDefinition(name), 'transform')).toContain(
-      'translateX(0)',
-    );
+    expect(drawerClasses(true, side)).toContain('[transform:translateX(0)]');
   });
 
   it('starts off-screen so the open transform has something to run from', () => {
-    const transform = property(styleDefinition(name), 'transform');
-
     // The whole point: the first rendered frame needs the closed transform.
     // Drop this and the drawer is simply there, fully open, on frame one —
     // while the close still animates, which is what made the bug look like a
     // missing entry animation rather than a missing starting style.
-    expect(transform).toContain('@starting-style');
-    expect(transform).toContain(offscreen);
-    // Mirrored, like the closed styles it has to match: sliding in from the
-    // wrong edge in RTL is as broken as not sliding at all.
-    expect(transform).toContain(offscreenRtl);
+    const classes = drawerClasses(true, side);
+    for (const className of open.slice(1)) {
+      expect(classes).toContain(className);
+    }
   });
 
   it('starts from the same edge the closed style parks it at', () => {
-    const closed = property(
-      styleDefinition(name.replace('Open', '')),
-      'transform',
-    );
-
-    expect(closed).toContain(offscreen);
-    expect(closed).toContain(offscreenRtl);
+    const classes = drawerClasses(false, side);
+    for (const className of closed) {
+      expect(classes).toContain(className);
+    }
   });
 });

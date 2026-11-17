@@ -55,13 +55,6 @@ import {
   type RefObject,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  borderVars,
-  colorVars,
-  durationVars,
-  easeVars,
-  spacingVars,
-} from '../theme/tokens.stylex';
 import {Button} from '../Button';
 import {Icon} from '../Icon';
 import {Heading} from '../Heading/Heading';
@@ -71,6 +64,14 @@ import {mergeProps, composeEventHandlers} from '../utils';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {tw} from '../utils/tw';
+import {
+  mobileNavContentClassName,
+  mobileNavDialogClassName,
+  mobileNavDrawerClassName,
+  mobileNavHeaderClassName,
+  mobileNavHeaderTextClassName,
+  mobileNavWidthVar,
+} from './mobileNavClasses';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
 import {layerClickBoundary} from '../Layer/layerClickBoundary';
 import {overlayPaddingReset} from '../Layout/overlayPaddingReset.stylex';
@@ -96,187 +97,6 @@ registerEnglishFallback(english);
 // =============================================================================
 // Styles
 // =============================================================================
-
-const styles = stylex.create({
-  dialog: {
-    // Reset native <dialog> defaults
-    position: 'fixed',
-    margin: 0,
-    padding: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    maxWidth: 'none',
-    maxHeight: 'none',
-    // Full viewport overlay — the dialog itself is the full-screen container
-    inset: 0,
-    width: '100vw',
-    height: '100dvh',
-    backgroundColor: 'transparent',
-    // `clip`, not `hidden`. Both clip the off-screen drawer, but `hidden` makes
-    // the dialog a SCROLL CONTAINER, and a scroll container in the top layer
-    // whose subtree holds another scroller (the drawer's content area) does not
-    // paint a @starting-style entry transition for its descendants in Chromium:
-    // the transition ticks in the CSSOM while every painted frame shows the
-    // end value, so the drawer appears fully open. `clip` clips without
-    // creating a scroll container and the slide-in paints normally. The dialog
-    // never scrolls anyway — its child is absolutely positioned — so nothing
-    // depended on it being a scroll container.
-    overflow: 'clip',
-    overscrollBehavior: 'contain',
-    // Stop pans passing through (pull-to-refresh, background scroll), but
-    // leave pinch to the browser: the open nav covers the whole viewport, and
-    // pinch-zoom is how phone readers resize text (WCAG 1.4.4).
-    touchAction: 'pinch-zoom',
-    outline: 'none',
-    // Native <dialog> uses display:none when closed.
-    // Open state applied via isOpen prop to avoid :where([open]) specificity issues.
-    // `display` participates in the transition with allow-discrete so it flips
-    // to none only after the slide-out finishes. That also keeps the dialog
-    // rendered until close() has actually run: an open modal dialog that isn't
-    // rendered still blocks the whole document, and a browser that fails to
-    // un-block it on close leaves the page inert with no error (#4290).
-    // Deliberately not shortened under reduced motion: `display` is discrete,
-    // so a long hold animates nothing — it is only the window the close has to
-    // land inside. The visible transitions (the drawer's transform and the
-    // backdrop's opacity) are the ones that respect the preference.
-    display: 'none',
-    transitionProperty: 'display',
-    transitionDuration: durationVars['--duration-medium'],
-    transitionBehavior: 'allow-discrete',
-  },
-  open: {
-    display: 'flex',
-  },
-  // ::backdrop is provided by the browser's top layer
-  backdrop: {
-    '::backdrop': {
-      // No backdrop-filter: a full-viewport blur is costly to repaint.
-      backgroundColor: colorVars['--color-overlay'],
-      opacity: 0,
-      transitionProperty: 'opacity',
-      transitionDuration: durationVars['--duration-medium'],
-      transitionTimingFunction: easeVars['--ease-standard'],
-    },
-    '@media (prefers-reduced-motion: reduce)': {
-      '::backdrop': {
-        transitionDuration: '0.01s',
-      },
-    },
-  },
-  backdropOpen: {
-    '::backdrop': {
-      // The ::backdrop only exists once showModal() has put the dialog in the
-      // top layer, so its first rendered frame already has the open opacity.
-      // Without a starting style there is no earlier value to transition from
-      // and the scrim snaps in — @starting-style supplies that value.
-      opacity: {
-        default: 1,
-        '@starting-style': 0,
-      },
-    },
-  },
-  drawer: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: colorVars['--color-background-surface'],
-    boxSizing: 'border-box',
-    overflow: 'hidden',
-    transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-medium'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    outline: 'none',
-    '@media (prefers-reduced-motion: reduce)': {
-      transitionDuration: '0.01s',
-    },
-  },
-  drawerStart: {
-    insetInlineStart: 0,
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-    transform: {
-      default: 'translateX(-100%)',
-      ':is([dir="rtl"] *)': 'translateX(100%)',
-    },
-  },
-  drawerStartOpen: {
-    // The whole dialog is `display: none` while closed, so the drawer is not
-    // rendered and the open transform is the only value it has ever had — a
-    // transition needs a previous value to run from. @starting-style gives the
-    // first rendered frame the off-screen transform, so the slide-in plays.
-    transform: {
-      default: 'translateX(0)',
-      '@starting-style': {
-        default: 'translateX(-100%)',
-        ':is([dir="rtl"] *)': 'translateX(100%)',
-      },
-    },
-  },
-  drawerEnd: {
-    insetInlineEnd: 0,
-    borderInlineStartWidth: borderVars['--border-width'],
-    borderInlineStartStyle: 'solid',
-    borderInlineStartColor: colorVars['--color-border'],
-    transform: {
-      default: 'translateX(100%)',
-      ':is([dir="rtl"] *)': 'translateX(-100%)',
-    },
-  },
-  drawerEndOpen: {
-    // See drawerStartOpen — same starting style, mirrored edge.
-    transform: {
-      default: 'translateX(0)',
-      '@starting-style': {
-        default: 'translateX(100%)',
-        ':is([dir="rtl"] *)': 'translateX(-100%)',
-      },
-    },
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    // At least one bar high, and taller for header content that needs it (a
-    // stacked title and search, or a title wrapped at a larger text size), so
-    // it never runs into the first item below.
-    minHeight: spacingVars['--spacing-12'],
-    paddingInline: spacingVars['--spacing-2'],
-    flexShrink: 0,
-    borderBlockEndWidth: borderVars['--border-width'],
-    borderBlockEndStyle: 'solid',
-    borderBlockEndColor: colorVars['--color-border'],
-  },
-  headerNoTitle: {
-    justifyContent: 'flex-end',
-  },
-  headerText: {
-    marginInlineStart: spacingVars['--spacing-1'],
-  },
-  content: {
-    flex: 1,
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    overscrollBehavior: 'contain',
-    // Re-enable vertical touch scrolling inside the drawer content (the
-    // dialog root allows only pinch-zoom, to block pull-to-refresh)
-    touchAction: 'pan-y pinch-zoom',
-    paddingInline: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-2'],
-  },
-});
-
-const dynamicStyles = stylex.create({
-  // The requested width, never more than 85 % of the viewport: on a narrow
-  // phone a strip of the page stays visible beside the drawer, as a target
-  // for the tap that closes it.
-  width: (w: number) => ({
-    width: `${w}px`,
-    maxWidth: '85vw',
-  }),
-});
 
 // =============================================================================
 // Close timing
@@ -720,7 +540,10 @@ export function MobileNav({
     [onOpenChange],
   );
 
-  const isStart = resolvedSide === 'start';
+  // The width rides an inline custom property; the class reads it.
+  const layoutVariables: Record<`--${string}`, string> = {
+    [mobileNavWidthVar]: `${width}px`,
+  };
   const navigationLabel =
     label ??
     (typeof header === 'string' ? header : t('@astryx.mobileNav.navigation'));
@@ -731,15 +554,13 @@ export function MobileNav({
       id={dialogId}
       {...mergeProps(
         themeProps('mobile-nav', {side: resolvedSide}),
-        stylex.props(
-          styles.dialog,
-          overlayPaddingReset.reset,
-          isPresentationHeld && styles.open,
-          styles.backdrop,
-          isOpen && styles.backdropOpen,
-          xstyle,
+        stylex.props(overlayPaddingReset.reset, xstyle),
+        tw(
+          mobileNavDialogClassName({isPresentationHeld, isOpen}),
+          layerTextResetClassName,
+          layerStructureResetClassName,
+          className,
         ),
-        tw(layerTextResetClassName, layerStructureResetClassName, className),
         style,
       )}
       {...rest}
@@ -759,22 +580,18 @@ export function MobileNav({
             <div
               ref={drawerRef}
               tabIndex={-1}
-              {...stylex.props(
-                styles.drawer,
-                dynamicStyles.width(width),
-                isStart && styles.drawerStart,
-                isStart && isOpen && styles.drawerStartOpen,
-                !isStart && styles.drawerEnd,
-                !isStart && isOpen && styles.drawerEndOpen,
-              )}>
+              className={mobileNavDrawerClassName({
+                side: resolvedSide,
+                isOpen,
+              })}
+              style={layoutVariables}>
               {/* Header — content + close button */}
               <div
-                {...stylex.props(
-                  styles.header,
-                  !header && styles.headerNoTitle,
-                )}>
+                className={mobileNavHeaderClassName({
+                  hasTitle: header != null,
+                })}>
                 {typeof header === 'string' ? (
-                  <Heading level={2} xstyle={styles.headerText}>
+                  <Heading level={2} className={mobileNavHeaderTextClassName}>
                     {header}
                   </Heading>
                 ) : (
@@ -796,7 +613,7 @@ export function MobileNav({
                 // it resolves, else by the dialog's own label.
                 aria-labelledby={rest['aria-labelledby']}
                 aria-label={navigationLabel}
-                {...stylex.props(styles.content)}>
+                className={mobileNavContentClassName}>
                 {children}
               </nav>
             </div>

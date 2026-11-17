@@ -44,6 +44,18 @@ import {
   dialogRootClassName,
 } from '../Dialog/dialogClasses';
 import {
+  drawerContentClassName,
+  drawerRootClassName,
+} from '../Drawer/drawerClasses';
+import {bottomSheetEdgeTintClassName} from '../BottomSheet/bottomSheetEdgeTintClasses';
+import {
+  mobileNavContentClassName,
+  mobileNavDialogClassName,
+  mobileNavDrawerClassName,
+  mobileNavHeaderClassName,
+  mobileNavHeaderTextClassName,
+} from '../MobileNav/mobileNavClasses';
+import {
   layerHeaderActionsClassName,
   layerHeaderContainerClassName,
   layerHeaderSlotClassName,
@@ -226,7 +238,12 @@ import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {sideNavClassName} from '../SideNav/sideNavClasses';
+import {sideNavHeadingClassName} from '../SideNav/sideNavHeadingClasses';
 import {sideNavItemClassName} from '../SideNav/sideNavItemClasses';
+import {
+  treeListItemClassName,
+  treeListItemDensityClassName,
+} from '../TreeList/treeListItemClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {stackClassName} from '../Stack/stackClasses';
@@ -724,6 +741,50 @@ function familyClassNames() {
       );
     }
   }
+
+  // The drawer panel: both anchored sides, each painting state, with and
+  // without a scrim, and the settled open that collapses its transition.
+  for (const side of ['start', 'end']) {
+    for (const isRendered of [false, true]) {
+      for (const isOpen of [false, true]) {
+        for (const hasScrim of [false, true]) {
+          for (const opensSettled of [false, true]) {
+            add(
+              drawerRootClassName({
+                side,
+                isRendered,
+                isOpen,
+                hasScrim,
+                opensSettled,
+              }),
+            );
+          }
+        }
+      }
+    }
+  }
+  add(drawerContentClassName);
+  // The bottom sheet's edge tint: the strip WebKit samples for the iOS toolbar
+  // colour.
+  add(bottomSheetEdgeTintClassName);
+
+  // The mobile nav: the dialog in its two display states, the scrim, both
+  // drawer edges in both motion states, the header row and its content area.
+  for (const isPresentationHeld of [false, true]) {
+    for (const isOpen of [false, true]) {
+      add(mobileNavDialogClassName({isPresentationHeld, isOpen}));
+    }
+  }
+  for (const side of ['start', 'end']) {
+    for (const isOpen of [false, true]) {
+      add(mobileNavDrawerClassName({side, isOpen}));
+    }
+  }
+  for (const hasTitle of [false, true]) {
+    add(mobileNavHeaderClassName({hasTitle}));
+  }
+  add(mobileNavHeaderTextClassName);
+  add(mobileNavContentClassName);
 
   // The alert dialog adds only the row's gesture policy and the stacked width;
   // Button already caps an action at `min-w-0 max-w-full`.
@@ -1693,6 +1754,17 @@ function familyClassNames() {
     add(value);
   }
 
+  for (const value of Object.values(sideNavHeadingClassName)) {
+    add(value);
+  }
+
+  for (const value of Object.values(treeListItemClassName)) {
+    add(value);
+  }
+
+  for (const value of Object.values(treeListItemDensityClassName)) {
+    add(value);
+  }
   // Card: one background per variant, one variable per elevation, and the
   // sizing classes that read a variable.
   add(cardClassName);
@@ -1811,12 +1883,20 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // side-nav row's class map added its own transition and popover utilities.
     // The display-and-feedback family added Card's thirteen variant
     // backgrounds, four elevation variables and its sizing classes, which took
-    // the sheet from 1016 rules to 1042 — so the ceiling moved to 1050, not to
-    // a multiple of that family. Divider's row, line, weight, label and
-    // full-bleed classes added 8, which reached that ceiling, so it moved to
-    // 1060. Banner's status fills and their forced-colors outlines, the text
-    // column and the content area added 26, so it moved to 1080.
-    expect(stylesheet.rules.size).toBeLessThan(1080);
+    // backgrounds, four elevation variables and its sizing classes, which took
+    // the sheet from 1016 rules to 1042. Divider's row, line, weight, label
+    // and full-bleed classes added 8, Banner's status fills and their
+    // forced-colors outlines, the text column and the content area added 26.
+    // The side-nav heading and the tree row reuse almost every utility their
+    // own families already spell, and their few new ones (the indent column's
+    // padding, the chevron's rotate pair) took the sheet to 1055. The drawer
+    // panel added two sides, two painting states, two direction arms and the
+    // scrim — about 60 — and the mobile nav about 30: its dialog, the scrim's
+    // fade, both drawer edges in both motion states, and the header. Card's
+    // four elevation variables were reused by the dialog family maps, so the
+    // sum of the two families is smaller than their parts. With every family
+    // above the sheet sits at 1121.
+    expect(stylesheet.rules.size).toBeLessThan(1160);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
