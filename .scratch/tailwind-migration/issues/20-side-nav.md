@@ -1,6 +1,6 @@
 # side nav
 
-Status: ready-for-agent
+Status: in-progress
 Blocked by: 18
 Wave: 6
 Family: `family:navigation-destinations`
@@ -52,19 +52,49 @@ Landed (commit `refactor(SideNav)`, branch `ticket/20-side-nav`):
   `sideNavClassName`; the 1020-rule budget still holds, so the limit is
   unchanged.
 
+## Progress (second pass)
+
+Landed in `refactor(SideNav): переместить оформление SideNavItem в классы Tailwind`:
+
+- `packages/core/src/SideNav/SideNavItem.tsx` — the `styles` block is gone;
+  `packages/core/src/SideNav/sideNavItemClasses.ts` holds the row wrapper, the
+  label, the end-content and actions slots, the children group and its
+  expanded/collapsed states, the chevron, the standalone toggle, the split
+  action, the popover surface and header, and the popover gap.
+- Two leftovers stay StyleX, both because `navItemStyles` is another family's
+  unlayered rule that wins inside `@layer astryx-base` at every order:
+  `leftoverStyles.collapsedItem/Sm/Lg` (the square a rail row keeps over
+  `width: 100%` plus the padding `navItemStyles` paints) and `indentStyles`
+  (the nesting indent, which replaces `padding-inline-start`).
+  `indentStyles.sm/md` read `spacingVars` only; they keep the `IndentStyle`
+  shape, so the indent is still a class plus a variable.
+- The standalone expand toggle keeps the shape `iconButtonHeight(size)`
+  already reads: `h-[var(--size-element-sm)]` / `w-[var(--size-element-sm)]`.
+- Tests: `declaredOn` is gone from `SideNav.test.tsx`; the children group has
+  no padding through `classesOf`, the collapsed group is found by
+  `overflow-hidden`, and the toggle's box is asserted as `h-[…]` / `w-[…]`.
+  The disabled-row test proves the actions slot carries `pointer-events-auto`
+  (jsdom resolves no Tailwind class, so the class is the proof).
+  `SideNav.slotPresence.test.tsx` finds `SideNavItem`'s end-content slot by its
+  class set instead of a debug name.
+- `packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` registers
+  `sideNavItemClassName`; the sheet grew from 1020 rules to 1025, so the budget
+  is raised to 1040 with the reason in the comment.
+
 ## Left
 
 - `packages/core/src/SideNav/SideNavHeading.tsx` — one `stylex.create` block
-  (`styles`, 25 members) and its call sites, several of which pass members into
-  `focusOutlineProps`, so each paint has to move to `tw()` beside the ring.
-- `packages/core/src/SideNav/SideNavItem.tsx` — two blocks: `styles` and
-  `indentStyles` (the per-level indent stays a class plus the
-  `--_side-nav-indent`-style variable the `IndentStyle` shape already carries).
+  (`styles`, 25 members) and about 70 call sites, several of which pass members
+  into `focusOutlineProps`, so each paint has to move to `tw()` beside the
+  ring. The root's `:has(.astryx-nav-icon)` paddingInlineStart needs a class
+  plus a `has-[.astryx-nav-icon]:` variant, or a leftover, because the two
+  values come from one StyleX conditional.
 - `packages/core/src/TreeList/TreeListItem.tsx` — three blocks: `styles`,
-  `densityStyles`, `descriptionSizeStyles`.
+  `densityStyles`, `descriptionSizeStyles`, plus the `IndentStyle` type around
+  line 325 (class plus inline indent variable).
 - `packages/core/src/SideNav/SideNav.slotPresence.test.tsx` still reaches
-  `SideNavHeading` and `SideNavItem` slots through
-  `zeroIsInsideStyleXSlot(debugName)`; each goes away with its component.
-- `SideNav.test.tsx` helpers `declaredOn`, `indentOf`, `ringSelectorsFor`,
-  `expectSharedFocusRing` and `iconButtonHeight` read StyleX rules or debug
-  names; they follow `SideNavItem`/`SideNavHeading`.
+  `SideNavHeading` slots through `zeroIsInsideStyleXSlot(debugName)`; the
+  helper goes away with that component.
+- `SideNav.test.tsx` helpers `indentOf`, `ringSelectorsFor`,
+  `expectSharedFocusRing` read StyleX rules or debug names; they follow
+  `SideNavHeading` (and `indentOf` `TreeListItem`).
