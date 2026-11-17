@@ -228,6 +228,12 @@ import {
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {checkboxListItemClassName} from '../CheckboxList/checkboxListItemClasses';
 import {radioListClassName} from '../RadioList/radioListClasses';
+import {
+  radioListItemIndicatorSlotClassName,
+  radioListItemInputClassName,
+  radioListItemPressOverlayClassName,
+  radioListItemWrapperClassName,
+} from '../RadioList/radioListItemClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
@@ -2049,6 +2055,12 @@ function familyClassNames() {
   }
   for (const orientation of ['vertical', 'horizontal']) {
     add(radioListClassName({orientation}));
+  }
+  add(radioListItemIndicatorSlotClassName);
+  add(radioListItemPressOverlayClassName);
+  for (const size of ['sm', 'md']) {
+    add(radioListItemWrapperClassName({size}));
+    add(radioListItemInputClassName({size}));
   }
 
   return [...names].sort();
