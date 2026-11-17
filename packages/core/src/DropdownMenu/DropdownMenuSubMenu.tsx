@@ -144,8 +144,11 @@ import english from '../i18n/generated-english/DropdownMenu/DropdownMenuSubMenu.
 
 registerEnglishFallback(english);
 
-// The caret is a slot wrapper, kept here: its box is structural, and the rule
-// against a style-only wrapper reads that from the style it applies.
+// The caret is a slot wrapper. It stays because its box is structural: the
+// no-style-only-wrapper rule lets a wrapper over one Astryx child stay only
+// when the style it applies resolves to a structural property, and `display`
+// and `alignItems` are structural. A class string resolves to no style, so the
+// rule reports the wrapper and the class would have nowhere to go.
 const triggerStyles = stylex.create({
   caret: {
     display: 'flex',

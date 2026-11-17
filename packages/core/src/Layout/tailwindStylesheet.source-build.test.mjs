@@ -240,6 +240,13 @@ import {
   checkboxInputWrapperClassName,
 } from '../CheckboxInput/checkboxInputClasses';
 import {
+  switchClassName,
+  switchContainerClassName,
+  switchLabelWrapperClassName,
+  switchStatusClassName,
+  switchWrapperClassName,
+} from '../Switch/switchClasses';
+import {
   radioListItemIndicatorSlotClassName,
   radioListItemInputClassName,
   radioListItemPressOverlayClassName,
@@ -624,6 +631,23 @@ import {
   emptyStateTitleCompactClassName,
 } from '../EmptyState/emptyStateClasses';
 import {timestampClassName} from '../Timestamp/timestampClasses';
+import {timerClassName} from '../Timer/timerClasses';
+import {
+  metadataListClassName,
+  metadataListColumnsClassName,
+  metadataListGridClassName,
+  metadataListResetClassName,
+  metadataListTitleClassName,
+  metadataListToggleClassName,
+} from '../MetadataList/metadataListClasses';
+import {
+  metadataListItemIconClassName,
+  metadataListItemLabelClassName,
+  metadataListItemStackedClassName,
+  metadataListItemStackedLabelClassName,
+  metadataListItemStackedValueClassName,
+  metadataListItemValueClassName,
+} from '../MetadataList/metadataListItemClasses';
 import {
   chatMessageMetadataAssistantClassName,
   chatMessageMetadataClassName,
@@ -2057,6 +2081,26 @@ function familyClassNames() {
   add(timestampHoverCardValueClassName);
   add(timestampHoverCardValueCellsClassName);
   add(timestampHoverCardActionClassName);
+  // Timer: the inherited-property reset of its `<time>`.
+  add(timerClassName);
+  // MetadataList: the root, the title, the `dl` reset, the three grid arms,
+  // the runtime grid-template class and the show-more toggle.
+  add(metadataListClassName);
+  add(metadataListTitleClassName);
+  add(metadataListResetClassName);
+  add(metadataListColumnsClassName);
+  for (const value of Object.values(metadataListGridClassName)) {
+    add(value);
+  }
+  add(metadataListToggleClassName);
+  // MetadataListItem: the label, the value, the stacked wrapper with its own
+  // label and value, and the icon wrapper.
+  add(metadataListItemLabelClassName);
+  add(metadataListItemValueClassName);
+  add(metadataListItemStackedClassName);
+  add(metadataListItemStackedLabelClassName);
+  add(metadataListItemStackedValueClassName);
+  add(metadataListItemIconClassName);
   for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
     add(value);
   }
@@ -2200,6 +2244,23 @@ function familyClassNames() {
   add(checkboxInputPressOverlayClassName);
   add(checkboxInputIndicatorSlotClassName);
   add(checkboxInputLabelWrapperClassName);
+  // Switch: the field root at both width states, the row in its four shape
+  // states, the track box per size, the label column and the status gap.
+  for (const width of [null, 240]) {
+    add(switchClassName({width}));
+  }
+  for (const isLabelHidden of [false, true]) {
+    for (const isSpread of [false, true]) {
+      add(switchContainerClassName({isLabelHidden, isSpread}));
+    }
+  }
+  for (const size of ['sm', 'md']) {
+    for (const isInteractive of [false, true]) {
+      add(switchWrapperClassName({size, isInteractive}));
+    }
+    add(switchLabelWrapperClassName({size}));
+  }
+  add(switchStatusClassName);
 
   return [...names].sort();
 }
