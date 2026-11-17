@@ -207,9 +207,9 @@ KB), `pnpm exec vitest run` on the four component directories plus
 `packages/lab/src/labTailwindStylesheet` → 5 files, 40 tests pass; prettier and
 eslint clean on every touched file.
 
-## Result, window 4 (DiffViewer)
+## Result, window 4 (DiffViewer and ChatEmojiPicker)
 
-Commit on `ticket/30-lab`:
+Commits on `ticket/30-lab`, one per component:
 
 - `23aeb4b9a` `refactor(diff-viewer): перевести строки и подсветку на классы Tailwind`
   — `DiffViewer/DiffViewer.tsx` (2098 lines, the largest file left) →
@@ -223,6 +223,15 @@ Commit on `ticket/30-lab`:
   `[&:is([dir="rtl"]_*)]:[transform:scaleX(-1)]`. The focus ring stays on
   `focusOutlineProps` and joins the map class through `mergeProps`, so the ring
   is not dropped by a later `className`.
+
+- `5d1bd89b6` `refactor(chat-emoji-picker): перевести панель, сетку и ячейки на классы Tailwind`
+  — `Chat/ChatEmojiPicker.tsx` → `Chat/chatEmojiPickerClasses.ts`. The grid is
+  `grid-cols-8` (it was `repeat(${GRID_COLUMNS}, 1fr)`), a cell is `size-8`, and
+  the panel's computed `GRID_COLUMNS * 34 + 8` is the literal `w-[280px]`. The
+  cell names no base background — the hover paint sits alone inside
+  `[@media(hover:hover)]` — and its inset ring is
+  `outline-offset-0 focus-visible:outline-offset-[-2px]`, the pair
+  `TransferList` already ships.
 
 What this file taught the rule: a same-property pair has to become one complete
 class even when it reads like an override chain. The line-number column's base
@@ -240,11 +249,15 @@ sits beside the sticky class's background-color.
 
 Verified: `node packages/core/scripts/build-css-tailwind.mjs`,
 `node packages/lab/scripts/build-css-tailwind.mjs`
-(`dist/lab-tailwind.css` 19.1 → 26.3 kB), prettier and eslint clean,
+(`dist/lab-tailwind.css` 19.1 → 27.2 kB), prettier and eslint clean,
 `pnpm exec vitest run packages/lab/src/DiffViewer
-packages/lab/src/labTailwindStylesheet.source-build.test.mjs` → 5 files, 98
-tests pass, `pnpm exec tsc --noEmit -p packages/core` reports only the
+packages/lab/src/Chat packages/lab/src/labTailwindStylesheet.source-build.test.mjs`
+→ 10 files, 106 tests pass, `pnpm exec tsc --noEmit -p packages/core` reports only the
 pre-existing `BottomSheet/BottomSheetPanel.tsx:1046` `PropsObject` error.
+
+The class map strings themselves are what the tests read: a space-separated
+list is not one token, so a test needs every token, not `classList.contains` of
+the whole entry.
 
 The DiffViewer tests read the class map directly through a local `carries(elt,
 mapClassName)` helper that checks every space-separated token, rather than
@@ -263,12 +276,11 @@ Deviations to review:
 - No changeset: `@astryxdesign/lab` is private, and `check-changesets` rejects
   a changeset that names it.
 
-Remaining `stylex.create` sites in `packages/lab/src`, per file (33 files, 44
+Remaining `stylex.create` sites in `packages/lab/src`, per file (32 files, 43
 maps), smallest first:
 
 | maps | file                                            |
 | ---- | ----------------------------------------------- |
-| 1    | `Chat/ChatEmojiPicker.tsx`                      |
 | 1    | `Chat/ChatVirtualizer.tsx`                      |
 | 1    | `CircleCheckIndicator/CircleCheckIndicator.tsx` |
 | 1    | `CodeEditor/CodeEditor.tsx`                     |
