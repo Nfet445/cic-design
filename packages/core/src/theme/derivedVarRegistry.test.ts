@@ -375,6 +375,11 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   '--_field-status-overlap',
   '--_codeblock-gutter-width',
   '--_tab-indicator-bottom',
+  // The layer viewport fit writes these three on the anchored layer at render
+  // time; no theme author sets a popover's size cap or width.
+  '--astryx-popover-max-inline-size',
+  '--astryx-popover-max-block-size',
+  '--astryx-popover-width',
   // Hit-area outset on a ::after overlay, and whether that overlay is
   // generated at all — `inset` and `content` on a pseudo-element are not
   // properties a theme author sets on the component.

@@ -66,6 +66,16 @@ import {
 } from '../Drawer/drawerClasses';
 import {bottomSheetEdgeTintClassName} from '../BottomSheet/bottomSheetEdgeTintClasses';
 import {
+  popoverAnchorWrapperClassName,
+  popoverCloseButtonWrapperClassName,
+  popoverContentWrapperClassName,
+  popoverExplicitWidthClassName,
+  popoverMatchTriggerClassName,
+  popoverSheetFallbackCloseClassName,
+  popoverSurfaceClassName,
+  popoverViewportFitClassName,
+} from '../Popover/popoverClasses';
+import {
   mobileNavContentClassName,
   mobileNavDialogClassName,
   mobileNavDrawerClassName,
@@ -805,6 +815,20 @@ function familyClassNames() {
   // The bottom sheet's edge tint: the strip WebKit samples for the iOS toolbar
   // colour.
   add(bottomSheetEdgeTintClassName);
+
+  // The popover: its surface and content wrapper, the anchor wrapper, both
+  // viewport-fit states, the two sizing classes and both hidden close
+  // wrappers.
+  add(popoverAnchorWrapperClassName);
+  add(popoverSurfaceClassName);
+  add(popoverContentWrapperClassName);
+  for (const isScrollable of [false, true]) {
+    add(popoverViewportFitClassName({isScrollable}));
+  }
+  add(popoverExplicitWidthClassName);
+  add(popoverMatchTriggerClassName);
+  add(popoverCloseButtonWrapperClassName);
+  add(popoverSheetFallbackCloseClassName);
 
   // The mobile nav: the dialog in its two display states, the scrim, both
   // drawer edges in both motion states, the header row and its content area.
@@ -1992,8 +2016,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // content box and action list, and the two drill-in wrappers added 18:
     // mostly one rule each, with the marker's two coarse-pointer arms and the
     // row's three radius parts already spelled elsewhere. With every family
-    // above the sheet sits at 1187, so the ceiling follows the sum rather
-    // than one side.
+    // above the sheet sits at 1187. The popover's map moved from StyleX to
+    // literal classes — its surface, both viewport-fit states, the two sizing
+    // classes, the anchor wrapper and both hidden close wrappers — and took
+    // the sheet to 1199, so the ceiling follows the sum rather than one side.
     expect(stylesheet.rules.size).toBeLessThan(1260);
   });
 
