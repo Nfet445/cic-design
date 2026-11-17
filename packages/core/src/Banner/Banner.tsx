@@ -4,7 +4,7 @@
 
 /**
  * @file Banner.tsx
- * @input Uses React useState/useRef/useId, useCollapsible, Button, Icon (with registry string names), StyleX
+ * @input Uses React useState/useRef/useId, useCollapsible, Button, Icon (with registry string names), the banner class map
  * @output Exports Banner component, BannerProps, BannerStatus, BannerContainer types
  * @position Core implementation; consumed by index.ts, tested by Banner.test.tsx
  *
@@ -57,16 +57,29 @@ import {Button} from '../Button';
 import {Icon} from '../Icon';
 import type {IconName, IconColor} from '../Icon';
 import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  fontWeightVars,
-  typeScaleVars,
-  borderVars,
-  durationVars,
-  easeVars,
-  shadowVars,
-} from '../theme/tokens.stylex';
+  bannerChevronClassName,
+  bannerChevronExpandedClassName,
+  bannerClassName,
+  bannerContentAreaCardClassName,
+  bannerContentAreaClassName,
+  bannerDescriptionClassName,
+  bannerElevatedCardClassName,
+  bannerElevationClassName,
+  bannerEndAreaClassName,
+  bannerHeaderCardStandaloneClassName,
+  bannerHeaderCardWithContentClassName,
+  bannerHeaderCenteredClassName,
+  bannerHeaderClassName,
+  bannerHeaderContentClassName,
+  bannerHeaderContentWithEndContentClassName,
+  bannerIconWrapperClassName,
+  bannerStatusClassName,
+  bannerStatusControlClassName,
+  bannerStatusForegroundClassName,
+  bannerTitleClassName,
+} from './bannerClasses';
+import {tw} from '../utils/tw';
+import {spacingVars} from '../theme/tokens.stylex';
 import {useCollapsible} from '../Collapsible/useCollapsible';
 import type {CollapsibleConfig} from '../Collapsible/useCollapsible';
 import {composeEventHandlers, isRenderable, mergeProps} from '../utils';
@@ -224,243 +237,13 @@ const statusIconColor: Partial<Record<BannerStatus, IconColor>> = {
 // Styles
 // =============================================================================
 
-const styles = stylex.create({
-  // Root container — outer elevation and elevated-card radius painter
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    fontFamily: 'inherit',
-  },
-  // When elevated, a card-container banner rounds its root so the shadow
-  // follows the same silhouette as the header/content border-radius.
-  rootElevatedCard: {
-    borderRadius: `var(--_banner-radius, ${radiusVars['--radius-container']})`,
-  },
-  // Header area — colored status background with icon, title, description, actions
-  // This is the primary theme target ('banner')
-  header: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    flexWrap: 'wrap',
-    columnGap: spacingVars['--spacing-2'],
-    // The end area carries a -4px block margin (see endArea), so the wrapped
-    // row reads as one step of spacing rather than two.
-    rowGap: spacingVars['--spacing-3'],
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-  },
-  // Border-radius for card container: all corners when standalone, top-only when content is visible
-  headerCardStandalone: {
-    borderRadius: `var(--_banner-radius, ${radiusVars['--radius-container']})`,
-  },
-  headerCardWithContent: {
-    borderStartStartRadius: `var(--_banner-radius, ${radiusVars['--radius-container']})`,
-    borderStartEndRadius: `var(--_banner-radius, ${radiusVars['--radius-container']})`,
-    borderEndStartRadius: 0,
-    borderEndEndRadius: 0,
-  },
-  // When there's only a title (no description) and actions, center everything vertically
-  headerCentered: {
-    alignItems: 'center',
-  },
-  // Text content area within the header
-  headerContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 0,
-    flex: 1,
-    minWidth: 0,
-  },
-  // The wrap threshold, applied only when there is `endContent` to wrap. Flex
-  // breaks a line when the items no longer fit at their base size, so this
-  // basis is what moves the end area to its own row instead of letting it hold
-  // the header and squeeze the title down to one word per line. In rem so it
-  // tracks the user's font size. The dismiss and expand controls alone are
-  // narrow enough never to need it.
-  headerContentWithEndContent: {
-    flexBasis: '8rem',
-  },
-  title: {
-    margin: 0,
-    fontFamily: 'inherit',
-    fontSize: typeScaleVars['--text-label-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    color: colorVars['--color-text-primary'],
-    // A single unbroken token (a URL, an ID, a German compound) otherwise sets
-    // the flex item's min-content width and pushes the page into horizontal
-    // scrolling at 320px, which is a WCAG 1.4.10 reflow failure.
-    overflowWrap: 'anywhere',
-    // Text inside keeps `anywhere` too (Text FR3).
-    '--_astryx-text-overflow-wrap': 'anywhere',
-  },
-  description: {
-    margin: 0,
-    fontFamily: 'inherit',
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    overflowWrap: 'anywhere',
-    // Text inside keeps `anywhere` too (Text FR3).
-    '--_astryx-text-overflow-wrap': 'anywhere',
-  },
-  // Built-in status title, description, and icon inherit the header's on-muted
-  // color. Built-in controls receive the same context on their Button element
-  // only, so the sibling tooltip bubble keeps the theme's ordinary text color.
-  statusForeground: {
-    color: 'inherit',
-  },
-  iconWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  endArea: {
-    display: 'flex',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-end',
-    gap: spacingVars['--spacing-2'],
-    flexShrink: 0,
-    // The status surface owns an inherited on-muted foreground, but consumer
-    // endContent does not. Reset the end area's ordinary text context, then let
-    // the built-in controls below opt back into the status foreground.
-    color: colorVars['--color-text-primary'],
-    // Bounded so a group of actions wider than the row wraps within itself
-    // rather than pushing the banner past the viewport (WCAG 1.4.10).
-    maxWidth: '100%',
-    marginInlineStart: 'auto',
-    marginBlock: `calc(-1 * (${spacingVars['--spacing-3']} - ${spacingVars['--spacing-2']}))`,
-  },
-  // Content area — theme target ('banner-content')
-  contentArea: {
-    backgroundColor: colorVars['--color-background-card'],
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-    borderInlineStartWidth: borderVars['--border-width'],
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderBlockEndWidth: borderVars['--border-width'],
-    borderInlineStartStyle: 'solid',
-    borderInlineEndStyle: 'solid',
-    borderBlockEndStyle: 'solid',
-    borderInlineStartColor: colorVars['--color-border'],
-    borderInlineEndColor: colorVars['--color-border'],
-    borderBlockEndColor: colorVars['--color-border'],
-  },
-  contentAreaCard: {
-    borderEndStartRadius: `var(--_banner-radius, ${radiusVars['--radius-container']})`,
-    borderEndEndRadius: `var(--_banner-radius, ${radiusVars['--radius-container']})`,
-  },
-  // Applied to the chevron <Icon> itself (via `xstyle`) rather than a wrapper,
-  // so the element that rotates is the element a theme targets.
-  chevron: {
-    transitionProperty: 'transform',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  chevronExpanded: {
-    transform: 'rotate(180deg)',
-  },
-});
-
-const statusStyles = stylex.create({
-  info: {
-    backgroundColor: colorVars['--color-info-muted'],
-    color: colorVars['--color-on-info-muted'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible (architecture:theme-tokens INV11).
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-  warning: {
-    backgroundColor: colorVars['--color-warning-muted'],
-    color: colorVars['--color-on-warning-muted'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible (architecture:theme-tokens INV11).
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-  error: {
-    backgroundColor: colorVars['--color-error-muted'],
-    color: colorVars['--color-on-error-muted'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible (architecture:theme-tokens INV11).
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-  success: {
-    backgroundColor: colorVars['--color-success-muted'],
-    color: colorVars['--color-on-success-muted'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible (architecture:theme-tokens INV11).
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-});
-
-// Scope status text context to each built-in Button. Its tooltip is a sibling,
-// so it does not inherit these control-only variables.
-const statusControlStyles = stylex.create({
-  info: {
-    '--color-text-primary': colorVars['--color-on-info-muted'],
-  },
-  warning: {
-    '--color-text-primary': colorVars['--color-on-warning-muted'],
-  },
-  error: {
-    '--color-text-primary': colorVars['--color-on-error-muted'],
-  },
-  success: {
-    '--color-text-primary': colorVars['--color-on-success-muted'],
-  },
-});
-
 /**
- * Narrows an augmented `BannerStatus` to one the style map actually carries,
- * so an unknown status renders with no status fill rather than crashing the
- * lookup. StyleX style maps cannot be declared `Partial`, hence the guard.
+ * Narrows an augmented `BannerStatus` to one the class maps carry, so an
+ * unknown status renders with no status fill rather than a missing class.
  */
-function hasStatusStyle(
-  status: BannerStatus,
-): status is BannerStatus & keyof typeof statusStyles {
-  return Object.prototype.hasOwnProperty.call(statusStyles, status);
+function hasStatusStyle(status: BannerStatus): status is BannerStatus {
+  return status in bannerStatusClassName;
 }
-
-// Resting elevation for the banner. Applied to the root so the shadow wraps
-// the whole banner (header + optional content). 'none' is the default and
-// leaves the layout-only root untouched. For the `card` container the root is
-// rounded (rootElevatedCard) so the shadow follows the card silhouette; the
-// full-width `section` container stays square.
-const elevationStyles = stylex.create({
-  none: {boxShadow: 'none'},
-  low: {boxShadow: shadowVars['--shadow-low']},
-  med: {boxShadow: shadowVars['--shadow-med']},
-  high: {boxShadow: shadowVars['--shadow-high']},
-});
 
 // =============================================================================
 // Component
@@ -663,13 +446,14 @@ export function Banner({
         handlePointerDownCapture,
       )}
       {...mergeProps(
-        themeProps('banner-frame', {container, elevation}),
-        stylex.props(
-          styles.root,
-          elevationStyles[elevation],
-          isCard && elevation !== 'none' && styles.rootElevatedCard,
-          xstyle,
-        ),
+        mergeProps(themeProps('banner-frame', {container, elevation}), {
+          className: tw(
+            bannerClassName,
+            bannerElevationClassName[elevation],
+            isCard && elevation !== 'none' && bannerElevatedCardClassName,
+            xstyle && stylex.props(xstyle).className,
+          ),
+        }),
         className,
         style,
       )}
@@ -677,18 +461,17 @@ export function Banner({
       {...frameProps}>
       {/* Header: colored status background — primary theme target ('banner') */}
       <div
-        {...mergeProps(
-          themeProps('banner', {container, status}),
-          stylex.props(
-            styles.header,
-            isSingleLine && styles.headerCentered,
-            hasStatusStyle(status) && statusStyles[status],
+        {...mergeProps(themeProps('banner', {container, status}), {
+          className: tw(
+            bannerHeaderClassName,
+            isSingleLine && bannerHeaderCenteredClassName,
+            hasStatusStyle(status) && bannerStatusClassName[status],
             isCard &&
               (showContent
-                ? styles.headerCardWithContent
-                : styles.headerCardStandalone),
+                ? bannerHeaderCardWithContentClassName
+                : bannerHeaderCardStandaloneClassName),
           ),
-        )}>
+        })}>
         {/* The 'banner-icon' target rides on the element that paints: the
             default <Icon> below, or this wrapper when a custom `icon` node
             is passed (core never injects props into consumer elements, so
@@ -696,11 +479,10 @@ export function Banner({
             layout-only. */}
         <div
           {...(isRenderable(icon)
-            ? mergeProps(
-                themeProps('banner-icon', {status}),
-                stylex.props(styles.iconWrapper),
-              )
-            : stylex.props(styles.iconWrapper))}
+            ? mergeProps(themeProps('banner-icon', {status}), {
+                className: bannerIconWrapperClassName,
+              })
+            : {className: bannerIconWrapperClassName})}
           aria-hidden="true">
           {isRenderable(icon) ? (
             icon
@@ -720,14 +502,15 @@ export function Banner({
         <div
           role={isUrgentAlert ? 'alert' : undefined}
           {...alertAriaProps}
-          {...stylex.props(
-            styles.headerContent,
-            isRenderable(endContent) && styles.headerContentWithEndContent,
+          className={tw(
+            bannerHeaderContentClassName,
+            isRenderable(endContent) &&
+              bannerHeaderContentWithEndContentClassName,
           )}>
           <div
-            {...stylex.props(
-              styles.title,
-              hasStatusStyle(status) && styles.statusForeground,
+            className={tw(
+              bannerTitleClassName,
+              hasStatusStyle(status) && bannerStatusForegroundClassName,
             )}>
             {title}
           </div>
@@ -737,22 +520,21 @@ export function Banner({
           {isUrgentAlert && isRenderable(description) && ' '}
           {isRenderable(description) && (
             <div
-              {...mergeProps(
-                themeProps('banner-description'),
-                stylex.props(
-                  styles.description,
-                  hasStatusStyle(status) && styles.statusForeground,
+              {...mergeProps(themeProps('banner-description'), {
+                className: tw(
+                  bannerDescriptionClassName,
+                  hasStatusStyle(status) && bannerStatusForegroundClassName,
                 ),
-              )}>
+              })}>
               {description}
             </div>
           )}
         </div>
         {showEndArea && (
           <div
-            {...stylex.props(
-              styles.endArea,
-              edgeCompSlot.inset(spacingVars['--spacing-2']),
+            {...mergeProps(
+              stylex.props(edgeCompSlot.inset(spacingVars['--spacing-2'])),
+              {className: bannerEndAreaClassName},
             )}>
             {endContent}
             {hasToggle && (
@@ -774,16 +556,16 @@ export function Banner({
                     icon="chevronDown"
                     size="sm"
                     color="inherit"
-                    xstyle={[
-                      styles.chevron,
-                      isExpanded && styles.chevronExpanded,
-                    ]}
+                    className={tw(
+                      bannerChevronClassName,
+                      isExpanded && bannerChevronExpandedClassName,
+                    )}
                   />
                 }
                 onClick={handleToggleExpand}
                 className={
                   hasStatusStyle(status)
-                    ? stylex.props(statusControlStyles[status]).className
+                    ? bannerStatusControlClassName[status]
                     : undefined
                 }
                 aria-expanded={isExpanded}
@@ -801,7 +583,7 @@ export function Banner({
                 onClick={handleDismiss}
                 className={
                   hasStatusStyle(status)
-                    ? stylex.props(statusControlStyles[status]).className
+                    ? bannerStatusControlClassName[status]
                     : undefined
                 }
                 isIconOnly
@@ -814,10 +596,12 @@ export function Banner({
       {showContent && (
         <div
           id={hasToggle ? contentId : undefined}
-          {...mergeProps(
-            themeProps('banner-content', {container, status}),
-            stylex.props(styles.contentArea, isCard && styles.contentAreaCard),
-          )}>
+          {...mergeProps(themeProps('banner-content', {container, status}), {
+            className: tw(
+              bannerContentAreaClassName,
+              isCard && bannerContentAreaCardClassName,
+            ),
+          })}>
           {children}
         </div>
       )}

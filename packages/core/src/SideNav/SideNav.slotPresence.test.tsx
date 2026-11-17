@@ -20,6 +20,7 @@ import {SideNavItem} from './SideNavItem';
 import {SideNavSection} from './SideNavSection';
 import {classesOf} from '../__tests__/classNameAssertions';
 import {sideNavClassName} from './sideNavClasses';
+import {sideNavHeadingClassName} from './sideNavHeadingClasses';
 import {sideNavItemClassName} from './sideNavItemClasses';
 import {SideNavCollapseContext} from './SideNavCollapseContext';
 import {SideNavRenderContext} from './SideNavRenderContext';
@@ -66,15 +67,6 @@ function zeroIsInside(classNames: string): boolean {
     }
   }
   return false;
-}
-
-/**
- * Whether the "0" sits inside an element whose StyleX debug name matches
- * `style`. SideNavHeading still paints with StyleX, so its slots carry no
- * class to find until it moves to a class map.
- */
-function zeroIsInsideStyleXSlot(style: string): boolean {
-  return zeroParent(document.body)?.closest(`[class*="${style}"]`) != null;
 }
 
 /** Every element carrying a class set. */
@@ -196,7 +188,7 @@ describe('SideNavHeading slots follow isRenderable', () => {
 
     it('renders an icon of 0 inside the icon slot', () => {
       render(<SideNavHeading heading="Product" icon={0} {...props} />);
-      expect(zeroIsInsideStyleXSlot('styles.icon')).toBe(true);
+      expect(zeroIsInside(sideNavHeadingClassName.icon)).toBe(true);
     });
   });
 
@@ -216,7 +208,7 @@ describe('SideNavHeading slots follow isRenderable', () => {
           <SideNavHeading heading="Product" icon={0} />
         </Collapsed>,
       );
-      expect(zeroIsInsideStyleXSlot('styles.icon')).toBe(true);
+      expect(zeroIsInside(sideNavHeadingClassName.icon)).toBe(true);
       // The expanded heading text does not render in the rail.
       expect(document.querySelector('[class*="textContainer"]')).toBeNull();
     });
@@ -232,7 +224,7 @@ describe('SideNavHeading slots follow isRenderable', () => {
 
   it('renders a headerEndContent of 0 inside its slot', () => {
     render(<SideNavHeading heading="Product" headerEndContent={0} />);
-    expect(zeroIsInsideStyleXSlot('headerEndContent')).toBe(true);
+    expect(zeroIsInside(sideNavHeadingClassName.headerEndContent)).toBe(true);
   });
 });
 

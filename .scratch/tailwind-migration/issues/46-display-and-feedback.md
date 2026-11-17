@@ -1,6 +1,6 @@
 # display and feedback surfaces
 
-Status: ready-for-agent
+Status: claimed
 Blocked by: 09
 Wave: 8
 Ticket: 46
@@ -79,3 +79,109 @@ the class map plus a token variable reaches the same pixels.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md`.
 - Manual Windows High Contrast check applies to Card, Divider, Outline,
   Banner and StatusDot.
+
+## Progress
+
+- `Card` paints with Tailwind classes (`Card/cardClasses.ts`). Thirteen variant
+  backgrounds, four elevation variables, the radius, the corners, the border,
+  the overflow arm and the sizing classes are literals; the sizing values ride
+  `--astryx-card-width`, `--astryx-card-height`, `--astryx-card-max-width` and
+  `--astryx-card-min-height`.
+- One rule stays in `Card/cardBorder.stylex.ts`, and the ticket names it:
+  `container()` sets `padding` from its variables as an unlayered StyleX rule,
+  so the border-inset `calc()` padding cannot be a class — an unlayered rule
+  wins over `astryx-base` at any order. Only the subtracted padding stays; the
+  border itself is a class.
+- Moved assertions in `Card/Card.test.tsx`: the four `getComputedStyle`
+  reads of `minWidth`/`overflow` now use `expectClassSet`, and the size check
+  reads `expectVariable('--astryx-card-width')`. One consumer override
+  (`xstyle` with `minWidth: 240`) still reads `getComputedStyle`, because
+  `xstyle` remains StyleX and jsdom still applies its sheet.
+- `cardClassName` and its siblings are registered in `familyClassNames()` of
+  `packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`. With the
+  menu leaves from `poc/tailwind-layout-primitives` the sheet reached 1042
+  rules, so the ceiling moved to `toBeLessThan(1050)` and the comment says why.
+- Changeset: `.changeset/card-tailwind-classes.md` (`component`, patch).
+
+- `Divider` paints with Tailwind classes (`Divider/dividerClasses.ts`): the row
+  per orientation, the line per orientation plus its weight, the label with the
+  stacked padding arm, and both full-bleed arms that read
+  `--container-padding-*` with a `0px` fallback. No `stylex.create` is left in
+  the directory, and no rule needed a `.stylex.ts` exception: no `container()`
+  call stands between the class and the line.
+- No test in `Divider/` read a computed style, so none had to move. The stale
+  comment that said `isFullBleed` "is applied via stylex" is gone with the test
+  that held it: it and the two variant stubs became five class assertions
+  (`expectClassSet`) over the row, the line, the weight, the label and the
+  full-bleed set.
+- `Banner` paints with Tailwind classes (`Banner/bannerClasses.ts`): the frame
+  and its four elevations, the status header with one fill class per status
+  (fill, on-muted foreground and the forced-colors outline together), the
+  centered arm, both card-radius arms, the text column with its `8rem` wrap
+  threshold, the title and description, the icon wrapper, the end area with its
+  block margin and text-context reset, the content area, and the chevron with
+  its reduced-motion duration. `edgeCompSlot.inset()` remains StyleX: it
+  publishes a private variable the end area reads, and it paints nothing.
+- Moved assertions in `Banner/Banner.test.tsx`, and why: the four on-muted
+  control rows read `--color-text-primary` through `getComputedStyle` on the
+  Button and on its tooltip; they now read the control class on the Button and
+  its absence on the tooltip. The endContent test compared computed colors of
+  two titles and two dialogs; it now asserts the title's foreground class and
+  the end area's reset class around the dialog. Three narrow-viewport tests read
+  `flexWrap` and `flexBasis`; they read the class set. The forced-colors test
+  read the compiled rule through the style-sheet helper; it reads the three
+  `forced-colors:` classes on the header and checks every status carries them.
+- The sheet ceiling moved twice: 1050 → 1060 for Divider's 8 rules, then 1060 →
+  1080 for Banner's 26. Both reasons are in the test's comment. The build's
+  `@source` scan already covered the new maps, so the coverage test passed at
+  the first build.
+
+## Left
+
+`Card`, `Divider` and `Banner` are done. The rest of the ticket's files still
+carry their `stylex.create` maps:
+
+- `Badge` (2), `Code` (3), `CodeBlock` (3), `Blockquote` (1), `Spinner` (4) plus
+  `Spinner/spinnerRotor.ts` (1), `ProgressBar` (4), `Skeleton` (3),
+  `StatusDot` (2), `EmptyState` (1), `Outline` (3), `AspectRatio` (2),
+  `Thumbnail` (1), `MetadataList`/`MetadataListItem` (3), `Timer` (1),
+  `Timestamp`/`TimestampHoverCard` (3), `Toast`/`ToastViewport` (2),
+  `Carousel` (3), `Markdown` (5) plus `Markdown/plugins/HeadingLinksRenderer.tsx`
+  (2).
+- `spinnerRotor.ts` is the first keyframe: `@keyframes astryxSpinnerRotor` goes
+  into `packages/core/tailwind/astryx.input.css`, and the rotor class names it.
+- Card's remaining test `getComputedStyle` read is the consumer-`xstyle` one
+  named above.
+- The manual Windows High Contrast check for Card, Divider and Banner is not
+  done. Banner now carries its boundary as a `forced-colors:` outline class on
+  the header, and its test asserts the class rather than the compiled rule, so
+  the manual check is the only place the boundary is seen. Divider draws a
+  border-width line, so it is in the same list.
+- The family browser check page does not exist yet.
+- The next window should start with `Badge` (2 maps), then `Code`,
+  `CodeBlock`, `Blockquote`, `Spinner` (plus the first keyframe,
+  `@keyframes astryxSpinnerRotor`), `ProgressBar`, `Skeleton` and `StatusDot`.
+  `Banner` showed the shape a status-driven map takes: one class per status
+  holding the fill and its forced-colors outline, and a second map for the
+  variable a built-in control rewrites.
+
+## Result
+
+`Card`, `Divider` and `Banner` are converted, verified and committed, one
+commit each:
+
+- `refactor(card): перевести стили карточки на Tailwind-классы`
+- `refactor(divider): перевести стили разделителя на Tailwind-классы`
+- `refactor(banner): перевести стили баннера на Tailwind-классы`
+
+The window ran out after `Banner`; the rest is listed under Left. The changeset
+`.changeset/card-tailwind-classes.md` covers all three components.
+
+The merge of `poc/tailwind-layout-primitives` auto-merged the sheet test with
+both sides intact (this ticket's Card, Divider and Banner registrations and the
+branch's `DropdownMenu` menu-leaf registrations), `node --check` passes, and
+after the merge `node packages/core/scripts/build-css-tailwind.mjs` plus
+`pnpm exec vitest run packages/core/src/Divider packages/core/src/Banner
+packages/core/src/Card packages/core/src/DropdownMenu
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` is green
+(560 tests). `pnpm check:repo` exits 0. Nothing is pushed.

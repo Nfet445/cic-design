@@ -28,7 +28,7 @@ import {ButtonGroup} from '../ButtonGroup';
 import {Tooltip} from '../Tooltip/Tooltip';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
-import {expectClassSet} from '../__tests__/classNameAssertions';
+import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
 
 // Mock dialog methods since they're not fully implemented in jsdom
 beforeEach(() => {
@@ -80,7 +80,7 @@ describe('Drawer', () => {
         Content
       </Drawer>,
     );
-    expect(getComputedStyle(screen.getByRole('dialog')).overflow).toBe('clip');
+    expectClassSet(screen.getByRole('dialog'), {includes: ['overflow-clip']});
   });
 
   it('renders children when open', () => {
@@ -383,8 +383,8 @@ describe('Drawer', () => {
       const classes = dialog.className.split(' ');
       expect(classes).toContain('astryx-drawer');
       expect(classes).toContain('inspector-panel');
-      // Drawer's own StyleX styling survives the merge.
-      expect(getComputedStyle(dialog).position).toBe('fixed');
+      // Drawer's own styling survives the merge.
+      expectClassSet(dialog, {includes: ['fixed']});
     });
 
     it('merges a consumer xstyle after Drawer styles so the override wins', () => {
@@ -400,7 +400,7 @@ describe('Drawer', () => {
       );
       const dialog = screen.getByRole('dialog');
       expect(getComputedStyle(dialog).maxWidth).toBe('240px');
-      expect(getComputedStyle(dialog).position).toBe('fixed');
+      expectClassSet(dialog, {includes: ['fixed']});
       expect(dialog.className).toContain('astryx-drawer');
     });
 
@@ -416,9 +416,9 @@ describe('Drawer', () => {
       );
       const dialog = screen.getByRole('dialog');
       expect(dialog.style.zIndex).toBe('30');
-      // The width budget travels as a StyleX dynamic inline variable and must
-      // survive the merge rather than be replaced by the consumer style.
-      expect(dialog.getAttribute('style')).toContain('400px');
+      // The width budget travels as an inline custom property and must survive
+      // the merge rather than be replaced by the consumer style.
+      expectVariable(dialog, '--astryx-drawer-width', '400px');
     });
 
     it('forwards a data attribute and an ARIA attribute to the root dialog', () => {
@@ -1624,11 +1624,14 @@ describe('Drawer unmounting while open', () => {
     );
   }
 
+  // jsdom's UA sheet hides a popover host that is not `:popover-open`, and the
+  // stand-in above tracks that state outside the cascade, so the panel's own
+  // `flex` class (which the shipped sheet carries) never reaches the query.
   function openAndFocusSave(): HTMLElement {
     const edit = screen.getByRole('button', {name: 'Edit'});
     edit.focus();
     fireEvent.click(edit);
-    const save = screen.getByRole('button', {name: 'Save'});
+    const save = screen.getByRole('button', {name: 'Save', hidden: true});
     save.focus();
     return edit;
   }
@@ -1639,10 +1642,14 @@ describe('Drawer unmounting while open', () => {
         render(<Inspector unmountWith={unmountWith} hasScrim={hasScrim} />);
         const edit = openAndFocusSave();
 
-        fireEvent.click(screen.getByRole('button', {name: 'Save'}));
+        fireEvent.click(
+          screen.getByRole('button', {name: 'Save', hidden: true}),
+        );
         await Promise.resolve();
 
-        expect(screen.queryByRole('button', {name: 'Save'})).toBeNull();
+        expect(
+          screen.queryByRole('button', {name: 'Save', hidden: true}),
+        ).toBeNull();
         expect(edit).toHaveFocus();
       });
     }
@@ -1651,7 +1658,7 @@ describe('Drawer unmounting while open', () => {
   it('leaves focus where the user moved it before the unmount', async () => {
     render(<Inspector unmountWith="save" hasScrim={false} />);
     openAndFocusSave();
-    const save = screen.getByRole('button', {name: 'Save'});
+    const save = screen.getByRole('button', {name: 'Save', hidden: true});
     const elsewhere = screen.getByRole('button', {name: 'Elsewhere'});
     elsewhere.focus();
 
@@ -1671,6 +1678,8 @@ describe('Drawer unmounting while open', () => {
     openAndFocusSave();
     await Promise.resolve();
 
-    expect(screen.getByRole('button', {name: 'Save'})).toHaveFocus();
+    expect(
+      screen.getByRole('button', {name: 'Save', hidden: true}),
+    ).toHaveFocus();
   });
 });
