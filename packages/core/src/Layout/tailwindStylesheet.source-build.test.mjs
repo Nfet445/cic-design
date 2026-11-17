@@ -292,6 +292,12 @@ import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {sideNavClassName} from '../SideNav/sideNavClasses';
 import {sideNavHeadingClassName} from '../SideNav/sideNavHeadingClasses';
+import {
+  navHeadingMenuClassName,
+  navHeadingMenuItemClassName,
+  navHeadingMenuItemContentClassName,
+  navHeadingMenuMinWidthClassName,
+} from '../NavMenu/navHeadingMenuClasses';
 import {sideNavItemClassName} from '../SideNav/sideNavItemClasses';
 import {
   treeListItemClassName,
@@ -1488,6 +1494,15 @@ function familyClassNames() {
   add(SELECTOR_ROW_CONTENT_CLASS);
   add(SELECTOR_ROW_MARK_COLUMN_CLASS);
   add(SELECTOR_OPTION_EMBEDDED_CLASS);
+  // The nav heading popover: its column, both row states at every size, and
+  // the minimum width each size states as its own fallback.
+  add(navHeadingMenuClassName);
+  add(navHeadingMenuItemContentClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(navHeadingMenuMinWidthClassName[size]);
+    add(navHeadingMenuItemClassName({isDisabled: false, size}));
+    add(navHeadingMenuItemClassName({isDisabled: true, size}));
+  }
 
   // MultiSelector rows: both row kinds (option and Select All) across every
   // size, the grid layout and each runtime state.
