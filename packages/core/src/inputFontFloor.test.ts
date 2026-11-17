@@ -57,7 +57,7 @@ const FLOORED_FLOOR_FILES = [
   'Typeahead/BaseTypeahead.tsx',
   // The rich-text package carries the same floor; its path is relative to
   // packages/core/src.
-  '../../richtext/src/RichTextEditor.tsx',
+  '../../richtext/src/richTextEditorClasses.ts',
 ];
 
 /** The utility class that states the floor, both variants in order. */

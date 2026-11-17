@@ -80,7 +80,7 @@ export const richTextEditorRootClassName = tw(
   '[font-family:var(--font-family-body)]',
   '[font-size:var(--text-body-size)]',
   '[line-height:var(--text-body-leading)]',
-  '[@media_(pointer:coarse)]:[@supports_(-webkit-touch-callout:none)]:[font-size:max(1rem,var(--text-body-size))]',
+  'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
 );
 
 export const richTextEditorStatusIconClassName = tw(
