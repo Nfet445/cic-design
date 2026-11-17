@@ -15,6 +15,11 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {createRoot, hydrateRoot} from 'react-dom/client';
 import {renderToString} from 'react-dom/server';
 import {Drawer} from './Drawer';
+import {classesOf} from '../__tests__/classNameAssertions';
+
+/** The settle collapse is the only transition duration a panel chooses. */
+const SETTLED = '[transition-duration:0.01s]';
+const ANIMATED = '[transition-duration:var(--duration-medium)]';
 
 beforeEach(() => {
   HTMLDialogElement.prototype.showModal = vi.fn(function (
@@ -82,7 +87,9 @@ describe('Drawer: open on the server (FR17)', () => {
 
   it('opens settled after hydration, without its slide-in, and animates a later open (spec:AST-013 FR13)', async () => {
     const entryMotion = (dialog: HTMLDialogElement) =>
-      getComputedStyle(dialog).transitionDuration;
+      classesOf(dialog).find(className =>
+        className.startsWith('[transition-duration:'),
+      );
     // A client-opened Drawer plays its slide-in.
     const client = document.createElement('div');
     document.body.appendChild(client);
@@ -91,7 +98,7 @@ describe('Drawer: open on the server (FR17)', () => {
     const clientMotion = entryMotion(
       client.querySelector('dialog') as HTMLDialogElement,
     );
-    expect(clientMotion).not.toBe('.01s');
+    expect(clientMotion).toBe(ANIMATED);
     await act(async () => clientRoot.unmount());
 
     // One open on the server opens where it rests once hydrated.
@@ -103,7 +110,7 @@ describe('Drawer: open on the server (FR17)', () => {
       root = hydrateRoot(container, tree(true));
     });
     const dialog = container.querySelector('dialog') as HTMLDialogElement;
-    expect(entryMotion(dialog)).toBe('.01s');
+    expect(entryMotion(dialog)).toBe(SETTLED);
 
     // Closed and opened again, it animates as a client open does.
     await act(async () => root.render(tree(false)));

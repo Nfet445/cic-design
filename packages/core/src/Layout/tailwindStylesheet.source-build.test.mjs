@@ -38,6 +38,10 @@ import {
   dialogRootClassName,
 } from '../Dialog/dialogClasses';
 import {
+  drawerContentClassName,
+  drawerRootClassName,
+} from '../Drawer/drawerClasses';
+import {
   layerHeaderActionsClassName,
   layerHeaderContainerClassName,
   layerHeaderSlotClassName,
@@ -678,6 +682,29 @@ function familyClassNames() {
       );
     }
   }
+
+  // The drawer panel: both anchored sides, each painting state, with and
+  // without a scrim, and the settled open that collapses its transition.
+  for (const side of ['start', 'end']) {
+    for (const isRendered of [false, true]) {
+      for (const isOpen of [false, true]) {
+        for (const hasScrim of [false, true]) {
+          for (const opensSettled of [false, true]) {
+            add(
+              drawerRootClassName({
+                side,
+                isRendered,
+                isOpen,
+                hasScrim,
+                opensSettled,
+              }),
+            );
+          }
+        }
+      }
+    }
+  }
+  add(drawerContentClassName);
 
   // The alert dialog adds only the row's gesture policy and the stacked width;
   // Button already caps an action at `min-w-0 max-w-full`.
@@ -1676,8 +1703,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // about 45, the item row machine about 45, and the tab family — TabList's
     // strip, masks and arrows, TabMenu, SegmentedControl — about 120. A scan
     // that reaches component bodies or prose would add hundreds more. The
-    // top-nav menus and the row machine brought the sheet to about 975.
-    expect(stylesheet.rules.size).toBeLessThan(1020);
+    // top-nav menus and the row machine brought the sheet to about 975, and the
+    // drawer panel — two sides, two painting states, two direction arms and the
+    // scrim — about 60 more.
+    expect(stylesheet.rules.size).toBeLessThan(1050);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
