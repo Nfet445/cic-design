@@ -251,6 +251,71 @@ packages/cli/clients/cli/__tests__/cliManifest.test.ts` passed (27 tests),
 before and after merging `poc/tailwind-layout-primitives` (`fb5d905f7`); the
 merge touched no template.
 
+Window 4 (`feat(cli): шаблоны ComplexSelector, useInputContainer и
+PanPlayingCard на Tailwind`): the three block templates that carried a map and
+no core blocker — `blocks/components/ComplexSelector/ComplexSelectorShowcase.tsx`,
+`blocks/components/Hooks/useInputContainerHookUsage.tsx`,
+`blocks/components/usePanGesture/PanPlayingCard.tsx`. Each `stylex.create` map
+became a `const styles = {...} as const` of class strings, each
+`{...stylex.props(...)}`/`xstyle` became `className`, and three
+`tokens.stylex` imports went away. `PanPlayingCard` is the first template where
+the value is computed at runtime: the drag position reaches the card as two
+inline variables, `--astryx-card-x` and `--astryx-card-y`, which the card's
+`[translate:var(--astryx-card-x)_var(--astryx-card-y)]` class reads; the throw,
+the settle and the grab cursor are plain classes with a `motion-reduce:`
+variant. `pan-playing-card.test.tsx` asserted the merged StyleX style object
+(`data-style`), so it now stubs `className`/`style` and reads the pose off the
+class list and the two variables.
+
+Counts after the window: 26 files, 155 `xstyle=`, 25 `@stylexjs/stylex`
+imports, 15 `tokens.stylex` imports, 24 `stylex.create` maps.
+
+Untouched, with what each needs (path — `xstyle=` sites / maps /
+`tokens.stylex` import):
+
+- `blocks/components/Table/TableLeadingMarkSelection.tsx` — 0 / 1 / yes
+- `blocks/components/BaseTypeahead/BaseTypeaheadCustomSearch.tsx` — 2 / 1 / yes
+- `blocks/components/BaseTypeahead/BaseTypeaheadShowcase.tsx` — 2 / 1 / yes
+- `blocks/components/usePanGesture/PanDraggableBox.tsx` — 2 / 1 / yes (dynamic
+  `translate`, same `--astryx-*` shape as `PanPlayingCard`)
+- `blocks/components/BaseTypeahead/BaseTypeaheadMenu.tsx` — 5 / 1 / yes
+- `blocks/components/Table/TableFloatingBulkActionsTable.tsx` — 2 / 1 / yes
+- `blocks/components/Toolbar/ToolbarTableFilter.tsx` — 7 / 1 / yes
+- `blocks/components/DrawerHeader/DrawerHeaderShowcase.tsx` — 0 / 1 / yes —
+  blocked: needs `layoutInnerClassName`, which core does not export
+- `blocks/components/Hooks/useInputStatusIconHookUsage.tsx` — 0 / 1 / yes —
+  blocked: `inputWrapperStyles`/`inputStatusBorderStyles` from
+  `@astryxdesign/core/Field`
+- `blocks/components/Hooks/usePressFeedbackHookUsage.tsx` plus its
+  `.test.tsx` — 1 / 0 / no — blocked: `focusOutlineStyles` and
+  `interactionOverlayStyles` are still StyleX in core
+- `pages/dashboard-alert-rail/page.tsx` — 2 / 2 / no
+- `pages/dashboard-cohort-funnel/page.tsx` — 2 / 1 / no
+- `pages/dashboard-comparison/page.tsx` — 2 / 2 / no
+- `pages/dashboard-progress/page.tsx` — 6 / 1 / no
+- `pages/dashboard-scorecard/page.tsx` — 2 / 2 / no
+- `pages/kanban-board/page.tsx` — 7 / 1 / no
+- `pages/settings-dialog/page.tsx` — 17 / 3 / no
+- `pages/shell-top-nav/page.tsx` — 3 / 1 / no
+- `pages/table-collapsible/page.tsx` — 4 / 1 / yes
+- `pages/table-comparison/page.tsx` — 4 / 1 / yes
+- `pages/table-filter/page.tsx` — 54 / 3 / yes
+- `pages/table-inbox/page.tsx` — 1 / 1 / yes
+- `pages/table-tree/page.tsx` — 2 / 1 / yes
+- `pages/work-item-detail/page.tsx` — 3 / 1 / yes
+- `pages/canvas-editor/page.tsx` — 25 / 6 / no — held back by the task for its
+  own pass
+
+Window 4 checks: the three templates and the updated test parse with
+`node_modules/.bin/esbuild --loader:.tsx=tsx`; `prettier --check` clean;
+`eslint` no issues; `vitest run --project node
+packages/cli/api/template/pan-playing-card.test.tsx
+packages/cli/api/template/use-input-container-hook-usage.test.tsx` passed (13
+tests) before and after merging `poc/tailwind-layout-primitives` (`3e19cec45`,
+no conflict). The batch holds three templates, not five: the window ran past
+its half hour before the fourth was finished, and three whole templates beat a
+half-converted fourth.
+
 ## Notes
 
 - Ticket 34 rewrites the render pipeline that compiles a generated page with
