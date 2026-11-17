@@ -32,7 +32,7 @@ const ROOT = resolve(__dirname, '..');
 const TOKENS_SRC = resolve(ROOT, 'packages/core/src/theme/tokenVars.ts');
 const DATA_TOKENS_SRC = resolve(
   ROOT,
-  'packages/core/src/theme/dataTokens.stylex.ts',
+  'packages/core/src/theme/dataTokenVars.ts',
 );
 const SYNTAX_TOKENS_SRC = resolve(
   ROOT,
