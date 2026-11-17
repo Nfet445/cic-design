@@ -64,10 +64,12 @@ export const TARGETS = {
     // this group even without a Core component import (spec:AST-066 FR3).
     stylexEntries: STYLEX_ENTRIES['@astryxdesign/core'],
     // The token defaults used to reach this sheet as StyleX defineVars
-    // declarations. They now live in a generated tokens.css (spec:AST-119 FR4),
-    // and this sheet still carries them so a page that loads only astryx.css
-    // keeps every default.
-    extraCss: path.resolve(CORE_SRC, 'theme/tokens.css'),
+    // declarations. They now live in generated sheets (spec:AST-119 FR4), and
+    // this sheet still carries them so a page that loads only astryx.css keeps
+    // every default.
+    extraCss: ['theme/tokens.css', 'theme/dataTokens.css'].map(file =>
+      path.resolve(CORE_SRC, file),
+    ),
   },
   lab: {
     src: path.resolve(ROOT, 'packages/lab/src'),
@@ -277,9 +279,13 @@ async function main() {
   }
 
   const outPath = path.resolve(target.dist, target.outFile);
-  const extraCss = target.extraCss
-    ? withoutBanner(await fs.readFile(target.extraCss, 'utf8'))
-    : '';
+  const extraCss = (
+    await Promise.all(
+      (target.extraCss ?? []).map(async file =>
+        withoutBanner(await fs.readFile(file, 'utf8')),
+      ),
+    )
+  ).join('\n\n');
   await fs.writeFile(
     outPath,
     composePackageStylesheet(target.banner, combinedCSS, extraCss),

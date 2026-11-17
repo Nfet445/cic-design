@@ -2,7 +2,7 @@
 
 /**
  * @file dataTokens.ts
- * @input dataTokens.stylex.ts (generated; do not edit)
+ * @input dataTokenVars.ts (generated; do not edit)
  * @output dataTokenDefaults, DataTokenName
  * @position Plain compatibility view for theme validation and JavaScript token resolution
  *
