@@ -26,6 +26,12 @@ import path from 'node:path';
 import userEvent from '@testing-library/user-event';
 import * as stylex from '@stylexjs/stylex';
 import {createReorderable} from '@astryxdesign/core';
+import {classesOf} from '../../../core/src/__tests__/classNameAssertions';
+import {
+  transferListPanelBodyClassName,
+  transferListPanelClassName,
+  transferListRootClassName,
+} from './transferListClasses';
 import {
   TransferList,
   type TransferListOption,
@@ -540,6 +546,39 @@ describe('TransferList', () => {
 
       await user.click(screen.getByRole('button', {name: 'Clear'}));
       expect(onValueChange).toHaveBeenCalledWith(['owner']);
+    });
+  });
+
+  describe('class map', () => {
+    it('carries the root, panel and body classes from the map', () => {
+      render(
+        <TransferList
+          label="Columns"
+          options={OPTIONS}
+          value={['name']}
+          onChange={() => {}}
+          data-testid="transfer-list"
+          className="consumer-class"
+        />,
+      );
+
+      const root = screen.getByTestId('transfer-list');
+      expect(classesOf(root)).toEqual(
+        expect.arrayContaining([
+          ...transferListRootClassName.split(' '),
+          'consumer-class',
+        ]),
+      );
+      const panel = screen.getAllByRole('group')[1];
+      expect(classesOf(panel)).toEqual(
+        expect.arrayContaining(transferListPanelClassName.split(' ')),
+      );
+      const body = root.querySelector(
+        '[data-transfer-list-panel-body="selected"]',
+      )!;
+      expect(classesOf(body)).toEqual(
+        expect.arrayContaining(transferListPanelBodyClassName.split(' ')),
+      );
     });
   });
 

@@ -88,3 +88,83 @@ in `packages/lab/src`):
 
 Then the remaining 40-odd carriers, and the overlay half (tour, emoji
 pickers) after wave 7 lands.
+
+## Result, window 2 (ListInput and TransferList)
+
+Commits on `ticket/30-lab`, one per family:
+
+- `2c35157bf` `refactor(list-input): перевести записи и сетку колонок на классы`
+  — `ListInput/listInputClasses.ts` (new) + `[--astryx-list-input-columns]`
+  inline variable for the field template.
+- `de6510e71` `refactor(transfer-list): перевести панели и строки на классы`
+  — `TransferList/transferListClasses.ts` (new, includes the selector's
+  surface, fieldset and footer), `TransferList/transferListOverrides.stylex.ts`
+  (three rules that must outrank a core utility: `Item`'s
+  `pointer-events-none` on a disabled row, its `opacity-50` dim, and `Button`'s
+  own label type scale and background image on the panel-header action).
+- `399cf0cef` `Merge branch 'poc/tailwind-layout-primitives'` — no conflicts.
+
+Both `stylex.create` maps are gone from `ListInput.tsx`,
+`TransferList.tsx` and `TransferListSelector.tsx`. `lab.css` 72.8 → 68.6 KB;
+`dist/lab-tailwind.css` 7.7 → 12.2 kB.
+`labTailwindStylesheet.source-build.test.mjs` now lists the `listInput` and
+`transferList` class maps, so the sheet is checked against every class they
+emit.
+
+Verified: `node scripts/build-css.mjs --package lab` (1504 StyleX rules from
+229 reachable files), `node packages/lab/scripts/build-css-tailwind.mjs`,
+`pnpm exec vitest run packages/lab/src/ListInput packages/lab/src/TransferList
+packages/lab/src/labTailwindStylesheet` → 5 files, 86 tests pass; prettier
+clean; `pnpm exec eslint packages/lab/src/TransferList` clean. Merge re-ran the
+same build and suite.
+
+Deviations to review:
+
+- `TransferListSelector.tsx:255` keeps one dynamic `stylex.create` for the
+  popup box (`content: (width) => …`). `ComplexSelector` exposes only
+  `contentXstyle` (`packages/core/src/ComplexSelector/ComplexSelector.tsx:528`,
+  applied at `:846`), so the popup's width has no class or inline-style seam.
+  The map carries a header saying so. Adding `contentClassName`/`contentStyle`
+  to core would let this go.
+- `ListInput.test.tsx` and `TransferList.test.tsx` import `classesOf` from
+  `../../../core/src/__tests__/classNameAssertions`, which is outside lab's
+  `rootDir`; `pnpm -F @astryxdesign/lab typecheck` therefore reports TS6059 for
+  those two lines on a worktree where `@astryxdesign/core` has declarations.
+  Same trade-off as window 1's note, now on two files, so it is worth a decision
+  (a lab-local copy of `classesOf`, or an exception in the lab tsconfig).
+- `pnpm -F @astryxdesign/lab typecheck` still cannot answer here:
+  `packages/core/dist` is not built on this worktree, so every lab file fails
+  TS2307 before the changed files are reached.
+
+## Remaining: `Schedule` is one map, not a family
+
+`Schedule` keeps a single shared map. `Schedule/shared.tsx:770` exports
+`styles` (about 60 rules) and five view files consume it — 158 references in
+total:
+
+| file                       | lines | references to the shared map or its own stylex |
+| -------------------------- | ----- | ---------------------------------------------- |
+| `Schedule/shared.tsx`      | 1717  | 67                                             |
+| `Schedule/TimeGridView.tsx`| 1003  | 53                                             |
+| `Schedule/MonthlyView.tsx` | 744   | 39                                             |
+| `Schedule/ListView.tsx`    | 240   | 12                                             |
+| `Schedule/Schedule.tsx`    | 334   | 2                                              |
+| `Schedule/WeeklyView.tsx`  | 134   | 0                                              |
+| `Schedule/DayView.tsx`     | 117   | 0                                              |
+
+Size is not the only reason it wants its own window:
+
+- `Schedule/schedule.stylex.ts` defines the `timeGridViewportScope` marker, read
+  with `stylex.when.siblingBefore(':focus-visible', …)`. The focus ring is drawn
+  by an overlay reacting to a sibling's keyboard focus; a plain class cannot
+  express "sibling before is focus-visible", so that rule stays in a
+  `*.stylex.ts` with its reason, or moves to `:has()` on the container.
+- The time grid positions events and the gutter at computed offsets, so several
+  rules are per-instance values and need the class + `--astryx-*` variable
+  shape rather than a static class.
+- Vertical rhythm in `TimeGridView` is `calc()` over a row height variable;
+  check each one against the `--spacing` scale before it becomes a utility.
+
+Suggested split, smallest first: `Schedule.tsx` (2 references) → `ListView.tsx`
+(12) → `MonthlyView.tsx` (39) → `TimeGridView.tsx` (53) → `shared.tsx` (67, the
+map itself, last, since the views keep importing it until then).

@@ -48,19 +48,32 @@ import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
 import {useAnnounce} from '@astryxdesign/core/hooks';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {
-  borderVars,
-  colorVars,
-  sizeVars,
-  spacingVars,
-  typeScaleVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
-import {
   focusOutlineStyles,
   mergeProps,
   mergeRefs,
   themeProps,
 } from '@astryxdesign/core/utils';
-import {transferListVars} from './tokens.stylex';
+import {
+  transferListClearsHandleClassName,
+  transferListControlsClassName,
+  transferListEmptyClassName,
+  transferListGroupHeadingClassName,
+  transferListHeadingClassName,
+  transferListItemClassName,
+  transferListPanelBodyClassName,
+  transferListPanelClassName,
+  transferListPanelDividerClassName,
+  transferListPanelHeaderClassName,
+  transferListPanelsClassName,
+  transferListRootClassName,
+  transferListSearchClassName,
+} from './transferListClasses';
+import {
+  transferListDisabledRowPointerStyles,
+  transferListHeaderActionStyles,
+  transferListRemoveOnDisabledRowStyles,
+} from './transferListOverrides.stylex';
+import {tw} from '../tw';
 
 // A Lucide glyph the shared icon registry does not carry (there is no `add`
 // semantic name). Typed as icon components and rendered through `Icon`
@@ -154,171 +167,6 @@ export interface TransferListProps<T extends string = string> extends Omit<
   /** Empty copy while a search query is active. */
   noResultsText?: string;
 }
-
-const styles = stylex.create({
-  // Core List's reorder handle is a small control, 28 px for every pointer,
-  // overlapping the row's end padding by 8 px. A finger's 44 px target is its
-  // invisible hit layer. A row without one keeps its end content clear of
-  // it, so every Remove sits in one column.
-  clearsHandle: {
-    marginInlineEnd: 20,
-  },
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 0,
-    minWidth: 0,
-    containerType: 'inline-size',
-  },
-  heading: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-3'],
-  },
-  controls: {
-    display: 'flex',
-    alignItems: 'flex-end',
-    gap: spacingVars['--spacing-2'],
-    minWidth: 0,
-    padding: spacingVars['--spacing-3'],
-  },
-  search: {flex: 1, minWidth: 0},
-  panels: {
-    display: 'grid',
-    gridTemplateColumns: {
-      default: 'minmax(0, 1fr) minmax(0, 1fr)',
-      '@container (max-width: 40rem)': 'minmax(0, 1fr)',
-    },
-    gap: 0,
-    minWidth: 0,
-  },
-  panel: {
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-    // In the phone layout the body does not scroll, so the panel does not
-    // clip. On iOS, that clip around the list's own clip draws the row at its
-    // edge one point off while rows glide.
-    overflow: {
-      default: 'hidden',
-      '@container (max-width: 40rem)': 'visible',
-    },
-    // Inset, not the shared offset: the panel's own edge is the container
-    // boundary, so an outset ring would fall outside the component.
-    outlineOffset: {default: '0', ':focus-visible': -2},
-  },
-  panelDivider: {
-    borderInlineStartWidth: {
-      default: borderVars['--border-width'],
-      '@container (max-width: 40rem)': 0,
-    },
-    borderInlineStartStyle: 'solid',
-    borderInlineStartColor: colorVars['--color-border'],
-    borderBlockStartWidth: {
-      default: 0,
-      '@container (max-width: 40rem)': borderVars['--border-width'],
-    },
-    borderBlockStartStyle: 'solid',
-    borderBlockStartColor: colorVars['--color-border'],
-  },
-  panelHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    backgroundColor: {
-      default: 'transparent',
-      '@container (max-width: 40rem)': colorVars['--color-background-body'],
-    },
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    borderBlockEndWidth: borderVars['--border-width'],
-    borderBlockEndStyle: 'solid',
-    borderBlockEndColor: colorVars['--color-border'],
-  },
-  headerAction: {
-    // A text-link treatment, but the hit target still has to clear the WCAG
-    // 2.5.8 24px floor. The link keeps `height: auto` so its baseline aligns
-    // with the panel heading; `minBlockSize` gives the button a >=24px target
-    // (the sm element height) without changing where the text sits, and the
-    // width already exceeds 24px.
-    height: 'auto',
-    minBlockSize: sizeVars['--size-element-sm'],
-    paddingBlock: 0,
-    paddingInline: 0,
-    borderRadius: 0,
-    color: colorVars['--color-text-accent'],
-    backgroundImage: {
-      default: 'none',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': 'none',
-      ':active': 'none',
-    },
-    textDecoration: {
-      default: 'none',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': 'underline',
-    },
-    fontSize: typeScaleVars['--text-body-size'],
-    fontWeight: typeScaleVars['--text-body-weight'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-  },
-  panelBody: {
-    minBlockSize: {
-      default: transferListVars['--transfer-list-panel-min-block-size'],
-      '@container (max-width: 40rem)': 0,
-    },
-    maxBlockSize: {
-      default: transferListVars['--transfer-list-panel-max-block-size'],
-      '@container (max-width: 40rem)': 'none',
-    },
-    overflowY: {
-      default: 'auto',
-      '@container (max-width: 40rem)': 'visible',
-    },
-    overscrollBehavior: {
-      default: 'contain',
-      '@container (max-width: 40rem)': 'auto',
-    },
-    scrollbarGutter: {
-      default: 'stable',
-      '@container (max-width: 40rem)': 'auto',
-    },
-    padding: 0,
-  },
-  groupHeading: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-3'],
-    marginBlockStart: {
-      default: spacingVars['--spacing-1'],
-      ':first-child': 0,
-    },
-  },
-  // A disabled row still takes the pointer, so its disabled controls show
-  // their tooltips on hover.
-  disabledItem: {
-    pointerEvents: 'auto',
-  },
-  // A disabled row already dims its end content, Remove included. Remove's
-  // own disabled dim would make it fainter than the list's other controls.
-  removeInDisabledRow: {
-    opacity: 1,
-  },
-  item: {
-    minWidth: 0,
-    paddingInline: spacingVars['--spacing-3'],
-  },
-  empty: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minBlockSize: {
-      default: transferListVars['--transfer-list-panel-min-block-size'],
-      '@container (max-width: 40rem)': 0,
-    },
-    padding: spacingVars['--spacing-4'],
-    textAlign: 'center',
-  },
-});
 
 // Case folding is locale-independent here, matching Selector, MultiSelector,
 // and CommandPalette. Locale-sensitive folding would mean raw Intl access,
@@ -707,10 +555,14 @@ export function TransferList<T extends string = string>({
         onClick={() => removeOption(option, index)}
         // A row that keeps its place has no handle: its Remove keeps the
         // movable rows' column, clear of where their handles sit.
-        xstyle={[
-          isOrdering && !canMove(option.value) && styles.clearsHandle,
-          isDisabled && styles.removeInDisabledRow,
-        ]}
+        className={
+          isOrdering && !canMove(option.value)
+            ? transferListClearsHandleClassName
+            : undefined
+        }
+        xstyle={
+          isDisabled ? transferListRemoveOnDisabledRowStyles.base : undefined
+        }
       />
     );
     if (!isDisabled || !isOrdering || !canMove(option.value)) {
@@ -757,7 +609,10 @@ export function TransferList<T extends string = string>({
           // A disabled list keeps each handle as a focusable disabled
           // control. Core List ends its reorder mode and sends a drag home.
           isDisabled={isDisabled}
-          xstyle={[styles.item, isDisabled && styles.disabledItem]}
+          className={transferListItemClassName}
+          xstyle={
+            isDisabled ? transferListDisabledRowPointerStyles.base : undefined
+          }
           data-transfer-list-row={option.value}
           data-transfer-list-index={String(value.indexOf(option.value))}
           {...theme}
@@ -771,7 +626,7 @@ export function TransferList<T extends string = string>({
         density="compact"
         label={renderOption?.(option) ?? option.label}
         endContent={optionActions(option, side, index)}
-        xstyle={styles.item}
+        className={transferListItemClassName}
         {...theme}
       />
     );
@@ -788,14 +643,14 @@ export function TransferList<T extends string = string>({
       {...restProps}
       {...mergeProps(
         themeProps('transfer-list'),
-        stylex.props(styles.root, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(transferListRootClassName, className),
         style,
       )}
       role={role ?? 'group'}
       aria-labelledby={ariaLabelledBy ?? labelId}
       aria-describedby={describedBy}>
-      <div {...stylex.props(styles.heading)}>
+      <div className={transferListHeadingClassName}>
         {isLabelHidden ? (
           <VisuallyHidden id={labelId}>{label}</VisuallyHidden>
         ) : (
@@ -811,7 +666,7 @@ export function TransferList<T extends string = string>({
       </div>
 
       {hasSearch && (
-        <div {...stylex.props(styles.controls)}>
+        <div className={transferListControlsClassName}>
           <TextInput
             ref={searchRef}
             role="searchbox"
@@ -824,7 +679,7 @@ export function TransferList<T extends string = string>({
             startIcon={<Icon icon="search" size="sm" color="secondary" />}
             hasClear
             width="100%"
-            controlXstyle={styles.search}
+            controlClassName={transferListSearchClassName}
             isDisabled={isDisabled}
             onChange={handleSearch}
           />
@@ -832,10 +687,9 @@ export function TransferList<T extends string = string>({
       )}
 
       <div
-        {...mergeProps(
-          themeProps('transfer-list-collection'),
-          stylex.props(styles.panels),
-        )}>
+        {...mergeProps(themeProps('transfer-list-collection'), {
+          className: transferListPanelsClassName,
+        })}>
         <div
           ref={selectedPanelRef}
           role="group"
@@ -843,9 +697,10 @@ export function TransferList<T extends string = string>({
           tabIndex={-1}
           {...mergeProps(
             themeProps('transfer-list-panel', {side: 'selected'}),
-            stylex.props(focusOutlineStyles.focusVisible, styles.panel),
+            stylex.props(focusOutlineStyles.focusVisible),
+            transferListPanelClassName,
           )}>
-          <div {...stylex.props(styles.panelHeader)}>
+          <div className={transferListPanelHeaderClassName}>
             <Text id={selectedHeadingId} type="label" color="secondary">
               {selectedLabel}
             </Text>
@@ -854,7 +709,7 @@ export function TransferList<T extends string = string>({
                 label={t('@astryx.transferList.clear')}
                 size="sm"
                 variant="ghost"
-                xstyle={styles.headerAction}
+                xstyle={transferListHeaderActionStyles.base}
                 data-transfer-list-header-action="true"
                 isDisabled={
                   !value.some(
@@ -868,7 +723,7 @@ export function TransferList<T extends string = string>({
           </div>
           <div
             data-transfer-list-panel-body="selected"
-            {...stylex.props(styles.panelBody)}>
+            className={transferListPanelBodyClassName}>
             {selectedOptions.length > 0 ? (
               <List
                 density="compact"
@@ -881,7 +736,7 @@ export function TransferList<T extends string = string>({
             ) : (
               <div
                 data-transfer-list-empty="selected"
-                {...stylex.props(styles.empty)}>
+                className={transferListEmptyClassName}>
                 <Text type="supporting" color="secondary">
                   {normalizedQuery === '' ? selectedEmptyText : noResultsText}
                 </Text>
@@ -897,13 +752,10 @@ export function TransferList<T extends string = string>({
           tabIndex={-1}
           {...mergeProps(
             themeProps('transfer-list-panel', {side: 'available'}),
-            stylex.props(
-              focusOutlineStyles.focusVisible,
-              styles.panel,
-              styles.panelDivider,
-            ),
+            stylex.props(focusOutlineStyles.focusVisible),
+            tw(transferListPanelClassName, transferListPanelDividerClassName),
           )}>
-          <div {...stylex.props(styles.panelHeader)}>
+          <div className={transferListPanelHeaderClassName}>
             <Text id={availableHeadingId} type="label" color="secondary">
               {availableLabel}
             </Text>
@@ -912,7 +764,7 @@ export function TransferList<T extends string = string>({
                 label={t('@astryx.transferList.addAll')}
                 size="sm"
                 variant="ghost"
-                xstyle={styles.headerAction}
+                xstyle={transferListHeaderActionStyles.base}
                 data-transfer-list-header-action="true"
                 isDisabled={
                   !options.some(
@@ -927,7 +779,7 @@ export function TransferList<T extends string = string>({
           </div>
           <div
             data-transfer-list-panel-body="available"
-            {...stylex.props(styles.panelBody)}>
+            className={transferListPanelBodyClassName}>
             {availableOptions.length > 0 ? (
               <List
                 density="compact"
@@ -937,7 +789,7 @@ export function TransferList<T extends string = string>({
                     {(group !== '' || groupedAvailable.length > 1) && (
                       <li
                         role="presentation"
-                        {...stylex.props(styles.groupHeading)}>
+                        className={transferListGroupHeadingClassName}>
                         <Text type="body" weight="bold" color="primary">
                           {group || t('@astryx.transferList.ungroupedLabel')}
                         </Text>
@@ -956,7 +808,7 @@ export function TransferList<T extends string = string>({
             ) : (
               <div
                 data-transfer-list-empty="available"
-                {...stylex.props(styles.empty)}>
+                className={transferListEmptyClassName}>
                 <Text type="supporting" color="secondary">
                   {normalizedQuery === '' ? availableEmptyText : noResultsText}
                 </Text>
