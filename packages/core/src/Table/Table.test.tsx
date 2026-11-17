@@ -30,6 +30,7 @@ import {
   DEFAULT_MIN_COLUMN_WIDTH,
 } from './columnUtils';
 import type {TablePlugin, TableColumn, ProportionalWidth} from './types';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 // =============================================================================
 // Test Data
@@ -1655,6 +1656,8 @@ describe('column alignment', () => {
 // Vertical Alignment Tests
 // =============================================================================
 
+// The axis is a class on the cell; the sheet test pins the declaration,
+// because jsdom never loads the built stylesheet.
 describe('vertical alignment', () => {
   it('defaults to middle vertical alignment', () => {
     const {container} = render(
@@ -1662,7 +1665,7 @@ describe('vertical alignment', () => {
     );
 
     const bodyCell = container.querySelector('tbody td');
-    expect(bodyCell).toHaveStyle({verticalAlign: 'middle'});
+    expectClassSet(bodyCell!, {includes: ['align-middle']});
   });
 
   it('applies top vertical alignment', () => {
@@ -1675,7 +1678,7 @@ describe('vertical alignment', () => {
     );
 
     const bodyCell = container.querySelector('tbody td');
-    expect(bodyCell).toHaveStyle({verticalAlign: 'top'});
+    expectClassSet(bodyCell!, {includes: ['align-top']});
   });
 
   it('applies bottom vertical alignment', () => {
@@ -1688,7 +1691,7 @@ describe('vertical alignment', () => {
     );
 
     const bodyCell = container.querySelector('tbody td');
-    expect(bodyCell).toHaveStyle({verticalAlign: 'bottom'});
+    expectClassSet(bodyCell!, {includes: ['align-bottom']});
   });
 });
 
