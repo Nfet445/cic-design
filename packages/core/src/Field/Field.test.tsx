@@ -798,7 +798,7 @@ describe('Field in a narrow row', () => {
         <input id="search" />
       </Field>,
     );
-    const root = container.querySelector('.astryx-field')!;
+    const root = container.querySelector<HTMLElement>('.astryx-field')!;
     expectVariable(root, '--astryx-field-width', '240px');
     expectClassSet(root, {includes: ['min-w-0']});
   });

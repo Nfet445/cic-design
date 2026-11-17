@@ -65,13 +65,13 @@ export type {
   InputStatusType as TextInputStatusType,
 } from '../Field';
 import {mergeProps} from '../utils/mergeProps';
+import {tw} from '../utils/tw';
 import {useSize} from '../SizeContext/SizeContext';
 import {useInputContainer} from '../hooks/useInputContainer';
 import {useInputStatusIcon} from '../hooks/useInputStatusIcon';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
-import type {BaseProps} from '../BaseProps';
 import {
   type FieldInputBaseProps,
   useFieldInputStyling,
@@ -458,7 +458,6 @@ export function TextInput({
         stylex.props(
           inputWrapperStyles.base,
           inputWrapperStyles.textField,
-          textInputHeightClassName({size}),
           isDisabled && inputWrapperStyles.disabled,
           isDisabled && inputDisabledFocusStyles.ring,
           status && inputStatusBorderStyles[status.type],
@@ -467,7 +466,7 @@ export function TextInput({
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
-        controlClassName,
+        tw(textInputHeightClassName({size}), controlClassName),
         controlStyle,
       )}>
       {/* The shared presence check decides the slot

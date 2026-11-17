@@ -42,7 +42,7 @@ export function fieldSizeStyle(
 }
 
 /**
- * The Field root. It owns the local stacking boundary (AST-027): the input
+ * The Field root. It owns the local stacking boundary: the input
  * wrapper's z-index (1, above the attached status box) and the attached status
  * layer (-1) order parts inside this surface only.
  *

@@ -603,12 +603,8 @@ describe('dist/astryx-tailwind.css declarations', () => {
       stylesheet.ruleFor(
         '[padding-block-start:calc(var(--border-width)_+_var(--spacing-1))]',
       ),
-    ).toBe(
-      'padding-block-start:calc(var(--border-width)+var(--spacing-1));',
-    );
-    expect(stylesheet.ruleFor('h-5')).toBe(
-      'height:calc(var(--spacing-1)*5);',
-    );
+    ).toBe('padding-block-start:calc(var(--border-width)+var(--spacing-1));');
+    expect(stylesheet.ruleFor('h-5')).toBe('height:calc(var(--spacing-1)*5);');
   });
 
   it('keeps token utilities inside the astryx-base layer', () => {
