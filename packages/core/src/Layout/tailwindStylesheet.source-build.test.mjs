@@ -649,6 +649,15 @@ import {
   metadataListItemValueClassName,
 } from '../MetadataList/metadataListItemClasses';
 import {
+  carouselFadeClassName,
+  carouselItemClassName,
+  carouselOverlayClassName,
+  carouselPillClassName,
+  carouselRootClassName,
+  carouselScrollerClassName,
+  carouselSnapClassName,
+} from '../Carousel/carouselClasses';
+import {
   outlineActiveAnchorClassName,
   outlineDividerClassName,
   outlineIndicatorClassName,
@@ -2132,6 +2141,26 @@ function familyClassNames() {
       add(outlineLinkClassName(density, level, true));
     }
   }
+  // Carousel: the root, an item, the overlay and the snap pair, then the
+  // scroller at every gap and every padding step, the three fade arms, and
+  // each pill state.
+  add(carouselRootClassName);
+  add(carouselItemClassName);
+  add(carouselOverlayClassName);
+  add(carouselSnapClassName);
+  for (const gap of [0, 0.5, 1, 1.5, 2, 3, 4]) {
+    add(carouselScrollerClassName({gap, hasSnap: true}));
+  }
+  for (const padding of [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10]) {
+    add(carouselScrollerClassName({gap: 1, padding, hasSnap: false}));
+  }
+  for (const fade of ['start', 'end', 'both']) {
+    add(carouselFadeClassName[fade]);
+  }
+  for (const edge of ['start', 'end']) {
+    add(carouselPillClassName(edge, false));
+    add(carouselPillClassName(edge, true));
+  }
   // AspectRatio: the box, its ratio reading the private variable, the ellipse
   // clip, the child wrapper and its three fit arms.
   add(aspectRatioClassName);
@@ -2356,8 +2385,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // every family above registered. The chat pasted-text preview, the system
     // notice and the metadata row share almost every utility those maps already
     // spell, and the checkbox field's row, box, press layers and native input
-    // added six; the sheet measures 1318 here and the ceiling keeps headroom.
-    expect(stylesheet.rules.size).toBeLessThan(1380);
+    // added six; the sheet measured 1318 there. Outline's nav, track, divider,
+    // the anchored indicator, the list, the item, the label and one link string
+    // per density, level and active state, then Carousel's root, item, overlay
+    // and pill states and its scroller at every gap, padding and fade arm took
+    // the sheet to 1390. The ceiling keeps the same headroom.
+    expect(stylesheet.rules.size).toBeLessThan(1450);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

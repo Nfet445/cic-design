@@ -5,6 +5,9 @@ import {createRef, useEffect, useRef} from 'react';
 import {act, render, screen, fireEvent} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {Carousel, type CarouselHandle} from './Carousel';
+import {carouselFadeClassName} from './carouselClasses';
+import {buildAstryxTailwindCss} from '../../scripts/build-css-tailwind.mjs';
+import {expectClassSet, stylesheetOf} from '../__tests__/classNameAssertions';
 import {
   makeSnapPaging,
   type HeldRowListener,
@@ -1146,20 +1149,6 @@ describe('Carousel', () => {
       fireEvent.scroll(el);
     }
 
-    function injectedCss(): string {
-      let out = '';
-      for (const sheet of Array.from(document.styleSheets)) {
-        try {
-          for (const rule of Array.from(sheet.cssRules)) {
-            out += rule.cssText + '\n';
-          }
-        } catch {
-          // Ignore cross-origin sheets.
-        }
-      }
-      return out;
-    }
-
     it('fades the physical left edge when only the start overflows (LTR)', () => {
       render(
         <Carousel aria-label="Fade">
@@ -1169,9 +1158,10 @@ describe('Carousel', () => {
       );
       const scroller = getScroller();
       makeOverflowing(scroller, 300);
-      expect(getComputedStyle(scroller).maskImage).toContain(
-        'linear-gradient(to right',
-      );
+      expectClassSet(scroller, {
+        includes: carouselFadeClassName.start.split(' '),
+        excludes: carouselFadeClassName.end.split(' '),
+      });
     });
 
     it('fades the physical right edge when only the end overflows (LTR)', () => {
@@ -1183,24 +1173,25 @@ describe('Carousel', () => {
       );
       const scroller = getScroller();
       makeOverflowing(scroller, 0);
-      expect(getComputedStyle(scroller).maskImage).toContain(
-        'linear-gradient(to left',
-      );
+      expectClassSet(scroller, {
+        includes: carouselFadeClassName.end.split(' '),
+        excludes: carouselFadeClassName.start.split(' '),
+      });
     });
 
-    it('mirrors both single-edge fade gradients under RTL', () => {
-      render(
-        <Carousel aria-label="Fade">
-          <div>Item 1</div>
-          <div>Item 2</div>
-        </Carousel>,
+    it('mirrors both single-edge fade gradients under RTL', async () => {
+      const sheet = stylesheetOf(await buildAstryxTailwindCss());
+      const rtlArm = (className: string) =>
+        className
+          .split(' ')
+          .find(token => token.startsWith('[&:is([dir="rtl"]_*)]'));
+      const startRtl = rtlArm(carouselFadeClassName.start);
+      const endRtl = rtlArm(carouselFadeClassName.end);
+      expect(sheet.blockOf(startRtl!)).toContain(
+        'mask-image:linear-gradient(toleft',
       );
-      const css = injectedCss();
-      expect(css).toMatch(
-        /:is\(\[dir="rtl"\][^)]*\)[^{]*\{\s*mask-image:\s*linear-gradient\(to left/,
-      );
-      expect(css).toMatch(
-        /:is\(\[dir="rtl"\][^)]*\)[^{]*\{\s*mask-image:\s*linear-gradient\(to right/,
+      expect(sheet.blockOf(endRtl!)).toContain(
+        'mask-image:linear-gradient(toright',
       );
     });
   });
