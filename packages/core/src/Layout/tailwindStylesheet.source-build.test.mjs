@@ -229,6 +229,17 @@ import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {checkboxListItemClassName} from '../CheckboxList/checkboxListItemClasses';
 import {radioListClassName} from '../RadioList/radioListClasses';
 import {
+  checkboxInputClassName,
+  checkboxInputIndicatorSlotClassName,
+  checkboxInputLabelWrapperClassName,
+  checkboxInputNativeClassName,
+  checkboxInputPressOverlayClassName,
+  checkboxInputRowClassName,
+  checkboxInputRowPressImageClassName,
+  checkboxInputRowPressOverlayClassName,
+  checkboxInputWrapperClassName,
+} from '../CheckboxInput/checkboxInputClasses';
+import {
   radioListItemIndicatorSlotClassName,
   radioListItemInputClassName,
   radioListItemPressOverlayClassName,
@@ -2170,6 +2181,25 @@ function familyClassNames() {
     add(radioListItemWrapperClassName({size}));
     add(radioListItemInputClassName({size}));
   }
+  // CheckboxInput: the field root at both width states, the row in its four
+  // shape states, and the fixed pieces.
+  for (const width of [null, 240]) {
+    add(checkboxInputClassName({width}));
+  }
+  for (const isLabelHidden of [false, true]) {
+    for (const hasHitArea of [false, true]) {
+      add(checkboxInputRowClassName({isLabelHidden, hasHitArea}));
+    }
+  }
+  for (const size of ['sm', 'md']) {
+    add(checkboxInputWrapperClassName({size}));
+    add(checkboxInputNativeClassName({size}));
+  }
+  add(checkboxInputRowPressImageClassName);
+  add(checkboxInputRowPressOverlayClassName);
+  add(checkboxInputPressOverlayClassName);
+  add(checkboxInputIndicatorSlotClassName);
+  add(checkboxInputLabelWrapperClassName);
 
   return [...names].sort();
 }
@@ -2236,7 +2266,8 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // ScrollableArea's platform, inset and both fade arms measured 1330 with
     // every family above registered. The chat pasted-text preview, the system
     // notice and the metadata row share almost every utility those maps already
-    // spell, so the sheet measures 1318 here and the ceiling keeps headroom.
+    // spell, and the checkbox field's row, box, press layers and native input
+    // added six; the sheet measures 1318 here and the ceiling keeps headroom.
     expect(stylesheet.rules.size).toBeLessThan(1380);
   });
 

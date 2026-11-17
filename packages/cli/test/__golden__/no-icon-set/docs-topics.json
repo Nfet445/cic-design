@@ -241,14 +241,15 @@
     },
     "styling-overview": {
       "sections": [
-        "what-ships",
-        "load",
-        "order",
-        "choose",
+        "pick-a-path",
+        "plain",
+        "tailwind",
+        "stylex-own-code",
+        "other-packages",
         "what-each-file-does",
         "further-reading"
       ],
-      "skeleton": "2623bc8d92d840c4c37bdbb65e18c4020aeb1f4f5d1ba4a996bc314b1207dba7",
+      "skeleton": "ef4e4158ed2cdf854f1136340b28822987012bda257287dff750fea105ec5d8d",
       "mentions": []
     },
     "theme": {
