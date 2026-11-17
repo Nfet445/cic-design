@@ -22,6 +22,11 @@ import {TopNavMenu} from './TopNavMenu';
 import {TopNavRenderContext} from './TopNavRenderContext';
 import {classesOf} from '../__tests__/classNameAssertions';
 import {
+  topNavHeadingChevronClassName,
+  topNavHeadingEndContentClassName,
+  topNavHeadingLogoClassName,
+} from './topNavHeadingClasses';
+import {
   topNavCenterRegionClassName,
   topNavEndContentClassName,
   topNavEndRegionClassName,
@@ -29,6 +34,7 @@ import {
   topNavMobileHeadingClassName,
   topNavStartContentClassName,
 } from './topNavClasses';
+import {topNavMenuDrawerItemIconClassName} from './topNavMenuClasses';
 import {TopNavMobileContentContext} from './TopNavMobileContentContext';
 import {NavHeadingMenu} from '../NavMenu/NavHeadingMenu';
 import {NavHeadingMenuItem} from '../NavMenu/NavHeadingMenuItem';
@@ -61,21 +67,24 @@ function zeroParent(): HTMLElement | null {
   return null;
 }
 
+/** Every element whose class list holds every class of a class set. */
+function slotsOf(classNames: string): Element[] {
+  const wanted = classNames.split(' ');
+  return Array.from(document.querySelectorAll('*')).filter(element => {
+    const present = classesOf(element);
+    return wanted.every(name => present.includes(name));
+  });
+}
+
 /** The first element whose class list holds every class of a class set. */
 function slotOf(classNames: string): Element | null {
-  const wanted = classNames.split(' ');
-  return (
-    Array.from(document.querySelectorAll('*')).find(element => {
-      const present = classesOf(element);
-      return wanted.every(name => present.includes(name));
-    }) ?? null
-  );
+  return slotsOf(classNames)[0] ?? null;
 }
 
 /**
  * Whether the "0" sits inside an element whose StyleX debug class contains
- * `style`. TopNavHeading, TopNavMenu and TopNavMegaMenuItem still style through
- * StyleX, so their slot assertions move to the class-set form with them.
+ * `style`. TopNavMenu and TopNavMegaMenuItem still style through StyleX, so
+ * their slot assertions move to the class-set form with them.
  */
 function zeroIsInsideStyleX(style: string): boolean {
   return zeroParent()?.closest(`[class*="${style}"]`) != null;
@@ -238,6 +247,28 @@ describe('TopNav layout follows isRenderable', () => {
 });
 
 describe('TopNavHeading slots follow isRenderable', () => {
+  const chevronClasses = topNavHeadingChevronClassName().split(' ');
+
+  /**
+   * The logo slot. The chevron trigger shares the logo's centering classes but
+   * adds its 28px box, so the chevron is not a logo slot.
+   */
+  function logoSlot(): Element | null {
+    return (
+      slotsOf(topNavHeadingLogoClassName()).find(element => {
+        const present = classesOf(element);
+        return !chevronClasses.every(name => present.includes(name));
+      }) ?? null
+    );
+  }
+
+  /** Whether the "0" sits inside the logo slot. */
+  function zeroIsInsideLogo(): boolean {
+    const slot = logoSlot();
+    const parent = zeroParent();
+    return slot != null && parent != null && slot.contains(parent);
+  }
+
   // Each props set reaches a different render path of the heading.
   const paths: ReadonlyArray<[string, Record<string, unknown>]> = [
     ['the logo-only heading', {heading: undefined}],
@@ -254,12 +285,12 @@ describe('TopNavHeading slots follow isRenderable', () => {
   describe.each(paths)('logo in %s', (_path, props) => {
     it.each(EMPTY_VALUES)('renders no logo for %s', (_label, value) => {
       render(<TopNavHeading heading="Product" logo={value} {...props} />);
-      expect(document.querySelector('[class*="styles.logo"]')).toBeNull();
+      expect(logoSlot()).toBeNull();
     });
 
     it('renders a logo of 0 inside its slot', () => {
       render(<TopNavHeading heading="Product" logo={0} {...props} />);
-      expect(zeroIsInsideStyleX('styles.logo')).toBe(true);
+      expect(zeroIsInsideLogo()).toBe(true);
     });
   });
 
@@ -268,9 +299,9 @@ describe('TopNavHeading slots follow isRenderable', () => {
       <TopNavHeading heading="Product" logo={0} menu={<span>Menu</span>} />,
     );
     fireEvent.click(screen.getByRole('button', {name: /Product/}));
-    const zeros = Array.from(
-      document.querySelectorAll('[class*="styles.logo"]'),
-    ).filter(element => element.textContent === '0');
+    const zeros = slotsOf(topNavHeadingLogoClassName()).filter(
+      element => element.textContent === '0',
+    );
     expect(zeros.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -278,13 +309,13 @@ describe('TopNavHeading slots follow isRenderable', () => {
     'renders no header end content for %s',
     (_label, value) => {
       render(<TopNavHeading heading="Product" headerEndContent={value} />);
-      expect(document.querySelector('[class*="headerEndContent"]')).toBeNull();
+      expect(slotOf(topNavHeadingEndContentClassName())).toBeNull();
     },
   );
 
   it('renders a headerEndContent of 0 inside its slot', () => {
     render(<TopNavHeading heading="Product" headerEndContent={0} />);
-    expect(zeroIsInsideStyleX('headerEndContent')).toBe(true);
+    expect(zeroIsInside(topNavHeadingEndContentClassName())).toBe(true);
   });
 });
 
@@ -327,12 +358,12 @@ describe('TopNavMenu drawer item icon follows isRenderable', () => {
 
   it.each(EMPTY_VALUES)('renders no icon for %s', (_label, value) => {
     renderDrawerMenu(value);
-    expect(document.querySelector('[class*="itemIcon"]')).toBeNull();
+    expect(slotOf(topNavMenuDrawerItemIconClassName())).toBeNull();
   });
 
   it('renders an icon of 0 inside its slot', () => {
     renderDrawerMenu(0);
-    expect(zeroIsInsideStyleX('itemIcon')).toBe(true);
+    expect(zeroIsInside(topNavMenuDrawerItemIconClassName())).toBe(true);
   });
 });
 

@@ -70,6 +70,45 @@ import {
 } from '../Item/itemClasses';
 
 import {
+  listClassName,
+  listCounterStartClassName,
+  listHeaderClassName,
+  listRootClassName,
+  LIST_ANIMATED_ISOLATION,
+  LIST_BLEED_CORNERS,
+  LIST_BLEED_CORNERS_BELOW_HEADER,
+  LIST_COARSE_ISOLATION,
+  LIST_COUNTER,
+  LIST_DIVIDED_GAP,
+  LIST_NUMBER_COLUMNS,
+  LIST_REACHES_CONTAINER_PADDING,
+  LIST_ROW_GAP,
+} from '../List/listClasses';
+import {
+  LIST_ITEM_BAND_RAISED,
+  LIST_ITEM_BLEED,
+  LIST_ITEM_COUNTER,
+  LIST_ITEM_DIVIDED_RADIUS,
+  LIST_ITEM_DIVIDER,
+  LIST_ITEM_DIVIDER_END_WIDTH,
+  LIST_ITEM_DIVIDER_LAST_RESET,
+  LIST_ITEM_FLUSH_INSET,
+  LIST_ITEM_NUMBER_COLUMNS,
+  LIST_ITEM_OUTSET_END,
+  LIST_ITEM_OUTSET_START,
+  LIST_ITEM_SPAN_COLUMNS,
+  listItemMarkerCircleClassName,
+  listItemMarkerContainerClassName,
+  listItemMarkerCounterClassName,
+  listItemMarkerDotClassName,
+  listItemMarkerGutterHangClassName,
+  listItemMarkerNumberClassName,
+  listItemMarkerSquareClassName,
+  listItemRowClassName,
+  listItemTaskMarkerContainerClassName,
+} from '../List/listItemClasses';
+
+import {
   fieldAttachedStatusLayerClassName,
   fieldClassName,
   fieldHorizontalLabelAlignClassName,
@@ -170,6 +209,7 @@ import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
+import {sideNavClassName} from '../SideNav/sideNavClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {stackClassName} from '../Stack/stackClasses';
@@ -290,6 +330,31 @@ import {
   topNavStartRegionClassName,
 } from '../TopNav/topNavClasses';
 import {
+  topNavHeadingChevronGlyphClassName,
+  topNavHeadingChevronWithGlyphClassName,
+  topNavHeadingClassName,
+  topNavHeadingColumnsClassName,
+  topNavHeadingEndContentClassName,
+  topNavHeadingInteractiveClassName,
+  topNavHeadingLinkedLineClassName,
+  topNavHeadingLogoClassName,
+  topNavHeadingMenuTriggerClassName,
+  topNavHeadingPopoverAnchorClassName,
+  topNavHeadingPopoverChevronWithGlyphClassName,
+  topNavHeadingPopoverContentClassName,
+  topNavHeadingPopoverHeadingClassName,
+  topNavHeadingSupportingLineClassName,
+  topNavHeadingTextContainerClassName,
+  topNavHeadingTitleClassName,
+  topNavHeadingTitleLinkClassName,
+  topNavHeadingTitleRowClassName,
+} from '../TopNav/topNavHeadingClasses';
+import {
+  topNavItemClassName,
+  topNavItemIconOnlyClassName,
+  topNavItemSelectedClassName,
+} from '../TopNav/topNavItemClasses';
+import {
   topNavFeaturedCardBodyClassName,
   topNavFeaturedCardClassName,
   topNavFeaturedCardDescriptionClassName,
@@ -298,6 +363,38 @@ import {
   topNavFeaturedCardLinkClassName,
   topNavFeaturedCardTitleClassName,
 } from '../TopNav/topNavMegaMenuFeaturedCardClasses';
+import {
+  topNavMenuChevronClassName,
+  topNavMenuChevronOpenClassName,
+  topNavMenuContainerClassName,
+  topNavMenuDrawerHeaderClassName,
+  topNavMenuDrawerItemClassName,
+  topNavMenuDrawerItemDescriptionClassName,
+  topNavMenuDrawerItemIconClassName,
+  topNavMenuDrawerItemTextClassName,
+  topNavMenuDrawerItemsClassName,
+  topNavMenuDrawerItemsInnerClassName,
+  topNavMenuDrawerSectionClassName,
+  topNavMenuItemClassName,
+  topNavMenuItemContentClassName,
+  topNavMenuItemDescriptionClassName,
+  topNavMenuItemIconClassName,
+  topNavMenuItemTitleClassName,
+  topNavMenuTriggerClassName,
+  topNavMenuTriggerOpenClassName,
+} from '../TopNav/topNavMenuClasses';
+import {
+  hoverCardContentClassName,
+  hoverCardHoverIndicationClassName,
+  hoverCardSurfaceClassName,
+  hoverCardWrapperClassName,
+} from '../HoverCard/hoverCardClasses';
+import {
+  tooltipContentClassName,
+  tooltipHoverIndicationClassName,
+  tooltipSurfaceClassName,
+  tooltipWrapperClassName,
+} from '../Tooltip/tooltipClasses';
 import {mediaThemeClassName} from '../theme/mediaThemeClasses';
 import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
 import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
@@ -342,6 +439,13 @@ import {
   tabMenuItemClassName,
   tabMenuTriggerClassName,
 } from '../TabList/tabListClasses';
+import {
+  SEGMENT_ICON_CLASS,
+  SEGMENT_LABEL_CLASS,
+  segmentedControlClassName,
+  segmentedItemClassName,
+  segmentedItemIconSizeClassName,
+} from '../SegmentedControl/segmentedControlClasses';
 import {
   linkClassName,
   linkColorClassName,
@@ -565,6 +669,87 @@ function familyClassNames() {
     topNavFeaturedCardLinkArrowClassName,
   ]) {
     add(className());
+  }
+
+  // The horizontal item carries its selected fill keyed off `aria-current`,
+  // so both state classes ship with the base one.
+  add(topNavItemClassName());
+  add(topNavItemSelectedClassName());
+  add(topNavItemIconOnlyClassName());
+
+  // The heading picks one column track per render path, so every track ships.
+  add(topNavHeadingClassName());
+  for (const columns of [
+    'withLogo',
+    'text',
+    'withLogoAndLinks',
+    'withLinks',
+    'withLogoAndMenu',
+    'withMenu',
+  ]) {
+    add(topNavHeadingColumnsClassName(columns));
+  }
+  for (const className of [
+    topNavHeadingMenuTriggerClassName,
+    topNavHeadingInteractiveClassName,
+    topNavHeadingLogoClassName,
+    topNavHeadingTextContainerClassName,
+    topNavHeadingSupportingLineClassName,
+    topNavHeadingTitleClassName,
+    topNavHeadingTitleRowClassName,
+    topNavHeadingTitleLinkClassName,
+    topNavHeadingLinkedLineClassName,
+    topNavHeadingChevronWithGlyphClassName,
+    topNavHeadingChevronGlyphClassName,
+    topNavHeadingEndContentClassName,
+    topNavHeadingPopoverContentClassName,
+    topNavHeadingPopoverHeadingClassName,
+    topNavHeadingPopoverChevronWithGlyphClassName,
+    topNavHeadingPopoverAnchorClassName,
+  ]) {
+    add(className());
+  }
+
+  // The menu trigger keeps its open fill and the drawer its collapse, both
+  // keyed off the `aria-expanded` and `aria-hidden` the menu already writes.
+  for (const className of [
+    topNavMenuTriggerClassName,
+    topNavMenuTriggerOpenClassName,
+    topNavMenuChevronClassName,
+    topNavMenuChevronOpenClassName,
+    topNavMenuContainerClassName,
+    topNavMenuItemClassName,
+    topNavMenuItemIconClassName,
+    topNavMenuItemContentClassName,
+    topNavMenuItemTitleClassName,
+    topNavMenuItemDescriptionClassName,
+    topNavMenuDrawerSectionClassName,
+    topNavMenuDrawerHeaderClassName,
+    topNavMenuDrawerItemsClassName,
+    topNavMenuDrawerItemsInnerClassName,
+    topNavMenuDrawerItemClassName,
+    topNavMenuDrawerItemIconClassName,
+    topNavMenuDrawerItemTextClassName,
+    topNavMenuDrawerItemDescriptionClassName,
+  ]) {
+    add(className());
+  }
+
+  // The tooltip and hover-card surfaces, their content padding and the
+  // trigger's dashed hint.
+  for (const className of [
+    tooltipSurfaceClassName,
+    tooltipContentClassName,
+    tooltipHoverIndicationClassName,
+    tooltipWrapperClassName.contents,
+    tooltipWrapperClassName.inline,
+    hoverCardSurfaceClassName,
+    hoverCardContentClassName,
+    hoverCardHoverIndicationClassName,
+    hoverCardWrapperClassName.contents,
+    hoverCardWrapperClassName.inline,
+  ]) {
+    add(className);
   }
 
   // The layout family: the shell frame, then every region combination. A
@@ -1159,6 +1344,110 @@ function familyClassNames() {
     add(className);
   }
 
+  // The List frame answers its header, its dividers, its motion, its counted
+  // columns and the container it reaches into; each flag is crossed with a
+  // header, since that moves the published corners to the list's root.
+  for (const hasHeader of [false, true]) {
+    for (const hasDividers of [false, true]) {
+      for (const animatesRows of [false, true]) {
+        for (const publishesCorners of [false, true]) {
+          add(
+            listClassName({
+              animatesRows,
+              countsRows: true,
+              hasDividers,
+              hasHeader,
+              publishesCorners,
+              reachesContainerPadding: publishesCorners,
+              startsCounter: true,
+              usesNumberColumns: true,
+            }),
+          );
+        }
+      }
+      add(
+        listClassName({
+          animatesRows: false,
+          countsRows: false,
+          hasDividers,
+          hasHeader: false,
+          publishesCorners: false,
+          reachesContainerPadding: false,
+          startsCounter: false,
+          usesNumberColumns: false,
+        }),
+      );
+    }
+  }
+  for (const className of [
+    listRootClassName,
+    listHeaderClassName,
+    listCounterStartClassName,
+    LIST_COUNTER,
+    LIST_ROW_GAP,
+    LIST_DIVIDED_GAP,
+    LIST_COARSE_ISOLATION,
+    LIST_ANIMATED_ISOLATION,
+    LIST_NUMBER_COLUMNS,
+    LIST_REACHES_CONTAINER_PADDING,
+    LIST_BLEED_CORNERS,
+    LIST_BLEED_CORNERS_BELOW_HEADER,
+  ]) {
+    add(className);
+  }
+
+  // A List row answers its edge treatment and four list-driven flags: the
+  // walk crosses every edge with and without dividers, then turns the row's
+  // whole machinery on at once.
+  for (const edge of ['padded', 'flush', 'outset', 'bleed']) {
+    for (const hasDividers of [false, true]) {
+      add(
+        listItemRowClassName({
+          edge,
+          hasDividers,
+          hasMarkers: false,
+          isTouchTargetInList: false,
+          spansNumberColumns: false,
+          usesNumberColumns: false,
+        }),
+      );
+      add(
+        listItemRowClassName({
+          edge,
+          hasDividers,
+          hasMarkers: true,
+          isTouchTargetInList: true,
+          spansNumberColumns: true,
+          usesNumberColumns: true,
+        }),
+      );
+    }
+  }
+  for (const className of [
+    LIST_ITEM_NUMBER_COLUMNS,
+    LIST_ITEM_SPAN_COLUMNS,
+    LIST_ITEM_COUNTER,
+    LIST_ITEM_FLUSH_INSET,
+    LIST_ITEM_OUTSET_START,
+    LIST_ITEM_OUTSET_END,
+    LIST_ITEM_BLEED,
+    LIST_ITEM_DIVIDER,
+    LIST_ITEM_DIVIDED_RADIUS,
+    LIST_ITEM_BAND_RAISED,
+    listItemMarkerContainerClassName,
+    listItemMarkerDotClassName,
+    listItemMarkerCircleClassName,
+    listItemMarkerSquareClassName,
+    listItemMarkerNumberClassName,
+    listItemMarkerCounterClassName.decimal,
+    listItemMarkerCounterClassName['lower-alpha'],
+    listItemMarkerCounterClassName['lower-roman'],
+    listItemMarkerGutterHangClassName,
+    listItemTaskMarkerContainerClassName,
+  ]) {
+    add(className);
+  }
+
   add(citationIconWrapClassName);
   add(citationIconClassName);
   add(citationLabelTextClassName);
@@ -1197,6 +1486,71 @@ function familyClassNames() {
   add(TAB_MENU_ITEM_CONTENT_CLASS);
   add(TAB_MENU_HEADING_CLASS);
 
+  // The segmented control: the track answers the layout, the disabled state
+  // and whether the lens paints; a segment answers the size, the selection,
+  // the disabled state, the layout, a hidden label and touch presentation.
+  for (const isFill of [false, true]) {
+    for (const isDisabled of [false, true]) {
+      for (const showsLens of [false, true]) {
+        add(segmentedControlClassName({isFill, isDisabled, showsLens}));
+      }
+    }
+  }
+  for (const size of ['sm', 'md', 'lg']) {
+    for (const isSelected of [false, true]) {
+      for (const isDisabled of [false, true]) {
+        add(
+          segmentedItemClassName({
+            size,
+            isSelected,
+            isDisabled,
+            isFill: false,
+            isLabelHidden: false,
+            isTouchPresentation: false,
+          }),
+        );
+      }
+    }
+    add(segmentedItemIconSizeClassName(size));
+  }
+  add(
+    segmentedItemClassName({
+      size: 'md',
+      isSelected: true,
+      isDisabled: false,
+      isFill: true,
+      isLabelHidden: true,
+      isTouchPresentation: true,
+    }),
+  );
+  add(SEGMENT_ICON_CLASS);
+  add(SEGMENT_LABEL_CLASS);
+
+  // The side nav: the rail answers the state of its own collapse, its zones
+  // answer where they sit between the fixed edges, and the footer row turns
+  // with the rail.
+  add(sideNavClassName.root);
+  add(sideNavClassName.rootCollapsed);
+  add(sideNavClassName.stickyTop);
+  add(sideNavClassName.stickyTopCollapsed);
+  add(sideNavClassName.scrollable);
+  add(sideNavClassName.scrollableCollapsed);
+  add(sideNavClassName.scrollableNoTop);
+  add(sideNavClassName.scrollableWithTop);
+  add(sideNavClassName.scrollableNoBottom);
+  add(sideNavClassName.scrollableWithBottom);
+  add(sideNavClassName.stickyBottom);
+  add(sideNavClassName.stickyBottomCollapsed);
+  add(sideNavClassName.footerRow);
+  add(sideNavClassName.footerRowCollapsed);
+  add(sideNavClassName.footerIcons);
+  add(sideNavClassName.footerIconsCollapsed);
+  add(sideNavClassName.drawerFooter);
+  add(sideNavClassName.drawerFooterIcons);
+  add(sideNavClassName.resizableContainer);
+  add(sideNavClassName.topbar);
+  add(sideNavClassName.topbarIcons);
+
   return [...names].sort();
 }
 
@@ -1228,8 +1582,9 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // and time inputs about 50, the dialog family about 35, the top-nav family
     // about 45, the item row machine about 45, and the tab family — TabList's
     // strip, masks and arrows, TabMenu, SegmentedControl — about 120. A scan
-    // that reaches component bodies or prose would add hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(940);
+    // that reaches component bodies or prose would add hundreds more. The
+    // top-nav menus and the row machine brought the sheet to about 975.
+    expect(stylesheet.rules.size).toBeLessThan(1020);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
@@ -1592,6 +1947,169 @@ describe('dist/astryx-tailwind.css declarations', () => {
     );
     expect(marked).toContain('display:block;');
     expect(marked).not.toContain('content');
+  });
+
+  it('clips the list inline, so a row dragged aside paints no further', () => {
+    // `clip`, never `hidden`: hidden makes a scroll container, which fights
+    // the list's vertical scroller.
+    expect(stylesheet.ruleFor('overflow-x-clip')).toBe('overflow-x:clip;');
+  });
+
+  it('publishes the list corners a bled row takes', () => {
+    // A bled row squares itself and reads the corner the list publishes for
+    // the container's first and last rows. The plain class publishes zero, so
+    // a list that is not the container's first child keeps a square corner.
+    expect(stylesheet.blockOf('[--_list-corner-start-start:0px]')).toBe(
+      '--_list-corner-start-start:0px;',
+    );
+    const corner =
+      'first:[--_list-corner-start-start:max(0px,var(--container-corner-start-start,0px)-var(--container-padding-block-start,0px))]';
+    expect(stylesheet.blockOf(corner)).toContain(
+      '&:first-child{--_list-corner-start-start:max(0px,var(--container-corner-start-start,0px)-var(--container-padding-block-start,0px));}',
+    );
+  });
+
+  it('reads a counted list start from the property the list writes', () => {
+    // The number is a per-instance value no class can name, so it travels as
+    // an inline property the class reads.
+    expect(stylesheet.ruleFor(listCounterStartClassName)).toBe(
+      'counter-reset:astryx-listvar(--astryx-list-counter-start);',
+    );
+    expect(stylesheet.ruleFor(LIST_COUNTER)).toBe('counter-reset:astryx-list;');
+  });
+
+  it('draws the list row divider and clears it after the last row', () => {
+    // The divider is the row's block-end border, so the last row clears it on
+    // the same longhand: a reset the row could not cancel would leave a line
+    // under the list's last row.
+    expect(stylesheet.ruleFor(LIST_ITEM_DIVIDER_END_WIDTH)).toBe(
+      'border-block-end-width:var(--border-width);',
+    );
+    expect(stylesheet.blockOf(LIST_ITEM_DIVIDER_LAST_RESET)).toContain(
+      'border-block-end-width:0px;',
+    );
+  });
+
+  it('keys the row edge treatments on the edge the row carries', () => {
+    // The row and the Item frame style one box, and the sheet decides a tie
+    // between two plain utilities. Every declaration that has to win is keyed
+    // on the edge attribute, and an attribute selector outranks a utility.
+    expect(stylesheet.blockOf(LIST_ITEM_FLUSH_INSET)).toBe(
+      '&[data-astryx-list-edge=flush]{--_item-inset-inline:0px;}',
+    );
+    // The outset only sets margins, which the frame leaves alone, so it needs
+    // no key: each edge reads its own container padding variable.
+    expect(stylesheet.ruleFor(LIST_ITEM_OUTSET_START)).toBe(
+      'margin-inline-start:max(var(--container-padding-inline-start,0px)-var(--_item-inset-inline),0px);',
+    );
+    expect(stylesheet.blockOf(LIST_ITEM_OUTSET_END)).toContain(
+      'margin-inline-end:max(var(--container-padding-inline-end,0px)-var(--_item-inset-inline),0px);',
+    );
+  });
+
+  it('fills a bled row and squares it, keeping the container corners on the ends', () => {
+    const bleed = stylesheet.blockOf(
+      '[&[data-astryx-list-edge=bleed]]:ps-[max(var(--container-padding-inline-start,0px),var(--_item-inset-inline))]',
+    );
+    expect(bleed).toContain(
+      'padding-inline-start:max(var(--container-padding-inline-start,0px),var(--_item-inset-inline));',
+    );
+    // A row that meets the container's straight sides takes no radius, and the
+    // first and last rows take the corners the list publishes.
+    expect(stylesheet.blockOf(LIST_ITEM_DIVIDED_RADIUS)).toContain(
+      'border-radius:0px;',
+    );
+    const corner =
+      '[&[data-astryx-list-edge=bleed]:first-child]:[border-start-start-radius:var(--_list-corner-start-start,0px)]';
+    expect(stylesheet.blockOf(corner)).toContain(
+      'border-start-start-radius:var(--_list-corner-start-start,0px);',
+    );
+  });
+
+  it('raises the touch band only under a finger', () => {
+    // The band rises above the rows after it, so a later row does not
+    // hit-test over it; the row box itself stays no stacking context.
+    expect(stylesheet.blockOf(LIST_ITEM_BAND_RAISED)).toBe(
+      '@media(pointer:coarse){&::after{z-index:1;}}',
+    );
+  });
+
+  it('counts a row in and hangs its counter from the row inset', () => {
+    expect(stylesheet.ruleFor(LIST_ITEM_COUNTER)).toBe(
+      'counter-increment:astryx-list;',
+    );
+    // The period after the number, then the hang into the row's inset.
+    expect(
+      stylesheet.blockOf('[&::before]:[content:counter(astryx-list)_"."]'),
+    ).toBe('&::before{content:counter(astryx-list)".";}');
+    expect(
+      stylesheet.blockOf('[&::before]:ms-[calc(var(--_item-inset-inline)*-1)]'),
+    ).toContain('margin-inline-start:calc(var(--_item-inset-inline)*-1);');
+  });
+
+  it('draws the segmented lens from the variables the motion writes', () => {
+    // The lens is the track's own `::before`/`::after`, so each declaration
+    // reads a variable the selection motion writes and falls back to the
+    // resting value. `forced-color-adjust` keeps an already resolved surface
+    // from being remapped a second time under forced colors.
+    const before = stylesheet.blockOf(
+      '[&::before]:[box-shadow:var(--_segmented-lens-box-shadow,none)]',
+    );
+    expect(before).toContain(
+      'box-shadow:var(--_segmented-lens-box-shadow,none);',
+    );
+    expect(
+      stylesheet.blockOf(
+        '[&::before]:[visibility:var(--_segmented-lens-visibility,hidden)]',
+      ),
+    ).toContain('visibility:var(--_segmented-lens-visibility,hidden);');
+    const after = stylesheet.blockOf(
+      '[&::after]:[background-color:var(--_segmented-after-background-color,transparent)]',
+    );
+    expect(after).toContain(
+      'background-color:var(--_segmented-after-background-color,transparent);',
+    );
+    expect(
+      stylesheet.blockOf('[&::before]:[forced-color-adjust:none]'),
+    ).toContain('forced-color-adjust:none;');
+  });
+
+  it('rounds a segment by the track radius less the track padding', () => {
+    // Concentric radii: the segment's corners keep the track's inset, so a
+    // theme that changes either variable keeps the nesting true.
+    expect(
+      stylesheet.blockOf(
+        'rounded-[max(0px,calc(var(--_segmented-control-radius)_-_var(--_segmented-control-padding)))]',
+      ),
+    ).toContain(
+      'border-radius:max(0px,calc(var(--_segmented-control-radius)-var(--_segmented-control-padding)));',
+    );
+  });
+
+  it('caps a labelled track and leaves an icon-only track uncapped', () => {
+    // Only a track whose segments carry a visible label can truncate, so only
+    // that track takes the container's width as a cap.
+    expect(
+      stylesheet.blockOf(
+        '[&:has([role=radio]:not([aria-label]))]:[max-width:100%]',
+      ),
+    ).toContain('max-width:100%;');
+    expect(stylesheet.ruleFor('[max-width:none]')).toBe('max-width:none;');
+  });
+
+  it('keeps the selected segment perceivable under forced colors', () => {
+    // The arms key off `aria-checked` so they outrank the segment's own
+    // surface and colour inside `astryx-base`, where specificity decides.
+    const surface = stylesheet.blockOf(
+      'aria-checked:forced-colors:bg-[color:Highlight]',
+    );
+    expect(surface).toContain('@media(forced-colors:active)');
+    expect(surface).toContain('background-color:Highlight');
+    const label = stylesheet.blockOf(
+      'aria-checked:forced-colors:text-[color:HighlightText]',
+    );
+    expect(label).toContain('@media(forced-colors:active)');
+    expect(label).toContain('color:HighlightText');
   });
 
   it('declares no theme variable of its own', () => {
