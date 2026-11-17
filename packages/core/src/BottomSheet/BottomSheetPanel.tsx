@@ -36,7 +36,10 @@ import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {useMediaQuery} from '../hooks/useMediaQuery';
-import {useScrollableArea} from '../hooks/useScrollableArea';
+import {
+  type ScrollableElementProps,
+  useScrollableArea,
+} from '../hooks/useScrollableArea';
 import {mergeProps} from '../utils/mergeProps';
 import {
   bottomSheetBodyClassName,
@@ -120,6 +123,17 @@ const BLOCK_SIZE_PROPERTIES = [
 ] as const;
 
 /** Whether StyleX styles hold any style: they can nest in arrays. */
+/**
+ * `mergeProps` returns its own open record type, while the scroll-area hooks
+ * take the element's prop type. The call sites below hand it a class string and
+ * a style object, so the record holds only those two props.
+ */
+function scrollElementProps(
+  props: unknown,
+): ScrollableElementProps<HTMLDivElement> {
+  return props as ScrollableElementProps<HTMLDivElement>;
+}
+
 function hasStyles(xstyle: unknown): boolean {
   return Array.isArray(xstyle)
     ? xstyle.some(hasStyles)
@@ -1030,57 +1044,61 @@ export function BottomSheetPanel({
       <div
         {...whilePresented(
           isPresented,
-          getViewportProps<HTMLDivElement>({
-            ...bodyProps,
-            ...mergeProps(
-              stylex.props(focusOutlineStyles.focusVisible),
-              bottomSheetBodyClassName(height === 'tall'),
-              bodyEndPadding != null ? {paddingBlockEnd: bodyEndPadding} : {},
-            ),
-          }),
+          getViewportProps<HTMLDivElement>(
+            scrollElementProps({
+              ...bodyProps,
+              ...mergeProps(
+                stylex.props(focusOutlineStyles.focusVisible),
+                bottomSheetBodyClassName(height === 'tall'),
+                bodyEndPadding != null ? {paddingBlockEnd: bodyEndPadding} : {},
+              ),
+            }),
+          ),
         )}>
         <div
           {...whilePresented(
             isPresented,
             getContentProps<HTMLDivElement>(
-              mergeProps(
-                stylex.props(
-                  ...container(
-                    usesThemePadding
-                      ? {useThemeDefault: 'bottom-sheet'}
-                      : {
-                          paddingInnerX: paddingToken,
-                          paddingInnerY: paddingToken,
-                          paddingOuterX: paddingToken,
-                          paddingOuterY: paddingToken,
-                        },
+              scrollElementProps(
+                mergeProps(
+                  stylex.props(
+                    ...container(
+                      usesThemePadding
+                        ? {useThemeDefault: 'bottom-sheet'}
+                        : {
+                            paddingInnerX: paddingToken,
+                            paddingInnerY: paddingToken,
+                            paddingOuterX: paddingToken,
+                            paddingOuterY: paddingToken,
+                          },
+                    ),
+                    !usesThemePadding &&
+                      effectivePadding !== 4 &&
+                      paddingStyles[effectivePadding],
+                    !usesThemePadding &&
+                      effectivePadding !== 4 &&
+                      containerPaddingInlineVarStyles[effectivePadding],
+                    // An explicit padding publishes what reaches past the grab
+                    // bar's band, like the theme default (Layout/container.stylex.ts).
+                    !usesThemePadding &&
+                      bottomSheetPastGrabBarStyles[effectivePadding],
+                    !usesThemePadding &&
+                      effectivePadding !== 4 &&
+                      containerPaddingBlockEndVarStyles[effectivePadding],
+                    // The band under the grab bar, on top of the published
+                    // padding past it: max(padding, the bar) in all.
+                    bottomSheetClearsGrabBarStyles.clearsGrabBar,
                   ),
-                  !usesThemePadding &&
-                    effectivePadding !== 4 &&
-                    paddingStyles[effectivePadding],
-                  !usesThemePadding &&
-                    effectivePadding !== 4 &&
-                    containerPaddingInlineVarStyles[effectivePadding],
-                  // An explicit padding publishes what reaches past the grab
-                  // bar's band, like the theme default (Layout/container.stylex.ts).
-                  !usesThemePadding &&
-                    bottomSheetPastGrabBarStyles[effectivePadding],
-                  !usesThemePadding &&
-                    effectivePadding !== 4 &&
-                    containerPaddingBlockEndVarStyles[effectivePadding],
-                  // The band under the grab bar, on top of the published
-                  // padding past it: max(padding, the bar) in all.
-                  bottomSheetClearsGrabBarStyles.clearsGrabBar,
+                  bottomSheetContentClassName({
+                    isTall: height === 'tall',
+                    hasKeyboardInset: height === 'tall' && keyboardInset > 0,
+                  }),
+                  height === 'tall' && keyboardInset > 0
+                    ? ({
+                        '--astryx-bottom-sheet-keyboard-inset': `${keyboardInset}px`,
+                      } as BottomSheetPanelInstanceStyle)
+                    : {},
                 ),
-                bottomSheetContentClassName({
-                  isTall: height === 'tall',
-                  hasKeyboardInset: height === 'tall' && keyboardInset > 0,
-                }),
-                height === 'tall' && keyboardInset > 0
-                  ? ({
-                      '--astryx-bottom-sheet-keyboard-inset': `${keyboardInset}px`,
-                    } as BottomSheetPanelInstanceStyle)
-                  : {},
               ),
             ),
           )}>
