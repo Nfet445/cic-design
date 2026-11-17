@@ -553,6 +553,10 @@ import {
 } from '../TreeList/treeListItemClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {
+  focusOwnerOverlayRingClassName,
+  focusOwnerRingClassName,
+} from '../privateAttributes/focusOwnerClasses';
+import {
   controlPressHeldClassName,
   indicatorPressPaintHandDownClassName,
   rowPressPaintCheckboxRowClassName,
@@ -2312,6 +2316,10 @@ function familyClassNames() {
     add(className);
   }
   add(menuPressLitRowClassName);
+  // The focus ring a wrapper draws for its marked control, and the same ring
+  // as an overlay above the wrapper's content.
+  add(focusOwnerRingClassName);
+  add(focusOwnerOverlayRingClassName);
   // The press paint a row hands down to a box, and the layer a coarse pointer
   // keeps under a control for the whole release.
   add(rowPressPaintCheckboxRowClassName);

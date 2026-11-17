@@ -46,8 +46,8 @@ import {
 } from './carouselClasses';
 import {tw} from '../utils/tw';
 import {
+  focusOwnerOverlayRingClassName,
   focusOwnerProps,
-  focusWithinOwnerOverlay,
 } from '../privateAttributes/focusOwner.stylex';
 import {Button} from '../Button';
 import {Icon} from '../Icon';
@@ -597,13 +597,14 @@ export function Carousel({
       {...htmlProps}
       {...mergeProps(
         themeProps('carousel'),
-        stylex.props(
+        stylex.props(xstyle),
+        tw(
+          carouselRootClassName,
           // The scroller is the focus owner. Its edge-fade mask would cover a
           // ring the root draws itself.
-          focusWithinOwnerOverlay,
-          xstyle,
+          focusOwnerOverlayRingClassName,
+          className,
         ),
-        tw(carouselRootClassName, className),
         style,
       )}
       role="region"

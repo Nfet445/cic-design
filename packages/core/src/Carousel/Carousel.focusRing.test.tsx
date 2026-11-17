@@ -19,12 +19,12 @@ import {render, screen} from '@testing-library/react';
 import {Carousel} from './Carousel';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {
+  focusOwnerOverlayRingClassName,
   focusOwnerProps,
-  focusWithinOwnerOverlay,
 } from '../privateAttributes/focusOwner.stylex';
 
 const atoms = (className: string | undefined) =>
-  (className ?? '').split(' ').filter(c => c !== '' && !c.includes('__'));
+  (className ?? '').split(' ').filter(Boolean);
 
 describe("Carousel: the root paints the scroller's shared focus ring", () => {
   it('marks the scroller as the focus owner, with no ring of its own, under a root that carries the owner overlay', () => {
@@ -46,7 +46,7 @@ describe("Carousel: the root paints the scroller's shared focus ring", () => {
     )) {
       expect(scroller!.className.split(' ')).toContain(c);
     }
-    for (const c of atoms(stylex.props(focusWithinOwnerOverlay).className)) {
+    for (const c of atoms(focusOwnerOverlayRingClassName)) {
       expect(root.className.split(' ')).toContain(c);
     }
   });

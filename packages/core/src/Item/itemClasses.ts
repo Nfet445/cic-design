@@ -8,9 +8,10 @@
  *   its slots, its two text lines and the first-line strut
  * @position Style primitives; scanned by the Tailwind build
  *
- * The pressed overlay and the focus ring stay StyleX
- * (`interactionOverlayStyles`, `focusWithinOwner`): they are the shared press
- * and ring machines, not this row's paint.
+ * The pressed overlay stays StyleX (`interactionOverlayStyles`): it is the
+ * shared press machine, not this row's paint. The row's delegate ring does too
+ * (`focusOutlineStyles`), while the owner ring is a class
+ * (`focusOwnerRingClassName`).
  */
 
 import {tw} from '../utils/tw';

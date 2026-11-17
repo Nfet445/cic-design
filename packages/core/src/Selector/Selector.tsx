@@ -107,7 +107,7 @@ import {themeProps} from '../utils/themeProps';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {
   focusOwnerProps,
-  focusWithinOwner,
+  focusOwnerRingClassName,
 } from '../privateAttributes/focusOwner.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
@@ -2113,11 +2113,6 @@ export function Selector<T extends SelectorOptionType>(
             variant === 'ghost' && styles.triggerGhost,
             variant === 'secondary' && styles.triggerSecondary,
             variant !== 'input' && interactionOverlayStyles.backgroundImage,
-            // Rings for the trigger button only. The clear and status
-            // buttons ring themselves.
-            variant !== 'input' &&
-              !surface.isTriggerFocusRingSuppressed &&
-              focusWithinOwner,
             surface.isTriggerFocusRingSuppressed &&
               selectorPresentationStyles.pointerRestoredFocus,
             isDisabled && inputWrapperStyles.disabled,
@@ -2150,6 +2145,11 @@ export function Selector<T extends SelectorOptionType>(
             // stops asserting one, as `triggerInGroup` did when both were
             // StyleX declarations in one sheet.
             !inputGroup && SELECTOR_TRIGGER_SIZE_CLASS[size],
+            // Rings for the trigger button only. The clear and status
+            // buttons ring themselves.
+            variant !== 'input' &&
+              !surface.isTriggerFocusRingSuppressed &&
+              focusOwnerRingClassName,
           ),
           controlStyle,
         )}>
