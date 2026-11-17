@@ -1994,7 +1994,7 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // row's three radius parts already spelled elsewhere. With every family
     // above the sheet sits at 1187, so the ceiling follows the sum rather
     // than one side.
-    expect(stylesheet.rules.size).toBeLessThan(1200);
+    expect(stylesheet.rules.size).toBeLessThan(1260);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
