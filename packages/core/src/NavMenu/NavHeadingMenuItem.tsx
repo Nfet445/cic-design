@@ -16,13 +16,6 @@ import React, {useCallback, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {renderIconSlot, type IconType} from '../Icon';
 import {Text} from '../Text';
-import {
-  colorVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-  radiusVars,
-} from '../theme/tokens.stylex';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
 import {mergeProps} from '../utils/mergeProps';
 import {useFocusAcrossSwap} from '../utils/useFocusAcrossSwap';
@@ -32,64 +25,11 @@ import {useLinkComponent} from '../Link/useLinkComponent';
 import {themeProps} from '../utils/themeProps';
 import {isRenderable} from '../utils/isRenderable';
 import {keepDisabledRowUnfocused} from '../DropdownMenu/menuItemRoles';
-
-const styles = stylex.create({
-  root: {
-    boxSizing: 'border-box',
-    // A held pointer slides across the items; it selects no item text.
-    // Caller content beside the items stays selectable.
-    userSelect: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    borderRadius: radiusVars['--radius-element'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: {
-      default: 'transparent',
-      ':focus': colorVars['--color-overlay-hover'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    borderWidth: 0,
-    borderStyle: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    textAlign: 'start',
-    outline: 'none',
-    textDecoration: 'none',
-  },
-  content: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minWidth: 0,
-  },
-  disabled: {
-    opacity: 0.5,
-    cursor: 'default',
-  },
-});
-
-const sizeStyles = stylex.create({
-  sm: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  md: {
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  lg: {
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-3'],
-  },
-});
+import {tw} from '../utils/tw';
+import {
+  navHeadingMenuItemClassName,
+  navHeadingMenuItemContentClassName,
+} from './navHeadingMenuClasses';
 
 export interface NavHeadingMenuItemProps extends Omit<
   BaseProps<HTMLElement>,
@@ -183,17 +123,12 @@ export function NavHeadingMenuItem({
       data-testid={testId}
       {...mergeProps(
         themeProps('nav-heading-menu-item', {size}),
-        stylex.props(
-          styles.root,
-          sizeStyles[size],
-          isDisabled && styles.disabled,
-          xstyle,
-        ),
-        className,
+        stylex.props(xstyle),
+        tw(navHeadingMenuItemClassName({isDisabled, size}), className),
         style,
       )}>
       {icon && renderIconSlot(icon, {size: 'sm', color: 'secondary'})}
-      <span {...stylex.props(styles.content)}>
+      <span className={navHeadingMenuItemContentClassName}>
         {typeof label === 'string' ? (
           <Text type="body" maxLines={1}>
             {label}

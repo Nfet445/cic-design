@@ -10,6 +10,7 @@ import {NavHeadingMenuItem} from './NavHeadingMenuItem';
 import {NavHeadingCloseContext} from './NavMenuContext';
 import {__resetMenuPressForTest} from '../hooks/useMenuPress';
 import {expectNativeLinkClicks} from '../hooks/__tests__/menuLinkClicks';
+import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
 
 describe('NavHeadingMenu', () => {
   it('renders with role="menu"', () => {
@@ -53,14 +54,30 @@ describe('NavHeadingMenu', () => {
     expect(screen.getByTestId('product-menu')).toBeInTheDocument();
   });
 
-  it('applies minWidth override via inline style', () => {
+  it('states the minWidth override as the size class variable', () => {
     render(
       <NavHeadingMenu minWidth={300}>
         <NavHeadingMenuItem label="Item" />
       </NavHeadingMenu>,
     );
     const menu = screen.getByRole('menu');
-    expect(menu.style.minWidth).toBe('300px');
+    expectVariable(menu, '--astryx-nav-heading-menu-min-inline-size', '300px');
+    expectClassSet(menu, {
+      includes: [
+        'min-w-[var(--astryx-nav-heading-menu-min-inline-size,200px)]',
+      ],
+    });
+  });
+
+  it('stacks the rows in the menu column', () => {
+    render(
+      <NavHeadingMenu>
+        <NavHeadingMenuItem label="Item" />
+      </NavHeadingMenu>,
+    );
+    expectClassSet(screen.getByRole('menu'), {
+      includes: ['flex', 'flex-col'],
+    });
   });
 });
 
