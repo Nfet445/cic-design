@@ -45,6 +45,10 @@ import {
   dropdownMenuPopoverViewportClassName,
   dropdownMenuScrollClassName,
 } from './dropdownMenuClasses';
+import {
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+} from './dropdownMenuSubMenuClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {spacingVars} from '../theme/tokens.stylex';
@@ -922,7 +926,10 @@ describe('DropdownMenu', () => {
       // off the class set.
       expectClassSet(menu, {
         includes: dropdownMenuPopoverClassName.split(' '),
-        excludes: [dropdownMenuScrollClassName],
+        excludes: [
+          ...dropdownMenuScrollClassName.split(' '),
+          ...dropdownMenuSubMenuTouchClassName.split(' '),
+        ],
       });
       expect(menu).toHaveAttribute('tabindex', '-1');
 
@@ -931,7 +938,10 @@ describe('DropdownMenu', () => {
 
       await waitFor(() => {
         expectClassSet(menu, {
-          includes: dropdownMenuScrollClassName.split(' '),
+          includes: [
+            ...dropdownMenuScrollClassName.split(' '),
+            ...dropdownMenuSubMenuTouchClassName.split(' '),
+          ],
         });
       });
     } finally {
@@ -3515,21 +3525,15 @@ describe('DropdownMenu press model', () => {
     await user.click(trigger);
     const menu = screen.getByRole('menu', {hidden: true});
     expect(menu).toHaveAttribute('data-astryx-menu-press');
-    // jsdom does not compute `touch-action`; StyleX class names are a hash of
-    // property and value, so the same declaration yields the same class (the
-    // dev build prefixes a debug name; the hash is the last token).
-    const touchStyles = stylex.create({
-      none: {touchAction: 'none'},
-      pinchZoom: {touchAction: 'pinch-zoom'},
-      panYPinchZoom: {touchAction: 'pan-y pinch-zoom'},
+    // jsdom does not compute `touch-action`, so the gesture is read from the
+    // class the map emits.
+    expectClassSet(menu, {
+      includes: dropdownMenuSubMenuTouchPinchClassName.split(' '),
+      excludes: [
+        ...dropdownMenuSubMenuTouchClassName.split(' '),
+        '[touch-action:none]',
+      ],
     });
-    const hash = (style: stylex.StyleXStyles) =>
-      stylex.props(style).className!.split(' ').pop()!;
-    // Rows that fit keep every one-finger move and leave a pinch to the
-    // browser, so the page stays zoomable over the open menu.
-    expect(menu).toHaveClass(hash(touchStyles.pinchZoom));
-    expect(menu).not.toHaveClass(hash(touchStyles.none));
-    expect(menu).not.toHaveClass(hash(touchStyles.panYPinchZoom));
   });
 
   it('a mouse press on the trigger opens the menu and a drag-release acts on the row under it', () => {
