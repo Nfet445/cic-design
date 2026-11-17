@@ -22,26 +22,15 @@
 import React, {type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {Badge} from '../Badge';
+import {
+  chatTokenizedTextClassName,
+  chatTokenizedTextTokenClassName,
+} from './chatClasses';
 import type {ChatComposerToken} from './ChatComposerInput';
 import {mergeProps} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    display: 'inline',
-  },
-  token: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    height: '1lh',
-    verticalAlign: 'top',
-  },
-});
+import {tw} from '../utils/tw';
 
 // =============================================================================
 // Types
@@ -110,7 +99,10 @@ export function ChatTokenizedText({
         ref={ref}
         {...mergeProps(
           themeProps('chat-tokenized-text'),
-          stylex.props(styles.root, xstyle),
+          tw(
+            chatTokenizedTextClassName,
+            xstyle && stylex.props(xstyle).className,
+          ),
           className,
           style,
         )}
@@ -126,7 +118,10 @@ export function ChatTokenizedText({
       ref={ref}
       {...mergeProps(
         themeProps('chat-tokenized-text'),
-        stylex.props(styles.root, xstyle),
+        tw(
+          chatTokenizedTextClassName,
+          xstyle && stylex.props(xstyle).className,
+        ),
         className,
         style,
       )}
@@ -170,7 +165,9 @@ function renderTokens(text: string, tokens: ChatComposerToken[]): ReactNode[] {
     const token = tokenMap.get(matched);
     if (token) {
       parts.push(
-        <span key={`${matched}-${match.index}`} {...stylex.props(styles.token)}>
+        <span
+          key={`${matched}-${match.index}`}
+          className={chatTokenizedTextTokenClassName}>
           {isCustomToken(token) ? (
             token.render()
           ) : (

@@ -609,6 +609,11 @@ import {
 } from '../EmptyState/emptyStateClasses';
 import {timestampClassName} from '../Timestamp/timestampClasses';
 import {
+  chatSendButtonClassName,
+  chatTokenizedTextClassName,
+  chatTokenizedTextTokenClassName,
+} from '../Chat/chatClasses';
+import {
   timestampHoverCardActionClassName,
   timestampHoverCardGridTemplateClassName,
   timestampHoverCardLabelClassName,
@@ -2053,6 +2058,11 @@ function familyClassNames() {
   for (const isSelected of [true, false]) {
     add(checkboxListItemClassName({isSelected, className: undefined}));
   }
+
+  // Chat: the tokenized text root and the inline box a token renders in.
+  add(chatTokenizedTextClassName);
+  add(chatTokenizedTextTokenClassName);
+  add(chatSendButtonClassName);
   for (const orientation of ['vertical', 'horizontal']) {
     add(radioListClassName({orientation}));
   }
