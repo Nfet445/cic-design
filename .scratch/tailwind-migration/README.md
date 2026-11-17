@@ -121,6 +121,29 @@ written into the ticket.
   `Item/itemDisabledClassName` became a class the click went through. Assert
   the class on the row (`classesOf(node).includes('pointer-events-none')`) and
   that the handler stayed silent, never the computed value.
+- Tailwind reads class text, so an **interpolated** class never exists: a
+  variant built as `` `[@media(hover:hover)]:[&:is(${SCOPE}:hover_*)]` `` compiles
+  to nothing and the sheet silently omits it. Spell the whole class out; a
+  shared prefix costs bytes, not correctness. The same bites the built sheet
+  checks: `grep -c` for the plain selector found `0` while the escaped selector
+  was there all along — grep for `clip:rect` or the declaration, not for the
+  class name.
+- `mergeProps` takes **at most four** arguments (`base, overrides,
+classNameOrStyle, style`). A fifth argument is silently dropped along with
+  `className` and `style` on the same element, and the unit tests that read a
+  computed value then fail in the browser, not in jsdom. When you need both a
+  props object and a class string: `mergeProps(base, extraProps, tw(a, b), style)`.
+- A private attribute that a class text must name needs a doubled spelling to
+  win on specificity, not on order: `[data-astryx-overlay-scope][data-astryx-overlay-scope]`
+  in the ancestor variant, because one attribute ties with the hidden state's own
+  utility inside `@layer astryx-base` and the sheet order then decides. The owner
+  module still lives in `privateAttributes/<name>.stylex.ts`, and the class file
+  carries one narrow `eslint-disable @astryx/no-raw-private-attribute` whose
+  reason names the owner.
+- Deleting a `*.stylex.ts` module also means deleting its `packages/core/package.json`
+  export entry. A subpath whose `source` no longer exists fails
+  `__tests__/publicStyleXNamespaces.test.ts` with `expected [18] to deeply equal
+[20]`, and only there.
 - Concurrency: three windows is the safe number. Six made every suite four
   minutes long and killed the windows at their 1800 s limit with the work
   uncommitted.
