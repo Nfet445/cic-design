@@ -36,9 +36,11 @@ import {stylesheetOf, type Stylesheet} from './__tests__/classNameAssertions';
  */
 const FLOORED_FLOOR_FILES = [
   // Migrated: the class map carries the utility.
+  'DateRangeInput/dateRangeInputClasses.ts',
   'FileInput/fileInputClasses.ts',
   'TextArea/textAreaClasses.ts',
   'TextInput/textInputClasses.ts',
+  'TimeInput/timeInputClasses.ts',
   // Still on StyleX: the component source carries the declaration.
   'Chat/ChatComposerInput.tsx',
   'CommandPalette/CommandPaletteInput.tsx',
@@ -46,14 +48,12 @@ const FLOORED_FLOOR_FILES = [
   'DateInput/DateInput.tsx',
   'DateInput/NativeDateField.tsx',
   'DateInput/TouchDateField.tsx',
-  'DateRangeInput/DateRangeInput.tsx',
   'DateTimeInput/DateTimeInput.tsx',
   'DateTimeInput/TouchDateTimeField.tsx',
   'DateTimeInput/nativePickerSegmentStyles.ts',
   'Field/PanelSearchInput.tsx',
   'NumberInput/NumberInput.tsx',
   'Selector/Selector.tsx',
-  'TimeInput/TimeInput.tsx',
   'Typeahead/BaseTypeahead.tsx',
   // The rich-text package carries the same floor; its path is relative to
   // packages/core/src.
