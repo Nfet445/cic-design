@@ -339,6 +339,7 @@ import {
   radioListItemWrapperClassName,
 } from '../RadioList/radioListItemClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
+import {kbdKeyClassName, kbdWrapperClassName} from '../Kbd/kbdClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
   iconColorClassName,
@@ -2634,6 +2635,9 @@ function familyClassNames() {
   add(checkboxInputPressOverlayClassName);
   add(checkboxInputIndicatorSlotClassName);
   add(checkboxInputLabelWrapperClassName);
+  // Kbd: the shortcut row and the one badge shape both platforms show.
+  add(kbdWrapperClassName);
+  add(kbdKeyClassName);
   // Switch: the field root at both width states, the row in its four shape
   // states, the track box per size, the label column and the status gap.
   for (const width of [null, 240]) {
