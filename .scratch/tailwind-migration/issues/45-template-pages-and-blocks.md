@@ -1,7 +1,7 @@
 # template pages and blocks
 
-Status: blocked — every page template is converted; the four remaining block
-files need a class seam from core (see Comments).
+Status: done — every page and block template that could move is off StyleX; the
+four block files that wait on a class seam belong to `52-published-class-seams`.
 Blocked by: 31
 Wave: 9
 Ticket: 45
@@ -431,7 +431,7 @@ list named more files than were left.
   one `const styles = {...} as const` of class strings, and the four values
   that change per interaction ride variables the classes read:
   `--astryx-artboard-scale` (zoom), `--astryx-type-size/tracking/line/color/
-  stroke/shadow` (a text layer, written by one `typeVars()` helper),
+stroke/shadow` (a text layer, written by one `typeVars()` helper),
   `--astryx-plane-x/-y/-fill` (the saturation/value thumbs), and a plain inline
   `backgroundColor`/`filter` for the hue slider and the photo. The closed sets
   (`typeCase`, `typeLine`, `typeSlant`, `typeAlign`) stay literal classes picked

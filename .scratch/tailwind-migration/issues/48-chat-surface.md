@@ -91,7 +91,7 @@ hover)`): the toggle row now publishes
   `none` — and `chatComposerBodyClassName` states none, so exactly one padding
   utility ever applies and the ordering reason the map outlived its siblings
   for disappears. `none` spells the border `border-[length:var(--border-width)]
-  border-solid`, emphasised then accent on `focus-within`, and rings with
+border-solid`, emphasised then accent on `focus-within`, and rings with
   `[@media(hover:hover)]:[&:hover:not(:focus-within)…]:shadow-[inset_0px_0px_0px_2px_color-mix(in_srgb,var(--color-border-emphasized)_30%,transparent)]`
   and `focus-within:shadow-[inset_0px_0px_0px_2px_var(--color-accent-muted)]`;
   `low` keeps `shadow-[var(--shadow-low)]` rising to med on hover and
@@ -149,7 +149,7 @@ both files' names, so splitting would have meant staging half a map.
 What the two files changed:
 
 - `ChatMessageBubble.tsx` — both maps gone. `chatMessageBubbleClassName({hasWidth,
-  isCompact})` states the cap and the radius itself instead of relying on a
+isCompact})` states the cap and the radius itself instead of relying on a
   later class to outrank the base, so no ordering bet. The per-instance width
   is the inline variable `--astryx-chat-bubble-width` read by
   `w-[var(--astryx-chat-bubble-width)]`; `ChatMessageBubbleStyle` types it.
