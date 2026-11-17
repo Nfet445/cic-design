@@ -19,6 +19,7 @@ import type {TreeListItemData} from './TreeListTypes';
 import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {FOCUS_OUTLINE} from '../utils/focusOutline.stylex';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 function generateThemeTestCSS(theme: Parameters<typeof generateThemeCSS>[0]) {
   const {prose, component} = generateThemeCSS(theme);
@@ -1051,13 +1052,16 @@ describe('TreeList', () => {
       const guide = container.querySelector('.astryx-tree-list-guide');
       expect(guide).not.toBeNull();
       const column = guide!.parentElement!;
-      expect(getComputedStyle(column).pointerEvents).toBe('none');
-      expect(getComputedStyle(column).zIndex).toBe('1');
+      // jsdom cannot parse the built Tailwind sheet, so the assertion reads the
+      // class set the column asked for.
+      expectClassSet(column, {
+        includes: ['absolute', 'pointer-events-none', 'z-[1]'],
+      });
       // The tree contains that stacking so a guide cannot climb over
       // positioned content outside the list.
       const treeRoot = screen.getByRole('tree').parentElement!;
       expect(treeRoot.className).toContain('astryx-tree-list');
-      expect(getComputedStyle(treeRoot).isolation).toBe('isolate');
+      expectClassSet(treeRoot, {includes: ['isolate']});
     });
 
     it('lifts only rows that draw a focus ring above the guides', () => {
@@ -1183,9 +1187,12 @@ describe('TreeList', () => {
       // resolve token vars, so the declared value is the --spacing-0-5 token.
       render(<TreeList items={simpleItems} data-testid="tree" />);
       const root = screen.getByTestId('tree');
-      expect(
-        getComputedStyle(root).getPropertyValue('--tree-list-row-gap').trim(),
-      ).toBe('var(--spacing-0-5)');
+      expectClassSet(root, {
+        includes: [
+          '[--tree-list-row-gap:var(--spacing-0-5)]',
+          '[--tree-list-indent:var(--spacing-4)]',
+        ],
+      });
     });
 
     it('lets a theme open a row gap via the tree-list target', () => {
@@ -1216,8 +1223,10 @@ describe('TreeList', () => {
         '.astryx-tree-list-guide',
       );
       expect(guide).not.toBeNull();
-      expect(guide!.className).toContain('verticalFull');
-      expect(guide!.className).not.toContain('verticalLast');
+      expectClassSet(guide!, {
+        includes: ['h-[calc(100%+1px)]'],
+        excludes: ['h-[calc(100%_-_var(--tree-list-row-gap,_0px)_/_2)]'],
+      });
     });
 
     it('clamps the last-in-group guide so it does not overhang the gap (verticalLast)', () => {
@@ -1232,8 +1241,10 @@ describe('TreeList', () => {
         '.astryx-tree-list-guide',
       );
       expect(guide).not.toBeNull();
-      expect(guide!.className).toContain('verticalLast');
-      expect(guide!.className).not.toContain('verticalFull');
+      expectClassSet(guide!, {
+        includes: ['h-[calc(100%_-_var(--tree-list-row-gap,_0px)_/_2)]'],
+        excludes: ['h-[calc(100%+1px)]'],
+      });
     });
 
     it('carries the inter-row gap as collapse-proof padding on the row wrapper, not the paint target', () => {

@@ -24,6 +24,7 @@ import {useRef, useState, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {getForcedColorsRules} from '../__tests__/forcedColors';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {Button} from '../Button';
 import {SideNav} from './SideNav';
 import {__resetMenuPressForTest} from '../hooks/useMenuPress';
@@ -3669,8 +3670,8 @@ describe('SideNav footer icon row sizing', () => {
     // The RTL-mirror wrapper is a flex item of Button's icon slot, so it
     // blockifies; as a block it gets a line box and the glyph sits on the
     // baseline, 2.42px above centre (measured in Chromium). A flex container
-    // has no line box.
-    expect(mirror && getComputedStyle(mirror).display).toBe('flex');
+    // has no line box. jsdom parses no stylesheet, so the class is the proof.
+    expect(mirror && classesOf(mirror)).toContain('flex');
   });
 });
 

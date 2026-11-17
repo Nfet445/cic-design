@@ -4,7 +4,7 @@
 
 /**
  * @file TreeListBranches.tsx
- * @input Uses React, StyleX, theme tokens
+ * @input Uses React and theme tokens
  * @output Exports TreeListBranches component (internal)
  * @position Presentational component for tree connector lines; consumed by TreeListItem.tsx
  *
@@ -13,12 +13,13 @@
  * - /packages/cli/assets/templates/blocks/components/TreeList/ (showcase blocks)
  */
 
-import * as stylex from '@stylexjs/stylex';
-import {colorVars, spacingVars} from '../theme/tokens.stylex';
+import type {CSSProperties} from 'react';
+import {spacingVars} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {treeListBranchesClassName} from './treeListBranchesClasses';
 
-const LINE_WIDTH = 1;
 const GUIDE_COLUMN_WIDTH = spacingVars['--spacing-5'];
 
 /**
@@ -33,48 +34,12 @@ const GUIDE_COLUMN_START = `calc(${spacingVars['--spacing-2']} + ${spacingVars['
  * lines stay aligned with the row indent when a theme retunes the step. */
 const LEVEL_INDENT = 'var(--tree-list-indent)';
 
-const styles = stylex.create({
-  // Rows span the full width of the list and carry their indent inside, so
-  // the guide columns sit inside the row boxes of deeper rows. Lift the guides
-  // above the rows so a hovered or selected row's fill never breaks the line,
-  // and let pointer input fall through to the row underneath.
-  container: {
-    height: '100%',
-    // From the row wrapper's top edge, so a line spans the gap padding above
-    // the row too.
-    insetBlockStart: 0,
-    position: 'absolute',
-    width: GUIDE_COLUMN_WIDTH,
-    zIndex: 1,
-    pointerEvents: 'none',
-  },
-  verticalLine: {
-    borderRadius: 1,
-    insetInlineStart: 0,
-    margin: 'auto',
-    position: 'absolute',
-    insetInlineEnd: 0,
-    width: LINE_WIDTH,
-    backgroundColor: colorVars['--color-border-emphasized'],
-  },
-  // Guide segment spanning its row wrapper. The row box's inter-row gap lives
-  // inside the row wrapper, as its `padding-block`. So `height: 100%` already
-  // covers it. The segment adds only the original `1px`, which bridges the
-  // hairline into the next sibling, so the connector reads as one line.
-  // Independent of `--tree-list-row-gap`: the gap is absorbed by the row
-  // wrapper's height, not added on top here.
-  verticalFull: {
-    height: 'calc(100% + 1px)',
-  },
-  // Last-in-group connector: nothing sits below, so the segment must not run
-  // through the row wrapper's bottom `padding-block` (`--tree-list-row-gap` / 2)
-  // into empty space. Clamp it back by that half-gap so it ends exactly at the
-  // row box's bottom edge. At the default `--spacing-0-5` gap this trims the
-  // 1px of bottom padding; at `0px` it is exactly `100%` — no overhang at any
-  // gap.
-  verticalLast: {
-    height: 'calc(100% - var(--tree-list-row-gap, 0px) / 2)',
-  },
+/** The column's start offset is the row's to know, so the row publishes it. */
+type BranchOffsetStyle = CSSProperties &
+  Record<'--astryx-tree-list-branch-offset', string>;
+
+const branchOffsetStyle = (offset: string): BranchOffsetStyle => ({
+  '--astryx-tree-list-branch-offset': offset,
 });
 
 // =============================================================================
@@ -121,15 +86,15 @@ export function TreeListBranches({
             <div
               // eslint-disable-next-line @eslint-react/no-array-index-key -- tree branch levels are fixed positional connectors
               key={level}
-              {...mergeProps(stylex.props(styles.container), {
-                style: {
-                  insetInlineStart: branchOffset,
-                },
-              })}>
+              className={treeListBranchesClassName.container}
+              style={branchOffsetStyle(branchOffset)}>
               <div
                 {...mergeProps(
                   themeProps('tree-list-guide'),
-                  stylex.props(styles.verticalLine, styles.verticalFull),
+                  tw(
+                    treeListBranchesClassName.verticalLine,
+                    treeListBranchesClassName.verticalFull,
+                  ),
                 )}
               />
             </div>
@@ -138,11 +103,10 @@ export function TreeListBranches({
       })}
       {nestedLevel > 0 && (
         <div
-          {...mergeProps(stylex.props(styles.container), {
-            style: {
-              insetInlineStart: `calc(${GUIDE_COLUMN_START} + ${nestedLevel - 1} * ${LEVEL_INDENT})`,
-            },
-          })}>
+          className={treeListBranchesClassName.container}
+          style={branchOffsetStyle(
+            `calc(${GUIDE_COLUMN_START} + ${nestedLevel - 1} * ${LEVEL_INDENT})`,
+          )}>
           <div
             {...mergeProps(
               themeProps('tree-list-guide'),
@@ -151,9 +115,11 @@ export function TreeListBranches({
               // of bridging into the inter-row gap — no overhang into empty
               // space. Every other row bridges the gap (verticalFull) so the
               // line stays continuous down to the next sibling.
-              stylex.props(
-                styles.verticalLine,
-                isLast ? styles.verticalLast : styles.verticalFull,
+              tw(
+                treeListBranchesClassName.verticalLine,
+                isLast
+                  ? treeListBranchesClassName.verticalLast
+                  : treeListBranchesClassName.verticalFull,
               ),
             )}
           />

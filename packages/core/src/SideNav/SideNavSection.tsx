@@ -4,7 +4,7 @@
 
 /**
  * @file SideNavSection.tsx
- * @input Uses React, StyleX
+ * @input Uses React, StyleX (xstyle only)
  * @output Exports SideNavSection component and SideNavSectionProps
  * @position Core implementation; used inside SideNav children
  *
@@ -20,74 +20,14 @@
 
 import React, {useId, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {sideNavSectionClassName} from './sideNavSectionClasses';
 import type {BaseProps} from '../BaseProps';
 import {useSideNavCollapse} from './SideNavCollapseContext';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {themeProps} from '../utils/themeProps';
 import {isRenderable} from '../utils/isRenderable';
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    paddingBlock: spacingVars['--spacing-1'],
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-1'],
-    cursor: 'default',
-    userSelect: 'none',
-  },
-
-  titleContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minWidth: 0,
-  },
-  title: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  subtitle: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  endContent: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-  },
-
-  items: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-  },
-});
-
 // =============================================================================
 // Types
 // =============================================================================
@@ -155,14 +95,16 @@ export function SideNavSection({
 
   const headerContent = (
     <>
-      <span {...stylex.props(styles.titleContainer)}>
-        <span id={titleId} {...stylex.props(styles.title)}>
+      <span className={sideNavSectionClassName.titleContainer}>
+        <span id={titleId} className={sideNavSectionClassName.title}>
           {title}
         </span>
-        {subtitle && <span {...stylex.props(styles.subtitle)}>{subtitle}</span>}
+        {subtitle && (
+          <span className={sideNavSectionClassName.subtitle}>{subtitle}</span>
+        )}
       </span>
       {isRenderable(endContent) && (
-        <span {...stylex.props(styles.endContent)}>{endContent}</span>
+        <span className={sideNavSectionClassName.endContent}>{endContent}</span>
       )}
     </>
   );
@@ -174,8 +116,8 @@ export function SideNavSection({
       ref={ref}
       {...mergeProps(
         themeProps('side-nav-section'),
-        stylex.props(styles.root, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(sideNavSectionClassName.root, className),
         style,
       )}
       {...rest}
@@ -185,9 +127,9 @@ export function SideNavSection({
       {shouldHideHeader ? (
         <VisuallyHidden as="div">{headerContent}</VisuallyHidden>
       ) : (
-        <div {...stylex.props(styles.header)}>{headerContent}</div>
+        <div className={sideNavSectionClassName.header}>{headerContent}</div>
       )}
-      <div {...stylex.props(styles.items)}>{children}</div>
+      <div className={sideNavSectionClassName.items}>{children}</div>
     </div>
   );
 }
