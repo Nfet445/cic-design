@@ -29,6 +29,7 @@ import * as commentsClasses from './Comments/commentsClasses';
 import * as diffViewerClasses from './DiffViewer/diffViewerClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
+import * as scheduleClasses from './Schedule/scheduleClasses';
 import * as transferListClasses from './TransferList/transferListClasses';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -63,6 +64,7 @@ function labClassNames() {
     diffViewerClasses,
     listInputClasses,
     loadingMessageClasses,
+    scheduleClasses,
     transferListClasses,
   ]) {
     for (const [name, value] of Object.entries(map)) {
