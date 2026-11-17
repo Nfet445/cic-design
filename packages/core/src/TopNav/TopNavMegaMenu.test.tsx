@@ -18,6 +18,11 @@ import userEvent from '@testing-library/user-event';
 import {TopNavMegaMenu} from './TopNavMegaMenu';
 import {TopNavMegaMenuItem} from './TopNavMegaMenuItem';
 import {TopNavRenderContext} from './TopNavRenderContext';
+import {classesOf} from '../__tests__/classNameAssertions';
+import {
+  topNavMegaMenuDrawerItemsClassName,
+  topNavMegaMenuDrawerItemsInnerClassName,
+} from './topNavMegaMenuClasses';
 
 // =============================================================================
 // Popover API mock — jsdom implements no Popover API, so default-mode tests
@@ -797,6 +802,9 @@ describe('TopNavMegaMenu — drawer mode', () => {
 
   it('clips the drawer section only while it is collapsed', async () => {
     // The ring paints outside the item, so a permanent clip would cut it off.
+    // jsdom loads no stylesheet, so the collapse is pinned on the class set: a
+    // clip for the collapsed arm, and the release keyed off the `aria-hidden`
+    // the section already publishes.
     const user = userEvent.setup();
     render(
       <TopNavRenderContext value="drawer">
@@ -810,11 +818,19 @@ describe('TopNavMegaMenu — drawer mode', () => {
     const section = document.getElementById(
       trigger.getAttribute('aria-controls') ?? '',
     )!;
-    expect(getComputedStyle(section).overflow).toBe('hidden');
-    expect(getComputedStyle(section.firstElementChild!).overflow).toBe('');
+    const collapse = topNavMegaMenuDrawerItemsClassName();
+    expect(classesOf(section)).toEqual(
+      expect.arrayContaining(collapse.split(' ')),
+    );
+    expect(collapse).toContain('overflow-hidden');
+    expect(collapse).toContain('[&[aria-hidden=false]]:overflow-visible');
+    // The inner box floors the row height and never clips.
+    expect(section.firstElementChild!.className).toBe(
+      topNavMegaMenuDrawerItemsInnerClassName(),
+    );
 
     await user.click(trigger);
-    expect(getComputedStyle(section).overflow).toBe('visible');
+    expect(section).toHaveAttribute('aria-hidden', 'false');
   });
 
   it('renders featured content when expanded', async () => {

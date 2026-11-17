@@ -364,6 +364,36 @@ import {
   topNavFeaturedCardTitleClassName,
 } from '../TopNav/topNavMegaMenuFeaturedCardClasses';
 import {
+  topNavMegaMenuChevronClassName,
+  topNavMegaMenuChevronOpenClassName,
+  topNavMegaMenuDrawerChevronClassName,
+  topNavMegaMenuDrawerChevronExpandedClassName,
+  topNavMegaMenuDrawerFeaturedClassName,
+  topNavMegaMenuDrawerHeaderClassName,
+  topNavMegaMenuDrawerItemsClassName,
+  topNavMegaMenuDrawerItemsInnerClassName,
+  topNavMegaMenuDrawerSectionClassName,
+  topNavMegaMenuFeaturedClassName,
+  topNavMegaMenuItemsClassName,
+  topNavMegaMenuPanelAnimationClassName,
+  topNavMegaMenuPanelClassName,
+  topNavMegaMenuPanelContentClassName,
+  topNavMegaMenuPanelViewportFitClassName,
+  topNavMegaMenuTriggerClassName,
+  topNavMegaMenuTriggerOpenClassName,
+} from '../TopNav/topNavMegaMenuClasses';
+import {
+  topNavMegaMenuItemClassName,
+  topNavMegaMenuItemContentClassName,
+  topNavMegaMenuItemDescriptionClassName,
+  topNavMegaMenuItemDrawerClassName,
+  topNavMegaMenuItemDrawerContentClassName,
+  topNavMegaMenuItemDrawerDescriptionClassName,
+  topNavMegaMenuItemDrawerIconClassName,
+  topNavMegaMenuItemIconClassName,
+  topNavMegaMenuItemTitleClassName,
+} from '../TopNav/topNavMegaMenuItemClasses';
+import {
   topNavMenuChevronClassName,
   topNavMenuChevronOpenClassName,
   topNavMenuContainerClassName,
@@ -731,6 +761,39 @@ function familyClassNames() {
     topNavMenuDrawerItemIconClassName,
     topNavMenuDrawerItemTextClassName,
     topNavMenuDrawerItemDescriptionClassName,
+  ]) {
+    add(className());
+  }
+
+  // The mega menu keeps its open fill and its drawer collapse on the same
+  // `aria-expanded`/`aria-hidden` keys, and its panel state on `:popover-open`.
+  for (const className of [
+    topNavMegaMenuTriggerClassName,
+    topNavMegaMenuTriggerOpenClassName,
+    topNavMegaMenuChevronClassName,
+    topNavMegaMenuChevronOpenClassName,
+    topNavMegaMenuPanelAnimationClassName,
+    topNavMegaMenuPanelViewportFitClassName,
+    topNavMegaMenuPanelClassName,
+    topNavMegaMenuPanelContentClassName,
+    topNavMegaMenuItemsClassName,
+    topNavMegaMenuFeaturedClassName,
+    topNavMegaMenuDrawerSectionClassName,
+    topNavMegaMenuDrawerHeaderClassName,
+    topNavMegaMenuDrawerChevronClassName,
+    topNavMegaMenuDrawerChevronExpandedClassName,
+    topNavMegaMenuDrawerItemsClassName,
+    topNavMegaMenuDrawerItemsInnerClassName,
+    topNavMegaMenuDrawerFeaturedClassName,
+    topNavMegaMenuItemClassName,
+    topNavMegaMenuItemIconClassName,
+    topNavMegaMenuItemContentClassName,
+    topNavMegaMenuItemTitleClassName,
+    topNavMegaMenuItemDescriptionClassName,
+    topNavMegaMenuItemDrawerClassName,
+    topNavMegaMenuItemDrawerIconClassName,
+    topNavMegaMenuItemDrawerContentClassName,
+    topNavMegaMenuItemDrawerDescriptionClassName,
   ]) {
     add(className());
   }

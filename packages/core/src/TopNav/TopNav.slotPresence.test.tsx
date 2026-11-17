@@ -35,6 +35,10 @@ import {
   topNavStartContentClassName,
 } from './topNavClasses';
 import {topNavMenuDrawerItemIconClassName} from './topNavMenuClasses';
+import {
+  topNavMegaMenuItemDrawerIconClassName,
+  topNavMegaMenuItemIconClassName,
+} from './topNavMegaMenuItemClasses';
 import {TopNavMobileContentContext} from './TopNavMobileContentContext';
 import {NavHeadingMenu} from '../NavMenu/NavHeadingMenu';
 import {NavHeadingMenuItem} from '../NavMenu/NavHeadingMenuItem';
@@ -79,15 +83,6 @@ function slotsOf(classNames: string): Element[] {
 /** The first element whose class list holds every class of a class set. */
 function slotOf(classNames: string): Element | null {
   return slotsOf(classNames)[0] ?? null;
-}
-
-/**
- * Whether the "0" sits inside an element whose StyleX debug class contains
- * `style`. TopNavMenu and TopNavMegaMenuItem still style through StyleX, so
- * their slot assertions move to the class-set form with them.
- */
-function zeroIsInsideStyleX(style: string): boolean {
-  return zeroParent()?.closest(`[class*="${style}"]`) != null;
 }
 
 /** Whether the "0" sits inside the slot drawn by a class set. */
@@ -324,24 +319,24 @@ describe('TopNavMegaMenuItem icon follows isRenderable', () => {
     [
       'the desktop popover',
       (node: ReactNode): ReactNode => node,
-      'desktopIcon',
+      topNavMegaMenuItemIconClassName,
     ],
     [
       'the drawer',
       (node: ReactNode): ReactNode => (
         <TopNavRenderContext value="drawer">{node}</TopNavRenderContext>
       ),
-      'drawerItemIcon',
+      topNavMegaMenuItemDrawerIconClassName,
     ],
-  ] as const)('in %s', (_mode, wrap, style) => {
+  ] as const)('in %s', (_mode, wrap, iconClassName) => {
     it.each(EMPTY_VALUES)('renders no icon for %s', (_label, value) => {
       render(wrap(<TopNavMegaMenuItem title="Reports" icon={value} />));
-      expect(document.querySelector(`[class*="${style}"]`)).toBeNull();
+      expect(slotOf(iconClassName())).toBeNull();
     });
 
     it('renders an icon of 0 inside its slot', () => {
       render(wrap(<TopNavMegaMenuItem title="Reports" icon={0} />));
-      expect(zeroIsInsideStyleX(style)).toBe(true);
+      expect(zeroIsInside(iconClassName())).toBe(true);
     });
   });
 });

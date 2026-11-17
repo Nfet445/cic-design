@@ -4,7 +4,8 @@
 
 /**
  * @file TopNavMegaMenu.tsx
- * @input Uses React, StyleX, usePopover (Popover API + CSS anchor positioning)
+ * @input Uses React, usePopover (Popover API + CSS anchor positioning), and
+ *   the Tailwind classes in topNavMegaMenuClasses.ts
  * @output Exports TopNavMegaMenu component and related types
  * @position Navigation item with hover-triggered full-width mega menu for TopNav
  *
@@ -27,6 +28,8 @@
  * SYNC: When modified, update these files to stay in sync:
  * - /packages/core/src/TopNav/TopNav.doc.mjs
  * - /packages/core/src/TopNav/index.ts
+ * - /packages/core/src/TopNav/TopNavMegaMenu.test.tsx
+ * - /packages/core/src/TopNav/topNavMegaMenuClasses.ts
  * - /packages/cli/assets/templates/blocks/components/TopNav/ (showcase blocks)
  */
 
@@ -37,19 +40,7 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {isRenderable} from '../utils/isRenderable';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  fontWeightVars,
-  shadowVars,
-  typeScaleVars,
-  borderVars,
-} from '../theme/tokens.stylex';
 import {usePopover} from '../Popover/usePopover';
 import {useMenuHover} from '../hooks/useMenuHover';
 import {Grid} from '../Grid/Grid';
@@ -65,217 +56,26 @@ import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  trigger: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-1-5'],
-    paddingInline: spacingVars['--spacing-3'],
-    borderRadius: radiusVars['--radius-element'],
-    fontSize: typeScaleVars['--text-label-size'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-secondary'],
-    textDecoration: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    transitionProperty: 'background-color, color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    backgroundColor: {
-      default: 'transparent',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    borderWidth: 0,
-    borderStyle: 'none',
-    fontFamily: 'inherit',
-  },
-  triggerOpen: {
-    color: colorVars['--color-text-primary'],
-    backgroundColor: colorVars['--color-overlay-hover'],
-  },
-  chevron: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    // The registry chevron is a 1em SVG, so it has always rendered at the
-    // trigger's own font size (--text-label-size). Icon's size box would repin
-    // it to a fixed rem (the nearest, sm, is 1rem = 16px vs the 14px here), so
-    // hold it on the inherited em: same pixels, and still tracks the type
-    // scale when a theme changes the label size.
-    width: '1em',
-    height: '1em',
-    fontSize: 'inherit',
-    transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  chevronOpen: {
-    transform: 'rotate(180deg)',
-  },
-  // Animation styles applied to the layer's popover element. Under
-  // `prefers-reduced-motion: reduce` the panel never rises (design:reduced-motion
-  // DR1): on a touch screen it cross-fades, 200 ms on easeInOut whatever the
-  // theme's duration (DR2, DR4), and with a mouse it opens and closes at once
-  // (DR3).
-  panelAnimation: {
-    opacity: {
-      default: 0,
-      ':popover-open': 1,
-    },
-    transform: {
-      default: 'translateY(-4px)',
-      ':popover-open': 'translateY(0)',
-      '@media (prefers-reduced-motion: reduce)': 'none',
-    },
-    transitionProperty: {
-      default: 'opacity, transform, overlay, display',
-      '@media (prefers-reduced-motion: reduce)': 'opacity, overlay, display',
-    },
-    transitionDuration: {
-      default: durationVars['--duration-medium-min'],
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)': '200ms',
-      '@media (prefers-reduced-motion: reduce) and (not (pointer: coarse))':
-        '0s',
-    },
-    transitionTimingFunction: {
-      default: easeVars['--ease-standard'],
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-        'cubic-bezier(0.42, 0, 0.58, 1)',
-    },
-    transitionBehavior: 'allow-discrete',
-    '@starting-style': {
-      opacity: 0,
-      transform: 'translateY(-4px)',
-    },
-  },
-  // Clamp the anchored layer to the space available below the nav so a tall
-  // menu never runs off the bottom of the viewport. The layer is positioned
-  // with position-area: self-block-end, so its containing block spans from
-  // the nav's block-end to the viewport edge — 100% is exactly that space.
-  // The layer is a flex column so panelContainer can shrink and scroll its
-  // own content, keeping the surface radius/shadow static at the edges.
-  // Internal scroll is a stopgap until the mobile bottom-sheet lands.
-  panelViewportFit: {
-    display: {
-      default: 'none',
-      ':popover-open': 'flex',
-    },
-    flexDirection: 'column',
-    maxHeight: `calc(100% - ${spacingVars['--spacing-3']})`,
-  },
-  // Visual styles for the panel content container.
-  panelContainer: {
-    backgroundColor: colorVars['--color-background-popover'],
-    borderTopWidth: borderVars['--border-width'],
-    borderTopStyle: 'solid',
-    borderTopColor: colorVars['--color-border'],
-    borderRadius: radiusVars['--radius-container'],
-    boxShadow: shadowVars['--shadow-low'],
-    overflow: 'hidden',
-    // Allow the container to shrink inside the height-clamped layer so its
-    // content (panelContent) can scroll rather than overflow the viewport.
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: 0,
-  },
-  panelContent: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: spacingVars['--spacing-6'],
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-3'],
-    // Clamp to the viewport (minus a gutter) so the anchored panel never
-    // overflows the screen edge on narrow viewports; caps at 960px otherwise.
-    maxWidth: `min(960px, calc(100dvw - ${spacingVars['--spacing-4']}))`,
-    boxSizing: 'border-box',
-    // Scroll internally when the menu is taller than the available space
-    // below the nav (paired with panelViewportFit on the layer).
-    overflowY: 'auto',
-    overscrollBehavior: 'contain',
-  },
-  menuWrapper: {
-    flexGrow: 2,
-    flexShrink: 1,
-    flexBasis: 300,
-    minWidth: 0,
-  },
-  featured: {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 200,
-    borderRadius: radiusVars['--radius-container'],
-    backgroundColor: colorVars['--color-background-muted'],
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  // =========================================================================
-  // Drawer mode styles (composes navItemStyles.item as base)
-  // =========================================================================
-  drawerSection: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  // Header button override — justifyContent and button resets only,
-  // base layout/colors come from navItemStyles.item
-  drawerHeader: {
-    justifyContent: 'space-between',
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-  },
-  drawerChevron: {
-    display: 'inline-flex',
-    // Same em pin as styles.chevron above — the drawer header inherits
-    // --text-label-size from navItemStyles.item.
-    width: '1em',
-    height: '1em',
-    fontSize: 'inherit',
-    transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  drawerChevronExpanded: {
-    transform: 'rotate(180deg)',
-  },
-  // Clips only while collapsed or animating; see TopNavMenu drawerStyles.items.
-  drawerItems: {
-    display: 'grid',
-    gridTemplateRows: '0fr',
-    overflow: 'hidden',
-    transitionProperty: 'grid-template-rows, overflow',
-    transitionBehavior: 'allow-discrete',
-    transitionDuration: `${durationVars['--duration-medium']}, 0s`,
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  drawerItemsExpanded: {
-    gridTemplateRows: '1fr',
-    overflow: 'visible',
-    transitionDelay: `0s, ${durationVars['--duration-medium']}`,
-  },
-  drawerItemsInner: {
-    minHeight: 0,
-  },
-
-  // Featured card in drawer — compact version
-  drawerFeatured: {
-    marginBlockStart: spacingVars['--spacing-2'],
-    marginInlineStart: spacingVars['--spacing-6'],
-    borderRadius: radiusVars['--radius-container'],
-    backgroundColor: colorVars['--color-background-muted'],
-    overflow: 'hidden',
-  },
-});
-
+import {tw} from '../utils/tw';
+import {
+  topNavMegaMenuChevronClassName,
+  topNavMegaMenuChevronOpenClassName,
+  topNavMegaMenuDrawerChevronClassName,
+  topNavMegaMenuDrawerChevronExpandedClassName,
+  topNavMegaMenuDrawerFeaturedClassName,
+  topNavMegaMenuDrawerHeaderClassName,
+  topNavMegaMenuDrawerItemsClassName,
+  topNavMegaMenuDrawerItemsInnerClassName,
+  topNavMegaMenuDrawerSectionClassName,
+  topNavMegaMenuFeaturedClassName,
+  topNavMegaMenuItemsClassName,
+  topNavMegaMenuPanelAnimationClassName,
+  topNavMegaMenuPanelClassName,
+  topNavMegaMenuPanelContentClassName,
+  topNavMegaMenuPanelViewportFitClassName,
+  topNavMegaMenuTriggerClassName,
+  topNavMegaMenuTriggerOpenClassName,
+} from './topNavMegaMenuClasses';
 // =============================================================================
 // Types
 // =============================================================================
@@ -452,8 +252,8 @@ function DefaultMegaMenu({
     // focused control inert).
     role: 'none',
     // hasSurface: false — mega menu provides its own surface (panelContainer)
-    // with border-top and custom overflow. Animation is applied via the
-    // render() call's xstyle prop (panelAnimation), not the hook options.
+    // with border-top and custom overflow. The entrance is applied through
+    // the render() call's className, not the hook options.
     hasSurface: false,
     // Keep native outside-click/Escape dismissal and sibling exclusivity.
     // The trigger's popoverTarget association prevents its activation from
@@ -511,12 +311,12 @@ function DefaultMegaMenu({
         )}
         {...mergeProps(
           themeProps('top-nav-mega-menu'),
-          focusOutlineProps.focusVisible(
-            styles.trigger,
-            popover.isOpen && styles.triggerOpen,
-            xstyle,
+          focusOutlineProps.focusVisible(xstyle),
+          tw(
+            topNavMegaMenuTriggerClassName(),
+            popover.isOpen && topNavMegaMenuTriggerOpenClassName(),
+            className,
           ),
-          className,
           style,
         )}>
         {label}
@@ -524,7 +324,10 @@ function DefaultMegaMenu({
           icon="chevronDown"
           size="sm"
           color="inherit"
-          xstyle={[styles.chevron, popover.isOpen && styles.chevronOpen]}
+          className={tw(
+            topNavMegaMenuChevronClassName(),
+            popover.isOpen && topNavMegaMenuChevronOpenClassName(),
+          )}
         />
       </button>
       {popover.render(
@@ -536,25 +339,33 @@ function DefaultMegaMenu({
           role="group"
           aria-label={label}
           {...contentProps}
-          {...stylex.props(styles.panelContainer)}>
-          <div {...stylex.props(styles.panelContent)}>
+          className={topNavMegaMenuPanelClassName()}>
+          <div className={topNavMegaMenuPanelContentClassName()}>
             {/* Menu items section */}
             {isRenderable(items) && (
-              <Grid columns={2} gap={2} xstyle={styles.menuWrapper}>
+              <Grid
+                columns={2}
+                gap={2}
+                className={topNavMegaMenuItemsClassName()}>
                 {items}
               </Grid>
             )}
 
             {/* Featured section */}
             {isRenderable(featured) && (
-              <div {...stylex.props(styles.featured)}>{featured}</div>
+              <div className={topNavMegaMenuFeaturedClassName()}>
+                {featured}
+              </div>
             )}
           </div>
         </div>,
         {
           placement: 'below',
           alignment: slot,
-          xstyle: [styles.panelAnimation, styles.panelViewportFit],
+          className: tw(
+            topNavMegaMenuPanelAnimationClassName(),
+            topNavMegaMenuPanelViewportFitClassName(),
+          ),
         },
       )}
     </>
@@ -582,7 +393,7 @@ function DrawerMegaMenu({
   const menuId = `mega-menu-${label.toLowerCase().replace(/\s+/g, '-')}`;
 
   return (
-    <div {...stylex.props(styles.drawerSection)}>
+    <div className={topNavMegaMenuDrawerSectionClassName()}>
       {/* Header toggle — same pattern as TopNavMenu drawer */}
       <button
         ref={ref}
@@ -599,10 +410,9 @@ function DrawerMegaMenu({
           focusOutlineProps.focusVisible(
             navItemStyles.item,
             interactionOverlayStyles.backgroundColor,
-            styles.drawerHeader,
             xstyle,
           ),
-          className,
+          tw(topNavMegaMenuDrawerHeaderClassName(), className),
           style,
         )}>
         {label}
@@ -610,10 +420,10 @@ function DrawerMegaMenu({
           icon="chevronDown"
           size="sm"
           color="inherit"
-          xstyle={[
-            styles.drawerChevron,
-            isExpanded && styles.drawerChevronExpanded,
-          ]}
+          className={tw(
+            topNavMegaMenuDrawerChevronClassName(),
+            isExpanded && topNavMegaMenuDrawerChevronExpandedClassName(),
+          )}
         />
       </button>
 
@@ -622,17 +432,16 @@ function DrawerMegaMenu({
         id={`${menuId}-items`}
         aria-hidden={!isExpanded}
         inert={!isExpanded ? true : undefined}
-        {...stylex.props(
-          styles.drawerItems,
-          isExpanded && styles.drawerItemsExpanded,
-        )}>
-        <div {...stylex.props(styles.drawerItemsInner)}>
+        className={topNavMegaMenuDrawerItemsClassName()}>
+        <div className={topNavMegaMenuDrawerItemsInnerClassName()}>
           {/* Items render themselves in drawer mode via TopNavRenderContext */}
           {items}
 
           {/* Featured card */}
           {isRenderable(featured) && (
-            <div {...stylex.props(styles.drawerFeatured)}>{featured}</div>
+            <div className={topNavMegaMenuDrawerFeaturedClassName()}>
+              {featured}
+            </div>
           )}
         </div>
       </div>
