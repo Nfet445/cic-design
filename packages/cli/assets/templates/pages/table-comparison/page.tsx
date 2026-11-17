@@ -83,7 +83,6 @@ import {Button} from '@astryxdesign/core/Button';
 import {Card} from '@astryxdesign/core/Card';
 import {Icon} from '@astryxdesign/core/Icon';
 import {ProgressBar} from '@astryxdesign/core/ProgressBar';
-import {colorVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {Selector} from '@astryxdesign/core/Selector';
 import {
   Table,
@@ -953,18 +952,18 @@ function uptimeStatus(value: number): {
 } {
   if (value >= 99.95) {
     return {
-      color: colorVars['--color-text-success'],
+      color: 'var(--color-text-success)',
       status: 'Operational',
     };
   }
   if (value >= 99) {
     return {
-      color: colorVars['--color-text-warning'],
+      color: 'var(--color-text-warning)',
       status: 'Degraded',
     };
   }
   return {
-    color: colorVars['--color-text-error'],
+    color: 'var(--color-text-error)',
     status: 'Outage',
   };
 }

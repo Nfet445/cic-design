@@ -29,12 +29,12 @@
 
 import {useCallback, useEffect, useId, useMemo, useRef, useState} from 'react';
 import type {
+  CSSProperties,
   KeyboardEvent as ReactKeyboardEvent,
   PointerEvent as ReactPointerEvent,
   ReactNode,
   SVGProps,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   HStack,
   Layout,
@@ -44,16 +44,6 @@ import {
   StackItem,
   VStack,
 } from '@astryxdesign/core/Layout';
-import {
-  borderVars,
-  colorVars,
-  durationVars,
-  easeVars,
-  fontWeightVars,
-  radiusVars,
-  spacingVars,
-  typeScaleVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import {Item} from '@astryxdesign/core/Item';
 import {List} from '@astryxdesign/core/List';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
@@ -1131,24 +1121,6 @@ const COMPACT_SURFACE_QUERY =
   '(max-width: 768px), (max-width: 1024px) and (pointer: coarse) and (hover: none)';
 
 /**
- * Width the filter row holds back, in px, for the readout that trails the
- * clauses — the density toggle, the result count and Clear all.
- *
- * The readout sits inside the slot the overflow list measures, so without this
- * the list would count the readout's width as room for another clause and
- * push it off the end. The slot pays for it as padding, which is the one part
- * of the slot the measurement already subtracts, and the readout takes the
- * width back with a matching negative margin so it still lands against the
- * last clause instead of at the far edge.
- *
- * Deliberately a little wider than the readout draws at the counts this page
- * reaches, because the two failure directions are not symmetric: too wide only
- * folds a clause marginally early, while too narrow puts the readout over the
- * edge of the row.
- */
-const READOUT_RESERVE = 184;
-
-/**
  * Stands in for Relay's `usePaginationFragment` so the table can grow by
  * batches instead of flipping pages. It returns the same
  * `{data, hasNext, isLoadingNext, loadNext}` shape a Relay connection does, so
@@ -1289,566 +1261,313 @@ const stickyKeys = (
   return fromEnd ? keys.slice(-count) : keys.slice(0, count);
 };
 
-const styles = stylex.create({
+const styles = {
   // height="fill" resolves to height:100%, which needs a definite height the
   // host's <html>/<body> don't set. Without it the shell grows to fit the
-  // table, the document scrolls, and the end panel rides away with it.
-  pageShell: {
-    height: '100dvh',
-    // Layout is transparent by design, so without this the shell inherits
-    // whatever the host paints. That reads fine on a bare UA canvas but puts
-    // dark-mode text on a light page the moment the host has a background of
-    // its own. Owning the surface makes the page legible wherever it is
-    // embedded.
-    backgroundColor: colorVars['--color-background-surface'],
-    // A pinned cell paints an opaque base so scrolled content cannot show
-    // through it, and that base defaults to the card token — right for a table
-    // inside a card, wrong for this one, which sits on the page surface. Both
-    // tokens are the same white in light mode, so the mismatch only surfaces
-    // in dark, as a darker band exactly where the frozen columns are.
-    '--table-sticky-background': colorVars['--color-background-surface'],
-  },
+  // table, the document scrolls, and the end panel rides away with it. The
+  // surface is owned here for the same reason: Layout is transparent by
+  // design, so on a host with its own background the page would otherwise put
+  // dark-mode text on a light canvas. `--table-sticky-background` is the
+  // opaque base a pinned cell paints; it defaults to the card token, which is
+  // the same white in light mode but a darker band in dark, exactly where the
+  // frozen columns are.
+  pageShell:
+    'h-dvh bg-[var(--color-background-surface)] [--table-sticky-background:var(--color-background-surface)]',
   // A wrapped row's `gap` sets both axes, and 8px between stacked lines is more
   // air than these need; the row gap is tightened back to 6 on its own.
-  bar: {
-    rowGap: 6,
-  },
+  bar: 'gap-y-1.5',
   // Collapses rather than wrapping: clauses that no longer fit fold into the
   // overflow trigger, so the row is one line at every width.
-  filterRow: {
-    rowGap: 6,
-  },
+  filterRow: 'gap-y-1.5',
   // This slot is what `observeParent` measures, so its width has to mean "the
   // room the clauses have" and nothing else. Grow is the part that makes that
   // true: as the row's only grower it settles at the width left over once the
   // search box has taken its share, whatever the clauses inside happen to add
-  // up to.
+  // up to. Left at grow 0 the slot is content-sized, and that feeds the list
+  // its own output — collapse one clause and it collapses again, all the way
+  // down to `minVisibleItems` in one pass; at 1200px that showed as a single
+  // clause and a +6 next to 500px of empty row.
   //
-  // Left at grow 0 the slot is flex-basis auto, which is to say content-sized,
-  // and that feeds the list its own output: collapse one clause, the content
-  // narrows, the slot narrows with it, the list re-reads the smaller number
-  // and collapses again. It runs all the way down to `minVisibleItems` in one
-  // pass. At 1200px that showed as a single clause and a +6 next to 500px of
-  // empty row. Grow breaks the circuit by sizing the slot from the row instead
-  // of from the clauses.
-  //
-  // The slot is also the readout's container rather than its sibling, which is
-  // what keeps the readout beside the last clause instead of riding the row's
-  // trailing edge — see READOUT_RESERVE for how its width is kept out of the
-  // measurement.
-  filterOverflowSlot: {
-    display: 'flex',
-    alignItems: 'center',
-    flexGrow: 1,
-    // The held-back width, as padding because padding is the one part of the
-    // box the measurement already subtracts.
-    paddingInlineEnd: READOUT_RESERVE,
-    // Weighted far above the search box's 1 so the row gives in an order
-    // rather than proportionally. Flex shares a deficit by shrink factor times
-    // basis, so a 100 here means the clauses fold away to the bare count
-    // before the field gives up its first pixel, and the field only starts
-    // shrinking once there is nothing left to fold.
-    flexShrink: 100,
-    // Where folding stops. StackItem resets min-width to 0, and with a shrink
-    // this aggressive that lets the slot pass the collapsed state and clip the
-    // count itself — the filters are then set, applied, and unreachable, with
-    // nothing on the row to say so. The floor is the trigger's own 44px plus
-    // the reserve, because min-width bounds the border box and the reserve is
-    // padding inside it — 44 on its own would floor a slot with nothing left
-    // to put the trigger in. The last thing the row gives up is the way back
-    // to what it folded.
-    minWidth: 44 + READOUT_RESERVE,
-  },
+  // The held-back width for the readout is padding, because padding is the one
+  // part of the box the measurement already subtracts, and `shrink-[100]`
+  // weights the slot far above the search box's 1 so the row gives in an order
+  // rather than proportionally. The 160px floor is the trigger's own 44px plus
+  // that reserve: min-width bounds the border box, so 44 on its own would
+  // floor a slot with nothing left to put the trigger in — the last thing the
+  // row gives up is the way back to what it folded. The 184px reserve is wide
+  // on purpose: too wide only folds a clause marginally early, while too
+  // narrow puts the readout over the edge of the row.
+  filterOverflowSlot:
+    'flex items-center grow [padding-inline-end:184px] shrink-[100] min-w-[228px]',
   // See the note in FilterOverflow: a flex column stretches its child, which
   // is what puts the button-backed presets on the same edge as the selectors.
-  overflowItem: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
+  overflowItem: 'flex flex-col',
   // Queried rather than @media: opening the detail panel narrows this header
   // without the viewport changing, and that is the width the toolbar actually
-  // has to fit in.
-  toolbarContainer: {
-    containerName: 'toolbar',
-    containerType: 'inline-size',
-  },
-  // Taking the full line forces the trailing cluster onto a second row. Below
-  // this the filter row and the view controls were splitting the width so
-  // evenly that neither had enough: the filters were collapsing into overflow
-  // while the buttons still had room to spare.
-  toolbarPrimary: {
-    flexBasis: {
-      default: 0,
-      '@container toolbar (max-width: 860px)': '100%',
-    },
-  },
+  // has to fit in. Taking the full line below 860px forces the trailing
+  // cluster onto a second row; above it the two share the width evenly, which
+  // left the filters collapsing into overflow while the buttons had room.
+  toolbarContainer: '@container/toolbar',
+  toolbarPrimary: 'basis-0 @max-[860px]/toolbar:basis-full',
   // Holds the cluster against the end edge on its own row, where it would
   // otherwise sit under the filters at the start.
-  toolbarEnd: {
-    marginInlineStart: 'auto',
-  },
+  toolbarEnd: 'ms-auto',
   // Takes back the width the slot held back for it, so the readout draws over
   // the reserve rather than after it and lands against the last clause. The
   // gap to that clause is a margin rather than the slot's `gap`, because a gap
   // would fall on the measured side of the reserve and cost the clauses the
   // last few pixels they were measured to have.
-  filterMeta: {
-    flexShrink: 0,
-    marginInlineStart: 8,
-    marginInlineEnd: -READOUT_RESERVE,
-  },
-  savedViewsLabel: {
-    flexShrink: 0,
-  },
+  filterMeta: 'shrink-0 ms-2 -me-[184px]',
+  savedViewsLabel: 'shrink-0',
   // Basis auto so the slot is exactly as wide as the chips while they fit —
   // shrinking only once they do not, which is the width the scroller inside
   // then has to work with.
-  savedViewsSlot: {
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  savedViewsScroller: {
-    overflowX: 'auto',
-    // The row is one line: without this the block axis picks up a scrollbar of
-    // its own the moment the inline one appears.
-    overflowY: 'hidden',
-    // Keeps a swipe that runs off the end of the chips from turning into a
-    // page scroll, which on a phone reads as the whole view lurching sideways.
-    overscrollBehaviorInline: 'contain',
-    // No scrollbar under a 32px row: it would eat as much height as the chips
-    // and sit there permanently on the platforms that reserve space for it.
-    // The chip cut off at the edge is the affordance instead, and every chip
-    // is a button, so tabbing scrolls the next one into view for a keyboard.
-    scrollbarWidth: 'none',
-  },
+  savedViewsSlot: 'shrink min-w-0',
+  // One line, with no scrollbar under a 32px row: it would eat as much height
+  // as the chips and sit there permanently on the platforms that reserve space
+  // for it. The chip cut off at the edge is the affordance instead, and every
+  // chip is a button, so tabbing scrolls the next one into view for a keyboard.
+  // `overscroll-behavior-inline` keeps a swipe that runs off the end of the
+  // chips from turning into a page scroll.
+  savedViewsScroller:
+    'overflow-x-auto overflow-y-hidden [overscroll-behavior-inline:contain] [scrollbar-width:none]',
   // In a nowrap row that scrolls, a shrinkable child squeezes to fit rather
-  // than overflowing: without this the chips compress into unreadable stubs
-  // and the scroller never has anything to scroll.
-  savedViewChip: {
-    flexShrink: 0,
-  },
+  // than overflowing.
+  savedViewChip: 'shrink-0',
   // A saved view can carry more clauses than the dialog is wide.
-  tokenWrap: {
-    flexWrap: 'wrap',
-    rowGap: 4,
-  },
+  tokenWrap: 'flex-wrap gap-y-1',
   // Token ellipsises on overflow, but only once it is allowed to shrink below
   // its content; without this a long clause runs past the dialog edge instead.
-  filterToken: {
-    minWidth: 0,
-    maxWidth: '100%',
-  },
-  progress: {
-    position: 'absolute',
-    insetBlockStart: 0,
-    insetInline: 0,
-  },
-  headerWrap: {
-    position: 'relative',
-  },
+  filterToken: 'min-w-0 max-w-full',
+  progress: 'absolute [inset-block-start:0] [inset-inline:0]',
+  headerWrap: 'relative',
   // The bulk bar now sits inside the header's 16px gutter, so it needs a
   // corner radius to read as a band rather than a clipped full-bleed strip.
-  bulkBand: {
-    borderRadius: radiusVars['--radius-element'],
-  },
+  bulkBand: 'rounded-[var(--radius-element)]',
   // The bar mounts the moment the first row is checked, so its entry is a
   // `@starting-style` transition rather than a keyframe or a mount flag: the
   // settled value is the one written here, so an interrupted transition still
   // lands correctly. Reduced motion collapses the duration instead of the
   // property — a media query can't nest inside `@starting-style`, so the
-  // duration is what gets conditioned (same form as ToastViewport/Markdown).
-  bulkBandEnter: {
-    opacity: 1,
-    transform: 'translateY(0)',
-    transitionProperty: 'opacity, transform',
-    transitionDuration: {
-      default: durationVars['--duration-medium'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-    '@starting-style': {
-      opacity: 0,
-      transform: `translateY(${spacingVars['--spacing-3']})`,
-    },
-  },
+  // duration is what gets conditioned.
+  bulkBandEnter:
+    'opacity-100 translate-y-0 transition-[opacity,transform] [transition-duration:var(--duration-medium)] motion-reduce:[transition-duration:0s] [transition-timing-function:var(--ease-standard)] starting:opacity-0 starting:[translate:0_var(--spacing-3)]',
   // Sits at the width of the filter selectors beside it so the row reads as
   // one family of controls, and widens on focus for typing room. TextInput's
-  // `width` prop is the sanctioned way to size a field, but it takes one
-  // static value and cannot express a focus variant, so the width lives here.
+  // `width` prop takes one static value and cannot express a focus variant.
   //
-  // On the slot rather than on the field: TextInput's `xstyle` lands on an
+  // On the slot rather than on the field: TextInput's own class lands on an
   // element inside its outer wrapper, and that wrapper is the row's actual
-  // flex item. Sized from within, the wrapper keeps `min-width: auto`, its
-  // min-content becomes the focused 240px, and no shrink factor can move it —
-  // the field stays rigid and pushes the readout off the end of the row. A
-  // StackItem resets that min-width, so the width and the give belong to the
-  // same box and the field can widen into space it actually has.
+  // flex item — sized from within, the wrapper keeps `min-width: auto` and no
+  // shrink factor can move it. A StackItem resets that min-width, so the width
+  // and the give belong to the same box. `:focus-within` needs no React state:
+  // the focused input is a descendant either way.
   //
-  // `:focus-within` is in scope here for the same reason it was on the field:
-  // the focused input is a descendant either way, so no React state is needed.
-  searchSlot: {
-    // Second in line to give, behind the overflow slot's 100 and ahead of the
-    // readout's 0 (see filterOverflowSlot). The focus width is a request
-    // rather than a reservation: a 393px row cannot seat 240px of search and
-    // still show "Clear all", so the field takes what the folded clauses left
-    // and stops there — full width where the window has it, a little under it
-    // where it does not.
-    flexShrink: 1,
-    // Never narrower than its resting width, so a tight row cannot grind the
-    // field down to a stub. Costs nothing idle: 120 is where it already sits.
-    minWidth: 120,
-    width: {
-      default: 120,
-      ':focus-within': 240,
-    },
-    transitionProperty: 'width',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
+  // Second in line to give, behind the overflow slot's 100 and ahead of the
+  // readout's 0: a 393px row cannot seat 240px of search and still show "Clear
+  // all", so the field takes what the folded clauses left. The 120px floor is
+  // where it already rests, so it costs nothing idle.
+  searchSlot:
+    'shrink min-w-[120px] w-[120px] focus-within:w-[240px] transition-[width] [transition-duration:var(--duration-fast)] motion-reduce:[transition-duration:0s] [transition-timing-function:var(--ease-standard)]',
   // ButtonVariantMap has no outline variant, so the Button-backed toggles in
   // the row paint the field chrome the selectors beside them draw natively —
   // same border token, same radius — rather than reading as a different
   // family of control.
-  filterChrome: {
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border-emphasized'],
-    borderRadius: radiusVars['--radius-element'],
-  },
-  filterSurface: {
-    backgroundColor: colorVars['--color-background-surface'],
-  },
+  filterChrome:
+    'border border-solid border-[var(--color-border-emphasized)] rounded-[var(--radius-element)]',
+  filterSurface: 'bg-[var(--color-background-surface)]',
   // The fill a control switches to once it carries a value. This is the token
   // ToggleButton paints for its own pressed state, so a set selector and a
-  // pressed preset land on the same value over the same backdrop instead of
-  // two neighbouring shades of engaged.
-  filterFill: {
-    backgroundColor: colorVars['--color-overlay-pressed'],
-  },
+  // pressed preset land on the same value over the same backdrop.
+  filterFill: 'bg-[var(--color-overlay-pressed)]',
   // ComplexSelector's popup only floors its width at the trigger's, and the
   // Quote trigger is as narrow as its label. A range slider needs a track long
-  // enough to resolve $100 steps under the thumb, so the popup states one.
-  quotePopover: {
-    width: 300,
-  },
+  // enough to resolve $100 steps under the thumb.
+  quotePopover: 'w-[300px]',
   // A Selector states its own emptiness typographically — placeholder weight
   // and secondary text unset, body weight and primary text once it holds a
   // value. Button labels are medium and always primary, so without this the
-  // unpressed toggles sit heavier and darker than the unset selectors they
-  // are meant to match.
-  filterLabelValue: {
-    fontWeight: fontWeightVars['--font-weight-normal'],
-  },
-  filterLabelEmpty: {
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    color: colorVars['--color-text-secondary'],
-  },
+  // unpressed toggles sit heavier and darker than the unset selectors.
+  filterLabelValue: 'font-normal',
+  filterLabelEmpty: 'font-normal text-[var(--color-text-secondary)]',
   // Popover paints a 12px gutter on its content container and publishes no
-  // padding prop, so the only way to a flush container is xstyle. It lands on
-  // that same container, and these are the exact longhands Popover sets — a
-  // `padding` shorthand would compile to the physical properties and leave the
-  // logical ones standing. Flush, the rail's divider and the footer rule reach
-  // the popover edges, and each region below re-states its own gutter.
-  viewPopoverSurface: {
-    paddingBlockStart: 0,
-    paddingBlockEnd: 0,
-    paddingInlineStart: 0,
-    paddingInlineEnd: 0,
-  },
+  // padding prop, so a flush container is the only way to let the rail's
+  // divider and the footer rule reach the popover edges. Each region inside
+  // re-states its own gutter.
+  viewPopoverSurface: 'pt-0 pb-0 ps-0 pe-0',
   // The popover's height is set here rather than left to each section, so it
-  // doesn't resize under the pointer as the reader moves down the rail — the
-  // trigger is at the top right, so a shrinking panel would walk the rail out
-  // from under the cursor. Columns fills this height and scrolls inside it;
-  // the other three are shorter and are padded out to it.
-  //
-  // A fixed height, not a minimum: min-height alone is a floor, so a long
-  // column list would still push the popover past it, and a panel can only
-  // scroll once some ancestor gives it a height to scroll within.
-  viewPopover: {
-    blockSize: 448,
-  },
+  // doesn't resize under the pointer as the reader moves down the rail.
+  // Columns fills this height and scrolls inside it; the other three are
+  // shorter and are padded out to it. A fixed height, not a minimum: a long
+  // column list would still push the popover past a floor.
+  viewPopover: '[block-size:448px]',
   // ESCAPE HATCH (see report): DialogHeader takes no `padding`, and inside a
   // Dialog its LayoutHeader adds the dialog's own gutter a second time — the
   // title lands at 32px while a Section body lands at 16px. Section escapes
   // this by negative-margining out of the container padding before it pads
-  // itself; Layout does the same, which is why the canonical block puts one
-  // between Dialog and DialogHeader. Same escape, applied to the header
-  // directly, so its own 16px is the only gutter. Block-end is left alone —
-  // the header's bottom padding is real spacing, not an edge to cancel.
-  dialogHeaderBleed: {
-    marginInlineStart: 'calc(-1 * var(--container-padding-inline-start, 0px))',
-    marginInlineEnd: 'calc(-1 * var(--container-padding-inline-end, 0px))',
-    marginBlockStart: 'calc(-1 * var(--container-padding-block-start, 0px))',
-  },
+  // itself; this is the same escape applied to the header directly, so its own
+  // 16px is the only gutter. Block-end is left alone — the header's bottom
+  // padding is real spacing, not an edge to cancel.
+  dialogHeaderBleed:
+    'ms-[calc(-1*var(--container-padding-inline-start,0px))] me-[calc(-1*var(--container-padding-inline-end,0px))] mt-[calc(-1*var(--container-padding-block-start,0px))]',
   // Wide enough for "Sticky Columns" on one line once the rail carries its own
   // gutter rather than borrowing the popover's.
-  viewRail: {
-    width: 184,
-    flexShrink: 0,
-  },
-  // Pairs with the rail's 4px gutter: the item keeps Button's own
-  // --radius-element and sits inside the popover's --radius-container, so the
-  // two corners curve together instead of the item squaring off in a rounded
-  // box. Both tokens move with the theme's radius multiplier, so the pairing
-  // survives a theme swap.
-  railItem: {
-    width: '100%',
-    justifyContent: 'flex-start',
-  },
+  viewRail: 'w-[184px] shrink-0',
+  // The item keeps Button's own --radius-element and sits inside the
+  // popover's --radius-container, so the two corners curve together instead of
+  // the item squaring off in a rounded box.
+  railItem: 'w-full justify-start',
   // Starts the strip on the sheet's own 16px gutter instead of the container
   // edge, so the first tab lines up with the panel below it. Padding rather
   // than margin: on a scroller the gutter has to be part of the scrollable box
-  // or the strip cannot scroll its last tab clear of the trailing edge.
-  //
-  // Inline only. The sheet's top inset is the wrapper's, not this box's: the
-  // strip's scroll arrow is absolutely positioned against this box at
-  // inset-block-start 0, so block padding here pushes the tabs down and leaves
-  // the arrow hanging above the row it scrolls.
-  viewSheetTabs: {
-    paddingInline: 16,
-  },
+  // or the strip cannot scroll its last tab clear of the trailing edge. Inline
+  // only — the strip's scroll arrow is positioned against this box, so block
+  // padding here would leave the arrow hanging above the row it scrolls.
+  viewSheetTabs: 'px-4',
   // Full height so the transfer panels can reach the popover floor: sized to
   // its content instead, the pane stops short and the rule between the panels
-  // ends in mid-air — most visibly when a search empties both sides.
-  viewPanel: {
-    blockSize: '100%',
-    flexGrow: 1,
-    minWidth: 0,
-  },
-  // --- Columns transfer list -------------------------------------------------
+  // ends in mid-air.
+  viewPanel: '[block-size:100%] grow min-w-0',
+  // --- Columns transfer list ---------------------------------------------
   // Copies the lab TransferList's panel chrome rather than importing it: that
   // package is unpublished and does not resolve from the template viewer, so
-  // the visual contract is restated here against the same tokens.
-  // The lab component stacks its panels under `@container (max-width: 40rem)`.
-  // That query is not carried over: this pane is the popover's 660px less the
-  // 184px rail and its gutters — about 28rem — so the stacked branch would be
-  // the only one that ever ran, and side by side is the layout this panel is
-  // for. The pane has no other width to respond to; the popover is fixed.
-  transferRoot: {
-    flexGrow: 1,
-    minHeight: 0,
-    minWidth: 0,
-  },
-  // The pair runs to the pane's edges, so the rule between them is full height
-  // and each panel's header rule reaches its own edges. Nothing here is padded:
-  // the gutter lives on the header, the rows and the empty state instead, via
-  // the two Pad styles below.
-  transferPanels: {
-    flexGrow: 1,
-    minHeight: 0,
-    minWidth: 0,
-  },
-  // flexBasis 0 with grow splits the row into two equal halves; the two minimums
-  // then let a half shrink below its content instead of pushing the popover
-  // wider or taller than the height every other section is held to, which is
-  // what lets a long column list scroll inside its own panel.
-  transferPanel: {
-    flexBasis: 0,
-    flexGrow: 1,
-    minBlockSize: 0,
-    minWidth: 0,
-    overflow: 'hidden',
-  },
+  // the visual contract is restated here against the same tokens. The lab
+  // component stacks its panels under `@container (max-width: 40rem)`; that
+  // query is not carried over, because this pane is the popover's 660px less
+  // the 184px rail and its gutters — about 28rem — so the stacked branch would
+  // be the only one that ever ran, and side by side is the layout this panel
+  // is for.
+  transferRoot: 'grow min-h-0 min-w-0',
+  transferPanels: 'grow min-h-0 min-w-0',
+  // flexBasis 0 with grow splits the row into two equal halves; the two
+  // minimums then let a half shrink below its content instead of pushing the
+  // popover wider or taller than the height every other section is held to.
+  transferPanel: 'basis-0 grow [min-block-size:0] min-w-0 overflow-hidden',
   // 16px against the pane's outer edge, 12px against the divider: the outer
   // gutter matches the heading above, and the inner one only has to clear a
   // 1px rule.
-  transferPadStart: {
-    paddingInlineEnd: spacingVars['--spacing-3'],
-    paddingInlineStart: spacingVars['--spacing-4'],
-  },
-  transferPadEnd: {
-    paddingInlineEnd: spacingVars['--spacing-4'],
-    paddingInlineStart: spacingVars['--spacing-3'],
-  },
-  transferPanelDivider: {
-    borderInlineStartColor: colorVars['--color-border'],
-    borderInlineStartStyle: 'solid',
-    borderInlineStartWidth: borderVars['--border-width'],
-  },
-  transferPanelHeader: {
-    borderBlockEndColor: colorVars['--color-border'],
-    borderBlockEndStyle: 'solid',
-    borderBlockEndWidth: borderVars['--border-width'],
-  },
-  // The bulk action sits on the header rule beside a label, where button chrome
-  // would outweigh the list it acts on. Stripped to a text link, it reads as
-  // secondary to the rows without losing the accent that marks it actionable.
-  transferHeaderAction: {
-    backgroundImage: {
-      default: 'none',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': 'none',
-      ':active': 'none',
-    },
-    borderRadius: 0,
-    color: colorVars['--color-text-accent'],
-    fontSize: typeScaleVars['--text-body-size'],
-    fontWeight: typeScaleVars['--text-body-weight'],
-    height: 'auto',
-    minHeight: 0,
-    lineHeight: typeScaleVars['--text-body-leading'],
-    paddingBlock: 0,
-    paddingInline: 0,
-    textDecoration: {
-      default: 'none',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': 'underline',
-    },
-  },
+  transferPadStart: 'pe-3 ps-4',
+  transferPadEnd: 'pe-4 ps-3',
+  transferPanelDivider: 'border-s border-s-[var(--color-border)]',
+  transferPanelHeader: 'border-b border-b-[var(--color-border)]',
+  // The bulk action sits on the header rule beside a label, where button
+  // chrome would outweigh the list it acts on. Stripped to a text link, it
+  // reads as secondary to the rows without losing the accent that marks it
+  // actionable.
+  transferHeaderAction:
+    'bg-none [@media(hover:hover)]:hover:bg-none active:bg-none rounded-none h-auto min-h-0 py-0 px-0 text-[var(--color-text-accent)] [font-size:var(--text-body-size)] [font-weight:var(--text-body-weight)] [line-height:var(--text-body-leading)] no-underline [@media(hover:hover)]:hover:underline',
   // Each panel scrolls its own rows within whatever height the pane gives it,
   // so adding columns lengthens a list instead of growing the popover past the
-  // viewport. The floor is the popover's own minHeight rather than a size set
-  // here, which is what keeps the four tabs the same height.
-  transferPanelBody: {
-    flexGrow: 1,
-    minBlockSize: 0,
-    overflowY: 'auto',
-    overscrollBehavior: 'contain',
-    scrollbarGutter: 'stable',
-  },
+  // viewport.
+  transferPanelBody:
+    'grow [min-block-size:0] overflow-y-auto [overscroll-behavior:contain] [scrollbar-gutter:stable]',
   // Padded by transferPadStart/End rather than Item's own gutter, so a row's
   // hover and selected fill runs the full width of the panel while its text
   // stays on the header's start line. The grip and the end action then pull
-  // back by their own button inset (transferGrip, transferEndAction) so it is
-  // the glyph that lands on the line, not the invisible button box.
-  transferItem: {
-    minWidth: 0,
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionProperty: 'background-color, opacity',
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  // A keyboard pick-up has no pointer under it to say what is moving, so the
-  // row itself carries the state.
-  transferItemPicked: {
-    backgroundColor: colorVars['--color-accent-muted'],
-  },
-  transferEmpty: {
-    textAlign: 'center',
-  },
-  // A ghost IconButton insets its glyph by --spacing-1-5; cancelling that puts
-  // the grip itself on the panel's start line rather than the button box.
-  transferGrip: {
-    marginInlineStart: `calc(-1 * ${spacingVars['--spacing-1-5']})`,
-  },
-  // Same cancellation at the other edge, so the row's action lands on the end
-  // line that "Restore" and "Select all" sit on.
-  transferEndAction: {
-    marginInlineEnd: `calc(-1 * ${spacingVars['--spacing-1-5']})`,
-  },
-  clickableRow: {
-    cursor: 'pointer',
-  },
+  // back by their own button inset so it is the glyph that lands on the line,
+  // not the invisible button box. A keyboard pick-up has no pointer under it
+  // to say what is moving, so the row itself carries that state.
+  transferItem:
+    'min-w-0 transition-[background-color,opacity] [transition-duration:var(--duration-fast)] motion-reduce:[transition-duration:0s] [transition-timing-function:var(--ease-standard)]',
+  transferItemPicked: 'bg-[var(--color-accent-muted)]',
+  transferEmpty: 'text-center',
+  // A ghost IconButton insets its glyph by 6px; cancelling that puts the grip
+  // itself on the panel's start line rather than the button box. Same
+  // cancellation at the other edge, so the row's action lands on the end line
+  // that "Restore" and "Select all" sit on.
+  transferGrip: '-ms-1.5',
+  transferEndAction: '-me-1.5',
+  clickableRow: 'cursor-pointer',
   // One step past hover in the same neutral ramp. A muted fill can't carry
   // this on its own — --color-background-muted resolves to the identical
   // value as --color-overlay-hover. Row background belongs to this state
-  // alone: selection opts out of its wash so the two never compete.
-  activeRow: {
-    backgroundColor: colorVars['--color-overlay-pressed'],
-    // A pinned cell paints an opaque background of its own, which would cover
-    // the row's. Publishing the overlay is how the sticky plugin picks it up
-    // and replays it, the same way TableRow does for striping and hover.
-    '--table-row-overlay': colorVars['--color-overlay-pressed'],
-  },
+  // alone: selection opts out of its wash so the two never compete. A pinned
+  // cell paints an opaque background of its own, so the overlay is published
+  // for the sticky plugin to replay, the same way TableRow does for striping.
+  activeRow:
+    'bg-[var(--color-overlay-pressed)] [--table-row-overlay:var(--color-overlay-pressed)]',
   // A flex child has no definite width for AspectRatio to derive a height
   // from, so the tile is pinned here and told not to give the width back when
   // the cell runs short.
-  jobMedia: {
-    backgroundColor: colorVars['--color-background-muted'],
-    borderRadius: radiusVars['--radius-element'],
-    flexShrink: 0,
-    width: spacingVars['--spacing-12'],
-  },
-  detailPanel: {
-    minWidth: 0,
-  },
-  skeletonRow: {
-    // The table drops the divider under its last row, so each placeholder
-    // carries its own on top — one line between every row, none trailing.
-    borderBlockStartColor: colorVars['--color-border'],
-    borderBlockStartStyle: 'solid',
-    borderBlockStartWidth: borderVars['--border-width'],
-  },
+  jobMedia:
+    'w-12 shrink-0 bg-[var(--color-background-muted)] rounded-[var(--radius-element)]',
+  detailPanel: 'min-w-0',
+  // The table drops the divider under its last row, so each placeholder
+  // carries its own on top — one line between every row, none trailing.
+  skeletonRow: 'border-t border-t-[var(--color-border)]',
   // The table bleeds past this container to the layout edge and re-applies the
   // inset on its outer cells. Matching that keeps the two grids on one axis.
-  skeletonBleed: {
-    marginInline: 'calc(-1 * var(--container-padding-inline-start, 0px))',
-  },
-  skeletonEdgeStart: {
-    paddingInlineStart: 'var(--container-padding-inline-start, 0px)',
-  },
-  skeletonEdgeEnd: {
-    paddingInlineEnd: 'var(--container-padding-inline-end, 0px)',
-  },
-});
+  skeletonBleed:
+    '[margin-inline:calc(-1*var(--container-padding-inline-start,0px))]',
+  skeletonEdgeStart: 'ps-[var(--container-padding-inline-start,0px)]',
+  skeletonEdgeEnd: 'pe-[var(--container-padding-inline-end,0px)]',
+} as const;
 
 /**
- * The insertion rule the drop indicator draws. Absolute inside the row it marks
- * and pulled half its own height clear of it, so it lands in the gap between
- * two rows rather than on top of either.
- */
-const reorderIndicator = {
-  backgroundColor: colorVars['--color-accent'],
-  borderRadius: radiusVars['--radius-full'],
-  content: '""',
-  height: spacingVars['--spacing-0-5'],
-  insetInline: 0,
-  pointerEvents: 'none' as const,
-  position: 'absolute' as const,
-  zIndex: 2,
-};
-
-/**
- * The drag states a reorderable row moves through, mirroring the lab package's
- * shared reorderStyles: the row being dragged fades to half, the row the
+ * The insertion rule the drop indicator draws. It is absolute inside the row it
+ * marks and pulled half its own height clear of it, so it lands in the gap
+ * between two rows rather than on top of either. The rule is a pseudo-element,
+ * so the row carries it as a `before:` / `after:` utility.
+ *
+ * The drag states a reorderable row moves through mirror the lab package's
+ * shared reorder styles: the row being dragged fades to half, the row the
  * pointer is over grows an accent rule on the side the drop would land, and the
  * grip carries the grab cursors.
  */
-const reorderStyles = stylex.create({
-  source: {
-    opacity: 0.5,
-    userSelect: 'none',
-  },
-  dropBefore: {
-    position: 'relative',
-    '::before': {
-      ...reorderIndicator,
-      insetBlockStart: `calc(-1 * ${spacingVars['--spacing-0-5']})`,
-    },
-  },
-  dropAfter: {
-    position: 'relative',
-    '::after': {
-      ...reorderIndicator,
-      insetBlockEnd: `calc(-1 * ${spacingVars['--spacing-0-5']})`,
-    },
-  },
-  handle: {cursor: 'grab', touchAction: 'none'},
-  handleActive: {cursor: 'grabbing', touchAction: 'none'},
-});
+const reorderStyles = {
+  source: 'opacity-50 select-none',
+  dropBefore:
+    "relative before:absolute before:[inset-inline:0] before:z-[2] before:h-0.5 before:rounded-[var(--radius-full)] before:bg-[var(--color-accent)] before:content-[''] before:[inset-block-start:calc(-0.125rem)]",
+  dropAfter:
+    "relative after:absolute after:[inset-inline:0] after:z-[2] after:h-0.5 after:rounded-[var(--radius-full)] after:bg-[var(--color-accent)] after:content-[''] after:[inset-block-end:calc(-0.125rem)]",
+  handle: 'cursor-grab touch-none',
+  handleActive: 'cursor-grabbing touch-none',
+} as const;
 
 /**
  * Widths come straight from the column definitions, so a placeholder cell
  * occupies the same track as the real one whatever the reader has configured.
+ * The numbers are per instance, so they arrive as inline variables.
  */
-const skeletonCell = stylex.create({
-  row: (paddingBlock: number) => ({paddingBlock}),
-  fixed: (width: number, paddingInline: number) => ({
-    flexGrow: 0,
-    flexShrink: 0,
-    paddingInline,
-    width,
-  }),
-  flexible: (flexGrow: number, minWidth: number, paddingInline: number) => ({
-    flexBasis: 0,
-    flexGrow,
-    minWidth,
-    paddingInline,
-  }),
-});
+const skeletonCell = {
+  row: '[padding-block:var(--skeleton-pad)]',
+  fixed:
+    'shrink-0 grow-0 w-[var(--skeleton-cell-width)] [padding-inline:var(--skeleton-cell-pad)]',
+  flexible:
+    'basis-0 min-w-[var(--skeleton-cell-min)] [flex-grow:var(--skeleton-cell-grow)] [padding-inline:var(--skeleton-cell-pad)]',
+} as const;
+
+type SkeletonPadStyle = CSSProperties & Record<'--skeleton-pad', string>;
+type SkeletonCellStyle = CSSProperties &
+  Record<'--skeleton-cell-width' | '--skeleton-cell-pad', string>;
+type SkeletonFlexibleStyle = CSSProperties &
+  Record<
+    '--skeleton-cell-min' | '--skeleton-cell-grow' | '--skeleton-cell-pad',
+    string
+  >;
+
+function skeletonPadStyle(pad: number): SkeletonPadStyle {
+  return {'--skeleton-pad': `${pad}px`};
+}
+
+function skeletonFixedStyle(width: number, pad: number): SkeletonCellStyle {
+  return {
+    '--skeleton-cell-width': `${width}px`,
+    '--skeleton-cell-pad': `${pad}px`,
+  };
+}
+
+function skeletonFlexibleStyle(
+  grow: number,
+  minWidth: number,
+  pad: number,
+): SkeletonFlexibleStyle {
+  return {
+    '--skeleton-cell-min': `${minWidth}px`,
+    '--skeleton-cell-grow': String(grow),
+    '--skeleton-cell-pad': `${pad}px`,
+  };
+}
 
 /** Placeholder rows standing in for the batch being fetched. */
 const SKELETON_ROWS = 5;
@@ -1884,20 +1603,19 @@ function LoadingRows({
       gap={0}
       role="status"
       aria-label="Loading more jobs"
-      xstyle={styles.skeletonBleed}>
+      className={styles.skeletonBleed}>
       {Array.from({length: SKELETON_ROWS}, (_, row) => (
         <HStack
           key={row}
           gap={0}
           aria-hidden
-          xstyle={[styles.skeletonRow, skeletonCell.row(pad)]}>
+          className={`${styles.skeletonRow} ${skeletonCell.row}`}
+          style={skeletonPadStyle(pad)}>
           <VStack
             gap={0}
             vAlign="center"
-            xstyle={[
-              skeletonCell.fixed(SELECTION_COLUMN_WIDTH, 0),
-              styles.skeletonEdgeStart,
-            ]}>
+            className={`${skeletonCell.fixed} ${styles.skeletonEdgeStart}`}
+            style={skeletonFixedStyle(SELECTION_COLUMN_WIDTH, 0)}>
             <Skeleton width={16} height={16} radius={1} index={row} />
           </VStack>
           {columns.map((col, index) => (
@@ -1905,16 +1623,20 @@ function LoadingRows({
               key={col.key}
               gap={0}
               vAlign="center"
-              xstyle={[
+              className={`${
                 col.width?.type === 'pixel'
-                  ? skeletonCell.fixed(col.width.value, pad)
-                  : skeletonCell.flexible(
+                  ? skeletonCell.fixed
+                  : skeletonCell.flexible
+              } ${index === columns.length - 1 ? styles.skeletonEdgeEnd : ''}`}
+              style={
+                col.width?.type === 'pixel'
+                  ? skeletonFixedStyle(col.width.value, pad)
+                  : skeletonFlexibleStyle(
                       col.width?.value ?? 1,
                       col.width?.minWidth ?? 120,
                       pad,
-                    ),
-                index === columns.length - 1 && styles.skeletonEdgeEnd,
-              ]}>
+                    )
+              }>
               {col.key === 'summary' && density !== 'compact' ? (
                 // The Job cell runs to two lines everywhere but compact;
                 // matching that keeps the placeholders on the same rhythm as
@@ -1973,14 +1695,14 @@ function ViewSummaryList({
         {filters.length === 0 ? (
           <Text type="body">None</Text>
         ) : (
-          <HStack gap={1} xstyle={styles.tokenWrap}>
+          <HStack gap={1} className={styles.tokenWrap}>
             {filters.map(f => (
               <Token
                 key={`${f.field}-${f.operator}-${filterValueText(f)}`}
                 label={filterTokenLabel(f)}
                 description={`${f.field} ${f.operator} ${filterValueText(f)}`}
                 size="sm"
-                xstyle={styles.filterToken}
+                className={styles.filterToken}
               />
             ))}
           </HStack>
@@ -2045,7 +1767,7 @@ function FilterOverflow({
       // In a sheet the sheet's band under its grab bar is the top inset.
       paddingBlockStart={0}>
       {items.map(({child, index}) => (
-        <StackItem key={index} xstyle={styles.overflowItem}>
+        <StackItem key={index} className={styles.overflowItem}>
           {child}
         </StackItem>
       ))}
@@ -2059,7 +1781,7 @@ function FilterOverflow({
       aria-label={label}
       variant="ghost"
       size="sm"
-      xstyle={[styles.filterChrome, styles.filterSurface]}
+      className={`${styles.filterChrome} ${styles.filterSurface}`}
       onClick={isCompactSurface ? () => setIsOpen(true) : undefined}
     />
   );
@@ -2173,7 +1895,7 @@ function AdaptiveSavedViewForm({
         title={title}
         subtitle={subtitle}
         onOpenChange={onOpenChange}
-        xstyle={styles.dialogHeaderBleed}
+        className={styles.dialogHeaderBleed}
       />
       <Section variant="transparent" padding={4}>
         <VStack gap={4}>{children}</VStack>
@@ -2755,9 +2477,13 @@ export default function TableFilterTemplate() {
               }
             },
           },
-          xstyle: isActive
-            ? [...props.xstyle, styles.clickableRow, styles.activeRow]
-            : [...props.xstyle, styles.clickableRow],
+          className: [
+            props.htmlProps.className,
+            styles.clickableRow,
+            isActive && styles.activeRow,
+          ]
+            .filter(Boolean)
+            .join(' '),
         };
       },
     }),
@@ -2822,7 +2548,7 @@ export default function TableFilterTemplate() {
                 <AspectRatio
                   ratio={4 / 3}
                   fit="center"
-                  xstyle={styles.jobMedia}>
+                  className={styles.jobMedia}>
                   <Icon icon={ImageIcon} size="sm" color="secondary" />
                 </AspectRatio>
               ) : null}
@@ -3282,11 +3008,9 @@ export default function TableFilterTemplate() {
           // ToggleButton is a ghost Button underneath, so unpressed it has no
           // chrome at all; the border is what puts it in the same family as
           // the unset selectors. Pressed, its own overlay supplies the fill.
-          xstyle={[
-            styles.filterChrome,
-            isPressed ? styles.filterLabelValue : styles.filterLabelEmpty,
-            !isPressed && styles.filterSurface,
-          ]}
+          className={`${styles.filterChrome} ${
+            isPressed ? styles.filterLabelValue : styles.filterLabelEmpty
+          } ${isPressed ? '' : styles.filterSurface}`}
           onPressedChange={() => togglePreset(preset.filter)}
         />
       );
@@ -3404,12 +3128,12 @@ export default function TableFilterTemplate() {
       vAlign="center"
       wrap="nowrap"
       minHeight={32}
-      xstyle={styles.filterRow}>
+      className={styles.filterRow}>
       {/* Search leads the row: it is the broadest filter, and anchoring it at
           the start keeps a fixed-width control on the first line. It sits
           outside the overflow list so it is never the clause that collapses —
           a hidden search box reads as a missing feature, not a folded one. */}
-      <StackItem xstyle={styles.searchSlot}>
+      <StackItem className={styles.searchSlot}>
         <TextInput
           label="Search jobs"
           isLabelHidden
@@ -3433,7 +3157,7 @@ export default function TableFilterTemplate() {
           The readout lives in here with the list for the same reason, so that
           sizing this wrapper from the row does not drag the readout out to the
           row's edge with it. */}
-      <StackItem xstyle={styles.filterOverflowSlot}>
+      <StackItem className={styles.filterOverflowSlot}>
         <OverflowList
           behavior="observeParent"
           gap={2}
@@ -3461,7 +3185,7 @@ export default function TableFilterTemplate() {
             would land at the trailing edge however few clauses were showing.
             In here it follows the clauses, and the reserve is what stops the
             list from spending the width it needs. */}
-        <HStack gap={2} vAlign="center" xstyle={styles.filterMeta}>
+        <HStack gap={2} vAlign="center" className={styles.filterMeta}>
           {powerSearchToggle}
 
           <Text type="supporting" color="secondary">
@@ -3491,10 +3215,10 @@ export default function TableFilterTemplate() {
       vAlign="center"
       wrap="nowrap"
       minHeight={32}
-      xstyle={styles.bar}>
+      className={styles.bar}>
       {/* Outside the scroller, so the row keeps saying what it is however far
           the chips are pushed along. */}
-      <Text type="label" xstyle={styles.savedViewsLabel}>
+      <Text type="label" className={styles.savedViewsLabel}>
         Saved views:
       </Text>
       {/* Same slot-and-content split the filter row uses, for the same reason:
@@ -3502,12 +3226,12 @@ export default function TableFilterTemplate() {
           width it is left with. Scrolled rather than folded into a count,
           unlike the clauses — a saved view is picked by recognising its name,
           so a set that hides behind "+3" cannot be browsed, only counted. */}
-      <StackItem xstyle={styles.savedViewsSlot}>
+      <StackItem className={styles.savedViewsSlot}>
         <HStack
           gap={2}
           vAlign="center"
           wrap="nowrap"
-          xstyle={styles.savedViewsScroller}>
+          className={styles.savedViewsScroller}>
           {/* Exactly one of these is engaged at a time, so All is a member of
               the same group rather than a differently-shaped reset button. It
               carries no icon because it stands for the absence of a saved
@@ -3516,14 +3240,11 @@ export default function TableFilterTemplate() {
             label="All"
             size="sm"
             isPressed={activeSavedViewId == null}
-            xstyle={[
-              styles.savedViewChip,
-              styles.filterChrome,
+            className={`${styles.savedViewChip} ${styles.filterChrome} ${
               activeSavedViewId == null
                 ? styles.filterLabelValue
-                : styles.filterLabelEmpty,
-              activeSavedViewId != null && styles.filterSurface,
-            ]}
+                : styles.filterLabelEmpty
+            } ${activeSavedViewId == null ? '' : styles.filterSurface}`}
             onPressedChange={() => applySavedView(null)}
           />
           {savedViews.map(saved => {
@@ -3538,12 +3259,9 @@ export default function TableFilterTemplate() {
                 // Same chrome the filter-bar presets wear: a ghost Button has
                 // none unpressed, and the border is what keeps these in the
                 // same family as the unset selectors in the row above.
-                xstyle={[
-                  styles.savedViewChip,
-                  styles.filterChrome,
-                  isPressed ? styles.filterLabelValue : styles.filterLabelEmpty,
-                  !isPressed && styles.filterSurface,
-                ]}
+                className={`${styles.savedViewChip} ${styles.filterChrome} ${
+                  isPressed ? styles.filterLabelValue : styles.filterLabelEmpty
+                } ${isPressed ? '' : styles.filterSurface}`}
                 // Unpressing lands on the state the All chip already models:
                 // applySavedView(null) drops the active id and its filters
                 // together, so the two controls can never disagree about what
@@ -3559,7 +3277,7 @@ export default function TableFilterTemplate() {
               variant="ghost"
               size="sm"
               icon={<Icon icon={Pencil} size="sm" />}
-              xstyle={styles.savedViewChip}
+              className={styles.savedViewChip}
               onClick={() => {
                 const found = savedViews.find(s => s.id === activeSavedViewId);
                 if (found) {
@@ -3578,13 +3296,13 @@ export default function TableFilterTemplate() {
       variant="muted"
       paddingInline={3}
       paddingBlock={1.5}
-      xstyle={[styles.bulkBand, styles.bulkBandEnter]}>
+      className={`${styles.bulkBand} ${styles.bulkBandEnter}`}>
       <HStack
         gap={3}
         vAlign="center"
         wrap="wrap"
         minHeight={32}
-        xstyle={styles.bar}>
+        className={styles.bar}>
         <StackItem size="fill">
           <HStack gap={1} vAlign="center">
             {BULK_EDIT_ACTIONS.map(action => (
@@ -3628,7 +3346,7 @@ export default function TableFilterTemplate() {
     switch (viewSection) {
       case 'columns':
         return (
-          <VStack gap={0} minHeight={0} xstyle={styles.transferRoot}>
+          <VStack gap={0} minHeight={0} className={styles.transferRoot}>
             {/* No column preset here: a saved view stores the whole view
                 configuration, columns included, so a second preset picker
                 scoped to columns alone would be a rival source of truth.
@@ -3639,21 +3357,18 @@ export default function TableFilterTemplate() {
               move it, Space or Enter to drop, or Escape to cancel.
             </VisuallyHidden>
 
-            <HStack gap={0} minHeight={0} xstyle={styles.transferPanels}>
+            <HStack gap={0} minHeight={0} className={styles.transferPanels}>
               <VStack
                 gap={0}
                 role="group"
                 aria-labelledby={`${columnPanelId}-displayed`}
-                xstyle={styles.transferPanel}>
+                className={styles.transferPanel}>
                 <HStack
                   gap={2}
                   vAlign="center"
                   hAlign="between"
                   paddingBlock={2}
-                  xstyle={[
-                    styles.transferPanelHeader,
-                    styles.transferPadStart,
-                  ]}>
+                  className={`${styles.transferPanelHeader} ${styles.transferPadStart}`}>
                   <Text
                     id={`${columnPanelId}-displayed`}
                     type="label"
@@ -3664,7 +3379,7 @@ export default function TableFilterTemplate() {
                     label="Restore"
                     variant="ghost"
                     size="sm"
-                    xstyle={styles.transferHeaderAction}
+                    className={styles.transferHeaderAction}
                     onClick={() =>
                       updateView(v => ({
                         ...v,
@@ -3673,7 +3388,7 @@ export default function TableFilterTemplate() {
                     }
                   />
                 </HStack>
-                <VStack gap={0} xstyle={styles.transferPanelBody}>
+                <VStack gap={0} className={styles.transferPanelBody}>
                   {displayedColumns.length === 0 ? (
                     <VStack
                       gap={0}
@@ -3681,7 +3396,7 @@ export default function TableFilterTemplate() {
                       hAlign="center"
                       minHeight="100%"
                       paddingBlock={4}
-                      xstyle={[styles.transferEmpty, styles.transferPadStart]}>
+                      className={`${styles.transferEmpty} ${styles.transferPadStart}`}>
                       <Text type="supporting" color="secondary">
                         No columns are displayed.
                       </Text>
@@ -3726,12 +3441,11 @@ export default function TableFilterTemplate() {
                                 variant="ghost"
                                 size="sm"
                                 icon={<Icon icon={GripVertical} size="sm" />}
-                                xstyle={[
-                                  styles.transferGrip,
-                                  reorderStyles.handle,
-                                  (isPicked || isDragging) &&
-                                    reorderStyles.handleActive,
-                                ]}
+                                className={`${styles.transferGrip} ${
+                                  isPicked || isDragging
+                                    ? reorderStyles.handleActive
+                                    : reorderStyles.handle
+                                }`}
                                 onClick={() => handleGripClick(key)}
                                 onKeyDown={event =>
                                   handleGripKeyDown(event, key)
@@ -3763,7 +3477,7 @@ export default function TableFilterTemplate() {
                                   isLocked ? LOCKED_COLUMN_MESSAGE : undefined
                                 }
                                 icon={<Icon icon={X} size="sm" />}
-                                xstyle={styles.transferEndAction}
+                                className={styles.transferEndAction}
                                 onClick={() =>
                                   updateView(v => ({
                                     ...v,
@@ -3774,14 +3488,16 @@ export default function TableFilterTemplate() {
                                 }
                               />
                             }
-                            xstyle={[
+                            className={[
                               styles.transferItem,
                               styles.transferPadStart,
                               isPicked && styles.transferItemPicked,
                               isDragging && reorderStyles.source,
                               drop === 'before' && reorderStyles.dropBefore,
                               drop === 'after' && reorderStyles.dropAfter,
-                            ]}
+                            ]
+                              .filter(Boolean)
+                              .join(' ')}
                           />
                         );
                       })}
@@ -3794,13 +3510,13 @@ export default function TableFilterTemplate() {
                 gap={0}
                 role="group"
                 aria-labelledby={`${columnPanelId}-available`}
-                xstyle={[styles.transferPanel, styles.transferPanelDivider]}>
+                className={`${styles.transferPanel} ${styles.transferPanelDivider}`}>
                 <HStack
                   gap={2}
                   vAlign="center"
                   hAlign="between"
                   paddingBlock={2}
-                  xstyle={[styles.transferPanelHeader, styles.transferPadEnd]}>
+                  className={`${styles.transferPanelHeader} ${styles.transferPadEnd}`}>
                   <Text
                     id={`${columnPanelId}-available`}
                     type="label"
@@ -3811,7 +3527,7 @@ export default function TableFilterTemplate() {
                     label="Select all"
                     variant="ghost"
                     size="sm"
-                    xstyle={styles.transferHeaderAction}
+                    className={styles.transferHeaderAction}
                     isDisabled={
                       view.columnKeys.length === ALL_COLUMN_KEYS.length
                     }
@@ -3830,7 +3546,7 @@ export default function TableFilterTemplate() {
                     }
                   />
                 </HStack>
-                <VStack gap={0} xstyle={styles.transferPanelBody}>
+                <VStack gap={0} className={styles.transferPanelBody}>
                   {availableColumns.length === 0 ? (
                     <VStack
                       gap={0}
@@ -3838,7 +3554,7 @@ export default function TableFilterTemplate() {
                       hAlign="center"
                       minHeight="100%"
                       paddingBlock={4}
-                      xstyle={[styles.transferEmpty, styles.transferPadEnd]}>
+                      className={`${styles.transferEmpty} ${styles.transferPadEnd}`}>
                       <Text type="supporting" color="secondary">
                         All columns are displayed.
                       </Text>
@@ -3861,7 +3577,7 @@ export default function TableFilterTemplate() {
                               variant="ghost"
                               size="sm"
                               icon={<Icon icon={Plus} size="sm" />}
-                              xstyle={styles.transferEndAction}
+                              className={styles.transferEndAction}
                               onClick={() =>
                                 updateView(v => ({
                                   ...v,
@@ -3875,7 +3591,7 @@ export default function TableFilterTemplate() {
                               }
                             />
                           }
-                          xstyle={[styles.transferItem, styles.transferPadEnd]}
+                          className={`${styles.transferItem} ${styles.transferPadEnd}`}
                         />
                       ))}
                     </List>
@@ -4006,12 +3722,12 @@ export default function TableFilterTemplate() {
    */
   const viewOptionsPopover = (
     <VStack gap={0}>
-      <HStack gap={0} xstyle={styles.viewPopover}>
+      <HStack gap={0} className={styles.viewPopover}>
         <Section
           variant="transparent"
           padding={1}
           dividers={['end']}
-          xstyle={styles.viewRail}>
+          className={styles.viewRail}>
           <VStack gap={1}>
             {VIEW_SECTIONS.map(section => (
               <Button
@@ -4019,7 +3735,7 @@ export default function TableFilterTemplate() {
                 label={section.label}
                 variant={viewSection === section.key ? 'secondary' : 'ghost'}
                 icon={section.icon}
-                xstyle={styles.railItem}
+                className={styles.railItem}
                 onClick={() => setViewSection(section.key)}
               />
             ))}
@@ -4034,7 +3750,7 @@ export default function TableFilterTemplate() {
               nothing to contribute here but an inner display:block wrapper,
               which is exactly what would stop the panels below from taking
               the pane's full height. */}
-          <VStack gap={0} minHeight={0} xstyle={styles.viewPanel}>
+          <VStack gap={0} minHeight={0} className={styles.viewPanel}>
             {/* The pane's gutter, restated here because the container carries
                 none — that is what lets a rule below reach both edges. */}
             <VStack gap={0} padding={4} paddingBlockEnd={3}>
@@ -4098,7 +3814,7 @@ export default function TableFilterTemplate() {
           onChange={value => setViewSection(value as ViewSection)}
           role="tablist"
           hasDivider
-          xstyle={styles.viewSheetTabs}>
+          className={styles.viewSheetTabs}>
           {VIEW_SECTIONS.map(section => (
             <Tab
               key={section.key}
@@ -4140,7 +3856,7 @@ export default function TableFilterTemplate() {
    */
   const detailBody =
     activeJob == null ? null : (
-      <VStack gap={0} xstyle={styles.detailPanel}>
+      <VStack gap={0} className={styles.detailPanel}>
         {/* The only part of the body that knows which host it is in: in the
             sheet, the sheet's band under its grab bar is the top inset; the
             docked panel has no pill and keeps the 16px gutter of the panels
@@ -4334,24 +4050,24 @@ export default function TableFilterTemplate() {
       <Layout
         height="fill"
         padding={0}
-        xstyle={styles.pageShell}
+        className={styles.pageShell}
         end={isCompactSurface ? undefined : detailPanel}
         header={
           <LayoutHeader hasDivider label="Job filters and table actions">
-            <VStack gap={0} xstyle={styles.headerWrap}>
+            <VStack gap={0} className={styles.headerWrap}>
               {isLoading && (
                 <ProgressBar
                   label="Loading jobs"
                   isLabelHidden
                   isIndeterminate
-                  xstyle={styles.progress}
+                  className={styles.progress}
                 />
               )}
 
               <Section
                 variant="transparent"
                 padding={4}
-                xstyle={styles.toolbarContainer}>
+                className={styles.toolbarContainer}>
                 <VStack gap={4}>
                   {/* No page-title component publishes an end slot — Heading,
                       Section and LayoutHeader all take content only — so the
@@ -4372,7 +4088,7 @@ export default function TableFilterTemplate() {
                     bulkBar
                   ) : (
                     <HStack gap={3} vAlign="center" wrap="wrap">
-                      <StackItem size="fill" xstyle={styles.toolbarPrimary}>
+                      <StackItem size="fill" className={styles.toolbarPrimary}>
                         {isPowerSearch ? (
                           <PowerSearch
                             config={config}
@@ -4395,7 +4111,7 @@ export default function TableFilterTemplate() {
                       <HStack
                         gap={3}
                         vAlign="center"
-                        xstyle={styles.toolbarEnd}>
+                        className={styles.toolbarEnd}>
                         {/* Saved views mode is about picking a view, so the
                           controls that edit one step aside. Only the toggle
                           that got you here stays, which is also the way back. */}
@@ -4426,7 +4142,7 @@ export default function TableFilterTemplate() {
                                 label="View options"
                                 isOpen={isViewOpen}
                                 onOpenChange={setIsViewOpen}
-                                xstyle={styles.viewPopoverSurface}
+                                className={styles.viewPopoverSurface}
                                 content={viewOptionsPopover}>
                                 {viewOptionsTrigger}
                               </Popover>
