@@ -39,7 +39,6 @@ import * as interactionOverlay from '@astryxdesign/core/utils/interactionOverlay
 
 /** The style namespaces that a component's `xstyle` accepts. */
 type XstyleNamespaces = {
-  iconBoxSizeStyles: typeof iconSize.iconBoxSizeStyles;
   iconSizeStyles: typeof iconSize.iconSizeStyles;
   edgeCompSlot: typeof edgeCompensation.edgeCompSlot;
   paddingBlockEndStyles: typeof padding.paddingBlockEndStyles;
@@ -144,7 +143,7 @@ type NoKeys<Namespaces> = {[Name in keyof Namespaces]: never};
  */
 const styleNamespacesBySubpath = {
   './DateInput/tokens.stylex': [],
-  './Icon/IconSize.stylex': ['iconBoxSizeStyles', 'iconSizeStyles'],
+  './Icon/IconSize.stylex': ['iconSizeStyles'],
   './Indicator/indicator.markers.stylex': [],
   './Layer/layerAnimations.stylex': [],
   './Layer/layerTextReset.stylex': [],
