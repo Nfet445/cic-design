@@ -10,6 +10,10 @@
 
 import {tw} from '../utils/tw';
 
+/** The send button: circular, and it keeps its width in a tight composer. */
+export const chatSendButtonClassName =
+  'shrink-0 rounded-[var(--_button-radius,var(--radius-full))]';
+
 /** The tokenized text root: inline, so a token flows with the words. */
 export const chatTokenizedTextClassName = 'inline';
 
