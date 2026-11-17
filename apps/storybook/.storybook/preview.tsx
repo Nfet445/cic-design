@@ -18,6 +18,10 @@ import {stoneTheme} from '@astryxdesign/theme-stone';
 import {y2kTheme} from '@astryxdesign/theme-y2k';
 // Import the base reset stylesheet
 import '@astryxdesign/core/reset.css';
+// The classes a migrated component carries resolve here. The sheet is compiled
+// from the same class maps the package build reads, so a story is never one
+// build behind the source it renders.
+import 'virtual:astryx-tailwind-sheet.css';
 
 import {storyPadding} from './storyFrame';
 
