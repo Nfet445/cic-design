@@ -10,11 +10,9 @@
  */
 
 import React from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Token} from '../Token';
 import {useLocale} from '../i18n/useLocale';
 import {useCalendarSystem} from '../i18n/useCalendarSystem';
-import {fontWeightVars} from '../theme/tokens.stylex';
 import {formatFilterValue} from './formatFilterValue';
 import {resolveOperatorLabel} from './resolveOperatorLabel';
 import {useInternalConfig} from './useInternalConfig';
@@ -22,12 +20,7 @@ import type {PowerSearchTokenProps} from './types';
 import {useComponentTranslator} from '../i18n/useComponentTranslator';
 import {formatTokenLabel} from './formatTokenValue';
 import {pickDataAttributes} from '../utils/themeProps';
-
-const tokenValueStyles = stylex.create({
-  value: {
-    fontWeight: fontWeightVars['--font-weight-bold'],
-  },
-});
+import {powerSearchTokenValueClassName} from './powerSearchClasses';
 
 /**
  * Default token pill for PowerSearch filters.
@@ -74,7 +67,7 @@ export function PowerSearchToken({
   );
 
   const valueContent = valueStr ? (
-    <span {...stylex.props(tokenValueStyles.value)}>{valueStr}</span>
+    <span className={powerSearchTokenValueClassName}>{valueStr}</span>
   ) : undefined;
 
   return (
