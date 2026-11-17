@@ -1,6 +1,6 @@
 # side nav
 
-Status: in-progress
+Status: ready-for-agent
 Blocked by: 18
 Wave: 6
 Family: `family:navigation-destinations`
@@ -98,3 +98,19 @@ Landed in `refactor(SideNav): переместить оформление SideNa
 - `SideNav.test.tsx` helpers `indentOf`, `ringSelectorsFor`,
   `expectSharedFocusRing` read StyleX rules or debug names; they follow
   `SideNavHeading` (and `indentOf` `TreeListItem`).
+
+## Result
+
+- `SideNav` and `SideNavItem` paint with Tailwind classes; `SideNavHeading` and
+  `TreeListItem` stay StyleX until the next pass, listed under Left.
+- Merged `poc/tailwind-layout-primitives` with no conflict: the branch does not
+  touch
+  `packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`, so this
+  ticket's `sideNavClassName` / `sideNavItemClassName` registrations and its
+  1040 budget stand. `node --check` on that file passes after the merge.
+- After the merge: `node packages/core/scripts/build-css-tailwind.mjs`,
+  `pnpm exec vitest run packages/core/src/SideNav packages/core/src/TreeList
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` — 6 files,
+  538 tests pass; `pnpm exec eslint packages/core/src/SideNav
+packages/core/src/Layout` — 0 errors, 6 pre-existing warnings in
+  `SideNavCollapseStacking.a11y.chromium.spec.ts`.
