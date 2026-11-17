@@ -669,7 +669,7 @@ export function chatComposerRootClassName(isDisabled: boolean): string {
     'relative z-0 isolate flex flex-col',
     '[--_chat-composer-radius:var(--radius-chat)]',
     '[--_chat-composer-padding:var(--spacing-3)]',
-    '[--_button-radius:max(var(--radius-element),calc(var(--_chat-composer-radius)-var(--_chat-composer-padding)))]',
+    '[--_button-radius:max(var(--radius-element),calc(var(--_chat-composer-radius)_-_var(--_chat-composer-padding)))]',
     isDisabled && 'opacity-60 pointer-events-none',
   );
 }
@@ -769,12 +769,12 @@ export function chatComposerStatusClassName(
     position === 'top'
       ? tw(
           'pt-[var(--_chat-composer-padding)]',
-          'pb-[calc(var(--_chat-composer-padding)+var(--_chat-composer-radius))]',
+          'pb-[calc(var(--_chat-composer-padding)_+_var(--_chat-composer-radius))]',
           '-mb-[var(--_chat-composer-radius)]',
           'rounded-ss-[var(--_chat-composer-radius)] rounded-se-[var(--_chat-composer-radius)]',
         )
       : tw(
-          'pt-[calc(var(--_chat-composer-padding)+var(--_chat-composer-radius))]',
+          'pt-[calc(var(--_chat-composer-padding)_+_var(--_chat-composer-radius))]',
           'pb-[var(--_chat-composer-padding)]',
           '-mt-[var(--_chat-composer-radius)]',
           'rounded-es-[var(--_chat-composer-radius)] rounded-ee-[var(--_chat-composer-radius)]',

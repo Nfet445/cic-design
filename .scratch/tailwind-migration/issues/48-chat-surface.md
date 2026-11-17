@@ -124,6 +124,18 @@ unchanged. Commits: `0b2776cb0 refactor(chat): перевести высоту �
 наведение ящика на классы Tailwind` (with the stale theming exception) and
 `115c24520 Merge branch 'poc/tailwind-layout-primitives'`.
 
+Three of the class strings those earlier windows wrote for the composer did not
+compile as written: Tailwind re-serialises an arbitrary value it reads as a math
+expression, so `calc(var(--_chat-composer-padding)+var(--_chat-composer-radius))`
+and the root's `max(…,calc(var(--_chat-composer-radius)-var(--_chat-composer-padding)))`
+emitted `var(-- chat-composer-radius)` and `var(-- chat-composer-padding)`, which
+is invalid at computed-value time. The sheet carried three such declarations
+(`dist/astryx-tailwind.css:3414`, `:3450` and the root's `--_button-radius`),
+so the status bar lost its padded arm and the composer's buttons lost their
+concentric radius. Fixed with the spaced form the repo already uses
+(`chatClasses.ts:672`, `:772`, `:777`, `_+_` and `_-_`); the sheet now has no
+`var(-- chat-` declaration at all.
+
 Still open, by hand only: the Windows High Contrast check of the message bubble
 edges and the composer's focus ring.
 
