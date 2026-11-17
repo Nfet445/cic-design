@@ -1170,7 +1170,9 @@ describe('R6 one scrim', () => {
     recorder.restore();
     expect(scrim(a)).toBe('0');
     expect(recorder.writes.every(write => write.pin === '')).toBe(true);
-    expect(classes(a)).toContain('scrimClosing');
+    expect(classes(a)).toContain(
+      'backdrop:[transition-timing-function:var(--_sheet-scrim-easing,linear)]',
+    );
   });
 
   it('a drag on an upper sheet never thins the visible scrim or reveals its own', () => {

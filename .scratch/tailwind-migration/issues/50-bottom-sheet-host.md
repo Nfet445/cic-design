@@ -81,45 +81,82 @@ merged, so no sheet-test conflict appeared):
   `vitest run BottomSheet Lightbox tailwindStylesheet.source-build` 851 passed,
   prettier, eslint, `pnpm -F @astryxdesign/core typecheck` clean.
 
+Window 3 (commit `980e25ec7`; merged `poc/tailwind-layout-primitives` first, no
+conflict):
+
+- Done: `BottomSheet.tsx`'s map is gone. `packages/core/src/BottomSheet/
+bottomSheetClasses.ts` holds the dialog shell (`DIALOG`), the panel host,
+  the non-modal box, the scrim and its transition arms, `POSITIONER` and the
+  switcher's `flow` wrapper, exposed as `bottomSheetDialogClassName`,
+  `bottomSheetPositionerClassName` and `bottomSheetSwitcherFlowClassName`.
+  Each state prints one `display` arm, and `scrimTransition` picks one
+  duration and one timing function, so the sheet's order never decides them.
+  `bottomSheetScrimReducedMotionDurationClassName` is exported: it is the
+  pin's only reader.
+- Done: `BottomSheetSwitcher.tsx` holds no `stylex.create` and no `stylex`
+  import (its flow wrapper is now `className={...}`).
+- Assertions moved, each with what replaced it:
+  - `BottomSheetSwitcher.test.tsx:1700-1711` — three `getComputedStyle`
+    reads (`isolation`, `zIndex` of the flow wrapper, `zIndex` of the top
+    dialog, `zIndex >= 1000` scan) — now `expectClassSet(flow, {includes:
+['isolate', 'z-[1000]', 'fixed']})`, `expectClassSet(confirmDialog,
+{includes: ['z-1']})` and `expectClassSet(detailsDialog, {excludes:
+['z-1', 'z-[1000]']})`.
+  - `BottomSheetSwitcher.test.tsx:1789` — the `document.styleSheets` walk for
+    a reduced-motion `::backdrop` `transition-duration` — the dialog now
+    asserts it carries
+    `bottomSheetScrimReducedMotionDurationClassName`, and the rule itself is
+    the new sheet case `it('keeps the scrim takeover pin under
+prefers-reduced-motion')` in `Layout/tailwindStylesheet.source-build.
+test.mjs`, reading `stylesheet.blockOf(...)` for
+    `transition-duration:var(--_sheet-scrim-duration,0.01s);`.
+  - `BottomSheetStacking.test.tsx:1173` — `classes(a)` contained the StyleX
+    class `scrimClosing` — now contains
+    `backdrop:[transition-timing-function:var(--_sheet-scrim-easing,linear)]`,
+    the class the leaving scrim's timing-function arm prints.
+- The sheet test's coverage block registers the new map (both dialog arms, the
+  three entry/exit states, the positioner and both flow wrappers). Measured
+  1424 rules; the ceiling stayed at 1460 and the comment records the new
+  number.
+- `BottomSheetPanel.tsx` needed one type fix that predates this window: its
+  `getContentProps` call got `mergeProps`'s widened props bag, so it now
+  asserts `as ScrollableElementProps<HTMLDivElement>`. `typecheck` was red on
+  the branch before this window.
+- Verified: `node packages/core/scripts/build-css-tailwind.mjs` (204.8 kB),
+  `vitest run BottomSheet Layout/tailwindStylesheet.source-build` 677 passed,
+  prettier, eslint, `pnpm -F @astryxdesign/core typecheck` clean.
+
 ## What is left
 
-- `BottomSheet.tsx:132` — the dialog host: `dialog`, `dialogOpen`,
-  `dialogPanelHost`, `dialogNonModal*`, `positioner*` and the `::backdrop`
-  scrim. The scrim needs its duration and timing-function arms chosen in the
-  class function rather than layered (`isEntrySettled` → `0.01s`, `isExiting`
-  → `var(--_sheet-scrim-easing, linear)`), because two classes of one property
-  are ordered by the sheet, not by the map. `--_sheet-scrim-opacity` /
-  `--_sheet-scrim-duration` stay inline variables the classes read.
-- The rest of `BottomSheetPanel.tsx`'s map at `:332` — `sheet`, `sheetSettled`,
-  `sheetClosing`, `sheetClosingCrossFade`, `sheetFading`, `sheetInactive`,
-  `handleBar`, `body`, `content`, `tallKeyboardBody`, `tallKeyboardContent`,
-  `keyboardInset(inset)`, `budget`, `hugHeight` — then the reads that asserts
-  it: `BottomSheetPanel.test.tsx:627-634` (a `getComputedStyle` spy keyed on
-  `astryx-bottom-sheet`; it survives, it models a rendered `transition: none`),
-  `:738`, `:742`, `:845`, `:866` (`document.styleSheets` walks for the exit and
-  coarse-pointer curves — these move to a `buildAstryxTailwindCss()` sheet
-  case), `:967`, `:1050`. Note for that window: the three source-string tests at
-  `:744-830` (`handleBar`, `sheet`, `body` read out of the `.tsx` text with a
-  `/handleBar: \{…\}/` regex) must be repointed at the new class file or
-  replaced by class assertions, or they throw "handle bar not found" shape
-  errors.
-- Shape the panel map must take: `mergeProps`'s third argument is already a
-  class string in this component (`tw(layerTextResetClassName,
-layerStructureResetClassName, className)`), so the sheet chain drops in
-  there. The body and content boxes go through
-  `useScrollableArea.ts:773` (`getContentProps`) and `:669`
-  (`getViewportProps`), which pass `xstyle` to `stylex.props` — a class map
-  cannot ride them, so those two need `mergeProps` at the call site instead.
-- Duration and transform are properties with several arms in one map
-  (`--duration-medium` vs `0.01s`, `translateY(0)` vs `translateY(100%)`), and
-  two classes of one property are ordered by the sheet, not by the map. Choose
-  one arm in a class function (as `drawerClasses.ts` does with
-  `panelTransition(opensSettled)`), and keep `motion-safe:` on the travel so a
-  reduced-motion environment resolves no transform at all.
-- `BottomSheetSwitcher.tsx:98` (`flow`, `flowNonModal`), then
-  `BottomSheetSwitcher.test.tsx:1626` (transition duration), `:1700-1711`
-  (`isolation` / `zIndex`), `:1789` (sheet walk).
-- `Lightbox.tsx:193` and `:578` — only if a window is left.
+- `Lightbox.tsx:193` and `:578` — the only `stylex.create` left in the four
+  files of this ticket, and the whole of the remaining work. Shape it as
+  `lightboxClasses.ts` with class functions; per-instance entries become a
+  class plus an inline `--_lightbox-*` variable: `pageStyles.position(index)`
+  → `--_lightbox-page-offset`, `captionTogglePlaceShown(width, lines)` →
+  `--_lightbox-toggle-width` plus a clamp arm, `captionTextBesideToggle(width)`
+  → the same width variable. Arbitrary values the sheet must print:
+  `grid-rows-subgrid`, `box-content`, `shape-outside`, the `-webkit-box`
+  clamp, `content` with its 240 `\A0` lines, `color-mix` backing. `dialog`'s
+  `::backdrop` reads `--_lightbox-backdrop-filter` inline;
+  `stylex.firstThatWorks('100dvh', '100vh')` becomes `h-dvh`.
+- The precedence question that decides how much of it stays in a
+  `*.stylex.ts`: many entries land on another component's root, where the
+  original `xstyle` order — not the sheet — decided the winner. Passed to
+  `control()` as `place`: `closeButton`, `navButton`, `navPrev`, `navNext`
+  (`absolute`, `top`, `inset-inline-*`, `zIndex`, `translate`) and `counter`
+  all style a Button or Counter root; `controlButton`
+  (`pointerEvents: 'auto'`) and `controlIcon` (`color`) do too;
+  `zoomButtonFocusInset` (`outlineOffset` on `:focus-visible`) must beat the
+  zoom button's own focus ring; `captionClamped`, `captionTextOpen`,
+  `captionToggle`, `captionTextToggleOwnLine` style `Text` roots. Check each
+  against the target component's current classes: where its own utility sets
+  the same property, one arm has to be chosen (a class function) or the rule
+  kept as a small survivor with its reason, as the panel's block padding is.
+- `Lightbox.test.tsx` names `getComputedStyle` once, in a comment, so the
+  unit test needs no assertions moved. The `__tests__/*.browser.spec.ts`
+  files read computed values (`translate`, `::backdrop` opacity, caption
+  padding, floats, line boxes) — they are the check that every class prints
+  what the map printed, so run them.
 
 ## Notes
 
