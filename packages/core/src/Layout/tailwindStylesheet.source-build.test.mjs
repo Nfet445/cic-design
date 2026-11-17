@@ -394,6 +394,12 @@ import {infoTipTriggerClassName} from '../InfoTip/infoTipClasses';
 import {navIconClassName} from '../NavIcon/navIconClasses';
 import {formLayoutDirectionClassName} from '../FormLayout/formLayoutClasses';
 import {
+  inputGroupClassName,
+  inputGroupDisabledClassName,
+  inputGroupSizeClassName,
+  inputGroupTextClassName,
+} from '../InputGroup/inputGroupClasses';
+import {
   panelSearchInputFieldClassName,
   panelSearchInputIconClassName,
   panelSearchInputInputClassName,
@@ -537,6 +543,18 @@ import {
   selectorOptionRowClassName,
 } from '../Selector/selectorOptionClasses';
 import {
+  selectorDividerClassName,
+  selectorEmptyStateClassName,
+  selectorListboxClassName,
+  selectorListboxHiddenClassName,
+  selectorListboxInputInsetClassName,
+  selectorListboxTouchClassName,
+  selectorListboxTouchScrollClassName,
+  selectorSearchPanelClassName,
+  selectorSearchRowInsetClassName,
+  selectorSectionHeadingClassName,
+} from '../Selector/selectorClasses';
+import {
   MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
   MULTI_SELECTOR_ACTION_CELL_CLASS,
   MULTI_SELECTOR_CHECKBOX_CLASS,
@@ -547,6 +565,10 @@ import {
   multiSelectorOptionRowClassName,
 } from '../MultiSelector/multiSelectorOptionClasses';
 import {
+  multiSelectorListWrapperClassName,
+  multiSelectorOptionsClassName,
+} from '../MultiSelector/multiSelectorClasses';
+import {
   TYPEAHEAD_DEFAULT_ITEM_CLASS,
   TYPEAHEAD_ITEM_CONTENT_CLASS,
   TYPEAHEAD_ITEM_DESCRIPTION_CLASS,
@@ -554,6 +576,10 @@ import {
   TYPEAHEAD_ITEM_FRAME_CLASS,
   TYPEAHEAD_ITEM_LABEL_CLASS,
   TYPEAHEAD_ROW_CONTENT_CLASS,
+  typeaheadContentLaneClassName,
+  typeaheadEndLaneClassName,
+  typeaheadInputClassName,
+  typeaheadInputDisabledClassName,
   typeaheadRowClassName,
 } from '../Typeahead/typeaheadClasses';
 import {tableCellClassName} from '../Table/tableCellClasses';
@@ -1917,6 +1943,18 @@ function familyClassNames() {
   for (const size of ['sm', 'md', 'lg']) {
     add(SELECTOR_TRIGGER_SIZE_CLASS[size]);
   }
+  // The option panel, its listbox in both scroll modes, the input trigger's
+  // inset, and the empty, heading and divider slots.
+  add(selectorSearchPanelClassName);
+  add(selectorListboxClassName);
+  add(selectorListboxTouchClassName);
+  add(selectorListboxTouchScrollClassName);
+  add(selectorListboxInputInsetClassName);
+  add(selectorListboxHiddenClassName);
+  add(selectorSearchRowInsetClassName);
+  add(selectorEmptyStateClassName);
+  add(selectorSectionHeadingClassName);
+  add(selectorDividerClassName);
   // The nav heading popover: its column, both row states at every size, and
   // the minimum width each size states as its own fallback.
   add(navHeadingMenuClassName);
@@ -1948,6 +1986,8 @@ function familyClassNames() {
       }
     }
   }
+  add(multiSelectorListWrapperClassName);
+  add(multiSelectorOptionsClassName);
   add(MULTI_SELECTOR_ROW_LABEL_CLASS);
   add(MULTI_SELECTOR_CHECKBOX_CLASS);
   add(MULTI_SELECTOR_CHECKBOX_END_CLASS);
@@ -1974,6 +2014,10 @@ function familyClassNames() {
   add(TYPEAHEAD_ITEM_LABEL_CLASS);
   add(TYPEAHEAD_ITEM_DESCRIPTION_CLASS);
   add(TYPEAHEAD_ITEM_DISABLED_CLASS);
+  add(typeaheadInputClassName);
+  add(typeaheadInputDisabledClassName);
+  add(typeaheadEndLaneClassName);
+  add(typeaheadContentLaneClassName);
 
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
@@ -2916,6 +2960,14 @@ function familyClassNames() {
   for (const direction of ['vertical', 'horizontal', 'horizontal-labels']) {
     add(formLayoutDirectionClassName[direction]);
   }
+  // InputGroup: the row, its disabled state, one height per size and the
+  // prefix/suffix cell.
+  add(inputGroupClassName);
+  add(inputGroupDisabledClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(inputGroupSizeClassName[size]);
+  }
+  add(inputGroupTextClassName);
   // FieldStatus: the message box in both placements, the detached content row
   // and glyph, and one fill per status type.
   add(fieldStatusBaseClassName);

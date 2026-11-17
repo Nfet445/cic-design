@@ -17,6 +17,7 @@ import userEvent from '@testing-library/user-event';
 import {InputGroup} from './InputGroup';
 import {InputGroupText} from './InputGroupText';
 import {TextInput} from '../TextInput';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 const overrides = stylex.create({
   wrap: {whiteSpace: 'normal'},
@@ -79,11 +80,9 @@ describe('InputGroupText', () => {
       </InputGroup>,
     );
 
-    const style = getComputedStyle(cellOf('https://'));
-    expect(style.display).toBe('flex');
-    expect(style.alignItems).toBe('center');
-    expect(style.whiteSpace).toBe('nowrap');
-    expect(style.flexShrink).toBe('0');
+    expectClassSet(cellOf('https://'), {
+      includes: ['flex', 'items-center', 'whitespace-nowrap', 'shrink-0'],
+    });
   });
 
   it('applies caller xstyle after its own styles (ORD1)', () => {

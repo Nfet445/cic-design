@@ -48,9 +48,7 @@ import {
 } from '../Field';
 import {Divider} from '../Divider';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
-import {reducedMotionFadeConsts} from '../motion/reducedMotion.stylex';
 import {useKeepLayerOpenProps, type LayerPlacement} from '../Layer/useLayer';
-import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import {InternalInputClearButton} from '../Field/InputClearButton';
 import {Spinner} from '../Spinner';
 import {PanelSearchInput} from '../Field/PanelSearchInput';
@@ -60,6 +58,18 @@ import {useAnnounceRenderedText} from '../hooks/useAnnounceRenderedText';
 import {tw} from '../utils/tw';
 import {SELECTOR_TRIGGER_SIZE_CLASS} from './selectorOptionClasses';
 import {
+  selectorDividerClassName,
+  selectorEmptyStateClassName,
+  selectorListboxClassName,
+  selectorListboxHiddenClassName,
+  selectorListboxInputInsetClassName,
+  selectorListboxTouchClassName,
+  selectorListboxTouchScrollClassName,
+  selectorSearchPanelClassName,
+  selectorSearchRowInsetClassName,
+  selectorSectionHeadingClassName,
+} from './selectorClasses';
+import {
   colorVars,
   spacingVars,
   radiusVars,
@@ -68,7 +78,6 @@ import {
   typographyVars,
   fontWeightVars,
   typeScaleVars,
-  borderVars,
 } from '../theme/tokens.stylex';
 import type {SelectorOptionType, SelectorOptionData} from './types';
 import {isOptionData, isDivider, isSection, normalizeOption} from './utils';
@@ -375,112 +384,9 @@ const styles = stylex.create({
     borderRadius: radiusVars['--radius-element'],
   },
 
-  // A panel with a search field, capped as a whole.
-  searchPanel: {
-    display: 'flex',
-    flexDirection: 'column',
-    // No taller than its layer's block-size cap, which folds in the software
-    // keyboard's. The search field's row keeps its height, and the list takes
-    // what is left.
-    maxHeight: stylex.firstThatWorks(
-      `calc(${layerViewportInset.maxBlockSize})`,
-      `calc(${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-  },
-
-  // Dropdown container
-  dropdown: {
-    boxSizing: 'border-box',
-    // In a search panel, the list shrinks below its content to fit the cap.
-    minHeight: 0,
-    // 300 px, and no taller than its layer's block-size cap, which folds in
-    // the software keyboard's: the list ends above the keyboard with the
-    // layer.
-    maxHeight: stylex.firstThatWorks(
-      `min(300px, ${layerViewportInset.maxBlockSize})`,
-      `min(300px, ${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-    overflowY: 'auto',
-    outline: 'none',
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-1'],
-    opacity: 1,
-    // Under Reduce Motion the list appears at once on a fine pointer, and
-    // takes the shared cross-fade on a coarse one.
-    transitionProperty: 'opacity',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-        reducedMotionFadeConsts.duration,
-      '@media (prefers-reduced-motion: reduce) and (not (pointer: coarse))':
-        '0s',
-    },
-    transitionTimingFunction: {
-      default: 'ease',
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-        reducedMotionFadeConsts.easing,
-    },
-  },
-  dropdownInput: {
-    // The input trigger's text inset includes its border. Mirror that extra
-    // pixel in the menu; the borderless secondary/ghost variants need no correction.
-    paddingInline: `calc(${spacingVars['--spacing-1']} + ${borderVars['--border-width']})`,
-  },
-  // Scroll ownership by the browser's own signal, as the menus declare it: a
-  // list whose options fit keeps every one-finger move, so a slide over the
-  // options stays a slide; one that scrolls lets the browser pan it vertically
-  // and cancel the press when it does. Both leave a two-finger pinch to the
-  // browser, so the page stays zoomable over an open list.
-  touchPinchZoom: {
-    touchAction: 'pinch-zoom',
-  },
-  touchPanYPinchZoom: {
-    touchAction: 'pan-y pinch-zoom',
-    overscrollBehavior: 'contain',
-  },
-  // Same correction for the search row's gutter, so the search field and the
-  // option rows share one left edge.
-  searchRowInput: {
-    paddingInline: `calc(${spacingVars['--spacing-1']} + ${borderVars['--border-width']})`,
-  },
-  dropdownHidden: {
-    opacity: 0,
-    // A longhand: the shorthand would lose to the list's longhands.
-    transitionProperty: 'none',
-  },
-
   // Popover container (for anchor positioning)
   popover: {
     minWidth: 'anchor-size(width)',
-  },
-
-  // Empty state
-  emptyState: {
-    padding: spacingVars['--spacing-3'],
-    textAlign: 'center',
-    color: colorVars['--color-text-secondary'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-  },
-
-  // Section heading. Plain secondary text, no rules — the same treatment
-  // DropdownMenu and CommandPaletteGroup already use for a group heading in a
-  // panel list. A labeled Divider (line–text–line) reads as a separator, and
-  // next to the search row's own divider it stacked two rules a few pixels
-  // apart.
-  sectionHeading: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    userSelect: 'none',
-  },
-
-  // Divider
-  divider: {
-    marginBlock: spacingVars['--spacing-1'],
   },
 });
 
@@ -1733,11 +1639,12 @@ export function Selector<T extends SelectorOptionType>(
           label: t('@astryx.selector.searchOptions'),
         })}
         {...themeProps('selector-search')}
-        xstyle={
+        className={tw(
+          themeProps('selector-search').className,
           surface.activePresentation === 'popover' &&
-          variant === 'input' &&
-          styles.searchRowInput
-        }
+            variant === 'input' &&
+            selectorSearchRowInsetClassName,
+        )}
         // When hasSearch is set, focus moves into this input on open, so it —
         // not the trigger — must be the combobox that reports the highlighted
         // option via aria-activedescendant (comboboxes-4). A bare searchbox
@@ -1883,7 +1790,8 @@ export function Selector<T extends SelectorOptionType>(
           role="presentation"
           {...mergeProps(
             themeProps('selector-empty-state'),
-            stylex.props(styles.emptyState),
+            undefined,
+            selectorEmptyStateClassName,
           )}>
           {isSearching ? emptySearchText : emptyText}
         </div>,
@@ -1910,7 +1818,7 @@ export function Selector<T extends SelectorOptionType>(
           <Divider
             key={`divider-${i}`}
             aria-hidden="true"
-            xstyle={styles.divider}
+            className={selectorDividerClassName}
           />,
         );
       } else if (isSection(option)) {
@@ -1940,7 +1848,8 @@ export function Selector<T extends SelectorOptionType>(
                 aria-hidden="true"
                 {...mergeProps(
                   themeProps('selector-section-heading'),
-                  stylex.props(styles.sectionHeading),
+                  undefined,
+                  selectorSectionHeadingClassName,
                 )}>
                 {option.title}
               </div>
@@ -2041,7 +1950,7 @@ export function Selector<T extends SelectorOptionType>(
     (selectedItem != null || placeholder != null);
 
   const panelContent = hasSearch ? (
-    <div {...stylex.props(styles.searchPanel)}>
+    <div className={selectorSearchPanelClassName}>
       {renderSearch()}
       <Divider />
       <div
@@ -2050,14 +1959,14 @@ export function Selector<T extends SelectorOptionType>(
         role="listbox"
         aria-label={label}
         {...listboxPress.menuProps}
-        {...stylex.props(
-          styles.dropdown,
+        className={tw(
+          selectorListboxClassName,
           listboxHasOverflow
-            ? styles.touchPanYPinchZoom
-            : styles.touchPinchZoom,
+            ? selectorListboxTouchScrollClassName
+            : selectorListboxTouchClassName,
           surface.activePresentation === 'popover' &&
             variant === 'input' &&
-            styles.dropdownInput,
+            selectorListboxInputInsetClassName,
         )}>
         {renderOptions()}
       </div>
@@ -2083,15 +1992,17 @@ export function Selector<T extends SelectorOptionType>(
           ? handleTriggerKeyDown
           : undefined
       }
-      {...stylex.props(
-        styles.dropdown,
-        listboxHasOverflow ? styles.touchPanYPinchZoom : styles.touchPinchZoom,
+      className={tw(
+        selectorListboxClassName,
+        listboxHasOverflow
+          ? selectorListboxTouchScrollClassName
+          : selectorListboxTouchClassName,
         surface.activePresentation === 'popover' &&
           variant === 'input' &&
-          styles.dropdownInput,
+          selectorListboxInputInsetClassName,
         surface.activePresentation === 'popover' &&
           !isPositioned &&
-          styles.dropdownHidden,
+          selectorListboxHiddenClassName,
       )}>
       {renderOptions()}
     </div>

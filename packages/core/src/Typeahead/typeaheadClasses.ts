@@ -5,7 +5,8 @@
  * @input Uses the theme's spacing, radius, typography, type-scale, colour and
  *   border variables, and the row's size and runtime state
  * @output The utility class strings a typeahead result row, its content slot
- *   and the default `TypeaheadItem` label, description and icon carry
+ *   and the default `TypeaheadItem` label, description and icon carry, plus
+ *   the field's text entry, its disabled cursor and the two lanes around it
  * @position Internal to BaseTypeahead and TypeaheadItem; the Tailwind build
  *   scans it for class names
  *
@@ -138,3 +139,39 @@ export const TYPEAHEAD_ITEM_DESCRIPTION_CLASS = tw(
 );
 
 export const TYPEAHEAD_ITEM_DISABLED_CLASS = 'opacity-50';
+
+/**
+ * The field's text entry: no box of its own, the field draws it. The field's
+ * own box stays on StyleX — it shares one element with
+ * `inputWrapperStyles.base`, whose unlayered `padding`, `gap`,
+ * `backgroundColor` and `boxShadow` would win over a layered class.
+ */
+export const typeaheadInputClassName = tw(
+  'block flex-1 min-w-[60px]',
+  'border-0 border-none p-0',
+  '[font-family:var(--font-family-body)]',
+  'text-[length:var(--text-body-size)] leading-[var(--text-body-leading)]',
+  // iOS Safari zooms the page when a focused control sits under 16px, and only
+  // iOS WebKit implements -webkit-touch-callout to key that floor to it.
+  'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
+  'text-[color:var(--color-text-primary)] bg-transparent outline-none',
+  'placeholder:text-[color:var(--color-text-secondary)]',
+);
+
+export const typeaheadInputDisabledClassName = 'cursor-default';
+
+/** The clear button and the busy indicator, in the field's inline end. */
+export const typeaheadEndLaneClassName = tw(
+  'flex items-center',
+  'gap-[var(--spacing-1)]',
+  'ms-auto',
+);
+
+/**
+ * The box the value may occupy. Its inline end is where the end lane begins,
+ * so a long value stops there instead of running under the clear button; `flex`
+ * with `min-w-0` yields all of its space in a narrow field.
+ */
+export const typeaheadContentLaneClassName = tw(
+  'relative flex items-center self-stretch flex-1 min-w-0',
+);

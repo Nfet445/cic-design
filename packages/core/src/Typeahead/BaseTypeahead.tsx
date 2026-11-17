@@ -58,12 +58,7 @@ import {TypeaheadItem} from './TypeaheadItem';
 import {Icon} from '../Icon';
 import {Spinner} from '../Spinner';
 import {SpinnerOwnerContext} from '../Spinner/SpinnerOwnerContext';
-import {
-  colorVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+import {colorVars, spacingVars, typeScaleVars} from '../theme/tokens.stylex';
 import {
   characterCount,
   composeEventHandlers,
@@ -78,8 +73,11 @@ import {themeProps} from '../utils/themeProps';
 import {
   TYPEAHEAD_DEFAULT_ITEM_CLASS,
   TYPEAHEAD_ROW_CONTENT_CLASS,
+  typeaheadInputClassName,
+  typeaheadInputDisabledClassName,
   typeaheadRowClassName,
 } from './typeaheadClasses';
+import {tw} from '../utils/tw';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {FOCUSABLE_SELECTOR} from '../hooks/focusableSelector';
@@ -363,34 +361,6 @@ export interface BaseTypeaheadProps<T extends SearchableItem> extends Omit<
 // =============================================================================
 
 const styles = stylex.create({
-  input: {
-    display: 'block',
-    flex: 1,
-    minWidth: '60px',
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    outline: 'none',
-    '::placeholder': {
-      color: colorVars['--color-text-secondary'],
-    },
-  },
-  inputDisabled: {
-    cursor: 'default',
-  },
   dropdown: {
     boxSizing: 'border-box',
     // Matches DROPDOWN_MAX_HEIGHT, which the room-below cap uses. It is no
@@ -2408,13 +2378,12 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
           hasAutoCorrect: false,
         })}
         {...mergeProps(
-          stylex.props(
-            styles.input,
-            isDisabled && styles.inputDisabled,
-            inputXStyle,
-            xstyle,
+          stylex.props(inputXStyle, xstyle),
+          tw(
+            typeaheadInputClassName,
+            isDisabled && typeaheadInputDisabledClassName,
+            className,
           ),
-          className,
           style,
         )}
       />

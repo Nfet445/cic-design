@@ -32,6 +32,10 @@ import * as stylex from '@stylexjs/stylex';
 import {Suspense, startTransition, use, useState} from 'react';
 import type {ReactNode} from 'react';
 import {Selector} from './Selector';
+import {
+  selectorListboxTouchClassName,
+  selectorListboxTouchScrollClassName,
+} from './selectorClasses';
 import {SelectorOption} from './SelectorOption';
 import {Item} from '../Item';
 import type {SelectorOptionData} from './types';
@@ -4038,7 +4042,7 @@ describe('Selector search affordances', () => {
     // The field is a rounded box inset from the panel edge, shaped like the
     // option rows under it — not a full-bleed header strip.
     expect(field).not.toBe(row);
-    expect(getComputedStyle(field).borderRadius).not.toBe('');
+    expectClassSet(field, {includes: ['rounded-[var(--radius-element)]']});
     // ...and a divider separates it from the options.
     const separator =
       container.ownerDocument.querySelector('[role="separator"]');
@@ -5351,19 +5355,11 @@ describe('Selector press model', () => {
     render(<Selector label="Fruit" options={OPTIONS} onChange={() => {}} />);
     await user.click(screen.getByRole('combobox'));
     const listbox = screen.getByRole('listbox', h);
-    // jsdom does not compute `touch-action`; StyleX class names hash the
-    // declaration, so the same declaration yields the same class (the dev
-    // build prefixes a debug name; the hash is the last token).
-    const touchStyles = stylex.create({
-      none: {touchAction: 'none'},
-      pinchZoom: {touchAction: 'pinch-zoom'},
-      panYPinchZoom: {touchAction: 'pan-y pinch-zoom'},
+    expectClassSet(listbox, {
+      includes: ['touch-pinch-zoom'],
+      excludes: [selectorListboxTouchScrollClassName],
     });
-    const hash = (style: stylex.StyleXStyles) =>
-      stylex.props(style).className!.split(' ').pop()!;
-    expect(listbox).toHaveClass(hash(touchStyles.pinchZoom));
-    expect(listbox).not.toHaveClass(hash(touchStyles.none));
-    expect(listbox).not.toHaveClass(hash(touchStyles.panYPinchZoom));
+    expect(selectorListboxTouchClassName).toBe('touch-pinch-zoom');
   });
 
   it('a press held still after a key lights the pressed row', async () => {
@@ -5457,12 +5453,6 @@ describe('Selector press model', () => {
   it('a long list renders its scrolling touch-action from the first open, with no class swap after the open measure', async () => {
     const user = userEvent.setup();
     const many = Array.from({length: 249}, (_, i) => `Option ${i}`);
-    const touchStyles = stylex.create({
-      pinchZoom: {touchAction: 'pinch-zoom'},
-      panYPinchZoom: {touchAction: 'pan-y pinch-zoom'},
-    });
-    const hash = (style: stylex.StyleXStyles) =>
-      stylex.props(style).className!.split(' ').pop()!;
     // A 249-row list overflows its 300 px box.
     Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
       configurable: true,
@@ -5485,10 +5475,12 @@ describe('Selector press model', () => {
       const listbox = screen.getByRole('listbox', h);
       // The class is already the scrolling one while closed, so the open
       // never swaps it (a swap restyles every row a second time).
-      expect(listbox).toHaveClass(hash(touchStyles.panYPinchZoom));
+      expectClassSet(listbox, {
+        includes: ['overscroll-contain', 'touch-pan-y'],
+      });
       const swaps: string[] = [];
       const observer = new MutationObserver(() => {
-        if (listbox.classList.contains(hash(touchStyles.pinchZoom))) {
+        if (listbox.classList.contains('touch-pinch-zoom')) {
           swaps.push(listbox.className);
         }
       });
@@ -5496,7 +5488,9 @@ describe('Selector press model', () => {
       await user.click(screen.getByRole('combobox'));
       observer.disconnect();
       expect(swaps).toEqual([]);
-      expect(listbox).toHaveClass(hash(touchStyles.panYPinchZoom));
+      expectClassSet(listbox, {
+        includes: ['overscroll-contain', 'touch-pan-y'],
+      });
     } finally {
       // jsdom defines both on Element.prototype; drop the overrides.
       delete (HTMLElement.prototype as {scrollHeight?: number}).scrollHeight;
@@ -5509,14 +5503,12 @@ describe('Selector press model', () => {
     const many = Array.from({length: 20}, (_, i) => `Option ${i}`);
     render(<Selector label="Country" options={many} onChange={() => {}} />);
     await user.click(screen.getByRole('combobox'));
-    const touchStyles = stylex.create({
-      pinchZoom: {touchAction: 'pinch-zoom'},
-    });
     // jsdom measures every element at 0 px, so the measure says it fits and
     // corrects the guess.
-    expect(screen.getByRole('listbox', h)).toHaveClass(
-      stylex.props(touchStyles.pinchZoom).className!.split(' ').pop()!,
-    );
+    expectClassSet(screen.getByRole('listbox', h), {
+      includes: ['touch-pinch-zoom'],
+      excludes: [selectorListboxTouchScrollClassName],
+    });
   });
 
   it('marks the listbox as carrying the press model', async () => {
