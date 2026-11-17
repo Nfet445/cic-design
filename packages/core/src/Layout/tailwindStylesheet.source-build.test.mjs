@@ -35,6 +35,14 @@ import {
   dropdownMenuGroupHeadingClassName,
 } from '../DropdownMenu/dropdownMenuClasses';
 import {
+  dropdownMenuSubMenuDrillInClassName,
+  dropdownMenuSubMenuFlyoutClassName,
+  dropdownMenuSubMenuScrollClassName,
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+  dropdownMenuSubMenuTriggerClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
+import {
   alertDialogActionsRowClassName,
   alertDialogStackedActionClassName,
 } from '../AlertDialog/alertDialogClasses';
@@ -1700,6 +1708,20 @@ function familyClassNames() {
       size: 'md',
     }),
   );
+  add(dropdownMenuSubMenuDrillInClassName);
+  add(dropdownMenuSubMenuFlyoutClassName);
+  add(dropdownMenuSubMenuScrollClassName);
+  add(dropdownMenuSubMenuTouchClassName);
+  add(dropdownMenuSubMenuTouchPinchClassName);
+  for (const isOpen of [true, false]) {
+    add(
+      dropdownMenuSubMenuTriggerClassName({
+        isDisabled: false,
+        size: 'md',
+        isOpen,
+      }),
+    );
+  }
 
   return [...names].sort();
 }
@@ -1738,8 +1760,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // The display-and-feedback family added Card's thirteen variant
     // backgrounds, four elevation variables and its sizing classes, which took
     // the sheet from 1016 rules to 1042 — so the ceiling moved to 1050, not to
-    // a multiple of that family.
-    expect(stylesheet.rules.size).toBeLessThan(1050);
+    // a multiple of that family. The sub-menu's flyout surface, its scroll
+    // gesture and the two cap fallbacks under `@supports` took it to 1055, so
+    // the ceiling moved to 1060.
+    expect(stylesheet.rules.size).toBeLessThan(1060);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

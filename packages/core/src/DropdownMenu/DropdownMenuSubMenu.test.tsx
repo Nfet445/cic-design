@@ -22,6 +22,11 @@ import * as stylex from '@stylexjs/stylex';
 import {DropdownMenu} from './DropdownMenu';
 import {DropdownMenuItem} from './DropdownMenuItem';
 import {DropdownMenuSubMenu} from './DropdownMenuSubMenu';
+import {
+  dropdownMenuSubMenuFlyoutClassName,
+  dropdownMenuSubMenuScrollClassName,
+} from './dropdownMenuSubMenuClasses';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {warmMenuBottomSheet} from './__tests__/warmMenuBottomSheet';
 import {IconButton} from '../IconButton';
 import {RadioList, RadioListItem} from '../RadioList';
@@ -126,10 +131,12 @@ describe('DropdownMenuSubMenu', () => {
     );
     expect(popover).toHaveStyle({minWidth: 'var(--x-minWidth)'});
     expect(popover?.getAttribute('style')).toContain('min(640px, calc(100vw');
-    expect(flyout).toHaveStyle(
-      'max-height: min(300px,min(calc(100dvb - calc(max(var(--spacing-4), env(safe-area-inset-top, 0px)) + var(--astryx-layer-inset-block-start, 0px)) - calc(max(var(--spacing-4), env(safe-area-inset-bottom, 0px)) + var(--astryx-layer-inset-block-end, 0px))), var(--_layer-keyboard-max-block-size, 100dvb)))',
-    );
-    expect(flyout).not.toHaveStyle({overflowY: 'auto'});
+    // jsdom cannot parse the built sheet, so the flyout's own cap and its
+    // scroll are read as the classes it carries.
+    expectClassSet(flyout, {
+      includes: dropdownMenuSubMenuFlyoutClassName.split(' '),
+      excludes: [dropdownMenuSubMenuScrollClassName],
+    });
     expect(flyout).toHaveAttribute('tabindex', '-1');
 
     Object.defineProperties(flyout, {
@@ -139,7 +146,9 @@ describe('DropdownMenuSubMenu', () => {
     fireEvent(window, new Event('resize'));
 
     await waitFor(() => {
-      expect(flyout).toHaveStyle({overflowY: 'auto'});
+      expectClassSet(flyout, {
+        includes: dropdownMenuSubMenuScrollClassName.split(' '),
+      });
       expect(flyout).toHaveAttribute('tabindex', '0');
     });
   });
