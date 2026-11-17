@@ -20,7 +20,7 @@ import {
   vi,
 } from 'vitest';
 import {act, cleanup, fireEvent, render, screen} from '@testing-library/react';
-import {layerOnlyWhilePressed, rulesDeclaredFor} from '../__tests__/pressState';
+import {layerOnlyWhilePressed} from '../__tests__/pressState';
 import {
   classesOf,
   expectClassSet,
@@ -1568,12 +1568,12 @@ describe('swipe', () => {
     ).toBe(panel);
     // The window clips to the row's resting box and takes no touch; the
     // track that paints sits beside it at rest, so nothing shows.
-    const windowRules = rulesDeclaredFor(panel).join(';');
-    expect(windowRules).toContain('overflow: clip');
-    expect(windowRules).toContain('pointer-events: none');
-    const trackRules = rulesDeclaredFor(trackOf(row, 'leading')).join(';');
-    expect(trackRules).toContain('inset-inline-end: 100%');
-    expect(trackRules).not.toContain('padding');
+    expect(classesOf(panel)).toContain('overflow-clip');
+    expect(classesOf(panel)).toContain('pointer-events-none');
+    // The track sits at the inline end, and paints no padding of its own.
+    const trackClasses = classesOf(trackOf(row, 'leading'));
+    expect(trackClasses).toContain('end-full');
+    expect(trackClasses.filter(c => /^p[xy]?-/.test(c))).toEqual([]);
     // Nothing moved: the root carries no translation of the swipe's.
     expect(row.style.getPropertyValue('translate')).toBe('');
   });
@@ -1600,33 +1600,47 @@ describe('swipe', () => {
     // wrapper. The gesture wrote that geometry on the window: 144 px of
     // entries. The outermost adds its slide by the full swipe's confirm. No
     // entry's opacity reads the confirm: a cover hides the others at once.
-    const travel = 'var(--_item-swipe-travel,0px)';
-    const confirm = 'var(--_item-swipe-confirm,0)';
-    const declared = (element: Element | null, property: string) =>
-      rulesDeclaredFor(element as HTMLElement)
-        .flatMap(rule =>
-          rule.slice(rule.indexOf('{') + 1, rule.lastIndexOf('}')).split(';'),
-        )
-        .map(declaration => declaration.replace(/\s+/g, ''))
-        .filter(declaration => declaration.startsWith(`${property}:`));
-    const pinned = `calc(var(--_item-swipe-pin,0px)-var(--_item-swipe-sign,1)*min(var(--_item-swipe-sign,1)*${travel},var(--_item-swipe-open,0px)))`;
-    expect(declared(row, 'transform')).toEqual([
-      `transform:translate3d(${travel},0,0)`,
-    ]);
-    expect(declared(panelOf(row, 'leading'), 'transform')).toEqual([
-      `transform:translate3d(calc(-1*${travel}),0,0)`,
-    ]);
-    expect(declared(trackOf(row, 'leading'), 'transform')).toEqual([
-      `transform:translate3d(${travel},0,0)`,
-    ]);
+    // Each part moves by a class that reads only the gesture's variables; the
+    // class names carry the values, so the assertions read them from there. The
+    // class map escapes the variable name's leading underscore for the build
+    // (`\_`), so the class the element carries spells it plainly.
+    const translations = (element: Element | null) =>
+      classesOf(element as Element).filter(c => c.includes('translate3d'));
+    const varsRead = (className: string) =>
+      new Set(Array.from(className.matchAll(/var\(([^,)]+)/g), m => m[1]));
     const [other, outermost] = entriesOf(row, 'leading');
-    expect(declared(other, 'transform')).toEqual([
-      `transform:translate3d(${pinned},0,0)`,
-    ]);
-    expect(declared(other, 'opacity')).toEqual([]);
-    expect(declared(outermost, 'transform')).toEqual([
-      `transform:translate3d(calc(${pinned}+var(--_item-swipe-slide,0px)*${confirm}),0,0)`,
-    ]);
+    expect(translations(row)).toEqual([]);
+    const [panelTransform] = translations(panelOf(row, 'leading'));
+    expect(panelTransform).toContain(
+      'translate3d(calc(-1*var(--_item-swipe-travel,0px)),0,0)',
+    );
+    const [trackTransform] = translations(trackOf(row, 'leading'));
+    expect(trackTransform).toContain(
+      'translate3d(var(--_item-swipe-travel,0px),0,0)',
+    );
+    const [entryTransform] = translations(other);
+    expect(varsRead(entryTransform)).toEqual(
+      new Set([
+        '--_item-swipe-pin',
+        '--_item-swipe-sign',
+        '--_item-swipe-travel',
+        '--_item-swipe-open',
+      ]),
+    );
+    // The outer entry adds the two the full swipe writes, and moves by the same
+    // travel as the others.
+    const [outerTransform] = translations(outermost).filter(c =>
+      c.includes('confirm'),
+    );
+    expect(varsRead(outerTransform)).toEqual(
+      new Set([
+        ...varsRead(entryTransform),
+        '--_item-swipe-slide',
+        '--_item-swipe-confirm',
+      ]),
+    );
+    // No entry's opacity reads the confirm: a cover hides the others at once.
+    expect(classesOf(other).filter(c => c.startsWith('opacity-'))).toEqual([]);
     const geometry = (panelOf(row, 'leading') as HTMLElement).style;
     expect(geometry.getPropertyValue('--_item-swipe-pin')).toBe('144px');
     expect(geometry.getPropertyValue('--_item-swipe-sign')).toBe('1');
@@ -2604,7 +2618,7 @@ describe('swipe', () => {
         openRow(row);
         const [other] = entriesOf(row, 'leading');
         const isHidden = (element: Element) =>
-          rulesDeclaredFor(element).some(rule => rule.includes('opacity: 0'));
+          element.classList.contains('opacity-0');
         const f = finger(row);
         f.down(10);
         f.move(20);
@@ -2644,11 +2658,9 @@ describe('swipe', () => {
 
       describe('the cover', () => {
         const isHidden = (element: Element) =>
-          rulesDeclaredFor(element).some(rule => rule.includes('opacity: 0'));
+          element.classList.contains('opacity-0');
         const isCovered = (row: HTMLElement) =>
-          rulesDeclaredFor(trackOf(row, 'leading')).some(
-            rule => rule.includes('::before') && rule.includes('opacity: 1'),
-          );
+          trackOf(row, 'leading').classList.contains('before:opacity-100');
 
         it('keeps the outermost entry over the panel from the confirm until the row is home, with no frame of the other', async () => {
           const outer = vi.fn();
@@ -2927,14 +2939,8 @@ describe('swipe', () => {
         // opacity stays free for the cover. A disabled outermost entry never
         // confirms, so the track's cover fill never shows.
         const [, outer] = entriesOf(row, 'trailing');
-        const rules = rulesDeclaredFor(outer);
-        expect(rules.some(r => /filter: opacity\(0?\.5\)/.test(r))).toBe(true);
-        expect(
-          rules.some(
-            r =>
-              r.includes('::after') && r.includes('background-color: inherit'),
-          ),
-        ).toBe(true);
+        expect(classesOf(outer)).toContain('[filter:opacity(0.5)]');
+        expect(classesOf(outer)).toContain('after:bg-[inherit]');
       });
     });
 
@@ -2956,16 +2962,8 @@ describe('swipe', () => {
       });
       const leading = trackOf(row, 'leading');
       const trailing = trackOf(row, 'trailing');
-      expect(
-        rulesDeclaredFor(leading).some(r =>
-          r.includes('flex-direction: row-reverse'),
-        ),
-      ).toBe(true);
-      expect(
-        rulesDeclaredFor(trailing).some(r =>
-          r.includes('flex-direction: row-reverse'),
-        ),
-      ).toBe(false);
+      expect(classesOf(leading)).toContain('flex-row-reverse');
+      expect(classesOf(trailing)).not.toContain('flex-row-reverse');
       // The outermost entry is the last one, at the outer end. Its colour is
       // painted beside it out to the outer edge (a pseudo-element, no element),
       // so a slide-out fills the row with it. At rest, the track's cover fill
@@ -2974,18 +2972,10 @@ describe('swipe', () => {
       const [archiveEntry, deleteEntry] = entriesOf(row, 'trailing');
       expect(deleteEntry).toHaveTextContent('Delete');
       const outerFill = (entry: HTMLElement) =>
-        rulesDeclaredFor(entry).some(
-          r => r.includes('::after') && r.includes('background-color: inherit'),
-        );
+        classesOf(entry).includes('after:bg-[inherit]');
       expect(outerFill(deleteEntry)).toBe(true);
       expect(outerFill(archiveEntry)).toBe(false);
-      expect(
-        rulesDeclaredFor(trailing).some(
-          r =>
-            r.includes('::before') &&
-            r.includes('background-color: var(--color-error'),
-        ),
-      ).toBe(true);
+      expect(classesOf(trailing)).toContain('before:bg-[var(--color-error)]');
     });
   });
 

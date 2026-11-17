@@ -10,11 +10,14 @@ Parent: `00-epic-stylex-to-tailwind-4`
 
 Turn the two `defineMarker()` scopes into private attributes. A marker cannot flip while any consumer still calls `stylex.when.ancestor`: the StyleX compiler rejects a bare attribute selector as an ancestor condition ("Attribute selector must end with `]`") and requires a `defineMarker()` value. So this ticket waits until Indicator, CheckboxInput, RadioList, DropdownMenu, Selector and Token are class-based.
 
+This ticket also owns the last `stylex.when.ancestor` consumer that a class cannot express at all: `Overlay/OverlayScrim.tsx`'s `showOn` reveal arms, which read the `overlayScope` marker applied in `Overlay/Overlay.tsx:126` and `Overlay/useOverlay.tsx:207`. It moved here from ticket 49 because the marker flip is the same edit.
+
 ## Files
 
 - `packages/core/src/Indicator/indicator.markers.stylex.ts`
 - `packages/core/src/internal/indicatorPress.stylex.ts`
 - the `stylex.when.ancestor` call sites: `Indicator/CheckboxIndicator.tsx`, `Indicator/RadioIndicator.tsx`, `CheckboxInput/CheckboxInput.tsx`, `RadioList/RadioListItem.tsx`
+- `packages/core/src/Overlay/OverlayScrim.tsx`, with `Overlay/Overlay.tsx:126` and `Overlay/useOverlay.tsx:207` where the `overlayScope` marker is applied
 
 ## Done when
 

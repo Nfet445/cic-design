@@ -48,8 +48,17 @@ the template needs the same vocabulary as the component. Two shapes appear
 today and each has an obvious replacement:
 
 - `stylex.create` in a showcase block → a local `const styles = {…}` of class
-  strings, joined with `tw()`. The library's `tw()` is exported for consumers,
-  so a template may import it.
+  strings in the same file, joined with a plain template literal. `tw()` is not
+  reachable from a consumer: `packages/core/src/utils/index.ts` does not export
+  it, so a template must not import it.
+
+A template stays one file. `packages/cli/api/template/copy/copy.mjs:148` writes
+one destination per `match.filePath`, `packages/cli/foundation/discovery/template-adapter.mjs:1171`
+and `:1186` pin a page to `page.tsx` and a block to `<Name>.tsx`, and
+`scripts/sync-templates.js:52-71` mirrors `page.tsx` only. A `*Classes.ts`
+beside a template would be referenced by the copied file and never emitted.
+Multi-file emission belongs to ticket 34.
+
 - `xstyle={styles.x}` passed into a component → `className={`${styles.x} …`}`
   on the same component. `className` lands after the component's own classes
   and stays unlayered, so it wins exactly where `xstyle` won.
