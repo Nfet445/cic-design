@@ -157,6 +157,19 @@ import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
 import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
 import {describe, expect, it} from 'vitest';
 import {
+  breadcrumbButtonResetClassName,
+  breadcrumbChevronClassName,
+  breadcrumbContentClassName,
+  breadcrumbCurrentClassName,
+  breadcrumbCurrentColorClassName,
+  breadcrumbItemClassName,
+  breadcrumbLinkClassName,
+  breadcrumbLinkColorClassName,
+  breadcrumbSeparatorClassName,
+  breadcrumbSizeClassName,
+  breadcrumbStartIconClassName,
+} from '../Breadcrumbs/breadcrumbItemClasses';
+import {
   citationClassName,
   citationIconClassName,
   citationIconWrapClassName,
@@ -677,6 +690,20 @@ function familyClassNames() {
       }
     }
   }
+  for (const variant of ['default', 'supporting']) {
+    add(breadcrumbSizeClassName[variant]);
+    add(breadcrumbCurrentColorClassName[variant]);
+  }
+  add(breadcrumbItemClassName);
+  add(breadcrumbContentClassName);
+  add(breadcrumbLinkClassName);
+  add(breadcrumbButtonResetClassName);
+  add(breadcrumbLinkColorClassName);
+  add(breadcrumbCurrentClassName);
+  add(breadcrumbStartIconClassName);
+  add(breadcrumbSeparatorClassName);
+  add(breadcrumbChevronClassName);
+
   add(citationIconWrapClassName);
   add(citationIconClassName);
   add(citationLabelTextClassName);
