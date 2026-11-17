@@ -27,6 +27,12 @@ import * as commentActionsClasses from './Comments/commentActionsClasses';
 import * as commentMarkdownClasses from './Comments/commentMarkdownClasses';
 import * as commentPartsClasses from './Comments/commentPartsClasses';
 import * as commentRowClasses from './Comments/commentRowClasses';
+import * as circleCheckClasses from './CircleCheckIndicator/circleCheckClasses';
+import {
+  circleBarClassName,
+  circleCheckmarkClassName,
+  circleClassName,
+} from './CircleCheckIndicator/circleCheckClasses';
 import * as commentsClasses from './Comments/commentsClasses';
 import * as dialogHeroHeaderClasses from './DialogHeroHeader/dialogHeroHeaderClasses';
 import * as diffViewerClasses from './DiffViewer/diffViewerClasses';
@@ -72,6 +78,7 @@ function labClassNames() {
     commentMarkdownClasses,
     commentPartsClasses,
     commentRowClasses,
+    circleCheckClasses,
     commentsClasses,
     dialogHeroHeaderClasses,
     diffViewerClasses,
@@ -87,6 +94,10 @@ function labClassNames() {
     transferListClasses,
   ]) {
     for (const [name, value] of Object.entries(map)) {
+      // A factory takes its state as an argument; its arms are added below.
+      if (typeof value === 'function') {
+        continue;
+      }
       if (name.endsWith('ClassName')) {
         add(value);
       } else if (name.endsWith('ClassNames')) {
@@ -95,6 +106,16 @@ function labClassNames() {
         }
       }
     }
+  }
+  // The circle's maps are factories, so each state and size is named here.
+  for (const size of ['sm', 'md']) {
+    add(circleClassName({size, isFilled: true, isDisabled: false}));
+    add(circleClassName({size, isFilled: false, isDisabled: false}));
+    add(circleClassName({size, isFilled: false, isDisabled: true}));
+    add(circleCheckmarkClassName({size, isVisible: true}));
+    add(circleCheckmarkClassName({size, isVisible: false}));
+    add(circleBarClassName({size, isVisible: true}));
+    add(circleBarClassName({size, isVisible: false}));
   }
   return [...names];
 }

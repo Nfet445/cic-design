@@ -5,7 +5,7 @@
  * @input UIKit measurements on the iOS 26.2 simulator
  * @output Exports `circleCheckTable`: the circle's geometry at two text sizes
  *   (pt)
- * @position Internal to CircleCheckIndicator; circleCheck.stylex.ts mirrors it
+ * @position Internal to CircleCheckIndicator; circleCheckClasses.ts mirrors it
  *
  * The circle is a Lab component, so its measurements live beside it. Core's
  * UIKit table holds only what Core's own components play.
