@@ -17,7 +17,6 @@
  */
 
 import {useId} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Button} from '../Button/Button';
 import {Dialog} from '../Dialog/Dialog';
 import {Heading} from '../Heading/Heading';
@@ -37,10 +36,6 @@ export interface SheetConfirmationProps {
   actionLabel: string;
   onAction: () => void;
 }
-
-const styles = stylex.create({
-  action: {width: '100%'},
-});
 
 export function SheetConfirmation({
   isOpen,
@@ -82,7 +77,7 @@ export function SheetConfirmation({
                 variant="destructive"
                 size="lg"
                 onClick={onAction}
-                xstyle={styles.action}
+                className="w-full"
               />
               <Button
                 label={cancelLabel}
@@ -90,7 +85,7 @@ export function SheetConfirmation({
                 size="lg"
                 onClick={() => onOpenChange(false)}
                 data-autofocus
-                xstyle={styles.action}
+                className="w-full"
               />
             </Stack>
           </LayoutFooter>
