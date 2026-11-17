@@ -9,18 +9,33 @@
  * SYNC: When AspectRatio.tsx changes, update tests to match new behavior
  */
 
-import {describe, it, expect, vi} from 'vitest';
+import {beforeAll, describe, it, expect, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {AspectRatio} from './AspectRatio';
+import {classesOf, stylesheetOf} from '../__tests__/classNameAssertions';
+import type {Stylesheet} from '../__tests__/classNameAssertions';
+import {
+  aspectRatioChildCenterClassName,
+  aspectRatioChildContainClassName,
+  aspectRatioChildCoverClassName,
+  aspectRatioChildFillClassName,
+  aspectRatioRatioClassName,
+} from './aspectRatioClasses';
+import {buildAstryxTailwindCss} from '../../scripts/build-css-tailwind.mjs';
+
+let sheet: Stylesheet;
+
+beforeAll(async () => {
+  sheet = stylesheetOf(await buildAstryxTailwindCss());
+});
 
 /**
- * The ratio compiles to a class-level `aspect-ratio: var(--x-aspectRatio)`
- * declaration with the value carried by a CSS variable (so xstyle/@media
- * and unlayered consumer CSS overrides can win). `--x-aspectRatio` is the
- * debug-mode variable name emitted for the `aspectRatio` property.
+ * The ratio is a class-level `aspect-ratio: var(--_aspect-ratio)` declaration
+ * with the value carried by a private variable, so xstyle/@media rules and
+ * unlayered consumer CSS can still win.
  */
 function ratioVar(el: HTMLElement): string {
-  return el.style.getPropertyValue('--x-aspectRatio');
+  return el.style.getPropertyValue('--_aspect-ratio');
 }
 
 function ratioValue(ratio: number): string {
@@ -205,6 +220,11 @@ describe('AspectRatio', () => {
       // it.
       expect(element.style.aspectRatio).toBe('');
       expect(ratioVar(element)).toBe(ratioValue(3 / 1));
+      // The built sheet declares it once, off the private variable.
+      expect(classesOf(element)).toContain(aspectRatioRatioClassName);
+      expect(sheet.blockOf(aspectRatioRatioClassName)).toContain(
+        'aspect-ratio:var(--_aspect-ratio)',
+      );
     });
 
     it('lets a consumer inline style win over the class-level ratio', () => {
@@ -275,9 +295,15 @@ describe('AspectRatio', () => {
       expect(wrapper).not.toHaveAttribute('data-astryx-aspect-ratio-override');
       // Without fit the wrapper carries no child-sizing styles, so existing
       // self-styled children render exactly as before.
-      expect(wrapper?.className).not.toContain('childFill');
-      expect(wrapper?.className).not.toContain('childCover');
-      expect(wrapper?.className).not.toContain('childContain');
+      for (const token of aspectRatioChildFillClassName.split(' ')) {
+        expect(classesOf(wrapper!)).not.toContain(token);
+      }
+      for (const token of aspectRatioChildCoverClassName.split(' ')) {
+        expect(classesOf(wrapper!)).not.toContain(token);
+      }
+      for (const token of aspectRatioChildContainClassName.split(' ')) {
+        expect(classesOf(wrapper!)).not.toContain(token);
+      }
       expect(screen.getByTestId('image')).not.toHaveAttribute('class');
     });
 
@@ -308,9 +334,15 @@ describe('AspectRatio', () => {
         </AspectRatio>,
       );
       const wrapper = screen.getByTestId('image').parentElement;
-      expect(wrapper?.className).toContain('childFill');
-      expect(wrapper?.className).toContain('childCover');
-      expect(wrapper?.className).not.toContain('childContain');
+      expect(classesOf(wrapper!)).toEqual(
+        expect.arrayContaining(aspectRatioChildFillClassName.split(' ')),
+      );
+      expect(classesOf(wrapper!)).toEqual(
+        expect.arrayContaining(aspectRatioChildCoverClassName.split(' ')),
+      );
+      for (const token of aspectRatioChildContainClassName.split(' ')) {
+        expect(classesOf(wrapper!)).not.toContain(token);
+      }
     });
 
     it('sizes the child from the wrapper with fit="contain"', () => {
@@ -320,9 +352,15 @@ describe('AspectRatio', () => {
         </AspectRatio>,
       );
       const wrapper = screen.getByTestId('image').parentElement;
-      expect(wrapper?.className).toContain('childFill');
-      expect(wrapper?.className).toContain('childContain');
-      expect(wrapper?.className).not.toContain('childCover');
+      expect(classesOf(wrapper!)).toEqual(
+        expect.arrayContaining(aspectRatioChildFillClassName.split(' ')),
+      );
+      expect(classesOf(wrapper!)).toEqual(
+        expect.arrayContaining(aspectRatioChildContainClassName.split(' ')),
+      );
+      for (const token of aspectRatioChildCoverClassName.split(' ')) {
+        expect(classesOf(wrapper!)).not.toContain(token);
+      }
     });
 
     it('centers the child via the wrapper with fit="center"', () => {
@@ -334,8 +372,12 @@ describe('AspectRatio', () => {
       const image = screen.getByTestId('image');
       expect(image).not.toHaveAttribute('class');
       const wrapper = image.parentElement;
-      expect(wrapper?.className).toContain('childCenter');
-      expect(wrapper?.className).not.toContain('childFill');
+      expect(classesOf(wrapper!)).toEqual(
+        expect.arrayContaining(aspectRatioChildCenterClassName.split(' ')),
+      );
+      for (const token of aspectRatioChildFillClassName.split(' ')) {
+        expect(classesOf(wrapper!)).not.toContain(token);
+      }
     });
 
     it('does not center the wrapper for other fit values', () => {
@@ -345,7 +387,9 @@ describe('AspectRatio', () => {
         </AspectRatio>,
       );
       const wrapper = screen.getByTestId('image').parentElement;
-      expect(wrapper?.className).not.toContain('childCenter');
+      for (const token of aspectRatioChildCenterClassName.split(' ')) {
+        expect(classesOf(wrapper!)).not.toContain(token);
+      }
     });
   });
 
