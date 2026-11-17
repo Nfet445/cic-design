@@ -128,6 +128,27 @@ import {
   filterPlaceholderClassName,
   filterTriggerClassName,
 } from '../Table/plugins/filtering/filterClasses';
+import {
+  paginationActivePageClassName,
+  paginationCompactFirstClassName,
+  paginationCompactLastClassName,
+  paginationControlsClassName,
+  paginationDotActiveClassName,
+  paginationDotClassName,
+  paginationDotDisabledClassName,
+  paginationDotSmClassName,
+  paginationDotsContainerClassName,
+  paginationEllipsisClassName,
+  paginationEllipsisSmClassName,
+  paginationInfoTextClassName,
+  paginationInputGroupClassName,
+  paginationInputLabelClassName,
+  paginationInputLabelSmClassName,
+  paginationInputTotalClassName,
+  paginationInputTotalSmClassName,
+  paginationPageSizeSelectorClassName,
+  paginationRootClassName,
+} from '../Pagination/paginationClasses';
 import {SELECTION_CELL_CLASS} from '../Table/plugins/selection/selectionClasses';
 import {
   TABLE_HEADER_LABEL_ROW_CLASS,
@@ -738,6 +759,30 @@ function familyClassNames() {
   add(tokenLabelClassName);
   add(tokenLabelHiddenClassName);
   add(tokenRemoveButtonClassName);
+
+  for (const className of [
+    paginationRootClassName,
+    paginationControlsClassName,
+    paginationCompactFirstClassName,
+    paginationCompactLastClassName,
+    paginationEllipsisClassName,
+    paginationEllipsisSmClassName,
+    paginationInfoTextClassName,
+    paginationDotsContainerClassName,
+    paginationDotClassName,
+    paginationDotSmClassName,
+    paginationDotActiveClassName,
+    paginationDotDisabledClassName,
+    paginationActivePageClassName,
+    paginationInputGroupClassName,
+    paginationInputLabelClassName,
+    paginationInputLabelSmClassName,
+    paginationInputTotalClassName,
+    paginationInputTotalSmClassName,
+    paginationPageSizeSelectorClassName,
+  ]) {
+    add(className);
+  }
 
   add(citationIconWrapClassName);
   add(citationIconClassName);
