@@ -365,6 +365,7 @@ import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {kbdKeyClassName, kbdWrapperClassName} from '../Kbd/kbdClasses';
 import {infoTipTriggerClassName} from '../InfoTip/infoTipClasses';
 import {navIconClassName} from '../NavIcon/navIconClasses';
+import {formLayoutDirectionClassName} from '../FormLayout/formLayoutClasses';
 import {
   panelSearchInputFieldClassName,
   panelSearchInputIconClassName,
@@ -2783,6 +2784,10 @@ function familyClassNames() {
   add(infoTipTriggerClassName);
   // NavIcon: the one accent disc.
   add(navIconClassName);
+  // FormLayout: one arrangement per direction.
+  for (const direction of ['vertical', 'horizontal', 'horizontal-labels']) {
+    add(formLayoutDirectionClassName[direction]);
+  }
   // FieldStatus: the message box in both placements, the detached content row
   // and glyph, and one fill per status type.
   add(fieldStatusBaseClassName);
