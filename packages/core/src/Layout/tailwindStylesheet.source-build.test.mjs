@@ -495,6 +495,8 @@ import {
   rtlCenterInlineBlockOffsetClassName,
   rtlCenterInlineClassName,
 } from '../utils/rtlClasses';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
 import {inputStatusIconButtonClassName} from '../hooks/inputStatusIconClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
@@ -2329,6 +2331,9 @@ function familyClassNames() {
   // as an overlay above the wrapper's content.
   add(focusOwnerRingClassName);
   add(focusOwnerOverlayRingClassName);
+  // The shared ring and the system's hover and press overlay as class arms.
+  add(focusOutlineFocusVisibleClassName);
+  add(interactionOverlayBackgroundImageClassName);
   // The press paint a row hands down to a box, and the layer a coarse pointer
   // keeps under a control for the whole release.
   add(rowPressPaintCheckboxRowClassName);
