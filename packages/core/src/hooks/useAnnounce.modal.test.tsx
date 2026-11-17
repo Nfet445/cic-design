@@ -21,7 +21,15 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import {BottomSheet} from '../BottomSheet/BottomSheet';
 import {Dialog} from '../Dialog/Dialog';
 import {Drawer} from '../Drawer/Drawer';
@@ -33,6 +41,18 @@ import {DropdownMenu} from '../DropdownMenu/DropdownMenu';
 import {useBusyAnnouncement} from './useBusyAnnouncement';
 import {ModalAnnounceProvider} from './ModalAnnounceProvider';
 import {__resetLiveRegionsForTest, useAnnounce} from './useAnnounce';
+
+// jsdom has neither the popover API nor the UA rule that paints a
+// `popover-open` dialog, so it applies `dialog:not([open]) {display: none}`
+// to every non-modal sheet and hides its subtree from every role query. This
+// mirrors the browser rule (`dialog:popover-open {display: block}`) so the
+// announce route, not the paint, is what these tests read.
+beforeAll(() => {
+  const style = document.createElement('style');
+  style.textContent =
+    'dialog[popover]:not([open]), dialog:not([open]) {display: block}';
+  document.head.appendChild(style);
+});
 
 function Owner({
   message = 'Added Design',

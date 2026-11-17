@@ -70,9 +70,6 @@
 import type {ReactNode} from 'react';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
-import * as stylex from '@stylexjs/stylex';
-import {colorVars, spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
-
 import {
   HStack,
   Layout,
@@ -86,6 +83,7 @@ import {Button} from '@astryxdesign/core/Button';
 import {Card} from '@astryxdesign/core/Card';
 import {Icon} from '@astryxdesign/core/Icon';
 import {ProgressBar} from '@astryxdesign/core/ProgressBar';
+import {colorVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {Selector} from '@astryxdesign/core/Selector';
 import {
   Table,
@@ -663,7 +661,7 @@ const MODEL_COLUMN_MIN_WIDTH = 236;
  */
 const CELL_CONTENT_HEIGHT = 24;
 
-const styles = stylex.create({
+const styles = {
   // The winner's wash, filling the whole cell rather than hugging the figure.
   // At a glance the reader is looking for which *column* wins a row, and a
   // full cell is a target the eye can land on from the far side of the table
@@ -684,30 +682,15 @@ const styles = stylex.create({
   // units move to primary text so normal-weight copy keeps AA contrast on the
   // dark neutral blue wash. The ranking therefore also survives for readers
   // who cannot separate the hues and in a greyscale print.
-  best: {
-    backgroundColor: colorVars['--color-background-blue'],
-    boxSizing: 'content-box',
-    marginBlock: `calc(-1 * ${spacingVars['--spacing-3']})`,
-    marginInline: `calc(-1 * ${spacingVars['--spacing-4']})`,
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-  },
+  best: 'box-content -mx-4 -my-3 px-4 py-3 bg-[var(--color-background-blue)]',
   // Keep the card inside the content lane so Table's own wrapper, rather than
   // an outer page surface, owns horizontal overflow and sticky positioning.
-  tableFrame: {
-    width: '100%',
-    maxWidth: '100%',
-    minWidth: 0,
-  },
+  tableFrame: 'w-full max-w-full min-w-0',
   // #6222 pins the plugin-owned chevron while preserving custom headers'
   // full-row layout. Pin this template's heading after that 16px control and
   // its two 4px gutters, so both remain visible without overlapping.
-  groupHeading: {
-    position: 'sticky',
-    insetInlineStart: spacingVars['--spacing-6'],
-    width: 'fit-content',
-  },
-});
+  groupHeading: 'sticky [inset-inline-start:var(--spacing-6)] w-fit',
+} as const;
 
 /**
  * One column's heading: the model picker, whose clear control doubles as
@@ -855,7 +838,7 @@ function ScoreBar({value, isBest}: {value: number; isBest: boolean}) {
       vAlign="center"
       hAlign="end"
       height={CELL_CONTENT_HEIGHT}
-      xstyle={isBest ? styles.best : undefined}>
+      className={isBest ? styles.best : undefined}>
       <HStack width={56} vAlign="center">
         <ProgressBar
           label={`Score ${decimal.format(value)} out of 100`}
@@ -1337,7 +1320,7 @@ export default function ModelComparisonTemplate() {
                 vAlign="center"
                 hAlign="end"
                 height={CELL_CONTENT_HEIGHT}
-                xstyle={isBest ? styles.best : undefined}>
+                className={isBest ? styles.best : undefined}>
                 {number}
                 {/* Same size as the figure it qualifies, held apart by colour
                     rather than scale — `large` is semibold by default, which
@@ -1371,7 +1354,7 @@ export default function ModelComparisonTemplate() {
     // pins its own chevron without constraining custom content; this heading
     // pins beside that control so both remain reachable while scrolling.
     renderGroupHeader: groupKey => (
-      <HStack gap={2} vAlign="center" xstyle={styles.groupHeading}>
+      <HStack gap={2} vAlign="center" className={styles.groupHeading}>
         {/* Sized as a heading rather than bold body text: these are the only
             landmarks in a long matrix, and the criteria count they used to
             carry was a number nobody acts on.
@@ -1441,7 +1424,7 @@ export default function ModelComparisonTemplate() {
               `--container-padding-inline-*` and inset the first and last
               columns' contents by it. That is what makes the two outer
               gutters equal without either column knowing about the other. */}
-          <Card padding={5} xstyle={styles.tableFrame}>
+          <Card padding={5} className={styles.tableFrame}>
             <Table<SpecRow>
               data={grouped.data}
               columns={columns}

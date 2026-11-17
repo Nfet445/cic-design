@@ -21,7 +21,6 @@
  */
 
 import {useMemo, useState, type CSSProperties} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   VStack,
   HStack,
@@ -453,43 +452,22 @@ const DONUT_GAP_ANGLE =
 
 // ============= SHARED PIECES =============
 
-const pageStyles = stylex.create({
-  contentBottomPad: {
-    paddingBlockEnd: 'var(--spacing-10)',
-  },
+const pageStyles = {
+  contentBottomPad: '[padding-block-end:var(--spacing-10)]',
   // The header and each Section run full-bleed so their dividers reach the
   // viewport edges; the column inside them is what gets capped and centered.
-  contentColumn: {
-    width: '100%',
-    maxWidth: 1440,
-    marginInline: 'auto',
-  },
+  contentColumn: 'w-full max-w-[1440px] mx-auto',
   // Risk rows carry no action, so ListItem's interactive treatment (pointer
   // cursor, pressed state) would be a lie. This is the hover half only — a hint
   // that the hover card exists — guarded so it never sticks on touch.
-  riskRow: {
-    transitionProperty: 'background-color',
-    transitionDuration: 'var(--duration-fast-min)',
-    transitionTimingFunction: 'var(--ease-standard)',
-    backgroundColor: 'transparent',
-    ':hover': {
-      backgroundColor: {
-        default: null,
-        '@media (hover: hover)': 'var(--color-overlay-hover)',
-      },
-    },
-  },
+  riskRow:
+    'transition-[background-color] [transition-duration:var(--duration-fast-min)] [transition-timing-function:var(--ease-standard)] bg-transparent [@media(hover:hover)]:hover:bg-[var(--color-overlay-hover)]',
   // Rows run the full width of the card, so the hover card has to cap itself.
-  riskDetail: {
-    maxWidth: 320,
-  },
-  // Fixed frame so the ring's px radii stay exact.
-  donutFrame: {
-    width: DONUT_SIZE,
-    height: DONUT_SIZE,
-    flexShrink: 0,
-  },
-});
+  riskDetail: 'max-w-[320px]',
+  // Fixed frame so the ring's px radii stay exact; the size matches
+  // DONUT_SIZE, which the chart radii are built from.
+  donutFrame: 'size-[208px] shrink-0',
+} as const;
 
 // Icon's `color` prop takes semantic names only, but a legend swatch has to
 // match its series color exactly, so this one reaches for an inline color.
@@ -578,7 +556,7 @@ function ProgramHeader({
         vAlign="center"
         hAlign="between"
         wrap="wrap"
-        xstyle={pageStyles.contentColumn}>
+        className={pageStyles.contentColumn}>
         <VStack gap={1}>
           <Heading level={1}>Aurora Launch</Heading>
           <HStack gap={2} vAlign="center">
@@ -770,7 +748,7 @@ function TaskProgressDonut() {
       {/* Fixed size rather than a ResponsiveContainer: the ring geometry is
           deliberate, and the card wraps the legend under it rather than
           shrinking it. */}
-      <div {...stylex.props(pageStyles.donutFrame)}>
+      <div className={pageStyles.donutFrame}>
         <PieChart
           width={DONUT_SIZE}
           height={DONUT_SIZE}
@@ -930,7 +908,7 @@ function RiskRow({risk}: {risk: Risk}) {
       // reachable without a pointer, and `aria-describedby` reads it out.
       tabIndex={0}
       aria-describedby={hoverCard.describedBy}
-      xstyle={pageStyles.riskRow}
+      className={pageStyles.riskRow}
       label={risk.title}
       description={`${risk.workstream} · ${PHASE_LABEL[risk.phase]} · ${risk.owner}`}
       endContent={
@@ -942,7 +920,7 @@ function RiskRow({risk}: {risk: Risk}) {
           {/* Inside the row, where the popover `<span>` is valid markup and
               out of flow; a sibling of the `<li>` would not be. */}
           {hoverCard.renderHoverCard(
-            <VStack gap={2} xstyle={pageStyles.riskDetail}>
+            <VStack gap={2} className={pageStyles.riskDetail}>
               <Text type="body" weight="semibold">
                 {risk.title}
               </Text>
@@ -1069,9 +1047,9 @@ export default function ProjectStatusPage() {
       height="fill"
       header={<ProgramHeader phase={phase} onPhaseChange={setPhase} />}
       content={
-        <LayoutContent padding={0} xstyle={pageStyles.contentBottomPad}>
+        <LayoutContent padding={0} className={pageStyles.contentBottomPad}>
           <Section padding={6} dividers={['bottom']}>
-            <VStack gap={6} xstyle={pageStyles.contentColumn}>
+            <VStack gap={6} className={pageStyles.contentColumn}>
               <SectionHeading
                 title="Milestone timeline"
                 hint={`Project days 0–${TIMELINE_DAYS} · dashed line marks today`}
@@ -1085,7 +1063,7 @@ export default function ProjectStatusPage() {
           </Section>
 
           <Section padding={6} paddingBlock={10}>
-            <VStack gap={6} xstyle={pageStyles.contentColumn}>
+            <VStack gap={6} className={pageStyles.contentColumn}>
               <Grid gap={4} columns={{minWidth: 320, max: 3}}>
                 <Card padding={6}>
                   <VStack gap={5}>

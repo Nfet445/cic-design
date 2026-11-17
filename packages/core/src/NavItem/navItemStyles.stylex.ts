@@ -18,6 +18,8 @@
  * `focusOutlineProps.focusVisible` (utils/focusOutline.stylex.ts) at the call
  * site, on whichever element actually takes focus — in a split-action row that
  * is the link and the toggle, not the row that contains them.
+ * @deprecated Internal appearance seam: it is not a public API and it
+ *   disappears when StyleX leaves the package.
  */
 
 export type NavItemSize = 'sm' | 'md' | 'lg';

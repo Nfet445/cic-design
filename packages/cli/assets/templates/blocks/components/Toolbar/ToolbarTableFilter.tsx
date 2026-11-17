@@ -3,12 +3,6 @@
 'use client';
 
 import {useMemo, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  borderVars,
-  colorVars,
-  radiusVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import {Toolbar} from '@astryxdesign/core/Toolbar';
 import {Selector} from '@astryxdesign/core/Selector';
 import {TextInput} from '@astryxdesign/core/TextInput';
@@ -101,94 +95,51 @@ const COLUMNS: TableColumn<Job>[] = [
   {key: 'priority', header: 'Priority', width: pixel(90)},
 ];
 
-/**
- * Width held back inside the clause slot for the readout that sits in it.
- *
- * The readout lives in the slot the overflow list measures, so without this
- * the list would count its width as room for another clause and push it off
- * the end. The slot pays for it as padding — the one part of the box the
- * measurement already subtracts — and the readout takes it back with a
- * matching negative margin, so it draws over the reserve and still lands
- * against the last clause rather than at the row's far edge.
- */
-const READOUT_RESERVE = 116;
-
-const styles = stylex.create({
-  toolbarRow: {
-    // Grow so the row spans the toolbar: the clause slot inside it can only
-    // measure the width it is actually given.
-    flexGrow: 1,
-    minWidth: 0,
-  },
+// The slot holds 116px back for the readout (see below) and the readout takes
+// that width back with a matching negative margin.
+const styles = {
+  // Grow so the row spans the toolbar: the clause slot inside it can only
+  // measure the width it is actually given.
+  toolbarRow: 'grow min-w-0',
   // Containment, not just a min-width reset: the reset lets flex squeeze this
   // slot, but the toolbar's own slot still floors at the width this one
   // reports it needs — the clauses at full length. Containment makes that
   // report independent of the clauses, so the row settles inside the toolbar
   // and the list finally reads a width that narrows. The popover it opens is
   // portalled, so nothing the reader needs is inside the clip.
-  clauseSlot: {
-    display: 'flex',
-    alignItems: 'center',
-    minWidth: 0,
-    overflow: 'hidden',
-    containerType: 'inline-size',
-    // The held-back width, as padding (see READOUT_RESERVE).
-    paddingInlineEnd: READOUT_RESERVE,
-  },
+  clauseSlot:
+    'flex items-center min-w-0 overflow-hidden [container-type:inline-size] [padding-inline-end:116px]',
   // Fixed: the field is the row's anchor, so it keeps one width in every
   // state. It still gives before the readout does, but only once the clauses
   // have folded away and there is nothing else left to take.
-  searchSlot: {
-    flexShrink: 1,
-    minWidth: 120,
-    width: 120,
-  },
+  searchSlot: 'shrink min-w-[120px] w-[120px]',
   // The fill a control switches to once it carries a value, so a set clause is
   // legible as engaged at a glance rather than only by reading it. This is the
   // token ToggleButton paints for its own pressed state, so a set selector and
   // a pressed control land on the same value over the same backdrop instead of
   // two neighbouring shades of engaged.
-  filterFill: {
-    backgroundColor: colorVars['--color-overlay-pressed'],
-  },
+  filterFill: 'bg-[var(--color-overlay-pressed)]',
   // A ghost Button has no chrome at all, so the border is what puts the count
   // in the same family as the unset selectors it stands in for. Left unfilled
   // deliberately: the fill means "this control carries a value", and the count
   // carries none of its own — it stands in for clauses that may or may not be
   // set.
-  overflowChip: {
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border-emphasized'],
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: colorVars['--color-background-surface'],
-  },
+  overflowChip:
+    'border-solid [border-width:var(--border-width)] border-[var(--color-border-emphasized)] rounded-[var(--radius-element)] bg-[var(--color-background-surface)]',
   // Shrink-wrapped to the clauses actually on the row. As a flex item the
   // list's basis is its unfolded content, which is wider than the slot, so it
   // would otherwise settle at the slot's full width and strand the readout at
   // the far edge with a gap where the folded clauses used to be. The list
   // measures the slot, not itself, so sizing it to its visible children costs
   // the fold nothing.
-  clauseList: {
-    flexGrow: 0,
-    flexShrink: 0,
-    width: 'max-content',
-    maxWidth: '100%',
-  },
+  clauseList: 'grow-0 shrink-0 w-max max-w-full',
   // Takes back the width the slot held back for it, so the readout draws over
   // the reserve and lands against the last clause. The gap to that clause is a
   // margin rather than the row's `gap`, because a gap would fall on the
   // measured side of the reserve and cost the clauses those pixels.
-  readout: {
-    flexShrink: 0,
-    whiteSpace: 'nowrap',
-    marginInlineStart: 8,
-    marginInlineEnd: -READOUT_RESERVE,
-  },
-  viewPanel: {
-    width: 320,
-  },
-});
+  readout: 'shrink-0 whitespace-nowrap ms-2 -me-[116px]',
+  viewPanel: 'w-[320px]',
+} as const;
 
 export default function ToolbarTableFilter() {
   const [search, setSearch] = useState('');
@@ -231,7 +182,9 @@ export default function ToolbarTableFilter() {
       hasClear
       options={field.options}
       value={clauses[field.key] ?? null}
-      controlXstyle={clauses[field.key] != null ? styles.filterFill : undefined}
+      controlClassName={
+        clauses[field.key] != null ? styles.filterFill : undefined
+      }
       onChange={value => setClauses(prev => ({...prev, [field.key]: value}))}
       renderValue={option =>
         `${field.label} is ${option.label ?? option.value}`
@@ -240,7 +193,7 @@ export default function ToolbarTableFilter() {
   ));
 
   const viewOptions = (
-    <VStack gap={3} xstyle={styles.viewPanel}>
+    <VStack gap={3} className={styles.viewPanel}>
       <Heading level={3}>Columns</Heading>
       <CheckboxList
         label="Displayed columns"
@@ -279,12 +232,12 @@ export default function ToolbarTableFilter() {
             gap={2}
             vAlign="center"
             wrap="nowrap"
-            xstyle={styles.toolbarRow}>
+            className={styles.toolbarRow}>
             {/* Search leads the row as the broadest filter, and sits outside
                 the overflow list so it is never the clause that folds — a
                 hidden search box reads as a missing feature, not a folded
                 one. */}
-            <StackItem xstyle={styles.searchSlot}>
+            <StackItem className={styles.searchSlot}>
               <TextInput
                 label="Search jobs"
                 isLabelHidden
@@ -300,11 +253,11 @@ export default function ToolbarTableFilter() {
             {/* The slot, not the list, carries the sizing: as the row's only
                 grower it settles at whatever the search box and the trailing
                 controls leave, and the list reads that. */}
-            <StackItem size="fill" xstyle={styles.clauseSlot}>
+            <StackItem size="fill" className={styles.clauseSlot}>
               <OverflowList
                 behavior="observeParent"
                 gap={2}
-                xstyle={styles.clauseList}
+                className={styles.clauseList}
                 // No floor on how many stay out: at this width a set clause
                 // reads as a whole sentence ("Status is Overdue"), and pinning
                 // one to the row would push the readout off the end. The count
@@ -330,7 +283,7 @@ export default function ToolbarTableFilter() {
                       tooltip={`${overflowItems.length} more filters`}
                       variant="ghost"
                       size="sm"
-                      xstyle={styles.overflowChip}
+                      className={styles.overflowChip}
                     />
                   </Popover>
                 )}>
@@ -346,7 +299,7 @@ export default function ToolbarTableFilter() {
                 gap={2}
                 vAlign="center"
                 wrap="nowrap"
-                xstyle={styles.readout}>
+                className={styles.readout}>
                 <Text type="supporting" color="secondary">
                   {results.length} of {JOBS.length}
                 </Text>

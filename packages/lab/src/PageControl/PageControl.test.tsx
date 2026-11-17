@@ -411,7 +411,7 @@ describe('PageControl', () => {
       const reduced = 'opacity 0.2s cubic-bezier(0.42, 0, 0.58, 1)';
       const fadeOfLook = () => ({
         platter: slider.style.getPropertyValue(
-          '--_page-control-platter-transition',
+          '--astryx-page-control-platter-transition',
         ),
         dots: Array.from(
           slider.querySelectorAll<HTMLElement>('[data-page]'),
@@ -714,10 +714,10 @@ describe('PageControl', () => {
     const html = renderToString(
       <PageControl totalPages={50} page={27} onChange={() => {}} />,
     );
-    const rest = /--_page-control-rest:\s*([\d.]+)px/.exec(html);
+    const rest = /--astryx-page-control-rest:\s*([\d.]+)px/.exec(html);
     expect(rest).not.toBeNull();
     expect(Number(rest?.[1])).toBeGreaterThan(0);
-    expect(html).toMatch(/--_page-control-scale:\s*0\.967/);
+    expect(html).toMatch(/--astryx-page-control-scale:\s*0\.967/);
   });
 
   it('with hidesForSinglePage, renders nothing for one page', () => {

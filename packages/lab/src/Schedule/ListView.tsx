@@ -9,7 +9,6 @@
  * @position Concrete schedule view; exported as createScheduleListView
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {
   plainDateAddDays,
   plainDateFromInstant,
@@ -18,6 +17,18 @@ import {
   type PlainDate,
 } from '@astryxdesign/core/utils';
 import {Heading} from '@astryxdesign/core/Text';
+import {tw} from '../tw';
+import {
+  scheduleListClassName,
+  scheduleListDayClassName,
+  scheduleListDayHeadingClassName,
+  scheduleListDayLastClassName,
+  scheduleListDayNumberClassName,
+  scheduleListDayNumberCurrentClassName,
+  scheduleListDayNumberTextClassName,
+  scheduleListEventsClassName,
+  scheduleListNowRowClassName,
+} from './scheduleClasses';
 import {
   enumerateDates,
   eventOccursOnDate,
@@ -34,7 +45,6 @@ import {
   ListEventRow,
   ScheduleFrame,
   ScheduleRangeMonthTitle,
-  styles,
   useScheduleCalendar,
 } from './shared';
 import {useCurrentTime} from './useCurrentTime';
@@ -87,20 +97,20 @@ function ScheduleListView(
       title={<ScheduleRangeMonthTitle start={range.startDate} end={endDate} />}
       titleLabel={titleLabel}
       isLoading={isLoading}>
-      <div {...stylex.props(styles.list)}>
+      <div className={tw(scheduleListClassName)}>
         {visibleDays.map(({day, dayEvents, isCurrentDay}, index) => (
           <section
             key={plainDateToISO(day)}
-            {...stylex.props(
-              styles.listDay,
-              index === visibleDays.length - 1 && styles.listDayLast,
+            className={tw(
+              scheduleListDayClassName,
+              index === visibleDays.length - 1 && scheduleListDayLastClassName,
             )}>
             <ListDayHeading
               day={day}
               isCurrentDay={isCurrentDay}
               headingLevel={headingLevel}
             />
-            <div {...stylex.props(styles.listEvents)}>
+            <div className={tw(scheduleListEventsClassName)}>
               {renderListRows({
                 events: dayEvents,
                 timezoneID,
@@ -133,13 +143,13 @@ function ListDayHeading({
       display="block"
       aria-label={formatFullDate(day, locale, calendar)}
       aria-current={isCurrentDay ? 'date' : undefined}
-      xstyle={styles.listDayHeading}>
+      className={scheduleListDayHeadingClassName}>
       <span
-        {...stylex.props(
-          styles.listDayNumber,
-          isCurrentDay && styles.listDayNumberCurrent,
+        className={tw(
+          scheduleListDayNumberClassName,
+          isCurrentDay && scheduleListDayNumberCurrentClassName,
         )}>
-        <span {...stylex.props(styles.listDayNumberText)}>
+        <span className={tw(scheduleListDayNumberTextClassName)}>
           {formatDayNumber(day, locale, calendar)}
         </span>
       </span>
@@ -173,7 +183,11 @@ function renderListRows({
   }
 
   const marker = (
-    <div key="current-time" aria-hidden {...stylex.props(styles.listNowRow)} />
+    <div
+      key="current-time"
+      aria-hidden
+      className={tw(scheduleListNowRowClassName)}
+    />
   );
   const insertIndex = events.findIndex(
     event => !isDayEvent(event) && event.start > currentTime,

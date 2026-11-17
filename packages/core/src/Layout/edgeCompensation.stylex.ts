@@ -24,6 +24,8 @@
  * just declare eligibility.
  *
  * SYNC: When modified, update /packages/core/src/Layout/Layout.doc.mjs
+ * @deprecated Internal layout seam: it is not a public API and it
+ *   disappears when StyleX leaves the package.
  */
 
 import * as stylex from '@stylexjs/stylex';

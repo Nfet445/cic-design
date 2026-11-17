@@ -276,7 +276,10 @@ export function usePageControlTouch({
     }
     const transition = isRelease ? reduced : 'none';
     // The platter is the root's ::before: its fade is a custom property.
-    root.style.setProperty('--_page-control-platter-transition', transition);
+    root.style.setProperty(
+      '--astryx-page-control-platter-transition',
+      transition,
+    );
     for (const dot of Array.from(
       stripRef.current?.children ?? [],
     ) as HTMLElement[]) {

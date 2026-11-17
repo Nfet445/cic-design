@@ -19,6 +19,9 @@
  * CheckboxInput, RadioListItem, ClickableCard, SelectableCard, Thumbnail),
  * Button (a tracked action sizes its `:active` image to zero) and
  * scripts/build-css.test.mjs.
+ * @deprecated Internal seam: it is not a public API and it disappears
+ *   when StyleX leaves the package.
+ *
  */
 
 // Every surface that paints a press uses one of these styles, so a change to

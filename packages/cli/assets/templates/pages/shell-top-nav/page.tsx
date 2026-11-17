@@ -2,7 +2,6 @@
 
 'use client';
 
-import * as stylex from '@stylexjs/stylex';
 import {AppShell} from '@astryxdesign/core/AppShell';
 import {
   TopNav,
@@ -41,17 +40,17 @@ import {
   MoonIcon,
 } from '@heroicons/react/24/outline';
 
-const styles = stylex.create({
+const styles = {
   // Cap + center the page body so wide screens show whitespace gutters.
-  contentMax: {maxWidth: 1100, marginInline: 'auto'},
+  contentMax: 'max-w-[1100px] mx-auto',
   // Lock both mega-menu panels to an identical size. Without this, Shop and
   // Brands size to their own content (different widths); since both anchor to
   // the centered nav, switching between them resizes the panel — which reads
   // as flashing/jumping. Fixed item + featured widths make the panels
   // pixel-identical so the transition is seamless.
-  megaItems: {gridColumn: '1 / -1', width: 520},
-  megaFeatured: {width: 240},
-});
+  megaItems: 'col-span-full w-[520px]',
+  megaFeatured: 'w-[240px]',
+} as const;
 
 type MegaItem = {name: string; tagline: string; icon: IconType};
 
@@ -100,7 +99,7 @@ const CATEGORY_TILES = [
 // area is exactly the same width regardless of its content.
 function MegaItems({items}: {items: MegaItem[]}) {
   return (
-    <Stack xstyle={styles.megaItems}>
+    <Stack className={styles.megaItems}>
       <Grid columns={2} gap={2}>
         {items.map(item => (
           <TopNavMegaMenuItem
@@ -126,7 +125,7 @@ function MegaFeatured(props: {
   linkHref: string;
 }) {
   return (
-    <Stack xstyle={styles.megaFeatured}>
+    <Stack className={styles.megaFeatured}>
       <TopNavMegaMenuFeaturedCard {...props} />
     </Stack>
   );
@@ -202,7 +201,7 @@ export default function ShellTopNav() {
           }
         />
       }>
-      <VStack gap={10} xstyle={styles.contentMax}>
+      <VStack gap={10} className={styles.contentMax}>
         <Card variant="muted" padding={0} width="100%" height={360} />
 
         {[0, 1, 2].map(section => (

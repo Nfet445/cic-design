@@ -8,7 +8,7 @@ export const doc = {
   name: 'usePanGesture — A draggable box',
   displayName: 'usePanGesture — A draggable box',
   description:
-    'The smallest pan example, in two forms side by side: the usePanGesture hook and the createPanGesture factory. The factory takes any element, React or not. Each card names its API, follows a drag from a finger, a mouse or a pen, and springs back, with the same StyleX styles. A starting point for a draggable tile, a swipe or any drag-and-release gesture.',
+    'The smallest pan example, in two forms side by side: the usePanGesture hook and the createPanGesture factory. The factory takes any element, React or not. Each card names its API, follows a drag from a finger, a mouse or a pen, and springs back, reading its place from the `--astryx-box-x` and `--astryx-box-y` variables. A starting point for a draggable tile, a swipe or any drag-and-release gesture.',
   isReady: true,
   aspectRatio: 4 / 3,
   componentsUsed: ['Card', 'Center', 'HStack'],

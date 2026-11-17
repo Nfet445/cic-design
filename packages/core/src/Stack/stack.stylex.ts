@@ -7,6 +7,8 @@
  * @position Layout utility; used by HStack, VStack components
  *
  * SYNC: When modified, update /packages/core/src/Stack/Stack.doc.mjs
+ * @deprecated Import `Stack/stackClasses.ts` instead. This module
+ *   disappears when StyleX leaves the package.
  */
 
 import * as stylex from '@stylexjs/stylex';

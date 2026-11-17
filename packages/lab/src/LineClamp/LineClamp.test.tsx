@@ -22,6 +22,7 @@ import {
 import {CheckboxInput} from '@astryxdesign/core/CheckboxInput';
 import {Switch} from '@astryxdesign/core/Switch';
 import {LineClamp} from './LineClamp';
+import {lineClampClassName} from './lineClampClasses';
 
 // jsdom has no layout engine, so content never actually overflows and
 // isTruncated stays false, the same constraint core's Text.test.tsx works
@@ -85,6 +86,9 @@ describe('LineClamp', () => {
       </LineClamp>,
     );
     expect(screen.getByText('Content')).toHaveClass('custom-class');
+    expect(screen.getByText('Content')).toHaveClass(
+      ...lineClampClassName.split(' '),
+    );
   });
 
   // jsdom still can't lay out real text, so `-webkit-line-clamp` never
