@@ -96,17 +96,35 @@ import {Token} from '../Token';
 import {Spinner} from '../Spinner';
 import {SpinnerOwnerContext} from '../Spinner/SpinnerOwnerContext';
 import {useEndLaneReserve} from './useEndLaneReserve';
+import {
+  tokenizerEndLaneClassName,
+  tokenizerEndLaneInGroupClassName,
+  tokenizerEndLaneInGroupWithTokensClassName,
+  tokenizerEndLaneSizeClassName,
+  tokenizerGroupedTrackClassName,
+  tokenizerGroupedTrackContentClassName,
+  tokenizerGroupedTrackContentTruncatedClassName,
+  tokenizerGroupedTrackFadeBothClassName,
+  tokenizerGroupedTrackFadeEndClassName,
+  tokenizerGroupedTrackFadeStartClassName,
+  tokenizerIdleSpinnerClassName,
+  tokenizerLayerClassName,
+  tokenizerOverflowTextClassName,
+  tokenizerSheetFieldClassName,
+  tokenizerSheetTriggerClassName,
+  tokenizerSheetFieldDisabledClassName,
+  tokenizerSheetTriggerPlaceholderClassName,
+  tokenizerSheetTriggerPlaceholderDisabledClassName,
+  tokenizerSheetTriggerWithTokensClassName,
+  tokenizerStartIconWithTokensClassName,
+  tokenizerTokenClassName,
+} from './tokenizerClasses';
 import {renderIconSlot, type IconType} from '../Icon';
 import {OverflowList} from '../OverflowList';
 import {useLayer} from '../Layer/useLayer';
 import {useTooltip} from '../Tooltip';
 import {useAnnounce} from '../hooks/useAnnounce';
-import {
-  colorVars,
-  spacingVars,
-  sizeVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+import {colorVars, spacingVars, sizeVars} from '../theme/tokens.stylex';
 import {groupStyles} from '../InputGroup/groupStyles';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
@@ -116,6 +134,7 @@ import type {
   SearchSource,
 } from '../Typeahead/types';
 import {composeEventHandlers, mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {getInputARIA, joinAriaIDs} from '../utils/inputAria';
 import {isFocusDetached} from '../utils/isFocusDetached';
 import {removeControlOf} from '../privateAttributes/tokenRemove.stylex';
@@ -425,18 +444,22 @@ const TOKEN_ROW_INSET = `calc(${spacingVars['--spacing-1']} - 1px)`;
  * the strip's focus-ring bleed, so a faded edge never paints into the row
  * padding.
  */
-const TRACK_FADE_INSET = `calc(${TOKEN_ROW_INSET} + ${spacingVars['--spacing-6']})`;
-const TRACK_FADE_FROM_LEFT = `linear-gradient(to right, transparent ${TOKEN_ROW_INSET}, black ${TRACK_FADE_INSET})`;
-const TRACK_FADE_FROM_RIGHT = `linear-gradient(to left, transparent ${TOKEN_ROW_INSET}, black ${TRACK_FADE_INSET})`;
 // Kept in sync with useEndLaneReserve: wrapperWithTokens reads the custom
 // property directly, to keep token rows and the input short of the lane.
-const END_LANE_RESERVE_VAR = '--_tokenizer-end-lane-reserve';
+const END_LANE_RESERVE_VAR = '--astryx-tokenizer-end-lane-reserve';
 const INPUT_TEXT_INSET = `calc(${spacingVars['--spacing-2']} - ${spacingVars['--spacing-1']} + 1px)`;
 // The content width an empty, focused input has beyond its inset, so its
 // caret has room to draw.
 const INPUT_CARET_ROOM = '2px';
 
 const styles = stylex.create({
+  // The field's box and the input's own states stay here. The wrapper is the
+  // same element as `inputWrapperStyles.base`, and `groupStyles.inGroup`
+  // before it: their unlayered `padding`, `gap`, `flex-wrap` and `height` win
+  // over any class in the `astryx-base` layer, so the row's insets and its
+  // truncation arms must be declared here too. The input states face the same
+  // tie against `typeaheadInputClassName`'s own `flex` and `min-w` utilities,
+  // where the sheet's order — not the state — would decide.
   wrapper: {
     position: 'relative',
     flexWrap: 'wrap',
@@ -460,42 +483,6 @@ const styles = stylex.create({
     paddingInlineEnd: `calc(${TOKEN_ROW_INSET} + var(${END_LANE_RESERVE_VAR}, 0px))`,
     // Row gap must match paddingBlock so wrapped rows look evenly spaced.
     rowGap: TOKEN_ROW_INSET,
-  },
-  startIconWithTokens: {
-    // Restore the default 8px inline-start inset when tokens are present,
-    // since wrapperWithTokens reduces padding to 3px for border concentricity.
-    marginInlineStart: `calc(${spacingVars['--spacing-2']} - ${spacingVars['--spacing-1']} + 1px)`,
-    position: 'relative',
-    zIndex: 1,
-  },
-  token: {
-    display: 'flex',
-    flexShrink: 0,
-    // A renderToken wrapper sizes to its content; cap it at the row so the
-    // pill inside truncates instead of running past the field.
-    maxWidth: '100%',
-    position: 'relative',
-    zIndex: 1,
-  },
-  endSection: {
-    position: 'absolute',
-    // Match the field's inline padding (inputWrapperStyles.base uses
-    // spacing-2) so end content (clear button, resultCount) lines up with
-    // the text/start-icon inset instead of hugging the border at ~3px.
-    insetInlineEnd: END_LANE_INSET,
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    flexShrink: 0,
-    zIndex: 1,
-  },
-  idleSpinner: {
-    // Hides the Spinner's own box too, which a theme may paint, and covers
-    // engines without content-visibility. Both keep the box's size.
-    visibility: 'hidden',
-    // Skips the ring's rendering, and with it the infinite arc animation,
-    // while the root keeps its own explicit, themed width and height.
-    contentVisibility: 'hidden',
   },
   inputAtMax: {
     width: 0,
@@ -557,73 +544,6 @@ const styles = stylex.create({
     // 3px block padding).
     flexWrap: 'nowrap',
   },
-  inGroupTrack: {
-    // The grouped row keeps to one line by scrolling, and only this track
-    // scrolls. The end lane is its sibling, so tokens are clipped beside the
-    // end controls instead of painting under them, and the controls hold the
-    // row's inline end while the tokens move. useScrollableArea owns the
-    // overflow declarations.
-    display: 'flex',
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    flex: '1 1 0',
-    minWidth: 0,
-    // A scroll container clips at its own padding edge. Bleed back out to the
-    // row's, so a token's focus ring keeps the room the row padding gives it.
-    margin: `calc(-1 * ${TOKEN_ROW_INSET})`,
-    padding: TOKEN_ROW_INSET,
-    // A native scrollbar would take most of a 28-32px row. The edge fades
-    // show what is out of view instead, and the keyboard reaches it through
-    // the remove buttons or, when disabled, through the track itself. Forced
-    // colors restore the platform scrollbar.
-    scrollbarWidth: {
-      default: 'none',
-      // A classic scrollbar at full width takes half the row.
-      '@media (forced-colors: active)': 'thin',
-    },
-    scrollPaddingInline: TRACK_FADE_INSET,
-  },
-  inGroupTrackContent: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    flex: 'none',
-    // At least the track's width, so the input can take what the tokens
-    // leave; wider once they overflow, which is the range the track scrolls.
-    minWidth: '100%',
-  },
-  inGroupTrackContentTruncated: {
-    // The "+N more" summary measures this box, so it holds the track's width.
-    width: '100%',
-  },
-  // Each fade masks an edge that hides tokens. Forced colors drop the fades,
-  // since the native scrollbar is back there.
-  trackFadeStart: {
-    maskImage: {
-      default: TRACK_FADE_FROM_LEFT,
-      ':dir(rtl)': {
-        default: TRACK_FADE_FROM_RIGHT,
-        '@media (forced-colors: active)': 'none',
-      },
-      '@media (forced-colors: active)': 'none',
-    },
-  },
-  trackFadeEnd: {
-    maskImage: {
-      default: TRACK_FADE_FROM_RIGHT,
-      ':dir(rtl)': {
-        default: TRACK_FADE_FROM_LEFT,
-        '@media (forced-colors: active)': 'none',
-      },
-      '@media (forced-colors: active)': 'none',
-    },
-  },
-  trackFadeBoth: {
-    maskImage: {
-      default: `linear-gradient(to right, transparent ${TOKEN_ROW_INSET}, black ${TRACK_FADE_INSET}, black calc(100% - ${TRACK_FADE_INSET}), transparent calc(100% - ${TOKEN_ROW_INSET}))`,
-      '@media (forced-colors: active)': 'none',
-    },
-  },
   inGroupInput: {
     // Always in flow after the last token. The empty-query hit surface of
     // inputCompact keeps a wrapping field from growing a blank row; a grouped
@@ -633,107 +553,6 @@ const styles = stylex.create({
     width: 0,
     paddingInlineStart: `calc(${spacingVars['--spacing-2']} - ${spacingVars['--spacing-1']} + 1px)`,
   },
-  inGroupEndSection: {
-    // In flow beside the track: with one row there is no first row to pin to,
-    // so the lane takes its own width out of the row and needs no measuring.
-    position: 'static',
-    transform: 'none',
-    // Give back the gap the track's bleed takes.
-    marginInlineStart: TOKEN_ROW_INSET,
-  },
-  inGroupEndSectionWithTokens: {
-    // Restore the lane's 8px inset from the border, since wrapperWithTokens
-    // reduces the row padding to 3px.
-    marginInlineEnd: `calc(${END_LANE_INSET} - ${TOKEN_ROW_INSET})`,
-  },
-  layerPopover: {
-    // Top-layer popover: match the anchor width exactly so the expanded
-    // tokenizer looks like an in-place expansion, overlapping the
-    // placeholder from its top edge.
-    width: 'anchor-size(width)',
-  },
-  overflowText: {
-    flexShrink: 0,
-    whiteSpace: 'nowrap',
-    fontSize: typeScaleVars['--text-supporting-size'],
-    color: colorVars['--color-text-secondary'],
-    paddingInline: spacingVars['--spacing-1'],
-  },
-  // The sheet presentation's field: the inline field's own control box. A
-  // button cannot contain controls, so the trigger, the tokens and the end lane
-  // are siblings in this box. `endContent` and a custom token can then hold their
-  // own controls. There is no input to type into, so the cursor says "press".
-  sheetField: {
-    width: '100%',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // The box carries no aria-disabled: that would expose a caller's operable
-  // `endContent` as disabled. The trigger carries it, so the box keys its
-  // disabled cursor on the prop.
-  sheetFieldDisabled: {
-    cursor: 'default',
-  },
-  // With tokens, the button covers the box beneath them. A tap on a token or
-  // on empty space then opens the sheet. The box draws the focus ring, so the
-  // button draws none.
-  sheetTrigger: {
-    appearance: 'none',
-    flexGrow: 1,
-    alignSelf: 'stretch',
-    display: 'flex',
-    alignItems: 'center',
-    minWidth: 0,
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-    color: 'inherit',
-    textAlign: 'start',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    outline: 'none',
-  },
-  sheetTriggerWithTokens: {
-    position: 'absolute',
-    inset: 0,
-  },
-  // An aria-disabled button gets no system disabled paint in forced colors;
-  // GrayText is the platform's disabled affordance there. Defaults repeat the
-  // base values, since StyleX merges per property.
-  sheetTriggerDisabled: {
-    borderColor: {
-      default: colorVars['--color-border-emphasized'],
-      '@media (forced-colors: active)': 'GrayText',
-    },
-    color: {
-      default: null,
-      '@media (forced-colors: active)': 'GrayText',
-    },
-  },
-  sheetTriggerPlaceholder: {
-    color: colorVars['--color-text-secondary'],
-    // Match the input's text inset so the placeholder sits where the typed
-    // query would.
-    paddingInline: spacingVars['--spacing-1'],
-  },
-  sheetTriggerPlaceholderDisabled: {
-    color: {
-      default: colorVars['--color-text-secondary'],
-      '@media (forced-colors: active)': 'GrayText',
-    },
-  },
-  // A Token authors its own color, which forced colors replace with
-  // CanvasText; GrayText marks the tokens of a disabled trigger as disabled.
-  // The default repeats Token's own default color.
   sheetTokenDisabled: {
     color: {
       default: colorVars['--color-text-primary'],
@@ -746,21 +565,6 @@ const sizeStyles = stylex.create({
   sm: {minHeight: sizeVars['--size-element-sm']},
   md: {minHeight: sizeVars['--size-element-md']},
   lg: {minHeight: sizeVars['--size-element-lg']},
-});
-
-const endSectionSizeStyles = stylex.create({
-  sm: {
-    top: `calc(${sizeVars['--size-element-sm']} / 2 - 1px)`,
-    transform: 'translateY(-50%)',
-  },
-  md: {
-    top: `calc(${sizeVars['--size-element-md']} / 2 - 1px)`,
-    transform: 'translateY(-50%)',
-  },
-  lg: {
-    top: `calc(${sizeVars['--size-element-lg']} / 2 - 1px)`,
-    transform: 'translateY(-50%)',
-  },
 });
 
 const truncatedSizeStyles = stylex.create({
@@ -883,7 +687,7 @@ function TokenizerSheetHost<T extends SearchableItem>(
 function EndLane({
   lane,
   laneRef,
-  laneXStyle,
+  laneClassName,
   loadingLabel,
   anchorRef,
   hasStaticContent,
@@ -892,7 +696,7 @@ function EndLane({
 }: {
   lane: BusyIndicatorLane;
   laneRef?: (node: HTMLElement | null) => void;
-  laneXStyle: stylex.StyleXStyles[];
+  laneClassName: string;
   loadingLabel: string;
   anchorRef: RefObject<Element | null>;
   hasStaticContent: boolean;
@@ -908,7 +712,7 @@ function EndLane({
     return null;
   }
   return (
-    <div ref={laneRef} {...stylex.props(laneXStyle)}>
+    <div ref={laneRef} className={laneClassName}>
       {(isBusy || hasBusySlot) && (
         // Named, never live: the tokenizer announces its search.
         <SpinnerOwnerContext value={true}>
@@ -920,7 +724,7 @@ function EndLane({
             aria-label={loadingLabel}
             role="img"
             aria-hidden={isBusy ? undefined : true}
-            xstyle={isBusy ? undefined : styles.idleSpinner}
+            className={isBusy ? undefined : tokenizerIdleSpinnerClassName}
           />
         </SpinnerOwnerContext>
       )}
@@ -934,12 +738,12 @@ function trackFade(inline: ScrollAxisState) {
     return null;
   }
   if (!inline.atStart && !inline.atEnd) {
-    return styles.trackFadeBoth;
+    return tokenizerGroupedTrackFadeBothClassName;
   }
   if (!inline.atStart) {
-    return styles.trackFadeStart;
+    return tokenizerGroupedTrackFadeStartClassName;
   }
-  return inline.atEnd ? null : styles.trackFadeEnd;
+  return inline.atEnd ? null : tokenizerGroupedTrackFadeEndClassName;
 }
 
 /**
@@ -989,15 +793,18 @@ function TokenTrack({
       {...scrollArea.getViewportProps<HTMLDivElement>({
         ref: trackRef,
         onFocus: revealFocusedItem,
-        xstyle: [styles.inGroupTrack, trackFade(scrollArea.state.inline)],
+        className: tw(
+          tokenizerGroupedTrackClassName,
+          trackFade(scrollArea.state.inline),
+        ),
       })}>
       <div
-        {...scrollArea.getContentProps<HTMLDivElement>(
-          stylex.props(
-            styles.inGroupTrackContent,
-            isTruncated && styles.inGroupTrackContentTruncated,
+        {...scrollArea.getContentProps<HTMLDivElement>({
+          className: tw(
+            tokenizerGroupedTrackContentClassName,
+            isTruncated && tokenizerGroupedTrackContentTruncatedClassName,
           ),
-        )}>
+        })}>
         {children}
       </div>
     </div>
@@ -1894,7 +1701,7 @@ export function Tokenizer<T extends SearchableItem>({
         <span
           key={item.id}
           ref={registerTokenSlot}
-          {...stylex.props(styles.token)}>
+          className={tokenizerTokenClassName}>
           {renderToken(item, onRemoveItem)}
         </span>
       );
@@ -1907,7 +1714,7 @@ export function Tokenizer<T extends SearchableItem>({
         size={size}
         onRemove={isDisabled || !canRemoveItem(item) ? undefined : onRemoveItem}
         isDisabled={isDisabled}
-        xstyle={styles.token}
+        className={tokenizerTokenClassName}
       />
     );
   });
@@ -2006,7 +1813,9 @@ export function Tokenizer<T extends SearchableItem>({
         isTruncated={isTruncated}>
         {isRenderable(startIcon as ReactNode) && (
           <span
-            {...stylex.props(value.length > 0 && styles.startIconWithTokens)}>
+            className={tw(
+              value.length > 0 && tokenizerStartIconWithTokensClassName,
+            )}>
             {renderIconSlot(startIcon, {size: 'sm', color: 'secondary'})}
           </span>
         )}
@@ -2015,7 +1824,7 @@ export function Tokenizer<T extends SearchableItem>({
             gap={1}
             behavior="observeParent"
             overflowRenderer={items => (
-              <span {...stylex.props(styles.overflowText)}>
+              <span className={tokenizerOverflowTextClassName}>
                 +{items.length} more
               </span>
             )}>
@@ -2086,18 +1895,21 @@ export function Tokenizer<T extends SearchableItem>({
                   onOpenChange={onOpenChange}
                   handleRef={baseHandleRef}
                   size={size}
-                  inputXStyle={[
+                  inputXStyle={
                     isAtMax || isTruncated
                       ? styles.inputAtMax
                       : value.length > 0
                         ? compactInputStyle
-                        : undefined,
-                    // With tokens, wrapperWithTokens reserves the lane for every row.
-                    // This rule is only for an empty Tokenizer; it still resolves to
-                    // zero until the lane publishes a width.
-                    !(isAtMax || isTruncated || value.length > 0) &&
-                      laneReserve,
-                  ]}
+                        : undefined
+                  }
+                  // With tokens, wrapperWithTokens reserves the lane for every row.
+                  // This inset is only for an empty Tokenizer; it still resolves to
+                  // zero until the lane publishes a width.
+                  className={
+                    !(isAtMax || isTruncated || value.length > 0)
+                      ? laneReserve
+                      : undefined
+                  }
                 />
               </BaseTypeaheadFocusContext>
             </CommittedChoicesKeyContext>
@@ -2113,14 +1925,15 @@ export function Tokenizer<T extends SearchableItem>({
         lane={busyLane}
         // A grouped lane is in flow, so nothing has to measure or reserve it.
         laneRef={isInGroupRow ? undefined : laneRef}
-        laneXStyle={[
-          styles.endSection,
-          endSectionSizeStyles[size],
-          isInGroupRow && styles.inGroupEndSection,
+        laneClassName={tw(
+          tokenizerEndLaneClassName,
+          isInGroupRow
+            ? tokenizerEndLaneInGroupClassName
+            : tokenizerEndLaneSizeClassName(size),
           isInGroupRow &&
             value.length > 0 &&
-            styles.inGroupEndSectionWithTokens,
-        ]}
+            tokenizerEndLaneInGroupWithTokensClassName,
+        )}
         loadingLabel={t('@astryx.typeahead.loading')}
         anchorRef={wrapperRef}
         hasStaticContent={hasStaticEndLane}
@@ -2237,15 +2050,12 @@ export function Tokenizer<T extends SearchableItem>({
               inputWrapperStyles.base,
               inputWrapperStyles.textField,
               styles.wrapper,
-              styles.sheetField,
-              isDisabled && styles.sheetFieldDisabled,
               // The field keeps the inline field's height for its size step,
               // as Selector's bottom-sheet trigger does; the sheet's own rows
               // and search field carry the touch-sized targets.
               sizeStyles[size],
               value.length > 0 && styles.wrapperWithTokens,
               isDisabled && inputWrapperStyles.disabled,
-              isDisabled && styles.sheetTriggerDisabled,
               status && inputStatusBorderStyles[status.type],
               status &&
                 !isDisabled &&
@@ -2253,12 +2063,18 @@ export function Tokenizer<T extends SearchableItem>({
               status && inputStatusFocusWithinStyles[status.type],
               controlXstyle,
             ),
-            controlClassName,
+            tw(
+              tokenizerSheetFieldClassName(isDisabled),
+              isDisabled && tokenizerSheetFieldDisabledClassName,
+              controlClassName,
+            ),
             controlStyle,
           )}>
           {isRenderable(startIcon as ReactNode) && (
             <span
-              {...stylex.props(value.length > 0 && styles.startIconWithTokens)}>
+              className={tw(
+                value.length > 0 && tokenizerStartIconWithTokensClassName,
+              )}>
               {renderIconSlot(startIcon, {size: 'sm', color: 'secondary'})}
             </span>
           )}
@@ -2310,18 +2126,19 @@ export function Tokenizer<T extends SearchableItem>({
                 React.MouseEventHandler<HTMLButtonElement> | undefined,
             )}
             onKeyDown={onKeyDown}
-            {...stylex.props(
-              styles.sheetTrigger,
-              value.length > 0 && styles.sheetTriggerWithTokens,
+            className={tw(
+              tokenizerSheetTriggerClassName,
+              value.length > 0 && tokenizerSheetTriggerWithTokensClassName,
               // With no token the placeholder stops short of the end lane, as
               // the inline input's text does.
               value.length === 0 && laneReserve,
             )}>
             {value.length === 0 && (
               <span
-                {...stylex.props(
-                  styles.sheetTriggerPlaceholder,
-                  isDisabled && styles.sheetTriggerPlaceholderDisabled,
+                className={tw(
+                  tokenizerSheetTriggerPlaceholderClassName,
+                  isDisabled &&
+                    tokenizerSheetTriggerPlaceholderDisabledClassName,
                 )}>
                 {placeholder ?? ''}
               </span>
@@ -2329,7 +2146,7 @@ export function Tokenizer<T extends SearchableItem>({
           </button>
           {value.map(item =>
             renderToken ? (
-              <span key={item.id} {...stylex.props(styles.token)}>
+              <span key={item.id} className={tokenizerTokenClassName}>
                 {renderToken(item, () => handleSheetTokenRemove(item))}
               </span>
             ) : (
@@ -2346,7 +2163,10 @@ export function Tokenizer<T extends SearchableItem>({
           {isRenderable(endContent) && (
             <div
               ref={sheetLaneMergedRef}
-              {...stylex.props(styles.endSection, endSectionSizeStyles[size])}>
+              className={tw(
+                tokenizerEndLaneClassName,
+                tokenizerEndLaneSizeClassName(size),
+              )}>
               {endContent}
             </div>
           )}
@@ -2444,7 +2264,7 @@ export function Tokenizer<T extends SearchableItem>({
                 gap={1}
                 behavior="observeParent"
                 overflowRenderer={items => (
-                  <span {...stylex.props(styles.overflowText)}>
+                  <span className={tokenizerOverflowTextClassName}>
                     +{items.length} more
                   </span>
                 )}>
@@ -2462,7 +2282,7 @@ export function Tokenizer<T extends SearchableItem>({
           </div>,
           {
             positioning: 'custom',
-            xstyle: styles.layerPopover,
+            className: tokenizerLayerClassName,
             style: popoverOverrideStyle,
           },
         )}

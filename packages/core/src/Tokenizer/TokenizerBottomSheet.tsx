@@ -58,12 +58,24 @@ import {
 import {useDismissSearchOnTouchDrag} from '../internal/useDismissSearchOnTouchDrag';
 import {warnOnce} from '../utils/devWarning';
 import type {SearchableItem, SearchSource} from '../Typeahead/types';
+import {tw} from '../utils/tw';
 import {
-  colorVars,
-  radiusVars,
-  sizeVars,
-  spacingVars,
-} from '../theme/tokens.stylex';
+  tokenizerSheetBodyClassName,
+  tokenizerSheetCreateLabelClassName,
+  tokenizerSheetCreateRowClassName,
+  tokenizerSheetEmptyClassName,
+  tokenizerSheetEmptyHostClassName,
+  tokenizerSheetFooterClassName,
+  tokenizerSheetListClassName,
+  tokenizerSheetPendingClassName,
+  tokenizerSheetRowClassName,
+  tokenizerSheetRowDisabledClassName,
+  tokenizerSheetRowItemClassName,
+  tokenizerSheetRowLabelClassName,
+  tokenizerSheetRowsClassName,
+  tokenizerSheetSearchRowClassName,
+} from './tokenizerClasses';
+import {colorVars, sizeVars, spacingVars} from '../theme/tokens.stylex';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -85,22 +97,11 @@ const EMPTY_RESULTS: never[] = [];
 const LIST_LOAD_MORE_THRESHOLD_PX = 200;
 
 const styles = stylex.create({
-  body: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    minHeight: 0,
-    paddingInline: spacingVars['--spacing-3'],
-    // With the sheet's band under its grab bar (--spacing-6), this keeps the
-    // first row --spacing-8 below the sheet's top edge.
-    paddingBlockStart: spacingVars['--spacing-2'],
-    paddingBlockEnd: spacingVars['--spacing-3'],
-  },
-  // The sheet has no dedicated close button; it keeps BottomSheet's gesture,
-  // scrim, and Escape dismissal paths, and the footer's Done.
-  searchRow: {
-    paddingBlockEnd: spacingVars['--spacing-2'],
-  },
+  // These three keep StyleX: each shares its element with a box that owns the
+  // property in a way a class here cannot settle. PanelSearchInput's field and
+  // CheckboxIndicator's border are unlayered and would win; Button's own
+  // `grow`/`basis-auto` sits in the same layer, where the sheet's order — not
+  // this row's intent — would decide.
   // A dropdown panel is already a bordered box, so its search field has no
   // border. The sheet is not, so its field takes the shared input box at the
   // `lg` height.
@@ -108,97 +109,18 @@ const styles = stylex.create({
     minHeight: sizeVars['--size-element-lg'],
     paddingBlock: spacingVars['--spacing-1'],
   },
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    flexGrow: 1,
-    overflowY: 'auto',
-    minHeight: 0,
-  },
-  rows: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  rowItem: {
-    display: 'contents',
-  },
-  row: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    minHeight: 44,
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-1'],
-    borderWidth: 0,
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: 'transparent',
-    color: colorVars['--color-text-primary'],
-    fontFamily: 'inherit',
-    textAlign: 'start',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
   // An aria-disabled row gets no system disabled paint in forced colors;
   // GrayText is the platform's disabled affordance there. The default repeats
-  // the base value, since StyleX merges per property.
-  rowDisabled: {
-    color: {
-      default: colorVars['--color-text-primary'],
-      '@media (forced-colors: active)': 'GrayText',
-    },
-  },
-  rowLabel: {
-    flexGrow: 1,
-    minWidth: 0,
-  },
-  // Same for the indicator's border: GrayText in forced colors, and the
-  // default repeats the indicator's disabled border.
+  // the indicator's disabled border, since StyleX merges per property.
   indicatorDisabled: {
     borderColor: {
       default: colorVars['--color-border'],
       '@media (forced-colors: active)': 'GrayText',
     },
   },
-  createRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    minHeight: 44,
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-1'],
-  },
-  createLabel: {
-    flexGrow: 1,
-    minWidth: 0,
-  },
-  footer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    paddingBlockStart: spacingVars['--spacing-3'],
-    marginTop: 'auto',
-  },
   footerAction: {
     flexGrow: 1,
     flexBasis: 0,
-  },
-  emptyHost: {
-    display: 'contents',
-  },
-  empty: {
-    flexGrow: 1,
-  },
-  pending: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 44,
-    paddingBlock: spacingVars['--spacing-2'],
   },
 });
 
@@ -840,8 +762,8 @@ function TokenizerSheetContent<T extends SearchableItem>({
   ]);
 
   return (
-    <div {...stylex.props(styles.body)}>
-      <div {...stylex.props(styles.searchRow)}>
+    <div className={tokenizerSheetBodyClassName}>
+      <div className={tokenizerSheetSearchRowClassName}>
         <PanelSearchInput
           ref={searchRef}
           label={searchLabel}
@@ -857,7 +779,7 @@ function TokenizerSheetContent<T extends SearchableItem>({
             label; naming this list the same would announce it twice. */}
       <div
         ref={listRef}
-        {...stylex.props(styles.list)}
+        className={tokenizerSheetListClassName}
         aria-busy={isPending || undefined}
         data-rendered-count={renderedItems.length}
         data-total-count={visibleItems.length}
@@ -895,8 +817,8 @@ function TokenizerSheetContent<T extends SearchableItem>({
           }
         }}>
         {createItem ? (
-          <div {...stylex.props(styles.createRow)}>
-            <Text type="body" xstyle={styles.createLabel}>
+          <div className={tokenizerSheetCreateRowClassName}>
+            <Text type="body" className={tokenizerSheetCreateLabelClassName}>
               {createItem.label}
             </Text>
             <Button
@@ -933,7 +855,7 @@ function TokenizerSheetContent<T extends SearchableItem>({
           // Named busy feedback while the source works
           // (`family:input-fields` FR7), above any rows still listed from
           // the previous search; the empty states wait for it.
-          <div {...stylex.props(styles.pending)}>
+          <div className={tokenizerSheetPendingClassName}>
             <Spinner
               size="md"
               role="img"
@@ -942,16 +864,18 @@ function TokenizerSheetContent<T extends SearchableItem>({
           </div>
         ) : null}
         {isSettledEmpty ? (
-          <div ref={emptyStateRef} {...stylex.props(styles.emptyHost)}>
+          <div ref={emptyStateRef} className={tokenizerSheetEmptyHostClassName}>
             {hasCustomEmptyElement ? (
-              <div {...stylex.props(styles.empty)}>{emptySearchText}</div>
+              <div className={tokenizerSheetEmptyClassName}>
+                {emptySearchText}
+              </div>
             ) : (
               <EmptyState
                 icon={<Icon icon="search" size="lg" color="secondary" />}
                 title={noResultsTitle}
                 description={t('@astryx.tokenizer.noResultsDescription')}
                 isCompact
-                xstyle={styles.empty}
+                className={tokenizerSheetEmptyClassName}
               />
             )}
           </div>
@@ -961,7 +885,7 @@ function TokenizerSheetContent<T extends SearchableItem>({
           // rows hears "n of total" and learns more exist before the list
           // has scrolled (FR21). The position attributes live on the
           // listitem because `checkbox` does not admit them.
-          <div role="list" {...stylex.props(styles.rows)}>
+          <div role="list" className={tokenizerSheetRowsClassName}>
             {renderedItems.map((item, index) => {
               const isSelected = selectedIds.has(item.id);
               const rowDisabled = !isSelected && isAtMax;
@@ -972,7 +896,7 @@ function TokenizerSheetContent<T extends SearchableItem>({
                   role="listitem"
                   aria-setsize={visibleItems.length}
                   aria-posinset={index + 1}
-                  {...stylex.props(styles.rowItem)}>
+                  className={tokenizerSheetRowItemClassName}>
                   <button
                     type="button"
                     role="checkbox"
@@ -1019,14 +943,14 @@ function TokenizerSheetContent<T extends SearchableItem>({
                         );
                       }
                     }}
-                    {...stylex.props(
-                      styles.row,
-                      rowDisabled && styles.rowDisabled,
+                    className={tw(
+                      tokenizerSheetRowClassName,
+                      rowDisabled && tokenizerSheetRowDisabledClassName,
                     )}>
                     <Text
                       type="body"
                       color={rowDisabled ? 'inherit' : undefined}
-                      xstyle={styles.rowLabel}>
+                      className={tokenizerSheetRowLabelClassName}>
                       {item.label}
                     </Text>
                     <CheckboxIndicator
@@ -1044,7 +968,7 @@ function TokenizerSheetContent<T extends SearchableItem>({
           </div>
         )}
       </div>
-      <div {...stylex.props(styles.footer)}>
+      <div className={tokenizerSheetFooterClassName}>
         <Button
           label={t('@astryx.tokenizer.clearAll')}
           variant="secondary"

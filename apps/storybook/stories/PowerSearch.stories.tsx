@@ -600,7 +600,8 @@ export const NearFullTokenRow: Story = {
     await document.fonts.ready;
     const reserveDeadline = performance.now() + 2000;
     while (
-      wrapper.style.getPropertyValue('--_tokenizer-end-lane-reserve') === ''
+      wrapper.style.getPropertyValue('--astryx-tokenizer-end-lane-reserve') ===
+      ''
     ) {
       if (performance.now() >= reserveDeadline) {
         throw new Error('Clear-all lane reserve was not measured');
@@ -746,7 +747,7 @@ async function waitForTokenRow(wrapper: HTMLElement) {
   await document.fonts.ready;
   const deadline = performance.now() + 2000;
   while (
-    wrapper.style.getPropertyValue('--_tokenizer-end-lane-reserve') === ''
+    wrapper.style.getPropertyValue('--astryx-tokenizer-end-lane-reserve') === ''
   ) {
     if (performance.now() >= deadline) {
       throw new Error('Clear-all lane reserve was not measured');

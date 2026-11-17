@@ -726,7 +726,9 @@ export const CaretPlacement: Story = {
     while (
       [wrappedField, fullRowField].some(
         field =>
-          field.style.getPropertyValue('--_tokenizer-end-lane-reserve') === '',
+          field.style.getPropertyValue(
+            '--astryx-tokenizer-end-lane-reserve',
+          ) === '',
       )
     ) {
       if (performance.now() >= reserveDeadline) {

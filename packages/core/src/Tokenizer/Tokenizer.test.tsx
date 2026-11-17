@@ -3727,7 +3727,7 @@ describe('Tokenizer end-lane reserve', () => {
 
   const laneHost = (container: HTMLElement) =>
     container.querySelector<HTMLElement>(
-      '[style*="--_tokenizer-end-lane-reserve"]',
+      '[style*="--astryx-tokenizer-end-lane-reserve"]',
     );
 
   // The variable carries the whole reserve — the lane's inset plus its
@@ -3737,7 +3737,7 @@ describe('Tokenizer end-lane reserve', () => {
   // the lane.
   const reserveOf = (container: HTMLElement) =>
     laneHost(container)?.style.getPropertyValue(
-      '--_tokenizer-end-lane-reserve',
+      '--astryx-tokenizer-end-lane-reserve',
     );
 
   it('reserves the lane\u2019s untransformed width, not its on-screen width', () => {
@@ -3805,7 +3805,7 @@ describe('Tokenizer end-lane reserve', () => {
     const field = laneHost(container);
     expect(field).not.toBeNull();
     expect(getComputedStyle(field!).paddingInlineEnd).toContain(
-      '--_tokenizer-end-lane-reserve',
+      '--astryx-tokenizer-end-lane-reserve',
     );
   });
 
@@ -3829,7 +3829,7 @@ describe('Tokenizer end-lane reserve', () => {
     expect(reserveOf(container)).toBeTruthy();
     const input = screen.getByRole('combobox');
     expect(getComputedStyle(input).paddingInlineEnd).not.toContain(
-      '--_tokenizer-end-lane-reserve',
+      '--astryx-tokenizer-end-lane-reserve',
     );
   });
 
