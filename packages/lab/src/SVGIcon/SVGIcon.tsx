@@ -23,9 +23,10 @@ import {type CSSProperties, type SVGProps, useId} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '@astryxdesign/core/utils';
 import {iconVars} from './tokens.stylex';
-import {iconColorStyles} from './colors.stylex';
+import {iconColorClassNames, svgIconRootClassName} from './svgIconClasses';
 import {iconA11yProps} from './iconA11y';
 import {variations, opticalSize} from './variations.stylex';
+import {tw} from '../tw';
 import {themeProps} from '@astryxdesign/core/utils';
 
 // =============================================================================
@@ -98,21 +99,6 @@ export interface SVGIconProps extends Omit<SVGProps<SVGSVGElement>, 'color'> {
   /** Override stroke width (bypasses optical compensation). */
   strokeWidth?: number;
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    display: 'inline-flex',
-    flexShrink: 0,
-    width: iconVars['--icon-size'],
-    height: iconVars['--icon-size'],
-    paddingInlineStart: iconVars['--icon-inline-offset'],
-    paddingBlockStart: iconVars['--icon-block-offset'],
-  },
-});
 
 // =============================================================================
 // Shape Renderer
@@ -354,12 +340,8 @@ export function SVGIcon({
       {...a11yProps}
       {...mergeProps(
         themeProps('svg-icon', {variation, size, color}),
-        stylex.props(
-          styles.root,
-          iconColorStyles[color],
-          variations[variation],
-          opticalSize[size],
-        ),
+        stylex.props(variations[variation], opticalSize[size]),
+        tw(svgIconRootClassName, iconColorClassNames[color]),
       )}
       style={overrideStyle}
       {...props}>

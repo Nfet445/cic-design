@@ -1,7 +1,6 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 import {StrictMode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {createPortal} from 'react-dom';
 import {describe, it, expect, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
@@ -11,14 +10,17 @@ import {
   weightedIconSymbolId,
 } from './WeightedSVGIcon';
 import {buildWeightedIcon, parseSVGPaths} from './buildWeightedIcon';
-import {iconColorStyles} from './colors.stylex';
 import {SVGIcon} from './SVGIcon';
 import {checkIcon} from './icons';
 import {bellWeightedIcon, weightedStarterIcons} from './weightedIcons';
 import {
+  iconColorClassNames,
   weightProbeClassName,
   weightProbeSvgClassName,
   weightRangeClassNames,
+  weightedIconSpriteClassName,
+  weightedSvgIconRootClassName,
+  weightedSvgIconSvgClassName,
 } from './svgIconClasses';
 
 /** Whether an element carries every class of a map entry. */
@@ -207,9 +209,7 @@ describe('the weight probe font', () => {
 
   it('paints each color with the same icon role as SVGIcon', () => {
     for (const color of ['positive', 'negative', 'warning'] as const) {
-      const roleClasses = (
-        stylex.props(iconColorStyles[color]).className ?? ''
-      ).split(' ');
+      const roleClasses = iconColorClassNames[color].split(' ');
       const {container, unmount} = render(
         <>
           <WeightedSVGIcon icon={bellWeightedIcon} color={color} />
@@ -232,5 +232,23 @@ describe('the weight probe font', () => {
     const icon = container.querySelector('svg');
     expect(icon).toHaveClass('caller');
     expect(icon?.classList.length).toBeGreaterThan(1);
+  });
+
+  it('carries the probe box, the drawing and the hidden sprite classes', () => {
+    const {container} = render(<WeightedSVGIcon icon={bellWeightedIcon} />);
+    const box = container.querySelector('span');
+    expect(carries(box, weightedSvgIconRootClassName)).toBe(true);
+    expect(carries(box, iconColorClassNames.primary)).toBe(true);
+    expect(
+      carries(container.querySelector('svg'), weightedSvgIconSvgClassName),
+    ).toBe(true);
+
+    const sprite = render(<WeightedIconSprite icons={[bellWeightedIcon]} />);
+    expect(
+      carries(
+        sprite.container.querySelector('svg'),
+        weightedIconSpriteClassName,
+      ),
+    ).toBe(true);
   });
 });

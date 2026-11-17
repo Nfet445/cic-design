@@ -40,6 +40,7 @@ import {
 import * as commentsClasses from './Comments/commentsClasses';
 import * as dialogHeroHeaderClasses from './DialogHeroHeader/dialogHeroHeaderClasses';
 import * as diffViewerClasses from './DiffViewer/diffViewerClasses';
+import * as emojiPickerClasses from './EmojiPicker/emojiPickerClasses';
 import * as lineClampClasses from './LineClamp/lineClampClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
@@ -90,6 +91,7 @@ function labClassNames() {
     commentsClasses,
     dialogHeroHeaderClasses,
     diffViewerClasses,
+    emojiPickerClasses,
     lineClampClasses,
     listInputClasses,
     loadingMessageClasses,
@@ -130,11 +132,11 @@ function labClassNames() {
   return [...names];
 }
 
-// Lab's StyleX sheet still carries most of the package: 12 514 B gzip when
-// measured, because 54 of its 58 `stylex.create` calls have not moved. The
-// Tailwind sheet holds only the migrated components, so it stays far inside
-// 1.15 × that baseline; the constant records the measured StyleX number rather
-// than a gate the sheet can reach.
+// The baseline is the lab StyleX sheet as measured at f35022021 (12 514 B
+// gzip), when 54 of its 58 `stylex.create` calls were still StyleX. The
+// constant records that measurement, not a gate the sheet can reach: the
+// StyleX sheet now holds only the rules that must outrank a utility or read a
+// marker.
 describeTailwindStylesheet({
   name: 'dist/lab-tailwind.css',
   css: sheet,

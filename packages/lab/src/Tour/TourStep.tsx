@@ -46,18 +46,22 @@ import {
   useInteractionModalityTracking,
 } from '@astryxdesign/core/internal/touch';
 import {Text} from '@astryxdesign/core/Text';
-import {focusOutlineStyles} from '@astryxdesign/core/utils';
+import {mergeProps, focusOutlineStyles} from '@astryxdesign/core/utils';
 import {Heading} from '@astryxdesign/core/Heading';
 import {VStack, HStack} from '@astryxdesign/core/Layout';
-import {
-  colorVars,
-  spacingVars,
-  durationVars,
-  easeVars,
-  radiusVars,
-  shadowVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
+import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {TourContext} from './TourContext';
+import {
+  tourStepCalloutGapClassNames,
+  tourStepContentClassName,
+  tourStepCutoutClassName,
+  tourStepHighlightClassName,
+  tourStepHighlightHiddenClassName,
+  tourStepOverlayInteractiveClassName,
+  tourStepOverlayPassiveClassName,
+  tourStepSurfaceClassName,
+} from './tourStepClasses';
+import {tw} from '../tw';
 
 // Client-only layout effect (SSR renders no overlay, so this only runs on the
 // client). Kept local since core does not export its isomorphic variant.
@@ -74,89 +78,6 @@ interface TargetRect {
   height: number;
   radius: string;
 }
-
-const styles = stylex.create({
-  // The callout surface: the same paint as a Popover surface.
-  surface: {
-    backgroundColor: colorVars['--color-background-popover'],
-    borderRadius: radiusVars['--radius-container'],
-    boxShadow: shadowVars['--shadow-low'],
-    padding: spacingVars['--spacing-3'],
-  },
-  content: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-3'],
-    // Keep the callout from growing arbitrarily wide with long body copy.
-    maxWidth: '320px',
-  },
-  header: {
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
-  footer: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  // Extra clearance between the target and the callout, so the highlight ring
-  // (which extends a few px past the target) is never covered by the callout.
-  // Placement-aware: the margin goes on the side of the callout that faces the
-  // target. Adds to the layer's own small anchor offset.
-  calloutGapBelow: {marginBlockStart: spacingVars['--spacing-2']},
-  calloutGapAbove: {marginBlockEnd: spacingVars['--spacing-2']},
-  calloutGapStart: {marginInlineEnd: spacingVars['--spacing-2']},
-  calloutGapEnd: {marginInlineStart: spacingVars['--spacing-2']},
-  // Full-viewport overlay root, promoted into the browser top layer so it sits
-  // above all page content with NO z-index. UA popover styles are neutralized
-  // so it fills the viewport. Click-through by default (coachmark); interactive
-  // only when it dims (to catch backdrop clicks).
-  overlayRoot: {
-    position: 'fixed',
-    inset: 0,
-    // A popover is sized to fit its content by default; the overlay fills
-    // the viewport so a dimmed step catches presses on the page.
-    width: '100%',
-    height: '100%',
-    margin: 0,
-    padding: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    overflow: 'visible',
-    pointerEvents: 'none',
-  },
-  overlayInteractive: {
-    pointerEvents: 'auto',
-  },
-  // The highlight box, sized to the target. Non-interactive so clicks reach the
-  // target (coachmark) or the overlay root (dimmed). The accent ring with a
-  // surface-colored gap mirrors the focus-visible outline used across the
-  // system.
-  highlight: {
-    position: 'absolute',
-    pointerEvents: 'none',
-    boxShadow: `0 0 0 2px ${colorVars['--color-background-surface']}, 0 0 0 4px ${colorVars['--color-accent']}`,
-    transitionProperty: 'top, left, width, height',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  // Spotlight cutout: a huge box-shadow spread dims the whole viewport EXCEPT
-  // this box, so the target reads as lit rather than covered. Layered after the
-  // ring so both shadows show. Only applied when the step opts into a backdrop.
-  cutout: {
-    boxShadow: `0 0 0 2px ${colorVars['--color-background-surface']}, 0 0 0 4px ${colorVars['--color-accent']}, 0 0 0 9999px ${colorVars['--color-overlay']}`,
-  },
-  hidden: {
-    opacity: 0,
-  },
-});
-
-const calloutGapStyles = {
-  below: styles.calloutGapBelow,
-  above: styles.calloutGapAbove,
-  start: styles.calloutGapStart,
-  end: styles.calloutGapEnd,
-} as const;
 
 /**
  * The highlight overlay: a top-layer box sized to the target, plus an optional
@@ -199,17 +120,17 @@ function TourHighlight({
       data-testid={hasBackdrop ? 'tour-backdrop' : undefined}
       aria-hidden="true"
       onClick={hasBackdrop ? onBackdropClick : undefined}
-      {...stylex.props(
-        styles.overlayRoot,
-        hasBackdrop && styles.overlayInteractive,
-      )}>
+      className={
+        hasBackdrop
+          ? tourStepOverlayInteractiveClassName
+          : tourStepOverlayPassiveClassName
+      }>
       <div
         ref={highlightRef}
         data-testid="tour-highlight"
-        {...stylex.props(
-          styles.highlight,
-          hasBackdrop && styles.cutout,
-          rect == null && styles.hidden,
+        className={tw(
+          hasBackdrop ? tourStepCutoutClassName : tourStepHighlightClassName,
+          rect == null && tourStepHighlightHiddenClassName,
         )}
         style={
           rect != null
@@ -434,11 +355,14 @@ export function TourStep({
       ref={setRegion}
       aria-labelledby={headingId}
       tabIndex={-1}
-      {...stylex.props(styles.surface, focusOutlineStyles.focusVisible)}
+      {...mergeProps(
+        stylex.props(focusOutlineStyles.focusVisible),
+        tourStepSurfaceClassName,
+      )}
       data-testid={testId}>
-      <div {...stylex.props(styles.content)}>
+      <div className={tourStepContentClassName}>
         <VStack gap={1}>
-          <HStack gap={2} xstyle={styles.header}>
+          <HStack gap={2} justify="between" align="start">
             <Heading level={4} id={headingId}>
               {heading}
             </Heading>
@@ -452,7 +376,7 @@ export function TourStep({
           </HStack>
           {children != null && <Text type="body">{children}</Text>}
         </VStack>
-        <HStack gap={2} xstyle={styles.footer}>
+        <HStack gap={2} justify="between" align="center">
           {isStepCountShown && stepCount > 0 ? (
             <Text type="supporting" color="secondary">
               {`${activeStepIndex + 1} of ${stepCount}`}
@@ -497,7 +421,7 @@ export function TourStep({
         offset: spacingVars['--spacing-1'],
         // Push the callout clear of the highlight ring so the ring is never
         // covered (placement-aware; adds to the layer's anchor offset).
-        xstyle: calloutGapStyles[placement],
+        className: tourStepCalloutGapClassNames[placement],
       })}
     </>
   );
