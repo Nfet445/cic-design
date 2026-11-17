@@ -522,6 +522,7 @@ import {
   layoutMiddleContentWidthClassName,
   layoutMiddleQueryClassName,
   layoutOuterClassName,
+  layoutPaddingResetClassName,
   layoutPanelClassName,
   layoutPanelCollapseEndClassName,
   layoutPanelCollapseStartClassName,
@@ -1804,6 +1805,7 @@ function familyClassNames() {
   for (const className of [
     layoutOuterClassName,
     layoutInnerClassName,
+    layoutPaddingResetClassName,
     layoutFillClassName,
     layoutAutoClassName,
     layoutMiddleClassName,

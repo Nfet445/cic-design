@@ -3,11 +3,13 @@
 /**
  * @file layoutClasses.ts
  * @input Accepts the slot state each Layout region resolves from its own props
- * @output Tailwind utility class names for the Layout root, its middle row, and
- *   the header, content, footer and panel regions, plus the type of the inline
- *   variables those classes read
- * @position Internal to Layout; the Tailwind build scans this module for the
- *   class names the regions can carry
+ * @output Tailwind utility class names for the Layout root, its middle row, the
+ *   header, content, footer and panel regions, and the padding boundary an
+ *   overlay root draws, plus the type of the inline variables those classes read
+ * @position Internal to Layout, except `layoutInnerClassName` and
+ *   `layoutPaddingResetClassName`, which `@astryxdesign/core/Layout` publishes
+ *   for a consumer that builds its own container or overlay root; the Tailwind
+ *   build scans this module for the class names the regions can carry
  *
  * Every edge of a region publishes the padding it applies as a
  * `--container-padding-*` variable, and reads its own padding back from that
@@ -75,6 +77,37 @@ export const layoutInnerClassName = tw(
   '[--layout-padding-own-outer-y:initial]',
   '[--_layout-flush-block-start:initial]',
   '[--_layout-flush-block-end:initial]',
+);
+
+/**
+ * The padding boundary at an overlay's root, published so an overlay built
+ * outside this package draws the same boundary: it writes what
+ * `overlayPaddingReset.reset` writes. A fixed or top-layer element is a DOM
+ * descendant of the padded page while sitting nowhere near it, so the
+ * container padding and corner values it inherits describe padding that is not
+ * there. Descendants subtract `--container-padding-*`, so those go to `0px`;
+ * they add `--layout-padding-*`, so those go to `initial` and each reader falls
+ * through to its own default.
+ *
+ * `--astryx-section-padding` is deliberately not here: it is public theme
+ * surface, and making it invalid would blank the theme's section padding.
+ */
+export const layoutPaddingResetClassName = tw(
+  '[--container-padding-inline-start:0px]',
+  '[--container-padding-inline-end:0px]',
+  '[--container-padding-block-start:0px]',
+  '[--container-padding-block-end:0px]',
+  '[--container-corner-start-start:0px]',
+  '[--container-corner-start-end:0px]',
+  '[--container-corner-end-start:0px]',
+  '[--container-corner-end-end:0px]',
+  '[--layout-padding-outer-x:initial]',
+  '[--layout-padding-outer-y:initial]',
+  '[--layout-padding-own-outer-x:initial]',
+  '[--layout-padding-own-outer-y:initial]',
+  '[--layout-padding-inner-x:initial]',
+  '[--layout-padding-inner-y:initial]',
+  '[--_section-padding-propagated:initial]',
 );
 
 /**
