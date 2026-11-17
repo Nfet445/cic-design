@@ -322,6 +322,27 @@ import {
   citationLabelTextClassName,
 } from '../Citation/citationClasses';
 import {
+  TAB_END_CONTENT_CLASS,
+  TAB_ICON_CLASS,
+  TAB_LABEL_CONTAINER_CLASS,
+  TAB_LABEL_SIZER_CLASS,
+  TAB_LABEL_TEXT_CLASS,
+  TAB_MENU_CHEVRON_CLASS,
+  TAB_MENU_CHEVRON_ICON_CLASS,
+  TAB_MENU_CHEVRON_OPEN_CLASS,
+  TAB_MENU_DROPDOWN_CLASS,
+  TAB_MENU_HEADING_CLASS,
+  TAB_MENU_ITEM_CONTENT_CLASS,
+  TAB_MENU_TRIGGER_LABEL_CLASS,
+  tabClassName,
+  tabHoverLayerClassName,
+  tabIconSizeClassName,
+  tabIndicatorClassName,
+  tabMenuHoverLayerClassName,
+  tabMenuItemClassName,
+  tabMenuTriggerClassName,
+} from '../TabList/tabListClasses';
+import {
   linkClassName,
   linkColorClassName,
   linkExternalIconInClampedTextClassName,
@@ -1142,6 +1163,40 @@ function familyClassNames() {
   add(citationIconClassName);
   add(citationLabelTextClassName);
 
+  // The tab family: a tab and a menu trigger answer the size, the selection
+  // and the layout, and each size brings its own minimum block size and icon
+  // box. The pieces below the trigger carry no axis.
+  for (const size of ['sm', 'md', 'lg']) {
+    for (const isSelected of [false, true]) {
+      for (const isFill of [false, true]) {
+        add(tabClassName({size, isSelected, isFill}));
+      }
+    }
+    for (const hasSelectedOption of [false, true]) {
+      add(tabMenuTriggerClassName({size, hasSelectedOption}));
+    }
+    add(tabHoverLayerClassName(size));
+    add(tabMenuHoverLayerClassName(size));
+    add(tabIconSizeClassName(size));
+  }
+  for (const isSelected of [false, true]) {
+    add(tabIndicatorClassName({isSelected}));
+    add(tabIndicatorClassName({isSelected, color: 'icon'}));
+    add(tabMenuItemClassName(isSelected));
+  }
+  add(TAB_ICON_CLASS);
+  add(TAB_LABEL_CONTAINER_CLASS);
+  add(TAB_LABEL_TEXT_CLASS);
+  add(TAB_LABEL_SIZER_CLASS);
+  add(TAB_END_CONTENT_CLASS);
+  add(TAB_MENU_TRIGGER_LABEL_CLASS);
+  add(TAB_MENU_CHEVRON_CLASS);
+  add(TAB_MENU_CHEVRON_ICON_CLASS);
+  add(TAB_MENU_CHEVRON_OPEN_CLASS);
+  add(TAB_MENU_DROPDOWN_CLASS);
+  add(TAB_MENU_ITEM_CONTENT_CLASS);
+  add(TAB_MENU_HEADING_CLASS);
+
   return [...names].sort();
 }
 
@@ -1170,9 +1225,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // about 60, the choice-input rows of Selector, MultiSelector and Typeahead
     // about 85, the link-and-item family about 100 (Link, Citation,
     // BreadcrumbItem, Token, Pagination and the avatar status dot), the date
-    // and time inputs about 50, and the dialog family about 35. A scan that
-    // reaches component bodies or prose would add hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(860);
+    // and time inputs about 50, the dialog family about 35, the top-nav family
+    // about 45, the item row machine about 45, and the tab family — TabList's
+    // strip, masks and arrows, TabMenu, SegmentedControl — about 120. A scan
+    // that reaches component bodies or prose would add hundreds more.
+    expect(stylesheet.rules.size).toBeLessThan(940);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
