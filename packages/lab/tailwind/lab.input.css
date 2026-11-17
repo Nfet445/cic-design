@@ -71,3 +71,17 @@
     background-position: -200% 0;
   }
 }
+
+/* Holds for five seconds, then fades over the slow motion token. The badge
+   removes itself when the animation ends so header actions reclaim the
+   trailing edge; the last frame keeps it out of the accessibility tree. */
+@keyframes astryxCommentUnreadBadgeFade {
+  from {
+    opacity: 1;
+    visibility: visible;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}

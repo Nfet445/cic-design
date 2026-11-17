@@ -59,7 +59,6 @@ import {
   ResolvedLabel,
   ThreadRailSegment,
   UnreadBadge,
-  partStyles,
 } from './CommentParts';
 import {tw} from '../tw';
 import {
@@ -75,6 +74,11 @@ import {
   commentRowTypingIndicatorClassName,
 } from './commentRowClasses';
 import {commentRowSurfaceStyles} from './commentRowOverrides.stylex';
+import {
+  commentPartsNoWrapClassName,
+  commentPartsRailRowClassName,
+  commentPartsSectionDividerOverlapClassName,
+} from './commentPartsClasses';
 import {useCommentsContext} from './CommentsContext';
 import {CommentIcon} from './icons';
 import {
@@ -175,8 +179,12 @@ function ThreadSurface({
         dividers={[...dividers]}
         padding={3}
         width="100%"
-        xstyle={[partStyles.sectionDividerOverlap, ...sharedXstyle]}
-        className={tw(sharedClassName, revealProps.className)}
+        xstyle={sharedXstyle}
+        className={tw(
+          commentPartsSectionDividerOverlapClassName,
+          sharedClassName,
+          revealProps.className,
+        )}
         style={revealProps.style}
         data-thread-id={threadId}
         data-thread-surface="section"
@@ -199,7 +207,11 @@ function ThreadSurface({
         isFilled && commentRowSurfaceStyles.selectedFill,
         ...sharedXstyle,
       ]}
-      className={tw(sharedClassName, revealProps.className)}
+      className={tw(
+        commentPartsSectionDividerOverlapClassName,
+        sharedClassName,
+        revealProps.className,
+      )}
       style={revealProps.style}
       data-thread-id={threadId}
       data-thread-surface="card"
@@ -503,7 +515,9 @@ export function CommentRow({
           tabIndex={-1}
           aria-labelledby={authorNameId}
           width="100%"
-          xstyle={visibleReplies.length > 0 ? partStyles.railRow : undefined}
+          className={
+            visibleReplies.length > 0 ? commentPartsRailRowClassName : undefined
+          }
           data-comment-id={comment.id}
           data-comment-depth={String(depth)}
           data-author-kind={comment.author.kind ?? 'person'}
@@ -570,7 +584,7 @@ export function CommentRow({
                           <Text
                             type="body"
                             color="secondary"
-                            xstyle={partStyles.noWrap}>
+                            className={commentPartsNoWrapClassName}>
                             {t('@astryx.comments.edited')}
                           </Text>
                         )}
@@ -683,7 +697,9 @@ export function CommentRow({
                 align="center"
                 width="100%"
                 xstyle={
-                  visibleReplies.length > 0 ? partStyles.railRow : undefined
+                  visibleReplies.length > 0
+                    ? commentPartsRailRowClassName
+                    : undefined
                 }>
                 {visibleReplies.length > 0 && (
                   <ThreadRailSegment from="row" to="avatar" />
@@ -692,7 +708,7 @@ export function CommentRow({
                 <Link
                   type="body"
                   color="secondary"
-                  xstyle={partStyles.noWrap}
+                  className={commentPartsNoWrapClassName}
                   aria-expanded={areRepliesVisible}
                   aria-controls={repliesRegionId}
                   aria-disabled={isReplyDisclosureBusy || undefined}
@@ -715,10 +731,10 @@ export function CommentRow({
                 key={reply.id}
                 gap={2}
                 width="100%"
-                xstyle={
+                className={
                   index === visibleReplies.length - 1
                     ? undefined
-                    : partStyles.railRow
+                    : commentPartsRailRowClassName
                 }>
                 {index < visibleReplies.length - 1 && (
                   <ThreadRailSegment from="avatar" to="avatar" />
