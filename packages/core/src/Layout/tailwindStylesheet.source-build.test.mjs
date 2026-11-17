@@ -860,6 +860,10 @@ import {
   chatComposerHeaderLeftClassName,
   chatComposerHeaderRightClassName,
   chatComposerInputAreaClassName,
+  chatComposerInputEditableClassName,
+  chatComposerInputPlaceholderClassName,
+  chatComposerInputRootClassName,
+  chatComposerTokenSpanClassName,
   chatComposerRootClassName,
   chatComposerStatusClassName,
   chatTriggerMenuGroupHeadingClassName,
@@ -2850,6 +2854,13 @@ function familyClassNames() {
   add(chatComposerHeaderLeftClassName);
   add(chatComposerHeaderRightClassName);
   add(chatComposerInputAreaClassName);
+  // ChatComposerInput: the shell both ways, the editable and its placeholder,
+  // and the token chip.
+  add(chatComposerInputRootClassName(true));
+  add(chatComposerInputRootClassName(false));
+  add(chatComposerInputEditableClassName);
+  add(chatComposerInputPlaceholderClassName);
+  add(chatComposerTokenSpanClassName);
   add(chatComposerFooterClassName);
   add(chatComposerFooterLeftClassName);
   add(chatComposerFooterRightClassName(true));

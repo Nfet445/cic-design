@@ -944,3 +944,47 @@ export const chatToolCallsStatusClassName: Record<ChatToolCallStatus, string> =
     complete: 'text-[color:var(--color-icon-success)]',
     error: 'text-[color:var(--color-icon-error)]',
   };
+
+// ---------------------------------------------------------------------------
+// ChatComposerInput
+// ---------------------------------------------------------------------------
+
+/**
+ * The input shell. The editable and the placeholder are both one line tall at
+ * rest, so height: auto keeps the field from collapsing on its first layout.
+ */
+export function chatComposerInputRootClassName(isDisabled: boolean): string {
+  return tw(
+    'relative flex flex-col min-h-[22px]',
+    isDisabled && 'opacity-50 pointer-events-none',
+  );
+}
+
+/**
+ * The editable region. Its automatic minimum height is 0 as a scrolling flex
+ * item, so an empty one would lay out at 0px after a restyle and a click would
+ * no longer reach it; the height floor keeps it hit-testable. The 16px floor is
+ * iOS-only: iOS Safari zooms the page when a focused control sits under 16px,
+ * and only iOS WebKit implements the support query that gates it.
+ */
+export const chatComposerInputEditableClassName = tw(
+  'min-h-[22px] px-1 outline-none whitespace-pre-wrap break-words overflow-y-auto',
+  '[font-family:var(--font-family-body)] leading-[22px]',
+  'text-[length:var(--text-body-size)]',
+  'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
+  'text-[color:var(--color-text-primary)]',
+  '[caret-color:var(--color-accent)]',
+);
+
+/** The placeholder stands in the editable's box with the same type. */
+export const chatComposerInputPlaceholderClassName = tw(
+  'absolute top-0 start-0 end-0 px-1 pointer-events-none select-none',
+  '[font-family:var(--font-family-body)] leading-[22px]',
+  'text-[length:var(--text-body-size)]',
+  'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** A token chip: one line box tall, so it sits on the text baseline row. */
+export const chatComposerTokenSpanClassName =
+  'inline-flex items-center h-[1lh] align-top';

@@ -43,8 +43,8 @@ const FLOORED_FLOOR_FILES = [
   'TextArea/textAreaClasses.ts',
   'TextInput/textInputClasses.ts',
   'TimeInput/timeInputClasses.ts',
+  'Chat/chatClasses.ts',
   // Still on StyleX: the component source carries the declaration.
-  'Chat/ChatComposerInput.tsx',
   'CommandPalette/CommandPaletteInput.tsx',
   'ComplexSelector/ComplexSelector.tsx',
   'DateInput/TouchDateField.tsx',
