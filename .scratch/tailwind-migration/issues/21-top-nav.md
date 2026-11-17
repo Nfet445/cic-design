@@ -24,6 +24,31 @@ Migrate `TopNav/` (9) and its mega-menu members: the last large call-site rewrit
 
 - `pnpm exec vitest run packages/core/src/TopNav`
 
+## Progress
+
+Migrated to Tailwind class maps (`*Classes.ts`), each in its own commit:
+
+- `TopNav.tsx` → `topNavClasses.ts` (`1204fcad5`).
+- `TopNavMegaMenuFeaturedCard.tsx` → `topNavMegaMenuFeaturedCardClasses.ts` (`4dd7cd4d8`).
+
+Left to migrate, each with its own `*Classes.ts` and commit:
+
+- `TopNavItem.tsx`. Its selected state composes `interactionOverlayStyles`
+  (press arms on `data-astryx-press`) and, in the drawer, `navItemStyles` from
+  `NavItem/**`, which ticket 44 owns. The horizontal path can move to classes
+  with the selected fill keyed off `aria-current="page"`; the drawer path keeps
+  the shared row styles until 44 lands.
+- `TopNavHeading.tsx`. Four grid-template maps plus the `:has(.astryx-nav-icon)`
+  inline-start padding and the popover's `anchor-size()` widths.
+- `TopNavMenu.tsx` and `TopNavMegaMenu.tsx`. Both still spread
+  `menuTouchActionStyles` from `DropdownMenu/**` (ticket 23) and
+  `useMenuOverflow`; only their own style objects move.
+- `TopNavMegaMenuItem.tsx`. The drawer item reuses `navItemStyles.item`.
+
+Sheet coverage for the two migrated files is in
+`packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`; the rule
+budget there stays 820 until the merged sheet needs more.
+
 ## Notes
 
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
