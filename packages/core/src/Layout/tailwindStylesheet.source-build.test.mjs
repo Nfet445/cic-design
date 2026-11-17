@@ -579,6 +579,13 @@ import {
   dividerVerticalLabelClassName,
 } from '../Divider/dividerClasses';
 import {
+  skeletonAnimateClassName,
+  skeletonClassName,
+  skeletonDelayClassName,
+  skeletonDimensionsClassName,
+  skeletonRadiusClassName,
+} from '../Skeleton/skeletonClasses';
+import {
   bannerChevronClassName,
   bannerChevronExpandedClassName,
   bannerClassName,
@@ -1907,6 +1914,15 @@ function familyClassNames() {
   for (const value of Object.values(bannerStatusControlClassName)) {
     add(value);
   }
+  // Skeleton: the placeholder, the pulse, the two utility classes that read
+  // the props' variables, and one class per radius.
+  add(skeletonClassName);
+  add(skeletonAnimateClassName);
+  add(skeletonDelayClassName);
+  add(skeletonDimensionsClassName);
+  for (const value of Object.values(skeletonRadiusClassName)) {
+    add(value);
+  }
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);
@@ -2011,9 +2027,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // rows, its marker placement, the radio group's column, the sheet's
     // content box and action list, and the two drill-in wrappers added 18:
     // mostly one rule each, with the marker's two coarse-pointer arms and the
-    // row's three radius parts already spelled elsewhere. With every family
-    // above the sheet sits at 1187, so the ceiling follows the sum rather
-    // than one side.
+    // row's three radius parts already spelled elsewhere. Skeleton's map added
+    // 25 — the placeholder, the pulse, the two classes that read the props'
+    // variables, and one per radius. With every family above the sheet sits at
+    // 1212, so the ceiling follows the sum rather than one side.
     expect(stylesheet.rules.size).toBeLessThan(1260);
   });
 
