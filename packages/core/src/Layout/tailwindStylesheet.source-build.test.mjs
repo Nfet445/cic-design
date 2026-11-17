@@ -29,6 +29,12 @@ import {
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
+  dropdownMenuDividerClassName,
+  dropdownMenuItemClassName,
+  dropdownMenuSheetClassName,
+  dropdownMenuGroupHeadingClassName,
+} from '../DropdownMenu/dropdownMenuClasses';
+import {
   alertDialogActionsRowClassName,
   alertDialogStackedActionClassName,
 } from '../AlertDialog/alertDialogClasses';
@@ -505,6 +511,15 @@ import {
   linkExternalIconInClampedTextClassName,
   linkLabelClassName,
 } from '../Link/linkClasses';
+import {
+  cardBorderClassName,
+  cardClassName,
+  cardCornersClassName,
+  cardElevationClassName,
+  cardOverflowClassName,
+  cardSizingClassName,
+  cardVariantClassName,
+} from '../Card/cardClasses';
 
 const sheet = await buildAstryxTailwindCss();
 const stylesheet = stylesheetOf(sheet);
@@ -1704,6 +1719,44 @@ function familyClassNames() {
     add(value);
   }
 
+  // Card: one background per variant, one variable per elevation, and the
+  // sizing classes that read a variable.
+  add(cardClassName);
+  add(cardCornersClassName);
+  add(cardBorderClassName);
+  add(cardOverflowClassName({hasFixedHeight: false}));
+  add(cardOverflowClassName({hasFixedHeight: true}));
+  add(cardSizingClassName({height: 1, maxWidth: 1, minHeight: 1, width: 1}));
+  for (const value of Object.values(cardVariantClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(cardElevationClassName)) {
+    add(value);
+  }
+  // The menu family's leaves: the rule between groups, the heading that names
+  // one.
+  add(dropdownMenuDividerClassName);
+  for (const value of Object.values(dropdownMenuSheetClassName)) {
+    add(value);
+  }
+  add(dropdownMenuGroupHeadingClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(
+      dropdownMenuItemClassName({
+        isDestructive: false,
+        isDisabled: false,
+        size,
+      }),
+    );
+  }
+  add(
+    dropdownMenuItemClassName({
+      isDestructive: true,
+      isDisabled: true,
+      size: 'md',
+    }),
+  );
+
   return [...names].sort();
 }
 
@@ -1737,11 +1790,14 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // strip, masks and arrows, TabMenu, SegmentedControl — about 120. A scan
     // that reaches component bodies or prose would add hundreds more. The
     // top-nav menus and the row machine brought the sheet to about 975; the
-    // side-nav row's class map added its own transition and popover utilities,
-    // the drawer panel — two sides, two painting states, two direction arms
-    // and the scrim — about 60 more, and the mobile nav about 30: its dialog,
-    // the scrim's fade, both drawer edges in both motion states, and the
-    // header.
+    // side-nav row's class map added its own transition and popover utilities.
+    // The display-and-feedback family added Card's thirteen variant
+    // backgrounds, four elevation variables and its sizing classes. The drawer
+    // panel added two sides, two painting states, two direction arms and the
+    // scrim — about 60 — and the mobile nav about 30: its dialog, the scrim's
+    // fade, both drawer edges in both motion states, and the header. Card's
+    // four elevation variables were reused by the dialog family maps, so the
+    // sum of the two families is smaller than their parts.
     expect(stylesheet.rules.size).toBeLessThan(1080);
   });
 

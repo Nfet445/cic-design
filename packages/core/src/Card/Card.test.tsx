@@ -4,6 +4,7 @@ import {createRef} from 'react';
 import {describe, it, expect} from 'vitest';
 import {render} from '@testing-library/react';
 import * as stylex from '@stylexjs/stylex';
+import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
 import {Card} from './Card';
 import type {CardVariant} from './Card';
 
@@ -18,16 +19,17 @@ describe('Card', () => {
       const {getByTestId} = render(<Card data-testid="card">C</Card>);
       // Without this, `overflow: clip` keeps the automatic minimum size, so a
       // long unbroken value widens the row or a `1fr` track past its parent.
-      expect(getComputedStyle(getByTestId('card')).minWidth).toBe('0');
+      expectClassSet(getByTestId('card'), {includes: ['min-w-0']});
     });
 
     it('clips rather than scrolls, so it never becomes a scroll container', () => {
       const {getByTestId} = render(<Card data-testid="card">C</Card>);
-      const style = getComputedStyle(getByTestId('card'));
       // A scroll container would capture sticky descendants and become an
       // unnamed keyboard tab stop whenever its content overflows.
-      expect(style.overflow).toBe('clip');
-      expect(style.overflowX).not.toBe('auto');
+      expectClassSet(getByTestId('card'), {
+        includes: ['overflow-clip'],
+        excludes: ['overflow-auto', 'overflow-x-auto'],
+      });
     });
 
     it('yields the same way for every variant and elevation', () => {
@@ -41,8 +43,8 @@ describe('Card', () => {
           </Card>
         </>,
       );
-      expect(getComputedStyle(getByTestId('muted')).minWidth).toBe('0');
-      expect(getComputedStyle(getByTestId('transparent')).minWidth).toBe('0');
+      expectClassSet(getByTestId('muted'), {includes: ['min-w-0']});
+      expectClassSet(getByTestId('transparent'), {includes: ['min-w-0']});
     });
 
     it('still scrolls a fixed-height card and lets it yield', () => {
@@ -51,9 +53,10 @@ describe('Card', () => {
           C
         </Card>,
       );
-      const style = getComputedStyle(getByTestId('card'));
-      expect(style.overflow).toBe('auto');
-      expect(style.minWidth).toBe('0');
+      expectClassSet(getByTestId('card'), {
+        includes: ['overflow-auto', 'min-w-0'],
+        excludes: ['overflow-clip'],
+      });
     });
 
     it('keeps width as the preferred size and lets a consumer minimum win', () => {
@@ -70,7 +73,8 @@ describe('Card', () => {
       );
       // An explicit width does not become a floor: in a narrow row the card
       // still yields, and a consumer minimum is the way to hold it.
-      expect(getComputedStyle(getByTestId('sized')).minWidth).toBe('0');
+      expectClassSet(getByTestId('sized'), {includes: ['min-w-0']});
+      expectVariable(getByTestId('sized'), '--astryx-card-width', '320px');
       expect(getComputedStyle(getByTestId('held')).minWidth).toBe('240px');
     });
   });

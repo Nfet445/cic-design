@@ -172,16 +172,24 @@ check of the family's states.
 
 ## Status
 
-- Current phase: `4` — waves 1 and 2 are done and pushed, wave 0 is the next
-  ticket. The layout family proved the contract; all five members of
-  `family:buttons` are settled, four of them migrated, and the whole sheet
-  still fits the budget the stylesheet test enforces.
-- The remaining work is scheduled: 36 tickets over waves 0 and 3-9, each with
-  its files, its `Blocked by:` line and its verification, in
+- Current phase: `4` — the family waves. Waves 1 and 2 landed on `main` in
+  pull request #1; waves 3 through 8 are integrating on the migration trunk
+  behind pull request #2, one merge commit per ticket.
+- Done: 27 of the 49 tickets, plus the two waves that landed before the
+  tickets were written. The sheet the trunk builds is 147 kB raw, 20 kB
+  gzipped, 1 050 rule blocks, and every package's sheet test holds its gzip
+  gate.
+- Remaining: date and time inputs, the rest of the side nav, dialogs and
+  sheets, menus, search surfaces, display and feedback, form controls and the
+  family leftovers, chat, overflow and gesture surfaces, the table plugins,
+  the shared modules whose consumers still own the property, and the consumer
+  surfaces — CLI docs and templates, Storybook, vibe-tests, swizzle.
+- The work is scheduled: 49 tickets over waves 0 and 3–9, each with its files,
+  its `Blocked by:` line and its verification, in
   [`.scratch/tailwind-migration/`](../../../.scratch/tailwind-migration/map.md).
   `packages/native` and `packages/vega` are out of scope: neither imports
   StyleX, and Tailwind CSS does not apply to React Native.
 - Blockers: `spec:AST-119` and the two amendments need owner approval, which
-  every wave pull request carries; OQ1 and OQ3 change the consumer story and
-  must settle before Phase 5; OQ2 decides whether FR8's class set is a promise.
-  OQ3 is answered for this plan: the consumer's `xstyle` stays unlayered.
+  every wave pull request carries; OQ1, OQ2 and OQ4 shape the consumer story
+  and must settle before Phase 5. OQ3 is answered for this plan: the
+  consumer's `xstyle` stays unlayered.
