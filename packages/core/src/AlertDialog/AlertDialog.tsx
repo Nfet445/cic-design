@@ -4,7 +4,7 @@
 
 /**
  * @file AlertDialog.tsx
- * @input Uses React, StyleX, Dialog, Layout, Heading, Text, Button, the
+ * @input Uses React, Dialog, Layout, Heading, Text, Button, the
  *   action-group tracking (hooks/useActionGroupTracking), the press-group
  *   context (hooks/pressGroupContext), the group pointers
  *   (hooks/useGroupPressTracking) and the touch motion (useAlertMotion)
@@ -22,7 +22,6 @@
  */
 
 import React, {useId, useCallback, useRef} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Dialog} from '../Dialog/Dialog';
 import {Layout} from '../Layout/Layout';
 import {LayoutContent} from '../Layout/LayoutContent';
@@ -52,6 +51,7 @@ import {
   alertDialogActionsRowClassName,
   alertDialogStackedActionClassName,
 } from './alertDialogClasses';
+import {alertDialogTouchMotionStyles} from './alertDialogTouchMotion.stylex';
 
 registerEnglishFallback(english);
 
@@ -59,22 +59,6 @@ const SMALL_SCREEN_QUERY = '(max-width: 640px)';
 
 /** iOS's alert is 320 px wide on a phone, in every theme. */
 const PHONE_WIDTH = 320;
-
-// The touch motion drives the dialog, so the theme's entrance keyframes do not
-// play. The animator promotes the dimming through this custom property on the
-// dialog. Without it, Mobile Safari keeps an unlayered backdrop's animation on
-// the main thread at its first commit. It stays with StyleX because it must
-// beat the dialog's `open:[animation-name:...]` class: an unlayered declaration
-// always wins over `@layer astryx-base`, while two classes in that layer are
-// decided by sheet order, not by the class attribute.
-const touchMotionStyles = stylex.create({
-  touchMotion: {
-    animationName: 'none',
-    '::backdrop': {
-      willChange: 'var(--astryx-motion-will-change-backdrop, auto)',
-    },
-  },
-});
 
 export interface AlertDialogProps extends BaseProps<HTMLDialogElement> {
   ref?: React.Ref<HTMLDialogElement>;
@@ -287,7 +271,10 @@ export function AlertDialog({
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
       {...mergeProps(themeProps('alert-dialog'), {className, style})}
-      xstyle={[motion.isDriving && touchMotionStyles.touchMotion, xstyle]}
+      xstyle={[
+        motion.isDriving && alertDialogTouchMotionStyles.touchMotion,
+        xstyle,
+      ]}
       data-testid={testId}>
       <Layout
         content={

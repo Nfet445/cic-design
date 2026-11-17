@@ -1,6 +1,6 @@
 # dialogs and sheets
 
-Status: partly done — Dialog, DialogHeader, AlertDialog, DrawerHeader, the `Drawer` panel (plus its content area), the BottomSheet edge tint and all of `MobileNav/` have class maps; the BottomSheet host and panel, `BottomSheetSwitcher.tsx` and `Lightbox/` still hold StyleX (see Result)
+Status: partly done — Dialog, DialogHeader, AlertDialog, DrawerHeader, the `Drawer` panel (plus its content area), the BottomSheet edge tint and all of `MobileNav/` have class maps, and the three rules that must stay unlayered now sit in `*.stylex.ts` beside their map; the BottomSheet host and panel, `BottomSheetSwitcher.tsx`, `Lightbox/` and `Popover/` still hold StyleX (see Result)
 Blocked by: 11,17
 Wave: 7
 Family: `family:overlay-dismissal`
@@ -83,15 +83,25 @@ changeset `.changeset/dialog-tailwind-classes.md` and a coverage block in
   the shipped sheet carries) never reaches the accessibility tree there. The
   assertions themselves (focus return, StrictMode remount) are unchanged.
 
-Deliberately left on StyleX:
+Deliberately left on StyleX, each now in its own `*.stylex.ts` beside the
+class map (the shape `Card/cardBorder.stylex.ts` set), so the reason lives
+with the rule:
 
-- `Dialog/Dialog.tsx` fullscreen safe-area padding. It pads the same element
-  `container()` pads, and `container()` is unlayered: an unlayered declaration
-  always wins over an `@layer astryx-base` class, so the padding cannot move
-  without moving `container()` first.
-- `AlertDialog/AlertDialog.tsx` touch motion. It must beat the dialog's
-  `open:[animation-name:…]` class, which two classes in one layer cannot do —
-  sheet order decides there, not the class attribute.
+- `Dialog/dialogFullscreenSafeArea.stylex.ts` fullscreen safe-area padding. It
+  pads the same element `container()` pads, and `container()` is unlayered: an
+  unlayered declaration always wins over an `@layer astryx-base` class, so the
+  padding cannot move without moving `container()` first. `Dialog.tsx` still
+  exports `dialogFullscreenSafeAreaPaddingContract` from the component, so the
+  test's import path is unchanged.
+- `AlertDialog/alertDialogTouchMotion.stylex.ts` touch motion. It must beat the
+  dialog's `open:[animation-name:…]` class, which two classes in one layer
+  cannot do — sheet order decides there, not the class attribute. The class map
+  already prints `open:[animation-name:none]` for a dialog with no entrance, so
+  the conflict is between two utilities of `dialogClasses.ts`, not a missing
+  utility.
+- `Drawer/drawerContentSafeArea.stylex.ts` block-end safe area. The content
+  area is the drawer's container, and the container rules that own its padding
+  are unlayered, so the safe-area arithmetic cannot be a class.
 - `Popover/` is outside this ticket's `## What` and still holds both
   `stylex.create` blocks (the surface caps use a `firstThatWorks` fallback chain
   and `layerViewportInset` constants a class literal cannot import). It belongs
@@ -209,3 +219,78 @@ packages/core/src/BottomSheet` — 1367 passed, 56 files.
 - `pnpm exec tsc -p packages/core/tsconfig.json --noEmit` — exit 0.
 - The one merge conflict was the budget comment and value in the sheet test;
   both sides are kept (see above) and `node --check` passes.
+
+Third window (`543805881`, on the merge of `poc/tailwind-layout-primitives`,
+then the merge `1be004522`):
+
+- `543805881` — the three rules that have to stay unlayered moved out of the
+  component files into a `*.stylex.ts` beside the class map, one file each:
+  `Dialog/dialogFullscreenSafeArea.stylex.ts`,
+  `AlertDialog/alertDialogTouchMotion.stylex.ts` and
+  `Drawer/drawerContentSafeArea.stylex.ts`. Each file header states which
+  unlayered rule the StyleX rule must beat, so the reason no longer sits in a
+  component that otherwise has no StyleX. `Dialog.tsx` re-exports
+  `dialogFullscreenSafeAreaPaddingContract`, and `AlertDialog.tsx` lost its
+  `@stylexjs/stylex` import with the rule. No behavior, no class and no
+  assertion changed: the moved rules are StyleX still, so the sheet, the class
+  sets and every computed-style read are identical.
+
+Decided with the sheet in hand, not from the comment:
+
+- `Dialog` fullscreen padding stays StyleX. `container()` pads the element from
+  an unlayered rule, and an unlayered declaration outranks `@layer
+astryx-base` whatever the class declares.
+- `AlertDialog` touch motion stays StyleX. `dialogClasses.ts` sets
+  `open:[animation-name:astryxDialogEnter]` (and the fullscreen variant from
+  `:49`, `:53`) on the same element; `dialogClasses.ts:57` already carries
+  `open:[animation-name:none]`, so the question was never a missing utility —
+  two utilities in one layer are decided by sheet order, which the class
+  attribute cannot express. An unlayered `animation-name: none` can.
+- `Drawer` block-end safe area stays StyleX for the reason recorded when the
+  panel landed.
+
+Window findings:
+
+- `packages/core/src/DropdownMenu/DropdownMenu.tsx:834` fails `tsc
+-p packages/core/tsconfig.json --noEmit` with `TS2353: Object literal may
+only specify known properties, and 'className' does not exist in type
+'CSSProperties'`. It is present on the tree before this window's edits
+  (verified by stashing them) and comes from the `poc` merge; DropdownMenu is
+  another ticket's file, so it is left for its owner.
+- `poc` carries two unformatted files this ticket does not own:
+  `Banner/Banner.doc.mjs` and `Divider/Divider.doc.mjs` fail
+  `prettier --check`.
+- The sheet test needed no conflict resolution this time: the merge took both
+  sides' coverage blocks on its own and `node --check` passes. The budget did
+  not move for this window's work, because no class was added.
+
+Verification on the merged tree (`1be004522`):
+
+- `pnpm exec vitest run packages/core/src/BottomSheet
+packages/core/src/Lightbox packages/core/src/Dialog packages/core/src/AlertDialog
+packages/core/src/Drawer packages/core/src/Popover packages/core/src/Layout
+packages/core/src/Banner packages/core/src/Divider packages/core/src/SideNav
+packages/core/src/TreeList packages/core/src/Card packages/core/src/MobileNav`
+  — 2221 passed, 75 files.
+- `pnpm exec vitest run packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`
+  — 54 passed, sheet 158.8 kB.
+- `node packages/core/scripts/build-css-tailwind.mjs` — 158.8 kB (153.1 kB
+  before the merge of the Divider/`SideNav`/`TreeList`/`Banner` class maps).
+- Prettier and ESLint on every touched file — clean.
+
+Left for the next window, unchanged by this one:
+
+- `BottomSheetPanel.tsx` (the `pastGrabBarStyles` map at `:286` and the
+  `styles` map at `:332`), `BottomSheet.tsx:136` and
+  `BottomSheetSwitcher.tsx:98`. Start from the assertions, as the `59`-failure
+  lesson above says: `BottomSheetPanel.test.tsx:738`, `:742`, `:967`, `:1050`
+  and the `document.styleSheets` walks at `:845`/`:866` read the panel's own
+  declarations, and `BottomSheetStacking.test.tsx:627` onward reads the
+  positioner's transform. The panel alone is 15 style keys plus a 12-step
+  padding map, so it is one window of its own.
+- `Lightbox/Lightbox.tsx:193` and `:578` (`pageStyles`): 2 blocks and about
+  1300 lines of styles.
+- `Popover/Popover.tsx:395` and `Popover/usePopover.tsx:91`: the caps ride
+  `stylex.firstThatWorks` over `layerViewportInset` constants, and a class
+  literal cannot import one, so the constant's value has to be written into the
+  class and the coupling recorded here.

@@ -242,6 +242,20 @@
   }
 }
 
+/* StatusDot: the pulse a live status breathes with. A keyframe lives here, not
+   in a `.ts` file, because the build scans class maps only. */
+@keyframes astryxStatusDotPulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 /* Button loading: the spinner fade-in and the content hide share one delay so
    the button never shows an empty frame in between. */
 @keyframes astryxButtonSpinnerReveal {

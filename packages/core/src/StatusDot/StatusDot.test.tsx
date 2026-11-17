@@ -2,10 +2,9 @@
 
 import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import {StatusDot} from './StatusDot';
-import {getForcedColorsRules} from '../__tests__/forcedColors';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {statusDotVariantClassName} from './statusDotClasses';
 
 /** Renders a StatusDot and returns its root element. */
 function renderDot(props: React.ComponentProps<typeof StatusDot>) {
@@ -150,31 +149,9 @@ describe('StatusDot', () => {
       // lands near 1.8:1 on a muted card. An icon inherits the ink via
       // `currentColor`; the surface ink keeps the same pair the other way
       // round.
-      const probe = stylex.create({
-        success: {
-          backgroundColor: colorVars['--color-icon-success'],
-          color: colorVars['--color-background-surface'],
-        },
-        warning: {
-          backgroundColor: colorVars['--color-icon-warning'],
-          color: colorVars['--color-background-surface'],
-        },
-        error: {
-          backgroundColor: colorVars['--color-icon-error'],
-          color: colorVars['--color-background-surface'],
-        },
-      });
       for (const variant of ['success', 'warning', 'error'] as const) {
         const dot = renderDot({variant, label: variant});
-        const atomicClasses = (stylex.props(probe[variant]).className ?? '')
-          .split(' ')
-          // Dev mode prepends a per-file `File__style.key` debug class that
-          // legitimately differs between the probe and the component.
-          .filter(cls => !cls.includes('__'));
-        expect(atomicClasses.length).toBeGreaterThan(0);
-        for (const cls of atomicClasses) {
-          expect(dot.className, variant).toContain(cls);
-        }
+        expect(dot).toHaveClass(statusDotVariantClassName[variant]!);
       }
     });
   });
@@ -211,14 +188,26 @@ describe('StatusDot theme target names', () => {
   });
 });
 
-// jsdom cannot emulate forced colors, so this asserts the compiled rule the
-// status fill relies on (architecture:theme-tokens INV11): the fill becomes
-// Canvas, and a CanvasText boundary keeps its shape.
+// jsdom cannot emulate forced colors, so this asserts the class the status
+// fill relies on: the fill becomes Canvas, and a CanvasText boundary keeps its
+// shape.
 describe('StatusDot forced colors', () => {
   it('keeps a visible boundary on the status fill', () => {
     render(<StatusDot variant="error" label="Offline" />);
-    const css = getForcedColorsRules();
-    expect(css).toContain('outline-style: solid;');
-    expect(css).toContain('outline-color: canvastext;');
+    const dot = screen.getByRole('img', {name: 'Offline'});
+    expectClassSet(dot, {
+      includes: [
+        'forced-colors:outline-[1px]',
+        'forced-colors:outline-solid',
+        'forced-colors:outline-[color:CanvasText]',
+      ],
+    });
+    // Every semantic status carries the boundary; a tint pair does not.
+    for (const variant of ['success', 'warning', 'error'] as const) {
+      expect(statusDotVariantClassName[variant]).toContain(
+        'forced-colors:outline-[color:CanvasText]',
+      );
+    }
+    expect(statusDotVariantClassName.accent).not.toContain('forced-colors:');
   });
 });
