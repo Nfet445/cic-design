@@ -237,6 +237,20 @@ export const docs = {
         visualProps: ['density'],
       },
     ],
+    vars: [
+      {
+        name: '--astryx-markdown-prose-width',
+        description:
+          'Measure a prose block is capped to. Markdown writes it inline on each block from the contentWidth prop; a block reads it through its max-width class.',
+        private: true,
+      },
+      {
+        name: '--astryx-markdown-block-width',
+        description:
+          'Width a wide block spans. Markdown writes it inline on a table block from the contentWidth prop; the block reads it through its min-width class.',
+        private: true,
+      },
+    ],
   },
   usage: {
     anatomy,

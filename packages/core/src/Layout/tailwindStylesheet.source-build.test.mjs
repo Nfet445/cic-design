@@ -28,6 +28,31 @@ import {
   avatarStatusDotVariantClassName,
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
+import {
+  markdownBlockIndentClassName,
+  markdownBlockSpacingClassName,
+  markdownBlockWidthClassName,
+  markdownBoldClassName,
+  markdownCenterAlignClassName,
+  markdownCodeBlockWrapperClassName,
+  markdownFadeInClassName,
+  markdownHeadingClassName,
+  markdownHeadingLevelClassName,
+  markdownHeadingLinksControlSlotClassName,
+  markdownHeadingLinksGlyphClassName,
+  markdownHeadingLinksProbeClassName,
+  markdownHeadingLinksTextClassName,
+  markdownHeadingRowClassName,
+  markdownHrClassName,
+  markdownImageClassName,
+  markdownInlineRootClassName,
+  markdownLinkClassName,
+  markdownMarkerGutterClassName,
+  markdownProseWidthClassName,
+  markdownRootClassName,
+  markdownStrikethroughClassName,
+  markdownTableWrapperClassName,
+} from '../Markdown/markdownClasses';
 import {commandPaletteEmptyClassName} from '../CommandPalette/commandPaletteEmptyClasses';
 import {
   commandPaletteFooterClassName,
@@ -2638,12 +2663,7 @@ function familyClassNames() {
   // ToastViewport: the popover reset with its safe-area gutters in both
   // directions, the four placements, both empty and filled, the outlet that
   // renders a portaled viewport in place of itself, and every row state.
-  for (const position of [
-    'topStart',
-    'topEnd',
-    'bottomStart',
-    'bottomEnd',
-  ]) {
+  for (const position of ['topStart', 'topEnd', 'bottomStart', 'bottomEnd']) {
     for (const isEmpty of [true, false]) {
       add(toastViewportClassName({position, isEmpty}));
     }
@@ -2953,6 +2973,53 @@ function familyClassNames() {
   add(commandPaletteInputSpinnerClassName);
   add(commandPaletteInputFieldClassName);
 
+  // Markdown: the two roots, the heading row with its level type and copy
+  // control, every block's first/middle/last density spacing, the code, table,
+  // hr and image blocks, and the inline and streaming marks.
+  add(markdownRootClassName);
+  add(markdownInlineRootClassName);
+  add(markdownHeadingClassName);
+  add(markdownHeadingRowClassName);
+  add(markdownHeadingLinksTextClassName);
+  add(markdownHeadingLinksControlSlotClassName);
+  add(markdownHeadingLinksProbeClassName);
+  add(markdownHeadingLinksGlyphClassName);
+  for (const level of [1, 2, 3, 4, 5, 6]) {
+    add(markdownHeadingLevelClassName[level]);
+  }
+  for (const density of ['default', 'compact']) {
+    for (const kind of [
+      'headingMajor',
+      'headingMinor',
+      'paragraph',
+      'codeblock',
+      'blockquote',
+      'list',
+      'table',
+      'hr',
+      'image',
+    ]) {
+      for (const isFirst of [false, true]) {
+        for (const isLast of [false, true]) {
+          add(markdownBlockSpacingClassName(kind, density, {isFirst, isLast}));
+        }
+      }
+    }
+  }
+  add(markdownCodeBlockWrapperClassName);
+  add(markdownTableWrapperClassName);
+  add(markdownHrClassName);
+  add(markdownImageClassName);
+  add(markdownBoldClassName);
+  add(markdownStrikethroughClassName);
+  add(markdownLinkClassName);
+  add(markdownFadeInClassName);
+  add(markdownProseWidthClassName);
+  add(markdownBlockWidthClassName);
+  add(markdownCenterAlignClassName);
+  add(markdownBlockIndentClassName);
+  add(markdownMarkerGutterClassName);
+
   return [...names].sort();
 }
 
@@ -3045,9 +3112,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // wrap states, its numbered divider, the row in every number and diff
     // combination, every tint, the marker and the two size and cluster classes
     // reuse almost every code font, spacing and border utility the siblings
-    // already spell. The ceiling keeps its usual headroom above the measured
-    // number.
-    expect(stylesheet.rules.size).toBeLessThan(1760);
+    // already spell. Markdown's two roots, the heading row with its level type
+    // and copy control, every block's first, middle and last density spacing,
+    // and the code, table, hr, image, inline and streaming marks mostly reuse
+    // those same utilities; the eleven rules they add took the sheet to 1771,
+    // and the ceiling keeps its usual headroom above that number.
+    expect(stylesheet.rules.size).toBeLessThan(1786);
   });
 
   it('keeps the scrim takeover pin under prefers-reduced-motion', () => {

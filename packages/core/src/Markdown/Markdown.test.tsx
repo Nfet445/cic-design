@@ -37,6 +37,9 @@ import type {ParseOptions} from './index';
 import {stubMatchMedia} from '../__tests__/stubMatchMedia';
 import {parseOutlineFromMarkdown} from '../Outline/parseOutlineFromMarkdown';
 import {spacingVars} from '../theme/tokens.stylex';
+import {LIST_ITEM_COUNTER} from '../List/listItemClasses';
+import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
+import {markdownProseWidthClassName} from './markdownClasses';
 
 const tableCellSpacingProbe = stylex.create({
   cell: {
@@ -544,16 +547,15 @@ describe('Markdown', () => {
     render(<Markdown>{'1. First\n2. Second\n3. Third'}</Markdown>);
     const ol = document.querySelector('ol')!;
     const lis = ol.querySelectorAll('li');
-    // Each li should have the counter-increment class
-    lis.forEach(li => {
-      expect(li.className).toContain('withCounter');
-    });
+    for (const li of lis) {
+      expect(li).toHaveClass(LIST_ITEM_COUNTER);
+    }
   });
 
   it('applies counter-reset class to ordered list container', () => {
     render(<Markdown>{'1. First\n2. Second'}</Markdown>);
     const ol = document.querySelector('ol')!;
-    expect(ol.className).toContain('withCounter');
+    expect(ol.className).toContain('counter-reset:astryx-list');
   });
 
   it('joins blank-line-separated 1./1./1. into a single ordered list', () => {
@@ -1541,21 +1543,23 @@ describe('inlinePlugins', () => {
 });
 
 describe('Markdown contentWidth', () => {
-  function maxWidthStyles(container: HTMLElement): string[] {
-    return Array.from(container.querySelectorAll('*'))
-      .map(el => el.getAttribute('style') ?? '')
-      .filter(style => style.includes('--x-maxWidth'));
+  const PROSE_WIDTH_VAR = '--astryx-markdown-prose-width';
+
+  // Every prose block carries the measure as an inline custom property, so the
+  // property itself is the selector.
+  function proseColumns(container: HTMLElement): HTMLElement[] {
+    return Array.from(
+      container.querySelectorAll<HTMLElement>('[role="document"] *'),
+    ).filter(element => element.style.getPropertyValue(PROSE_WIDTH_VAR) !== '');
   }
 
   it('caps default prose at the 680px measure', () => {
     const {container} = render(
       <Markdown>{'Hello world paragraph.\n\n```\ncode\n```'}</Markdown>,
     );
-    expect(
-      maxWidthStyles(container).some(style =>
-        style.includes('--x-maxWidth: 680px'),
-      ),
-    ).toBe(true);
+    const paragraph = screen.getByText('Hello world paragraph.');
+    expectClassSet(paragraph, {includes: [markdownProseWidthClassName]});
+    expectVariable(paragraph, PROSE_WIDTH_VAR, '680px');
     // A code block spans the column, with the prose measure as its floor.
     expect(container.querySelector('pre')?.getAttribute('style')).toContain(
       '--x-minWidth: min(680px, 100%)',
@@ -1566,10 +1570,11 @@ describe('Markdown contentWidth', () => {
     const {container} = render(
       <Markdown contentWidth="100%">{'Hello world paragraph.'}</Markdown>,
     );
-    const proseStyles = maxWidthStyles(container);
-    expect(proseStyles.length).toBeGreaterThan(0);
-    for (const style of proseStyles) {
-      expect(style).toContain('--x-maxWidth: 100%');
+    const columns = proseColumns(container);
+    expect(columns.length).toBeGreaterThan(0);
+    for (const column of columns) {
+      expectClassSet(column, {includes: [markdownProseWidthClassName]});
+      expectVariable(column, PROSE_WIDTH_VAR, '100%');
     }
   });
 
@@ -1577,10 +1582,11 @@ describe('Markdown contentWidth', () => {
     const {container} = render(
       <Markdown contentWidth={640}>{'Hello world paragraph.'}</Markdown>,
     );
-    const proseStyles = maxWidthStyles(container);
-    expect(proseStyles.length).toBeGreaterThan(0);
-    for (const style of proseStyles) {
-      expect(style).toContain('--x-maxWidth: 640px');
+    const columns = proseColumns(container);
+    expect(columns.length).toBeGreaterThan(0);
+    for (const column of columns) {
+      expectClassSet(column, {includes: [markdownProseWidthClassName]});
+      expectVariable(column, PROSE_WIDTH_VAR, '640px');
     }
   });
 
@@ -1588,6 +1594,6 @@ describe('Markdown contentWidth', () => {
     const {container} = render(
       <Markdown contentWidth={0}>{'Hello world paragraph.'}</Markdown>,
     );
-    expect(maxWidthStyles(container)).toEqual([]);
+    expect(proseColumns(container)).toEqual([]);
   });
 });

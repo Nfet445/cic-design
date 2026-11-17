@@ -11,14 +11,22 @@
 
 import {useCallback} from 'react';
 import type {MouseEvent, ReactElement} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import {Button} from '../../Button/Button';
 import {Icon} from '../../Icon';
 import {useClipboard} from '../../hooks/useClipboard';
 import {useContainerReveal} from '../../hooks/useContainerReveal';
-import {colorVars, sizeVars, spacingVars} from '../../theme/tokens.stylex';
 import {mergeProps, rtlStyles} from '../../utils';
+import {tw} from '../../utils/tw';
+import {
+  markdownCenterAlignClassName,
+  markdownHeadingLinksControlSlotClassName,
+  markdownHeadingLinksGlyphClassName,
+  markdownHeadingLinksProbeClassName,
+  markdownHeadingRowClassName,
+  markdownProseWidthClassName,
+  markdownProseWidthStyle,
+} from '../markdownClasses';
+import {markdownHeadingLinksCopyButtonStyles} from '../markdownChildOverrides.stylex';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -28,81 +36,6 @@ import english from '../../i18n/generated-english/Markdown/plugins/HeadingLinksR
 registerEnglishFallback(english);
 
 const COPY_FEEDBACK_MS = 1500;
-const COARSE_TARGET = '24px';
-
-const ALIGN_MARGIN = {
-  start: '0',
-  center: 'auto',
-} as const;
-
-const dynamicStyles = stylex.create({
-  proseWidth: (maxWidth: string) => ({maxWidth}),
-  proseAlign: (marginInline: string) => ({marginInline}),
-});
-
-const styles = stylex.create({
-  row: {
-    display: 'flex',
-    alignItems: 'last baseline',
-    minWidth: 0,
-    maxWidth: '100%',
-    overflow: 'visible',
-    isolation: 'isolate',
-  },
-  heading: {
-    flex: '0 1 auto',
-    minWidth: 0,
-    marginBlock: 0,
-  },
-  controlSlot: {
-    position: 'relative',
-    display: 'inline-block',
-    flexShrink: 0,
-    zIndex: 1,
-    inlineSize: {
-      default: sizeVars['--size-element-sm'],
-      '@media (any-pointer: coarse)': COARSE_TARGET,
-    },
-    marginInlineStart: spacingVars['--spacing-1-5'],
-    color: colorVars['--color-text-secondary'],
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    fontWeight: 'inherit',
-    lineHeight: 'inherit',
-  },
-  baselineProbe: {
-    visibility: 'hidden',
-  },
-  copyButton: {
-    position: 'absolute',
-    insetBlockStart: '50%',
-    inlineSize: {
-      default: sizeVars['--size-element-sm'],
-      '@media (any-pointer: coarse)': COARSE_TARGET,
-    },
-    blockSize: {
-      default: sizeVars['--size-element-sm'],
-      '@media (any-pointer: coarse)': COARSE_TARGET,
-    },
-    paddingBlock: 0,
-    paddingInline: 0,
-    color: 'inherit',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    fontWeight: 'inherit',
-    lineHeight: 'inherit',
-  },
-  glyph: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    inlineSize: '1em',
-    blockSize: '1em',
-  },
-});
-
-/** @internal Applied only while this module owns the built-in heading row. */
-export const headingLinksHeadingStyle = styles.heading;
 
 interface HeadingLinksRendererProps {
   readonly children: ReactElement;
@@ -111,8 +44,8 @@ interface HeadingLinksRendererProps {
   readonly permalinkUrl: string;
   readonly contentWidth: string | null;
   readonly contentAlign: 'start' | 'center';
-  readonly headingTextStyle: StyleXStyles;
-  readonly blockSpacingStyle: StyleXStyles;
+  readonly headingTextClassName: string;
+  readonly blockSpacingClassName: string;
   /** The heading's own direction; the copy control follows its inline end. */
   readonly dir?: 'ltr' | 'rtl';
 }
@@ -137,8 +70,8 @@ export function HeadingLinksRenderer({
   permalinkUrl,
   contentWidth,
   contentAlign,
-  headingTextStyle,
-  blockSpacingStyle,
+  headingTextClassName,
+  blockSpacingClassName,
   dir,
 }: HeadingLinksRendererProps): ReactElement {
   const t = useComponentTranslator();
@@ -167,21 +100,22 @@ export function HeadingLinksRenderer({
   return (
     <div
       dir={dir}
-      {...mergeProps(
-        getContainerProps(),
-        stylex.props(
-          styles.row,
-          headingTextStyle,
-          blockSpacingStyle,
-          contentWidth != null ? dynamicStyles.proseWidth(contentWidth) : null,
-          contentAlign !== 'start'
-            ? dynamicStyles.proseAlign(ALIGN_MARGIN[contentAlign])
-            : null,
+      {...mergeProps(getContainerProps(), {
+        className: tw(
+          markdownHeadingRowClassName,
+          headingTextClassName,
+          blockSpacingClassName,
+          contentWidth != null && markdownProseWidthClassName,
+          contentAlign === 'center' && markdownCenterAlignClassName,
         ),
-      )}>
+        style:
+          contentWidth != null
+            ? markdownProseWidthStyle(contentWidth)
+            : undefined,
+      })}>
       {children}
-      <span {...stylex.props(styles.controlSlot)}>
-        <span aria-hidden="true" {...stylex.props(styles.baselineProbe)}>
+      <span className={markdownHeadingLinksControlSlotClassName}>
+        <span aria-hidden="true" className={markdownHeadingLinksProbeClassName}>
           #
         </span>
         <Button
@@ -190,13 +124,18 @@ export function HeadingLinksRenderer({
           size="sm"
           label={isCopied ? copiedLabel : copyLabel}
           icon={
-            <span aria-hidden="true" {...stylex.props(styles.glyph)}>
+            <span
+              aria-hidden="true"
+              className={markdownHeadingLinksGlyphClassName}>
               {isCopied ? <Icon icon="check" size="sm" color="inherit" /> : '#'}
             </span>
           }
           isIconOnly
           onClick={handleClick}
-          xstyle={[styles.copyButton, rtlStyles.centerInline('-50%')]}
+          xstyle={[
+            markdownHeadingLinksCopyButtonStyles.overrides,
+            rtlStyles.centerInline('-50%'),
+          ]}
           {...getContentRevealProps({isLayoutPreserved: true})}
         />
       </span>
