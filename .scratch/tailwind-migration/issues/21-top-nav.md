@@ -54,3 +54,13 @@ budget there stays 820 until the merged sheet needs more.
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.
 - Manual Windows High Contrast check is part of this ticket's checklist when the component draws a border, an outline or a focus ring.
+
+## Result
+
+`TopNav` bar, `FeaturedCard`, `TopNavItem`, `TopNavHeading` and `TopNavMenu`
+are class maps (`topNavItemClasses.ts`, `topNavHeadingClasses.ts`,
+`topNavMenuClasses.ts`, `topNavMegaMenuFeaturedCardClasses.ts`). Merged
+`4ffc4bafc`, `8b3b75fb4`, `a12b5f5b1`, `0dd913d17`.
+
+Left: `TopNavMegaMenu.tsx` (1 `stylex.create`), `TopNavMegaMenuItem.tsx` (1)
+and the map its test reads.
