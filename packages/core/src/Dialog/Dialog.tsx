@@ -65,6 +65,7 @@ import {
   dialogWidthVar,
   type DialogEntrance,
 } from './dialogClasses';
+import {dialogFullscreenSafeAreaStyles} from './dialogFullscreenSafeArea.stylex';
 import {tw} from '../utils/tw';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
 import {layerClickBoundary} from '../Layer/layerClickBoundary';
@@ -163,45 +164,7 @@ export interface DialogPosition extends DialogBlockPosition {
   end?: number | string;
 }
 
-const dialogFullscreenSafeAreaBlockStartPadding = `var(--astryx-dialog-padding-block-start, var(--astryx-dialog-padding, max(${spacingVars['--spacing-4']}, env(safe-area-inset-top, 0px))))`;
-const dialogFullscreenSafeAreaBlockEndPadding = `var(--astryx-dialog-padding-block-end, var(--astryx-dialog-padding, max(${spacingVars['--spacing-4']}, env(safe-area-inset-bottom, 0px))))`;
-const dialogFullscreenSafeAreaInlineStartPaddingLtr = `var(--astryx-dialog-padding-inline-start, var(--astryx-dialog-padding-inline, var(--astryx-dialog-padding, max(${spacingVars['--spacing-4']}, env(safe-area-inset-left, 0px)))))`;
-const dialogFullscreenSafeAreaInlineStartPaddingRtl = `var(--astryx-dialog-padding-inline-start, var(--astryx-dialog-padding-inline, var(--astryx-dialog-padding, max(${spacingVars['--spacing-4']}, env(safe-area-inset-right, 0px)))))`;
-const dialogFullscreenSafeAreaInlineEndPaddingLtr = `var(--astryx-dialog-padding-inline-end, var(--astryx-dialog-padding-inline, var(--astryx-dialog-padding, max(${spacingVars['--spacing-4']}, env(safe-area-inset-right, 0px)))))`;
-const dialogFullscreenSafeAreaInlineEndPaddingRtl = `var(--astryx-dialog-padding-inline-end, var(--astryx-dialog-padding-inline, var(--astryx-dialog-padding, max(${spacingVars['--spacing-4']}, env(safe-area-inset-left, 0px)))))`;
-
-/** @internal Verified by Dialog.test.tsx; not re-exported from the package entry point. */
-export const dialogFullscreenSafeAreaPaddingContract = {
-  blockStart: dialogFullscreenSafeAreaBlockStartPadding,
-  blockEnd: dialogFullscreenSafeAreaBlockEndPadding,
-  inlineStart: {
-    ltr: dialogFullscreenSafeAreaInlineStartPaddingLtr,
-    rtl: dialogFullscreenSafeAreaInlineStartPaddingRtl,
-  },
-  inlineEnd: {
-    ltr: dialogFullscreenSafeAreaInlineEndPaddingLtr,
-    rtl: dialogFullscreenSafeAreaInlineEndPaddingRtl,
-  },
-} as const;
-
-// The fullscreen safe-area padding stays with StyleX: the theme's container
-// padding publishes `--container-padding-*` and applies padding to this same
-// element from an unlayered rule, and an unlayered declaration always wins over
-// an `@layer astryx-base` class.
-const styles = stylex.create({
-  fullscreenSafeArea: {
-    paddingBlockStart: dialogFullscreenSafeAreaBlockStartPadding,
-    paddingBlockEnd: dialogFullscreenSafeAreaBlockEndPadding,
-    paddingInlineStart: {
-      default: dialogFullscreenSafeAreaInlineStartPaddingLtr,
-      ':is([dir="rtl"] *)': dialogFullscreenSafeAreaInlineStartPaddingRtl,
-    },
-    paddingInlineEnd: {
-      default: dialogFullscreenSafeAreaInlineEndPaddingLtr,
-      ':is([dir="rtl"] *)': dialogFullscreenSafeAreaInlineEndPaddingRtl,
-    },
-  },
-});
+export {dialogFullscreenSafeAreaPaddingContract} from './dialogFullscreenSafeArea.stylex';
 
 const STANDARD_DIALOG_VIEWPORT_GUTTER = spacingVars['--spacing-4'];
 const STANDARD_DIALOG_VIEWPORT_MAX_WIDTH = `calc(100dvw - ${STANDARD_DIALOG_VIEWPORT_GUTTER} - ${STANDARD_DIALOG_VIEWPORT_GUTTER})`;
@@ -690,7 +653,9 @@ export function Dialog({
           !useThemeDefault &&
             effectivePadding !== 4 &&
             containerPaddingBlockEndVarStyles[effectivePadding],
-          isFullscreen && useThemeDefault && styles.fullscreenSafeArea,
+          isFullscreen &&
+            useThemeDefault &&
+            dialogFullscreenSafeAreaStyles.fullscreenSafeArea,
           containerCornerStyles.publish,
         ),
         {className: dialogInnerClassName},
