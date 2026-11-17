@@ -208,3 +208,67 @@ Left for the rest of this ticket:
 - `Selector`/`MultiSelector` option menus and `NavHeadingMenu`.
 - The sheet-size gate has ~10 rules of room left under 1050 after this window;
   the popover container will need the constant raised with its reason.
+
+### Window 5
+
+Landed, one commit per file:
+
+- `ContextMenu.tsx` — `ef9ecef7b`. The whole `styles` block (11 keys) is
+  `ContextMenu/contextMenuClasses.ts`. Three parts are worth knowing:
+  - `popoverCustomWidth` became a class plus `--astryx-context-menu-min-inline-size`
+    set on the layer container, so a consumer class still overrides it; the
+    variable is in `ContextMenu.doc.mjs` and the registry allowlist.
+  - the 1px cursor anchor keeps `left`/`top` inline (runtime geometry) and its
+    box is the class `contextMenuCursorAnchorClassName`.
+  - the sheet heading row reuses `dropdownMenuSheetClassName.header`/
+    `.rootHeading`/`.viewHeading` instead of a second copy.
+- `DropdownMenu.tsx` — `f118555dd`. `styles` (18 keys) and `dynamicStyles` (2)
+  are gone; `DropdownMenu/dropdownMenuClasses.ts` grew a "pointer popover"
+  section. Decisions the next window needs to keep:
+  - `menuMaxHeight` lifts the menu cap through
+    `--astryx-dropdown-menu-max-block-size`, read by both the menu's cap class
+    and `dropdownMenuPopoverViewportClassName`, so the layer's flip decision
+    still sees the height the menu takes. The cap class keeps `300px` as the
+    variable's fallback.
+  - `menuWidth` writes `--astryx-dropdown-menu-inline-size` and picks
+    `min-w-`/`w-` from `resolvedMenuWidth.property`, so the fixed and minimum
+    cases stay distinct without a second inline declaration.
+  - `stepsAsideForView` is one `[&:has(~ [data-astryx-submenu-host] >
+[data-astryx-submenu-regions=view]:not([hidden]))]:hidden` utility, with a
+    narrow `@astryx/no-raw-private-attribute` disable for the scan.
+  - `popoverMatchTrigger` keeps the `@supports_not_(inline-size:100vi)` arm
+    around the same `min(anchor-size(width), …)` clamp.
+  - tests: the four `DropdownMenu.test.tsx` groups that read `toHaveStyle` now
+    read the class set or the inline variable; `DropdownMenuSubMenu.test.tsx`
+    gained a `stepsAside()` helper that asserts the DOM shape the `:has()` rule
+    reads, because jsdom parses no stylesheet.
+  - sheet: 170.4 kB, rules still under the 1200 ceiling; the ceiling did not
+    move.
+
+Left for the next window, in this order (the window closed at the 20-minute
+mark with items 3–5 still open):
+
+1. `DropdownMenuSubMenu.tsx`:
+   - `triggerStyles.row` is the documented unlayered survivor (Item's overlays +
+     the shared ring) — same shape as the three row creates in item 4.
+   - `triggerStyles.caret` (`display:flex; align-items:center`) — check whether
+     `dropdownMenuSubMenuTriggerClassName` can carry `flex items-center` on the
+     caret slot; the comment says a style-only wrapper rule reads it, so verify
+     that rule first.
+   - `flyoutStyles` (4 keys) goes to `useLayer` as `xstyle`; the layer takes
+     `className` and `style` too, so the viewport cap becomes a class and the
+     widths become classes plus an inline variable, as in `DropdownMenu.tsx`.
+   - `regionStyles.frame` is the same frame as
+     `dropdownMenuRegionsFrameClassName`; `dynamicRegionStyles.viewMaxHeight`
+     is the drill-in cap and needs the cap-as-variable seam (the root's
+     `menuMaxHeight` reaches the view through the same variable name).
+2. The three identical `menuRowStateStyles` (`DropdownMenuCheckboxItem.tsx:53`,
+   `DropdownMenuRadioItem.tsx:50`, `DropdownMenuItem.tsx:54`, plus
+   `DropdownMenuSubMenu.tsx`'s `triggerStyles.row`) fold into one shared
+   `.stylex.ts` beside them: `:focus` paint from
+   `--_menu-row-focus-paint` and the `-1 * focus-outline-width` offset, unlayered
+   because Item's overlays and the focus ring are.
+3. `menuTouchAction.stylex.ts` stays this window: seven call sites outside this
+   family pass it as `xstyle`, so converting it edits other families. Recorded
+   as a documented survivor; the next window that is allowed to touch those
+   files can do it in one commit.
