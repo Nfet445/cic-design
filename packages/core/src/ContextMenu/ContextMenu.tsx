@@ -64,7 +64,8 @@ import {
   MenuBottomSheetActionList,
   preloadMenuBottomSheetActionList,
 } from '../DropdownMenu/lazyMenuBottomSheet';
-import {menuBottomSheetStyles} from '../DropdownMenu/menuBottomSheet.stylex';
+import {menuBottomSheetClassName} from '../DropdownMenu/menuBottomSheetClasses';
+import {tw} from '../utils/tw';
 import {renderDropdownItems} from '../DropdownMenu/renderDropdownItems';
 import {
   DropdownMenuContext,
@@ -208,7 +209,7 @@ const styles = stylex.create({
     outline: 'none',
     userSelect: 'none',
   },
-  // The menu's own inset inside the sheet content box (menuBottomSheetStyles
+  // The menu's own inset inside the sheet content box (menuBottomSheetClassName
   // .content): the 4px at the sides the content box keeps plus the menu's
   // 4px padding; above the first row, the menu's 4px below the band the sheet
   // keeps under its grab bar.
@@ -821,17 +822,13 @@ export function ContextMenu({
         themeProps('context-menu'),
         stylex.props(
           usesBottomSheet
-            ? [
-                styles.sheetMenu,
-                menuBottomSheetStyles.content,
-                styles.sheetMenuInset,
-              ]
+            ? [styles.sheetMenu, styles.sheetMenuInset]
             : styles.menu,
           !usesBottomSheet &&
             (hasOverflow ? styles.touchPanYPinchZoom : styles.touchPinchZoom),
           xstyle,
         ),
-        className,
+        tw(usesBottomSheet && menuBottomSheetClassName.content, className),
         style,
       )}>
       <DropdownMenuContext value={contextValue}>
@@ -851,11 +848,13 @@ export function ContextMenu({
       tabIndex={-1}
       xstyle={[
         styles.sheetViewHeading,
-        submenuPath.length === 0 && [
-          styles.sheetRootHeading,
-          menuBottomSheetStyles.headingAlone,
-        ],
-      ]}>
+        submenuPath.length === 0 && styles.sheetRootHeading,
+      ]}
+      className={
+        submenuPath.length === 0
+          ? menuBottomSheetClassName.headingAlone
+          : undefined
+      }>
       {currentTitle}
     </Heading>
   );
@@ -868,13 +867,8 @@ export function ContextMenu({
         tabIndex={0}
         {...mergeProps(
           themeProps('context-menu'),
-          stylex.props(
-            styles.sheetMenu,
-            menuBottomSheetStyles.content,
-            styles.sheetMenuInset,
-            xstyle,
-          ),
-          className,
+          stylex.props(styles.sheetMenu, styles.sheetMenuInset, xstyle),
+          tw(menuBottomSheetClassName.content, className),
           style,
         )}>
         {submenuPath.length > 0 ? (

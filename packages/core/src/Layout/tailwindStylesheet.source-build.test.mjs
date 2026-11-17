@@ -36,7 +36,13 @@ import {
   dropdownMenuRadioGroupClassName,
   dropdownMenuSheetClassName,
   dropdownMenuGroupHeadingClassName,
+  dropdownMenuTreeClassName,
+  dropdownMenuTreeHiddenClassName,
 } from '../DropdownMenu/dropdownMenuClasses';
+import {
+  menuBottomSheetActionListClassName,
+  menuBottomSheetClassName,
+} from '../DropdownMenu/menuBottomSheetClasses';
 import {
   dropdownMenuSubMenuDrillInClassName,
   dropdownMenuSubMenuFlyoutClassName,
@@ -1846,6 +1852,14 @@ function familyClassNames() {
     add(value);
   }
   add(dropdownMenuGroupHeadingClassName);
+  add(dropdownMenuTreeClassName);
+  add(dropdownMenuTreeHiddenClassName);
+  for (const value of Object.values(menuBottomSheetClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(menuBottomSheetActionListClassName)) {
+    add(value);
+  }
   for (const size of ['sm', 'md', 'lg']) {
     add(
       dropdownMenuItemClassName({

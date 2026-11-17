@@ -1357,9 +1357,9 @@ export function DropdownMenuSubMenu(
                           ? dropdownMenuSubMenuTouchClassName
                           : dropdownMenuSubMenuTouchPinchClassName,
                         hasOverflow && dropdownMenuSubMenuScrollClassName,
+                        layerAnimations.end,
                       ),
                     },
-                    stylex.props(layerAnimations.end),
                   )}>
                   {nestedContent}
                 </div>

@@ -90,6 +90,19 @@ export const dropdownMenuMarkerClassName = tw(
   'pointer-coarse:order-1 pointer-coarse:ms-auto',
 );
 
+/**
+ * The drill-in wrapper: it adds no box of its own, so the menu's flex gap runs
+ * between the rows exactly as it does without it.
+ */
+export const dropdownMenuTreeClassName = 'contents';
+
+/**
+ * The root's rows while a sub-menu's view shows in their place. The `hidden`
+ * attribute alone would lose to the `contents` class, so the wrapper swaps the
+ * class with it.
+ */
+export const dropdownMenuTreeHiddenClassName = 'hidden';
+
 /** The radio group's column: the menu's own inter-row gap, inside the group. */
 export const dropdownMenuRadioGroupClassName =
   'flex flex-col gap-[var(--spacing-0-5)]';

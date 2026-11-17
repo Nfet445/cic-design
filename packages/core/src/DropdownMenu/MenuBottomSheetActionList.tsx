@@ -10,7 +10,6 @@
  */
 
 import React, {useId, useRef, type ReactElement} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Divider} from '../Divider/Divider';
 import {Heading} from '../Heading/Heading';
 import {Icon, renderIconSlot} from '../Icon/Icon';
@@ -18,43 +17,16 @@ import {List} from '../List/List';
 import {ListItem} from '../List/ListItem';
 import {useMenuPress} from '../hooks/useMenuPress';
 import {useMergedRefs} from '../hooks/useMergedRefs';
-import {colorVars, spacingVars} from '../theme/tokens.stylex';
 import {rtlStyles} from '../utils/rtlStyles';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 import type {DropdownMenuItemData, DropdownMenuOption} from './DropdownMenu';
 import {isModifiedClick} from './menuItemRoles';
+import {dropdownMenuDividerClassName} from './dropdownMenuClasses';
+import {menuBottomSheetActionListClassName} from './menuBottomSheetClasses';
 import {visibleText} from '../utils/accessibleName';
 
 /** The action rows: ListItem renders its action as a button (or a link). */
 const SHEET_ROW_SELECTOR = 'button:not(:disabled), a[href]';
-
-const styles = stylex.create({
-  // The row under a held finger is the highlight; the browser's held-press
-  // callout and text selection must not compete with it.
-  list: {
-    WebkitTouchCallout: 'none',
-    userSelect: 'none',
-  },
-  destructiveAction: {
-    '--_item-label-color': colorVars['--color-text-error'],
-    '--_item-description-color': colorVars['--color-text-error'],
-    color: colorVars['--color-text-error'],
-  },
-  structuralItem: {
-    listStyleType: 'none',
-  },
-  divider: {
-    marginBlock: spacingVars['--spacing-1'],
-  },
-  section: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-1'],
-  },
-  sectionHeading: {
-    paddingInline: spacingVars['--spacing-3'],
-  },
-});
 
 function getItemKey(item: DropdownMenuItemData, index: number): string {
   return `item-${item.id ?? index}`;
@@ -164,7 +136,11 @@ export function MenuBottomSheetActionList({
         rel={isLink ? item.rel : undefined}
         onClick={isLink ? undefined : handleActivate}
         onClickCapture={isLink ? handleActivate : undefined}
-        xstyle={isDestructive && styles.destructiveAction}
+        className={
+          isDestructive
+            ? menuBottomSheetActionListClassName.destructiveAction
+            : undefined
+        }
       />
     );
   };
@@ -176,7 +152,7 @@ export function MenuBottomSheetActionList({
       // Focus parks on the list when no row is lit, as in DropdownMenu's own
       // menu, so a row a cancelled finger lit loses its highlight.
       tabIndex={-1}
-      xstyle={styles.list}
+      className={menuBottomSheetActionListClassName.list}
       {...menuPress.menuProps}>
       {items.map((option, index) => {
         if ('type' in option && option.type === 'divider') {
@@ -185,8 +161,8 @@ export function MenuBottomSheetActionList({
               // eslint-disable-next-line @eslint-react/no-array-index-key
               key={`divider-${index}`}
               role="presentation"
-              {...stylex.props(styles.structuralItem)}>
-              <Divider xstyle={styles.divider} />
+              className={menuBottomSheetActionListClassName.structuralItem}>
+              <Divider className={dropdownMenuDividerClassName} />
             </li>
           );
         }
@@ -195,13 +171,17 @@ export function MenuBottomSheetActionList({
           return (
             <li
               key={`section-${option.id ?? index}`}
-              {...stylex.props(styles.structuralItem)}>
+              className={menuBottomSheetActionListClassName.structuralItem}>
               <div
                 role="group"
                 aria-label={option.title}
-                {...stylex.props(styles.section)}>
+                className={menuBottomSheetActionListClassName.section}>
                 {option.title && (
-                  <Heading level={4} xstyle={styles.sectionHeading}>
+                  <Heading
+                    level={4}
+                    className={
+                      menuBottomSheetActionListClassName.sectionHeading
+                    }>
                     {option.title}
                   </Heading>
                 )}
