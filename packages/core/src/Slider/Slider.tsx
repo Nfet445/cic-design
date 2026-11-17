@@ -34,15 +34,6 @@ import {
 import {flushSync} from 'react-dom';
 import {useCommittedRef} from '../hooks/useCommittedRef';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import {Field} from '../Field/Field';
 import {useTooltip} from '../Tooltip';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -68,6 +59,22 @@ import {
   type SliderTouchParts,
 } from './useSliderTouch';
 
+import {
+  sliderControlClassName,
+  sliderFillClipClassName,
+  sliderFillMoverClassName,
+  sliderFilledTrackClassName,
+  sliderMarkClassName,
+  sliderMarkLabelClassName,
+  sliderMarksContainerClassName,
+  sliderRowClassName,
+  sliderTextValueClassName,
+  sliderThumbClassName,
+  sliderTrackClassName,
+  sliderTravelBoxClassName,
+  sliderValueAnchorClassName,
+} from './sliderClasses';
+import {tw} from '../utils/tw';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {
@@ -180,7 +187,6 @@ export type SliderProps = SliderSingleProps | SliderRangeProps;
 // Constants
 // =============================================================================
 
-const TRACK_SIZE = 4;
 const THUMB_SIZE = 20;
 
 /**
@@ -199,8 +205,6 @@ const HIT_INSET = {
   inlineStart: '--_slider-hit-start',
   inlineEnd: '--_slider-hit-end',
 } as const;
-/** Half a thumb: the inset of the thumb's travel at each end of the track. */
-const THUMB_INSET_PX = THUMB_SIZE / 2;
 /** The filled range's ends as progress, written inline on the fill parts. */
 const FILL_START = '--_slider-fill-start';
 const FILL_END = '--_slider-fill-end';
@@ -217,368 +221,6 @@ interface ValueAnchor {
   readonly element: HTMLElement;
   readonly tooltipId: string;
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-// How far below the control's middle a horizontal mark label starts: 4px
-// under the thumb's lower edge.
-const MARK_LABEL_OFFSET = THUMB_SIZE / 2 + 4;
-
-// The horizontal track's block size under a touch pointer (WCAG 2.5.8 AA).
-const TOUCH_TRACK_MIN_BLOCK = 24;
-
-const styles = stylex.create({
-  sliderRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-  },
-  trackContainer: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    flexGrow: 1,
-    // Under a finger (a coarse primary pointer) the control leaves the browser
-    // its pans. So a swipe from the track or across a thumb scrolls the page.
-    // The gesture host narrows that per element from the recognizers attached
-    // to it (a thumb's pan keeps its own axis) and never widens it. A held
-    // thumb's pan locks text selection and the callout until the lift. A
-    // mouse or a trackpad keeps the control's `none`.
-    touchAction: {
-      default: 'none',
-      '@media (pointer: coarse)': 'manipulation',
-    },
-    // The control's text is never selectable. WebKit applies only the
-    // prefixed property. So both are written. A held finger on the track
-    // then starts no selection either. The gesture host's lock leaves this
-    // always-on suppression as it is.
-    WebkitUserSelect: 'none',
-    userSelect: 'none',
-    isolation: 'isolate',
-  },
-  // Every part of the control sits in this box, which fills the control's
-  // padding box. So padding on the control (a theme rule, `controlStyle`)
-  // moves no part. The thumbs and the fill travel in container units of it
-  // (`cqi` / `cqb`). Its size never depends on its content.
-  travelBox: {
-    position: 'absolute',
-    inset: 0,
-    containerType: 'size',
-  },
-  // Where layout places a thumb at its value: the value tooltip's position
-  // anchor. CSS anchor positioning reads the anchor's layout box, which the
-  // thumb's `translate` does not move in every engine. So the tooltip anchors
-  // here while hover and focus stay on the thumb. During a drag the anchor
-  // keeps the place the drag held, and the tooltip moves with the thumb by
-  // translate.
-  valueAnchor: {
-    position: 'absolute',
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
-    pointerEvents: 'none',
-  },
-  valueAnchorHorizontal: {
-    top: `calc(50% - ${THUMB_SIZE / 2}px)`,
-    insetInlineStart: `calc(var(${THUMB_PROGRESS}) * (100cqi - ${THUMB_SIZE}px))`,
-  },
-  valueAnchorVertical: {
-    insetInlineStart: `calc(50% - ${THUMB_SIZE / 2}px)`,
-    bottom: `calc(var(${THUMB_PROGRESS}) * (100cqb - ${THUMB_SIZE}px))`,
-  },
-  trackContainerHorizontal: {
-    height: THUMB_SIZE,
-    // The whole track is the tap target (a click anywhere on it moves the
-    // slider), but it is only THUMB_SIZE (20px) tall — under the WCAG 2.5.8 AA
-    // 24px minimum. Floor its block size to 24px on touch pointers only. The
-    // rail and thumb center on 50%, so they stay put; only the invisible
-    // tappable area grows. Desktop (fine pointer) is unchanged.
-    minBlockSize: {
-      default: null,
-      '@media (pointer: coarse)': `${TOUCH_TRACK_MIN_BLOCK}px`,
-    },
-    width: '100%',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  trackContainerVertical: {
-    width: THUMB_SIZE,
-    height: 160,
-    // Same tap target, rotated: the vertical track is the thing you press, and
-    // it is only THUMB_SIZE (20px) wide. `minBlockSize` above floors the
-    // horizontal track's short axis; here the short axis is the inline one
-    // (the block size is already 160px), so floor that instead. The rail,
-    // fill, marks and thumb all center on the inline 50%, so they stay put;
-    // only the invisible tappable area grows. Desktop is unchanged.
-    minInlineSize: {
-      default: null,
-      '@media (pointer: coarse)': '24px',
-    },
-    flexDirection: 'column',
-    justifyContent: 'center',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  trackContainerDisabled: {
-    opacity: 0.5,
-    cursor: 'default',
-  },
-  track: {
-    position: 'absolute',
-    backgroundColor: colorVars['--color-track'],
-    borderRadius: radiusVars['--radius-full'],
-  },
-  trackHorizontal: {
-    insetInlineStart: 0,
-    insetInlineEnd: 0,
-    height: TRACK_SIZE,
-    top: '50%',
-    transform: 'translateY(-50%)',
-  },
-  trackVertical: {
-    top: 0,
-    bottom: 0,
-    width: TRACK_SIZE,
-  },
-  // The filled range is a full-length bar moved into place inside two
-  // clips, so it travels by translate alone. The clip has the track's shape
-  // and rounds the start of a single slider's fill. The mover's start edge
-  // cuts the fill at the range's start, and the fill's own end sits at the
-  // range's end. Both ends of a range hide under its thumbs.
-  fillClip: {
-    position: 'absolute',
-    overflow: 'hidden',
-    borderRadius: radiusVars['--radius-full'],
-    pointerEvents: 'none',
-  },
-  fillClipHorizontal: {
-    insetInlineStart: 0,
-    insetInlineEnd: 0,
-    height: TRACK_SIZE,
-    top: '50%',
-    transform: 'translateY(-50%)',
-  },
-  fillClipVertical: {
-    top: 0,
-    bottom: 0,
-    width: TRACK_SIZE,
-  },
-  fillMover: {
-    position: 'absolute',
-    inset: 0,
-    overflow: 'hidden',
-  },
-  // A range's start is round, like the track's ends (the clip already
-  // rounds a single slider's start). It shows through a disabled thumb's
-  // translucent fill.
-  fillMoverRangeStartHorizontal: {
-    borderStartStartRadius: radiusVars['--radius-full'],
-    borderEndStartRadius: radiusVars['--radius-full'],
-  },
-  fillMoverRangeStartVertical: {
-    borderEndStartRadius: radiusVars['--radius-full'],
-    borderEndEndRadius: radiusVars['--radius-full'],
-  },
-  fillMoverRangeHorizontal: {
-    translate: {
-      default: `calc(${THUMB_INSET_PX}px + var(${FILL_START}) * (100cqi - ${THUMB_SIZE}px)) 0`,
-      ':dir(rtl)': `calc(-${THUMB_INSET_PX}px - var(${FILL_START}) * (100cqi - ${THUMB_SIZE}px)) 0`,
-    },
-  },
-  fillMoverRangeVertical: {
-    translate: `0 calc(-${THUMB_INSET_PX}px - var(${FILL_START}) * (100cqb - ${THUMB_SIZE}px))`,
-  },
-  filledTrack: {
-    position: 'absolute',
-    inset: 0,
-    backgroundColor: colorVars['--color-accent'],
-  },
-  // The fill's end is round too, under the thumb.
-  filledTrackHorizontal: {
-    borderStartEndRadius: radiusVars['--radius-full'],
-    borderEndEndRadius: radiusVars['--radius-full'],
-  },
-  filledTrackVertical: {
-    borderStartStartRadius: radiusVars['--radius-full'],
-    borderStartEndRadius: radiusVars['--radius-full'],
-  },
-  // A single slider's fill runs from the track's start to the thumb's center.
-  filledTrackSingleHorizontal: {
-    translate: {
-      default: `calc(${THUMB_INSET_PX}px + var(${FILL_END}) * (100cqi - ${THUMB_SIZE}px) - 100cqi) 0`,
-      ':dir(rtl)': `calc(100cqi - ${THUMB_INSET_PX}px - var(${FILL_END}) * (100cqi - ${THUMB_SIZE}px)) 0`,
-    },
-  },
-  filledTrackSingleVertical: {
-    translate: `0 calc(100cqb - ${THUMB_INSET_PX}px - var(${FILL_END}) * (100cqb - ${THUMB_SIZE}px))`,
-  },
-  // A range's fill runs from the lower thumb's center to the upper's. The
-  // mover already sits at the lower one.
-  filledTrackRangeHorizontal: {
-    translate: {
-      default: `calc((var(${FILL_END}) - var(${FILL_START})) * (100cqi - ${THUMB_SIZE}px) - 100cqi) 0`,
-      ':dir(rtl)': `calc(100cqi - (var(${FILL_END}) - var(${FILL_START})) * (100cqi - ${THUMB_SIZE}px)) 0`,
-    },
-  },
-  filledTrackRangeVertical: {
-    translate: `0 calc(100cqb - (var(${FILL_END}) - var(${FILL_START})) * (100cqb - ${THUMB_SIZE}px))`,
-  },
-  thumb: {
-    position: 'absolute',
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
-    borderRadius: radiusVars['--radius-full'],
-    backgroundColor: colorVars['--color-accent'],
-    transitionProperty: 'background-color, box-shadow',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-    outline: 'none',
-    cursor: {
-      default: 'grab',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    zIndex: 1,
-  },
-  thumbHorizontal: {
-    // Centered by its offset, not by a transform: the touch lift scales the
-    // thumb (`scale`), and CSS applies `transform` inside `scale`. So a
-    // centering translate would grow with it and lift the thumb off the
-    // track. UISlider's lens grows around its center.
-    top: `calc(50% - ${THUMB_SIZE / 2}px)`,
-    insetInlineStart: 0,
-    // The thumb starts at the track's inline start (the right edge under
-    // RTL). It travels by its progress along the track minus its own size,
-    // so its center lands where `insetPosition` places the fill and the
-    // marks. `translate` is physical, so it flips its sign under RTL.
-    translate: {
-      default: `calc(var(${THUMB_PROGRESS}) * (100cqi - ${THUMB_SIZE}px)) 0`,
-      ':dir(rtl)': `calc(var(${THUMB_PROGRESS}) * (${THUMB_SIZE}px - 100cqi)) 0`,
-    },
-  },
-  // A thumb's touch target under a finger (UISlider's hit area): the thumb's
-  // own `::before`, invisible and centered on it, larger than it. So a touch
-  // presentation renders no more elements than a mouse one. Each side grows
-  // by the inset `thumbHitInsets` sets on the thumb.
-  thumbHit: {
-    '::before': {
-      content: '""',
-      position: 'absolute',
-      top: `var(${HIT_INSET.top})`,
-      bottom: `var(${HIT_INSET.bottom})`,
-      insetInlineStart: `var(${HIT_INSET.inlineStart})`,
-      insetInlineEnd: `var(${HIT_INSET.inlineEnd})`,
-    },
-  },
-  thumbVertical: {
-    bottom: 0,
-    // Centered by its offset (see thumbHorizontal): the same in both
-    // directions, since the thumb is symmetric.
-    insetInlineStart: `calc(50% - ${THUMB_SIZE / 2}px)`,
-    translate: `0 calc(var(${THUMB_PROGRESS}) * (${THUMB_SIZE}px - 100cqb))`,
-  },
-  thumbHover: {
-    backgroundColor: {
-      default: colorVars['--color-accent'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': `color-mix(in srgb, ${colorVars['--color-accent']}, ${colorVars['--color-tint-hover']} 15%)`,
-      },
-    },
-  },
-  // Pressed: the system's pressed overlay over the thumb's fill for as long
-  // as the thumb is being dragged. A slider is a drag, not a tap — the finger
-  // lands anywhere on the track and the thumb follows it — so the pressed
-  // paint follows the drag state the pointer handlers already keep, on a
-  // mouse and on a finger alike, rather than `:active` on the thumb itself
-  // (which a press on the track never activates).
-  thumbPressed: {
-    backgroundImage: `linear-gradient(${colorVars['--color-overlay-pressed']}, ${colorVars['--color-overlay-pressed']})`,
-  },
-  thumbDisabled: {
-    backgroundColor: colorVars['--color-background-muted'],
-    cursor: 'default',
-  },
-  textValue: {
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    color: colorVars['--color-text-primary'],
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
-  },
-  marksContainer: {
-    position: 'absolute',
-  },
-  marksContainerHorizontal: {
-    insetInlineStart: 0,
-    insetInlineEnd: 0,
-    top: '50%',
-  },
-  marksContainerVertical: {
-    top: 0,
-    bottom: 0,
-    insetInlineStart: '50%',
-  },
-  mark: {
-    position: 'absolute',
-    backgroundColor: colorVars['--color-track'],
-    borderRadius: radiusVars['--radius-full'],
-  },
-  // Marks over the filled region (at or behind the thumb in single mode,
-  // between the thumbs in range mode) take the fill color so they read as
-  // part of the filled track rather than the unfilled rail.
-  markFilled: {
-    backgroundColor: colorVars['--color-accent'],
-  },
-  markHorizontal: {
-    width: 2,
-    height: 8,
-    transform: {
-      default: 'translate(-50%, -50%)',
-      ':is([dir="rtl"] *)': 'translate(50%, -50%)',
-    },
-  },
-  markVertical: {
-    height: 2,
-    width: 8,
-    transform: 'translate(-50%, 50%)',
-  },
-  markLabel: {
-    position: 'absolute',
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    whiteSpace: 'nowrap',
-  },
-  markLabelHorizontal: {
-    transform: {
-      default: 'translateX(-50%)',
-      ':is([dir="rtl"] *)': 'translateX(50%)',
-    },
-    top: MARK_LABEL_OFFSET,
-  },
-  markLabelVertical: {
-    transform: 'translateY(50%)',
-    insetInlineStart: THUMB_SIZE / 2 + 4,
-  },
-  // A horizontal mark label hangs below the middle of the control, whose
-  // size never depends on its content. The row keeps room for the part of
-  // the label's line below the control, so the content after the slider
-  // starts below the labels.
-  sliderRowMarkLabels: {
-    paddingBlockEnd: {
-      default: `calc(${MARK_LABEL_OFFSET - THUMB_SIZE / 2}px + ${typeScaleVars['--text-supporting-size']} * ${typeScaleVars['--text-supporting-leading']})`,
-      '@media (pointer: coarse)': `calc(${MARK_LABEL_OFFSET - TOUCH_TRACK_MIN_BLOCK / 2}px + ${typeScaleVars['--text-supporting-size']} * ${typeScaleVars['--text-supporting-leading']})`,
-    },
-  },
-});
 
 // =============================================================================
 // Helpers
@@ -664,7 +306,8 @@ function cssLength(percent: number, px: number): string {
 
 /**
  * A thumb's value tooltip: hover and focus on the thumb, position from a
- * thumb-sized anchor that layout places at the value (styles.valueAnchor).
+ * thumb-sized anchor that layout places at the value (see
+ * `sliderValueAnchorClassName`).
  */
 function SliderValueTooltip({
   content,
@@ -722,15 +365,9 @@ function SliderValueTooltip({
       <span
         aria-hidden="true"
         ref={anchorRef}
-        {...mergeProps(
-          stylex.props(
-            styles.valueAnchor,
-            isHorizontal
-              ? styles.valueAnchorHorizontal
-              : styles.valueAnchorVertical,
-          ),
-          {style: anchorStyle},
-        )}
+        {...mergeProps(sliderValueAnchorClassName({isHorizontal}), {
+          style: anchorStyle,
+        })}
       />
       {children({ref: triggerRef, describedBy: tooltip.describedBy})}
       {tooltip.renderTooltip(content)}
@@ -1627,16 +1264,15 @@ export function Slider({ref, ...props}: SliderProps) {
             disabled: isDisabled ? 'disabled' : null,
           }),
           stylex.props(
-            styles.thumb,
-            isHorizontal ? styles.thumbHorizontal : styles.thumbVertical,
-            !isDisabled && styles.thumbHover,
-            !isDisabled && draggingThumb === thumbIndex && styles.thumbPressed,
             keyboardFocusThumb === thumbIndex &&
               focusOutlineStyles.focusVisible,
-            isDisabled && styles.thumbDisabled,
-            hasTouchTargets && styles.thumbHit,
           ),
-          undefined,
+          sliderThumbClassName({
+            isHorizontal,
+            isDisabled,
+            isPressed: !isDisabled && draggingThumb === thumbIndex,
+            hasTouchTarget: hasTouchTargets,
+          }),
           positionStyle,
         )}
       />
@@ -1667,7 +1303,8 @@ export function Slider({ref, ...props}: SliderProps) {
   };
 
   // The filled range's ends as progress: it ends at the thumb centers. So it
-  // uses the same inset travel as the thumbs (see styles.fillClip).
+  // uses the same inset travel as the thumbs (see
+  // `sliderFillClipClassName`).
   const fillStart = isRange ? getPercent(values[0], min, max) / 100 : 0;
   const fillEnd = getPercent(values[isRange ? 1 : 0], min, max) / 100;
   const fillStyle: FillStyle = {[FILL_START]: fillStart, [FILL_END]: fillEnd};
@@ -1675,7 +1312,7 @@ export function Slider({ref, ...props}: SliderProps) {
   // Text value display
   const textDisplay =
     valueDisplay === 'text' ? (
-      <span {...stylex.props(styles.textValue)}>
+      <span className={sliderTextValueClassName}>
         {isRange
           ? `${displayValue(values[0])} – ${displayValue(values[1])}`
           : displayValue(values[0])}
@@ -1719,12 +1356,10 @@ export function Slider({ref, ...props}: SliderProps) {
             orientation,
             disabled: isDisabled ? 'disabled' : null,
           }),
-          stylex.props(
-            styles.sliderRow,
-            isHorizontal &&
-              marks?.some(mark => Boolean(mark.label)) === true &&
-              styles.sliderRowMarkLabels,
-          ),
+          sliderRowClassName({
+            hasMarkLabels:
+              isHorizontal && marks?.some(mark => Boolean(mark.label)) === true,
+          }),
         )}>
         {/* A disabled slider submits no value (spec:AST-085 FR3). */}
         {htmlName != null &&
@@ -1774,75 +1409,41 @@ export function Slider({ref, ...props}: SliderProps) {
               orientation,
               disabled: isDisabled ? 'disabled' : null,
             }),
-            stylex.props(
-              styles.trackContainer,
-              isHorizontal
-                ? styles.trackContainerHorizontal
-                : styles.trackContainerVertical,
-              isDisabled && styles.trackContainerDisabled,
-              controlXstyle,
+            stylex.props(controlXstyle),
+            tw(
+              sliderControlClassName({isHorizontal, isDisabled}),
+              controlClassName,
             ),
-            controlClassName,
             controlStyle,
           )}>
-          <div {...stylex.props(styles.travelBox)}>
+          <div className={sliderTravelBoxClassName}>
             {/* Background track */}
             <div
               aria-hidden="true"
               {...mergeProps(
                 themeProps('slider-track', {orientation}),
-                stylex.props(
-                  styles.track,
-                  isHorizontal
-                    ? styles.trackHorizontal
-                    : [styles.trackVertical, rtlStyles.centerInline('0px')],
-                ),
+                stylex.props(!isHorizontal && rtlStyles.centerInline('0px')),
+                sliderTrackClassName({isHorizontal}),
               )}
             />
 
             {/* Filled track */}
             <div
               aria-hidden="true"
-              {...stylex.props(
-                styles.fillClip,
-                isHorizontal
-                  ? styles.fillClipHorizontal
-                  : [styles.fillClipVertical, rtlStyles.centerInline('0px')],
+              {...mergeProps(
+                stylex.props(!isHorizontal && rtlStyles.centerInline('0px')),
+                sliderFillClipClassName({isHorizontal}),
               )}>
               <div
                 ref={fillMoverRef}
                 {...mergeProps(
-                  stylex.props(
-                    styles.fillMover,
-                    isRange &&
-                      (isHorizontal
-                        ? [
-                            styles.fillMoverRangeHorizontal,
-                            styles.fillMoverRangeStartHorizontal,
-                          ]
-                        : [
-                            styles.fillMoverRangeVertical,
-                            styles.fillMoverRangeStartVertical,
-                          ]),
-                  ),
+                  sliderFillMoverClassName({isHorizontal, isRange}),
                   {style: fillStyle},
                 )}>
                 <div
                   ref={fillRef}
                   {...mergeProps(
-                    stylex.props(
-                      styles.filledTrack,
-                      isHorizontal
-                        ? styles.filledTrackHorizontal
-                        : styles.filledTrackVertical,
-                      isRange
-                        ? isHorizontal
-                          ? styles.filledTrackRangeHorizontal
-                          : styles.filledTrackRangeVertical
-                        : isHorizontal
-                          ? styles.filledTrackSingleHorizontal
-                          : styles.filledTrackSingleVertical,
-                    ),
+                    sliderFilledTrackClassName({isHorizontal, isRange}),
                     {style: fillStyle},
                   )}
                 />
@@ -1853,12 +1454,7 @@ export function Slider({ref, ...props}: SliderProps) {
             {marks && (
               <div
                 aria-hidden="true"
-                {...stylex.props(
-                  styles.marksContainer,
-                  isHorizontal
-                    ? styles.marksContainerHorizontal
-                    : styles.marksContainerVertical,
-                )}>
+                {...mergeProps(sliderMarksContainerClassName({isHorizontal}))}>
                 {marks.map(mark => {
                   const percent = getPercent(mark.value, min, max);
                   const markPos = isHorizontal
@@ -1876,13 +1472,7 @@ export function Slider({ref, ...props}: SliderProps) {
                         data-testid="slider-mark"
                         data-mark-value={mark.value}
                         {...mergeProps(
-                          stylex.props(
-                            styles.mark,
-                            isHorizontal
-                              ? styles.markHorizontal
-                              : styles.markVertical,
-                            isFilled && styles.markFilled,
-                          ),
+                          sliderMarkClassName({isHorizontal, isFilled}),
                           {style: markPos},
                         )}
                       />
@@ -1891,12 +1481,7 @@ export function Slider({ref, ...props}: SliderProps) {
                           data-testid="slider-mark-label"
                           data-mark-value={mark.value}
                           {...mergeProps(
-                            stylex.props(
-                              styles.markLabel,
-                              isHorizontal
-                                ? styles.markLabelHorizontal
-                                : styles.markLabelVertical,
-                            ),
+                            sliderMarkLabelClassName({isHorizontal}),
                             {style: markPos},
                           )}>
                           {mark.label}

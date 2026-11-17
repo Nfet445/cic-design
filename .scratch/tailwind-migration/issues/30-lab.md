@@ -142,15 +142,15 @@ Deviations to review:
 `styles` (about 60 rules) and five view files consume it — 158 references in
 total:
 
-| file                       | lines | references to the shared map or its own stylex |
-| -------------------------- | ----- | ---------------------------------------------- |
-| `Schedule/shared.tsx`      | 1717  | 67                                             |
-| `Schedule/TimeGridView.tsx`| 1003  | 53                                             |
-| `Schedule/MonthlyView.tsx` | 744   | 39                                             |
-| `Schedule/ListView.tsx`    | 240   | 12                                             |
-| `Schedule/Schedule.tsx`    | 334   | 2                                              |
-| `Schedule/WeeklyView.tsx`  | 134   | 0                                              |
-| `Schedule/DayView.tsx`     | 117   | 0                                              |
+| file                        | lines | references to the shared map or its own stylex |
+| --------------------------- | ----- | ---------------------------------------------- |
+| `Schedule/shared.tsx`       | 1717  | 67                                             |
+| `Schedule/TimeGridView.tsx` | 1003  | 53                                             |
+| `Schedule/MonthlyView.tsx`  | 744   | 39                                             |
+| `Schedule/ListView.tsx`     | 240   | 12                                             |
+| `Schedule/Schedule.tsx`     | 334   | 2                                              |
+| `Schedule/WeeklyView.tsx`   | 134   | 0                                              |
+| `Schedule/DayView.tsx`      | 117   | 0                                              |
 
 Size is not the only reason it wants its own window:
 
@@ -168,3 +168,97 @@ Size is not the only reason it wants its own window:
 Suggested split, smallest first: `Schedule.tsx` (2 references) → `ListView.tsx`
 (12) → `MonthlyView.tsx` (39) → `TimeGridView.tsx` (53) → `shared.tsx` (67, the
 map itself, last, since the views keep importing it until then).
+
+## Result, window 3 (four more components)
+
+Commits on `ticket/30-lab`, one per component:
+
+- `d3dff72db` `refactor(loading-message): перевести колонку кольца и слов на классы`
+  — `LoadingMessage` (`packages/lab/src/LoadingMessage.tsx`) →
+  `loadingMessageClasses.ts`; one map, two rules (the ring column's
+  `inline-flex flex-col items-center` and its `gap-2`).
+- `6659e4d45` `refactor(chat-typing-indicator): перевести точки и подпись на классы`
+  — `ChatTypingIndicator.tsx` → `Chat/chatTypingIndicatorClasses.ts`; the arm
+  animation became `@keyframes astryxChatTypingIndicatorBounce` in
+  `packages/lab/tailwind/lab.input.css`, the delays are
+  `[animation-delay:160ms]` / `[animation-delay:320ms]` and the motion guard is
+  `motion-reduce:animate-none`. The dots column width stays a per-instance
+  `--astryx-chat-typing-indicator-dots-column-width` read by the class.
+- `b6bd9b945` `refactor(chat-reasoning): перевести строку рассуждения на классы`
+  — `ChatReasoning.tsx` → `ChatReasoning/chatReasoningClasses.ts`; shimmer is
+  `@keyframes astryxChatReasoningShimmer`. The expanded/collapsed grid row, the
+  chevron rotation, the streaming label and the selected count are state classes
+  that _replace_ the base rather than stack on it.
+- `448007476` `refactor(chat-reaction-bar): перевести пилюли и кнопку добавления на классы`
+  — `Chat/ChatReactionBar.tsx` → `Chat/chatReactionBarClasses.ts`, same rule for
+  the selected pill and the selected count.
+
+The replacement rule is the load-bearing part of this window. Two classes that
+set one property (`grid-rows-[0fr]` and `grid-rows-[1fr]`, `bg-muted` and
+`bg-accent-muted`) are ordered by the sheet, not by the attribute, so a state
+gets its own complete class and `tw()` picks one. A hover arm inside a
+`@media (hover: hover)` guard is still an extra class, because the base sets no
+hover value.
+
+Verified after each commit: `node packages/lab/scripts/build-css-tailwind.mjs`
+(`dist/lab-tailwind.css` 12.2 → 19.1 kB), `node scripts/build-css.mjs --package
+lab` (1504 → 1370 StyleX rules from 233 reachable files, `lab.css` 68.6 → 65.5
+KB), `pnpm exec vitest run` on the four component directories plus
+`packages/lab/src/labTailwindStylesheet` → 5 files, 40 tests pass; prettier and
+eslint clean on every touched file.
+
+Remaining `stylex.create` sites in `packages/lab/src`, per file (34 files, 47
+maps), smallest first:
+
+| maps | file                                            |
+| ---- | ----------------------------------------------- |
+| 1    | `Chat/ChatEmojiPicker.tsx`                      |
+| 1    | `Chat/ChatVirtualizer.tsx`                      |
+| 1    | `CircleCheckIndicator/CircleCheckIndicator.tsx` |
+| 1    | `CodeEditor/CodeEditor.tsx`                     |
+| 1    | `Comments/CommentActions.tsx`                   |
+| 1    | `Comments/CommentComposer.tsx`                  |
+| 1    | `Comments/CommentMarkdown.tsx`                  |
+| 1    | `Comments/CommentRow.tsx`                       |
+| 1    | `Comments/Comments.tsx`                         |
+| 1    | `DialogHeroHeader/DialogHeroHeader.tsx`         |
+| 1    | `EmojiPicker/EmojiPicker.tsx`                   |
+| 1    | `LineClamp/LineClamp.tsx`                       |
+| 1    | `LogStream/LogStream.tsx`                       |
+| 1    | `PageControl/PageControl.tsx`                   |
+| 1    | `Radial/RadialChart.tsx`                        |
+| 1    | `SVGIcon/SVGIcon.tsx`                           |
+| 1    | `SVGIcon/WeightedSVGIcon.tsx`                   |
+| 1    | `SVGIcon/colors.stylex.ts`                      |
+| 1    | `Schedule/shared.tsx`                           |
+| 1    | `SelectableCardGroup/SelectableCardGroup.tsx`   |
+| 1    | `TabBar/TabBar.tsx`                             |
+| 1    | `Tour/TourStep.tsx`                             |
+| 1    | `TransferList/TransferListSelector.tsx`         |
+| 2    | `CircleCheckIndicator/circleCheck.stylex.ts`    |
+| 2    | `CommentPin/CommentPin.tsx`                     |
+| 2    | `Comments/CommentParts.tsx`                     |
+| 2    | `NavigationStack/NavigationStack.tsx`           |
+| 2    | `SVGIcon/variations.stylex.ts`                  |
+| 2    | `SVGIcon/weighted.stylex.ts`                    |
+| 2    | `internal/useScrollEdgeEffect.ts`               |
+| 3    | `CircularProgress/CircularProgress.tsx`         |
+| 3    | `DiffViewer/DiffViewer.tsx`                     |
+| 3    | `Stat/Stat.tsx`                                 |
+| 3    | `TransferList/transferListOverrides.stylex.ts`  |
+
+The five `*.stylex.ts` files and `useScrollEdgeEffect.ts` are the ones that
+keeping StyleX is the current answer for: they carry markers, ancestor/sibling
+conditions or a rule that must outrank a core utility, and they keep a header
+saying so.
+
+Deviations to review:
+
+- `packages/lab/src/LoadingMessage.test.tsx` is new: `LoadingMessage` had no
+  test, and the map it now uses needed one.
+- Every component test imports `classesOf` from
+  `../../../core/src/__tests__/classNameAssertions`, outside lab's `rootDir`.
+  The window 2 note stands and now covers four more files.
+- `pnpm -F @astryxdesign/lab typecheck` still cannot answer here:
+  `packages/core/dist` is absent on this worktree, so every lab file fails
+  TS2307 before the changed files are reached.

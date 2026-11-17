@@ -56,12 +56,35 @@ import {
   dropdownMenuDividerClassName,
   dropdownMenuItemClassName,
   dropdownMenuMarkerClassName,
+  dropdownMenuMenuInFrameClassName,
+  dropdownMenuPopoverClassName,
+  dropdownMenuPopoverFixedWidthClassName,
+  dropdownMenuPopoverMatchTriggerClassName,
+  dropdownMenuPopoverMinWidthClassName,
+  dropdownMenuPopoverViewportClassName,
   dropdownMenuRadioGroupClassName,
+  dropdownMenuRegionClassName,
+  dropdownMenuRegionsFrameClassName,
+  dropdownMenuScrollClassName,
   dropdownMenuSheetClassName,
   dropdownMenuGroupHeadingClassName,
+  dropdownMenuStepsAsideForViewClassName,
+  dropdownMenuSurfaceHostClassName,
   dropdownMenuTreeClassName,
   dropdownMenuTreeHiddenClassName,
+  dropdownMenuTriggerOpenClassName,
+  dropdownMenuTriggerPressableClassName,
 } from '../DropdownMenu/dropdownMenuClasses';
+import {
+  contextMenuCursorAnchorClassName,
+  contextMenuPopoverClassName,
+  contextMenuPopoverWidthClassName,
+  contextMenuSheetInsetClassName,
+  contextMenuSheetMenuClassName,
+  contextMenuTouchPanClassName,
+  contextMenuTouchPinchClassName,
+  contextMenuTriggerClassName,
+} from '../ContextMenu/contextMenuClasses';
 import {
   menuBottomSheetActionListClassName,
   menuBottomSheetClassName,
@@ -69,6 +92,12 @@ import {
 import {
   dropdownMenuSubMenuDrillInClassName,
   dropdownMenuSubMenuFlyoutClassName,
+  dropdownMenuSubMenuFlyoutMinWidthClassName,
+  dropdownMenuSubMenuFlyoutViewportClassName,
+  dropdownMenuSubMenuFrameMenuClassName,
+  dropdownMenuSubMenuRegionsFrameCapClassName,
+  dropdownMenuSubMenuRegionsFrameClassName,
+  dropdownMenuSubMenuRegionsSurfaceClassName,
   dropdownMenuSubMenuScrollClassName,
   dropdownMenuSubMenuTouchClassName,
   dropdownMenuSubMenuTouchPinchClassName,
@@ -88,6 +117,12 @@ import {
   drawerRootClassName,
 } from '../Drawer/drawerClasses';
 import {bottomSheetEdgeTintClassName} from '../BottomSheet/bottomSheetEdgeTintClasses';
+import {
+  bottomSheetDialogClassName,
+  bottomSheetPositionerClassName,
+  bottomSheetScrimReducedMotionDurationClassName,
+  bottomSheetSwitcherFlowClassName,
+} from '../BottomSheet/bottomSheetClasses';
 import {
   popoverAnchorWrapperClassName,
   popoverCloseButtonWrapperClassName,
@@ -208,6 +243,14 @@ import {
   nativeDateFieldOverlayValueClassName,
   nativeDateFieldSlotClassName,
   nativeDateFieldWrapperClassName,
+  scrollWheelBandClassName,
+  scrollWheelColumnClassName,
+  scrollWheelItemActiveClassName,
+  scrollWheelItemClassName,
+  scrollWheelItemFadeClassName,
+  scrollWheelItemInnerClassName,
+  scrollWheelItemInnerTipClassName,
+  scrollWheelScrollerClassName,
 } from '../DateInput/dateInputClasses';
 import {
   fileInputBoxClassName,
@@ -297,6 +340,21 @@ import {
   switchTrackBoxClassName,
   switchWrapperClassName,
 } from '../Switch/switchClasses';
+import {
+  sliderControlClassName,
+  sliderFillClipClassName,
+  sliderFillMoverClassName,
+  sliderFilledTrackClassName,
+  sliderMarkClassName,
+  sliderMarkLabelClassName,
+  sliderMarksContainerClassName,
+  sliderRowClassName,
+  sliderTextValueClassName,
+  sliderThumbClassName,
+  sliderTrackClassName,
+  sliderTravelBoxClassName,
+  sliderValueAnchorClassName,
+} from '../Slider/sliderClasses';
 import {
   radioListItemIndicatorSlotClassName,
   radioListItemInputClassName,
@@ -746,6 +804,28 @@ import {
   chatMessageChildrenClassName,
   chatMessageClassName,
   chatMessageContentClassName,
+} from '../Chat/chatClasses';
+import {
+  carouselFadeClassName,
+  carouselItemClassName,
+  carouselOverlayClassName,
+  carouselPillClassName,
+  carouselRootClassName,
+  carouselScrollerClassName,
+  carouselSnapClassName,
+} from '../Carousel/carouselClasses';
+import {
+  outlineActiveAnchorClassName,
+  outlineDividerClassName,
+  outlineIndicatorClassName,
+  outlineItemClassName,
+  outlineLabelClassName,
+  outlineLinkClassName,
+  outlineListClassName,
+  outlineRootClassName,
+  outlineTrackClassName,
+} from '../Outline/outlineClasses';
+import {
   chatMessageMetadataAssistantClassName,
   chatMessageMetadataClassName,
   chatMessageMetadataStatusErrorClassName,
@@ -1080,6 +1160,39 @@ function familyClassNames() {
   // The bottom sheet's edge tint: the strip WebKit samples for the iOS toolbar
   // colour.
   add(bottomSheetEdgeTintClassName);
+  // The bottom sheet's host dialog: each presentation arm, its scrim in the
+  // settled and leaving entries, the switcher's positioner and flow wrapper.
+  for (const isPresented of [false, true]) {
+    for (const isPanelHost of [false, true]) {
+      for (const hasScrim of [false, true]) {
+        for (const isNonModalTop of [false, true]) {
+          for (const [isEntrySettled, isExiting] of [
+            [false, false],
+            [true, false],
+            [false, true],
+          ]) {
+            add(
+              bottomSheetDialogClassName({
+                hasScrim,
+                isEntrySettled,
+                isExiting,
+                isNonModalTop,
+                isPanelHost,
+                isPresented,
+              }),
+            );
+          }
+          add(
+            bottomSheetPositionerClassName({
+              isPresented,
+              isTop: isNonModalTop,
+            }),
+          );
+        }
+      }
+    }
+    add(bottomSheetSwitcherFlowClassName({isNonModal: isPresented}));
+  }
 
   // The popover: its surface and content wrapper, the anchor wrapper, both
   // viewport-fit states, the two sizing classes and both hidden close
@@ -1518,8 +1631,18 @@ function familyClassNames() {
     nativeDateFieldOverlayClassName,
     nativeDateFieldOverlayValueClassName,
     nativeDateFieldOverlayPlaceholderClassName,
+    scrollWheelColumnClassName,
+    scrollWheelBandClassName,
+    scrollWheelScrollerClassName,
+    scrollWheelItemClassName,
+    scrollWheelItemFadeClassName,
+    scrollWheelItemActiveClassName,
+    scrollWheelItemInnerClassName,
   ]) {
     add(className);
+  }
+  for (const isDisabled of [false, true]) {
+    add(scrollWheelItemInnerTipClassName({isDisabled}));
   }
   for (const size of ['sm', 'md', 'lg']) {
     add(dateRangeInputSizeClassName({size}));
@@ -2285,6 +2408,43 @@ function familyClassNames() {
   for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
     add(value);
   }
+  // Outline: the root, the track, the divider line, the anchored indicator,
+  // the list and the label, then one complete link string per density, level
+  // and active state.
+  add(outlineRootClassName);
+  add(outlineTrackClassName);
+  add(outlineDividerClassName);
+  add(outlineIndicatorClassName);
+  add(outlineActiveAnchorClassName);
+  add(outlineListClassName);
+  add(outlineItemClassName);
+  add(outlineLabelClassName);
+  for (const density of ['compact', 'default']) {
+    for (let level = 1; level <= 6; level += 1) {
+      add(outlineLinkClassName(density, level, false));
+      add(outlineLinkClassName(density, level, true));
+    }
+  }
+  // Carousel: the root, an item, the overlay and the snap pair, then the
+  // scroller at every gap and every padding step, the three fade arms, and
+  // each pill state.
+  add(carouselRootClassName);
+  add(carouselItemClassName);
+  add(carouselOverlayClassName);
+  add(carouselSnapClassName);
+  for (const gap of [0, 0.5, 1, 1.5, 2, 3, 4]) {
+    add(carouselScrollerClassName({gap, hasSnap: true}));
+  }
+  for (const padding of [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10]) {
+    add(carouselScrollerClassName({gap: 1, padding, hasSnap: false}));
+  }
+  for (const fade of ['start', 'end', 'both']) {
+    add(carouselFadeClassName[fade]);
+  }
+  for (const edge of ['start', 'end']) {
+    add(carouselPillClassName(edge, false));
+    add(carouselPillClassName(edge, true));
+  }
   // AspectRatio: the box, its ratio reading the private variable, the ellipse
   // clip, the child wrapper and its three fit arms.
   add(aspectRatioClassName);
@@ -2374,6 +2534,39 @@ function familyClassNames() {
       }),
     );
   }
+  // The pointer popover: the trigger's two states, the surface with its caps
+  // and the step aside, the frame a menu with a header or footer takes, the
+  // layer box and its three width arms. A sub-menu repeats the surface's caps
+  // and the frame, because a drilled-in view caps where the root menu does.
+  add(dropdownMenuTriggerPressableClassName);
+  add(dropdownMenuTriggerOpenClassName);
+  add(dropdownMenuPopoverClassName);
+  add(dropdownMenuScrollClassName);
+  add(dropdownMenuRegionsFrameClassName);
+  add(dropdownMenuMenuInFrameClassName);
+  add(dropdownMenuSurfaceHostClassName);
+  add(dropdownMenuRegionClassName);
+  add(dropdownMenuStepsAsideForViewClassName);
+  add(dropdownMenuPopoverViewportClassName);
+  add(dropdownMenuPopoverMatchTriggerClassName);
+  add(dropdownMenuPopoverMinWidthClassName);
+  add(dropdownMenuPopoverFixedWidthClassName);
+  add(dropdownMenuSubMenuFlyoutMinWidthClassName);
+  add(dropdownMenuSubMenuFlyoutViewportClassName);
+  add(dropdownMenuSubMenuRegionsFrameClassName);
+  add(dropdownMenuSubMenuRegionsFrameCapClassName);
+  add(dropdownMenuSubMenuRegionsSurfaceClassName);
+  add(dropdownMenuSubMenuFrameMenuClassName);
+  // The context menu: the trigger wrapper, the cursor anchor, the popover and
+  // its width, both touch actions, and the frame its menu takes in a sheet.
+  add(contextMenuTriggerClassName);
+  add(contextMenuCursorAnchorClassName);
+  add(contextMenuPopoverClassName);
+  add(contextMenuPopoverWidthClassName);
+  add(contextMenuTouchPinchClassName);
+  add(contextMenuTouchPanClassName);
+  add(contextMenuSheetMenuClassName);
+  add(contextMenuSheetInsetClassName);
 
   for (const isSelected of [true, false]) {
     add(checkboxListItemClassName({isSelected, className: undefined}));
@@ -2485,6 +2678,43 @@ function familyClassNames() {
     }
   }
   add(switchStatusClassName);
+  // Slider: the row in both mark-label states, both orientations of every
+  // part, the fill in single and range mode, a thumb in its held, disabled and
+  // touch-target states, and the text value.
+  for (const hasMarkLabels of [false, true]) {
+    add(sliderRowClassName({hasMarkLabels}));
+  }
+  add(sliderTravelBoxClassName);
+  add(sliderTextValueClassName);
+  for (const isHorizontal of [false, true]) {
+    add(sliderValueAnchorClassName({isHorizontal}));
+    add(sliderTrackClassName({isHorizontal}));
+    add(sliderFillClipClassName({isHorizontal}));
+    add(sliderMarksContainerClassName({isHorizontal}));
+    add(sliderMarkLabelClassName({isHorizontal}));
+    for (const isRange of [false, true]) {
+      add(sliderFillMoverClassName({isHorizontal, isRange}));
+      add(sliderFilledTrackClassName({isHorizontal, isRange}));
+    }
+    for (const isFilled of [false, true]) {
+      add(sliderMarkClassName({isHorizontal, isFilled}));
+    }
+    for (const isDisabled of [false, true]) {
+      for (const isPressed of [false, true]) {
+        for (const hasTouchTarget of [false, true]) {
+          add(
+            sliderThumbClassName({
+              isHorizontal,
+              isDisabled,
+              isPressed,
+              hasTouchTarget,
+            }),
+          );
+        }
+      }
+      add(sliderControlClassName({isHorizontal, isDisabled}));
+    }
+  }
 
   // The command palette: the empty box, the footer row and its hints, the
   // group column and heading, the scrolling list, the item row with its three
@@ -2577,8 +2807,29 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // field, row, track, thumb and press layers, the sensor's date-time row and
     // segments, the bottom-sheet panel and the selector's size arms measured
     // 1402 with every family above registered, so the ceiling carries the usual
-    // headroom above that number rather than below it.
-    expect(stylesheet.rules.size).toBeLessThan(1460);
+    // headroom above that number rather than below it. The sheet host's dialog,
+    // its scrim arms, the switcher positioner and flow wrapper then measured
+    // 1424, and the scroll wheel's column, band, scrollport, row, its colour
+    // fade and the three tip arms added 10 more — the pane and edge padding are
+    // literals it spells alone, so the sheet measured 1434 there. Outline's nav,
+    // track, divider, the anchored indicator, the list, the item, the label and
+    // one link string per density, level and active state, then Carousel's root,
+    // item, overlay and pill states and its scroller at every gap, padding and
+    // fade arm added six more, and the toast card and its row took the sheet to
+    // 1502. The slider's row, travel box, value anchors, track, fill clip and
+    // mover, filled bar, marks, thumbs and text value added fifty-eight — the
+    // travel classes are arbitrary properties with a container-unit calc each —
+    // and Stepper's root, its track and the three step states added thirty-three
+    // more.
+    expect(stylesheet.rules.size).toBeLessThan(1620);
+  });
+
+  it('keeps the scrim takeover pin under prefers-reduced-motion', () => {
+    // Ten percent-of-duration on the reduced arm would win the cascade over
+    // the pin the stack writes for the frame a scrim changes hands.
+    expect(
+      stylesheet.blockOf(bottomSheetScrimReducedMotionDurationClassName),
+    ).toContain('transition-duration:var(--_sheet-scrim-duration,0.01s);');
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

@@ -90,7 +90,6 @@ import {moveRegionsTab} from './menuRegionStops';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {useMenuDrillIn} from './useMenuDrillIn';
 import {resolveMenuWidth} from './menuWidth';
-import {menuTouchActionStyles} from './menuTouchAction.stylex';
 import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import {
   useAdaptivePresentation,
@@ -126,6 +125,10 @@ import {
   dropdownMenuTriggerPressableClassName,
   dropdownMenuMaxBlockSizeVar,
 } from './dropdownMenuClasses';
+import {
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+} from './dropdownMenuSubMenuClasses';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {
@@ -1730,9 +1733,6 @@ function DropdownMenuPopover({
             {...mergeProps(
               themeProps('dropdown-menu', {presentation: 'popover'}),
               stylex.props(
-                hasOverflow
-                  ? menuTouchActionStyles.scrolls
-                  : menuTouchActionStyles.fits,
                 // Between a header and a footer the menu is a Tab stop, so
                 // keyboard focus on it must be visible (the base style removes
                 // the ring for the pointer-open focus target).
@@ -1743,6 +1743,9 @@ function DropdownMenuPopover({
               ),
               tw(
                 dropdownMenuPopoverClassName,
+                hasOverflow
+                  ? dropdownMenuSubMenuTouchClassName
+                  : dropdownMenuSubMenuTouchPinchClassName,
                 hasOverflow && dropdownMenuScrollClassName,
                 hasRegions && dropdownMenuMenuInFrameClassName,
                 className,

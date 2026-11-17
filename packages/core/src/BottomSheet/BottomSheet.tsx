@@ -68,7 +68,6 @@ import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import type {DialogPurpose} from '../Dialog';
 import type {SpacingStep} from '../utils/types';
-import {colorVars, durationVars, easeVars} from '../theme/tokens.stylex';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {useScrollLock} from '../hooks/useScrollLock';
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -127,111 +126,11 @@ export type {BottomSheetHeight, BottomSheetSnapPoint} from './BottomSheetPanel';
 import type {BottomSheetHeight, BottomSheetSnapPoint} from './BottomSheetPanel';
 import {BottomSheetEscapeContext} from './bottomSheetEscape';
 import {bottomSheetStackMotionStyles} from './bottomSheetStackMotion.stylex';
+import {
+  bottomSheetDialogClassName,
+  bottomSheetPositionerClassName,
+} from './bottomSheetClasses';
 import {layerClickBoundary} from '../Layer/layerClickBoundary';
-
-const styles = stylex.create({
-  dialog: {
-    position: 'fixed',
-    inset: 0,
-    width: '100dvw',
-    height: '100dvh',
-    maxWidth: 'none',
-    maxHeight: 'none',
-    margin: 0,
-    padding: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    overflow: 'visible',
-    display: 'none',
-    outline: 'none',
-  },
-  dialogOpen: {
-    display: 'block',
-  },
-  // An open standalone dialog positions its panel: the panel sits at its
-  // block end, centred, with no wrapper. A tap beside a narrower panel lands
-  // on the dialog, which light dismiss reads. A flex row, not a grid: WebKit
-  // lays a grid host out again on each render inside the sheet, which makes
-  // each update slower. Not a column: WebKit then drops the content's
-  // block-end padding from the scroll range. In a row the panel's height is
-  // its own cross size, so a sheet taller than the viewport runs past the top
-  // edge, as in a grid. The stack's recede applies to this dialog too, so a
-  // covered sheet shrinks and lifts as one.
-  dialogPanelHost: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-  },
-  // A non-modal sheet is in the top layer as a manual popover, so it has no
-  // page z-index (AST-027). Below the Popover API floor, `show()` leaves it
-  // in page stacking order as a reduced fallback.
-  dialogNonModal: {
-    pointerEvents: 'none',
-    width: '100%',
-    height: '100%',
-  },
-  dialogNonModalItem: {
-    pointerEvents: 'none',
-    width: '100%',
-    height: '100%',
-  },
-  dialogNonModalItemTop: {
-    zIndex: 1,
-  },
-  scrim: {
-    '::backdrop': {
-      backgroundColor: colorVars['--color-overlay'],
-      opacity: {
-        default: 'var(--_sheet-scrim-opacity, 1)',
-        '@starting-style': 0,
-      },
-      transitionProperty: 'opacity, display',
-      // The scrim changes hands between stacked sheets with no fade at all:
-      // the host pins this to 0s inline for the frame the change lands in
-      // (see `writeScrimOpacity`). Reduced motion keeps the pin too.
-      transitionDuration: `var(--_sheet-scrim-duration, ${durationVars['--duration-medium']})`,
-      transitionTimingFunction: easeVars['--ease-standard'],
-      transitionBehavior: 'allow-discrete',
-      '@media (prefers-reduced-motion: reduce)': {
-        transitionDuration: 'var(--_sheet-scrim-duration, 0.01s)',
-      },
-    },
-  },
-  // A sheet present on page load dims at once (AST-013 FR13), with the
-  // reduced-motion collapse, so the transition still ends.
-  scrimSettled: {
-    '::backdrop': {
-      transitionDuration: '0.01s',
-    },
-  },
-  /**
-   * The dim leaves with the sheet, on a matching curve. A fade covers no
-   * distance, so `--ease-standard` would end it early: 90% faded after 163ms
-   * of a 410ms close, under a sheet that is still sliding. `linear` uses the
-   * whole duration. A touch drag's close writes its spring's progress as the
-   * easing instead, so the dim clears as the sheet slides out.
-   */
-  scrimClosing: {
-    '::backdrop': {
-      transitionTimingFunction: 'var(--_sheet-scrim-easing, linear)',
-    },
-  },
-  positioner: {
-    position: 'absolute',
-    insetInline: 0,
-    insetBlockEnd: 0,
-    display: 'flex',
-    justifyContent: 'center',
-    pointerEvents: 'none',
-  },
-  positionerHidden: {
-    display: 'none',
-  },
-  positionerTop: {
-    zIndex: 1,
-  },
-});
 
 /** Positioner styles for a sheet's place in the stack; the switcher items share them. */
 function stackPositionerStyles(view: BottomSheetStackView) {
@@ -868,18 +767,21 @@ function StandaloneBottomSheet({
 
   return (
     <dialog
-      {...stylex.props(
-        styles.dialog,
-        shouldPresent && styles.dialogOpen,
-        shouldPresent && styles.dialogPanelHost,
-        // The dialog is the panel's positioner, so the stack's recede
-        // transforms the dialog: panel, grabber and all shrink and lift as
-        // one. The backdrop is not a descendant and stays put.
-        ...stackPositionerStyles(stackView),
-        hasScrim && styles.scrim,
-        hasScrim && isEntrySettled && styles.scrimSettled,
-        hasScrim && isExiting && styles.scrimClosing,
-        !hasScrim && styles.dialogNonModal,
+      {...mergeProps(
+        stylex.props(
+          // The dialog is the panel's positioner, so the stack's recede
+          // transforms the dialog: panel, grabber and all shrink and lift as
+          // one. The backdrop is not a descendant and stays put.
+          ...stackPositionerStyles(stackView),
+        ),
+        bottomSheetDialogClassName({
+          isPresented: shouldPresent,
+          isPanelHost: shouldPresent,
+          hasScrim,
+          isNonModalTop: false,
+          isEntrySettled,
+          isExiting,
+        }),
       )}
       ref={dialogComposedRef}
       // A non-modal sheet is hosted in the top layer as a manual popover
@@ -1207,16 +1109,15 @@ function SwitcherBottomSheetItem({
     ...switcherDialogProps
   } = dialogProps;
   const dialogPresentationProps = mergeProps(
-    stylex.props(
-      styles.dialog,
-      isPresented && styles.dialogOpen,
-      hasScrim && styles.scrim,
-      hasScrim && isEntrySettled && styles.scrimSettled,
-      hasScrim && ownsScrim && isFlowClosing && styles.scrimClosing,
-      !hasScrim && styles.dialogNonModalItem,
-      !hasScrim && isTopSheet && styles.dialogNonModalItemTop,
-      switcherXstyle,
-    ),
+    stylex.props(switcherXstyle),
+    bottomSheetDialogClassName({
+      isPresented,
+      isPanelHost: false,
+      hasScrim,
+      isNonModalTop: !hasScrim && isTopSheet,
+      isEntrySettled,
+      isExiting: hasScrim && ownsScrim && isFlowClosing,
+    }),
     switcherClassName,
     switcherStyle,
   );
@@ -1257,11 +1158,9 @@ function SwitcherBottomSheetItem({
         onClick: onDialogClick,
       })}>
       <div
-        {...stylex.props(
-          styles.positioner,
-          !isPresented && styles.positionerHidden,
-          isTopSheet && styles.positionerTop,
-          ...(hasScrim ? stackPositionerStyles(stackView) : []),
+        {...mergeProps(
+          stylex.props(...(hasScrim ? stackPositionerStyles(stackView) : [])),
+          bottomSheetPositionerClassName({isPresented, isTop: isTopSheet}),
         )}
         hidden={!isPresented}
         aria-hidden={isBlocked ? 'true' : undefined}

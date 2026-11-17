@@ -2,7 +2,15 @@
 
 import {describe, it, expect} from 'vitest';
 import {render, screen, fireEvent} from '@testing-library/react';
+import {classesOf} from '../../../core/src/__tests__/classNameAssertions';
 import {ChatReasoning} from './ChatReasoning';
+import {
+  chatReasoningContentCollapsedClassName,
+  chatReasoningContentExpandedClassName,
+  chatReasoningHeaderClassName,
+  chatReasoningLabelClassName,
+  chatReasoningStreamingLabelClassName,
+} from './chatReasoningClasses';
 
 describe('ChatReasoning', () => {
   it('renders collapsed by default', () => {
@@ -77,5 +85,45 @@ describe('ChatReasoning', () => {
     expect(region).not.toHaveAttribute('inert');
     fireEvent.click(button);
     expect(region).toHaveAttribute('inert');
+  });
+
+  it('carries the header and collapsed-content classes', () => {
+    render(<ChatReasoning>Body</ChatReasoning>);
+    const button = screen.getByRole('button');
+    expect(classesOf(button).join(' ')).toBe(chatReasoningHeaderClassName);
+    const region = document.getElementById(
+      button.getAttribute('aria-controls') as string,
+    ) as HTMLElement;
+    expect(region.className).toContain(chatReasoningContentCollapsedClassName);
+    expect(region.className).not.toContain(
+      chatReasoningContentExpandedClassName,
+    );
+  });
+
+  it('swaps the collapsed row for the expanded row', () => {
+    render(<ChatReasoning>Body</ChatReasoning>);
+    const button = screen.getByRole('button');
+    const region = document.getElementById(
+      button.getAttribute('aria-controls') as string,
+    ) as HTMLElement;
+    fireEvent.click(button);
+    expect(region.className).toContain(chatReasoningContentExpandedClassName);
+    expect(region.className).not.toContain(
+      chatReasoningContentCollapsedClassName,
+    );
+  });
+
+  it('swaps the plain label for the shimmer while streaming', () => {
+    const {rerender} = render(<ChatReasoning>Body</ChatReasoning>);
+    expect(screen.getByText('Thinking').className).toContain(
+      chatReasoningLabelClassName,
+    );
+    rerender(<ChatReasoning isStreaming>Body</ChatReasoning>);
+    expect(screen.getByText('Thinking').className).toContain(
+      chatReasoningStreamingLabelClassName,
+    );
+    expect(screen.getByText('Thinking').className).not.toContain(
+      chatReasoningLabelClassName,
+    );
   });
 });

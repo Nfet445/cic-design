@@ -42,8 +42,11 @@ import type {BaseProps} from '../BaseProps';
 import {useMenuHover} from '../hooks/useMenuHover';
 import {useMenuPress} from '../hooks/useMenuPress';
 import {pressOnItemsOnly} from '../hooks/menuPressOnItems';
-import {menuTouchActionStyles} from '../DropdownMenu/menuTouchAction.stylex';
 import {useMenuOverflow} from '../DropdownMenu/useMenuOverflow';
+import {
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
 import {
   NavHeadingCloseContext,
   NavHeadingDismissContext,
@@ -232,11 +235,13 @@ export function SideNavHeading({
     HEADING_MENU_ITEM_SELECTOR,
   );
   const dismissCtx = useMemo(() => ({dismiss: closeMenu}), [closeMenu]);
-  const headingMenuTouch = stylex.props(
-    useMenuOverflow(headingMenuRef, menu, popover.isOpen)
-      ? menuTouchActionStyles.scrolls
-      : menuTouchActionStyles.fits,
-  );
+  const headingMenuTouchClassName = useMenuOverflow(
+    headingMenuRef,
+    menu,
+    popover.isOpen,
+  )
+    ? dropdownMenuSubMenuTouchClassName
+    : dropdownMenuSubMenuTouchPinchClassName;
 
   const closeMenuCtx = useMemo(() => ({closeMenu}), [closeMenu]);
 
@@ -366,7 +371,7 @@ export function SideNavHeading({
                 aria-label={heading}
                 {...headingMenuPress.menuProps}
                 onPointerDown={headingMenuPointerDown}
-                {...headingMenuTouch}>
+                className={headingMenuTouchClassName}>
                 <NavHeadingCloseContext value={closeMenuCtx}>
                   {menu}
                 </NavHeadingCloseContext>
@@ -627,7 +632,7 @@ export function SideNavHeading({
               aria-label={heading}
               {...headingMenuPress.menuProps}
               onPointerDown={headingMenuPointerDown}
-              {...headingMenuTouch}>
+              className={headingMenuTouchClassName}>
               <NavHeadingDismissContext value={dismissCtx}>
                 {menu}
               </NavHeadingDismissContext>
@@ -717,7 +722,7 @@ export function SideNavHeading({
               aria-label={heading}
               {...headingMenuPress.menuProps}
               onPointerDown={headingMenuPointerDown}
-              {...headingMenuTouch}>
+              className={headingMenuTouchClassName}>
               <NavHeadingDismissContext value={dismissCtx}>
                 {menu}
               </NavHeadingDismissContext>

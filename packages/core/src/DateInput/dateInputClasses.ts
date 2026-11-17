@@ -185,6 +185,147 @@ export const pickerWheelRowClassName = tw(
 );
 
 /**
+ * The snap-scrolling picker column under a fine pointer. The row pitch and the
+ * pane size mirror `dateInputTouchGeometry` as literals: a class assembled by
+ * interpolation reaches the DOM with no rule behind it.
+ */
+export const scrollWheelColumnClassName = tw(
+  'relative',
+  'flex-1',
+  '[min-inline-size:0]',
+);
+
+/**
+ * The selection band: one row-height plate behind the options. Half the row,
+ * measured off the column's centre.
+ */
+export const scrollWheelBandClassName = tw(
+  'absolute',
+  'inset-x-0',
+  '[inset-block-start:calc(50%_-_14px)]',
+  '[block-size:28px]',
+  'rounded-[var(--radius-element)]',
+  // `--color-neutral`, not `--color-background-muted`: muted is 4.7% alpha,
+  // which puts the plate 17 units of colour from the sheet behind it, so the
+  // wheels' fade had nothing to happen in.
+  'bg-[color:var(--color-neutral)]',
+  'pointer-events-none',
+);
+
+/**
+ * The scrollport. `box-border` is load-bearing and stated rather than
+ * inherited from the reset: with content-box the end padding would be added to
+ * the scrollport instead of sitting inside it, and every snap position would be
+ * wrong.
+ */
+export const scrollWheelScrollerClassName = tw(
+  'box-border',
+  // The pane of six day rows, and the room for the first and last rows to
+  // reach the centre: `dateInputTouchGeometry.paneBlockSize` and its
+  // `wheelEdgePadding`, spelled out.
+  '[block-size:264px]',
+  'overflow-y-auto',
+  'overflow-x-hidden',
+  '[scroll-snap-type:y_mandatory]',
+  'overscroll-contain',
+  '[padding-block:118px]',
+  '[perspective:520px]',
+  '[transform-style:preserve-3d]',
+  '[scrollbar-width:none]',
+  'outline-none',
+  // Vertical pans scroll the wheel; a two-finger pinch stays the page's, so the
+  // page can still zoom over an open picker (WCAG 1.4.4).
+  '[touch-action:pan-y_pinch-zoom]',
+);
+
+/**
+ * One row. Its disabled colour keys off `aria-disabled`: a plain colour beside
+ * the active arm's accent would be ordered by the sheet, not by the caller.
+ */
+export const scrollWheelItemClassName = tw(
+  'flex',
+  'items-center',
+  'justify-center',
+  '[block-size:28px]',
+  'px-2',
+  '[scroll-snap-align:center]',
+  '[border-width:0]',
+  '[border-style:none]',
+  'bg-transparent',
+  'text-[length:var(--text-large-size)]',
+  'font-normal',
+  'text-[color:var(--color-text-primary)]',
+  'whitespace-nowrap',
+  'cursor-pointer',
+  'disabled:cursor-default',
+  '[&[aria-disabled=true]]:cursor-default',
+  '[&[aria-disabled=true]]:text-[color:var(--color-text-disabled)]',
+  'select-none',
+  '[transition-property:color,font-weight]',
+  '[transition-duration:var(--duration-fast)]',
+);
+
+/**
+ * The colour fade, on the row and not the tipped inner element: colour does not
+ * move a snap area. An animated colour outranks the selected and disabled
+ * colours, so those rows do not take this class.
+ */
+export const scrollWheelItemFadeClassName = tw(
+  // Without the guard a browser that cannot drive an animation from a scroll
+  // timeline plays these frames once, on the document timeline.
+  '[@supports(animation-timeline:view())]:[animation-name:astryxWheelFade]',
+  '[animation-timeline:view(y)]',
+  '[animation-range:cover_0%_cover_100%]',
+  '[animation-fill-mode:both]',
+  '[animation-duration:auto]',
+  '[animation-timing-function:linear]',
+);
+
+/** The row under the band. */
+export const scrollWheelItemActiveClassName = tw(
+  'text-[color:var(--color-text-accent)]',
+  'font-semibold',
+);
+
+/**
+ * The tip rides an inner element, never the row itself: a snap area is the
+ * element's transformed border box, so animating the row would move the very
+ * positions the scroller snaps to.
+ */
+export const scrollWheelItemInnerClassName = tw(
+  'flex',
+  'items-center',
+  'justify-center',
+  'size-full',
+  'overflow-hidden',
+  'text-ellipsis',
+  '[backface-visibility:hidden]',
+  '[animation-timeline:view(y)]',
+  '[animation-range:cover_0%_cover_100%]',
+  '[animation-fill-mode:both]',
+  '[animation-duration:auto]',
+  '[animation-timing-function:linear]',
+);
+
+/**
+ * The frames the inner element plays. Keyed to `motion-safe` so the reduced
+ * arm never fights this one for the same property: an enabled row keeps only
+ * the row's colour fade, a disabled one still dims.
+ */
+export function scrollWheelItemInnerTipClassName({
+  isDisabled,
+}: {
+  isDisabled: boolean;
+}): string {
+  return isDisabled
+    ? tw(
+        '[@supports(animation-timeline:view())]:motion-safe:[animation-name:astryxWheelTipAndDim]',
+        '[@supports(animation-timeline:view())]:motion-reduce:[animation-name:astryxWheelDim]',
+      )
+    : '[@supports(animation-timeline:view())]:motion-safe:[animation-name:astryxWheelTip]';
+}
+
+/**
  * The month scroller's measured geometry: the spacer's full inline size, and
  * one pane's place and width along it. The scroller measures its own box, so
  * every value is per instance and rides a variable the element writes.

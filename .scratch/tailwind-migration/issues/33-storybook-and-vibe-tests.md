@@ -1,6 +1,6 @@
 # storybook and vibe tests
 
-Status: ready-for-agent
+Status: in-progress (both surfaces load the sheet; the browser comparison is open)
 Blocked by: 31
 Wave: 9
 Ticket: 33
@@ -30,6 +30,69 @@ Load the Tailwind sheet in Storybook and in `internal/vibe-tests`, so stories an
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.
 - Manual Windows High Contrast check is part of this ticket's checklist when the component draws a border, an outline or a focus ring.
+
+## Comments
+
+### Attempt 1 (`ticket/33-storybook-and-vibe-tests`)
+
+Started from `a70963644` (the Storybook plugin another branch wrote) and then
+merged `poc/tailwind-layout-primitives`, so every story and preview below
+renders the migrated sources.
+
+**Storybook.** `apps/storybook/.storybook/astryxTailwindSheet.ts` compiles
+`packages/core/dist/astryx-tailwind.css` at request time through
+`buildAstryxTailwindCss()` and serves it as
+`virtual:astryx-tailwind-sheet.css`; `main.ts` registers the plugin in
+`viteFinal`, `preview.tsx` imports the module after `@astryxdesign/reset.css`.
+`pnpm -F @astryxdesign/storybook build` completes successfully (exit 0, about
+19 s of the build inside the plugin's `load`). The sheet lands in
+`dist/assets/iframe-*.css`: the utilities sit in `@layer astryx-base{…}` and
+`.astryx-layer-text-reset` is present, so a story resolves the same classes
+the package build compiles. The build prints six pre-existing Lightning CSS
+warnings (a mangled `var(-- tab-indicator-bottom…)` and `var(-- sheet-reserve…)`
+in two class literals); none comes from this change.
+
+**vibe-tests.** `createEntryFile` (`internal/vibe-tests/src/build-previews.ts`)
+now appends `import '<repo>/packages/core/dist/astryx-tailwind.css';` after
+`@astryxdesign/core/reset.css` for the `astryx` target only, and throws the
+`pnpm -F @astryxdesign/core build` hint when that file is missing. The
+`astryx-tailwind` target keeps its CDN Tailwind and `src/tailwind-theme.css`,
+so its baseline is untouched. `main()` moved behind the `isEntryPoint` guard
+that `render-pages.ts` uses, so `createEntryFile` can be tested;
+`internal/vibe-tests/src/build-previews.test.ts` covers both targets.
+
+Verification:
+
+- `pnpm -F @astryxdesign/storybook build` — exit 0.
+- `pnpm exec vitest run internal/vibe-tests/src` — 64 passed (the 62 that were
+  there plus the 2 new). The first run failed once in
+  `validateCanonicalSuite` (provenance) and passed on every rerun.
+- `pnpm exec tsx internal/vibe-tests/src/render-pages.ts --check` — exit 0.
+- `pnpm -F @astryxdesign/vibe-tests aggregate --help` — prints usage, exit 0.
+- `prettier --check` and `eslint` clean on the six touched files.
+
+`pnpm -F @astryxdesign/core build` fails on this branch before `build:css` runs,
+at `src/BottomSheet/BottomSheetPanel.tsx(1046,15): error TS2345: Argument of
+type 'PropsObject' is not assignable to parameter of type
+'ScrollableElementProps<HTMLDivElement>'`. That file belongs to another window,
+so the validation above used `build:esm` (which ran before the typecheck
+failed) plus `build:css`.
+
+### Left over in this ticket
+
+- The `Done when` browser comparison is not run: no browser opened a migrated
+  story next to the family check page. The build proves the classes resolve;
+  the computed values still need a reviewer's eyes.
+- `internal/vibe-tests/environments/project-astryx-tailwind/globals.css` still
+  imports `@astryxdesign/core/tailwind-theme.css` and not
+  `@astryxdesign/core/astryx-tailwind.css`, so that environment does not yet
+  carry the Astryx class maps its own Tailwind build cannot scan. Changing it
+  touches the fixture suite (`fixtures:build`, `fixtures:verify`), which was
+  not run here; it is the remaining half of `The Tailwind environment no longer
+needs a second stylesheet`.
+- No changeset: this ticket changes no published package surface.
+- The manual Windows High Contrast check does not apply: this change adds no
+  border, outline or focus ring.
 
 ## Comments
 

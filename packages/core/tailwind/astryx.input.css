@@ -425,3 +425,72 @@
     --astryx-press-alpha: 0;
   }
 }
+
+/* DateInput/ScrollWheel: a row tips away from the centre of the wheel. 0% is a
+   row entering at the bottom of the scrollport, 50% a row centred in it, 100%
+   a row leaving at the top — which is what a `view()` timeline over the
+   `cover` range means, and why this reads as a cylinder under the finger. */
+@keyframes astryxWheelTip {
+  0% {
+    transform: rotateX(52deg) scale(0.86);
+  }
+  50% {
+    transform: rotateX(0deg) scale(1);
+  }
+  100% {
+    transform: rotateX(-52deg) scale(0.86);
+  }
+}
+
+/* Colour keeps every row at WCAG AA, which an opacity fade does not. The ends
+   stop halfway to the secondary text colour, because that colour alone falls
+   below AA in two shipped themes. */
+@keyframes astryxWheelFade {
+  0% {
+    color: color-mix(
+      in oklab,
+      var(--color-text-primary),
+      var(--color-text-secondary)
+    );
+  }
+  50% {
+    color: var(--color-text-primary);
+  }
+  100% {
+    color: color-mix(
+      in oklab,
+      var(--color-text-primary),
+      var(--color-text-secondary)
+    );
+  }
+}
+
+/* A disabled row keeps its disabled colour and fades by opacity instead: WCAG
+   1.4.3 exempts inactive components from the contrast minimum. */
+@keyframes astryxWheelTipAndDim {
+  0% {
+    opacity: 0.3;
+    transform: rotateX(52deg) scale(0.86);
+  }
+  50% {
+    opacity: 1;
+    transform: rotateX(0deg) scale(1);
+  }
+  100% {
+    opacity: 0.3;
+    transform: rotateX(-52deg) scale(0.86);
+  }
+}
+
+/* Reduce Motion on a disabled row: the same dim, without the travel. */
+@keyframes astryxWheelDim {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}

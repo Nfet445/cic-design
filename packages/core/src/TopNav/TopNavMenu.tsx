@@ -26,13 +26,15 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {usePopoverInternal} from '../Popover/usePopover';
 import {useMenuHover} from '../hooks/useMenuHover';
 import {useMenuPress} from '../hooks/useMenuPress';
 import {pressOnItemsOnly} from '../hooks/menuPressOnItems';
-import {menuTouchActionStyles} from '../DropdownMenu/menuTouchAction.stylex';
 import {useMenuOverflow} from '../DropdownMenu/useMenuOverflow';
+import {
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
 import {useListFocus} from '../hooks/useListFocus';
 import {useTypeahead} from '../hooks/useTypeahead';
 import {Icon} from '../Icon';
@@ -446,12 +448,12 @@ export function TopNavMenu({
           onKeyDown={menuKeyDown}
           onFocus={handleFocus}
           {...mergeProps(
-            stylex.props(
+            tw(
+              topNavMenuContainerClassName(),
               hasOverflow
-                ? menuTouchActionStyles.scrolls
-                : menuTouchActionStyles.fits,
+                ? dropdownMenuSubMenuTouchClassName
+                : dropdownMenuSubMenuTouchPinchClassName,
             ),
-            tw(topNavMenuContainerClassName()),
           )}>
           {items.map(item => {
             const Element = item.href ? 'a' : 'div';

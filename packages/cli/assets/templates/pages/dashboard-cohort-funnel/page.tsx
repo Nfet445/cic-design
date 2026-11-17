@@ -18,7 +18,6 @@
  */
 
 import {useMemo, useState, type CSSProperties} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   VStack,
   HStack,
@@ -98,27 +97,19 @@ const FUNNEL_COLORS = [
 
 // ============= STYLES =============
 
-const styles = stylex.create({
+const styles = {
   // Rules between the drop-off steps. Each step draws its own leading rule,
   // pulled half a gap to the left so it sits centred in the column gap. The
   // step that starts a row draws its rule outside the grid's content box,
-  // where `overflowX: clip` hides it — so the separators stay correct as the
+  // where `overflow-x-clip` hides it — so the separators stay correct as the
   // grid reflows from four columns down to one.
   //
   // The `--spacing-3` below must match the step Grid's `gap={3}`, otherwise
-  // the rules sit off-centre. StyleX needs a literal here, so the two can't
+  // the rules sit off-centre. A class takes a literal here, so the two can't
   // share a constant — keep them in sync by hand.
-  stepGrid: {
-    overflowX: 'clip',
-  },
-  step: {
-    borderInlineStartWidth: '1px',
-    borderInlineStartStyle: 'solid',
-    borderInlineStartColor: 'var(--color-border, rgba(5, 54, 89, 0.1))',
-    marginInlineStart: 'calc(var(--spacing-3, 12px) / -2)',
-    paddingInlineStart: 'calc(var(--spacing-3, 12px) / 2)',
-  },
-});
+  stepGrid: 'overflow-x-clip',
+  step: 'border-s border-solid [border-inline-start-color:var(--color-border,rgba(5,54,89,0.1))] [margin-inline-start:calc(var(--spacing-3,12px)/-2)] [padding-inline-start:calc(var(--spacing-3,12px)/2)]',
+} as const;
 
 // ============= FUNNEL DATA =============
 
@@ -579,11 +570,11 @@ function FunnelSteps({segment}: {segment: Segment}) {
     <Grid
       columns={{minWidth: 200, repeat: 'fit'}}
       gap={3}
-      xstyle={styles.stepGrid}>
+      className={styles.stepGrid}>
       {steps.map(step => {
         const leaky = step.drop >= 55;
         return (
-          <VStack key={step.key} gap={1} xstyle={styles.step}>
+          <VStack key={step.key} gap={1} className={styles.step}>
             <Text type="label" color="secondary">
               {step.label}
             </Text>

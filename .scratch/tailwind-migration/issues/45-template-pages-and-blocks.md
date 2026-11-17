@@ -270,16 +270,45 @@ class list and the two variables.
 Counts after the window: 26 files, 155 `xstyle=`, 25 `@stylexjs/stylex`
 imports, 15 `tokens.stylex` imports, 24 `stylex.create` maps.
 
+Window 5 (`refactor(cli): шаблоны BaseTypeahead на классы Tailwind` and
+`refactor(cli): шаблоны TableLeadingMarkSelection и воронки когорт на
+Tailwind`): four templates, smallest maps first.
+
+- `blocks/components/BaseTypeahead/BaseTypeaheadCustomSearch.tsx` and
+  `BaseTypeaheadShowcase.tsx` — the two files carry the same two-rule map, so
+  it became the same two class strings. The wrapper keeps the focus ring:
+  `outline-solid [outline-color:transparent] [outline-width:0]` is the resting
+  state, and `[&:has(input:focus-visible)]:[outline-color:…]` (same for width)
+  wins on the pseudo-class's specificity, exactly as the `:has` condition in
+  the StyleX map did. `outline-solid` is the stock utility for
+  `outlineStyle: 'solid'`; `[padding-block:var(--spacing-5)]` and
+  `[padding-inline:var(--spacing-2)]` read the tokens, because a theme may set
+  `--spacing-5` off the 4px grid (y2k sets it to `1.875rem`) while `py-*` would
+  stay `calc(var(--spacing) * n)`.
+- `blocks/components/Table/TableLeadingMarkSelection.tsx` — `grid-area: 1 / 1`
+  became the logical `col-start-1 row-start-1` (a slash inside an arbitrary
+  value collides with Tailwind's modifier syntax), the 50% checkbox became
+  `rounded-full bg-surface`, and `paddingInlineStart: var(--spacing)` became
+  `ps-1`. `mergeProps` now takes the class string as `{className}`, the shape
+  its third argument already accepted.
+- `pages/dashboard-cohort-funnel/page.tsx` — `overflowX: 'clip'` became
+  `overflow-x-clip`; the step rule became
+  `border-s border-solid [border-inline-start-color:var(--color-border,rgba(5,54,89,0.1))]`
+  with the half-gap margin and padding spelled out in `calc`. Both `xstyle`
+  sites sat on `Grid` and `VStack`, which take `className`.
+
+Counts after the window: 22 files, 168 `xstyle=`, 21 `@stylexjs/stylex`
+imports, 12 `tokens.stylex` imports, 20 `stylex.create` maps.
+
 Untouched, with what each needs (path — `xstyle=` sites / maps /
 `tokens.stylex` import):
 
-- `blocks/components/Table/TableLeadingMarkSelection.tsx` — 0 / 1 / yes
-- `blocks/components/BaseTypeahead/BaseTypeaheadCustomSearch.tsx` — 2 / 1 / yes
-- `blocks/components/BaseTypeahead/BaseTypeaheadShowcase.tsx` — 2 / 1 / yes
 - `blocks/components/usePanGesture/PanDraggableBox.tsx` — 2 / 1 / yes (dynamic
-  `translate`, same `--astryx-*` shape as `PanPlayingCard`)
-- `blocks/components/BaseTypeahead/BaseTypeaheadMenu.tsx` — 5 / 1 / yes
+  `translate`, same `--astryx-*` shape as `PanPlayingCard`; its
+  `pan-draggable-box.test.tsx` reads the merged style off `data-style`, so the
+  test moves with it)
 - `blocks/components/Table/TableFloatingBulkActionsTable.tsx` — 2 / 1 / yes
+- `blocks/components/BaseTypeahead/BaseTypeaheadMenu.tsx` — 5 / 1 / yes
 - `blocks/components/Toolbar/ToolbarTableFilter.tsx` — 7 / 1 / yes
 - `blocks/components/DrawerHeader/DrawerHeaderShowcase.tsx` — 0 / 1 / yes —
   blocked: needs `layoutInnerClassName`, which core does not export
@@ -289,21 +318,20 @@ Untouched, with what each needs (path — `xstyle=` sites / maps /
 - `blocks/components/Hooks/usePressFeedbackHookUsage.tsx` plus its
   `.test.tsx` — 1 / 0 / no — blocked: `focusOutlineStyles` and
   `interactionOverlayStyles` are still StyleX in core
-- `pages/dashboard-alert-rail/page.tsx` — 2 / 2 / no
-- `pages/dashboard-cohort-funnel/page.tsx` — 2 / 1 / no
-- `pages/dashboard-comparison/page.tsx` — 2 / 2 / no
-- `pages/dashboard-progress/page.tsx` — 6 / 1 / no
-- `pages/dashboard-scorecard/page.tsx` — 2 / 2 / no
-- `pages/kanban-board/page.tsx` — 7 / 1 / no
-- `pages/settings-dialog/page.tsx` — 17 / 3 / no
-- `pages/shell-top-nav/page.tsx` — 3 / 1 / no
+- `pages/table-inbox/page.tsx` — 1 / 1 / yes
 - `pages/table-collapsible/page.tsx` — 4 / 1 / yes
 - `pages/table-comparison/page.tsx` — 4 / 1 / yes
-- `pages/table-filter/page.tsx` — 54 / 3 / yes
-- `pages/table-inbox/page.tsx` — 1 / 1 / yes
-- `pages/table-tree/page.tsx` — 2 / 1 / yes
+- `pages/table-tree/page.tsx` — 4 / 1 / yes
 - `pages/work-item-detail/page.tsx` — 3 / 1 / yes
-- `pages/canvas-editor/page.tsx` — 25 / 6 / no — held back by the task for its
+- `pages/dashboard-alert-rail/page.tsx` — 2 / 2 / no
+- `pages/dashboard-comparison/page.tsx` — 4 / 2 / no
+- `pages/dashboard-progress/page.tsx` — 6 / 1 / no
+- `pages/dashboard-scorecard/page.tsx` — 3 / 2 / no
+- `pages/kanban-board/page.tsx` — 7 / 1 / no
+- `pages/shell-top-nav/page.tsx` — 3 / 1 / no
+- `pages/settings-dialog/page.tsx` — 21 / 3 / no
+- `pages/table-filter/page.tsx` — 59 / 3 / yes
+- `pages/canvas-editor/page.tsx` — 30 / 6 / no — held back by the task for its
   own pass
 
 - Two arbitrary-value utilities for the same property do not resolve by
@@ -313,17 +341,26 @@ Untouched, with what each needs (path — `xstyle=` sites / maps /
   already carries `aria-selected`, so the chosen look lives inside `styles.cell`
   as `aria-selected:` variants and one class covers both states. Any later
   template that overrode a StyleX property in a second style object needs the
-  same treatment.
+  same treatment. The BaseTypeahead field in this window is the second case: a
+  plain `[outline-width:0]` cannot lose to a same-property class chosen later,
+  so the focused value lives on a selector with its own specificity.
 
-Window 4 checks: the three templates and the updated test parse with
+Window 5 checks: all four templates parse with
 `node_modules/.bin/esbuild --loader:.tsx=tsx`; `prettier --check` clean;
-`eslint` no issues; `vitest run --project node
-packages/cli/api/template/pan-playing-card.test.tsx
-packages/cli/api/template/use-input-container-hook-usage.test.tsx` passed (13
-tests) before and after merging `poc/tailwind-layout-primitives` (`3e19cec45`,
-no conflict). The batch holds three templates, not five: the window ran past
-its half hour before the fourth was finished, and three whole templates beat a
-half-converted fourth.
+`eslint` no issues; `git merge poc/tailwind-layout-primitives` fast-forwarded
+this branch with no template in the diff. `vitest run --project node
+packages/cli/api/template scripts/sync-templates.test.mjs` is **63 files
+passed, 2 failed, 6 tests failed** — both failures are
+`use-scroll-overflow-hook-usage.test.tsx` and
+`use-scrollable-area-hook-usage.test.tsx`, which window 3 left in the tree and
+which fail identically with this window's work stashed. The node project's
+global setup rebuilds `packages/core/dist` first, and that build stops on
+`packages/core/src/BottomSheet/BottomSheetPanel.tsx:1046` (`PropsObject` is not
+assignable to `BaseProps<HTMLDivElement>`), a type error that arrived with a
+merged branch and blocks every `--project node` run until it is fixed. The two
+suites were therefore run through a temporary config that drops the node
+project's `globalSetup`; the config was deleted after the run, and the failures
+above are unaffected by that. No test imports any of the four templates.
 
 ## Notes
 

@@ -34,7 +34,10 @@ import type {BaseProps} from '../BaseProps';
 import {useMenuHover} from '../hooks/useMenuHover';
 import {useMenuPress} from '../hooks/useMenuPress';
 import {pressOnItemsOnly} from '../hooks/menuPressOnItems';
-import {menuTouchActionStyles} from '../DropdownMenu/menuTouchAction.stylex';
+import {
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
 import {useMenuOverflow} from '../DropdownMenu/useMenuOverflow';
 import {NavHeadingCloseContext} from '../NavMenu/NavMenuContext';
 import {themeProps} from '../utils/themeProps';
@@ -227,11 +230,13 @@ export function TopNavHeading({
     productMenuPress.menuProps.onPointerDown,
     '[role="menuitem"]:not([aria-disabled="true"])',
   );
-  const productMenuTouch = stylex.props(
-    useMenuOverflow(productMenuRef, menu, popover.isOpen)
-      ? menuTouchActionStyles.scrolls
-      : menuTouchActionStyles.fits,
-  );
+  const productMenuTouchClassName = useMenuOverflow(
+    productMenuRef,
+    menu,
+    popover.isOpen,
+  )
+    ? dropdownMenuSubMenuTouchClassName
+    : dropdownMenuSubMenuTouchPinchClassName;
 
   const closeMenuCtx = useMemo(() => ({closeMenu}), [closeMenu]);
 
@@ -476,7 +481,7 @@ export function TopNavHeading({
               aria-label={heading ?? t('@astryx.topNav.heading.dialogLabel')}
               {...productMenuPress.menuProps}
               onPointerDown={productMenuPointerDown}
-              {...productMenuTouch}>
+              className={productMenuTouchClassName}>
               <NavHeadingCloseContext value={closeMenuCtx}>
                 {menu}
               </NavHeadingCloseContext>
@@ -569,7 +574,7 @@ export function TopNavHeading({
               aria-label={heading ?? t('@astryx.topNav.heading.dialogLabel')}
               {...productMenuPress.menuProps}
               onPointerDown={productMenuPointerDown}
-              {...productMenuTouch}>
+              className={productMenuTouchClassName}>
               <NavHeadingCloseContext value={closeMenuCtx}>
                 {menu}
               </NavHeadingCloseContext>

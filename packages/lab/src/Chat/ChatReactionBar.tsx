@@ -4,7 +4,8 @@
 
 /**
  * @file ChatReactionBar.tsx
- * @input Uses React, StyleX, theme tokens, Tooltip, ChatEmojiPicker
+ * @input Uses React, StyleX for the `xstyle` passthrough, class maps from
+ *   `chatReactionBarClasses.ts`, Tooltip, ChatEmojiPicker
  * @output Exports ChatReactionBar component, ChatReactionBarProps, ChatReaction
  * @position Row of emoji reaction pills under a chat message
  *
@@ -21,19 +22,19 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  typographyVars,
-  typeScaleVars,
-  fontWeightVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {mergeProps} from '@astryxdesign/core/utils';
 import {themeProps} from '@astryxdesign/core/utils';
+import {tw} from '../tw';
+import {
+  chatReactionBarAddButtonClassName,
+  chatReactionBarCountClassName,
+  chatReactionBarCountSelectedClassName,
+  chatReactionBarEmojiClassName,
+  chatReactionBarPillClassName,
+  chatReactionBarPillSelectedClassName,
+  chatReactionBarRootClassName,
+} from './chatReactionBarClasses';
 import {Tooltip} from '@astryxdesign/core/Tooltip';
 import {ChatEmojiPicker} from './ChatEmojiPicker';
 import type {ChatEmojiOption} from './ChatEmojiPicker';
@@ -96,101 +97,6 @@ export interface ChatReactionBarProps extends Omit<
   label?: string;
 }
 
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  pill: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    height: 24,
-    paddingInline: spacingVars['--spacing-2'],
-    borderRadius: radiusVars['--radius-full'],
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: {
-      default: 'transparent',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        default: 'transparent',
-        '@media (hover: hover)': colorVars['--color-border-emphasized'],
-      },
-    },
-    backgroundColor: colorVars['--color-background-muted'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    fontFamily: typographyVars['--font-family-body'],
-    boxSizing: 'border-box',
-    transitionProperty: 'border-color, background-color',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  pillSelected: {
-    backgroundColor: colorVars['--color-accent-muted'],
-    borderColor: {
-      default: colorVars['--color-accent'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        default: colorVars['--color-accent'],
-        '@media (hover: hover)': colorVars['--color-accent'],
-      },
-    },
-  },
-  emoji: {
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-  },
-  count: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-secondary'],
-    fontVariantNumeric: 'tabular-nums',
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-  },
-  countSelected: {
-    color: colorVars['--color-text-accent'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  addButton: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 32,
-    height: 24,
-    borderRadius: radiusVars['--radius-full'],
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: {
-      default: 'transparent',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        default: 'transparent',
-        '@media (hover: hover)': colorVars['--color-border-emphasized'],
-      },
-    },
-    backgroundColor: colorVars['--color-background-muted'],
-    color: colorVars['--color-icon-secondary'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    boxSizing: 'border-box',
-    fontSize: 15,
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    padding: 0,
-  },
-});
-
 function pillLabel(reaction: ChatReaction): string {
   if (reaction.label != null) {
     return reaction.label;
@@ -243,8 +149,8 @@ export function ChatReactionBar({
       data-testid={testId}
       {...mergeProps(
         themeProps('chat-reaction-bar'),
-        stylex.props(styles.root, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(chatReactionBarRootClassName, className),
         styleProp,
       )}>
       {reactions.map(reaction => {
@@ -256,15 +162,20 @@ export function ChatReactionBar({
             aria-pressed={isSelected}
             aria-label={pillLabel(reaction)}
             onClick={() => onToggle?.(reaction.emoji)}
-            {...stylex.props(styles.pill, isSelected && styles.pillSelected)}>
-            <span aria-hidden="true" {...stylex.props(styles.emoji)}>
+            className={
+              isSelected
+                ? chatReactionBarPillSelectedClassName
+                : chatReactionBarPillClassName
+            }>
+            <span aria-hidden="true" className={chatReactionBarEmojiClassName}>
               {reaction.emoji}
             </span>
             <span
-              {...stylex.props(
-                styles.count,
-                isSelected && styles.countSelected,
-              )}>
+              className={
+                isSelected
+                  ? chatReactionBarCountSelectedClassName
+                  : chatReactionBarCountClassName
+              }>
               {reaction.count}
             </span>
           </button>
@@ -283,7 +194,7 @@ export function ChatReactionBar({
             <button
               type="button"
               aria-label={addLabel}
-              {...stylex.props(styles.addButton)}>
+              className={chatReactionBarAddButtonClassName}>
               +
             </button>
           </Tooltip>

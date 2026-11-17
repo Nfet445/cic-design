@@ -414,3 +414,19 @@ prettier and eslint are clean, and `pnpm -F @astryxdesign/core typecheck` passes
 `git merge poc/tailwind-layout-primitives` reports "Уже актуально": the window
 started from the trunk merge `9dafa1906`, so the sheet test needed no conflict
 resolution this time. Nothing is pushed.
+
+## Comments
+
+- Window 7: the Toast card and its row moved to `packages/core/src/Toast/toastClasses.ts`
+  (`toastSurfaceClassName({isError, isEntering, isExiting})`, `toastInnerClassName`,
+  `toastContentClassName`, `toastEndContentClassName`). `TOAST_EDGE_DRIFT` now names the
+  token rather than its value; the reduced-motion arm lives in the class
+  (`motion-reduce:duration-[0.01ms]`), so the exit cleanup still sees a `transitionend`.
+  Assertions moved: `ToastViewport.test.tsx` "keeps real trailing controls…" reads
+  `classesOf`, "uses tokenized transform…" reads the card's class set, and "keeps reduced
+  motion transitions eventful…" reads `toastClasses.ts` plus the viewport source.
+- `ToastViewport` itself is still on StyleX: its map covers positioning, safe-area padding,
+  edge arms, the wrapper grid track and the exit arm, and about a dozen tests read those
+  declarations through `getComputedStyle`. A window that takes it must rewrite those reads
+  in the same commit, so the map's class vocabulary should be written alongside the
+  component rather than before it.

@@ -3,7 +3,6 @@
 'use client';
 
 import {useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Avatar} from '@astryxdesign/core/Avatar';
 import {CheckboxInput} from '@astryxdesign/core/CheckboxInput';
 import {HStack} from '@astryxdesign/core/HStack';
@@ -14,7 +13,6 @@ import {
   useTableSelectionState,
 } from '@astryxdesign/core/Table';
 import type {TableColumn} from '@astryxdesign/core/Table';
-import {colorVars, spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {mergeProps} from '@astryxdesign/core/utils';
 
 interface Automation extends Record<string, unknown> {
@@ -31,29 +29,17 @@ const automations: Automation[] = [
   {id: '4', name: 'Usage report', owner: 'Eve', schedule: 'Monthly, 1st'},
 ];
 
-const styles = stylex.create({
-  mark: {
-    display: 'grid',
-    placeItems: 'center',
-    flexShrink: 0,
-  },
+const styles = {
+  mark: 'grid place-items-center shrink-0',
   // A flex layer is exactly as tall as the 24px avatar; a block layer
   // follows the taller line box and lets the avatar's edge show under the
   // checkbox.
-  layer: {
-    gridArea: '1 / 1',
-    display: 'flex',
-  },
+  layer: 'col-start-1 row-start-1 flex',
   // The checkbox covers the avatar while it shows, so the two never read as
   // one mark.
-  checkbox: {
-    borderRadius: '50%',
-    backgroundColor: colorVars['--color-background-surface'],
-  },
-  name: {
-    paddingInlineStart: spacingVars['--spacing-1'],
-  },
-});
+  checkbox: 'rounded-full bg-surface',
+  name: 'ps-1',
+} as const;
 
 export default function TableLeadingMarkSelection() {
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
@@ -95,15 +81,15 @@ export default function TableLeadingMarkSelection() {
         return (
           <HStack gap={2} vAlign="center">
             <span
-              {...mergeProps(stylex.props(styles.mark), getContainerProps())}>
+              {...mergeProps({className: styles.mark}, getContainerProps())}>
               {selectionState.hasSelection ? null : (
-                <span {...stylex.props(styles.layer)}>
+                <span className={styles.layer}>
                   <Avatar name={item.owner} size="sm" tooltip={false} />
                 </span>
               )}
               <span
                 {...mergeProps(
-                  stylex.props(styles.layer, styles.checkbox),
+                  {className: `${styles.layer} ${styles.checkbox}`},
                   getContentRevealProps({
                     isLayoutPreserved: true,
                     forceVisibility: selectionState.hasSelection
@@ -121,7 +107,7 @@ export default function TableLeadingMarkSelection() {
                 />
               </span>
             </span>
-            <span {...stylex.props(styles.name)}>{item.name}</span>
+            <span className={styles.name}>{item.name}</span>
           </HStack>
         );
       },
