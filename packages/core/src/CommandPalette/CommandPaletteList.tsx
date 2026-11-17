@@ -2,7 +2,7 @@
 
 /**
  * @file CommandPaletteList.tsx
- * @input Uses React, StyleX, CommandPaletteContext
+ * @input Uses React, the class map, CommandPaletteContext
  * @output Exports CommandPaletteList component
  * @position Sub-component; scrollable results container
  *
@@ -17,8 +17,9 @@ import type {ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
-import {spacingVars} from '../theme/tokens.stylex';
+import {tw} from '../utils/tw';
 import {useCommandPaletteContext} from './CommandPaletteContext';
+import {commandPaletteListClassName} from './commandPaletteListClasses';
 import {themeProps} from '../utils/themeProps';
 import {
   registerEnglishFallback,
@@ -27,18 +28,6 @@ import {
 import english from '../i18n/generated-english/CommandPalette/CommandPaletteList.generated';
 
 registerEnglishFallback(english);
-
-const styles = stylex.create({
-  list: {
-    overflowY: 'auto',
-    maxHeight: '100%',
-    padding: spacingVars['--spacing-1'],
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-  },
-});
 
 export interface CommandPaletteListProps extends BaseProps<HTMLDivElement> {
   /**
@@ -105,8 +94,8 @@ export function CommandPaletteList({
       aria-label={hasListbox ? label : undefined}
       {...mergeProps(
         themeProps('command-palette-list'),
-        stylex.props(styles.list, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(commandPaletteListClassName, className),
         style,
       )}>
       {children}

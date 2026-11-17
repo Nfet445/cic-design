@@ -3,7 +3,7 @@
 'use client';
 /**
  * @file CommandPaletteItem.tsx
- * @input Uses React, StyleX, CommandPaletteContext, DialogContext
+ * @input Uses React, the class map, CommandPaletteContext, DialogContext
  * @output Exports CommandPaletteItem component
  * @position Sub-component; individual selectable item
  *
@@ -15,14 +15,14 @@ import {useCallback, useEffect, useMemo, useRef, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
 import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+  commandPaletteItemClassName,
+  commandPaletteItemDisabledClassName,
+  commandPaletteItemHighlightedClassName,
+  commandPaletteItemSelectedClassName,
+} from './commandPaletteItemClasses';
 import {useCommandPaletteContext} from './CommandPaletteContext';
 import {useDialogContext} from '../Dialog/DialogContext';
 import {themeProps} from '../utils/themeProps';
@@ -30,41 +30,6 @@ import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
-
-const styles = stylex.create({
-  item: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    paddingInline: spacingVars['--spacing-3'],
-    paddingBlock: spacingVars['--spacing-2'],
-    borderRadius: radiusVars['--radius-inner'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    textAlign: 'start' as const,
-    outline: 'none',
-    userSelect: 'none',
-  },
-  itemHighlighted: {
-    backgroundColor: colorVars['--color-overlay-hover'],
-  },
-  itemDisabled: {
-    opacity: 0.5,
-    cursor: 'default',
-  },
-  itemSelected: {
-    backgroundColor: colorVars['--color-accent-muted'],
-  },
-});
 
 export interface CommandPaletteItemProps extends Omit<
   BaseProps<HTMLDivElement>,
@@ -210,14 +175,16 @@ export function CommandPaletteItem({
           disabled: isDisabled ? 'disabled' : null,
         }),
         stylex.props(
-          styles.item,
           !isDisabled && interactionOverlayStyles.backgroundColor,
-          isHighlighted && styles.itemHighlighted,
-          isSelected && styles.itemSelected,
-          isDisabled && styles.itemDisabled,
           xstyle,
         ),
-        className,
+        tw(
+          commandPaletteItemClassName,
+          isHighlighted && commandPaletteItemHighlightedClassName,
+          isSelected && commandPaletteItemSelectedClassName,
+          isDisabled && commandPaletteItemDisabledClassName,
+          className,
+        ),
         style,
       )}>
       {children}

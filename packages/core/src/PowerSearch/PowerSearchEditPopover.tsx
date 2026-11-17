@@ -14,14 +14,28 @@
  */
 
 import React, {useState, useCallback, useEffect, useMemo, useRef} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Button} from '../Button';
 import {Selector} from '../Selector';
 import {HStack, VStack} from '../Stack';
 import {Icon} from '../Icon';
 import {TreeList, type TreeListItemData} from '../TreeList';
 import {isImeKeyEvent} from '../utils/ime';
-import {spacingVars, typeScaleVars} from '../theme/tokens.stylex';
+import {tw} from '../utils/tw';
+import {
+  powerSearchEditPopoverChipRowClassName,
+  powerSearchEditPopoverChipRowWrappedClassName,
+  powerSearchEditPopoverContainerClassName,
+  powerSearchEditPopoverContentClassName,
+  powerSearchEditPopoverFieldSelectorClassName,
+  powerSearchEditPopoverFooterClassName,
+  powerSearchEditPopoverNestedFieldSelectorClassName,
+  powerSearchEditPopoverNestedOperatorSelectorClassName,
+  powerSearchEditPopoverNestedRootLabelClassName,
+  powerSearchEditPopoverNestedRowValueEditorClassName,
+  powerSearchEditPopoverOperatorSelectorClassName,
+  powerSearchEditPopoverValueEditorClassName,
+  powerSearchEditPopoverValueEditorFullWidthClassName,
+} from './powerSearchEditPopoverClasses';
 import {
   PowerSearchValueEditor,
   type PowerSearchValueEditorProps,
@@ -43,76 +57,6 @@ import english from '../i18n/generated-english/PowerSearch/PowerSearchEditPopove
 import type {ThemeDataAttributes} from '../utils/themeProps';
 
 registerEnglishFallback(english);
-
-// Below the popover layer's 400px floor (see popoverLayerStyles in
-// PowerSearch.tsx) the chip rows collapse from one line to wrapped lines.
-// A container query, not a viewport one, so the rows track the width the
-// popover actually got (#4761).
-const CHIP_ROW_COLLAPSE = '@container (max-width: 399px)';
-
-const styles = stylex.create({
-  container: {
-    overflow: 'hidden',
-    containerType: 'inline-size',
-  },
-  content: {
-    padding: spacingVars['--spacing-4'],
-  },
-  chipRow: {
-    flexWrap: {default: 'nowrap', [CHIP_ROW_COLLAPSE]: 'wrap'},
-  },
-  // A date-and-time control is two inputs wide. Beside the selectors it
-  // shrinks the field selector to nothing. The row wraps, so the control
-  // gets its own line.
-  chipRowWrapped: {
-    flexWrap: 'wrap',
-  },
-  footer: {
-    padding: spacingVars['--spacing-3'],
-    paddingTop: 0,
-  },
-  fieldSelector: {
-    flexGrow: 1,
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  operatorSelector: {
-    flexGrow: 1,
-    flexShrink: 0,
-    // Long translated operator labels truncate in the Selector trigger
-    // instead of pushing the row wider than the popover (#4761).
-    maxWidth: '100%',
-  },
-  valueEditor: {
-    flexGrow: 2,
-    minWidth: 0,
-  },
-  valueEditorFullWidth: {
-    flexBasis: '100%',
-  },
-  // Nested editor styles
-  nestedRootLabel: {
-    fontSize: typeScaleVars['--text-label-size'],
-  },
-  nestedFieldSelector: {
-    flexShrink: 0,
-    width: 200,
-    maxWidth: '100%',
-  },
-  nestedOperatorSelector: {
-    flexShrink: 0,
-    width: 180,
-    maxWidth: '100%',
-  },
-  nestedRow: {
-    width: '100%',
-  },
-  nestedRowValueEditor: {
-    flexGrow: 2,
-    flexShrink: 1,
-    minWidth: 0,
-  },
-});
 
 export interface PowerSearchEditPopoverProps {
   config: InternalConfig;
@@ -354,8 +298,11 @@ function NestedSubFilterRow({
   );
 
   return (
-    <HStack gap={2} vAlign="center" xstyle={styles.chipRow}>
-      <div {...stylex.props(styles.nestedFieldSelector)}>
+    <HStack
+      gap={2}
+      vAlign="center"
+      className={powerSearchEditPopoverChipRowClassName}>
+      <div className={powerSearchEditPopoverNestedFieldSelectorClassName}>
         <Selector
           label={t('@astryx.powersearch.editor.field')}
           isLabelHidden
@@ -367,7 +314,7 @@ function NestedSubFilterRow({
         />
       </div>
       {operatorOptions.length > 0 && (
-        <div {...stylex.props(styles.nestedOperatorSelector)}>
+        <div className={powerSearchEditPopoverNestedOperatorSelectorClassName}>
           <Selector
             label={t('@astryx.powersearch.editor.operator')}
             isLabelHidden
@@ -380,7 +327,7 @@ function NestedSubFilterRow({
         </div>
       )}
       {operatorValue && !isEmptyType && !isNestedType && (
-        <div {...stylex.props(styles.nestedRowValueEditor)}>
+        <div className={powerSearchEditPopoverNestedRowValueEditorClassName}>
           <PowerSearchValueEditor
             key={valueEditorKey(subFilter)}
             operatorValue={operatorValue}
@@ -410,8 +357,8 @@ export interface NestedEditorProps {
   maxMenuItems?: number;
   timezoneID?: string;
   isReadOnly: boolean;
-  /** Styles for the editor's tree root (the sheet makes it a query container). */
-  xstyle?: stylex.StyleXStyles;
+  /** Classes for the editor's tree root (the sheet makes it a query container). */
+  className?: string;
   /**
    * Whether the tree root offers the group-operator picker when the field has
    * several operators. The popover shows it; the sheet presentation's value
@@ -437,7 +384,7 @@ export function NestedEditor({
   maxMenuItems,
   timezoneID,
   isReadOnly,
-  xstyle,
+  className,
   hasRootOperatorPicker = true,
 }: NestedEditorProps) {
   const t = useComponentTranslator();
@@ -625,9 +572,9 @@ export function NestedEditor({
   }
 
   const rootLabel = (
-    <div {...stylex.props(styles.nestedRootLabel)}>
+    <div className={powerSearchEditPopoverNestedRootLabelClassName}>
       {hasRootOperatorPicker && operatorOptions.length > 1 ? (
-        <div {...stylex.props(styles.operatorSelector)}>
+        <div className={powerSearchEditPopoverOperatorSelectorClassName}>
           <Selector
             label={t('@astryx.powersearch.editor.groupOperator')}
             isLabelHidden
@@ -656,7 +603,7 @@ export function NestedEditor({
     },
   ];
 
-  return <TreeList items={items} density="balanced" xstyle={xstyle} />;
+  return <TreeList items={items} density="balanced" className={className} />;
 }
 
 // =============================================================================
@@ -694,9 +641,9 @@ function ValueEditorCell({
   return (
     <div
       ref={ref}
-      {...stylex.props(
-        styles.valueEditor,
-        isFullWidth && styles.valueEditorFullWidth,
+      className={tw(
+        powerSearchEditPopoverValueEditorClassName,
+        isFullWidth && powerSearchEditPopoverValueEditorFullWidthClassName,
       )}>
       <PowerSearchValueEditor {...props} />
     </div>
@@ -882,12 +829,12 @@ export function PowerSearchEditPopover({
     return (
       <div
         {...dataAttributes}
-        {...stylex.props(styles.container)}
+        className={powerSearchEditPopoverContainerClassName}
         onKeyDown={handleKeyDown}>
-        <div {...stylex.props(styles.content)}>
+        <div className={powerSearchEditPopoverContentClassName}>
           <VStack gap={2}>
             <HStack gap={2}>
-              <div {...stylex.props(styles.fieldSelector)}>
+              <div className={powerSearchEditPopoverFieldSelectorClassName}>
                 <Selector
                   label={t('@astryx.powersearch.editor.field')}
                   isLabelHidden
@@ -911,7 +858,7 @@ export function PowerSearchEditPopover({
             />
           </VStack>
         </div>
-        <div {...stylex.props(styles.footer)}>
+        <div className={powerSearchEditPopoverFooterClassName}>
           <HStack gap={2} hAlign="between">
             {!isReadOnly && mode === 'edit' ? (
               <Button
@@ -947,13 +894,16 @@ export function PowerSearchEditPopover({
   return (
     <div
       {...dataAttributes}
-      {...stylex.props(styles.container)}
+      className={powerSearchEditPopoverContainerClassName}
       onKeyDown={handleKeyDown}>
-      <div {...stylex.props(styles.content)}>
+      <div className={powerSearchEditPopoverContentClassName}>
         <HStack
           gap={2}
-          xstyle={[styles.chipRow, hasDateTimeValue && styles.chipRowWrapped]}>
-          <div {...stylex.props(styles.fieldSelector)}>
+          className={tw(
+            powerSearchEditPopoverChipRowClassName,
+            hasDateTimeValue && powerSearchEditPopoverChipRowWrappedClassName,
+          )}>
+          <div className={powerSearchEditPopoverFieldSelectorClassName}>
             <Selector
               label={t('@astryx.powersearch.editor.field')}
               isLabelHidden
@@ -965,7 +915,7 @@ export function PowerSearchEditPopover({
             />
           </div>
           {showOperatorSelector && operatorOptions.length > 0 && (
-            <div {...stylex.props(styles.operatorSelector)}>
+            <div className={powerSearchEditPopoverOperatorSelectorClassName}>
               <Selector
                 label={t('@astryx.powersearch.editor.operator')}
                 isLabelHidden
@@ -994,7 +944,7 @@ export function PowerSearchEditPopover({
         </HStack>
       </div>
       {!isEmptyType && (
-        <div {...stylex.props(styles.footer)}>
+        <div className={powerSearchEditPopoverFooterClassName}>
           <HStack gap={2} hAlign="between">
             {!isReadOnly && mode === 'edit' ? (
               <Button
