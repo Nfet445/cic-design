@@ -26,7 +26,7 @@
 import {useCallback, useMemo, useRef, useState, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import {tw} from '../utils/tw';
 import {
   stepperFrameClassName,
@@ -458,7 +458,7 @@ export function Stepper({
         icon={
           <Icon
             icon={delta === -1 ? 'chevronLeft' : 'chevronRight'}
-            xstyle={rtlStyles.mirror}
+            className={RTL_MIRROR_CLASS}
           />
         }
         isDisabled={targetAtRender == null}

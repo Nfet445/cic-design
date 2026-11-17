@@ -22,7 +22,7 @@ import {
 import * as React from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import {isRenderable, mergeProps, rtlStyles} from '../utils';
+import {isRenderable, mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import {tw} from '../utils/tw';
 import {
   codeBlockChevronClassName,
@@ -894,11 +894,7 @@ export function CodeBlock({
             // in RTL (design:bidirectionality DR4). The mirror sits on this box
             // so the glyph's own rotation still eases: rotated down when
             // expanded, a mirrored glyph still points down.
-            <span
-              {...mergeProps(
-                {className: codeBlockChevronClassName},
-                stylex.props(rtlStyles.mirror),
-              )}>
+            <span className={tw(codeBlockChevronClassName, RTL_MIRROR_CLASS)}>
               <Icon
                 icon="chevronRight"
                 size="xsm"

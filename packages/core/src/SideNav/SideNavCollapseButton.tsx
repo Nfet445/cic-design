@@ -18,11 +18,10 @@
  */
 
 import React, {use, useCallback, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Icon} from '../Icon';
 import {Button} from '../Button';
 import type {BaseProps} from '../BaseProps';
-import {composeEventHandlers, rtlStyles} from '../utils';
+import {composeEventHandlers, RTL_MIRROR_CLASS} from '../utils';
 import {
   useSideNavCollapse,
   type SideNavCollapseState,
@@ -165,12 +164,12 @@ export function SideNavCollapseButton({
           // The RTL mirror stays on its own element, wrapping (not merged
           // into) the state rotation: both are `transform`, so on a single
           // element one would overwrite the other and the chevron would stop
-          // mirroring under RTL. See utils/rtlStyles.ts.
+          // mirroring under RTL. See utils/rtlClasses.ts.
           // eslint-disable-next-line @astryx/no-style-only-wrapper -- the wrapper holds the RTL mirror, which must stay on its own element: it and the state rotation both write `transform`. The rule reads StyleX objects, not class text.
           <span
             className={tw(
               sideNavCollapseButtonClassName.chevronMirror,
-              stylex.props(rtlStyles.mirror).className,
+              RTL_MIRROR_CLASS,
             )}>
             {/* `sm` (1rem) matches what this glyph already renders at: Button's
                 icon slot pins its wrapper to 16px, and the registry SVG is

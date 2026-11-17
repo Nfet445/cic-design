@@ -71,7 +71,6 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {useCommittedRef} from '../hooks/useCommittedRef';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {
@@ -88,7 +87,8 @@ import english from '../i18n/generated-english/List/listReorderEngine.generated'
 import {useLayer} from '../Layer/useLayer';
 import {useLayerDismissal} from '../Layer/useLayerDismissal';
 import {Kbd} from '../Kbd/Kbd';
-import {anchoredHintStyles, renderAnchoredHint} from '../hooks/anchoredHint';
+import {renderAnchoredHint} from '../hooks/anchoredHint';
+import {anchoredHintKeysClassName} from '../hooks/anchoredHintClasses';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {tw} from '../utils/tw';
 import type {LongPressGestureRecognizer} from '../gestures/LongPressGestureRecognizer';
@@ -2542,7 +2542,7 @@ function ListReorderModeHint({
           hintRef.current = element;
           controller.setHintElement(element);
         }}
-        {...stylex.props(anchoredHintStyles.keys)}>
+        className={anchoredHintKeysClassName}>
         <HintButton
           label={t('@astryx.list.reorderMoveUp')}
           onPress={() => controller.step(target, -1)}>

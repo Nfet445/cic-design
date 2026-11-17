@@ -144,7 +144,7 @@ export function FieldStatus({
   style,
   ...rest
 }: FieldStatusProps) {
-  const entryStyle = useEntryAnimation('slideDown');
+  const entryClassName = useEntryAnimation('slideDown');
   // Announce-on-mount is intentional: callers conditionally mount FieldStatus
   // when a status appears (and whole forms can mount with a server-side
   // validation error already present), and both cases must be heard.
@@ -157,8 +157,9 @@ export function FieldStatus({
       {...rest}
       {...mergeProps(
         themeProps('field-status', {type, variant}),
-        stylex.props(entryStyle, xstyle),
+        stylex.props(xstyle),
         tw(
+          entryClassName,
           fieldStatusBaseClassName,
           variant === 'attached'
             ? fieldStatusAttachedClassName

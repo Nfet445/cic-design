@@ -242,6 +242,52 @@
   }
 }
 
+/* Entry animations (useEntryAnimation): the entrance of a box that mounts after
+   the first paint. The presets differ by the direction the box travels and
+   whether it scales; the class map carries duration, easing and fill mode. The
+   frames live here because the build scans class maps only. */
+@keyframes astryxEntrySlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--spacing-2)));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes astryxEntrySlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(var(--spacing-2));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes astryxEntryFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes astryxEntryScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* StatusDot: the pulse a live status breathes with. A keyframe lives here, not
    in a `.ts` file, because the build scans class maps only. */
 @keyframes astryxStatusDotPulse {

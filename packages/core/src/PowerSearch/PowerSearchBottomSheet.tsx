@@ -79,7 +79,7 @@ import {useCalendarSystem} from '../i18n/useCalendarSystem';
 import {SheetConfirmation} from '../internal/SheetConfirmation';
 import {useDismissSearchOnTouchDrag} from '../internal/useDismissSearchOnTouchDrag';
 import {isImeKeyEvent} from '../utils/ime';
-import {rtlStyles} from '../utils/rtlStyles';
+import {RTL_MIRROR_CLASS} from '../utils/rtlClasses';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {
@@ -2253,7 +2253,7 @@ export function PowerSearchBottomSheet({
                               icon="chevronRight"
                               size="sm"
                               color="secondary"
-                              xstyle={rtlStyles.mirror}
+                              className={RTL_MIRROR_CLASS}
                             />
                           )
                         }

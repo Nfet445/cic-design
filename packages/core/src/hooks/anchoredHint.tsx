@@ -5,7 +5,7 @@
 /**
  * @file anchoredHint.tsx
  * @input A context layer (Layer/useLayer.tsx) and the theme's tokens
- * @output renderAnchoredHint and anchoredHintStyles: the anchored hint layer
+ * @output renderAnchoredHint: the anchored hint layer
  *   Core's keyboard hints share. It is a small surface in the top layer,
  *   below the start of the element it is anchored to. It has the popover
  *   background, the element radius, the low shadow and supporting text. It
@@ -15,8 +15,8 @@
  *   reorderable List (List/listReorderEngine.tsx) renders the hint of its
  *   reorder mode with it, whose glyphs are buttons
  *
- * SYNC: When modified, update hooks/useKeyboardHint.tsx and
- * List/listReorderEngine.tsx.
+ * The hint's key row and label are classes (`hooks/anchoredHintClasses.ts`):
+ * they sit inside the layer element, which owns the surface.
  */
 
 import type {ReactNode} from 'react';
@@ -68,21 +68,7 @@ const styles = stylex.create({
   passive: {
     pointerEvents: 'none',
   },
-  keys: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  label: {
-    marginInlineStart: spacingVars['--spacing-1'],
-  },
 });
-
-/** The hint's row of key glyphs, and the label after it. */
-export const anchoredHintStyles = {
-  keys: styles.keys,
-  label: styles.label,
-};
 
 /**
  * Renders `content` as an anchored hint in `layer` (a context layer whose

@@ -37,7 +37,7 @@ import {IconButton} from '../IconButton';
 import {RadioList, RadioListItem} from '../RadioList';
 import {COMPACT_TOUCH_PRESENTATION_QUERY} from '../hooks/useAdaptivePresentation';
 import {Theme, defineTheme} from '../theme';
-import {rtlStyles} from '../utils';
+import {RTL_MIRROR_CLASS} from '../utils';
 import {TOUCH_QUERY} from '../utils/touchPresentation';
 
 beforeEach(() => {
@@ -228,9 +228,7 @@ describe('DropdownMenuSubMenu', () => {
 
   it('mirrors its indicator and keyboard directions under RTL', async () => {
     const user = userEvent.setup();
-    const {className: mirrorClassName} = stylex.props(rtlStyles.mirror);
-    const mirrorClasses = mirrorClassName?.split(' ') ?? [];
-    expect(mirrorClasses.length).toBeGreaterThan(0);
+    const mirrorClasses = RTL_MIRROR_CLASS.split(' ');
     render(
       <div dir="rtl" style={{direction: 'rtl'}}>
         <MoveMenu />

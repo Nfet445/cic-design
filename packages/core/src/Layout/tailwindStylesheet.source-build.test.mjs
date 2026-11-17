@@ -483,6 +483,13 @@ import {
   fieldStatusDetachedContentClassName,
   fieldStatusDetachedIconClassName,
 } from '../FieldStatus/fieldStatusClasses';
+import {
+  anchoredHintKeysClassName,
+  anchoredHintLabelClassName,
+} from '../hooks/anchoredHintClasses';
+import {entryAnimationClassName} from '../hooks/entryAnimationClasses';
+import {RTL_MIRROR_CLASS} from '../utils/rtlClasses';
+import {inputStatusIconButtonClassName} from '../hooks/inputStatusIconClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
   iconColorClassName,
@@ -3326,6 +3333,18 @@ function familyClassNames() {
   // FieldStatus: the message box in both placements, the detached content row
   // and glyph, and one fill per status type.
   add(fieldStatusBaseClassName);
+  // useEntryAnimation: one mount animation per preset, each off under Reduce
+  // Motion; FieldStatus mounts with the slide-down preset.
+  for (const preset of ['slideDown', 'slideUp', 'fadeIn', 'scaleIn']) {
+    add(entryAnimationClassName(preset));
+  }
+  // useInputStatusIcon: the tooltip-variant status button's chrome.
+  add(inputStatusIconButtonClassName);
+  // utils: the RTL mirror every directional glyph shares.
+  add(RTL_MIRROR_CLASS);
+  // The anchored keyboard hint's key row and its label.
+  add(anchoredHintKeysClassName);
+  add(anchoredHintLabelClassName);
   // Field: the hidden label's info button and the panel search row.
   add(fieldLabelHiddenInfoTipClassName);
   add(panelSearchInputWrapperClassName);
@@ -3754,8 +3773,9 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // its overlay and both border states mostly reuse the selectable card's
     // utilities; with the disabled dimming and the hidden control they took
     // the sheet to 1974. The avatar's three shape radii added 1977, and the
-    // ceiling keeps its headroom above that.
-    expect(stylesheet.rules.size).toBeLessThan(1980);
+    // hint's anchored surface and its keyboard row added 1982. The ceiling
+    // keeps its headroom above that.
+    expect(stylesheet.rules.size).toBeLessThan(2020);
   });
 
   it('keeps the scrim takeover pin under prefers-reduced-motion', () => {

@@ -38,7 +38,7 @@ import {tw} from '../../../utils/tw';
 import {VisuallyHidden} from '../../../VisuallyHidden';
 import {resolveContextActions} from '../../tableContextMenu';
 import {useTableContext} from '../../useTableCellStyles';
-import {mergeProps, rtlStyles} from '../../../utils';
+import {mergeProps, RTL_MIRROR_CLASS} from '../../../utils';
 import {
   ROW_EXPANSION_CHEVRON_BUTTON_CLASS,
   ROW_EXPANSION_CLICKABLE_ROW_CLASS,
@@ -846,7 +846,7 @@ export function useTableRowExpansion<T extends Record<string, unknown>>(
                   aria-hidden
                   // chevronDown needs no mirroring; chevronRight (collapsed,
                   // pointing toward the reveal direction) does.
-                  xstyle={!isExpanded && rtlStyles.mirror}
+                  className={!isExpanded ? RTL_MIRROR_CLASS : undefined}
                 />
               ),
               onSelect: () => onToggle(key),

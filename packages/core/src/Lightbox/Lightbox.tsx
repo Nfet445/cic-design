@@ -50,7 +50,7 @@ import {observeResizeAfterLayout} from '../utils/sharedResizeObserver';
 import {useTouchHitArea} from '../utils/touchHitArea';
 import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 import {usePressTracker} from '../gestures/usePressTracker';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
@@ -1541,10 +1541,8 @@ export function Lightbox({
             icon={icon}
             size="sm"
             color="inherit"
-            xstyle={[
-              isMirrored && rtlStyles.mirror,
-              hasZoom && lightboxOverrideStyles.onDarkChrome,
-            ]}
+            xstyle={hasZoom && lightboxOverrideStyles.onDarkChrome}
+            className={isMirrored ? RTL_MIRROR_CLASS : undefined}
           />
         }
         ref={buttonRef}

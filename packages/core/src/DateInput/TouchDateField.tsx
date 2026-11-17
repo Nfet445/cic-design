@@ -94,7 +94,7 @@ import {
   getInputARIA,
   isImeKeyEvent,
   mergeProps,
-  rtlStyles,
+  RTL_MIRROR_CLASS,
   themeProps,
   plainDateFromISO,
   plainDateIsEqual,
@@ -746,8 +746,8 @@ export function TouchDateField({
             label={t('@astryx.calendar.previousMonth')}
             icon={
               <span
-                {...mergeProps(
-                  stylex.props(rtlStyles.mirror),
+                className={tw(
+                  RTL_MIRROR_CLASS,
                   touchDateMonthArrowIconClassName,
                 )}>
                 <Icon icon="chevronLeft" size="sm" color="inherit" />
@@ -766,8 +766,8 @@ export function TouchDateField({
             label={t('@astryx.calendar.nextMonth')}
             icon={
               <span
-                {...mergeProps(
-                  stylex.props(rtlStyles.mirror),
+                className={tw(
+                  RTL_MIRROR_CLASS,
                   touchDateMonthArrowIconClassName,
                 )}>
                 <Icon icon="chevronRight" size="sm" color="inherit" />
