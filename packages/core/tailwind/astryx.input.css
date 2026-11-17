@@ -401,3 +401,27 @@
     opacity: var(--_progress-bar-pulse-floor);
   }
 }
+
+/* Switch: under a finger the press rides on a layer of the track and the thumb.
+   The layers' arms read the row's press marker, so switchHoverPress.stylex.ts
+   names the frames and keeps the clock. */
+@keyframes astryxSwitchPressRelease {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Switch: the row holds the press's strength for the layers above. With any
+   pointer but a coarse one the row releases it itself, on the same clock as
+   the shared overlay's release. */
+@keyframes astryxSwitchPressStrength {
+  from {
+    --astryx-press-alpha: 1;
+  }
+  to {
+    --astryx-press-alpha: 0;
+  }
+}

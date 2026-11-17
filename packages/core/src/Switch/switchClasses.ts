@@ -4,13 +4,15 @@
  * @file switchClasses.ts
  * @input The switch's size, whether its label is hidden, the label spacing and
  *   the field's width
- * @output The field root, the row, the track's size box, the label column, the
- *   status gap and the sizing custom property
+ * @output The field root, the row, the input, the track's box and fill, the
+ *   thumb's circle, travel and fill, the label column, the status gap and the
+ *   sizing custom property
  * @position Internal to Switch; the Tailwind build scans it for class names
  *
- * The track's and thumb's paints read the `switchScope` marker and the
- * `switchFocusInput` marker (hover tint, press layers, focus ring) or carry
- * keyframes, so they stay StyleX. Everything without a marker is a class here.
+ * What reads the `switchScope` marker or the `switchFocusInput` marker (the
+ * hover tint, the press layers, the focus ring) and the input's transform —
+ * which replaces `rtlStyles.centerInline`'s — stay in
+ * switchHoverPress.stylex.ts. Everything without a marker is a class here.
  *
  * SYNC: When modified, update
  * - /packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
@@ -24,6 +26,39 @@ import {tw} from '../utils/tw';
 const WRAPPER_SIZE: Record<'sm' | 'md', string> = {
   sm: 'h-5 w-8',
   md: 'h-6 w-10',
+};
+
+/**
+ * The track's box and inset, per size. Its padding is the thumb's resting
+ * inset under a finger.
+ */
+const TRACK_BOX: Record<'sm' | 'md', string> = {
+  sm: 'h-5 w-8 p-0.5',
+  md: 'h-6 w-10 p-1',
+};
+
+/**
+ * The thumb, per size and state: its circle, its resting inset under a finger
+ * and its travel under a mouse. A finger moves the thumb by its insets, so the
+ * travel's coarse arm clears it; the animator writes the drag's `translate`
+ * inline (`useSwitchTouch`). The travel flips sign under RTL, where the
+ * reading-end edge is the left one.
+ */
+const THUMB_BOX: Record<'sm' | 'md', {off: string; on: string}> = {
+  sm: {
+    off: 'h-3.5 w-3.5 pointer-coarse:start-[3px]',
+    on: tw(
+      'h-4 w-4 pointer-coarse:end-0.5',
+      '[transform:translateX(12px)] rtl:[transform:translateX(-12px)] pointer-coarse:[transform:none]',
+    ),
+  },
+  md: {
+    off: 'h-4 w-4 pointer-coarse:start-[4px]',
+    on: tw(
+      'h-5 w-5 pointer-coarse:end-0.5',
+      '[transform:translateX(14px)] rtl:[transform:translateX(-14px)] pointer-coarse:[transform:none]',
+    ),
+  },
 };
 
 /** The label column's floor: the track's height. */
@@ -104,6 +139,114 @@ export function switchWrapperClassName({
     WRAPPER_SIZE[size],
     isInteractive && '[touch-action:pan-y_pinch-zoom]',
   );
+}
+
+/** The track's box and inset, per size. */
+export function switchTrackBoxClassName({size}: {size: 'sm' | 'md'}): string {
+  return TRACK_BOX[size];
+}
+
+/**
+ * The native input: it covers the track, so a click anywhere on the track
+ * toggles, and it is invisible. Its box and the hit area it grows to under a
+ * finger stay in switchHoverPress.stylex.ts, where they can replace
+ * `rtlStyles.centerInline`'s transform.
+ */
+export function switchInputClassName({isBusy}: {isBusy: boolean}): string {
+  return tw(
+    'absolute top-1/2 z-[1] m-0 p-0 opacity-0',
+    // aria-disabled, not disabled: a disabled switch stays focusable.
+    'cursor-pointer aria-disabled:cursor-default',
+    isBusy && 'pointer-events-none',
+  );
+}
+
+/**
+ * The track's fill, colour fade and bounds. Forced colors keeps a system-colour
+ * border, and the on/off fills take their own system colours, so the two states
+ * stay distinguishable under Windows High Contrast (WCAG 1.4.11). The hover
+ * tint and the mouse press read the `switchScope` marker and stay StyleX.
+ *
+ * Under a finger the track's fill changes at once and the fade layer (::after)
+ * crossfades it on the compositor; reduced motion stops both. The fade layer's
+ * colour is what the track is leaving, or mid-drag the one it heads to, read
+ * from the track by switchFill.ts. The animator owns its opacity, and at rest
+ * it is clear.
+ */
+export function switchTrackClassName({
+  size,
+  isOn,
+  isDisabled,
+}: {
+  size: 'sm' | 'md';
+  isOn: boolean;
+  isDisabled: boolean;
+}): string {
+  return tw(
+    'box-border flex items-center rounded-full border-0',
+    TRACK_BOX[size],
+    // Under a finger the press layer (::before), the colour fade (::after) and
+    // the thumb sit in the track, in a stacking context of its own.
+    'pointer-coarse:relative pointer-coarse:isolate',
+    'transition-[background-color] duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
+    'pointer-coarse:[transition-duration:0s] motion-reduce:[transition-duration:0s]',
+    isOn
+      ? 'bg-[var(--color-accent)] forced-colors:bg-[color:Highlight]'
+      : 'bg-[var(--color-background-gray)] forced-colors:bg-[color:Canvas]',
+    'forced-colors:border forced-colors:border-solid',
+    // Opacity dimming does not survive forced colors; GrayText is the
+    // platform's disabled affordance there.
+    isDisabled
+      ? 'opacity-50 forced-colors:border-[color:GrayText]'
+      : 'forced-colors:border-[color:CanvasText]',
+    "after:content-[''] after:hidden after:absolute after:inset-0 after:z-0 after:rounded-[inherit] after:pointer-events-none after:opacity-0 after:bg-[var(--_switch-fade-fill,transparent)]",
+    // A compositing layer only while a fade runs. The animator sets the
+    // property in the task that starts the fade: iOS Safari needs that to run
+    // the fade off the main thread. It clears it after the fade rests.
+    'pointer-coarse:after:block pointer-coarse:after:will-change-[var(--astryx-motion-will-change-after,auto)]',
+  );
+}
+
+/**
+ * The thumb's fill, slide and lifted shadow. Under a finger it sits in the
+ * track, centered in its height, above the colour fade (::after) and the press
+ * layer (::before), and useSwitchTouch moves and lifts it on the compositor:
+ * nothing of its own transitions. Its circle, resting inset and mouse travel
+ * are switchThumbBoxClassName's. The press on the thumb reads `switchScope`
+ * and stays StyleX.
+ *
+ * Forced colors takes the thumb's fill per state, so it reads against the
+ * track's system colour: CanvasText on the empty track, HighlightText on the
+ * Highlight one.
+ */
+export function switchThumbClassName({isOn}: {isOn: boolean}): string {
+  return tw(
+    'flex items-center justify-center rounded-full',
+    'pointer-coarse:absolute pointer-coarse:inset-y-0 pointer-coarse:my-auto pointer-coarse:z-[2] pointer-coarse:pointer-events-none',
+    'transition-[transform,width,height] duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
+    // Under reduced motion nothing slides: under a finger the thumb
+    // cross-fades through the animator, and with a mouse it moves at once.
+    'pointer-coarse:transition-none motion-reduce:[transition-duration:0s]',
+    isOn
+      ? 'bg-[var(--color-background-surface)] forced-colors:bg-[color:HighlightText]'
+      : 'bg-[var(--color-background-surface)] forced-colors:bg-[color:CanvasText]',
+    // The lifted shadow, under a finger: the theme's elevation on a layer the
+    // thumb's size. It fades in with the lift on the compositor, and at rest it
+    // is clear.
+    "after:content-[''] after:hidden after:absolute after:inset-0 after:rounded-[inherit] after:pointer-events-none after:opacity-0 after:shadow-[var(--shadow-low)]",
+    'pointer-coarse:after:block pointer-coarse:after:will-change-[var(--astryx-motion-will-change-after,auto)]',
+  );
+}
+
+/** The thumb's circle, resting inset and mouse travel, per size and state. */
+export function switchThumbBoxClassName({
+  size,
+  isOn,
+}: {
+  size: 'sm' | 'md';
+  isOn: boolean;
+}): string {
+  return THUMB_BOX[size][isOn ? 'on' : 'off'];
 }
 
 /** The label and description column, as tall as the track. */

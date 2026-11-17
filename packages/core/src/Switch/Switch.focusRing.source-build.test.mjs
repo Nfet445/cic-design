@@ -3,7 +3,8 @@
 /**
  * @file Switch.focusRing.source-build.test.mjs
  * @input Uses Babel, the StyleX plugin as the package stylesheet compiles it,
- *   and the Switch source
+ *   and the Switch source: the ring itself lives in
+ *   switchHoverPress.stylex.ts
  * @output Verifies the shipped focus ring follows the switch's own input
  *   through a sibling relation, with no `:has()` ancestor scan
  * @position Regression test for the compiled CSS of the Switch module
@@ -61,6 +62,14 @@ async function compiledCss(fileName) {
   );
 }
 
+/** The compiled CSS of every StyleX module the switch ships. */
+async function switchCss() {
+  return (
+    (await compiledCss('Switch.tsx')) +
+    (await compiledCss('switchHoverPress.stylex.ts'))
+  );
+}
+
 /** Every selector in `css`, one per rule. */
 function selectorsOf(css) {
   return [...css.matchAll(/([^{}]+)\{[^{}]*\}/g)].map(match => match[1].trim());
@@ -68,7 +77,7 @@ function selectorsOf(css) {
 
 describe('the shipped Switch focus ring', () => {
   it('reads the input as the track\u2019s preceding sibling, never through :has()', async () => {
-    const selectors = selectorsOf(await compiledCss('Switch.tsx'));
+    const selectors = selectorsOf(await switchCss());
     const ring = selectors.filter(selector =>
       selector.includes(':focus-visible'),
     );
@@ -80,7 +89,7 @@ describe('the shipped Switch focus ring', () => {
   });
 
   it('ships no :has() followed by a descendant *', async () => {
-    const selectors = selectorsOf(await compiledCss('Switch.tsx'));
+    const selectors = selectorsOf(await switchCss());
     expect(
       selectors.filter(selector => /:has\([^{]*\)[^{,]* \*/.test(selector)),
     ).toEqual([]);

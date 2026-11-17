@@ -270,6 +270,8 @@ import {
   switchContainerClassName,
   switchLabelWrapperClassName,
   switchStatusClassName,
+  switchThumbBoxClassName,
+  switchTrackBoxClassName,
   switchWrapperClassName,
 } from '../Switch/switchClasses';
 import {
@@ -2388,6 +2390,10 @@ function familyClassNames() {
       add(switchWrapperClassName({size, isInteractive}));
     }
     add(switchLabelWrapperClassName({size}));
+    add(switchTrackBoxClassName({size}));
+    for (const isOn of [false, true]) {
+      add(switchThumbBoxClassName({size, isOn}));
+    }
   }
   add(switchStatusClassName);
 
