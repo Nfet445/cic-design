@@ -678,6 +678,12 @@ import {
   TREE_LEAF_SPACER_CLASS,
 } from '../Table/plugins/tree/treeClasses';
 import {
+  INFINITE_SCROLL_COMMAND_CLASS,
+  INFINITE_SCROLL_SENTINEL_CLASS,
+  INFINITE_SCROLL_SURFACE_CLASS,
+  INFINITE_SCROLL_VIEWPORT_CLASS,
+} from '../Table/plugins/infiniteScroll/infiniteScrollClasses';
+import {
   SORT_INDICATOR_CLASS,
   SORT_INDICATOR_UNSORTED_CLASS,
   SORT_RANK_CLASS,
@@ -3414,6 +3420,13 @@ function familyClassNames() {
   add(TREE_LEAF_SPACER_CLASS);
   add(TREE_HEADER_CELL_CLASS);
   add(TREE_CLICKABLE_ROW_CLASS);
+
+  // The infinite-scroll surface below the table, and the scroll viewport that
+  // hosts the table.
+  add(INFINITE_SCROLL_VIEWPORT_CLASS);
+  add(INFINITE_SCROLL_COMMAND_CLASS);
+  add(INFINITE_SCROLL_SURFACE_CLASS);
+  add(INFINITE_SCROLL_SENTINEL_CLASS);
 
   return [...names].sort();
 }
