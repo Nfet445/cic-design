@@ -21,8 +21,9 @@ import {
   createEvent,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {readFileSync} from 'node:fs';
 import {ContextMenu} from './ContextMenu';
+import {contextMenuSheetInsetClassName} from './contextMenuClasses';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {ContextMenuGroup} from './index';
 import {
   ContextMenuItem,
@@ -360,12 +361,9 @@ describe('ContextMenu', () => {
       // its own 4px, and its own 4px below the band the sheet keeps under its
       // grab bar, and publishes the padding it applies.
       expect(content.parentElement?.closest('.astryx-section')).toBeNull();
-      expect(content).toHaveStyle({
-        paddingTop: 'var(--spacing-1)',
-        paddingInline: 'calc(var(--spacing-1) + var(--spacing-1))',
-        '--container-padding-block-start': 'var(--spacing-1)',
-        '--container-padding-inline-start':
-          'calc(var(--spacing-1) + var(--spacing-1))',
+      // jsdom parses no stylesheet, so the box is read off the class set.
+      expectClassSet(content, {
+        includes: contextMenuSheetInsetClassName.split(' '),
       });
     });
   }
@@ -744,14 +742,17 @@ describe('ContextMenu', () => {
   });
 
   it('suppresses native text selection on the long-press trigger', () => {
-    const source = readFileSync(
-      'packages/core/src/ContextMenu/ContextMenu.tsx',
-      'utf8',
+    render(
+      <ContextMenu items={[{label: 'Item 1'}]} data-testid="ctx">
+        <div>Long-press me</div>
+      </ContextMenu>,
     );
 
-    expect(source).toMatch(
-      /trigger:[\s\S]*?WebkitTouchCallout: 'none',[\s\S]*?WebkitUserSelect: 'none',[\s\S]*?userSelect: 'none'/,
-    );
+    // jsdom resolves no stylesheet, so the suppressing classes are read off the
+    // trigger's class set.
+    expectClassSet(screen.getByTestId('ctx'), {
+      includes: ['[-webkit-touch-callout:none]', 'select-none'],
+    });
   });
 
   it('cancels the long-press when the finger moves past the threshold', () => {
@@ -1088,7 +1089,7 @@ describe('ContextMenu compound mode', () => {
       expect(anchor.style.anchorName).toMatch(/^--astryx-layer-/);
       // Owns a box: WebKit counts an empty anchor box inside a scroll
       // container as clipped, and `position-visibility` hides the menu.
-      expect(anchor).toHaveStyle({width: '1px', height: '1px'});
+      expectClassSet(anchor, {includes: ['[width:1px]', '[height:1px]']});
     });
 
     it('places the cursor anchor at the pointer position relative to the trigger', () => {
