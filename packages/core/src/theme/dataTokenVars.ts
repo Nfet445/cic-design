@@ -8,7 +8,7 @@
  * style carries `var(--color-data-*)` and a theme overrides the property once.
  *
  * `dataTokens.stylex.ts` re-exports this module for importers written against
- * StyleX; it goes away when the last family migrates (spec:AST-119 FR4).
+ * StyleX; it goes away when the last family migrates.
  *
  * SYNC: When modified, run `node packages/core/scripts/generate-tokens-css.mjs`
  * to rebuild `theme/dataTokens.css`, `node scripts/generate-data-tokens.mjs`
@@ -90,17 +90,25 @@ export const dataTokenDefaults = {
 } as const;
 
 /**
- * The data-color group, each value a reference to its custom property. StyleX
- * accepts the reference where it accepts a token, so a style compiles to
- * `var(--color-data-*)` and the theme owns the value.
+ * Build a group of references to the custom properties `defaults` declares.
+ * The result keeps the type `defineVars` returns, because StyleX's property
+ * types accept a token reference and reject a bare string. At runtime the
+ * value is the reference itself, so a style compiles to `var(--token)`.
  *
- * The map is built here rather than imported: the CSS generator imports this
- * module directly under Node, which resolves only a specifier with an
- * extension, and a runtime import of `./tokenVars` has none.
+ * It repeats `refsOf` in `./tokenVars` instead of importing it: this module has
+ * to load under plain Node, where the CSS generator imports it, and a runtime
+ * import of an extensionless `./tokenVars` does not resolve there.
  */
-export const dataVars = Object.fromEntries(
-  Object.keys(dataTokenDefaults).map(name => [name, `var(${name})`]),
-) as VarGroup<typeof dataTokenDefaults>;
+function refsOf<T extends Record<string, string>>(defaults: T): VarGroup<T> {
+  const vars: Record<string, string> = {};
+  for (const name of Object.keys(defaults)) {
+    vars[name] = `var(${name})`;
+  }
+  return vars as VarGroup<T>;
+}
+
+/** The data-color group, each value a reference to its custom property. */
+export const dataVars = refsOf(dataTokenDefaults);
 
 /** A name in the data-color group. */
 export type DataTokenName = keyof typeof dataTokenDefaults;

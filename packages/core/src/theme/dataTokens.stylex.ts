@@ -7,8 +7,8 @@
  *   StyleX keep working while the families migrate.
  * @position Compatibility shim; the values live in `./dataTokenVars`.
  *
- * @deprecated Import `./dataTokenVars` instead. This module only re-exports it,
- * and it disappears when the last family migrates (spec:AST-119 FR4).
+ * @deprecated Import `./dataTokenVars` instead. This module only re-exports
+ * it, and it disappears when the last family migrates.
  */
 
 /** @deprecated Import `./dataTokenVars` instead. */

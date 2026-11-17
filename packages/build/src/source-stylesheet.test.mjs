@@ -71,6 +71,7 @@ describe('a source build against the prebuilt stylesheets', () => {
     const sheet = buildCss.composePackageStylesheet(
       '',
       processStylexRules(rules, false),
+      await buildCss.readExtraCss(TARGETS[name]),
     );
     // Everything after the banner: the layer order, then the rules.
     return sheet.slice(sheet.indexOf(buildCss.ASTRYX_LAYER_ORDER));

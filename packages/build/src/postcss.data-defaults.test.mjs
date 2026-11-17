@@ -10,10 +10,10 @@
  *   `:root` inside `@layer astryx-base`
  * @position Regression test for spec:AST-066 FR3 in @astryxdesign/build
  *
- * The PostCSS helper compiles every module each installed Astryx package
- * publishes, so Core's `theme/dataTokens.stylex.ts` is always among them and
- * its variable group is always emitted. Raw `var(--color-data-*)` CSS in a
- * PostCSS source build relies on this.
+ * Core's data-color defaults used to reach this sheet as StyleX `defineVars`
+ * rules. They now live in a generated sheet, which the PostCSS helper appends
+ * to Core's block because no app imports `dataVars`. Raw `var(--color-data-*)`
+ * CSS in a PostCSS source build relies on that.
  */
 
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
@@ -33,11 +33,11 @@ const REPO_ROOT = path.resolve(
 );
 const CORE_PACKAGE = path.join(REPO_ROOT, 'packages/core');
 
-/** The canonical names and values, read from Core's StyleX source. */
+/** The canonical names and values, read from Core's token source. */
 const CANONICAL = new Map(
   parseDataTokenDefaults(
     fs.readFileSync(
-      path.join(CORE_PACKAGE, 'src/theme/dataTokens.stylex.ts'),
+      path.join(CORE_PACKAGE, 'src/theme/dataTokenVars.ts'),
       'utf8',
     ),
   ),
