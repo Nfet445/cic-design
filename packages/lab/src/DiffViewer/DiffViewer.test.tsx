@@ -5,6 +5,15 @@ import {act, fireEvent, render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {createRef} from 'react';
 import {DiffViewer} from './DiffViewer';
+import {
+  DIFF_VIEWER_PIN_OFFSET_VAR,
+  diffViewerAddedRowClassName,
+  diffViewerChangeAddedClassName,
+  diffViewerCodeWrappedClassName,
+  diffViewerMarkerSlimClassName,
+  diffViewerStickyClassName,
+} from './diffViewerClasses';
+import {focusOutlineProps} from '@astryxdesign/core/utils';
 import {parseUnifiedDiff} from './parseUnifiedDiff';
 import type {DiffViewerFile, DiffViewerLineRef} from './diffTypes';
 import {createDiffFile} from './createDiffFile';
@@ -47,6 +56,12 @@ function patchOf(removed: string, added: string) {
 -${removed}
 +${added}
 `;
+}
+
+/** Whether an element carries every class of a map entry. */
+function carries(element: Element | null | undefined, mapClassName: string) {
+  const classes = new Set(element?.classList);
+  return mapClassName.split(' ').every(className => classes.has(className));
 }
 
 function changedText(container: HTMLElement, kind: 'added' | 'removed') {
@@ -877,5 +892,49 @@ describe('DiffViewer', () => {
     expect(root).toHaveClass('custom');
     expect(root).toHaveClass('astryx-diff-viewer');
     expect(root).toHaveAttribute('data-view-mode', 'split');
+  });
+
+  it('keeps the shared focus ring beside the class map', () => {
+    const {container} = render(
+      <DiffViewer file={FILE} onLineNumberClick={() => {}} />,
+    );
+    const button = container.querySelector('[data-diff-line-button]');
+    const ring = focusOutlineProps.focusVisible().className ?? '';
+    const classes = new Set(button?.classList);
+    expect(ring).not.toBe('');
+    expect(ring.split(' ').every(c => classes.has(c))).toBe(true);
+  });
+
+  it('paints a changed row and its changed words from the class map', () => {
+    const [file] = parseUnifiedDiff(
+      patchOf('const total = price * qty;', 'const total = price * quantity;'),
+    );
+    const {container} = render(<DiffViewer file={file} />);
+    const code = container.querySelector('[data-diff="added"]');
+    expect(carries(code, diffViewerAddedRowClassName)).toBe(true);
+    const change = code?.querySelector('[data-diff-change]');
+    expect(carries(change, diffViewerChangeAddedClassName)).toBe(true);
+  });
+
+  it('pins line numbers with the row offset in a private variable', () => {
+    const {container} = render(<DiffViewer file={FILE} />);
+    const code = container.querySelector('[data-diff="added"]');
+    const gutter = code?.closest('tr')?.querySelector('td') as HTMLElement;
+    expect(carries(gutter, diffViewerStickyClassName)).toBe(true);
+    expect(gutter.style.getPropertyValue(DIFF_VIEWER_PIN_OFFSET_VAR)).toBe(
+      '0px',
+    );
+  });
+
+  it('swaps the complete class a wrapped or slim variant needs', () => {
+    const {container} = render(
+      <DiffViewer file={FILE} isWrapped={true} changeIndicator="bars" />,
+    );
+    const code = container.querySelector('[data-diff="added"]') as HTMLElement;
+    expect(carries(code, diffViewerCodeWrappedClassName)).toBe(true);
+    expect(code.classList.contains('whitespace-pre')).toBe(false);
+    const marker = code.previousElementSibling as HTMLElement;
+    expect(carries(marker, diffViewerMarkerSlimClassName)).toBe(true);
+    expect(marker.classList.contains('ps-1')).toBe(false);
   });
 });
