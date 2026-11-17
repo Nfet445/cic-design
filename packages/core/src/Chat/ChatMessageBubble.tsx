@@ -4,7 +4,8 @@
 
 /**
  * @file ChatMessageBubble.tsx
- * @input Uses React, StyleX, ChatMessageContext, theme tokens
+ * @input Uses React, StyleX for the caller's xstyle, ChatMessageContext, the
+ *   class map and an inline sizing variable
  * @output Exports ChatMessageBubble component and ChatMessageBubbleProps
  * @position Styled content container — the actual "chat bubble" with sender-aware styling
  *
@@ -30,20 +31,35 @@
 
 import type {ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  typeScaleVars,
-  typographyVars,
-} from '../theme/tokens.stylex';
 import {useChatMessageContext} from './ChatContext';
 import {isRenderable, mergeProps} from '../utils';
 import type {SizeValue} from '../utils/types';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {
+  chatMessageBubbleAlignEndClassName,
+  chatMessageBubbleClassName,
+  chatMessageBubbleGroupClassName,
+  chatMessageBubbleMetadataRowClassName,
+  chatMessageBubbleNameRowClassName,
+  chatMessageBubblePaddingClassName,
+  chatMessageBubbleSizeVars,
+  chatMessageBubbleSlotPaddingClassName,
+  chatMessageBubbleSurfaceClassName,
+  chatMessageBubbleTextClassName,
+} from './chatClasses';
 
 export type ChatMessageBubbleVariant = 'filled' | 'ghost';
+
+/** The inline custom properties the bubble's sizing class reads. */
+type ChatMessageBubbleStyle = React.CSSProperties &
+  Partial<
+    Record<
+      (typeof chatMessageBubbleSizeVars)[keyof typeof chatMessageBubbleSizeVars],
+      string
+    >
+  >;
 
 export interface ChatMessageBubbleProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element */
@@ -101,120 +117,6 @@ export interface ChatMessageBubbleProps extends BaseProps<HTMLDivElement> {
 }
 
 // =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  content: {
-    display: 'flex',
-    flexDirection: 'column',
-    maxWidth: 'max(80%, 280px)',
-    // Bubbles are intentionally rounder than cards in the same view, so they
-    // use the dedicated chat radius rather than coupling to --radius-page. #2072
-    borderRadius: radiusVars['--radius-chat'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    overflowWrap: 'break-word',
-    wordBreak: 'break-word',
-  },
-  radiusCompact: {
-    borderRadius: radiusVars['--radius-container'],
-  },
-  paddingCompact: {
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-  },
-  paddingBalanced: {
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-  },
-  paddingSpacious: {
-    paddingBlock: spacingVars['--spacing-4'],
-    paddingInline: spacingVars['--spacing-5'],
-  },
-  paddingBlockNone: {
-    paddingBlock: 0,
-  },
-  // Slot padding — matches bubble's paddingInline per density
-  metadataPaddingCompact: {
-    paddingInline: spacingVars['--spacing-4'],
-  },
-  metadataPaddingBalanced: {
-    paddingInline: spacingVars['--spacing-4'],
-  },
-  metadataPaddingSpacious: {
-    paddingInline: spacingVars['--spacing-5'],
-  },
-  metadataReducedGap: {
-    marginBlockStart: `calc(-1 * ${spacingVars['--spacing-1-5']})`,
-  },
-  headerReducedGap: {
-    marginBlockEnd: `calc(-1 * ${spacingVars['--spacing-1-5']})`,
-  },
-  nameRow: {
-    height: spacingVars['--spacing-5'],
-    display: 'flex',
-    alignItems: 'center',
-  },
-  alignEnd: {
-    textAlign: 'end',
-  },
-  // Sender backgrounds — same default, but separate styles for theme overrides.
-  // Themes can target sender via legacy classes (.user/.assistant) or the
-  // reflected data-sender attribute under @scope.
-  assistant: {
-    backgroundColor: colorVars['--color-neutral'],
-    color: colorVars['--color-text-primary'],
-  },
-  user: {
-    backgroundColor: colorVars['--color-neutral'],
-    color: colorVars['--color-text-primary'],
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-    color: colorVars['--color-text-primary'],
-  },
-  // Grouped bubble corners — assistant (inline-start side tight).
-  // Logical radii so the tail follows reading direction: inline-start is the
-  // left edge under LTR and the right edge under RTL (assistant tucks toward
-  // the start of the line in both directions).
-  groupFirstAssistant: {
-    borderEndStartRadius: radiusVars['--radius-inner'],
-  },
-  groupMiddleAssistant: {
-    borderStartStartRadius: radiusVars['--radius-inner'],
-    borderEndStartRadius: radiusVars['--radius-inner'],
-  },
-  groupLastAssistant: {
-    borderStartStartRadius: radiusVars['--radius-inner'],
-  },
-  // Grouped bubble corners — user (inline-end side tight).
-  // Logical radii: inline-end is the right edge under LTR and the left edge
-  // under RTL (user tucks toward the end of the line in both directions).
-  groupFirstUser: {
-    borderEndEndRadius: radiusVars['--radius-inner'],
-  },
-  groupMiddleUser: {
-    borderStartEndRadius: radiusVars['--radius-inner'],
-    borderEndEndRadius: radiusVars['--radius-inner'],
-  },
-  groupLastUser: {
-    borderStartEndRadius: radiusVars['--radius-inner'],
-  },
-});
-
-// Dynamic styles for sizing props
-const dynamicStyles = stylex.create({
-  sizing: (width: SizeValue) => ({
-    width,
-    // An explicit width replaces the default cap — a full-column or
-    // fixed-width bubble shouldn't also be clamped by max(80%, 280px).
-    maxWidth: 'none',
-  }),
-});
-
-// =============================================================================
 // Component
 // =============================================================================
 
@@ -253,58 +155,31 @@ export function ChatMessageBubble({
   const sender = msgContext?.sender ?? 'assistant';
   const density = msgContext?.density ?? 'balanced';
 
-  const paddingStyle =
-    density === 'compact'
-      ? styles.paddingCompact
-      : density === 'spacious'
-        ? styles.paddingSpacious
-        : styles.paddingBalanced;
-
   const isUser = sender === 'user';
+  const isGhost = variant === 'ghost';
+  const isCompact = density === 'compact';
+  const hasWidth = width != null;
 
-  const senderStyle =
-    variant === 'ghost'
-      ? styles.ghost
-      : isUser
-        ? styles.user
-        : styles.assistant;
-
-  const groupStyle =
-    group === 'first'
-      ? isUser
-        ? styles.groupFirstUser
-        : styles.groupFirstAssistant
-      : group === 'middle'
-        ? isUser
-          ? styles.groupMiddleUser
-          : styles.groupMiddleAssistant
-        : group === 'last'
-          ? isUser
-            ? styles.groupLastUser
-            : styles.groupLastAssistant
-          : null;
-
-  const metadataPaddingStyle =
-    density === 'compact'
-      ? styles.metadataPaddingCompact
-      : density === 'spacious'
-        ? styles.metadataPaddingSpacious
-        : styles.metadataPaddingBalanced;
+  const sizingStyle: ChatMessageBubbleStyle = hasWidth
+    ? {
+        [chatMessageBubbleSizeVars.width]:
+          typeof width === 'number' ? `${width}px` : width,
+      }
+    : {};
 
   const hasName = isRenderable(name);
   const hasMetadata = isRenderable(metadata);
+  const slotClassName = tw(
+    chatMessageBubbleSlotPaddingClassName(density),
+    isUser && chatMessageBubbleAlignEndClassName,
+  );
 
   return (
     <>
       {hasName && (
         <div
           data-chat-name
-          {...stylex.props(
-            metadataPaddingStyle,
-            styles.nameRow,
-            styles.headerReducedGap,
-            isUser && styles.alignEnd,
-          )}>
+          className={tw(slotClassName, chatMessageBubbleNameRowClassName)}>
           {name}
         </div>
       )}
@@ -314,28 +189,25 @@ export function ChatMessageBubble({
         data-testid={testId}
         {...mergeProps(
           themeProps('chat-message-bubble', {sender, variant, density}),
-          stylex.props(
-            styles.content,
-            density === 'compact' && styles.radiusCompact,
-            senderStyle,
-            paddingStyle,
-            variant === 'ghost' && styles.paddingBlockNone,
-            groupStyle,
-            width != null && dynamicStyles.sizing(width),
-            xstyle,
+          tw(
+            chatMessageBubbleClassName({hasWidth, isCompact}),
+            chatMessageBubbleTextClassName,
+            chatMessageBubbleSurfaceClassName({isGhost}),
+            chatMessageBubblePaddingClassName({density, isGhost}),
+            group != null &&
+              chatMessageBubbleGroupClassName[isUser ? 'user' : 'assistant'][
+                group
+              ],
+            xstyle && stylex.props(xstyle).className,
           ),
           className,
-          styleProp,
+          {...sizingStyle, ...styleProp},
         )}>
         {children}
       </div>
       {hasMetadata && (
         <div
-          {...stylex.props(
-            metadataPaddingStyle,
-            styles.metadataReducedGap,
-            isUser && styles.alignEnd,
-          )}>
+          className={tw(slotClassName, chatMessageBubbleMetadataRowClassName)}>
           {metadata}
         </div>
       )}
