@@ -29,6 +29,10 @@ import {
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
+  dropdownMenuDividerClassName,
+  dropdownMenuGroupHeadingClassName,
+} from '../DropdownMenu/dropdownMenuClasses';
+import {
   alertDialogActionsRowClassName,
   alertDialogStackedActionClassName,
 } from '../AlertDialog/alertDialogClasses';
@@ -1643,6 +1647,11 @@ function familyClassNames() {
   add(sideNavClassName.resizableContainer);
   add(sideNavClassName.topbar);
   add(sideNavClassName.topbarIcons);
+
+  // The menu family's leaves: the rule between groups, the heading that names
+  // one.
+  add(dropdownMenuDividerClassName);
+  add(dropdownMenuGroupHeadingClassName);
 
   return [...names].sort();
 }
