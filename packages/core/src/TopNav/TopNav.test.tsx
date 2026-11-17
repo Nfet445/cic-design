@@ -29,6 +29,12 @@ import {
   topNavItemIconOnlyClassName,
   topNavItemSelectedClassName,
 } from './topNavItemClasses';
+import {
+  topNavHeadingClassName,
+  topNavHeadingColumnsClassName,
+  topNavHeadingLinkedLineClassName,
+  type TopNavHeadingColumns,
+} from './topNavHeadingClasses';
 import {TopNavHeading} from './TopNavHeading';
 import {NavIcon} from '../NavIcon';
 import {TopNavItem} from './TopNavItem';
@@ -302,9 +308,9 @@ describe('TopNavHeading', () => {
       .getByText('Product')
       .closest('.astryx-top-nav-heading');
     expect(withLogo).not.toBeNull();
-    expect(getComputedStyle(withLogo!).gridTemplateColumns).toBe(
-      'auto minmax(0,1fr)',
-    );
+    expectClassSet(withLogo as Element, {
+      includes: [topNavHeadingColumnsClassName('withLogo')],
+    });
 
     rerender(
       <TopNavHeading heading="Product" headerEndContent={<span>End</span>} />,
@@ -312,9 +318,9 @@ describe('TopNavHeading', () => {
     const textOnly = screen
       .getByText('Product')
       .closest('.astryx-top-nav-heading');
-    expect(getComputedStyle(textOnly!).gridTemplateColumns).toBe(
-      'minmax(0,1fr)',
-    );
+    expectClassSet(textOnly as Element, {
+      includes: [topNavHeadingColumnsClassName('text')],
+    });
   });
 
   it('clips each linked line inside its column and leaves the column overflow visible', () => {
@@ -330,14 +336,13 @@ describe('TopNavHeading', () => {
     );
     for (const name of ['Suite', 'Product', 'Account']) {
       const link = screen.getByRole('link', {name});
-      const style = getComputedStyle(link);
-      expect(style.overflow).toBe('hidden');
-      expect(style.minWidth).toBe('0');
-      expect(style.maxWidth).toBe('100%');
+      expectClassSet(link, {
+        includes: topNavHeadingLinkedLineClassName().split(' '),
+      });
     }
     // The column itself is not a clip, so the link's own focus ring can paint.
     const column = screen.getByRole('link', {name: 'Product'}).parentElement;
-    expect(getComputedStyle(column!).overflow).toBe('');
+    expectClassSet(column as Element, {excludes: ['overflow-hidden']});
   });
 
   it('counts the chevron row in the text track when the heading has a menu', () => {
@@ -349,15 +354,15 @@ describe('TopNavHeading', () => {
       />,
     );
     const withLogo = document.querySelector('.astryx-top-nav-heading');
-    expect(getComputedStyle(withLogo!).gridTemplateColumns).toBe(
-      'auto minmax(calc(var(--spacing-7) + var(--spacing-1)),1fr)',
-    );
+    expectClassSet(withLogo as Element, {
+      includes: [topNavHeadingColumnsClassName('withLogoAndMenu')],
+    });
 
     rerender(<TopNavHeading heading="Product" menu={<div>Menu</div>} />);
     const textOnly = document.querySelector('.astryx-top-nav-heading');
-    expect(getComputedStyle(textOnly!).gridTemplateColumns).toBe(
-      'minmax(calc(var(--spacing-7) + var(--spacing-1)),1fr)',
-    );
+    expectClassSet(textOnly as Element, {
+      includes: [topNavHeadingColumnsClassName('withMenu')],
+    });
   });
 
   it('gives a logo-only heading a single track', () => {
@@ -370,8 +375,20 @@ describe('TopNavHeading', () => {
     );
     const root = screen.getByRole('link', {name: 'Home'});
     expect(root).toHaveClass('astryx-top-nav-heading');
-    expect(getComputedStyle(root).display).toBe('grid');
-    expect(getComputedStyle(root).gridTemplateColumns).toBe('');
+    const allColumns: TopNavHeadingColumns[] = [
+      'withLogo',
+      'text',
+      'withLogoAndLinks',
+      'withLinks',
+      'withLogoAndMenu',
+      'withMenu',
+    ];
+    expectClassSet(root, {
+      includes: topNavHeadingClassName().split(' '),
+      excludes: allColumns.map(columns =>
+        topNavHeadingColumnsClassName(columns),
+      ),
+    });
     expect(root.childElementCount).toBe(1);
   });
 

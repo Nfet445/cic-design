@@ -290,6 +290,26 @@ import {
   topNavStartRegionClassName,
 } from '../TopNav/topNavClasses';
 import {
+  topNavHeadingChevronGlyphClassName,
+  topNavHeadingChevronWithGlyphClassName,
+  topNavHeadingClassName,
+  topNavHeadingColumnsClassName,
+  topNavHeadingEndContentClassName,
+  topNavHeadingInteractiveClassName,
+  topNavHeadingLinkedLineClassName,
+  topNavHeadingLogoClassName,
+  topNavHeadingMenuTriggerClassName,
+  topNavHeadingPopoverAnchorClassName,
+  topNavHeadingPopoverChevronWithGlyphClassName,
+  topNavHeadingPopoverContentClassName,
+  topNavHeadingPopoverHeadingClassName,
+  topNavHeadingSupportingLineClassName,
+  topNavHeadingTextContainerClassName,
+  topNavHeadingTitleClassName,
+  topNavHeadingTitleLinkClassName,
+  topNavHeadingTitleRowClassName,
+} from '../TopNav/topNavHeadingClasses';
+import {
   topNavItemClassName,
   topNavItemIconOnlyClassName,
   topNavItemSelectedClassName,
@@ -577,6 +597,39 @@ function familyClassNames() {
   add(topNavItemClassName());
   add(topNavItemSelectedClassName());
   add(topNavItemIconOnlyClassName());
+
+  // The heading picks one column track per render path, so every track ships.
+  add(topNavHeadingClassName());
+  for (const columns of [
+    'withLogo',
+    'text',
+    'withLogoAndLinks',
+    'withLinks',
+    'withLogoAndMenu',
+    'withMenu',
+  ]) {
+    add(topNavHeadingColumnsClassName(columns));
+  }
+  for (const className of [
+    topNavHeadingMenuTriggerClassName,
+    topNavHeadingInteractiveClassName,
+    topNavHeadingLogoClassName,
+    topNavHeadingTextContainerClassName,
+    topNavHeadingSupportingLineClassName,
+    topNavHeadingTitleClassName,
+    topNavHeadingTitleRowClassName,
+    topNavHeadingTitleLinkClassName,
+    topNavHeadingLinkedLineClassName,
+    topNavHeadingChevronWithGlyphClassName,
+    topNavHeadingChevronGlyphClassName,
+    topNavHeadingEndContentClassName,
+    topNavHeadingPopoverContentClassName,
+    topNavHeadingPopoverHeadingClassName,
+    topNavHeadingPopoverChevronWithGlyphClassName,
+    topNavHeadingPopoverAnchorClassName,
+  ]) {
+    add(className());
+  }
 
   // The layout family: the shell frame, then every region combination. A
   // region edge publishes its inset and reads it back, so each combination
