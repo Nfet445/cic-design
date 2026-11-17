@@ -2,9 +2,10 @@
 
 /**
  * @file StackItem.tsx
- * @input Uses React, ElementType, stackItem utility, StackItemScrollRegion
+ * @input Uses React, ElementType, stackItemClasses utility, StackItemScrollRegion
  * @output Exports StackItem polymorphic component and StackItemProps
- * @position Layout/Stack component; uses stackItem.stylex.ts. A scrollable
+ * @position Layout/Stack component; uses stackItemClasses.ts for its layout
+ *   and stackItem.stylex.ts for the public `stackItem()` utility. A scrollable
  *   `div` or `span` item renders through StackItemScrollRegion, which names
  *   it while it scrolls.
  *
@@ -16,20 +17,12 @@
 import {createElement, type ElementType, type ReactNode, type Ref} from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import {
-  stackItem,
-  type StackItemCrossAlignSelf,
-  type StackItemSize,
-} from './stackItem.stylex';
+import type {StackItemCrossAlignSelf, StackItemSize} from './stackItem.stylex';
+import {stackItemClassName} from './stackItemClasses';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
 import {StackItemScrollRegion} from '../hooks/StackItemScrollRegion';
-
-const overflowStyles = stylex.create({
-  scrollable: {
-    overflow: 'auto',
-  },
-});
 
 export interface StackItemProps extends BaseProps<HTMLElement> {
   /** Ref forwarded to the root element */
@@ -101,16 +94,16 @@ export function StackItem({
   ref,
   ...props
 }: StackItemProps) {
-  const stylexProps = stylex.props(
-    ...stackItem({crossAlignSelf, size}),
-    isScrollable && overflowStyles.scrollable,
-    xstyle,
+  const layoutClassName = tw(
+    stackItemClassName({crossAlignSelf, scrollable: isScrollable, size}),
   );
 
   const elementProps = {
     ...mergeProps(
-      themeProps('stack-item', {size}),
-      stylexProps,
+      mergeProps(themeProps('stack-item', {size}), {
+        className: layoutClassName,
+      }),
+      stylex.props(xstyle),
       className,
       style,
     ),

@@ -2,7 +2,8 @@
 
 /**
  * @file Center.tsx
- * @input Uses React, StyleX for centering styles, Layout padding.stylex for spacing-scale padding
+ * @input Uses React, Tailwind utilities for centering styles, Layout
+ *   paddingClasses for spacing-scale padding
  * @output Exports Center component and CenterProps
  * @position Center component for one- or two-axis flex centering
  *
@@ -18,46 +19,21 @@ import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
 import type {SizeValue, SpacingStep} from '../utils/types';
+import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {
-  paddingInlineStartStyles,
-  paddingInlineEndStyles,
-  paddingBlockStartStyles,
-  paddingBlockEndStyles,
-} from '../Layout/padding.stylex';
+  centerClassName,
+  centerSizeVars,
+  centerSizingClassName,
+} from './centerClasses';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
-
-const styles = stylex.create({
-  base: {
-    display: 'flex',
-  },
-  inline: {
-    display: 'inline-flex',
-  },
-  alignItemsCenter: {
-    alignItems: 'center',
-  },
-  justifyContentCenter: {
-    justifyContent: 'center',
-  },
-});
-
-// Dynamic styles for sizing props
-const dynamicStyles = stylex.create({
-  sizing: (
-    width: SizeValue | null,
-    height: SizeValue | null,
-    maxWidth: SizeValue | null,
-    minHeight: SizeValue | null,
-  ) => ({
-    width,
-    height,
-    maxWidth,
-    minHeight,
-  }),
-});
+import {tw} from '../utils/tw';
 
 export type CenterAxis = 'both' | 'horizontal' | 'vertical';
+
+/** The inline sizing custom properties the sizing classes read. */
+type SizingStyle = React.CSSProperties &
+  Partial<Record<(typeof centerSizeVars)[keyof typeof centerSizeVars], string>>;
 
 export interface CenterProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element */
@@ -202,34 +178,47 @@ export function Center({
     paddingBlockStart ?? paddingBlock ?? padding;
   const resolvedPaddingBlockEnd = paddingBlockEnd ?? paddingBlock ?? padding;
 
-  const stylexProps = mergeProps(
-    themeProps('center', {axis}),
-    stylex.props(
-      isInline ? styles.inline : styles.base,
-      (axis === 'both' || axis === 'vertical') && styles.alignItemsCenter,
-      (axis === 'both' || axis === 'horizontal') && styles.justifyContentCenter,
-      dynamicStyles.sizing(
-        width ?? null,
-        height ?? null,
-        maxWidth ?? null,
-        minHeight ?? null,
+  // Sizing goes through CSS variables so a consumer class can override it:
+  // an inline `width` would beat every class, a class-level `width` would not.
+  const sizingVars: SizingStyle = {
+    ...(width != null && {
+      [centerSizeVars.width]: typeof width === 'number' ? `${width}px` : width,
+    }),
+    ...(height != null && {
+      [centerSizeVars.height]:
+        typeof height === 'number' ? `${height}px` : height,
+    }),
+    ...(maxWidth != null && {
+      [centerSizeVars.maxWidth]:
+        typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+    }),
+    ...(minHeight != null && {
+      [centerSizeVars.minHeight]:
+        typeof minHeight === 'number' ? `${minHeight}px` : minHeight,
+    }),
+  };
+
+  const mergedProps = mergeProps(
+    mergeProps(themeProps('center', {axis}), {
+      className: tw(
+        centerClassName({axis, isInline}),
+        centerSizingClassName({width, height, maxWidth, minHeight}),
+        paddingEdgeClassName({
+          paddingBlockEnd: resolvedPaddingBlockEnd,
+          paddingBlockStart: resolvedPaddingBlockStart,
+          paddingInlineEnd: resolvedPaddingInlineEnd,
+          paddingInlineStart: resolvedPaddingInlineStart,
+        }),
       ),
-      resolvedPaddingInlineStart != null &&
-        paddingInlineStartStyles[resolvedPaddingInlineStart],
-      resolvedPaddingInlineEnd != null &&
-        paddingInlineEndStyles[resolvedPaddingInlineEnd],
-      resolvedPaddingBlockStart != null &&
-        paddingBlockStartStyles[resolvedPaddingBlockStart],
-      resolvedPaddingBlockEnd != null &&
-        paddingBlockEndStyles[resolvedPaddingBlockEnd],
-      xstyle,
-    ),
+      style: sizingVars,
+    }),
+    stylex.props(xstyle),
     className,
     style,
   );
 
   return (
-    <div ref={ref} {...props} {...stylexProps}>
+    <div ref={ref} {...props} {...mergedProps}>
       {children}
     </div>
   );

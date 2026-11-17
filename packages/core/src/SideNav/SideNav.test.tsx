@@ -3676,10 +3676,10 @@ describe('SideNav footer icon row sizing', () => {
 
 describe('SideNav row control sizing', () => {
   /**
-   * The height an icon-only `Button` of this size declares — the box every
-   * control sharing a nav row is measured against.
+   * The height an icon-only `Button` of this size declares, read from its
+   * class — the box every control sharing a nav row is measured against.
    */
-  function iconButtonHeight(size: 'sm' | 'md' | 'lg'): string[] {
+  function iconButtonHeight(size: 'sm' | 'md' | 'lg'): string {
     const {unmount} = render(
       <Button
         label="sized reference"
@@ -3689,12 +3689,15 @@ describe('SideNav row control sizing', () => {
         data-testid="sized-ref"
       />,
     );
-    const height = declaredOn(screen.getByTestId('sized-ref'), 'height');
+    const height = screen
+      .getByTestId('sized-ref')
+      .className.split(/\s+/)
+      .filter(name => name.startsWith('h-[var(--size-element-'));
     unmount();
     // Guard against a vacuous pass: nothing below means anything if the
-    // reference itself declares no height.
+    // reference itself carries no height.
     expect(height).toHaveLength(1);
-    return height;
+    return height[0].slice('h-['.length, -1);
   }
 
   function collapsibleRow(actions: ReactNode) {
@@ -3723,9 +3726,9 @@ describe('SideNav row control sizing', () => {
     const sm = iconButtonHeight('sm');
     render(collapsibleRow(iconAction()));
     const toggle = screen.getByRole('button', {name: /collapse project/i});
-    expect(declaredOn(toggle, 'height')).toEqual(sm);
+    expect(declaredOn(toggle, 'height')).toEqual([sm]);
     // Square, so its hover pill reads as the same box as the action's.
-    expect(declaredOn(toggle, 'width')).toEqual(sm);
+    expect(declaredOn(toggle, 'width')).toEqual([sm]);
   });
 
   it('cascades that size to an action the consumer did not size', () => {
@@ -3734,13 +3737,13 @@ describe('SideNav row control sizing', () => {
     // compiled to one height the assertion below could not fail.
     expect(sm).not.toEqual(iconButtonHeight('md'));
     render(collapsibleRow(iconAction()));
-    expect(declaredOn(screen.getByTestId('row-action'), 'height')).toEqual(sm);
+    expect(screen.getByTestId('row-action').className).toContain(`h-[${sm}]`);
   });
 
   it('lets an explicit size on an action win over the cascade', () => {
     const lg = iconButtonHeight('lg');
     render(collapsibleRow(iconAction({size: 'lg'})));
-    expect(declaredOn(screen.getByTestId('row-action'), 'height')).toEqual(lg);
+    expect(screen.getByTestId('row-action').className).toContain(`h-[${lg}]`);
   });
 });
 

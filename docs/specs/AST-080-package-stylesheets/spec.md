@@ -90,6 +90,12 @@ first.
   Theme packages are outside this requirement; their stylesheets follow the theme
   records named in Non-goals.
 
+  While a family migrates to the Tailwind utility build (`spec:AST-119`) and
+  modules of both kinds remain, a package also ships the stylesheet for the
+  modules that migrated, and a product loads the pair. That second stylesheet
+  covers the modules that migrated and nothing else; the pair lasts only until
+  the last family migrates.
+
 - **FR2 — Prebuilt stylesheets are complete without a compiler.** Loading a
   package's stylesheet with `astryx.css` and a theme stylesheet MUST style every
   element the package renders, in every state, color scheme, and text direction
@@ -100,9 +106,9 @@ first.
   `spec:AST-066` FR3 is carried by the package stylesheet whose modules read it.
 
 - **FR3 — One layer and one layer order in every package stylesheet.** Every rule
-  in every package stylesheet, and in Core's `reset.css`, MUST sit inside its one
-  Astryx layer: `astryx-base` for package stylesheets and `reset` for
-  `reset.css`. None of these files emits an unlayered rule or another layer. Each
+  in every package stylesheet, including a migration stylesheet `spec:AST-119`
+  adds, and in Core's `reset.css`, MUST sit inside its one Astryx layer:
+  `astryx-base` for package stylesheets and `reset` for `reset.css`. None of these files emits an unlayered rule or another layer. Each
   begins with the same order registration that theme output carries under
   `spec:AST-066` FR7:
 
@@ -112,7 +118,10 @@ first.
 
   So `reset < astryx-base < astryx-theme` holds whatever Astryx stylesheet loads
   first, and an authored theme override wins over the base rule of every package.
-  A product's unlayered CSS stays above every Astryx layer.
+  A product's unlayered CSS stays above every Astryx layer. A migration
+  stylesheet registers those three layers in that order first and registers the
+  consumer slots `theme`, `base`, `components`, and `utilities` after them, so a
+  product's own utilities outrank an Astryx rule.
 
 - **FR4 — The stylesheet survives bundling.** Each package's `exports` MUST
   resolve its stylesheet subpath in the packed package, and its `sideEffects`

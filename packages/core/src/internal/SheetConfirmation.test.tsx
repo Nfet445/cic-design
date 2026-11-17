@@ -53,7 +53,9 @@ describe('SheetConfirmation', () => {
       expect(button).toHaveAttribute('data-size', 'lg');
       expect(getComputedStyle(button).width).toBe('100%');
     }
-    expect(getComputedStyle(safe.parentElement!).flexDirection).toBe('column');
+    // Stack lays itself out with utility classes, which jsdom does not
+    // resolve into declarations.
+    expect(safe.parentElement!.className).toContain('flex-col');
     expect(safe).toHaveFocus();
   });
 

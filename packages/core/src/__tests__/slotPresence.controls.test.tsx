@@ -77,12 +77,12 @@ const SLOTS: ReadonlyArray<SlotCase> = [
   [
     'Button icon',
     value => <Button label="Save" icon={value} />,
-    'styles.iconWrapper',
+    'inline-flex items-center justify-center shrink-0',
   ],
   [
     'Button endContent',
     value => <Button label="Save" endContent={value} />,
-    'styles.endContentWrapper',
+    'inline-flex items-center [color:inherit]',
   ],
   [
     'Lightbox caption',

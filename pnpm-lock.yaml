@@ -942,6 +942,9 @@ importers:
       '@stylexjs/babel-plugin':
         specifier: 'catalog:'
         version: 0.19.1
+      '@tailwindcss/postcss':
+        specifier: ^4.3.2
+        version: 4.3.2
       '@testing-library/dom':
         specifier: ^10.0.0
         version: 10.4.2
@@ -954,6 +957,9 @@ importers:
       '@types/babel__core':
         specifier: ^7.20.5
         version: 7.20.5
+      postcss:
+        specifier: ^8.5.23
+        version: 8.5.25
       tailwindcss:
         specifier: ^4.3.2
         version: 4.3.2

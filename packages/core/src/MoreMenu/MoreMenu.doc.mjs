@@ -70,7 +70,7 @@ export const docs = {
     },
     {
       name: 'size',
-      type: 'ButtonSize',
+      type: "'sm' | 'md' | 'lg'",
       description:
         'Size of the trigger button. Without it, the trigger takes the surrounding size (from a SizeProvider, ButtonGroup, or Toolbar), else md.',
       default: "'md'",
@@ -178,7 +178,7 @@ export const docsZh = {
     },
     {
       name: 'size',
-      type: 'ButtonSize',
+      type: "'sm' | 'md' | 'lg'",
       description:
         '触发按钮的尺寸。未设置时，触发按钮使用外层尺寸（来自 SizeProvider、ButtonGroup 或 Toolbar），否则为 md。',
       default: "'md'",

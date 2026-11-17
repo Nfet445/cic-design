@@ -11,6 +11,23 @@ repository. Add or change shared agent guidance here rather than duplicating it
 in tool-specific instruction files. Put genuinely path-specific guidance in a
 nested `AGENTS.md`.
 
+## Agent skills
+
+### Issue tracker
+
+Work tickets live as markdown under `.scratch/<feature>/`; design knowledge
+stays in `docs/specs/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical triage roles keep their default names, recorded as a
+`Status:` line in each issue file. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the root. See
+`docs/agents/domain.md`.
+
 ## Start here
 
 - Product builders: use `astryx docs`, component `{Name}.doc.mjs` files, and

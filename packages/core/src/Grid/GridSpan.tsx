@@ -2,7 +2,7 @@
 
 /**
  * @file GridSpan.tsx
- * @input Uses React, stylex
+ * @input Uses React
  * @output Exports GridSpan component and GridSpanProps
  * @position Grid span component; controls grid item span
  *
@@ -20,6 +20,7 @@ import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
+import {gridSpanClassName} from './gridClasses';
 
 export interface GridSpanProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element */
@@ -42,19 +43,6 @@ export interface GridSpanProps extends BaseProps<HTMLDivElement> {
    */
   children?: ReactNode;
 }
-
-const baseStyles = stylex.create({
-  span: {
-    // Base styles for grid item
-    minWidth: 0, // Prevent overflow in grid
-    // Make span fill grid cell and stretch children
-    display: 'grid',
-    // The implicit `auto` column would grow to a child's min-content width;
-    // a zero minimum keeps it inside the span.
-    gridTemplateColumns: 'minmax(0, 1fr)',
-    height: '100%',
-  },
-});
 
 /**
  * Grid span component for controlling how many columns/rows a grid item spans.
@@ -94,8 +82,8 @@ export function GridSpan({
     <div
       ref={ref}
       {...mergeProps(
-        themeProps('grid-span'),
-        stylex.props(baseStyles.span, xstyle),
+        mergeProps(themeProps('grid-span'), {className: gridSpanClassName}),
+        stylex.props(xstyle),
         className,
         {...style, ...inlineStyle},
       )}

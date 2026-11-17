@@ -301,7 +301,9 @@ describe('PowerSearch isDateOnly: false', () => {
     const {date, time} = await openEditor('Group');
     expect(time).toBeTruthy();
     // The pair's own row wraps, so the time field drops under the date field
-    // instead of overlapping it in the width the nested selectors leave.
+    // instead of overlapping it in the width the nested selectors leave. The
+    // row is a Stack, so the wrap is a class rather than a declaration jsdom
+    // can compute.
     const pairRow = Array.from(
       document.querySelectorAll<HTMLElement>('[popover] div'),
     ).find(
@@ -309,7 +311,7 @@ describe('PowerSearch isDateOnly: false', () => {
         el.children.length === 2 &&
         el.contains(date) &&
         el.contains(time) &&
-        getComputedStyle(el).flexWrap === 'wrap',
+        el.className.split(' ').includes('flex-wrap'),
     );
     expect(pairRow).toBeTruthy();
   });

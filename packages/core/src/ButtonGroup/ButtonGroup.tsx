@@ -4,8 +4,9 @@
 
 /**
  * @file ButtonGroup.tsx
- * @input Uses React, StyleX, Button/IconButton children, and the shared group
- *   press tracking (hooks/useGroupPressTracking)
+ * @input Uses React, Tailwind utility classes (buttonGroupClasses.ts), the
+ *   shared touch band, Button/IconButton children, and the shared group press
+ *   tracking (hooks/useGroupPressTracking)
  * @output Exports ButtonGroup component, context, and types
  * @position Groups buttons with connected styling; consumed by index.ts
  *
@@ -25,7 +26,6 @@
 import {useMemo, useRef, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import type {ButtonSize} from '../Button';
-import {radiusVars, shadowVars} from '../theme/tokens.stylex';
 import type {Elevation} from '../utils/types';
 import {SizeProvider, useSize} from '../SizeContext/SizeContext';
 import {oneTabStopAmong, useInternalListFocus} from '../hooks/useListFocus';
@@ -40,7 +40,9 @@ import {mergeProps, composeEventHandlers} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {ButtonGroupContext} from './ButtonGroupContext';
 import type {ButtonGroupOrientation} from './ButtonGroupContext';
+import {buttonGroupClassName} from './buttonGroupClasses';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 // =============================================================================
@@ -93,45 +95,6 @@ export interface ButtonGroupProps extends BaseProps<HTMLDivElement> {
    */
   'data-testid'?: string;
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  group: {
-    display: 'inline-flex',
-    alignItems: 'stretch',
-  },
-  vertical: {
-    flexDirection: 'column',
-  },
-  // While the group tracks presses, its hit layer is the root's `::before`,
-  // below its buttons, so the root is the layer's containing block.
-  tracking: {
-    position: 'relative',
-  },
-});
-
-// Resting elevation for the whole group — the connected buttons share one
-// surface, so the shadow sits on the group wrapper and lifts them as a unit.
-// The wrapper takes the element radius so the shadow follows the group's
-// rounded outer corners rather than a bare rectangle. 'none' is the default.
-const elevationStyles = stylex.create({
-  none: {boxShadow: 'none'},
-  low: {
-    boxShadow: shadowVars['--shadow-low'],
-    borderRadius: radiusVars['--radius-element'],
-  },
-  med: {
-    boxShadow: shadowVars['--shadow-med'],
-    borderRadius: radiusVars['--radius-element'],
-  },
-  high: {
-    boxShadow: shadowVars['--shadow-high'],
-    borderRadius: radiusVars['--radius-element'],
-  },
-});
 
 // =============================================================================
 // Component
@@ -228,6 +191,14 @@ export function ButtonGroup({
   const groupRef = useRef<HTMLDivElement>(null);
   const {hitAreaRef} = useGroupPressTracking(groupRef, tracksPress);
 
+  // The group's own layout comes from utility classes. The touch hit band is
+  // a shared StyleX module that has not migrated, so its class joins them.
+  const layoutClassName = tw(
+    buttonGroupClassName({elevation, orientation, tracksPress}),
+    tracksPress &&
+      stylex.props(touchHitAreaStyles.layerBelowChildren).className,
+  );
+
   return (
     <ButtonGroupContext value={contextValue}>
       <SizeProvider value={size}>
@@ -235,15 +206,11 @@ export function ButtonGroup({
           ref={useMergedRefs(ref, listRef, groupRef, hitAreaRef)}
           {...props}
           {...mergeProps(
-            themeProps('button-group', {size, orientation, elevation}),
-            stylex.props(
-              styles.group,
-              tracksPress && styles.tracking,
-              tracksPress && touchHitAreaStyles.layerBelowChildren,
-              orientation === 'vertical' && styles.vertical,
-              elevationStyles[elevation],
-              xstyle,
+            mergeProps(
+              themeProps('button-group', {size, orientation, elevation}),
+              {className: layoutClassName},
             ),
+            stylex.props(xstyle),
             className,
             style,
           )}

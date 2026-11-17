@@ -17,7 +17,6 @@ import {ChatComposer} from './ChatComposer';
 import {Button} from '../Button';
 import {registerIcons, resetIcons} from '../Icon';
 import {TestIcon} from '../__tests__/TestIcon';
-import {declaredValue} from '../__tests__/stylexDeclarations';
 
 describe('ChatSendButton', () => {
   afterEach(() => {
@@ -167,18 +166,16 @@ describe('ChatSendButton', () => {
           icon={<TestIcon />}
         />,
       );
-      const primary = declaredValue(
-        primaryRef.querySelector('button')!,
-        'background-color',
-      );
+      const accent = 'bg-[var(--color-accent)]';
+      const neutral = 'bg-[var(--color-neutral)]';
+      const primary = primaryRef.querySelector('button');
+      const secondary = secondaryRef.querySelector('button');
       expect(primary).not.toBeNull();
-      expect(
-        declaredValue(
-          secondaryRef.querySelector('button')!,
-          'background-color',
-        ),
-      ).not.toBe(primary);
-      expect(declaredValue(send, 'background-color')).toBe(primary);
+      expect(secondary).not.toBeNull();
+      expect(primary?.className).toContain(accent);
+      expect(secondary?.className).toContain(neutral);
+      expect(send.className).toContain(accent);
+      expect(send.className).not.toContain(neutral);
     });
 
     it('resolves its default icon from the registry arrowUp entry', () => {
