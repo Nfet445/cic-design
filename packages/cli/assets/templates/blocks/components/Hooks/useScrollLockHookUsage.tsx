@@ -3,27 +3,14 @@
 'use client';
 
 import {useEffect, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Button} from '@astryxdesign/core/Button';
 import {useFocusTrap, useScrollLock} from '@astryxdesign/core/hooks';
 import {VStack} from '@astryxdesign/core/Layout';
 import {Link} from '@astryxdesign/core/Link';
-import {colorVars, spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
 
-const styles = stylex.create({
-  menu: {
-    width: '100%',
-    height: '100%',
-    maxWidth: 'none',
-    maxHeight: 'none',
-    margin: 0,
-    borderWidth: 0,
-    overflowY: 'auto',
-    padding: spacingVars['--spacing-4'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: colorVars['--color-background-surface'],
-  },
-});
+const styles = {
+  menu: 'size-full max-w-none max-h-none m-0 border-0 overflow-y-auto [padding:var(--spacing-4)] [color:var(--color-text-primary)] [background-color:var(--color-background-surface)]',
+} as const;
 
 const MENU_ITEMS = ['Products', 'Pricing', 'Customers', 'Support'];
 
@@ -60,7 +47,7 @@ export default function UseScrollLockHookUsage() {
           event.preventDefault();
           close();
         }}
-        {...stylex.props(styles.menu)}>
+        className={styles.menu}>
         <nav aria-label="Site menu">
           <VStack gap={4} hAlign="start">
             <Button label="Close menu" variant="secondary" onClick={close} />

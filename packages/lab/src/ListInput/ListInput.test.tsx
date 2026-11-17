@@ -29,6 +29,7 @@ import {
   within,
 } from '@testing-library/react';
 import {useAnnounce, useContainerReveal} from '@astryxdesign/core/hooks';
+import {classesOf} from '../../../core/src/__tests__/classNameAssertions';
 import {TextInput} from '@astryxdesign/core/TextInput';
 import {
   ListInput,
@@ -359,9 +360,15 @@ describe('ListInput', () => {
     expect(emptyState).toBeInTheDocument();
     expect(emptyState).toHaveClass('astryx-empty-state');
     expect(emptyState).toHaveAttribute('data-variant', 'compact');
-    expect(getComputedStyle(emptyState!).alignItems).toBe('center');
-    expect(getComputedStyle(emptyState!).justifyContent).toBe('center');
-    expect(getComputedStyle(emptyState!).textAlign).toBe('center');
+    for (const utility of [
+      'flex',
+      'flex-col',
+      'items-center',
+      'justify-center',
+      'text-center',
+    ]) {
+      expect(classesOf(emptyState!)).toContain(utility);
+    }
     expect(
       screen.getByRole('heading', {name: 'No guests yet'}),
     ).toBeInTheDocument();

@@ -46,13 +46,17 @@
     },
     "./lab.css": {
       "default": "./dist/lab.css"
+    },
+    "./lab-tailwind.css": {
+      "types": "./dist/lab-tailwind.css.d.ts",
+      "default": "./dist/lab-tailwind.css"
     }
   },
   "scripts": {
     "prepack": "pnpm build",
     "build": "node ../../scripts/clean-dist.mjs && pnpm build:esm && tsc --project tsconfig.build.json && node ../../scripts/add-declaration-extensions.mjs && pnpm build:css && node ../../scripts/check-no-dev-jsx.mjs && node ../../scripts/check-fully-specified.mjs",
     "build:esm": "babel src --out-dir dist --extensions .ts,.tsx --out-file-extension .js --ignore \"**/*.test.ts,**/*.test.tsx,**/__tests__/**,**/*.perf.test.*,**/*.doc.mjs,**/*.d.ts,**/*.css,**/*.css.d.ts\" --config-file ./babel.config.cjs",
-    "build:css": "node ../../scripts/build-css.mjs --package lab",
+    "build:css": "node ../../scripts/build-css.mjs --package lab && node scripts/build-css-tailwind.mjs",
     "dev": "babel src --watch --out-dir dist --extensions .ts,.tsx --out-file-extension .js --ignore \"**/*.test.*,**/*.doc.mjs,**/*.d.ts,**/*.css*\" --config-file ./babel.config.cjs",
     "test": "vitest run --root ../..",
     "test:watch": "vitest --root ../..",
@@ -81,11 +85,14 @@
     "@babel/preset-react": "catalog:",
     "@babel/preset-typescript": "catalog:",
     "@stylexjs/babel-plugin": "catalog:",
+    "@tailwindcss/postcss": "^4.3.2",
     "@testing-library/react": "catalog:",
     "@types/d3-array": "^3.2.2",
     "@types/d3-scale": "^4.0.9",
     "@types/d3-shape": "^3.1.8",
     "emojibase-data": "17.0.0",
-    "temporal-polyfill": "^1.0.6"
+    "postcss": "catalog:",
+    "temporal-polyfill": "^1.0.6",
+    "tailwindcss": "^4.3.2"
   }
 }
