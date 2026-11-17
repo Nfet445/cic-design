@@ -15,14 +15,7 @@ import {describe, it, expect, beforeEach, afterEach} from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import {createRequire} from 'node:module';
-import {fileURLToPath} from 'node:url';
 import {runCli} from '../../../test-utils/run-cli.mjs';
-/** The StyleX runtime that Core ships with, resolved the way Core resolves it. */
-const CORE_PACKAGE = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '../../../../core/package.json',
-);
 
 /**
  * Build a fake @astryxdesign/core under <project>/node_modules with a single
@@ -76,7 +69,10 @@ function buildFakeCore(project) {
  * @param {string} project
  * @param {{issuesUrl?: string|null, componentName?: string}} [opts]
  */
-function buildIntegration(project, {issuesUrl, componentName = 'MetaAppShell'} = {}) {
+function buildIntegration(
+  project,
+  {issuesUrl, componentName = 'MetaAppShell'} = {},
+) {
   const intDir = path.join(project, 'node_modules', '@test', 'meta');
   const compRoot = path.join(intDir, 'components');
   const compDir = path.join(compRoot, componentName);
@@ -154,7 +150,9 @@ describe('swizzle — core feedback routing via config', () => {
     const env = JSON.parse(result.stdout);
     expect(env.type).toBe('swizzle.copy');
     expect(env.data.package).toBe('@astryxdesign/core');
-    expect(env.data.feedback.issuesUrl).toBe('https://github.com/acme/ds/issues');
+    expect(env.data.feedback.issuesUrl).toBe(
+      'https://github.com/acme/ds/issues',
+    );
     // Escaping import rewritten to core; sibling import preserved.
     const out = fs.readFileSync(
       path.join(project, 'components', 'astryx', 'Button', 'Button.tsx'),
@@ -182,7 +180,9 @@ describe('swizzle — the npm packages a copy imports', () => {
     buildFakeCore(project);
     writeProjectPackageJson(project);
     const core = path.join(project, 'node_modules', '@astryxdesign', 'core');
-    const manifest = JSON.parse(fs.readFileSync(path.join(core, 'package.json'), 'utf-8'));
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(core, 'package.json'), 'utf-8'),
+    );
     manifest.dependencies = {'d3-scale': '^4.0.2'};
     manifest.peerDependencies = {react: '>=19.0.0'};
     fs.writeFileSync(path.join(core, 'package.json'), JSON.stringify(manifest));
@@ -203,7 +203,12 @@ describe('swizzle — the astryx-swizzle.json marker', () => {
     buildFakeCore(project);
     writeProjectPackageJson(project);
     buildIntegration(project, {issuesUrl: 'https://example.com/meta/issues'});
-    const marker = path.join(project, 'components', 'astryx', 'astryx-swizzle.json');
+    const marker = path.join(
+      project,
+      'components',
+      'astryx',
+      'astryx-swizzle.json',
+    );
 
     const core = await runCli(['--json', 'swizzle', 'Button', '-f'], project);
     expect(core.code).toBe(0);
@@ -212,10 +217,18 @@ describe('swizzle — the astryx-swizzle.json marker', () => {
     });
     // The marker is not one of the copy's files.
     const coreEnv = JSON.parse(core.stdout);
-    expect(coreEnv.data.files.some(f => f.includes('astryx-swizzle'))).toBe(false);
-    expect(coreEnv.data.marker).toEqual({path: 'components/astryx/astryx-swizzle.json', written: true});
+    expect(coreEnv.data.files.some(f => f.includes('astryx-swizzle'))).toBe(
+      false,
+    );
+    expect(coreEnv.data.marker).toEqual({
+      path: 'components/astryx/astryx-swizzle.json',
+      written: true,
+    });
 
-    const integration = await runCli(['--json', 'swizzle', 'MetaAppShell', '-f'], project);
+    const integration = await runCli(
+      ['--json', 'swizzle', 'MetaAppShell', '-f'],
+      project,
+    );
     expect(integration.code).toBe(0);
     expect(JSON.parse(fs.readFileSync(marker, 'utf-8'))).toEqual({
       packages: {'@astryxdesign/core': '0.0.13', '@test/meta': '1.2.3'},
@@ -227,59 +240,101 @@ describe('swizzle — the astryx-swizzle.json marker', () => {
     writeProjectPackageJson(project);
     // The product's own components live in src/components.
     fs.mkdirSync(path.join(project, 'src', 'components'), {recursive: true});
-    fs.writeFileSync(path.join(project, 'src', 'components', 'Header.tsx'), `export const Header = 1;\n`);
+    fs.writeFileSync(
+      path.join(project, 'src', 'components', 'Header.tsx'),
+      `export const Header = 1;\n`,
+    );
 
-    const json = await runCli(['--json', 'swizzle', 'Button', '--output', 'src/components', '-f'], project);
+    const json = await runCli(
+      ['--json', 'swizzle', 'Button', '--output', 'src/components', '-f'],
+      project,
+    );
     expect(json.code).toBe(0);
     expect(JSON.parse(json.stdout).data.marker).toEqual({
       path: 'src/components/astryx-swizzle.json',
       written: false,
       found: ['Header.tsx'],
     });
-    expect(fs.existsSync(path.join(project, 'src', 'components', 'astryx-swizzle.json'))).toBe(false);
+    expect(
+      fs.existsSync(
+        path.join(project, 'src', 'components', 'astryx-swizzle.json'),
+      ),
+    ).toBe(false);
 
-    const text = await runCli(['swizzle', 'Button', '--output', 'src/components', '-f'], project);
+    const text = await runCli(
+      ['swizzle', 'Button', '--output', 'src/components', '-f'],
+      project,
+    );
     expect(text.stdout).toContain(
       'Did not mark src/components/ with astryx-swizzle.json: it already holds Button, Header.tsx and no astryx-swizzle.json',
     );
-    expect(text.stdout).toContain('add src/components/astryx-swizzle.json to mark it');
+    expect(text.stdout).toContain(
+      'add src/components/astryx-swizzle.json to mark it',
+    );
   });
 
   it('leaves a folder of earlier copies unmarked on re-swizzle, and names what it holds', async () => {
     buildFakeCore(project);
     writeProjectPackageJson(project);
     // Copies from a swizzle that wrote no marker.
-    fs.mkdirSync(path.join(project, 'components', 'astryx', 'Button'), {recursive: true});
-    fs.writeFileSync(path.join(project, 'components', 'astryx', 'Button', 'Button.tsx'), `export const Button = 1;\n`);
+    fs.mkdirSync(path.join(project, 'components', 'astryx', 'Button'), {
+      recursive: true,
+    });
+    fs.writeFileSync(
+      path.join(project, 'components', 'astryx', 'Button', 'Button.tsx'),
+      `export const Button = 1;\n`,
+    );
 
     const result = await runCli(['swizzle', 'Button', '-f'], project);
     expect(result.code).toBe(0);
-    expect(fs.existsSync(path.join(project, 'components', 'astryx', 'astryx-swizzle.json'))).toBe(false);
-    expect(result.stdout).toContain('it already holds Button and no astryx-swizzle.json');
-    expect(result.stdout).toContain('add components/astryx/astryx-swizzle.json to mark it');
+    expect(
+      fs.existsSync(
+        path.join(project, 'components', 'astryx', 'astryx-swizzle.json'),
+      ),
+    ).toBe(false);
+    expect(result.stdout).toContain(
+      'it already holds Button and no astryx-swizzle.json',
+    );
+    expect(result.stdout).toContain(
+      'add components/astryx/astryx-swizzle.json to mark it',
+    );
   });
 
   it('reports a write failure when the output path is a file', async () => {
     buildFakeCore(project);
     writeProjectPackageJson(project);
     fs.writeFileSync(path.join(project, 'notes.txt'), 'notes\n');
-    const result = await runCli(['--json', 'swizzle', 'Button', '--output', 'notes.txt'], project);
+    const result = await runCli(
+      ['--json', 'swizzle', 'Button', '--output', 'notes.txt'],
+      project,
+    );
     expect(result.code).not.toBe(0);
     const envelope = JSON.parse(result.stdout);
     expect(envelope.code).toBe('ERR_WRITE_FAILED');
-    expect(envelope.error).toContain(`Could not write ${path.join('notes.txt', 'Button', 'Button.tsx')}:`);
+    expect(envelope.error).toContain(
+      `Could not write ${path.join('notes.txt', 'Button', 'Button.tsx')}:`,
+    );
     expect(envelope.error).toContain('Nothing was written.');
     expect(envelope.error).not.toContain(project);
-    expect(fs.readFileSync(path.join(project, 'notes.txt'), 'utf-8')).toBe('notes\n');
+    expect(fs.readFileSync(path.join(project, 'notes.txt'), 'utf-8')).toBe(
+      'notes\n',
+    );
   });
 
   it('marks a folder the copy creates, and says what the marker does', async () => {
     buildFakeCore(project);
     writeProjectPackageJson(project);
-    const result = await runCli(['swizzle', 'Button', '--output', 'src/astryx', '-f'], project);
+    const result = await runCli(
+      ['swizzle', 'Button', '--output', 'src/astryx', '-f'],
+      project,
+    );
     expect(result.code).toBe(0);
-    expect(fs.existsSync(path.join(project, 'src', 'astryx', 'astryx-swizzle.json'))).toBe(true);
-    expect(result.stdout).toContain('Marked src/astryx/ with astryx-swizzle.json');
+    expect(
+      fs.existsSync(path.join(project, 'src', 'astryx', 'astryx-swizzle.json')),
+    ).toBe(true);
+    expect(result.stdout).toContain(
+      'Marked src/astryx/ with astryx-swizzle.json',
+    );
   });
 });
 
@@ -288,7 +343,10 @@ describe('swizzle — integration-owned components', () => {
     buildFakeCore(project);
     writeProjectPackageJson(project);
     buildIntegration(project, {issuesUrl: 'https://example.com/meta/issues'});
-    const result = await runCli(['--json', 'swizzle', 'MetaAppShell', '-f'], project);
+    const result = await runCli(
+      ['--json', 'swizzle', 'MetaAppShell', '-f'],
+      project,
+    );
     expect(result.code).toBe(0);
     const env = JSON.parse(result.stdout);
     expect(env.type).toBe('swizzle.copy');
@@ -302,7 +360,9 @@ describe('swizzle — integration-owned components', () => {
     expect(env.data.feedback.issuesUrl).toBe('https://example.com/meta/issues');
 
     const outDir = path.join(project, 'components', 'astryx', 'MetaAppShell');
-    expect(fs.existsSync(path.join(outDir, 'MetaAppShell.doc.mjs'))).toBe(false);
+    expect(fs.existsSync(path.join(outDir, 'MetaAppShell.doc.mjs'))).toBe(
+      false,
+    );
     const out = fs.readFileSync(path.join(outDir, 'MetaAppShell.tsx'), 'utf-8');
     // The helper is not exported, so the copy carries it in the same layout.
     expect(out).toContain(`from '../utils/foo'`);
@@ -323,12 +383,18 @@ describe('swizzle — integration-owned components', () => {
     });
     // A helper at the package root, beside `components/`.
     fs.mkdirSync(path.join(intDir, 'lib'), {recursive: true});
-    fs.writeFileSync(path.join(intDir, 'lib', 'helper.ts'), `export const helper = 2;\n`);
+    fs.writeFileSync(
+      path.join(intDir, 'lib', 'helper.ts'),
+      `export const helper = 2;\n`,
+    );
     fs.writeFileSync(
       path.join(compDir, 'MetaAppShell.tsx'),
       `import {helper} from '../../lib/helper';\nexport function MetaAppShell() { return helper; }\n`,
     );
-    const result = await runCli(['--json', 'swizzle', 'MetaAppShell', '-f'], project);
+    const result = await runCli(
+      ['--json', 'swizzle', 'MetaAppShell', '-f'],
+      project,
+    );
     expect(result.code).toBe(0);
     const env = JSON.parse(result.stdout);
     const output = path.join(project, 'components', 'astryx');
@@ -350,12 +416,18 @@ describe('swizzle — integration-owned components', () => {
       issuesUrl: 'https://example.com/meta/issues',
     });
     fs.mkdirSync(path.join(intDir, 'utils'), {recursive: true});
-    fs.writeFileSync(path.join(intDir, 'utils', 'foo.ts'), `export const root = 3;\n`);
+    fs.writeFileSync(
+      path.join(intDir, 'utils', 'foo.ts'),
+      `export const root = 3;\n`,
+    );
     fs.writeFileSync(
       path.join(compDir, 'MetaAppShell.tsx'),
       `import x from '../utils/foo';\nimport {root} from '../../utils/foo';\nexport function MetaAppShell() { return x + root; }\n`,
     );
-    const result = await runCli(['--json', 'swizzle', 'MetaAppShell', '-f'], project);
+    const result = await runCli(
+      ['--json', 'swizzle', 'MetaAppShell', '-f'],
+      project,
+    );
     expect(result.code).toBe(0);
     const output = path.join(project, 'components', 'astryx');
     const out = fs.readFileSync(
@@ -393,7 +465,10 @@ describe('swizzle — integration-owned components', () => {
       path.join(compDir, 'MetaAppShell.tsx'),
       `import '../../styles.css';\nexport function MetaAppShell() { return null; }\n`,
     );
-    const result = await runCli(['--json', 'swizzle', 'MetaAppShell', '-f'], project);
+    const result = await runCli(
+      ['--json', 'swizzle', 'MetaAppShell', '-f'],
+      project,
+    );
     expect(result.code).toBe(0);
     const env = JSON.parse(result.stdout);
     const out = fs.readFileSync(
@@ -418,7 +493,10 @@ describe('swizzle — integration-owned components', () => {
     });
     const ownerDir = path.join(path.dirname(compDir), 'privateAttributes');
     fs.mkdirSync(ownerDir, {recursive: true});
-    fs.writeFileSync(path.join(ownerDir, 'row.stylex.ts'), `export const row = 1;\n`);
+    fs.writeFileSync(
+      path.join(ownerDir, 'row.stylex.ts'),
+      `export const row = 1;\n`,
+    );
     fs.writeFileSync(
       path.join(compDir, 'MetaAppShell.tsx'),
       `import {row} from '../privateAttributes/row.stylex';\nexport function MetaAppShell() { return row; }\n`,
@@ -448,35 +526,82 @@ describe('swizzle — integration-owned components', () => {
     buildFakeCore(project);
     writeProjectPackageJson(project);
     const {intDir} = buildIntegration(project, {componentName: 'Foo'});
-    fs.writeFileSync(path.join(intDir, 'package.json'), JSON.stringify({name: '@test/meta', version: '1.2.3', exports: exportsField}));
-    fs.writeFileSync(path.join(intDir, 'components', 'index.ts'), `export {Bar} from './Bar/Bar';\n`);
+    fs.writeFileSync(
+      path.join(intDir, 'package.json'),
+      JSON.stringify({
+        name: '@test/meta',
+        version: '1.2.3',
+        exports: exportsField,
+      }),
+    );
+    fs.writeFileSync(
+      path.join(intDir, 'components', 'index.ts'),
+      `export {Bar} from './Bar/Bar';\n`,
+    );
     const bar = path.join(intDir, 'components', 'Bar');
     fs.mkdirSync(bar, {recursive: true});
-    fs.writeFileSync(path.join(bar, 'Bar.tsx'), `export function Bar() { return null; }\n`);
-    fs.writeFileSync(path.join(bar, 'index.ts'), `export {Bar} from './Bar';\n`);
-    fs.writeFileSync(path.join(intDir, 'components', 'Foo', 'Foo.tsx'), `import {Bar} from '../Bar';\nexport function Foo() { return Bar(); }\n`);
+    fs.writeFileSync(
+      path.join(bar, 'Bar.tsx'),
+      `export function Bar() { return null; }\n`,
+    );
+    fs.writeFileSync(
+      path.join(bar, 'index.ts'),
+      `export {Bar} from './Bar';\n`,
+    );
+    fs.writeFileSync(
+      path.join(intDir, 'components', 'Foo', 'Foo.tsx'),
+      `import {Bar} from '../Bar';\nexport function Foo() { return Bar(); }\n`,
+    );
     const result = await runCli(['--json', 'swizzle', 'Foo', '-f'], project);
     expect(result.code).toBe(0);
-    return fs.readFileSync(path.join(project, 'components', 'astryx', 'Foo', 'Foo.tsx'), 'utf-8');
+    return fs.readFileSync(
+      path.join(project, 'components', 'astryx', 'Foo', 'Foo.tsx'),
+      'utf-8',
+    );
   }
 
   it.each([
-    ['a `./*` pattern with a source condition', {'./*': {source: './components/*/index.ts', default: './dist/*/index.js'}}],
+    [
+      'a `./*` pattern with a source condition',
+      {
+        './*': {
+          source: './components/*/index.ts',
+          default: './dist/*/index.js',
+        },
+      },
+    ],
     ['a `./*` pattern with a plain string', {'./*': './components/*/index.ts'}],
     ['a plain-string subpath', {'./Bar': './components/Bar/index.ts'}],
-    ['a `./*` pattern whose target repeats `*`', {'./*': './components/*/*.tsx'}],
-    ['a `./*` pattern with a fallback array', {'./*': ['./components/*/index.ts']}],
-  ])('imports another public component from the package when exports use %s', async (_shape, exportsField) => {
-    expect(await swizzleFooBesideBar(exportsField)).toContain(`from '@test/meta/Bar'`);
-  });
+    [
+      'a `./*` pattern whose target repeats `*`',
+      {'./*': './components/*/*.tsx'},
+    ],
+    [
+      'a `./*` pattern with a fallback array',
+      {'./*': ['./components/*/index.ts']},
+    ],
+  ])(
+    'imports another public component from the package when exports use %s',
+    async (_shape, exportsField) => {
+      expect(await swizzleFooBesideBar(exportsField)).toContain(
+        `from '@test/meta/Bar'`,
+      );
+    },
+  );
 
   it('imports from the package root when exports are a single condition object', async () => {
-    const out = await swizzleFooBesideBar({source: './components/index.ts', default: './dist/index.js'});
+    const out = await swizzleFooBesideBar({
+      source: './components/index.ts',
+      default: './dist/index.js',
+    });
     expect(out).toContain(`from '@test/meta';`);
   });
 
   it('copies a component whose subpath exports block beside a `./*` pattern', async () => {
-    const out = await swizzleFooBesideBar({'./*': {source: './components/*/index.ts'}, './Bar': null});
+    const out = await swizzleFooBesideBar({
+      './*': {source: './components/*/index.ts'},
+      './Bar': null,
+    });
     expect(out).not.toContain('@test/meta');
     expect(out).toContain(`from '../Bar`);
   });
@@ -632,7 +757,10 @@ describe('swizzle — integration-owned components', () => {
     buildFakeCore(project);
     writeProjectPackageJson(project);
     buildIntegration(project, {issuesUrl: null});
-    const result = await runCli(['--json', 'swizzle', 'MetaAppShell', '-f'], project);
+    const result = await runCli(
+      ['--json', 'swizzle', 'MetaAppShell', '-f'],
+      project,
+    );
     expect(result.code).toBe(0);
     const env = JSON.parse(result.stdout);
     expect(env.type).toBe('swizzle.copy');
@@ -713,8 +841,8 @@ describe('swizzle — ambiguous ownership', () => {
 });
 
 /**
- * Build a fake @astryxdesign/core with a component that imports StyleX directly
- * (so the swizzle StyleX-build note should fire) and one that doesn't.
+ * Build a fake @astryxdesign/core with a component whose source imports StyleX
+ * (the copy keeps that import) and one that does not.
  */
 function buildStyleXCore(project) {
   const core = path.join(project, 'node_modules', '@astryxdesign', 'core');
@@ -758,46 +886,62 @@ function buildStyleXCore(project) {
   return core;
 }
 
-describe('swizzle — StyleX build setup note (#3373)', () => {
-  it('reports usesStyleX and prints a setup note for StyleX components', async () => {
+describe('swizzle — the stylesheet a copy needs (#3373)', () => {
+  it('names the stylesheet and prints its import for a StyleX component', async () => {
     buildStyleXCore(project);
     writeProjectPackageJson(project);
 
-    // JSON payload carries the machine-readable flag.
-    const jsonResult = await runCli(['--json', 'swizzle', 'Styled', '-f'], project);
+    // JSON payload carries the sheet the copy's class maps read.
+    const jsonResult = await runCli(
+      ['--json', 'swizzle', 'Styled', '-f'],
+      project,
+    );
     expect(jsonResult.code).toBe(0);
     const env = JSON.parse(jsonResult.stdout);
-    expect(env.data.usesStyleX).toBe(true);
+    expect(env.data.stylesheet).toBe('@astryxdesign/core/astryx-tailwind.css');
 
-    // Human output surfaces the compiler requirement + Next.js caveat.
+    // Human output names the one import that makes the copy render.
     const humanResult = await runCli(['swizzle', 'Styled', '-f'], project);
     expect(humanResult.code).toBe(0);
-    expect(humanResult.stdout).toMatch(/StyleX compiler/i);
-    expect(humanResult.stdout).toMatch(/importing them throws "Unexpected 'stylex\.create' call at runtime"/);
-    expect(humanResult.stdout).not.toMatch(/unstyled/i);
-    expect(humanResult.stdout).toMatch(/next\/font/i);
-    // The fixture has no `astryx` bin installed, so the note names the scoped package.
-    expect(humanResult.stdout).toMatch(/@astryxdesign\/cli@\S+ docs styling/);
-  });
-
-  // The note quotes what StyleX does without a compiler; this keeps it true.
-  it('matches what the StyleX runtime does when styles are not compiled', () => {
-    const stylex = createRequire(CORE_PACKAGE)('@stylexjs/stylex');
-    expect(() => stylex.create({root: {color: 'red'}})).toThrow(
-      /Unexpected 'stylex\.create' call at runtime/,
+    expect(humanResult.stdout).toContain(
+      "import '@astryxdesign/core/astryx-tailwind.css';",
+    );
+    // No build setup is asked for: Core ships the sheet the copy reads. The
+    // only StyleX mention left is the npm package the copy imports.
+    expect(humanResult.stdout).not.toMatch(
+      /require a StyleX compiler|Unexpected 'stylex.create'/,
     );
   });
-  it('does not print the StyleX note for components without StyleX', async () => {
+
+  // Components still on StyleX keep their style modules in the copy.
+  it('keeps a StyleX module in the copy', async () => {
     buildStyleXCore(project);
     writeProjectPackageJson(project);
-    const jsonResult = await runCli(['--json', 'swizzle', 'Plain', '-f'], project);
+    const result = await runCli(['--json', 'swizzle', 'Styled', '-f'], project);
+    expect(result.code).toBe(0);
+    const out = fs.readFileSync(
+      path.join(project, 'components', 'astryx', 'Styled', 'Styled.tsx'),
+      'utf-8',
+    );
+    expect(out).toContain("import * as stylex from '@stylexjs/stylex';");
+  });
+
+  it('names the same stylesheet for a component without StyleX', async () => {
+    buildStyleXCore(project);
+    writeProjectPackageJson(project);
+    const jsonResult = await runCli(
+      ['--json', 'swizzle', 'Plain', '-f'],
+      project,
+    );
     expect(jsonResult.code).toBe(0);
     const env = JSON.parse(jsonResult.stdout);
-    expect(env.data.usesStyleX).toBe(false);
+    expect(env.data.stylesheet).toBe('@astryxdesign/core/astryx-tailwind.css');
 
     const humanResult = await runCli(['swizzle', 'Plain', '-f'], project);
     expect(humanResult.code).toBe(0);
-    expect(humanResult.stdout).not.toMatch(/StyleX compiler/i);
+    expect(humanResult.stdout).not.toMatch(
+      /require a StyleX compiler|Unexpected 'stylex.create'/,
+    );
   });
 });
 describe('swizzle — shared modules outside the component folder (spec:AST-110 FR4)', () => {
@@ -805,7 +949,9 @@ describe('swizzle — shared modules outside the component folder (spec:AST-110 
     const core = path.join(project, 'node_modules', '@astryxdesign', 'core');
     const rowDir = path.join(core, 'src', 'Row');
     fs.mkdirSync(rowDir, {recursive: true});
-    fs.mkdirSync(path.join(core, 'src', 'privateAttributes'), {recursive: true});
+    fs.mkdirSync(path.join(core, 'src', 'privateAttributes'), {
+      recursive: true,
+    });
     fs.mkdirSync(path.join(core, 'src', 'motion'), {recursive: true});
     fs.writeFileSync(
       path.join(core, 'package.json'),
