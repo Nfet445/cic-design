@@ -50,3 +50,22 @@ enough to move, and they are the place to start.
 - The attribute spellings here are private: owner modules under
   `packages/core/src/privateAttributes/` write them, and class text gets one narrow
   `eslint-disable @astryx/no-raw-private-attribute` naming its owner.
+
+## Comments
+
+Measured before starting, so the next agent does not repeat the analysis:
+
+- `ownRingContainerStyles` cannot become a plain utility. Its rest state writes
+  `outline-width: 0` / `outline-style: none` on the reorder row to keep the row's own focus ring
+  off while the handle rings itself. That row ring comes from `focusOutlineStyles.focusVisible`
+  inside `Item`, which is unlayered, and an unlayered rule beats any `@layer astryx-base`
+  utility at every order. A class version would have to spell `!important`, which then beats the
+  theme too. It becomes movable when the ring application inside `Item`/`Layer` is a class as
+  well, not when the map alone changes.
+- `rowPressPaintStyles.radioRow` is one custom property gated on `:active:not(…)` plus a
+  `:not(:has(…))` over nine nested-control selectors, with a coarse-pointer arm. A class can
+  spell it, but `packages/core/src/RadioList/RadioList.test.tsx:1176` `declaresRowPress` reads the
+  injected StyleX rule text, so the test has to move first.
+- `rowPressLayerStyles.cell` remains the variant-per-combination case the header describes.
+- `press.stylex.ts` `checkboxRow` is already gone: `privateAttributes/pressClasses.ts` carries it
+  for `CheckboxInput`.
