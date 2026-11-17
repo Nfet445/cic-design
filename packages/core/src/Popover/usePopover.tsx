@@ -24,12 +24,6 @@ import {watchOutsidePans} from '../Layer/outsidePanClaim';
 import {useFocusTrapInternal} from '../hooks/useFocusTrap';
 import {LayerDepthProvider} from '../Layer/LayerDepthContext';
 import type {StyleXStyles} from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  shadowVars,
-} from '../theme/tokens.stylex';
 import {Button} from '../Button';
 import {
   FOCUSABLE_SELECTOR,
@@ -45,6 +39,12 @@ import {themeProps} from '../utils/themeProps';
 import {paddingStyles} from '../Layout/paddingStyles.stylex';
 import type {SpacingStep} from '../utils/types';
 import {stableClassName} from '../naming';
+import {tw} from '../utils/tw';
+import {
+  popoverCloseButtonWrapperClassName,
+  popoverContentWrapperClassName,
+  popoverSurfaceClassName,
+} from './popoverClasses';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -87,70 +87,6 @@ function focusFirstContentControl(container: HTMLElement): boolean {
   }
   return false;
 }
-
-const styles = stylex.create({
-  // Default popover surface — background, radius, shadow.
-  // Applied automatically unless hasSurface is false.
-  // Consumers that need a raw positioned layer should use useLayer instead.
-  surface: {
-    backgroundColor: colorVars['--color-background-popover'],
-    '--_popover-radius': radiusVars['--radius-container'],
-    borderRadius: 'var(--_popover-radius)',
-    boxShadow: shadowVars['--shadow-low'],
-    // Forced colors removes box-shadow, which is this surface's only edge.
-    borderWidth: {
-      default: null,
-      '@media (forced-colors: active)': '1px',
-    },
-    borderStyle: {
-      default: null,
-      '@media (forced-colors: active)': 'solid',
-    },
-    borderColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-  },
-  // Focus trap container. Shared :focus-visible styling keeps semantic focus
-  // placement independent of pointer/keyboard indication.
-  contentWrapper: {
-    position: 'relative',
-  },
-  // Hidden close button wrapper - sr-only until focused, then positioned below
-  // popover. Inline-axis centering (+ the translateY(100%) that drops it below
-  // the surface) comes from rtlStyles.centerInline('100%') at the call site —
-  // it centers correctly in both LTR and RTL.
-  closeButtonWrapper: {
-    position: 'absolute',
-    bottom: 0,
-    zIndex: 1,
-    // sr-only by default
-    width: {
-      default: 1,
-      ':focus-within': 'auto',
-    },
-    height: {
-      default: 1,
-      ':focus-within': 'auto',
-    },
-    overflow: {
-      default: 'hidden',
-      ':focus-within': 'visible',
-    },
-    clipPath: {
-      default: 'inset(50%)',
-      ':focus-within': 'none',
-    },
-    pointerEvents: {
-      default: 'none',
-      ':focus-within': 'auto',
-    },
-    paddingBlockStart: {
-      default: 0,
-      ':focus-within': spacingVars['--spacing-1'],
-    },
-  },
-});
 
 /**
  * Options for usePopover
@@ -690,10 +626,16 @@ function usePopoverImplementation(
       // `style`, not as more props — so the surface's classes are composed
       // into one props object before merging with the StyleX result.
       const surfaceProps = themeProps('popover');
-      const surfaceClassName =
+      // Focus trap container. Shared :focus-visible styling keeps semantic
+      // focus placement independent of pointer/keyboard indication.
+      const surfaceClassName = tw(
+        surfaceProps.className,
         surfaceTarget != null && surfaceTarget !== 'popover'
-          ? `${surfaceProps.className} ${stableClassName(surfaceTarget)}`
-          : surfaceProps.className;
+          ? stableClassName(surfaceTarget)
+          : undefined,
+        popoverContentWrapperClassName,
+        hasSurface && popoverSurfaceClassName,
+      );
 
       return layer.render(
         <LayerDepthProvider>
@@ -708,8 +650,6 @@ function usePopoverImplementation(
             {...mergeProps(
               {...surfaceProps, className: surfaceClassName},
               focusOutlineProps.focusVisible(
-                styles.contentWrapper,
-                hasSurface && styles.surface,
                 padding != null && paddingStyles[padding],
                 xstyle,
               ),
@@ -720,9 +660,12 @@ function usePopoverImplementation(
             {hasCloseButton && (
               <div
                 data-astryx-popover-fallback-close=""
-                {...stylex.props(
-                  styles.closeButtonWrapper,
-                  rtlStyles.centerInline('100%'),
+                {...mergeProps(
+                  stylex.props(rtlStyles.centerInline('100%')),
+                  // Inline-axis centering (+ the translateY(100%) that drops it
+                  // below the surface) comes from rtlStyles.centerInline, which
+                  // centers correctly in LTR and RTL.
+                  tw(popoverCloseButtonWrapperClassName),
                 )}>
                 <Button
                   variant="secondary"

@@ -39,7 +39,6 @@ import {DropdownMenu} from '@astryxdesign/core/DropdownMenu';
 import {MoreMenu} from '@astryxdesign/core/MoreMenu';
 import {Toolbar} from '@astryxdesign/core/Toolbar';
 import {useResizable, ResizeHandle} from '@astryxdesign/core/Resizable';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {useToast} from '@astryxdesign/core/Toast';
 import {useClipboard} from '@astryxdesign/core/hooks';
 
@@ -348,7 +347,7 @@ function ArtifactCard({onOpen}: {onOpen: () => void}) {
           icon={ChevronRightIcon}
           size="sm"
           color="secondary"
-          xstyle={rtlStyles.mirror}
+          className="rtl:[transform:scaleX(-1)]"
         />
       </HStack>
     </ClickableCard>

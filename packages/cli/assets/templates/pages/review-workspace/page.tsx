@@ -35,7 +35,6 @@ import {EmptyState} from '@astryxdesign/core/EmptyState';
 import {BottomSheet} from '@astryxdesign/core/BottomSheet';
 import {MoreMenu} from '@astryxdesign/core/MoreMenu';
 import {useToast} from '@astryxdesign/core/Toast';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {useMediaQuery} from '@astryxdesign/core/hooks';
 import {
   ArrowDownTrayIcon,
@@ -372,7 +371,9 @@ export default function ReviewWorkspaceTemplate() {
       <Button
         label="Previous"
         variant="ghost"
-        icon={<Icon icon={ArrowLeftIcon} xstyle={rtlStyles.mirror} />}
+        icon={
+          <Icon icon={ArrowLeftIcon} className="rtl:[transform:scaleX(-1)]" />
+        }
         isIconOnly={isNarrow}
         isDisabled={index === 0}
         onClick={previous}
@@ -382,7 +383,9 @@ export default function ReviewWorkspaceTemplate() {
       <Button
         label="Save & next"
         variant="primary"
-        icon={<Icon icon={ArrowRightIcon} xstyle={rtlStyles.mirror} />}
+        icon={
+          <Icon icon={ArrowRightIcon} className="rtl:[transform:scaleX(-1)]" />
+        }
         isDisabled={draft.score === ''}
         onClick={saveAndNext}
       />

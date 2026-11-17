@@ -28,6 +28,8 @@ const GUTTER_OWNERS = new Set([
   'Toast/ToastViewport.tsx',
   'BottomSheet/BottomSheetPanel.tsx',
   'Drawer/Drawer.tsx',
+  'Dialog/dialogFullscreenSafeArea.stylex.ts',
+  'Drawer/drawerContentSafeArea.stylex.ts',
   'Stepper/Step.tsx',
   'Tokenizer/useEndLaneReserve.ts',
 ]);

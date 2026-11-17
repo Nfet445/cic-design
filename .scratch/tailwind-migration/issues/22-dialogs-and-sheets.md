@@ -1,6 +1,6 @@
 # dialogs and sheets
 
-Status: partly done — `Dialog`, `DialogHeader`, `AlertDialog`, `Drawer`, its header, its scrim and its content safe area, `MobileNav` and the bottom-sheet edge tint are classes. What is left is `Popover/` (this window) and the `BottomSheet` host plus `Lightbox`, which moved to ticket 50.
+Status: done — `Dialog`, `DialogHeader`, `AlertDialog`, `Drawer` with its header, scrim and content safe area, `MobileNav`, the bottom-sheet edge tint and `Popover` are classes. `BottomSheet` host and `Lightbox` live in ticket 50.
 Blocked by: 11,17
 Wave: 7
 Family: `family:overlay-dismissal`
@@ -364,3 +364,77 @@ Left for the next window, unchanged by this one:
   `stylex.firstThatWorks` over `layerViewportInset` constants, and a class
   literal cannot import one, so the constant's value has to be written into the
   class and the coupling recorded here.
+
+### Fifth window — `Popover/` lands, ticket closes (`e82fdcdc6`, merge `074dacff7`)
+
+- **New file `Popover/popoverClasses.ts`**, built the way
+  `Dialog/dialogClasses.ts` is: whole literals through `tw()`, exported as
+  `popoverAnchorWrapperClassName`, `popoverSurfaceClassName`,
+  `popoverContentWrapperClassName`, `popoverViewportFitClassName({isScrollable})`,
+  `popoverExplicitWidthClassName`, `popoverMatchTriggerClassName`,
+  `popoverCloseButtonWrapperClassName` and `popoverSheetFallbackCloseClassName`,
+  plus the three variable names.
+- **`usePopover.tsx` lost its whole `stylex.create` map** (was `:91`, 62 lines).
+  The surface skin, the `relative` focus-trap box and the hidden close wrapper
+  now join one `tw()` string in the surface props (`usePopover.tsx:668-690`);
+  the close wrapper keeps `rtlStyles.centerInline('100%')` through `mergeProps`,
+  so RTL centering is unchanged. `colorVars`/`radiusVars`/`shadowVars`/
+  `spacingVars` left the imports with it; `focusOutlineProps.focusVisible` and
+  `paddingStyles` stay StyleX, as the seam note above said they must.
+- **`Popover.tsx` lost its `stylex.create` map** (was `:395`, 78 lines) and now
+  imports `tw` and the class constants. The viewport-fit class rides
+  `usePopoverInternal`'s `className` beside `layerAnimations[placement]`; the
+  two sizing classes ride `popover.render(...)`'s `className` on the layer
+  element, with `--astryx-popover-max-inline-size` / `-max-block-size` /
+  `-width` built into one `Record<string, string>` (`Popover.tsx:1044-1053`) and
+  passed as `render`'s `style`, which `useLayer` merges last
+  (`useLayer.tsx:2554`). The layer box passes them down to the surface by
+  inheritance, so one class serves every value and nothing lands inline.
+- **The anchor chain is one arm**, as the seam note predicted, and the reason
+  sits beside the class: an engine without anchor positioning parses the arm
+  and its successors to nothing alike, leaving `min-width: auto`.
+- **`usePopover.forcedColorsEdge.test.tsx` is no longer a CSS-sheet walk.** It
+  asserted over `document.styleSheets`, which never holds the Tailwind sheet in
+  jsdom, so after the move it would have been vacuous — and its regex broke on
+  the arbitrary-value class names (`Invalid regular expression … Range out of
+order in character class`). It now reads the rendered surface's class list
+  and requires every border utility on it to be a `forced-colors:` one. That is
+  the same invariant the StyleX rule carried (`borderWidth: {default: null}`),
+  proved without a stylesheet. `border-0`/`border-none` were kept out of the
+  surface class for exactly this reason: they would override a caller's own
+  border outside forced colors.
+- **Docs and registry:** three `private` entries in `Popover.doc.mjs`'s
+  `theming.vars` (both the English and the `docsZh` mirror) and three lines in
+  `derivedVarRegistry.test.ts`'s `VARS_WITHOUT_DERIVED_MAPPING` with the reason.
+- **Sheet test:** the eight classes joined `familyClassNames()`
+  (`tailwindStylesheet.source-build.test.mjs:70-79` import, `:821-833`
+  coverage), and the budget comment now reads the measured number: **1254**
+  rules against the 1260 ceiling.
+- **One accepted behaviour delta, recorded:** `surfaceViewportFit` carried
+  `firstThatWorks` fallbacks built on `100vw`/`100vh` for an engine without
+  `env()`. The class reads the cap from the variable, so there is one value and
+  no fallback arm: an engine that cannot parse `env()` gets no cap at all.
+  `env()` has shipped since 2018 in every engine this library supports.
+- **One pre-existing red gate fixed on the way:** `layerViewportInset.test.ts`'s
+  gutter-ownership test flagged `Dialog/dialogFullscreenSafeArea.stylex.ts` and
+  `Drawer/drawerContentSafeArea.stylex.ts` — both real gutter owners that simply
+  were not in `GUTTER_OWNERS`. Two lines, no behaviour change.
+
+This window's verification (merge `074dacff7`):
+
+- `node packages/core/scripts/build-css-tailwind.mjs` — 175.8 kB, sheet
+  rebuilt.
+- `pnpm exec vitest run packages/core/src/Popover packages/core/src/Layer
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
+packages/core/src/theme/derivedVarRegistry.test.ts` — **1051 passed**, 39
+  files.
+- `pnpm exec eslint packages/core/src/Popover` — 0 errors, 14 warnings, all
+  pre-existing non-null assertions in `PopoverTouchMotion.interaction.browser.spec.ts`.
+- `pnpm -F @astryxdesign/core typecheck` — clean.
+- The merge of `poc/tailwind-layout-primitives` conflicted only in the sheet
+  test's budget comment (my popover sentence against `poc`'s Skeleton sentence):
+  both kept, `node --check` clean, sheet re-measured to 1254, suite green again.
+
+Nothing is left in this ticket's `Popover/` scope. `BottomSheet/` and
+`Lightbox/` are ticket 50's, with the measured cost above standing as the note
+for whoever opens it.
