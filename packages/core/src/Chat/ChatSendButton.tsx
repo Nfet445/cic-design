@@ -26,6 +26,8 @@ import {useChatComposerContext} from './ChatContext';
 
 import type {BaseProps} from '../BaseProps';
 import {composeEventHandlers, mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {chatSendButtonClassName} from './chatClasses';
 import {themeProps} from '../utils/themeProps';
 import {
   registerEnglishFallback,
@@ -56,17 +58,6 @@ export interface ChatSendButtonProps extends BaseProps<HTMLButtonElement> {
   /** Button size. @default 'md' */
   size?: 'sm' | 'md';
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    borderRadius: 'var(--_button-radius, var(--radius-full))',
-    flexShrink: 0,
-  },
-});
 
 // =============================================================================
 // Component
@@ -126,8 +117,12 @@ export function ChatSendButton(props: ChatSendButtonProps): ReactNode {
       isDisabled={!isStopShown && isDisabled}
       onClick={composeEventHandlers(isStopShown ? onStop : handleSend, onClick)}
       {...rest}
-      {...mergeProps(themeProps('chat-send-button'), {className}, style)}
-      xstyle={[styles.root, xstyle]}
+      {...mergeProps(
+        themeProps('chat-send-button'),
+        tw(chatSendButtonClassName, xstyle && stylex.props(xstyle).className),
+        className,
+        style,
+      )}
     />
   );
 }
