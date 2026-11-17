@@ -1,6 +1,6 @@
 # layout-regions browser page
 
-Status: needs-info
+Status: done
 Blocked by: —
 Wave: 3
 Ticket: 39
@@ -22,6 +22,19 @@ Register `internal/vibe-tests/environments/project-astryx-tailwind/pages/layout-
 1. Decide whether `Section` should forward consumer props to one node only; if it should forward to the outer one, `readElements` needs no change.
 2. Make the fixture tag elements the page owns.
 3. Register the page in `FAMILY_PAGES` and get `--check` green.
+
+## Result
+
+Registered and green. The four checks the ticket called failing all pass
+against the sheets this branch builds, so the defect it described is gone:
+`Section` spreads consumer props on its outer node only, and the outer node
+carries the inline `--astryx-section-width`. The page was written before
+`Section` and `Toolbar` moved to class maps; once they did, the fixture's
+`data-astryx-value` landed on one node and every check resolved.
+
+`internal/vibe-tests/src/render-pages.ts` lists the page in `FAMILY_PAGES`
+between `layout-primitives` and `buttons`; `--check` exits 0 and prints
+nothing, and `pnpm exec vitest run internal/vibe-tests/src` passes 62 tests.
 
 ## Done when
 

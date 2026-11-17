@@ -24,6 +24,7 @@ import * as path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import * as buttons from '../environments/project-astryx-tailwind/pages/buttons';
 import * as layoutPrimitives from '../environments/project-astryx-tailwind/pages/layout-primitives';
+import * as layoutRegions from '../environments/project-astryx-tailwind/pages/layout-regions';
 import {
   elementVariables,
   readBuiltValues,
@@ -57,7 +58,11 @@ export interface FamilyPageModule {
   FamilyPage: ComponentType<{rows: ResolvedCheck[]}>;
 }
 
-export const FAMILY_PAGES: FamilyPageModule[] = [layoutPrimitives, buttons];
+export const FAMILY_PAGES: FamilyPageModule[] = [
+  layoutPrimitives,
+  layoutRegions,
+  buttons,
+];
 
 /** A rendered page, its fixture markup, and the checks it resolved. */
 export interface RenderedPage {
