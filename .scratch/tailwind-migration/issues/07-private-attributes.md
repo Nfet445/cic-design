@@ -1,7 +1,7 @@
 # private attributes
 
 Status: blocked
-Blocked by: 10, 14, 15, 17, 21, 23
+Blocked by: 42, 48
 Wave: 7
 Ticket: 07
 Parent: `00-epic-stylex-to-tailwind-4`
@@ -32,6 +32,8 @@ This ticket also owns the last `stylex.when.ancestor` consumer that a class cann
 - `node packages/core/scripts/build-css-tailwind.mjs`
 
 ## Notes
+
+- Current `stylex.when.ancestor` sites, measured on the integration branch after waves 3–7: `Indicator/indicatorHover.stylex.ts`, `Indicator/indicator.markers.stylex.ts`, `privateAttributes/press.stylex.ts`, `Overlay/OverlayScrim.tsx`, `Switch/switchHoverPress.stylex.ts`, `Chat/ChatComposerDrawer.tsx`, `Table/table.stylex.ts`, `Table/plugins/rowExpansion/useTableRowExpansion.tsx`, `Table/plugins/stickyColumns/useTableStickyColumns.tsx`. The Indicator, press and Overlay sites are ready to flip now, because their consumers render classes. The Switch, Chat and Table sites keep `defineMarker` alive, so "no `defineMarker` remains" cannot hold until ticket 42 (table plugin styles) and ticket 48 (chat composer drawer) finish, and until the Switch press survivor is revisited.
 
 - The compiler refuses an attribute selector as an ancestor condition: `Attribute selector must end with "]"`, and the marker argument must be a `defineMarker()` value. That is the whole reason this ticket waits.
 - Scope consumers after wave 5: `Indicator/{CheckboxIndicator,RadioIndicator}.tsx` (six `when.ancestor` calls each), `CheckboxInput/CheckboxInput.tsx:516` and `:125`, `RadioList/RadioListItem.tsx:402`, `privateAttributes/press.stylex.ts:453/:469-470`, plus the re-export `Indicator/index.ts:32`.
