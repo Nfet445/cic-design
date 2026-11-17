@@ -36,12 +36,6 @@ import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useEntryErrorBehavior} from '../Field/useEntryErrorBehavior';
 import type {EntryErrorBehavior} from '../FormLayout/FormLayoutContext';
 import {
-  colorVars,
-  sizeVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
-import {
   Field,
   InputClearButton,
   type InputStatus,
@@ -100,67 +94,19 @@ import {
   useComponentTranslator,
 } from '../i18n/useComponentTranslator';
 import english from '../i18n/generated-english/TimeInput/TimeInput.generated';
+import {
+  timeInputClassName,
+  timeInputIconClassName,
+  timeInputSizeClassName,
+  type TimeInputSize,
+} from './timeInputClasses';
+import {tw} from '../utils/tw';
 
 registerEnglishFallback(english);
 
 const TOUCH_POINTER_QUERY = '(pointer: coarse)';
 
-const styles = stylex.create({
-  icon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  input: {
-    display: 'block',
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    outline: 'none',
-    '::placeholder': {
-      color: colorVars['--color-text-secondary'],
-    },
-  },
-  inputDisabled: {
-    cursor: 'default',
-  },
-  inputInvalid: {
-    color: colorVars['--color-text-secondary'],
-  },
-});
-
-const sizeStyles = stylex.create({
-  sm: {
-    height: sizeVars['--size-element-sm'],
-    minWidth: 120,
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-    minWidth: 120,
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
-    minWidth: 120,
-  },
-});
-
-export type TimeInputSize = keyof typeof sizeStyles;
+export type {TimeInputSize};
 
 export type TimeInputHourFormat = '12h' | '24h';
 
@@ -834,7 +780,7 @@ function TimeField({
         stylex.props(
           inputWrapperStyles.base,
           inputWrapperStyles.textField,
-          sizeStyles[size],
+
           isDisabled && inputWrapperStyles.disabled,
           isDisabled && inputDisabledFocusStyles.withinRing,
           fieldStatus && inputStatusBorderStyles[fieldStatus.type],
@@ -845,7 +791,7 @@ function TimeField({
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
-        controlClassName,
+        tw(timeInputSizeClassName({size}), controlClassName),
         controlStyle,
       )}>
       {inputGroup && <VisuallyHidden id={inputLabelID}>{label}</VisuallyHidden>}
@@ -892,7 +838,7 @@ function TimeField({
         />
       ) : (
         <>
-          <div {...stylex.props(styles.icon)}>
+          <div className={timeInputIconClassName}>
             <Icon icon="clock" size="sm" color="secondary" />
           </div>
           <input
@@ -929,11 +875,10 @@ function TimeField({
             }
             aria-busy={isBusy || undefined}
             aria-labelledby={controlLabelledBy}
-            {...stylex.props(
-              styles.input,
-              isDisabled && styles.inputDisabled,
-              typedTime.isRejected && styles.inputInvalid,
-            )}
+            className={timeInputClassName({
+              isDisabled,
+              isRejected: typedTime.isRejected,
+            })}
           />
           {name != null && typedTime.isNameOnHiddenInput && (
             <input

@@ -55,6 +55,29 @@ import {
   textInputClassName,
   textInputHeightClassName,
 } from '../TextInput/textInputClasses';
+import {
+  dateRangeInputCalendarPaneClassName,
+  dateRangeInputIconButtonClassName,
+  dateRangeInputPopoverLayoutClassName,
+  dateRangeInputPopoverScrollClassName,
+  dateRangeInputPresetButtonClassName,
+  dateRangeInputPresetSidebarClassName,
+  dateRangeInputSizeClassName,
+  dateRangeInputTriggerClassName,
+} from '../DateRangeInput/dateRangeInputClasses';
+import {
+  timeInputClassName,
+  timeInputIconClassName,
+  timeInputSizeClassName,
+} from '../TimeInput/timeInputClasses';
+import {
+  touchTimeFieldFooterClassName,
+  touchTimeFieldIconButtonClassName,
+  touchTimeFieldInputClassName,
+  touchTimeFieldSheetBodyClassName,
+  touchTimeFieldSizeClassName,
+  touchTimeFieldWheelsClassName,
+} from '../TimeInput/touchTimeFieldClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
@@ -543,6 +566,38 @@ function familyClassNames() {
   for (const size of ['sm', 'md', 'lg']) {
     add(textAreaSizeClassName(size));
   }
+  // The date range field: the closed trigger, its calendar button, the
+  // popover body and the preset column.
+  for (const size of ['sm', 'md', 'lg']) {
+    add(dateRangeInputSizeClassName({size}));
+    add(timeInputSizeClassName({size}));
+    add(touchTimeFieldSizeClassName({size}));
+  }
+  for (const hasValue of [false, true]) {
+    for (const isDisabled of [false, true]) {
+      add(dateRangeInputTriggerClassName({hasValue, isDisabled}));
+    }
+  }
+  for (const isDisabled of [false, true]) {
+    add(dateRangeInputIconButtonClassName({isDisabled}));
+    add(dateRangeInputPresetButtonClassName({isDisabled}));
+    add(timeInputClassName({isDisabled, isRejected: false}));
+    add(timeInputClassName({isDisabled, isRejected: true}));
+    add(touchTimeFieldIconButtonClassName({isDisabled}));
+    add(touchTimeFieldInputClassName({isDisabled}));
+  }
+  for (const className of [
+    dateRangeInputPopoverScrollClassName,
+    dateRangeInputPopoverLayoutClassName,
+    dateRangeInputPresetSidebarClassName,
+    dateRangeInputCalendarPaneClassName,
+    timeInputIconClassName,
+    touchTimeFieldSheetBodyClassName,
+    touchTimeFieldWheelsClassName,
+    touchTimeFieldFooterClassName,
+  ]) {
+    add(className);
+  }
   for (const isDisabled of [false, true]) {
     for (const hasStartIcon of [false, true]) {
       for (const hasCounter of [false, true]) {
@@ -745,10 +800,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // The layout primitives and the words in their comments produce about 190
     // rules, the Button map about 115, the Text map about 65, Section and
     // Toolbar about 40, the layout shell and region maps about 110, the input
-    // field family about 60, and Table's sorting, filtering and selection maps
-    // about 60. A scan that reaches component bodies or prose would add
-    // hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(620);
+    // field family about 60, Table's sorting, filtering and selection maps
+    // about 60, and the choice-input rows of Selector, MultiSelector and
+    // Typeahead about 85. A scan that reaches component bodies or prose would
+    // add hundreds more. The budget covers the date-range and time-field maps
+    // merged alongside them.
+    expect(stylesheet.rules.size).toBeLessThan(660);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

@@ -40,6 +40,7 @@ import {TopNav, TopNavHeading, TopNavItem} from '../TopNav';
 import {TextInput} from '../TextInput';
 import {useAppShellMobile} from './AppShellMobileContext';
 import {Theme, defineTheme} from '../theme';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 // jsdom doesn't implement showModal/close on <dialog>, so we mock them
 beforeAll(() => {
@@ -895,9 +896,10 @@ describe('AppShell', () => {
     // The header stays at its normal local stacking level — no escalation.
     expect(Number(getComputedStyle(header).zIndex)).toBe(1);
     expect(getComputedStyle(inputWrapper).position).toBe('relative');
-    // Field's local layers cannot escape into page-level stacking: the root
-    // establishes an isolation boundary around the input wrapper's z-index.
-    expect(getComputedStyle(fieldRoot).isolation).toBe('isolate');
+    // Field's local layers cannot escape into page-level stacking: the root's
+    // `isolate` class is the isolation boundary around the input wrapper's
+    // z-index.
+    expectClassSet(fieldRoot, {includes: ['isolate']});
   });
 
   it('wraps header in sticky container in auto mode', () => {

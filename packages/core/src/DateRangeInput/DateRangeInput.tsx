@@ -42,15 +42,6 @@ import {
 } from '../utils/calendarSystem';
 import {useCalendarSystem} from '../i18n/useCalendarSystem';
 import {
-  colorVars,
-  sizeVars,
-  radiusVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-  borderVars,
-} from '../theme/tokens.stylex';
-import {
   Field,
   InputClearButton,
   type InputStatus,
@@ -75,6 +66,7 @@ import {useTooltip} from '../Tooltip';
 import {mergeProps} from '../utils';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
 import {joinAriaIDs} from '../utils/inputAria';
+import {tw} from '../utils/tw';
 import {
   useFieldInputStyling,
   type FieldInputBaseProps,
@@ -96,7 +88,16 @@ import {
   useComponentTranslator,
 } from '../i18n/useComponentTranslator';
 import english from '../i18n/generated-english/DateRangeInput/DateRangeInput.generated';
-import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
+import {
+  dateRangeInputCalendarPaneClassName,
+  dateRangeInputIconButtonClassName,
+  dateRangeInputPopoverLayoutClassName,
+  dateRangeInputPopoverScrollClassName,
+  dateRangeInputPresetButtonClassName,
+  dateRangeInputPresetSidebarClassName,
+  dateRangeInputSizeClassName,
+  dateRangeInputTriggerClassName,
+} from './dateRangeInputClasses';
 
 registerEnglishFallback(english);
 
@@ -113,162 +114,6 @@ export type {
   InputStatus as DateRangeInputStatus,
   InputStatusType as DateRangeInputStatusType,
 } from '../Field';
-
-const styles = stylex.create({
-  trigger: {
-    display: 'block',
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    outline: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    textAlign: 'start',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  triggerPlaceholder: {
-    color: colorVars['--color-text-secondary'],
-  },
-  triggerDisabled: {
-    cursor: 'default',
-  },
-  iconButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-  },
-  iconButtonDisabled: {
-    cursor: 'default',
-  },
-  // The popover content scrolls inside the layer's block cap, so a stacked
-  // calendar stays reachable on a short screen.
-  popoverScroll: {
-    overflowY: 'auto',
-    overscrollBehavior: 'contain',
-    maxBlockSize: stylex.firstThatWorks(
-      `calc(${layerViewportInset.maxBlockSize})`,
-      `calc(${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-  },
-  // When the presets and a one-month calendar do not fit side by side, the
-  // row wraps and the presets stack above the calendar, in DOM order. The
-  // preset group draws a divider on its inline end and its block end. A
-  // negative margin moves each divider 1 border width past the group's margin
-  // box, and this row clips at its edges. Thus only the divider between the
-  // two parts shows: the inline-end one side by side, the block-end one when
-  // stacked. The row clips, not the scroller, so the overhang is never
-  // scrollable overflow.
-  popoverLayout: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    overflow: 'clip',
-  },
-  presetSidebar: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-1'],
-    padding: spacingVars['--spacing-3'],
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border-emphasized'],
-    borderBlockEndWidth: borderVars['--border-width'],
-    borderBlockEndStyle: 'solid',
-    borderBlockEndColor: colorVars['--color-border-emphasized'],
-    marginInlineEnd: `calc(-1 * ${borderVars['--border-width']})`,
-    marginBlockEnd: `calc(-1 * ${borderVars['--border-width']})`,
-    // Alone on its line, the group fills the line, so its inline-end divider
-    // reaches the clipped edge.
-    flexGrow: 1,
-    minWidth: 140,
-  },
-  calendarPane: {
-    // Gives back the border width the preset group's margin takes, so the
-    // calendar keeps its side-by-side position.
-    marginInlineStart: borderVars['--border-width'],
-    // The row wraps on the calendar's one-month width, and the calendar then
-    // takes the free space, so its months sit in a row where they fit. The
-    // large factor keeps the preset group at its own width beside it.
-    flexBasis: 'min-content',
-    flexGrow: 1_000_000,
-  },
-  presetButton: {
-    display: 'block',
-    width: '100%',
-    padding: `${spacingVars['--spacing-1']} ${spacingVars['--spacing-2']}`,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: {
-      default: 'transparent',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    color: colorVars['--color-text-primary'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    textAlign: 'start',
-  },
-  presetButtonActive: {
-    backgroundColor: colorVars['--color-accent-muted'],
-    color: colorVars['--color-text-accent'],
-  },
-  presetButtonDisabled: {
-    color: colorVars['--color-text-disabled'],
-    cursor: 'default',
-    backgroundColor: 'transparent',
-  },
-});
-
-const sizeStyles = stylex.create({
-  sm: {
-    height: sizeVars['--size-element-sm'],
-    minWidth: 180,
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-    minWidth: 180,
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
-    minWidth: 180,
-  },
-});
 
 function formatRangeDisplay(
   range: DateRange | null,
@@ -791,7 +636,6 @@ export function DateRangeInput({
           stylex.props(
             inputWrapperStyles.base,
             inputWrapperStyles.textField,
-            sizeStyles[size],
             isEffectivelyDisabled && inputWrapperStyles.disabled,
             isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
             status && inputStatusBorderStyles[status.type],
@@ -801,7 +645,7 @@ export function DateRangeInput({
             status && inputStatusFocusWithinStyles[status.type],
             controlXstyle,
           ),
-          controlClassName,
+          tw(dateRangeInputSizeClassName({size}), controlClassName),
           controlStyle,
         )}>
         <button
@@ -814,10 +658,11 @@ export function DateRangeInput({
               : t('@astryx.dateInput.openCalendar')
           }
           tabIndex={-1}
-          {...stylex.props(
-            focusOutlineStyles.focusVisible,
-            styles.iconButton,
-            isEffectivelyDisabled && styles.iconButtonDisabled,
+          {...mergeProps(
+            stylex.props(focusOutlineStyles.focusVisible),
+            dateRangeInputIconButtonClassName({
+              isDisabled: isEffectivelyDisabled,
+            }),
           )}>
           <Icon
             icon="calendar"
@@ -855,11 +700,10 @@ export function DateRangeInput({
           aria-expanded={popover.isOpen}
           aria-haspopup="dialog"
           aria-controls={popover.isOpen ? popover.id : undefined}
-          {...stylex.props(
-            styles.trigger,
-            !displayValue && styles.triggerPlaceholder,
-            isEffectivelyDisabled && styles.triggerDisabled,
-          )}>
+          className={dateRangeInputTriggerClassName({
+            hasValue: !!displayValue,
+            isDisabled: isEffectivelyDisabled,
+          })}>
           {displayValue || placeholder}
         </button>
         {hasClear && value !== null && !isEffectivelyDisabled && (
@@ -882,15 +726,15 @@ export function DateRangeInput({
         </VisuallyHidden>
       )}
       {popover.render(
-        <div {...stylex.props(styles.popoverScroll)}>
-          <div {...stylex.props(styles.popoverLayout)}>
+        <div className={dateRangeInputPopoverScrollClassName}>
+          <div className={dateRangeInputPopoverLayoutClassName}>
             {presets && presets.length > 0 && (
               <div
                 role="group"
                 aria-label={t('@astryx.dateRangeInput.presetDateRanges')}
                 {...mergeProps(
                   themeProps('date-range-input-presets'),
-                  stylex.props(styles.presetSidebar),
+                  dateRangeInputPresetSidebarClassName,
                 )}>
                 {presets.map(preset => {
                   const presetRange = preset.getRange();
@@ -931,12 +775,10 @@ export function DateRangeInput({
                           selected: isActive ? 'selected' : null,
                           disabled: isPresetDisabled ? 'disabled' : null,
                         }),
-                        stylex.props(
-                          focusOutlineStyles.focusVisible,
-                          styles.presetButton,
-                          isActive && styles.presetButtonActive,
-                          isPresetDisabled && styles.presetButtonDisabled,
-                        ),
+                        stylex.props(focusOutlineStyles.focusVisible),
+                        dateRangeInputPresetButtonClassName({
+                          isDisabled: isPresetDisabled,
+                        }),
                       )}>
                       {preset.label}
                     </button>
@@ -959,7 +801,11 @@ export function DateRangeInput({
                 minRangeSpan={minRangeSpan}
                 numberOfMonths={numberOfMonths}
                 weekStartsOn={weekStartsOn}
-                xstyle={presets && presets.length > 0 && styles.calendarPane}
+                className={
+                  presets && presets.length > 0
+                    ? dateRangeInputCalendarPaneClassName
+                    : undefined
+                }
               />
             )}
           </div>
