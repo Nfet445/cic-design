@@ -1,8 +1,6 @@
 # shared modules whose consumers own the property
 
-Status: in-progress — most modules are classes; what is left needs the marker
-flip (ticket 07) and the published focus-ring seam (ticket 52).
-Blocked by: 07
+Status: done
 Wave: 7
 Ticket: 41
 Parent: `00-epic-stylex-to-tailwind-4`
@@ -57,3 +55,17 @@ is a paint a class can express today:
   (2) are the ring and the overlay image: they back `focusOutlineProps`, which
   composes `stylex.props`, so the class arm belongs to ticket 52 with the rest
   of the published seams.
+
+## Comments
+
+Landed: `privateAttributes/pressClasses.ts` for the press paint the controller hands a
+row, `privateAttributes/focusOwnerClasses.ts` for the wrapper ring (`has-[>_[data-astryx-focus-owner]:focus-visible]`
+and the `=group` cell form), `utils/rtlClasses.ts`, `privateAttributes/reorderingClasses.ts`,
+and the consumers that read them (`Carousel`, `Item`, `Selector`, `Token`, `ListItem`,
+`ListReorderHandle`). `privateAttributes/focusOwner.stylex.ts`, `ownRing.stylex.ts` and
+`press.stylex.ts` keep only their attribute owners and the maps ticket 53 names.
+
+Left deliberately: `utils/focusOutline.stylex.ts` and `utils/interactionOverlay.stylex.ts`
+back `focusOutlineProps`, which `Layer` applies as a StyleX value; ticket 52 publishes the
+class arm beside them. `privateAttributes/press.stylex.ts:138` `rowPressLayerStyles`,
+`:387` `rowPressPaintStyles` and `ownRing.stylex.ts:37` `ownRingContainerStyles` are ticket 53.

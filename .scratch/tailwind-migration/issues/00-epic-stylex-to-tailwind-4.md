@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 48 of 52 tickets done, plus two waves (layout primitives,
+Progress: 49 of 53 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -97,6 +97,8 @@ buttons) that landed before the tickets were written.
 - [x] `47-form-controls-and-leftovers` — Switch, Checkbox, Radio, Slider, Stepper, and the family leftovers
 - [x] `48-chat-surface` — thirteen files and twenty-three creations
 
+- [ ] `53-press-and-own-ring` — the press layers and the own-ring container, the last maps in `privateAttributes`
+
 ### Wave 9 — themes, consumers, removal
 
 - [x] `31-themes` — the bridge keeps its names, only its shape changes
@@ -109,7 +111,7 @@ buttons) that landed before the tickets were written.
 - [x] `38-data-token-sheet` — 56 data tokens get their own sheet
 - [x] `39-layout-regions-page` — a check page that does not contradict the classes
 - [x] `40-integration-regressions` — repair the wave's merged failures
-- [ ] `41-shared-modules-after-consumers` — the seven creations whose consumers own the property
+- [x] `41-shared-modules-after-consumers` — the seven creations whose consumers own the property
 - [x] `42-table-plugin-styles` — the table plugins and the cells they borrow
 - [x] `43-full-suite-green` — the full core suite back to its known-failing count
 - [ ] `36-remove-stylex` — `@stylexjs` leaves the repository
