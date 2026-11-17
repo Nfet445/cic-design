@@ -68,7 +68,6 @@ import {
   fontWeightVars,
   typeScaleVars,
   borderVars,
-  focusVars,
 } from '../theme/tokens.stylex';
 import type {SelectorOptionType, SelectorOptionData} from './types';
 import {isOptionData, isDivider, isSection, normalizeOption} from './utils';
@@ -110,6 +109,11 @@ import type {AdaptivePresentation} from '../hooks/useAdaptivePresentation';
 import {SelectorBottomSheet} from './SelectorBottomSheet';
 import {useSelectorPresentation} from './useSelectorPresentation';
 import {selectorPresentationStyles} from './selectorPresentation.stylex';
+import {
+  SELECTOR_ROW_CONTENT_CLASS,
+  SELECTOR_ROW_MARK_COLUMN_CLASS,
+  selectorOptionRowClassName,
+} from './selectorOptionClasses';
 import type {FieldStatusPlacement} from '../Field/fieldStatusPlacement';
 import {
   registerEnglishFallback,
@@ -477,77 +481,6 @@ const styles = stylex.create({
   divider: {
     marginBlock: spacingVars['--spacing-1'],
   },
-
-  // Individual item
-  item: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    padding: spacingVars['--spacing-2'],
-    borderRadius: radiusVars['--radius-element'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    textAlign: 'start',
-    outlineStyle: 'none',
-  },
-  itemContent: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    flex: 1,
-    minWidth: 0,
-  },
-  // The wrapper keeps a visible mark at either logical position and lets a
-  // replacement indicator grow beyond the default 1rem minimum. When the
-  // resolved indicator draws nothing, `:empty` removes the wrapper from layout
-  // instead of reserving blank space. Selected and unselected labels may
-  // therefore shift or have different available width by design (AST-004).
-  itemMarkColumn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    minWidth: '1rem',
-    ':empty': {
-      display: 'none',
-    },
-  },
-  itemCheckmark: {
-    flexShrink: 0,
-    width: 16,
-    height: 16,
-    color: colorVars['--color-icon-primary'],
-  },
-  itemHighlighted: {
-    backgroundColor: colorVars['--color-overlay-hover'],
-  },
-  // The fill alone does not reach 3:1 against the listbox. After keyboard
-  // input, the active option also draws the standard focus ring, inside the
-  // row by its own width, as a focused menu row does.
-  itemKeyboardHighlighted: {
-    outlineWidth: focusVars['--focus-outline-width'],
-    outlineStyle: focusVars['--focus-outline-style'],
-    outlineColor: focusVars['--focus-outline-color'],
-    outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
-  },
-  itemSelected: {
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  itemDisabled: {
-    opacity: 0.5,
-    cursor: 'default',
-  },
 });
 
 // The trigger is sized by PADDING, not by a fixed height, so it is the size
@@ -587,23 +520,6 @@ const sizeStyles = stylex.create({
     lineHeight: `max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-lg']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem)`,
     paddingBlock: `calc((${sizeVars['--size-element-lg']} - max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-lg']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem) - 2 * ${borderVars['--border-width']}) / 2)`,
   },
-});
-
-/**
- * Size-specific overrides for dropdown list items.
- * Matches the pattern used by DropdownMenuItem so that
- * an `sm` selector renders compact list items, `md`/`lg` use
- * the base padding defined in `styles.item`.
- */
-const itemSizeStyles = stylex.create({
-  sm: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  md: {
-    paddingBlock: spacingVars['--spacing-1-5'],
-  },
-  lg: {},
 });
 
 const STATUS_ICON_MAP: Record<SelectorStatusType, IconName> = {
@@ -1016,7 +932,7 @@ const SelectorOptionRow = memo(function SelectorOptionRow({
    * in the row; the indicator owns what the mark looks like.
    */
   const mark = (
-    <span {...stylex.props(styles.itemMarkColumn)}>
+    <span className={SELECTOR_ROW_MARK_COLUMN_CLASS}>
       <SelectionMark
         state={isSelected ? 'checked' : 'unchecked'}
         size="sm"
@@ -1027,7 +943,7 @@ const SelectorOptionRow = memo(function SelectorOptionRow({
   );
 
   const optionContent = (
-    <span {...stylex.props(styles.itemContent)}>
+    <span className={SELECTOR_ROW_CONTENT_CLASS}>
       {renderOption ? renderOption(item) : <DefaultOption option={item} />}
     </span>
   );
@@ -1055,14 +971,15 @@ const SelectorOptionRow = memo(function SelectorOptionRow({
           selected: isSelected ? 'selected' : null,
           disabled: item.disabled ? 'disabled' : null,
         }),
-        stylex.props(
-          styles.item,
-          itemSizeStyles[size],
-          isHighlighted && styles.itemHighlighted,
-          isKeyboardHighlighted && styles.itemKeyboardHighlighted,
-          isSelected && styles.itemSelected,
-          item.disabled && styles.itemDisabled,
-        ),
+        // The third positional argument is a class string, not a props
+        // object: an object there is read as the inline style.
+        selectorOptionRowClassName({
+          isDisabled: item.disabled === true,
+          isHighlighted,
+          isKeyboardHighlighted,
+          isSelected,
+          size,
+        }),
       )}>
       {indicatorPosition === 'start' ? (
         <>

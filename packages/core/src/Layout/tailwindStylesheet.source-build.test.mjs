@@ -109,6 +109,12 @@ import {
   sectionInnerClassName,
   sectionOuterClassName,
 } from '../Section/sectionClasses';
+import {
+  SELECTOR_OPTION_EMBEDDED_CLASS,
+  SELECTOR_ROW_CONTENT_CLASS,
+  SELECTOR_ROW_MARK_COLUMN_CLASS,
+  selectorOptionRowClassName,
+} from '../Selector/selectorOptionClasses';
 import {tableCellClassName} from '../Table/tableCellClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
 import {tableRowClassName} from '../Table/tableRowClasses';
@@ -601,6 +607,31 @@ function familyClassNames() {
   add(TABLE_SCROLL_WRAPPER_CLASS);
   add(TABLE_SCROLL_WRAPPER_RING_INSET_CLASS);
   add(TABLE_SCROLL_WRAPPER_BLOCK_VIEWPORT_CLASS);
+
+  // The choice-input rows: every size crossed with the four row states, so a
+  // state no other test renders still has its rule.
+  for (const size of ['sm', 'md', 'lg']) {
+    for (const isHighlighted of [false, true]) {
+      for (const isKeyboardHighlighted of [false, true]) {
+        for (const isSelected of [false, true]) {
+          for (const isDisabled of [false, true]) {
+            add(
+              selectorOptionRowClassName({
+                isDisabled,
+                isHighlighted,
+                isKeyboardHighlighted,
+                isSelected,
+                size,
+              }),
+            );
+          }
+        }
+      }
+    }
+  }
+  add(SELECTOR_ROW_CONTENT_CLASS);
+  add(SELECTOR_ROW_MARK_COLUMN_CLASS);
+  add(SELECTOR_OPTION_EMBEDDED_CLASS);
 
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
