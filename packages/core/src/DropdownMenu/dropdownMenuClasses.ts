@@ -4,7 +4,8 @@
  * @file dropdownMenuClasses.ts
  * @input The menu row's size, variant and disabled state, and the group and
  *   divider shapes the menu's leaf components share
- * @output The class maps for the dropdown menu family's leaves
+ * @output The class maps for the dropdown menu family's leaves and the
+ *   bottom-sheet presentation's frame
  * @position Style primitives; scanned by the Tailwind build. The leaf
  *   components compose these with `tw`
  */
@@ -73,6 +74,28 @@ export function dropdownMenuItemClassName({
     isDisabled && 'opacity-50',
   );
 }
+
+/**
+ * The bottom-sheet presentation's frame: the sheet body, the header row that
+ * carries the back button, and the caller's regions inset to the list's
+ * content edge. A sub-menu's own heading is the row's sibling, so the root
+ * heading takes the list's content edge and the drilled one does not.
+ */
+export const dropdownMenuSheetClassName = {
+  content: 'w-full',
+  header: tw(
+    'flex flex-row items-center',
+    'gap-[var(--spacing-1)] [margin-bottom:var(--spacing-2)]',
+  ),
+  rootHeading: '[margin-inline-start:var(--spacing-3)]',
+  // The heading is the panel's focus target once a sub-menu opens; the ring is
+  // the panel's, not the text's.
+  viewHeading: 'outline-none',
+  region: tw(
+    '[padding-inline:var(--spacing-3)]',
+    '[padding-block:var(--spacing-2)]',
+  ),
+} as const;
 
 /**
  * The group heading. It is not a `menuitem`, so it carries no row affordance;

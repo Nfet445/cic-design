@@ -31,6 +31,7 @@ import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
   dropdownMenuDividerClassName,
   dropdownMenuItemClassName,
+  dropdownMenuSheetClassName,
   dropdownMenuGroupHeadingClassName,
 } from '../DropdownMenu/dropdownMenuClasses';
 import {
@@ -1679,6 +1680,9 @@ function familyClassNames() {
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);
+  for (const value of Object.values(dropdownMenuSheetClassName)) {
+    add(value);
+  }
   add(dropdownMenuGroupHeadingClassName);
   for (const size of ['sm', 'md', 'lg']) {
     add(
