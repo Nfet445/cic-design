@@ -910,13 +910,15 @@ describe('every theme follows the reader text size', () => {
       );
     }
     // TextInput's iOS floor is 1rem, which therefore stays 16px however small
-    // body text gets (family:input-fields FR9).
-    const textInput = fs.readFileSync(
-      path.resolve(__dirname, '../TextInput/TextInput.tsx'),
+    // body text gets (family:input-fields FR9). The floor ships as a utility
+    // class, so its coarse query, iOS gate and 1rem are read from the class
+    // map.
+    const textInputClasses = fs.readFileSync(
+      path.resolve(__dirname, '../TextInput/textInputClasses.ts'),
       'utf8',
     );
-    expect(textInput).toContain(
-      "`max(1rem, ${typeScaleVars['--text-body-size']})`",
+    expect(textInputClasses).toContain(
+      'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]',
     );
   });
 });
