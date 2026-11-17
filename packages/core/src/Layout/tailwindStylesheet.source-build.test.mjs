@@ -275,6 +275,21 @@ import {
   switchWrapperClassName,
 } from '../Switch/switchClasses';
 import {
+  sliderControlClassName,
+  sliderFillClipClassName,
+  sliderFillMoverClassName,
+  sliderFilledTrackClassName,
+  sliderMarkClassName,
+  sliderMarkLabelClassName,
+  sliderMarksContainerClassName,
+  sliderRowClassName,
+  sliderTextValueClassName,
+  sliderThumbClassName,
+  sliderTrackClassName,
+  sliderTravelBoxClassName,
+  sliderValueAnchorClassName,
+} from '../Slider/sliderClasses';
+import {
   radioListItemIndicatorSlotClassName,
   radioListItemInputClassName,
   radioListItemPressOverlayClassName,
@@ -2462,6 +2477,43 @@ function familyClassNames() {
     }
   }
   add(switchStatusClassName);
+  // Slider: the row in both mark-label states, both orientations of every
+  // part, the fill in single and range mode, a thumb in its held, disabled and
+  // touch-target states, and the text value.
+  for (const hasMarkLabels of [false, true]) {
+    add(sliderRowClassName({hasMarkLabels}));
+  }
+  add(sliderTravelBoxClassName);
+  add(sliderTextValueClassName);
+  for (const isHorizontal of [false, true]) {
+    add(sliderValueAnchorClassName({isHorizontal}));
+    add(sliderTrackClassName({isHorizontal}));
+    add(sliderFillClipClassName({isHorizontal}));
+    add(sliderMarksContainerClassName({isHorizontal}));
+    add(sliderMarkLabelClassName({isHorizontal}));
+    for (const isRange of [false, true]) {
+      add(sliderFillMoverClassName({isHorizontal, isRange}));
+      add(sliderFilledTrackClassName({isHorizontal, isRange}));
+    }
+    for (const isFilled of [false, true]) {
+      add(sliderMarkClassName({isHorizontal, isFilled}));
+    }
+    for (const isDisabled of [false, true]) {
+      for (const isPressed of [false, true]) {
+        for (const hasTouchTarget of [false, true]) {
+          add(
+            sliderThumbClassName({
+              isHorizontal,
+              isDisabled,
+              isPressed,
+              hasTouchTarget,
+            }),
+          );
+        }
+      }
+      add(sliderControlClassName({isHorizontal, isDisabled}));
+    }
+  }
 
   return [...names].sort();
 }
@@ -2534,8 +2586,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // field, row, track, thumb and press layers, the sensor's date-time row and
     // segments, the bottom-sheet panel and the selector's size arms measured
     // 1402 with every family above registered, so the ceiling carries the usual
-    // headroom above that number rather than below it.
-    expect(stylesheet.rules.size).toBeLessThan(1460);
+    // headroom above that number rather than below it. The slider's row, travel
+    // box, value anchors, track, fill clip and mover, filled bar, marks, thumbs
+    // and text value added fifty-eight — the travel classes are arbitrary
+    // properties with a container-unit calc each — and the sheet measures 1460
+    // with every family above registered.
+    expect(stylesheet.rules.size).toBeLessThan(1470);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
