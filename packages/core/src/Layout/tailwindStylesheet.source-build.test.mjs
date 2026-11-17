@@ -720,6 +720,52 @@ import {
   tableClassName,
   tableGapCellClassName,
 } from '../Table/tableClasses';
+import {TABLE_ROW_INDEX_CLASS} from '../Table/plugins/rowIndex/rowIndexClasses';
+import {
+  TABLE_ROW_STATUS_DOT_CLASS,
+  TABLE_ROW_STATUS_ICON_CLASS,
+  TABLE_ROW_STATUS_WRAP_CLASS,
+} from '../Table/plugins/rowStatus/rowStatusClasses';
+import {tablePaginationWrapperClassName} from '../Table/plugins/pagination/paginationClasses';
+import {
+  GROUPED_ROWS_CHEVRON_CLASS,
+  GROUPED_ROWS_CHEVRON_GLYPH_CLASS,
+  GROUPED_ROWS_CHEVRON_PINNED_CLASS,
+  GROUPED_ROWS_COUNT_CLASS,
+  GROUPED_ROWS_HEADER_CELL_CLASS,
+  GROUPED_ROWS_HEADER_INNER_CLASS,
+  GROUPED_ROWS_HEADER_INNER_PINNED_CLASS,
+  GROUPED_ROWS_HEADER_ROW_CLASS,
+  GROUPED_ROWS_LABEL_CLASS,
+} from '../Table/plugins/groupedRows/groupedRowsClasses';
+import {
+  TREE_CELL_CLASS,
+  TREE_CELL_INDENT_CLASS,
+  TREE_CHEVRON_GLYPH_CLASS,
+  TREE_CHEVRON_GLYPH_STATE_CLASS,
+  TREE_CLICKABLE_ROW_CLASS,
+  TREE_EXPANDER_CLASS,
+  TREE_HEADER_CELL_CLASS,
+  TREE_LEAF_SPACER_CLASS,
+} from '../Table/plugins/tree/treeClasses';
+import {
+  INFINITE_SCROLL_COMMAND_CLASS,
+  INFINITE_SCROLL_SENTINEL_CLASS,
+  INFINITE_SCROLL_SURFACE_CLASS,
+  INFINITE_SCROLL_VIEWPORT_CLASS,
+} from '../Table/plugins/infiniteScroll/infiniteScrollClasses';
+import {
+  ROW_EXPANSION_CHEVRON_BUTTON_CLASS,
+  ROW_EXPANSION_CLICKABLE_ROW_CLASS,
+  ROW_EXPANSION_GLYPH_BOX_CLASS,
+  ROW_EXPANSION_GLYPH_CENTER_CLASS,
+  ROW_EXPANSION_GLYPH_CLASS,
+  ROW_EXPANSION_GLYPH_STATE_CLASS,
+  ROW_EXPANSION_PANEL_CLASS,
+  ROW_EXPANSION_PANEL_MUTED_CLASS,
+  rowExpansionChevronOffsetClassName,
+  rowExpansionPanelIndentClassName,
+} from '../Table/plugins/rowExpansion/rowExpansionClasses';
 import {
   SORT_INDICATOR_CLASS,
   SORT_INDICATOR_UNSORTED_CLASS,
@@ -3517,6 +3563,68 @@ function familyClassNames() {
   add(tokenizerSheetEmptyHostClassName);
   add(tokenizerSheetEmptyClassName);
   add(tokenizerSheetPendingClassName);
+
+  // The Table plugins: the row number, the status marker, and the pagination
+  // wrapper on each side at each alignment.
+  add(TABLE_ROW_INDEX_CLASS);
+  add(TABLE_ROW_STATUS_WRAP_CLASS);
+  add(TABLE_ROW_STATUS_DOT_CLASS);
+  add(TABLE_ROW_STATUS_ICON_CLASS);
+  for (const side of ['above', 'below']) {
+    for (const align of ['start', 'center', 'end']) {
+      add(tablePaginationWrapperClassName({side, align}));
+    }
+  }
+
+  // The grouped-rows header: its row, spanning cell, inner row in both pin
+  // states, the chevron in both pin states, and the glyph in both rotations.
+  add(GROUPED_ROWS_HEADER_ROW_CLASS);
+  add(GROUPED_ROWS_HEADER_CELL_CLASS);
+  add(GROUPED_ROWS_HEADER_INNER_CLASS);
+  add(GROUPED_ROWS_HEADER_INNER_PINNED_CLASS);
+  add(GROUPED_ROWS_CHEVRON_CLASS);
+  add(GROUPED_ROWS_CHEVRON_PINNED_CLASS);
+  add(GROUPED_ROWS_CHEVRON_GLYPH_CLASS.base);
+  add(GROUPED_ROWS_CHEVRON_GLYPH_CLASS.collapsed);
+  add(GROUPED_ROWS_CHEVRON_GLYPH_CLASS.expanded);
+  add(GROUPED_ROWS_LABEL_CLASS);
+  add(GROUPED_ROWS_COUNT_CLASS);
+
+  // The tree plugin: the indented cell, the disclosure toggle, its glyph in
+  // both rotations, the leaf spacer, the header toggle row, and the row that
+  // a click expands.
+  add(TREE_CELL_CLASS);
+  add(TREE_CELL_INDENT_CLASS);
+  add(TREE_EXPANDER_CLASS);
+  add(TREE_CHEVRON_GLYPH_CLASS);
+  add(TREE_CHEVRON_GLYPH_STATE_CLASS.collapsed);
+  add(TREE_CHEVRON_GLYPH_STATE_CLASS.expanded);
+  add(TREE_LEAF_SPACER_CLASS);
+  add(TREE_HEADER_CELL_CLASS);
+  add(TREE_CLICKABLE_ROW_CLASS);
+
+  // The infinite-scroll surface below the table, and the scroll viewport that
+  // hosts the table.
+  add(INFINITE_SCROLL_VIEWPORT_CLASS);
+  add(INFINITE_SCROLL_COMMAND_CLASS);
+  add(INFINITE_SCROLL_SURFACE_CLASS);
+  add(INFINITE_SCROLL_SENTINEL_CLASS);
+
+  // The row-expansion chevron, its box and rotation, and the detail panel at
+  // each density and variant.
+  add(ROW_EXPANSION_CHEVRON_BUTTON_CLASS);
+  add(ROW_EXPANSION_GLYPH_BOX_CLASS);
+  add(ROW_EXPANSION_GLYPH_CENTER_CLASS);
+  add(ROW_EXPANSION_GLYPH_CLASS);
+  add(ROW_EXPANSION_GLYPH_STATE_CLASS.expanded);
+  add(ROW_EXPANSION_GLYPH_STATE_CLASS.collapsed);
+  add(ROW_EXPANSION_PANEL_CLASS);
+  add(ROW_EXPANSION_PANEL_MUTED_CLASS);
+  add(ROW_EXPANSION_CLICKABLE_ROW_CLASS);
+  for (const density of ['compact', 'balanced', 'spacious']) {
+    add(rowExpansionChevronOffsetClassName(density));
+    add(rowExpansionPanelIndentClassName(density));
+  }
 
   return [...names].sort();
 }

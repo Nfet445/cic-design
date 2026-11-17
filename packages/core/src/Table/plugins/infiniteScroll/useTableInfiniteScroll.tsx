@@ -20,7 +20,6 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Button} from '../../../Button/Button';
 import {
   registerEnglishFallback,
@@ -29,7 +28,6 @@ import {
 import english from '../../../i18n/generated-english/Table/plugins/infiniteScroll/useTableInfiniteScroll.generated';
 
 registerEnglishFallback(english);
-import {spacingVars} from '../../../theme/tokens.stylex';
 import {
   moveFocusLeftBehind,
   noteFocusWithin,
@@ -41,6 +39,13 @@ import {createDevWarnings} from '../../../utils/devWarning';
 import {TableRuntimeContext} from '../../tableRuntime';
 import {useInteractionModalityTracking} from '../../../utils/interactionModality';
 import type {TablePlugin, TableRenderContext} from '../../types';
+import {tw} from '../../../utils/tw';
+import {
+  INFINITE_SCROLL_COMMAND_CLASS,
+  INFINITE_SCROLL_SENTINEL_CLASS,
+  INFINITE_SCROLL_SURFACE_CLASS,
+  INFINITE_SCROLL_VIEWPORT_CLASS,
+} from './infiniteScrollClasses';
 
 export interface UseTableInfiniteScrollConfig {
   /** Whether another batch can be loaded. */
@@ -252,21 +257,6 @@ function createRuntime(
 }
 type Runtime = ReturnType<typeof createRuntime>;
 
-const styles = stylex.create({
-  // Grid gives the existing content box the table's intrinsic inline extent,
-  // without size containment suppressing its contribution to shrink-to-fit hosts.
-  viewport: {display: 'grid'},
-  command: {position: 'sticky', insetInlineStart: 0, insetInlineEnd: 0},
-  surface: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    paddingBlock: spacingVars['--spacing-2'],
-    gap: spacingVars['--spacing-2'],
-  },
-  sentinel: {height: 1, width: '100%', flexShrink: 0},
-});
-
 /** A single surface owns its observer, rearm task and focus-handoff resource. */
 function InfiniteScrollSurface({
   runtime,
@@ -443,14 +433,14 @@ function InfiniteScrollSurface({
   return (
     <>
       {snapshot}
-      <div ref={surfaceRef} {...stylex.props(styles.surface)}>
+      <div ref={surfaceRef} className={INFINITE_SCROLL_SURFACE_CLASS}>
         <div
           ref={setSentinel}
-          {...stylex.props(styles.sentinel)}
+          className={INFINITE_SCROLL_SENTINEL_CLASS}
           aria-hidden="true"
         />
         <Button
-          xstyle={styles.command}
+          className={INFINITE_SCROLL_COMMAND_CLASS}
           label={t('@astryx.table.loadMore')}
           isLoading={view.isLoading}
           onClick={() => runtime.invoke(false)}
@@ -500,7 +490,14 @@ export function useTableInfiniteScroll<T extends Record<string, unknown>>(
       }
       return {
         ...props,
-        xstyle: [...props.xstyle, styles.viewport],
+        htmlProps: {
+          ...props.htmlProps,
+          className: tw(
+            props.htmlProps.className,
+            INFINITE_SCROLL_VIEWPORT_CLASS,
+          ),
+        },
+        xstyle: props.xstyle,
         afterTable: (
           <>
             {props.afterTable}

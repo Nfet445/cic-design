@@ -13,6 +13,8 @@ import {
   useTableRowStatus,
   type UseTableRowStatusConfig,
 } from './useTableRowStatus';
+import {TABLE_ROW_STATUS_DOT_CLASS} from './rowStatusClasses';
+import {expectClassSet} from '../../../__tests__/classNameAssertions';
 
 interface Row extends Record<string, unknown> {
   id: string;
@@ -150,8 +152,9 @@ describe('useTableRowStatus', () => {
 
       expect(indicator.querySelector('svg')).toBeNull();
       expect(dot).toBeInstanceOf(HTMLElement);
-      expect(getComputedStyle(dot as HTMLElement).width).toBe('8px');
-      expect(getComputedStyle(dot as HTMLElement).height).toBe('8px');
+      expectClassSet(dot as Element, {
+        includes: TABLE_ROW_STATUS_DOT_CLASS.split(' '),
+      });
       expect(dot?.getAttribute('style')).toContain(token);
     }
   });

@@ -23,8 +23,12 @@ import {
   type ReactNode,
 } from 'react';
 import {useIsomorphicLayoutEffect} from '../../../hooks/useIsomorphicLayoutEffect';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../../../theme/tokens.stylex';
+import {tw} from '../../../utils/tw';
+import {
+  COLUMN_RESIZE_HANDLE_CLASS,
+  COLUMN_RESIZE_HEADER_CELL_CLASS,
+  COLUMN_RESIZE_HEADER_ROW_CLASS,
+} from './columnResizeClasses';
 import type {
   TablePlugin,
   HeaderCellRenderProps,
@@ -223,134 +227,6 @@ function computeColumnWidths(drag: DragState, delta: number): number[] {
 // =============================================================================
 // Styles
 // =============================================================================
-
-const handleStyles = stylex.create({
-  base: {
-    position: 'absolute',
-    // Keep entirely inside the <th> — extending outside gets clipped by the
-    // adjacent <th>'s overflow:hidden.
-    insetInlineEnd: 0,
-    top: 0,
-    // Extend the handle the full height of the table, not just the header.
-    // The <th> has overflow:visible (from headerCellRelative), so the handle
-    // visually reaches through the body rows. Both variables are set by the
-    // plugin's ResizeObserver — they fall back to header-height when it
-    // hasn't fired yet.
-    //
-    // `top: 0` does not land on the table's top edge: the handle hangs from
-    // its cell's content box, and the header's vertical centring shifts that
-    // box down by an amount that depends on how tall its own content is.
-    // Subtracting that drop keeps the handle from hanging past the last row
-    // and forcing the scroll wrapper to scroll.
-    height:
-      'calc(var(--table-resize-height, 100%) - var(--table-resize-offset, 0px))',
-    // Wide transparent hit area; the visible indicator uses ::after to span
-    // the full handle height independently of the border box.
-    width: '8px',
-    cursor: {
-      default: 'ew-resize',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    zIndex: 1,
-    touchAction: 'none',
-    userSelect: 'none',
-    // Drive the indicator color via a CSS variable that ::after reads.
-    // The parent handle is the hover/focus target — pseudo-elements
-    // can't receive :hover directly.
-    /*
-     * The resting value is inherited rather than fixed: the header row sets
-     * `--resize-hint` while it is hovered, which reveals every boundary at
-     * once so the columns can advertise that they move. Reading it as the
-     * default (instead of matching the row's hover from down here) keeps this
-     * element's own :hover a plain same-element override — an ancestor
-     * selector would outrank it and the handle under the pointer would never
-     * reach accent.
-     *
-     * The pointer arm passes through the same `--resize-hint-gate` as the row
-     * hint: horizontal scrolling drags columns under a still pointer, so a
-     * boundary arriving beneath it mid-scroll is no more intentional than the
-     * row-level reveal (FR10). Focus-visible is ungated — focus is always
-     * deliberate.
-     */
-    '--indicator-color': {
-      default: 'var(--resize-hint, transparent)',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': `var(--resize-hint-gate, ${colorVars['--color-accent']})`,
-      ':focus-visible': colorVars['--color-accent'],
-    },
-    /*
-     * Pointer capability gates the REVEAL, not the control (DEC-3). The
-     * handle stays rendered and focusable wherever any input can drive it, so
-     * a coarse-primary device with a keyboard keeps its tab stop, its
-     * accessible name, and arrow-key resize (FR6, FR8, AR6).
-     *
-     * What coarse pointers lose is pointer interaction: dragging a hairline
-     * boundary by finger is a non-goal (DEC-4), and an invisible 8px strip
-     * that swallows touches on the header is worse than no target at all.
-     * `pointer-events: none` removes it from touch without removing it from
-     * the accessibility tree the way `display: none` did. The hover reveal is
-     * already gated separately on the header row, so at rest there is nothing
-     * drawn here to explain.
-     */
-    '@media (pointer: coarse)': {
-      pointerEvents: 'none',
-    },
-  },
-  /**
-   * The 1px indicator line as a pseudo-element on the trailing edge.
-   * Spans the full height of the handle (which extends the table height).
-   * Reads --indicator-color from the parent, which toggles on
-   * hover, focus-visible, and during drag.
-   */
-  indicator: {
-    '::after': {
-      content: '""',
-      position: 'absolute',
-      // Position on the column boundary (right edge of the handle)
-      // so the visual line aligns with the column divider. The 8px
-      // hit area extends to the left of it.
-      insetInlineEnd: 0,
-      top: 0,
-      bottom: 0,
-      width: 'var(--indicator-width, 1px)',
-      backgroundColor: 'var(--indicator-color, transparent)',
-      transition: 'background-color 150ms ease, width 150ms ease',
-    },
-  },
-});
-
-/**
- * Publishes the hint colour the handles read at rest. Hover has to be caught
- * on the row so that entering the header anywhere reveals every boundary, not
- * only the cell under the pointer. Pointer-only — there is no hover to lead
- * with on touch, and the handles ignore touch there regardless.
- *
- * `--resize-hint-gate` is the scroll gate (FR10): the scroll listener sets it
- * to `transparent` on the scroll wrapper while the region is moving, which
- * wins here because a set custom property beats the fallback arm of `var()`.
- * Hover keeps resolving underneath — the gate just hides its result until the
- * region settles, so nothing has to be recomputed when it clears.
- *
- * Focus is deliberately absent: focusing a boundary emphasizes that one
- * boundary and never raises this row-level hint (FR9, DEC-5).
- */
-const headerRowStyles = stylex.create({
-  base: {
-    '--resize-hint': {
-      default: 'transparent',
-      '@media (hover: hover)': {
-        default: 'transparent',
-        ':hover:where(:not(:disabled,[aria-disabled="true"]))': `var(--resize-hint-gate, ${colorVars['--color-border']})`,
-      },
-    },
-  },
-});
-
-const headerCellRelative = stylex.create({
-  base: {
-    position: 'relative',
-    overflow: 'visible',
-  },
-});
 
 // =============================================================================
 // Drag State (ref-based, not React state — avoids re-renders during drag)
@@ -841,7 +717,7 @@ function ResizeHandle({
       data-resize-handle=""
       onPointerDown={handlePointerDown}
       onKeyDown={handleKeyDown}
-      {...stylex.props(handleStyles.base, handleStyles.indicator)}
+      className={COLUMN_RESIZE_HANDLE_CLASS}
     />
   );
 }
@@ -1023,7 +899,16 @@ export function useTableColumnResize<T extends Record<string, unknown>>(
         );
       },
       transformHeaderRow(props: HeaderRowRenderProps): HeaderRowRenderProps {
-        return {...props, xstyle: [...props.xstyle, headerRowStyles.base]};
+        return {
+          ...props,
+          htmlProps: {
+            ...props.htmlProps,
+            className: tw(
+              props.htmlProps.className,
+              COLUMN_RESIZE_HEADER_ROW_CLASS,
+            ),
+          },
+        };
       },
       transformScrollWrapper(
         props: ScrollWrapperRenderProps,
@@ -1137,6 +1022,10 @@ export function useTableColumnResize<T extends Record<string, unknown>>(
           htmlProps: {
             ...props.htmlProps,
             style: mergedStyle,
+            className: tw(
+              props.htmlProps.className,
+              COLUMN_RESIZE_HEADER_CELL_CLASS,
+            ),
           },
           overlay: (
             <>
@@ -1144,7 +1033,6 @@ export function useTableColumnResize<T extends Record<string, unknown>>(
               {handle}
             </>
           ),
-          xstyle: [...props.xstyle, headerCellRelative.base],
         };
       },
     }),
