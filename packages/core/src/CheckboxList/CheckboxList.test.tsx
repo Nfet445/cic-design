@@ -26,6 +26,10 @@ import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {List} from '../List/List';
 import {CheckboxInput} from '../CheckboxInput/CheckboxInput';
+import {
+  checkboxInputRowPressImageClassName,
+  checkboxInputRowPressOverlayClassName,
+} from '../CheckboxInput/checkboxInputClasses';
 import {FormLayout} from '../FormLayout/FormLayout';
 import {indicatorScope} from '../Indicator/indicator.markers.stylex';
 import {stubMatchMedia} from '../__tests__/stubMatchMedia';
@@ -1664,13 +1668,12 @@ describe('CheckboxListItem press surface', () => {
    * further out (the shared `--_press-paint-image`)?
    */
   function readsRowPressPaint(wrapper: Element): boolean {
-    const layer = rulesFor(wrapper, style => style.backgroundImage).filter(
-      rule => rule.selector.includes('::after'),
-    );
+    const classes = classesOf(wrapper);
     return (
-      layer.some(rule =>
-        rule.value.includes('var(--_checkbox-row-press-paint'),
-      ) && !layer.some(rule => rule.value.includes('var(--_press-paint-image)'))
+      checkboxInputRowPressOverlayClassName
+        .split(' ')
+        .every(name => classes.includes(name)) &&
+      !classes.some(name => name.includes('--_press-paint-image'))
     );
   }
 
@@ -1755,13 +1758,15 @@ describe('CheckboxListItem press surface', () => {
     const {control} = parts(rowOf('Email'));
     // The checkbox's own row is never pressed here, so its own press states
     // would hand the indicator nothing.
-    const handed = rulesFor(
-      control,
-      style =>
-        /--_indicator-press-image:\s*([^;]+)/.exec(style.cssText)?.[1] ?? '',
-    ).map(rule => rule.value);
+    const handed = classesOf(control).filter(name =>
+      name.includes('--_indicator-press-image'),
+    );
     expect(handed).toHaveLength(1);
-    expect(handed[0]).toMatch(/^var\(--_checkbox-row-press-paint,\s*none\)$/);
+    expect(checkboxInputRowPressImageClassName.split(' ')).toContain(handed[0]);
+    // The box reads the same row paint the row hands down.
+    expect(checkboxInputRowPressOverlayClassName).toContain(
+      'var(--_checkbox-row-press-paint,none)',
+    );
   });
 
   it('makes the row the one press surface on a fine-pointer page too', () => {
