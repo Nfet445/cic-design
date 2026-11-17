@@ -18,6 +18,13 @@ import userEvent from '@testing-library/user-event';
 import {rulesDeclaredFor} from '../__tests__/pressState';
 import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {
+  listCounterStartClassName,
+  listCounterStartVars,
+  LIST_ANIMATED_ISOLATION,
+  LIST_COARSE_ISOLATION,
+  LIST_REACHES_CONTAINER_PADDING,
+} from './listClasses';
+import {
   LIST_ITEM_BAND_RAISED,
   LIST_ITEM_BLEED,
   LIST_ITEM_COUNTER,
@@ -166,8 +173,10 @@ describe('List', () => {
       </List>,
     );
     const ol = container.querySelector('ol')!;
-    // The counter-reset style should include the start offset (start - 1 = 2)
-    expect(ol.className).toContain('counterStart');
+    // The counter's start is a per-instance value no class can name, so it
+    // travels as a property the frame's class reads (start - 1 = 2).
+    expectClassSet(ol, {includes: [listCounterStartClassName]});
+    expect(ol.style.getPropertyValue(listCounterStartVars.start)).toBe('2');
   });
 
   it('emits the start HTML attribute on <ol> when start is non-default', () => {
@@ -333,18 +342,8 @@ describe('List', () => {
   // Edge treatment
   // ===========================================================================
 
-  /** Every injected rule that names one of the element's classes. */
-  function declarationsFor(el: Element): string {
-    return rulesDeclaredFor(el).join('\n').replace(/\s+/g, '');
-  }
-
   /** The item's own inset, a class the row always carries. */
   const DEFAULT_INSET_CLASS = '[--_item-inset-inline:var(--spacing-2)]';
-  const LIST_REACH = [
-    'margin-inline-start:calc(-1*var(--container-padding-inline-start,0px))',
-    'margin-inline-end:calc(-1*var(--container-padding-inline-end,0px))',
-    'width:calc(100%+var(--container-padding-inline-start,0px)+var(--container-padding-inline-end,0px))',
-  ];
 
   function renderEdge(props: Partial<React.ComponentProps<typeof List>>) {
     const {container} = render(
@@ -374,7 +373,9 @@ describe('List', () => {
         ],
       });
     }
-    expect(ul.className).not.toContain('reachesContainerPadding');
+    expectClassSet(ul, {
+      excludes: LIST_REACHES_CONTAINER_PADDING.split(' '),
+    });
     expect(edgeContext(ul)).toBe('padded');
   });
 
@@ -404,7 +405,9 @@ describe('List', () => {
     expect(LIST_ITEM_FLUSH_INSET).toContain('--_item-inset-inline:0px');
     for (const density of ['compact', 'balanced', 'spacious'] as const) {
       const {ul, items} = renderEdge({edge: 'flush', density});
-      expect(ul.className).not.toContain('reachesContainerPadding');
+      expectClassSet(ul, {
+        excludes: LIST_REACHES_CONTAINER_PADDING.split(' '),
+      });
       for (const item of items) {
         expect(item).toHaveAttribute('data-density', density);
         expectClassSet(item, {includes: [LIST_ITEM_FLUSH_INSET]});
@@ -418,10 +421,9 @@ describe('List', () => {
     // over-reaches the other edge under asymmetric padding (16px start /
     // 4px end), so a selected row would paint past the outer border.
     const {ul, items} = renderEdge({edge: 'outset'});
-    const listCss = declarationsFor(ul);
-    for (const declaration of LIST_REACH) {
-      expect(listCss).toContain(declaration);
-    }
+    expectClassSet(ul, {
+      includes: LIST_REACHES_CONTAINER_PADDING.split(' '),
+    });
     // The start edge reads the start padding var, the end edge the end one.
     expect(LIST_ITEM_OUTSET_START).toContain('container-padding-inline-start');
     expect(LIST_ITEM_OUTSET_END).toContain('container-padding-inline-end');
@@ -442,10 +444,9 @@ describe('List', () => {
 
   it('bleed: the list reaches the container padding and rows fill it with text on the padding line, per edge', () => {
     const {ul, items} = renderEdge({edge: 'bleed'});
-    const listCss = declarationsFor(ul);
-    for (const declaration of LIST_REACH) {
-      expect(listCss).toContain(declaration);
-    }
+    expectClassSet(ul, {
+      includes: LIST_REACHES_CONTAINER_PADDING.split(' '),
+    });
     const bleed = LIST_ITEM_BLEED.split(' ');
     // Text on the container's padding line, never closer to the row's edge
     // than its own inset, and square corners where the row meets the
@@ -464,7 +465,7 @@ describe('List', () => {
   it('keeps the inline clip on the list for every treatment', () => {
     for (const edge of ['padded', 'flush', 'outset', 'bleed'] as const) {
       const {ul} = renderEdge({edge});
-      expect(declarationsFor(ul)).toContain('overflow-x:clip');
+      expectClassSet(ul, {includes: ['overflow-x-clip']});
       cleanup();
     }
   });
@@ -475,7 +476,9 @@ describe('List', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const {ul} = renderEdge({edgeCompensation: 'inline'});
     expect(edgeContext(ul)).toBe('outset');
-    expect(ul.className).toContain('reachesContainerPadding');
+    expectClassSet(ul, {
+      includes: LIST_REACHES_CONTAINER_PADDING.split(' '),
+    });
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
   });
@@ -484,7 +487,9 @@ describe('List', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const {ul} = renderEdge({edge: 'flush', edgeCompensation: 'inline'});
     expect(edgeContext(ul)).toBe('flush');
-    expect(ul.className).not.toContain('reachesContainerPadding');
+    expectClassSet(ul, {
+      excludes: LIST_REACHES_CONTAINER_PADDING.split(' '),
+    });
     expect(warn).toHaveBeenCalledTimes(1);
     const message = String(warn.mock.calls[0][0]);
     expect(message).toContain('`edge` wins');
@@ -1063,7 +1068,7 @@ describe('List', () => {
     );
     const list = container.querySelector('ol')!;
     expect(list.style.maxWidth).toBe('320px');
-    expect(list.getAttribute('style')).toContain('astryx-list 2');
+    expect(list.style.getPropertyValue(listCounterStartVars.start)).toBe('2');
   });
 
   it('marks the corner reader where a bleeding list meets its container: the list, or its root under a header', () => {
@@ -1287,11 +1292,12 @@ describe('List and swipe actions', () => {
         <ListItem label="A" />
       </List>,
     );
-    const rules = rulesDeclaredFor(screen.getByRole('list'));
-    // Declared as `overflow-inline`; StyleX emits the physical longhand of
-    // the same axis in horizontal writing modes.
-    expect(rules.some(r => /overflow-(inline|x): clip/.test(r))).toBe(true);
-    expect(rules.some(r => /overflow[-a-z]*: hidden/.test(r))).toBe(false);
+    // `clip`, never `hidden`: hidden makes a scroll container, which fights
+    // the list's vertical scroller.
+    expectClassSet(screen.getByRole('list'), {
+      includes: ['overflow-x-clip'],
+      excludes: ['overflow-x-hidden'],
+    });
   });
 
   it('under a finger, isolates its rows, so what rises inside the list stays below a sticky header; with a mouse it keeps its stacking', () => {
@@ -1300,13 +1306,14 @@ describe('List and swipe actions', () => {
         <ListItem label="A" onClick={() => {}} />
       </List>,
     );
-    const {touch, other} = touchGatedRules(screen.getByRole('list'));
     // Under a finger the list is the isolation boundary for its rows'
     // z-index. So a page-level sticky header at z-index 1 stays above every
-    // part of the list.
-    expect(touch.join('\n')).toMatch(/isolation: isolate/);
-    // With a mouse nothing rises, so the list is no stacking context.
-    expect(other.filter(rule => rule.includes('isolation'))).toEqual([]);
+    // part of the list. With a mouse nothing rises, so the list is no
+    // stacking context.
+    expectClassSet(screen.getByRole('list'), {
+      includes: [LIST_COARSE_ISOLATION],
+      excludes: [LIST_ANIMATED_ISOLATION],
+    });
   });
 
   it('isolates for every pointer under an animatedLayout handle, since a sliding row rides above its neighbors with a mouse too', () => {
@@ -1322,8 +1329,9 @@ describe('List and swipe actions', () => {
       );
     }
     render(<Animated />);
-    const {other} = touchGatedRules(screen.getByRole('list'));
-    expect(other.join('\n')).toMatch(/isolation: isolate/);
+    expectClassSet(screen.getByRole('list'), {
+      includes: [LIST_ANIMATED_ISOLATION],
+    });
   });
 
   it('under a finger, raises a swipeable interactive row above the rows after it: it is a stacking context, so its touch band’s own z-index orders only inside it', () => {
