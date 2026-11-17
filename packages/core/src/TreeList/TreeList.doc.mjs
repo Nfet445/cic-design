@@ -128,6 +128,13 @@ export const docs = {
         default: 'auto',
         private: true,
       },
+      {
+        name: '--astryx-tree-list-branch-offset',
+        description:
+          'Distance from the row inline start to that row branch connector, published by the guide column from the row depth. Set --tree-list-indent to retune it; this is the resolved value.',
+        default: '0px',
+        private: true,
+      },
     ],
   },
   components: [
