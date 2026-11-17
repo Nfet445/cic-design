@@ -869,6 +869,20 @@ import {
   chatMessageChildrenClassName,
   chatMessageClassName,
   chatMessageContentClassName,
+  chatLayoutBlurLayerClassName,
+  chatLayoutDockClassName,
+  chatFocusRingInsetClassName,
+  chatLayoutDockContainerClassName,
+  chatLayoutDockInnerClassName,
+  chatLayoutEmptyStateClassName,
+  chatLayoutMessageAreaClassName,
+  chatLayoutRootClassName,
+  chatLayoutScrollButtonButtonClassName,
+  chatLayoutScrollButtonPillClassName,
+  chatLayoutScrollButtonWrapperClassName,
+  chatDictationBarClassName,
+  chatDictationBarsClassName,
+  chatDictationWrapperClassName,
 } from '../Chat/chatClasses';
 import {
   carouselFadeClassName,
@@ -2832,6 +2846,37 @@ function familyClassNames() {
   add(chatMessageMetadataSlotClassName);
   add(chatMessageChildrenClassName({density: 'compact', sender: 'assistant'}));
   add(chatMessageChildrenClassName({density: 'spacious', sender: 'user'}));
+  // ChatLayout: the root in both scroll modes, the message area's density and
+  // end room, the dock box, the frosted layer, the dock's own inset and its
+  // inner column.
+  add(chatLayoutRootClassName(true));
+  add(chatLayoutRootClassName(false));
+  for (const density of ['compact', 'balanced', 'spacious']) {
+    add(chatLayoutMessageAreaClassName({density, hasEndRoom: true}));
+    add(chatLayoutMessageAreaClassName({density, hasEndRoom: false}));
+    add(chatLayoutBlurLayerClassName(density));
+    add(chatLayoutDockClassName(density));
+    add(chatLayoutDockInnerClassName(density));
+  }
+  add(chatLayoutEmptyStateClassName);
+  add(chatLayoutDockContainerClassName({isFixed: true, hasLift: true}));
+  add(chatLayoutDockContainerClassName({isFixed: false, hasLift: false}));
+  add(chatFocusRingInsetClassName);
+  // ChatLayoutScrollButton: both pill states and both widths, plus the Button's
+  // inset with and without a label.
+  add(chatLayoutScrollButtonWrapperClassName);
+  for (const isVisible of [true, false]) {
+    for (const isExpanded of [true, false]) {
+      add(chatLayoutScrollButtonPillClassName({isVisible, isExpanded}));
+    }
+  }
+  add(chatLayoutScrollButtonButtonClassName(true));
+  add(chatLayoutScrollButtonButtonClassName(false));
+  // ChatDictationButton: the frame, the bars' row and both bar widths.
+  add(chatDictationWrapperClassName);
+  add(chatDictationBarsClassName);
+  add(chatDictationBarClassName('sm'));
+  add(chatDictationBarClassName('md'));
   for (const orientation of ['vertical', 'horizontal']) {
     add(radioListClassName({orientation}));
   }

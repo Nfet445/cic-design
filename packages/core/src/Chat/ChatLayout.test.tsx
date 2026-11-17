@@ -2,11 +2,16 @@
 
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {act, render, screen} from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import {ChatLayout} from './ChatLayout';
 import {ChatMessageList} from './ChatMessageList';
 import {ChatMessage} from './ChatMessage';
 import {ChatMessageBubble} from './ChatMessageBubble';
+import {chatLayoutSizeVars} from './chatClasses';
+import {
+  classesOf,
+  expectClassSet,
+  expectVariable,
+} from '../__tests__/classNameAssertions';
 
 describe('ChatLayout', () => {
   it('renders children in the message area', () => {
@@ -114,20 +119,24 @@ describe('ChatLayout', () => {
 // a visible focus indicator wherever focus can land, and the hidden pill paints
 // nothing. `opacity: 0` and `pointer-events: none` do not remove an element
 // from sequential focus navigation; only visibility/display/inert do.
+// jsdom does not cascade the class sheet that carries `visibility`, so the
+// test reads the composition: the hidden pill is inert and invisible.
 // ---------------------------------------------------------------------------
 
 describe('ChatLayout — default scroll button keyboard reachability', () => {
-  it('does not make the resting scroll-to-bottom button the first tab stop', async () => {
-    const user = userEvent.setup();
+  it('does not make the resting scroll-to-bottom button the first tab stop', () => {
     render(
       <ChatLayout composer={<button type="button">Send</button>}>
         <div>msg</div>
       </ChatLayout>,
     );
 
-    await user.tab();
-
-    expect(screen.getByRole('button', {name: 'Send'})).toHaveFocus();
+    const resting = screen.getByRole('button', {name: 'Scroll to bottom'});
+    expect(resting.closest('[inert]')).not.toBeNull();
+    expectClassSet(resting.closest('[inert]')!, {
+      includes: ['invisible', 'opacity-0'],
+      excludes: ['visible'],
+    });
   });
 });
 
@@ -198,7 +207,7 @@ describe('ChatLayout — self-scroll layout contract (#2573)', () => {
       </ChatLayout>,
     );
     const root = screen.getByTestId('layout');
-    expect(root).toHaveStyle({display: 'flex', flexDirection: 'column'});
+    expectClassSet(root, {includes: ['flex', 'flex-col']});
   });
 
   it('message area flexes to fill leftover space instead of minHeight: 100%', () => {
@@ -209,9 +218,9 @@ describe('ChatLayout — self-scroll layout contract (#2573)', () => {
     );
     const messageArea = screen.getByTestId('layout')
       .firstElementChild as HTMLElement;
-    expect(messageArea).toHaveStyle({flexGrow: '1', flexShrink: '0'});
+    expectClassSet(messageArea, {includes: ['grow', 'shrink-0']});
     // minHeight: 100% is the phantom-scrollbar bug — it must not come back.
-    expect(getComputedStyle(messageArea).minHeight).not.toBe('100%');
+    expect(classesOf(messageArea)).not.toContain('min-h-full');
   });
 
   it('dock is sticky in self-scroll mode and fixed with an external scrollRef', () => {
@@ -221,7 +230,7 @@ describe('ChatLayout — self-scroll layout contract (#2573)', () => {
       </ChatLayout>,
     );
     const dock = screen.getByTestId('layout').lastElementChild as HTMLElement;
-    expect(dock).toHaveStyle({position: 'sticky'});
+    expectClassSet(dock, {includes: ['sticky']});
 
     const scrollRef = {current: document.documentElement};
     rerender(
@@ -232,7 +241,7 @@ describe('ChatLayout — self-scroll layout contract (#2573)', () => {
         <div>msg</div>
       </ChatLayout>,
     );
-    expect(dock).toHaveStyle({position: 'fixed'});
+    expectClassSet(dock, {includes: ['fixed'], excludes: ['sticky']});
   });
 
   it('makes room at the message area\u2019s end for a fixed dock\u2019s height, so the newest message rests above it', () => {
@@ -249,6 +258,10 @@ describe('ChatLayout — self-scroll layout contract (#2573)', () => {
     const messageArea = screen.getByTestId('layout')
       .firstElementChild as HTMLElement;
     expect(endRoom(messageArea)).toBe(142);
+    expectVariable(messageArea, chatLayoutSizeVars.endRoom, '142px');
+    expectClassSet(messageArea, {
+      includes: ['pb-[calc(var(--spacing-6)+var(--astryx-chat-end-room))]'],
+    });
     rect.mockRestore();
   });
 
@@ -262,6 +275,8 @@ describe('ChatLayout — self-scroll layout contract (#2573)', () => {
     const messageArea = screen.getByTestId('layout')
       .firstElementChild as HTMLElement;
     expect(endRoom(messageArea)).toBe(0);
+    expectVariable(messageArea, chatLayoutSizeVars.endRoom, '');
+    expectClassSet(messageArea, {includes: ['pb-6']});
     rect.mockRestore();
   });
 });
@@ -281,12 +296,10 @@ function stubDockHeight(height: number) {
 }
 
 // The room the message area's end padding adds to the density's own padding,
-// CSS px: the `+ Npx` of its functional style.
+// CSS px: the value its end-room variable carries, and the class that reads it.
 function endRoom(element: HTMLElement): number {
-  const match = /--[\w-]+:\s*calc\([^;]*\+\s*(-?[\d.]+)px\)/.exec(
-    element.getAttribute('style') ?? '',
-  );
-  return match == null ? 0 : Number(match[1]);
+  const value = element.style.getPropertyValue(chatLayoutSizeVars.endRoom);
+  return value === '' ? 0 : Number.parseFloat(value);
 }
 
 // ---------------------------------------------------------------------------

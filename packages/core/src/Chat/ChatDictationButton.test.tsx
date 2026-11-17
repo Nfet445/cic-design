@@ -4,6 +4,7 @@ import {createRef} from 'react';
 import {describe, it, expect, vi} from 'vitest';
 import {fireEvent, render, screen} from '@testing-library/react';
 import {colorVars} from '../theme/tokens.stylex';
+import {chatDictationBarVars} from './chatClasses';
 import {ChatDictationButton} from './ChatDictationButton';
 import type {ChatDictationButtonProps} from './ChatDictationButton';
 import type {UseSpeechRecognitionReturn} from './useSpeechRecognition';
@@ -57,9 +58,8 @@ describe('ChatDictationButton', () => {
     });
     const {container} = render(<ChatDictationButton dictation={dictation} />);
 
-    const barStyle = container
-      .querySelector('[aria-hidden="true"] > span')
-      ?.getAttribute('style');
+    const bar = container.querySelector('[aria-hidden="true"] > span')!;
+    const barStyle = bar.style.getPropertyValue(chatDictationBarVars.color);
     expect(barStyle).toContain('color-mix(in srgb');
     expect(barStyle).toContain(colorVars['--color-accent']);
     expect(barStyle).toContain(colorVars['--color-error']);
