@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 43 of 50 tickets done, plus two waves (layout primitives,
+Progress: 44 of 50 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -104,7 +104,7 @@ buttons) that landed before the tickets were written.
 - [ ] `45-template-pages-and-blocks` — the shipped page and block templates become class-based
 - [x] `33-storybook-and-vibe-tests` — both load the sheet
 - [x] `34-swizzle-and-render-pipeline` — ejected source states its stylesheet
-- [ ] `35-deprecate-stylex-subpaths` — 80 export entries, one release
+- [x] `35-deprecate-stylex-subpaths` — 80 export entries, one release
 - [x] `37-table-row-and-cell` — row and body cell
 - [x] `38-data-token-sheet` — 56 data tokens get their own sheet
 - [x] `39-layout-regions-page` — a check page that does not contradict the classes
