@@ -1,7 +1,7 @@
 # overflow and gesture surfaces
 
-Status: in-progress
-Blocked by: 11
+Status: done — OverlayScrim перенесён в тикет 07 (маркер `overlayScope`)
+Blocked by: —
 Wave: 6
 Ticket: 49
 Parent: `00-epic-stylex-to-tailwind-4`
