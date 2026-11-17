@@ -13,16 +13,18 @@
 
 import React, {type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import type {SearchableItem} from './types';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {
+  TYPEAHEAD_ITEM_CONTENT_CLASS,
+  TYPEAHEAD_ITEM_DESCRIPTION_CLASS,
+  TYPEAHEAD_ITEM_DISABLED_CLASS,
+  TYPEAHEAD_ITEM_FRAME_CLASS,
+  TYPEAHEAD_ITEM_LABEL_CLASS,
+} from './typeaheadClasses';
 
 // =============================================================================
 // Types
@@ -63,41 +65,6 @@ export interface TypeaheadItemProps<
 // =============================================================================
 // Styles
 // =============================================================================
-
-const styles = stylex.create({
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    minHeight: 0,
-  },
-  content: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minWidth: 0,
-  },
-  label: {
-    fontSize: typeScaleVars['--text-label-size'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    color: colorVars['--color-text-primary'],
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  description: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-});
 
 // =============================================================================
 // Component
@@ -149,16 +116,22 @@ export function TypeaheadItem<T extends SearchableItem>({
       ref={ref}
       {...mergeProps(
         themeProps('typeahead-item'),
-        stylex.props(styles.container, isDisabled && styles.disabled, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(
+          TYPEAHEAD_ITEM_FRAME_CLASS,
+          isDisabled && TYPEAHEAD_ITEM_DISABLED_CLASS,
+          className,
+        ),
         style,
       )}
       {...rest}>
       {icon}
-      <div {...stylex.props(styles.content)}>
-        <span {...stylex.props(styles.label)}>{item.label}</span>
+      <div className={TYPEAHEAD_ITEM_CONTENT_CLASS}>
+        <span className={TYPEAHEAD_ITEM_LABEL_CLASS}>{item.label}</span>
         {description && (
-          <span {...stylex.props(styles.description)}>{description}</span>
+          <span className={TYPEAHEAD_ITEM_DESCRIPTION_CLASS}>
+            {description}
+          </span>
         )}
       </div>
     </div>

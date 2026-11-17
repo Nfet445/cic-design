@@ -124,6 +124,16 @@ import {
   MULTI_SELECTOR_ROW_LABEL_CLASS,
   multiSelectorOptionRowClassName,
 } from '../MultiSelector/multiSelectorOptionClasses';
+import {
+  TYPEAHEAD_DEFAULT_ITEM_CLASS,
+  TYPEAHEAD_ITEM_CONTENT_CLASS,
+  TYPEAHEAD_ITEM_DESCRIPTION_CLASS,
+  TYPEAHEAD_ITEM_DISABLED_CLASS,
+  TYPEAHEAD_ITEM_FRAME_CLASS,
+  TYPEAHEAD_ITEM_LABEL_CLASS,
+  TYPEAHEAD_ROW_CONTENT_CLASS,
+  typeaheadRowClassName,
+} from '../Typeahead/typeaheadClasses';
 import {tableCellClassName} from '../Table/tableCellClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
 import {tableRowClassName} from '../Table/tableRowClasses';
@@ -669,6 +679,23 @@ function familyClassNames() {
   add(MULTI_SELECTOR_OPTION_CELL_CLASS);
   add(MULTI_SELECTOR_ACTION_CELL_CLASS);
   add(MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS);
+
+  // Typeahead result rows: each size crossed with highlighted and selected,
+  // plus the default item's own parts.
+  for (const size of ['sm', 'md', 'lg']) {
+    for (const isHighlighted of [false, true]) {
+      for (const isSelected of [false, true]) {
+        add(typeaheadRowClassName({isHighlighted, isSelected, size}));
+      }
+    }
+  }
+  add(TYPEAHEAD_ROW_CONTENT_CLASS);
+  add(TYPEAHEAD_DEFAULT_ITEM_CLASS);
+  add(TYPEAHEAD_ITEM_FRAME_CLASS);
+  add(TYPEAHEAD_ITEM_CONTENT_CLASS);
+  add(TYPEAHEAD_ITEM_LABEL_CLASS);
+  add(TYPEAHEAD_ITEM_DESCRIPTION_CLASS);
+  add(TYPEAHEAD_ITEM_DISABLED_CLASS);
 
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
