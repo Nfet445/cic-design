@@ -9,6 +9,7 @@
  */
 
 import {tw} from '../utils/tw';
+import type {SpacingStep} from '../utils/types';
 import type {ChatDensity, ChatMessageSender} from './ChatContext';
 
 /** The send button: circular, and it keeps its width in a tight composer. */
@@ -399,6 +400,73 @@ export function chatLayoutDockInnerClassName(density: ChatDensity): string {
     density === 'spacious' ? 'max-w-[800px]' : 'max-w-full',
   );
 }
+
+// ---------------------------------------------------------------------------
+// ChatMessageList
+// ---------------------------------------------------------------------------
+
+/**
+ * The log and the rows column inside it: both fill the area that scrolls them,
+ * and neither shrinks below its content.
+ */
+export const chatMessageListColumnClassName = 'flex flex-col flex-1 min-h-0';
+
+/** The density's own row gap, used when the caller sets no gap. */
+const chatMessageListDensityGapClassName: Record<ChatDensity, string> = {
+  compact: 'gap-2',
+  balanced: 'gap-4',
+  spacious: 'gap-6',
+};
+
+/** A caller's row gap, on the spacing scale. */
+const chatMessageListGapClassName: Record<SpacingStep, string> = {
+  0: 'gap-0',
+  0.5: 'gap-0.5',
+  1: 'gap-1',
+  1.5: 'gap-1.5',
+  2: 'gap-2',
+  3: 'gap-3',
+  4: 'gap-4',
+  5: 'gap-5',
+  6: 'gap-6',
+  8: 'gap-8',
+  10: 'gap-10',
+};
+
+/**
+ * The rows column: density states its own inset, and a caller's gap replaces
+ * the density's rather than competing with it, so only one gap class is ever
+ * present.
+ */
+export function chatMessageListInnerClassName({
+  density,
+  gap,
+}: {
+  density: ChatDensity;
+  gap: SpacingStep | undefined;
+}): string {
+  return tw(
+    chatMessageListColumnClassName,
+    density === 'compact'
+      ? 'px-3 py-2'
+      : density === 'spacious'
+        ? 'px-6 py-6'
+        : 'px-4 py-4',
+    gap == null
+      ? chatMessageListDensityGapClassName[density]
+      : chatMessageListGapClassName[gap],
+  );
+}
+
+/** The sentinel row at the top that asks for older messages. */
+export const chatMessageListLoadingClassName = 'flex justify-center py-3';
+
+/** The spacer that holds a short list against the composer. */
+export const chatMessageListSpacerClassName = 'flex-1 min-h-0';
+
+/** The accepted empty state, centered in the space the rows would fill. */
+export const chatMessageListEmptyStateClassName =
+  'flex items-center justify-center flex-1 min-h-0';
 
 // ---------------------------------------------------------------------------
 // ChatLayoutScrollButton

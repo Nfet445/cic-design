@@ -840,6 +840,11 @@ import {
   chatMessageChildrenClassName,
   chatMessageClassName,
   chatMessageContentClassName,
+  chatMessageListColumnClassName,
+  chatMessageListEmptyStateClassName,
+  chatMessageListInnerClassName,
+  chatMessageListLoadingClassName,
+  chatMessageListSpacerClassName,
   chatLayoutBlurLayerClassName,
   chatLayoutDockClassName,
   chatFocusRingInsetClassName,
@@ -2761,6 +2766,18 @@ function familyClassNames() {
   add(chatMessageMetadataSlotClassName);
   add(chatMessageChildrenClassName({density: 'compact', sender: 'assistant'}));
   add(chatMessageChildrenClassName({density: 'spacious', sender: 'user'}));
+  // ChatMessageList: the log and rows column, the density inset, a caller's
+  // gap at both ends of the scale, and the three fixed rows.
+  add(chatMessageListColumnClassName);
+  for (const density of ['compact', 'balanced', 'spacious']) {
+    add(chatMessageListInnerClassName({density, gap: undefined}));
+  }
+  add(chatMessageListInnerClassName({density: 'balanced', gap: 0}));
+  add(chatMessageListInnerClassName({density: 'balanced', gap: 1.5}));
+  add(chatMessageListInnerClassName({density: 'balanced', gap: 10}));
+  add(chatMessageListLoadingClassName);
+  add(chatMessageListSpacerClassName);
+  add(chatMessageListEmptyStateClassName);
   // ChatLayout: the root in both scroll modes, the message area's density and
   // end room, the dock box, the frosted layer, the dock's own inset and its
   // inner column.
