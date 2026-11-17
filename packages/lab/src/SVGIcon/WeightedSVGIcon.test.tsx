@@ -15,6 +15,17 @@ import {iconColorStyles} from './colors.stylex';
 import {SVGIcon} from './SVGIcon';
 import {checkIcon} from './icons';
 import {bellWeightedIcon, weightedStarterIcons} from './weightedIcons';
+import {
+  weightProbeClassName,
+  weightProbeSvgClassName,
+  weightRangeClassNames,
+} from './svgIconClasses';
+
+/** Whether an element carries every class of a map entry. */
+function carries(element: Element | null | undefined, mapClassName: string) {
+  const classes = new Set(element?.classList);
+  return mapClassName.split(' ').every(className => classes.has(className));
+}
 
 const svg = (d: string) => `<svg viewBox="0 0 24 24"><path d="${d}"/></svg>`;
 
@@ -90,6 +101,20 @@ describe('WeightedSVGIcon', () => {
     const id = weightedIconSymbolId(bellWeightedIcon);
     expect(container.querySelector(`symbol#${id}`)).not.toBeNull();
     expect(container.querySelector('use')).toHaveAttribute('href', `#${id}`);
+  });
+
+  it('reads the weight on the svg and paints each layer from its band', () => {
+    const {container} = render(<WeightedSVGIcon icon={bellWeightedIcon} />);
+    const icon = container.querySelector('svg');
+    expect(carries(icon, weightProbeSvgClassName)).toBe(true);
+    expect(carries(icon?.parentElement, weightProbeClassName)).toBe(true);
+
+    const groups = container.querySelectorAll('svg > g');
+    bellWeightedIcon.layers.forEach((layer, index) => {
+      const key =
+        `r${layer.from}_${layer.to}` as keyof typeof weightRangeClassNames;
+      expect(carries(groups[index], weightRangeClassNames[key])).toBe(true);
+    });
   });
 
   it('pins the weight through the override property', () => {
