@@ -79,7 +79,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   Area,
   AreaChart,
@@ -98,7 +97,6 @@ import {
   StackItem,
   VStack,
 } from '@astryxdesign/core/Layout';
-import {colorVars, radiusVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {Heading, Text} from '@astryxdesign/core/Text';
 import {Badge} from '@astryxdesign/core/Badge';
 import {Button} from '@astryxdesign/core/Button';
@@ -286,10 +284,6 @@ const percentFormat = new Intl.NumberFormat('en-US', {
 const UP_COLOR = 'var(--color-data-categorical-green, #0B991F)';
 const DOWN_COLOR = 'var(--color-data-categorical-red, #F5394F)';
 const GRID_COLOR = 'var(--color-border, rgba(5, 54, 89, 0.1))';
-// Text tokens rather than the categorical pair the charts stroke with: these
-// carry text contrast, which a 12px label needs and a 1.5px line does not.
-const TEXT_UP_COLOR = 'var(--color-text-green, #0B991F)';
-const TEXT_DOWN_COLOR = 'var(--color-text-red, #F5394F)';
 const AXIS_TICK = {
   fontSize: 'var(--font-size-sm, 12px)',
   fill: 'var(--color-text-secondary, #4E606F)',
@@ -388,7 +382,7 @@ function CompactValueCell({
       <HStack
         gap={0.5}
         vAlign="center"
-        xstyle={styles.delta(isGood ? TEXT_UP_COLOR : TEXT_DOWN_COLOR)}>
+        className={isGood ? styles.deltaUp : styles.deltaDown}>
         <Icon
           icon={isUp ? 'arrowUp' : 'arrowDown'}
           size="xsm"
@@ -1073,6 +1067,8 @@ function DetailTooltip({
     return null;
   }
   const point = payload[0].payload;
+  // The chart hands this tooltip one of its own two stroke colours.
+  const swatch = color === DOWN_COLOR ? styles.swatchDown : styles.swatchUp;
   return (
     <Card padding={3}>
       <VStack gap={1}>
@@ -1080,7 +1076,7 @@ function DetailTooltip({
           {point.label}
         </Text>
         <HStack gap={2} vAlign="center">
-          <HStack xstyle={styles.swatch(color ?? UP_COLOR)} />
+          <HStack className={`${styles.swatch} ${swatch}`} />
           <Text weight="semibold" hasTabularNumbers>
             {wholeCurrency.format(point.value)}
           </Text>
@@ -1103,35 +1099,23 @@ type GroupId = (typeof GROUP_IDS)[number];
  * chevron buttons, and it sits at their x — so the group's disclosure and its
  * rows' disclosures form one column down the left edge of the card.
  */
-const TILE_SIZE = 24;
-
-const styles = stylex.create({
+const styles = {
   // The page is a wash so the group cards read as surfaces sitting on it
   // rather than as outlines drawn on the same sheet. Body is the right token
   // for that: a theme that wants its cards to contrast sets it away from
   // --color-background-card, and one that wants them flush sets it equal and
   // separates them by border instead. Either way the page follows the theme.
-  wash: {
-    backgroundColor: colorVars['--color-background-body'],
-  },
-  delta: (color: string) => ({color}),
-  swatch: (color: string) => ({
-    width: 8,
-    height: 8,
-    borderRadius: '50%',
-    backgroundColor: color,
-    flexShrink: 0,
-  }),
-  categoryTile: {
-    display: 'grid',
-    placeItems: 'center',
-    width: TILE_SIZE,
-    height: TILE_SIZE,
-    flexShrink: 0,
-    borderRadius: radiusVars['--radius-inner'],
-    backgroundColor: colorVars['--color-background-muted'],
-  },
-});
+  wash: 'bg-[var(--color-background-body)]',
+  // Text tokens rather than the categorical pair the charts stroke with: these
+  // carry text contrast, which a 12px label needs and a 1.5px line does not.
+  deltaUp: 'text-[var(--color-text-green,#0B991F)]',
+  deltaDown: 'text-[var(--color-text-red,#F5394F)]',
+  swatch: 'w-2 h-2 rounded-full shrink-0',
+  swatchUp: 'bg-[var(--color-data-categorical-green,#0B991F)]',
+  swatchDown: 'bg-[var(--color-data-categorical-red,#F5394F)]',
+  categoryTile:
+    'grid place-items-center w-6 h-6 shrink-0 rounded-[var(--radius-inner)] bg-[var(--color-background-muted)]',
+} as const;
 
 function AccountGroup({
   icon,
@@ -1173,7 +1157,7 @@ function AccountGroup({
             paddingBlock={2}
             paddingInline={2}>
             <HStack gap={2} vAlign="center">
-              <HStack xstyle={styles.categoryTile}>
+              <HStack className={styles.categoryTile}>
                 <Icon icon={icon} size="sm" />
               </HStack>
               <Text weight="semibold">{title}</Text>
@@ -1347,7 +1331,7 @@ export default function ConnectedAccountsTemplate() {
       <Layout
         height="auto"
         contentWidth={1200}
-        xstyle={styles.wash}
+        className={styles.wash}
         header={
           <LayoutHeader padding={4}>
             <HStack gap={3} vAlign="center" wrap="wrap">
