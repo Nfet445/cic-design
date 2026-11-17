@@ -210,6 +210,7 @@ import {
 } from '../TimeInput/touchTimeFieldClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {checkboxListItemClassName} from '../CheckboxList/checkboxListItemClasses';
+import {radioListClassName} from '../RadioList/radioListClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
@@ -1941,6 +1942,9 @@ function familyClassNames() {
 
   for (const isSelected of [true, false]) {
     add(checkboxListItemClassName({isSelected, className: undefined}));
+  }
+  for (const orientation of ['vertical', 'horizontal']) {
+    add(radioListClassName({orientation}));
   }
 
   return [...names].sort();
