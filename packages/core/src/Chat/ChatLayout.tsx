@@ -53,7 +53,7 @@ import {
   chatLayoutBlurLayerClassName,
   chatLayoutDockClassName,
   chatLayoutDockContainerClassName,
-  chatLayoutDockFocusRingClassName,
+  chatFocusRingInsetClassName,
   chatLayoutDockInnerClassName,
   chatLayoutEmptyStateClassName,
   chatLayoutMessageAreaClassName,
@@ -315,7 +315,7 @@ export function ChatLayout({
               {...mergeProps(
                 tw(
                   chatLayoutDockClassName(density),
-                  chatLayoutDockFocusRingClassName,
+                  chatFocusRingInsetClassName,
                 ),
                 stylex.props(focusOutlineStyles.focusVisible),
               )}>

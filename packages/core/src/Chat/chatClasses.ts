@@ -15,6 +15,15 @@ import type {ChatDensity, ChatMessageSender} from './ChatContext';
 export const chatSendButtonClassName =
   'shrink-0 rounded-[var(--_button-radius,var(--radius-full))]';
 
+/**
+ * A ring drawn inside an element whose edges are the viewport's or a clipping
+ * box's. `focusOutlineStyles` supplies the width, style and colour from the
+ * tokens; this overrides only the offset, and it wins because its rule and the
+ * shared one both land in `astryx-base`, where sheet order decides.
+ */
+export const chatFocusRingInsetClassName =
+  'focus-visible:[outline-offset:calc(-1*var(--focus-outline-width))]';
+
 /** The tokenized text root: inline, so a token flows with the words. */
 export const chatTokenizedTextClassName = 'inline';
 
@@ -382,13 +391,6 @@ export function chatLayoutDockClassName(density: ChatDensity): string {
         : 'px-3 pb-3',
   );
 }
-
-/**
- * The dock's edge can meet the viewport's, so its ring is drawn inside it.
- * `focusOutlineStyles` lands in the same layer, and the later rule wins.
- */
-export const chatLayoutDockFocusRingClassName =
-  'focus-visible:[outline-offset:calc(-1*var(--focus-outline-width))]';
 
 /** The dock's inner column: the composer's own cap, not the viewport's. */
 export function chatLayoutDockInnerClassName(density: ChatDensity): string {

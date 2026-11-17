@@ -842,8 +842,8 @@ import {
   chatMessageContentClassName,
   chatLayoutBlurLayerClassName,
   chatLayoutDockClassName,
+  chatFocusRingInsetClassName,
   chatLayoutDockContainerClassName,
-  chatLayoutDockFocusRingClassName,
   chatLayoutDockInnerClassName,
   chatLayoutEmptyStateClassName,
   chatLayoutMessageAreaClassName,
@@ -2776,7 +2776,7 @@ function familyClassNames() {
   add(chatLayoutEmptyStateClassName);
   add(chatLayoutDockContainerClassName({isFixed: true, hasLift: true}));
   add(chatLayoutDockContainerClassName({isFixed: false, hasLift: false}));
-  add(chatLayoutDockFocusRingClassName);
+  add(chatFocusRingInsetClassName);
   // ChatLayoutScrollButton: both pill states and both widths, plus the Button's
   // inset with and without a label.
   add(chatLayoutScrollButtonWrapperClassName);
