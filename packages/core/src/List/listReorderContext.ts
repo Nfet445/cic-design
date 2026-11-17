@@ -34,7 +34,6 @@ import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {sharedKey} from '../utils/sharedRealm';
 import type {Reorderable} from '../reorderable/createReorderable';
 import type {StyleXStyles} from '@stylexjs/stylex';
-import type {reorderListStyle} from './ListReorderHandle';
 
 /**
  * The key a reorderable object carries its machinery under. `sharedKey`
@@ -122,9 +121,7 @@ export interface ListReorderSession {
   readonly RowName: ComponentType<ListReorderRowNameProps>;
   /** A row with a handle: its focus ring stays off for the handle's own. */
   readonly rowStyle: StyleXStyles;
-  /** The list itself: its insertion line, a pseudo-element. */
-  readonly listStyle: typeof reorderListStyle;
-  /** Shows that line while the list is marked: the list's `::after` class. */
+  /** Paints that line and shows it while the list is marked: its `::after`. */
   readonly listClassName: string;
 }
 
