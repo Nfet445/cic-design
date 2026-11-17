@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 46 of 52 tickets done, plus two waves (layout primitives,
+Progress: 47 of 52 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -52,7 +52,7 @@ buttons) that landed before the tickets were written.
 
 - [x] `05-tokens` — 18 `defineVars` become `tokens.css` plus a shim, 251 importers follow
 - [x] `06-theme-modules` — data tokens, derived registry, `defineTheme`, colour modes
-- [ ] `07-private-attributes` — markers and variables, 26 `.stylex.ts` files
+- [x] `07-private-attributes` — markers and variables, 26 `.stylex.ts` files
 - [x] `08-icon` — `Icon/` and the `IconSize` contract
 - [x] `09-text` — the typography vocabulary every family reads
 - [x] `10-indicator` — indicator states over the new marker path

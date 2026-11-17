@@ -1,7 +1,6 @@
 # private attributes
 
-Status: blocked
-Blocked by: 42, 48
+Status: done
 Wave: 7
 Ticket: 07
 Parent: `00-epic-stylex-to-tailwind-4`
@@ -41,3 +40,35 @@ This ticket also owns the last `stylex.when.ancestor` consumer that a class cann
 - The ten `stylex.create` calls that used to sit in this ticket moved to `17-shared-stylex-modules.md`: they are the shared press and overlay seam, and fifteen components compose them, so they belong with the other shared modules.
 - Verified facts from the wave-3 investigation: the compiler error above; the consumers are `Button`, `Item`, `ListItem`, `ListReorderHandle`, `RadioListItem`, `CheckboxInput`, `CheckboxListItem`, `TreeListItem`, `DropdownMenu{Item,CheckboxItem,RadioItem,SubMenu}`, `Selector`, `Token`, `Carousel`.
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`.
+
+## Comments
+
+The marker scopes are gone. `Indicator/indicator.markers.stylex.ts`,
+`Indicator/indicatorHover.stylex.ts`, `internal/indicatorPress.stylex.ts` and
+`Overlay/overlay.markers.stylex.ts` were deleted, and the attribute owners now
+sit where `@astryx/no-raw-private-attribute` expects them:
+
+- `Indicator/indicatorScope.ts` and `internal/indicatorPress.ts` moved to
+  `privateAttributes/indicatorScope.stylex.ts` and
+  `privateAttributes/indicatorPress.stylex.ts`, because the rule only accepts an
+  owner under `packages/core/src/privateAttributes/`.
+- `privateAttributes/pressClasses.ts` was folded into
+  `Indicator/indicatorClasses.ts` (`indicatorPressFillClassName`,
+  `indicatorPressImageClassName`): its selectors read two attributes at once, so
+  no single owner module could hold them.
+- `Overlay/overlayClasses.ts` replaced the scrim map and
+  `privateAttributes/overlayScope.stylex.ts` owns the new scope attribute.
+  `Overlay.tsx` and `useOverlay.tsx` spread the attribute instead of a marker.
+  `OverlayContainerProps` keeps `style` (always undefined) so a caller that
+  spreads the props onto an element keeps its type.
+
+Two markers deliberately stay, each because a Tailwind class cannot express the
+condition: `Switch/switchHoverPress.stylex.ts` and
+`Table/table.stylex.ts`/`Table/plugins/rowExpansion/rowExpansionOverrides.stylex.ts`
+read `stylex.when.ancestor` with a marker for a state that composes inside a
+map that is still StyleX. They move with the maps that read them.
+
+Deleted code found on the way: an unused `ruleTexts()` and its `CSSMediaRule`
+walk in `Indicator/Indicator.classes.test.tsx`, and an unused
+`import * as stylex` in `RadioList/RadioListItem.tsx`. `pnpm exec eslint src`
+reports the same warning set as the integration branch.
