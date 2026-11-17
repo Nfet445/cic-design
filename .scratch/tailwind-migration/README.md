@@ -174,3 +174,8 @@ classNameOrStyle, style`). A fifth argument is silently dropped along with
 Temporal behaviour on Node 26 (`Calendar`, `PowerSearch.calendarSystems`,
 `Timestamp`, `postinstall`, four `utils/` calendar tests). A wave must not make
 them worse and must not fix them; a change in that count is a finding.
+
+- A utility cannot cancel an unlayered declaration. `@layer astryx-base` loses to every
+  unlayered StyleX rule at any order, so a rest state that writes `outline-width: 0` to keep a
+  wrapper's ring off while its child rings itself has to stay StyleX until the ring application
+  itself is a class; `!important` would beat the theme instead. Ticket 53 records the cases.
