@@ -12,8 +12,9 @@
 import {describe, it, expect, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {expectVariable} from '../__tests__/classNameAssertions';
+import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
 import {Icon} from '../Icon/Icon';
+import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {iconSizeVar} from '../Icon/iconClasses';
 import {IconButton} from './IconButton';
 
@@ -117,10 +118,12 @@ describe('IconButton', () => {
       expect(icon).toHaveAttribute('data-size', iconSize);
       // The glyph takes its size from the class plus the inline variable, so
       // the wrapper's box and the glyph agree without either reading the
-      // other's rendered size.
+      // other's rendered size. The box's class reads the same theme vars; its
+      // geometry is pinned in the built sheet, not in jsdom.
       expectVariable(icon, iconSizeVar, renderedSize);
-      expect(getComputedStyle(wrapper!).width).toBe(renderedSize);
-      expect(getComputedStyle(wrapper!).height).toBe(renderedSize);
+      expectClassSet(wrapper!, {
+        includes: iconBoxClassName[iconSize].split(' '),
+      });
     },
   );
 
