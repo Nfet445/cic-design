@@ -15,6 +15,11 @@ import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import React from 'react';
 import {PowerSearch} from './PowerSearch';
 import {PowerSearchFilterEditor} from './PowerSearchFilterEditor';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
+import {
+  powerSearchEditPopoverChipRowWrappedClassName,
+  powerSearchEditPopoverValueEditorFullWidthClassName,
+} from './powerSearchEditPopoverClasses';
 import type {
   PowerSearchConfig,
   PowerSearchEditorProps,
@@ -259,13 +264,20 @@ describe('PowerSearch isDateOnly: false', () => {
     const {date} = await openEditor('At');
     const popover = date.closest<HTMLElement>('[popover]');
     // The value cell spans the row and the row wraps, so the two-input
-    // control does not squeeze the field selector beside it.
+    // control does not squeeze the field selector beside it. Both are classes,
+    // which jsdom cannot compute, so the row's shape is the class it asked for.
     const valueCell = Array.from(
       popover?.querySelectorAll<HTMLElement>('div') ?? [],
-    ).find(el => getComputedStyle(el).flexBasis === '100%');
+    ).find(el =>
+      classesOf(el).includes(
+        powerSearchEditPopoverValueEditorFullWidthClassName,
+      ),
+    );
     expect(valueCell).toBeTruthy();
     expect(valueCell?.contains(date)).toBe(true);
-    expect(getComputedStyle(valueCell!.parentElement!).flexWrap).toBe('wrap');
+    expectClassSet(valueCell!.parentElement!, {
+      includes: [powerSearchEditPopoverChipRowWrappedClassName],
+    });
   });
 
   it('wraps the date-and-time pair in a nested sub-filter row, where the value cell is narrower than its two inputs', async () => {
