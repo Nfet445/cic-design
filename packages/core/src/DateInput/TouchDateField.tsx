@@ -87,18 +87,6 @@ import {joinAriaIDs} from '../utils/inputAria';
 import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
 import {useSize} from '../SizeContext';
 import {Spinner} from '../Spinner';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  sizeVars,
-  borderVars,
-  fontWeightVars,
-  typeScaleVars,
-  typographyVars,
-  durationVars,
-  easeVars,
-} from '../theme/tokens.stylex';
 import {useTooltip} from '../Tooltip';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {
@@ -134,8 +122,31 @@ import {
   createMonthModel,
   dateInMonth,
 } from './monthGeometry';
-import {dateInputSizeClassName} from './dateInputClasses';
-import {dateInputTouchSizes, dateInputTouchGeometry} from './tokens.stylex';
+import {
+  dateInputSizeClassName,
+  touchDateBodyClassName,
+  touchDateFieldIconButtonClassName,
+  touchDateFieldInputClassName,
+  touchDateFieldWrapperClassName,
+  touchDateFooterActionClassName,
+  touchDateFooterClassName,
+  touchDateHeaderClassName,
+  touchDateHeaderResetClassName,
+  touchDateMonthArrowClassName,
+  touchDateMonthArrowIconClassName,
+  touchDateMonthArrowsClassName,
+  touchDatePanelBeneathClassName,
+  touchDatePanelClassName,
+  touchDatePanelOverlayClassName,
+  touchDateResetButtonClassName,
+  touchDateSheetBodyClassName,
+  touchDateSurfaceClassName,
+  touchDateTitleChevronClassName,
+  touchDateTitleClassName,
+  touchDateTitleTextClassName,
+  touchDateWeekdayClassName,
+  touchDateWeekdaysClassName,
+} from './dateInputClasses';
 import {tw} from '../utils/tw';
 import {
   registerEnglishFallback,
@@ -148,406 +159,6 @@ import english from '../i18n/generated-english/DateInput/TouchDateField.generate
 const UNKNOWN_TODAY_STAND_IN = plainDateFromISO('1970-01-01');
 
 registerEnglishFallback(english);
-
-/**
- * The comfortable minimum tap target on both iOS and Android, honoured by
- * every target inside the sheet.
- */
-const TOUCH_TARGET = dateInputTouchSizes.daySize;
-
-/**
- * The whole surface swap, in one leg.
- *
- * It used to be two: the outgoing surface faded out, then the incoming one
- * faded in, 110ms each. The sequencing existed for one reason — the wheels'
- * panel was transparent, so overlapping the two put the wheels' translucent
- * selection band over the calendar grid and tinted a band-shaped strip of it,
- * which read as "the grey area animates differently from the content".
- *
- * Giving the wheels an opaque background removes the reason. Nothing shows
- * through them, so they can simply fade in ON TOP of a calendar that does not
- * move at all — no empty middle, no outgoing animation, and one duration
- * instead of a wait plus a fade.
- *
- * `--duration-fast` rather than a literal now that this is a whole duration
- * and not half of one.
- */
-const SWAP_DURATION = durationVars['--duration-fast'];
-
-const styles = stylex.create({
-  // ---- the closed field ----
-  wrapper: {
-    gap: spacingVars['--spacing-2'],
-  },
-  iconButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-  },
-  iconButtonDisabled: {
-    cursor: 'default',
-  },
-  input: {
-    display: 'block',
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    fontFamily: typographyVars['--font-family-body'],
-    // Below 16px iOS zooms the page on focus. The field is focusable even
-    // though it is not typable, so it needs the same floor DateInput has —
-    // keyed to iOS alone, since only iOS WebKit implements
-    // -webkit-touch-callout.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    outline: 'none',
-    // It opens a picker; it does not take text. The caret would say otherwise.
-    caretColor: 'transparent',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    userSelect: 'none',
-    '::placeholder': {
-      color: colorVars['--color-text-secondary'],
-    },
-  },
-  inputDisabled: {
-    cursor: 'default',
-  },
-
-  // ---- the picker surface ----
-  surface: {
-    display: 'flex',
-    flexDirection: 'column',
-    inlineSize: '100%',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    blockSize: sizeVars['--size-element-lg'],
-    // No inline padding of its own: the content box owns the inset, and any
-    // extra here would push the arrows off the line the day grid sits on.
-  },
-  /**
-   * Both arrows together, at the trailing corner. `IconButton` draws each
-   * one — a hand-rolled button had the glyph off-centre, and matching
-   * Button's optical centring by hand is exactly the sort of thing a shared
-   * component is for.
-   */
-  monthArrows: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-0-5'],
-    // The pair is the trailing item; the title takes the space before it.
-    marginInlineStart: 'auto',
-    // The plate starts below the header, so these two are the one part of the
-    // calendar the layer above cannot cover. They fade on its timing instead,
-    // both directions, so the change reads as one motion rather than chrome
-    // blinking out a beat before the grid is covered.
-    transitionProperty: 'opacity, visibility',
-    transitionDuration: SWAP_DURATION,
-    transitionTimingFunction: 'linear',
-    '@media (prefers-reduced-motion: reduce)': {
-      transitionDuration: '0.01s',
-    },
-  },
-  /**
-   * Hidden while the wheels are up: they step the calendar, and the calendar
-   * is not on screen. Hidden rather than unmounted because they are the
-   * tallest thing in the header — dropping them would shorten it by 8px and
-   * shift the whole sheet just as the panels cross-fade.
-   *
-   * `visibility: hidden` also takes them out of the tab order and the
-   * accessibility tree, so there is nothing to reach that cannot be seen.
-   */
-  /**
-   * An arrow with nowhere to go. Hidden, not unmounted, and not merely
-   * disabled — it keeps its 44px so the remaining arrow does not slide
-   * sideways as the range's edge is reached, and `visibility: hidden` takes
-   * it out of the tab order and the accessibility tree so nothing invisible
-   * is reachable.
-   */
-  monthArrowUnavailable: {
-    visibility: 'hidden',
-  },
-  monthArrowsHidden: {
-    visibility: 'hidden',
-    opacity: 0,
-    pointerEvents: 'none',
-  },
-  /**
-   * `Button`'s own sizes top out at 36px, which is fine for a mouse and short
-   * of the 44px every other target in this sheet honours. Floor it on a
-   * coarse pointer, the same way the day cells do.
-   */
-  monthArrow: {
-    minBlockSize: {default: null, '@media (pointer: coarse)': TOUCH_TARGET},
-    minInlineSize: {default: null, '@media (pointer: coarse)': TOUCH_TARGET},
-  },
-  /**
-   * The wrapper the RTL mirror rides on has to be a flex box. A bare inline
-   * span puts the glyph on the text baseline, which lifts it a few px off the
-   * button's optical centre — the whole reason these are `IconButton`s now.
-   * Core's Calendar carries the identical `navIcon` rule.
-   */
-  monthArrowIcon: {
-    display: 'inline-flex',
-  },
-  /**
-   * Reset, past the arrows. It fades on their timing for their reason: the
-   * plate starts below the header, so the two of them are what the layer
-   * above cannot cover, and they have to leave together.
-   */
-  headerReset: {
-    display: 'flex',
-    alignItems: 'center',
-    transitionProperty: 'opacity, visibility',
-    transitionDuration: SWAP_DURATION,
-    transitionTimingFunction: 'linear',
-    '@media (prefers-reduced-motion: reduce)': {
-      transitionDuration: '0.01s',
-    },
-  },
-  headerResetHidden: {
-    visibility: 'hidden',
-    opacity: 0,
-    pointerEvents: 'none',
-  },
-  /**
-   * The same 44px floor the arrows take. `Button`'s `sm` is 32px, which is
-   * fine beside a mouse and short of what every other target in this sheet
-   * honours.
-   */
-  resetButton: {
-    minBlockSize: {default: null, '@media (pointer: coarse)': TOUCH_TARGET},
-  },
-  /**
-   * The month and year, and the toggle into the wheels. Leading, so it reads
-   * first and sits on the same line as the day grid below it.
-   */
-  title: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    blockSize: '100%',
-    paddingInline: spacingVars['--spacing-2'],
-    // Pulls the text back onto the grid's line: the button's own padding
-    // would otherwise inset the label past it.
-    marginInlineStart: `calc(-1 * ${spacingVars['--spacing-2']})`,
-    borderWidth: 0,
-    borderStyle: 'none',
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: 'transparent',
-    color: colorVars['--color-text-primary'],
-    fontSize: typeScaleVars['--text-large-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    whiteSpace: 'nowrap',
-    // The header now ends with Reset, so the title is the part that gives:
-    // it ellipses rather than pushing the corner off a narrow screen.
-    minInlineSize: 0,
-    overflow: 'hidden',
-  },
-  titleText: {
-    minInlineSize: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  titleChevron: {
-    display: 'inline-flex',
-    flexShrink: 0,
-    // The one part of the swap that keeps `--ease-standard`, because it is
-    // the one part that travels: a rotation has a distance to cover, and
-    // fast-out-slow-in is what that curve is for. Same duration as the
-    // surface it announces, so the two land together.
-    transitionProperty: 'transform',
-    transitionDuration: SWAP_DURATION,
-    transitionTimingFunction: easeVars['--ease-standard'],
-    '@media (prefers-reduced-motion: reduce)': {
-      transitionDuration: '0.01s',
-    },
-  },
-  titleChevronOpen: {
-    transform: 'rotate(180deg)',
-  },
-  weekdays: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(7, 1fr)',
-    blockSize: sizeVars['--size-element-sm'],
-    alignItems: 'center',
-    // Same as the arrows: above the plate's reach, so it fades on the layer's
-    // timing rather than clearing on its own.
-    transitionProperty: 'opacity, visibility',
-    transitionDuration: SWAP_DURATION,
-    transitionTimingFunction: 'linear',
-    '@media (prefers-reduced-motion: reduce)': {
-      transitionDuration: '0.01s',
-    },
-  },
-  weekdaysHidden: {
-    // Hidden, not unmounted: the row still owes the surface its height, or
-    // opening the wheels would make the picker shorter.
-    visibility: 'hidden',
-    opacity: 0,
-  },
-  weekday: {
-    textAlign: 'center',
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    color: colorVars['--color-text-secondary'],
-  },
-  body: {
-    display: 'grid',
-    blockSize: dateInputTouchGeometry.paneBlockSize,
-    position: 'relative',
-  },
-  /**
-   * The two panels share one grid cell, and the wheels are the one on top.
-   */
-  panel: {
-    gridArea: '1 / 1',
-    minWidth: 0,
-  },
-  /**
-   * The layer underneath — the calendar, and the calendar's footer actions.
-   *
-   * It has no opacity and never fades. `visibility` is the only thing that
-   * moves, and giving it the layer's own duration is what times it: CSS
-   * interpolates `visibility` discretely, holding `visible` for the whole
-   * transition whenever either end is `visible` and taking the final value
-   * only at the finish. So it disappears exactly when the cover completes,
-   * and on the way back it is there from the first frame, revealed as the
-   * layer above fades off it. Nothing about it is ever seen changing.
-   *
-   * It is not merely decorative to hide it: `inert` keeps it off the tab
-   * order, but a layer that is only COVERED is still `visible` to a screen
-   * reader, so the two footer actions would both be announced.
-   *
-   * `visibility` (not `display`) also keeps the month scroller laid out while
-   * the wheels are up, so its scroll offset survives the round trip and the
-   * wheels can steer it before it is shown again.
-   */
-  panelBeneath: {
-    transitionProperty: 'visibility',
-    transitionDuration: SWAP_DURATION,
-    '@media (prefers-reduced-motion: reduce)': {
-      transitionDuration: '0.01s',
-    },
-  },
-  panelBeneathHidden: {
-    visibility: 'hidden',
-    pointerEvents: 'none',
-  },
-  /**
-   * The month and year, as one layer that fades in and out on top.
-   *
-   * The calendar underneath does not fade with it — this layer is opaque, so
-   * covering it is enough, and animating it too would be animating the date
-   * picker rather than the thing arriving over it.
-   *
-   * Three properties carry the whole design:
-   *
-   * `backgroundColor` is what makes the fade uniform. Without it the wheels
-   * are a translucent selection band and some text, each compositing against
-   * a live calendar grid on its own terms — so the band area faded unlike the
-   * rest and read as "the grey area animates differently from the content".
-   * With the plate inside the fading group, the group renders opaque first
-   * and the fade applies to the finished image, so every pixel of it crosses
-   * at the same rate.
-   *
-   * `isolation` is what makes the plate actually cover. Backgrounds and text
-   * paint in separate phases, so without a stacking context a later sibling's
-   * background lands UNDER an earlier sibling's text — the plate went in
-   * opaque and the calendar's day numbers showed straight through it. Easy to
-   * lose, because any opacity below 1 makes a stacking context anyway: the
-   * cover only breaks at the two ends of the fade, where opacity is exactly
-   * 1, which is to say whenever anyone is actually looking.
-   *
-   * `visibility` rides along with `opacity`, on the same rule as the layer
-   * beneath: it stays `visible` for the whole transition, so fading out is
-   * seen rather than cut on the first frame, and the layer still leaves the
-   * a11y tree and the hit testing at the end of it.
-   *
-   * Easing is `linear`, not `--ease-standard`. That token is
-   * `cubic-bezier(0.24, 1, 0.4, 1)`, which is right for something travelling
-   * a distance and wrong for a fade: measured, it put the opacity at 50% in
-   * 91ms and 95% in 241ms of a 410ms transition, so the fade was over long
-   * before the duration was, and lengthening the duration bought an
-   * imperceptible tail rather than a slower fade. A fade has no distance to
-   * cover, so its progress should be its progress.
-   */
-  panelOverlay: {
-    backgroundColor: colorVars['--color-background-surface'],
-    isolation: 'isolate',
-    transitionProperty: 'opacity, visibility',
-    transitionDuration: SWAP_DURATION,
-    transitionTimingFunction: 'linear',
-    '@media (prefers-reduced-motion: reduce)': {
-      transitionDuration: '0.01s',
-    },
-  },
-  panelOverlayHidden: {
-    visibility: 'hidden',
-    opacity: 0,
-    pointerEvents: 'none',
-  },
-  footer: {
-    paddingBlockStart: spacingVars['--spacing-2'],
-    // Same reason as the header: the content box owns the inline inset, so
-    // Done's edge lines up with the grid's rather than sitting 4px inside it.
-    // One grid cell, so the two actions stack and the row is as tall as one
-    // button whichever is showing.
-    display: 'grid',
-    gridTemplateColumns: '1fr',
-  },
-  /**
-   * One footer action. Both occupy the same cell, and the wheels' one is a
-   * layer over the calendar's, exactly as the panels above are. The row
-   * never changes height either way.
-   */
-  footerAction: {
-    gridArea: '1 / 1',
-    // One button per surface, filling the row: Save on the calendar, Done on
-    // the wheels.
-    display: 'flex',
-  },
-  sheetBody: {
-    // One inset on every edge but the top: BottomSheet keeps the band under
-    // its grab bar, which reads as the same inset because the bar sits in it.
-    paddingInline: spacingVars['--spacing-4'],
-    paddingBlockStart: 0,
-    paddingBlockEnd: spacingVars['--spacing-4'],
-  },
-  divider: {
-    blockSize: borderVars['--border-width'],
-    backgroundColor: colorVars['--color-border'],
-    marginBlockStart: spacingVars['--spacing-1'],
-  },
-});
 
 /**
  * The touch surface. Takes `DateInput`'s props verbatim; see
@@ -1071,8 +682,8 @@ export function TouchDateField({
   );
 
   const surface = (
-    <div {...stylex.props(styles.surface)}>
-      <div {...stylex.props(styles.header)}>
+    <div className={touchDateSurfaceClassName}>
+      <div className={touchDateHeaderClassName}>
         <button
           ref={monthYearButtonRef}
           type="button"
@@ -1091,22 +702,21 @@ export function TouchDateField({
           // withdrawing one is not.
           data-title="month-year"
           {...pressable}
-          {...stylex.props(
-            styles.title,
-            interactionOverlayStyles.backgroundColor,
-            focusOutlineStyles.focusVisible,
+          {...mergeProps(
+            stylex.props(
+              interactionOverlayStyles.backgroundColor,
+              focusOutlineStyles.focusVisible,
+            ),
+            {className: touchDateTitleClassName},
           )}>
-          <span {...stylex.props(styles.titleText)}>{monthYearLabel}</span>
+          <span className={touchDateTitleTextClassName}>{monthYearLabel}</span>
           <Icon
             icon="chevronDown"
             size="sm"
             color="secondary"
             // The transform rides on the Icon itself, not a wrapper span, so
             // the element a theme can target is the element that moves.
-            xstyle={[
-              styles.titleChevron,
-              isWheelOpen && styles.titleChevronOpen,
-            ]}
+            className={touchDateTitleChevronClassName({isOpen: isWheelOpen})}
           />
         </button>
         {/* Both arrows at the trailing corner, as a pair — and only while the
@@ -1123,23 +733,22 @@ export function TouchDateField({
           // `visible` until it finishes, and a control that is on its way out
           // should not answer a click or a Tab in the meantime.
           inert={isWheelOpen ? true : undefined}
-          {...stylex.props(
-            styles.monthArrows,
-            isWheelOpen && styles.monthArrowsHidden,
-          )}>
+          className={touchDateMonthArrowsClassName({isHidden: isWheelOpen})}>
           <IconButton
             variant="ghost"
             size="sm"
-            xstyle={[
-              styles.monthArrow,
-              !canStepBack && styles.monthArrowUnavailable,
-            ]}
+            className={touchDateMonthArrowClassName({
+              isUnavailable: !canStepBack,
+            })}
             ref={previousArrowRef}
             isDisabled={!canStepBack}
             onClick={() => stepMonthFromArrow(-1)}
             label={t('@astryx.calendar.previousMonth')}
             icon={
-              <span {...stylex.props(styles.monthArrowIcon, rtlStyles.mirror)}>
+              <span
+                {...mergeProps(stylex.props(rtlStyles.mirror), {
+                  className: touchDateMonthArrowIconClassName,
+                })}>
                 <Icon icon="chevronLeft" size="sm" color="inherit" />
               </span>
             }
@@ -1147,16 +756,18 @@ export function TouchDateField({
           <IconButton
             variant="ghost"
             size="sm"
-            xstyle={[
-              styles.monthArrow,
-              !canStepForward && styles.monthArrowUnavailable,
-            ]}
+            className={touchDateMonthArrowClassName({
+              isUnavailable: !canStepForward,
+            })}
             ref={nextArrowRef}
             isDisabled={!canStepForward}
             onClick={() => stepMonthFromArrow(1)}
             label={t('@astryx.calendar.nextMonth')}
             icon={
-              <span {...stylex.props(styles.monthArrowIcon, rtlStyles.mirror)}>
+              <span
+                {...mergeProps(stylex.props(rtlStyles.mirror), {
+                  className: touchDateMonthArrowIconClassName,
+                })}>
                 <Icon icon="chevronRight" size="sm" color="inherit" />
               </span>
             }
@@ -1169,16 +780,13 @@ export function TouchDateField({
         <span
           data-action="reset"
           inert={isWheelOpen ? true : undefined}
-          {...stylex.props(
-            styles.headerReset,
-            isWheelOpen && styles.headerResetHidden,
-          )}>
+          className={touchDateHeaderResetClassName({isHidden: isWheelOpen})}>
           <Button
             // ghost: a filled button up here would outrank the Save that
             // finishes the task.
             variant="ghost"
             size="sm"
-            xstyle={styles.resetButton}
+            className={touchDateResetButtonClassName}
             label={t('@astryx.dateInput.resetPicking')}
             onClick={handleResetInSheet}
           />
@@ -1190,18 +798,15 @@ export function TouchDateField({
           live outside the scroller, or it would scroll away with the month. */}
       <div
         aria-hidden="true"
-        {...stylex.props(
-          styles.weekdays,
-          isWheelOpen && styles.weekdaysHidden,
-        )}>
+        className={touchDateWeekdaysClassName({isHidden: isWheelOpen})}>
         {weekdayHeaders.map(({dayOfWeek, name}) => (
-          <div key={dayOfWeek} {...stylex.props(styles.weekday)}>
+          <div key={dayOfWeek} className={touchDateWeekdayClassName}>
             {name}
           </div>
         ))}
       </div>
 
-      <div {...stylex.props(styles.body)}>
+      <div className={touchDateBodyClassName}>
         <div
           data-panel="calendar"
           // `inert` as well as the hidden styling: the panel keeps its layout
@@ -1209,10 +814,9 @@ export function TouchDateField({
           // it), which means without this it would still be tabbable behind
           // the layer on top.
           inert={isWheelOpen ? true : undefined}
-          {...stylex.props(
-            styles.panel,
-            styles.panelBeneath,
-            isWheelOpen && styles.panelBeneathHidden,
+          className={tw(
+            touchDatePanelClassName,
+            touchDatePanelBeneathClassName({isHidden: isWheelOpen}),
           )}>
           <MonthScroller
             key={`${minMonthIndex}:${maxMonthIndex}`}
@@ -1232,10 +836,9 @@ export function TouchDateField({
         <div
           data-panel="wheels"
           inert={isWheelOpen ? undefined : true}
-          {...stylex.props(
-            styles.panel,
-            styles.panelOverlay,
-            !isWheelOpen && styles.panelOverlayHidden,
+          className={tw(
+            touchDatePanelClassName,
+            touchDatePanelOverlayClassName({isHidden: !isWheelOpen}),
           )}>
           <MonthYearWheels
             monthModel={monthModel}
@@ -1267,7 +870,7 @@ export function TouchDateField({
           entirely on the wheels, and leaving it behind made the wheels' own
           Done button unreachable — an inert ancestor disables everything
           inside it. */}
-      <div {...stylex.props(styles.footer)}>
+      <div className={touchDateFooterClassName}>
         {/* Both actions share one grid cell, the same way the panels above
             them do, and follow the same base/overlay rule — so the footer
             never changes height and the two never read as superimposed. Each
@@ -1275,10 +878,9 @@ export function TouchDateField({
             the detour through the wheels. */}
         <div
           inert={isWheelOpen ? true : undefined}
-          {...stylex.props(
-            styles.footerAction,
-            styles.panelBeneath,
-            isWheelOpen && styles.panelBeneathHidden,
+          className={tw(
+            touchDateFooterActionClassName,
+            touchDatePanelBeneathClassName({isHidden: isWheelOpen}),
           )}>
           <Button
             variant="primary"
@@ -1293,10 +895,9 @@ export function TouchDateField({
         </div>
         <div
           inert={isWheelOpen ? undefined : true}
-          {...stylex.props(
-            styles.footerAction,
-            styles.panelOverlay,
-            !isWheelOpen && styles.panelOverlayHidden,
+          className={tw(
+            touchDateFooterActionClassName,
+            touchDatePanelOverlayClassName({isHidden: !isWheelOpen}),
           )}>
           <Button
             // secondary, not primary: this one does not finish the task, it
@@ -1330,7 +931,6 @@ export function TouchDateField({
         stylex.props(
           inputWrapperStyles.base,
           inputWrapperStyles.textField,
-          styles.wrapper,
           // Disabled paint belongs to the disabled state only; a busy field
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
@@ -1344,7 +944,11 @@ export function TouchDateField({
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
-        tw(dateInputSizeClassName({size}), controlClassName),
+        tw(
+          dateInputSizeClassName({size}),
+          touchDateFieldWrapperClassName,
+          controlClassName,
+        ),
         controlStyle,
       )}>
       {inputGroup && <VisuallyHidden id={inputLabelID}>{label}</VisuallyHidden>}
@@ -1354,11 +958,11 @@ export function TouchDateField({
         aria-disabled={isEffectivelyDisabled || undefined}
         aria-label={t('@astryx.dateInput.openCalendar')}
         tabIndex={-1}
-        {...stylex.props(
-          focusOutlineStyles.focusVisible,
-          styles.iconButton,
-          isEffectivelyDisabled && styles.iconButtonDisabled,
-        )}>
+        {...mergeProps(stylex.props(focusOutlineStyles.focusVisible), {
+          className: touchDateFieldIconButtonClassName({
+            isDisabled: isEffectivelyDisabled,
+          }),
+        })}>
         <Icon
           icon="calendar"
           size="sm"
@@ -1403,10 +1007,9 @@ export function TouchDateField({
         aria-haspopup="dialog"
         aria-autocomplete="none"
         autoComplete="off"
-        {...stylex.props(
-          styles.input,
-          isEffectivelyDisabled && styles.inputDisabled,
-        )}
+        className={touchDateFieldInputClassName({
+          isDisabled: isEffectivelyDisabled,
+        })}
       />
       {hasClear && value !== undefined && !isEffectivelyDisabled && (
         <InputClearButton
@@ -1426,7 +1029,7 @@ export function TouchDateField({
         // sheetBody owns the inset; the sheet keeps the band under its grab
         // bar.
         padding={0}>
-        <div ref={sheetBodyRef} {...stylex.props(styles.sheetBody)}>
+        <div ref={sheetBodyRef} className={touchDateSheetBodyClassName}>
           {today != null && surface}
         </div>
       </BottomSheet>
