@@ -12,6 +12,8 @@ import * as stylex from '@stylexjs/stylex';
 import {act, fireEvent, render, screen} from '@testing-library/react';
 import {Suspense, use, useLayoutEffect} from 'react';
 import {renderToString} from 'react-dom/server';
+import {readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {
   BottomSheetPanel,
@@ -24,6 +26,15 @@ const panelTransitionStyle = {
   transitionDuration: '410ms',
   transitionDelay: '0ms',
 };
+
+// jsdom injects no Tailwind sheet, so a class-map rule is read from the module
+// that prints it.
+function readPanelClasses(): string {
+  return readFileSync(
+    resolve(__dirname, './bottomSheetPanelClasses.ts'),
+    'utf-8',
+  );
+}
 
 beforeEach(() => {
   vi.stubGlobal(
@@ -735,7 +746,7 @@ describe('BottomSheetPanel', () => {
     // point of it -- the content sits closer to the sheet's top edge, and
     // scrolled content passes beneath the pill rather than stopping at a
     // hard edge.
-    expect(getComputedStyle(bar).position).toBe('absolute');
+    expect(bar.className.split(/\s+/)).toContain('absolute');
 
     // So the body must not reserve room for it. A top padding here would
     // push the content back down and undo the change.
@@ -746,35 +757,17 @@ describe('BottomSheetPanel', () => {
   // the bar carries a backdrop; without it, text runs straight through the
   // pill. jsdom's StyleX runtime does not inject the rule, so assert on the
   // style definition itself (same approach as AspectRatio's reset.css tests).
-  it('backs the floating handle bar with a surface gradient', async () => {
-    const fs = await import('fs');
-    const path = await import('path');
-    const source = fs.readFileSync(
-      path.resolve(__dirname, './BottomSheetPanel.tsx'),
-      'utf-8',
+  it('backs the floating handle bar with a surface gradient', () => {
+    expect(readPanelClasses()).toContain(
+      "'bg-[linear-gradient(to_bottom,var(--color-background-surface)_60%,transparent)]'",
     );
-
-    const handleBar = source.match(/handleBar: \{([\s\S]*?)\n {2}\},/);
-    expect(handleBar).not.toBeNull();
-    expect(handleBar![1]).toContain("position: 'absolute'");
-    expect(handleBar![1]).toContain('linear-gradient(to bottom');
-    expect(handleBar![1]).toContain("colorVars['--color-background-surface']");
   });
 
   // While the sheet's transform animates between detents, WebKit can draw the
   // bar under the scrolling body. The pill then vanishes until the sheet rests.
   // This is asserted on the style definition, as the test above is.
-  it('gives the floating handle bar a compositing layer of its own', async () => {
-    const fs = await import('fs');
-    const path = await import('path');
-    const source = fs.readFileSync(
-      path.resolve(__dirname, './BottomSheetPanel.tsx'),
-      'utf-8',
-    );
-
-    const handleBar = source.match(/handleBar: \{([\s\S]*?)\n {2}\},/);
-    expect(handleBar).not.toBeNull();
-    expect(handleBar![1]).toContain("willChange: 'transform'");
+  it('gives the floating handle bar a compositing layer of its own', () => {
+    expect(readPanelClasses()).toContain("'will-change-transform'");
   });
 
   // In dark mode the surface fill and the scrim sit a few RGB steps apart and
@@ -782,28 +775,20 @@ describe('BottomSheetPanel', () => {
   // sheet's left and right edges invisible against the scrim. A hairline on
   // the scrim-facing edges is what draws them. Asserted on the style
   // definition for the same reason as the test above.
-  it('draws a hairline on the three edges that face the scrim', async () => {
-    const fs = await import('fs');
-    const path = await import('path');
-    const source = fs.readFileSync(
-      path.resolve(__dirname, './BottomSheetPanel.tsx'),
-      'utf-8',
-    );
-
-    const sheet = source.match(/\n {2}sheet: \{([\s\S]*?)\n {2}\},/);
-    expect(sheet).not.toBeNull();
-    for (const edge of [
-      'borderBlockStart',
-      'borderInlineStart',
-      'borderInlineEnd',
-    ]) {
-      expect(sheet![1]).toContain(`${edge}Width: borderVars['--border-width']`);
-      expect(sheet![1]).toContain(`${edge}Style: 'solid'`);
-      expect(sheet![1]).toContain(`${edge}Color: colorVars['--color-border']`);
+  it('draws a hairline on the three edges that face the scrim', () => {
+    const source = readPanelClasses();
+    for (const edge of ['block-start', 'inline-start', 'inline-end']) {
+      expect(source, edge).toContain(
+        `'[border-${edge}-width:var(--border-width)]'`,
+      );
+      expect(source, edge).toContain(`'[border-${edge}-style:solid]'`);
+      expect(source, edge).toContain(
+        `'[border-${edge}-color:var(--color-border)]'`,
+      );
     }
     // The block-end edge sits below the viewport, under the overscroll
     // padding, so it carries no hairline to draw.
-    expect(sheet![1]).not.toContain('borderBlockEndWidth');
+    expect(source).not.toContain('border-block-end');
   });
 
   // A theme that packs an inset ring into --shadow-high (the bundled themes all
@@ -812,18 +797,9 @@ describe('BottomSheetPanel', () => {
   // gap below the content and the side edges appeared to change width partway
   // down. The scrolling body paints the surface across the whole inner box to
   // hide the ring evenly.
-  it('paints the surface across the scrolling body so the edge stays uniform', async () => {
-    const fs = await import('fs');
-    const path = await import('path');
-    const source = fs.readFileSync(
-      path.resolve(__dirname, './BottomSheetPanel.tsx'),
-      'utf-8',
-    );
-
-    const body = source.match(/\n {2}body: \{([\s\S]*?)\n {2}\},/);
-    expect(body).not.toBeNull();
-    expect(body![1]).toContain(
-      "backgroundColor: colorVars['--color-background-surface']",
+  it('paints the surface across the scrolling body so the edge stays uniform', () => {
+    expect(readPanelClasses()).toContain(
+      "'bg-[var(--color-background-surface)]'",
     );
   });
 
