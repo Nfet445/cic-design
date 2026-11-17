@@ -41,6 +41,7 @@ import {
   drawerContentClassName,
   drawerRootClassName,
 } from '../Drawer/drawerClasses';
+import {bottomSheetEdgeTintClassName} from '../BottomSheet/bottomSheetEdgeTintClasses';
 import {
   layerHeaderActionsClassName,
   layerHeaderContainerClassName,
@@ -706,6 +707,9 @@ function familyClassNames() {
     }
   }
   add(drawerContentClassName);
+  // The bottom sheet's edge tint: the strip WebKit samples for the iOS toolbar
+  // colour.
+  add(bottomSheetEdgeTintClassName);
 
   // The alert dialog adds only the row's gesture policy and the stacked width;
   // Button already caps an action at `min-w-0 max-w-full`.
