@@ -168,6 +168,13 @@ import {
   dateInputControlClassName,
   dateInputSizeClassName,
   dateInputToggleClassName,
+  nativeDateFieldIconButtonClassName,
+  nativeDateFieldInputClassName,
+  nativeDateFieldOverlayClassName,
+  nativeDateFieldOverlayPlaceholderClassName,
+  nativeDateFieldOverlayValueClassName,
+  nativeDateFieldSlotClassName,
+  nativeDateFieldWrapperClassName,
 } from '../DateInput/dateInputClasses';
 import {
   fileInputBoxClassName,
@@ -209,6 +216,8 @@ import {
   touchTimeFieldWheelsClassName,
 } from '../TimeInput/touchTimeFieldClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
+import {checkboxListItemClassName} from '../CheckboxList/checkboxListItemClasses';
+import {radioListClassName} from '../RadioList/radioListClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
@@ -1209,7 +1218,20 @@ function familyClassNames() {
     add(dateInputToggleClassName({isDisabled}));
     for (const isInvalid of [false, true]) {
       add(dateInputControlClassName({isDisabled, isInvalid}));
+      for (const isHidden of [false, true]) {
+        add(nativeDateFieldInputClassName({isDisabled, isHidden, isInvalid}));
+      }
     }
+  }
+  for (const className of [
+    nativeDateFieldWrapperClassName,
+    nativeDateFieldIconButtonClassName,
+    nativeDateFieldSlotClassName,
+    nativeDateFieldOverlayClassName,
+    nativeDateFieldOverlayValueClassName,
+    nativeDateFieldOverlayPlaceholderClassName,
+  ]) {
+    add(className);
   }
   for (const size of ['sm', 'md', 'lg']) {
     add(dateRangeInputSizeClassName({size}));
@@ -1996,6 +2018,13 @@ function familyClassNames() {
         isOpen,
       }),
     );
+  }
+
+  for (const isSelected of [true, false]) {
+    add(checkboxListItemClassName({isSelected, className: undefined}));
+  }
+  for (const orientation of ['vertical', 'horizontal']) {
+    add(radioListClassName({orientation}));
   }
 
   return [...names].sort();
