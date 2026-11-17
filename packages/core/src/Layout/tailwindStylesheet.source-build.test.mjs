@@ -168,6 +168,13 @@ import {
   dateInputControlClassName,
   dateInputSizeClassName,
   dateInputToggleClassName,
+  nativeDateFieldIconButtonClassName,
+  nativeDateFieldInputClassName,
+  nativeDateFieldOverlayClassName,
+  nativeDateFieldOverlayPlaceholderClassName,
+  nativeDateFieldOverlayValueClassName,
+  nativeDateFieldSlotClassName,
+  nativeDateFieldWrapperClassName,
 } from '../DateInput/dateInputClasses';
 import {
   fileInputBoxClassName,
@@ -1188,7 +1195,20 @@ function familyClassNames() {
     add(dateInputToggleClassName({isDisabled}));
     for (const isInvalid of [false, true]) {
       add(dateInputControlClassName({isDisabled, isInvalid}));
+      for (const isHidden of [false, true]) {
+        add(nativeDateFieldInputClassName({isDisabled, isHidden, isInvalid}));
+      }
     }
+  }
+  for (const className of [
+    nativeDateFieldWrapperClassName,
+    nativeDateFieldIconButtonClassName,
+    nativeDateFieldSlotClassName,
+    nativeDateFieldOverlayClassName,
+    nativeDateFieldOverlayValueClassName,
+    nativeDateFieldOverlayPlaceholderClassName,
+  ]) {
+    add(className);
   }
   for (const size of ['sm', 'md', 'lg']) {
     add(dateRangeInputSizeClassName({size}));
