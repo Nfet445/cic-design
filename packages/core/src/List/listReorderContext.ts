@@ -124,6 +124,8 @@ export interface ListReorderSession {
   readonly rowStyle: StyleXStyles;
   /** The list itself: its insertion line, a pseudo-element. */
   readonly listStyle: typeof reorderListStyle;
+  /** Shows that line while the list is marked: the list's `::after` class. */
+  readonly listClassName: string;
 }
 
 /** How a reorder session finds a collection's rows in its container. */

@@ -8,6 +8,7 @@ import {TableCell} from './TableCell';
 import {TableRow} from './TableRow';
 import type {TablePlugin} from './types';
 import {useTableRowsVirtualization} from './plugins/virtualization/useTableRowsVirtualization';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 const columns = [{key: 'name', header: 'Name'}];
 afterEach(() => {
   cleanup();
@@ -90,10 +91,11 @@ describe('Table parent compatibility regressions', () => {
       );
     }
     const {container} = render(<Fixture />);
-    expect(container.querySelector('td')?.className).toContain('wrapStyles');
-    expect(container.querySelector('td')?.className).not.toContain(
-      'overflowStyles',
-    );
+    // Virtualization asks for truncation, but a single short cell still wraps.
+    expectClassSet(container.querySelector('td')!, {
+      includes: ['[overflow-wrap:break-word]', '[word-break:break-word]'],
+      excludes: ['text-ellipsis', 'whitespace-nowrap'],
+    });
   });
   it('reports no header row to scroll-wrapper plugins in children mode', () => {
     const headerRowCounts: number[] = [];

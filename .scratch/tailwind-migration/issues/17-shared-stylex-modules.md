@@ -1,6 +1,6 @@
 # shared stylex modules
 
-Status: ready-for-agent
+Status: partly done — three of ten modules, the rest waits on its consumers (see Result)
 Blocked by: 11
 Wave: 5
 Ticket: 17
@@ -33,6 +33,32 @@ Retire the last modules that still hand a StyleX style object to components: foc
 - `pnpm exec vitest run packages/core/src/Button packages/core/src/ButtonGroup packages/core/src/ToggleButton`
 - `node packages/core/scripts/build-css-tailwind.mjs`
 
+## Result
+
+Landed: `Icon/iconBoxClasses.ts`, `privateAttributes/menuPressLitClasses.ts` and
+`privateAttributes/reorderLineClasses.ts` hold the classes, and the modules that
+exported the styles now re-export them (`iconBoxSizeStyles`, `menuPressLitRowClassName`,
+`reorderLineClassName`). Three of the ten `stylex.create` are gone.
+
+The other seven wait for the ticket that migrates their consumers. A Tailwind
+utility prints in `@layer astryx-base`, StyleX output prints unlayered, and an
+unlayered declaration beats a layered one whatever the order. Each of those
+modules sets a property that its consumer's own StyleX style also sets on the
+same element, so moving the module alone would change what a browser paints:
+
+| module                                                               | property it shares                         | consumer still on StyleX                                                                      |
+| -------------------------------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `travelling.stylex.ts`                                               | `zIndex` under `@media (pointer: coarse)`  | `List/ListItem.tsx:255` sets 1 there, the travelling row asks for 2 (ticket 18)               |
+| `focusOwner.stylex.ts`, `ownRing.stylex.ts`                          | the four outline longhands                 | `Item/Item.tsx:1035` composes `focusWithinOwner` beside `focusOutlineStyles` (tickets 15, 18) |
+| `Selector/selectorPresentation.stylex.ts`                            | `borderColor`, `boxShadow`, `outlineWidth` | `Selector.tsx:2333`, `MultiSelector.tsx:2665` (ticket 15)                                     |
+| `internal/touchHitArea.stylex.ts`                                    | `::after` and `::before`                   | `CheckboxInput.tsx:513`, `InfoTip.tsx:211`, `ButtonGroup.tsx:199`                             |
+| `press.stylex.ts` (four creates, two keyframes)                      | press paint and transform layers           | every row and control consumer above                                                          |
+| `utils/focusOutline.stylex.ts`, `utils/interactionOverlay.stylex.ts` | outline and background                     | Token, Carousel, Selector, ListItem                                                           |
+| `InputGroup/groupStyles.ts`, `NavItem/navItemStyles.stylex.ts`       | radius, height, `zIndex`, item surface     | the InputGroup consumers and SideNav                                                          |
+
+`reorderLine.stylex.ts` was the one remaining module whose only declaration
+(`::after` `display`) no consumer also set.
+
 ## Census (checked against the tree at `ccb97ef02`)
 
 Ten `stylex.create` in `packages/core/src/privateAttributes/`:
@@ -54,6 +80,10 @@ Consumers, fifteen files: `Button/Button.tsx` (:519-521), `Item/Item.tsx` (:1035
 Keyframes: `pressRelease` (`press.stylex.ts:84`) and `cellRelease` (:99). Author them as `@keyframes astryxPressRelease` / `astryxCellRelease` in `packages/core/tailwind/astryx.input.css`, beside the two button keyframes — the tool moves every top-level node into `@layer astryx-base`, and the scanner reads class names, not a keyframes string in a `.ts` module. Themes declare the same 1→0 alpha animation today, so one shared name removes the duplicate.
 
 ## Notes
+
+- Landed three of the ten creates: the icon box (`Icon/iconBoxClasses.ts`), the menu press highlight (`privateAttributes/menuPressLitClasses.ts`) and the reorder line (`privateAttributes/reorderLineClasses.ts`), with `IconSize.stylex.ts` kept as a deprecated shim.
+- The other seven cannot move while their consumers still style the same properties through StyleX. Tailwind utilities print inside `@layer astryx-base`; StyleX output is unlayered, and an unlayered declaration wins at any order. A shared module that now sets an unlayered-styled property would paint differently in a browser. Example: `travellingStyles.row` asks `zIndex: 2` while `List/ListItem.tsx:255` sets `zIndex: 1` under `@media (pointer: coarse)`.
+- The rest moved to `41-shared-modules-after-consumers.md`, which waits for the consumer families.
 
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.

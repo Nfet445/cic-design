@@ -122,6 +122,7 @@ import {
 import {markReorderPreview} from '../privateAttributes/reorderPreview.stylex';
 import {
   hideReorderLine,
+  reorderLineClassName,
   showReorderLine,
 } from '../privateAttributes/reorderLine.stylex';
 import {
@@ -706,6 +707,7 @@ export class ListReorderController implements ListReorderSession {
   readonly RowName = ListReorderRowName;
   readonly rowStyle = reorderRowStyle;
   readonly listStyle = reorderListStyle;
+  readonly listClassName = reorderLineClassName;
   options: ListReorderOptions | null = null;
   announce: AnnounceFn = () => {};
   messages: ReorderMessages | null = null;

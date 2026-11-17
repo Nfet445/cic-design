@@ -12,9 +12,16 @@ Register `internal/vibe-tests/environments/project-astryx-tailwind/pages/layout-
 
 ## Findings
 
-- `--astryx-section-width` is written as an inline style by `Section`, but the page's variable check reports "the element writes no --astryx-section-width": the element tagged `data-astryx-value="section-sized"` is the outer one, so either the check targets the wrong node or `readElements` drops the inline style when a class is present.
-- The toolbar's `min-h-[var(--size-element-sm)]` rule is absent from `dist/astryx-tailwind.css` although `Toolbar/toolbarClasses.ts:79` holds it — the scan does not reach the constant, which is a build-ticket matter rather than a page matter.
-- `FAMILY_PAGES` currently lists `layout-primitives` and `buttons` only.
+- My first reading of the sheet was wrong: `min-h-[var(--size-element-sm)]` **is** in `dist/astryx-tailwind.css` (six `size-element-sm` occurrences). The page check fails for another reason, so this ticket is a page-and-component defect, not a build defect.
+- `Section` spreads `...props` on its outer node (`packages/core/src/Section/Section.tsx:253`) and again on the inner one, so a consumer's `data-astryx-value` lands twice. `readElements` in `internal/vibe-tests/src/check-values.ts:146` keys by that attribute and keeps the LAST node, which is the inner one — and the inner node carries no inline `--astryx-section-width`, so the variable check reports "the element writes no --astryx-section-width" for an element that does write it.
+- The same duplication means `id`, `aria-*` and `data-*` props reach two nodes at once, which is a component bug in its own right, independent of this page.
+- The page's four remaining checks also assert geometry the fixture never renders (toolbar gap lives on lanes, and the wrap behaviour depends on a runtime measurement), so the fixture needs a second pass after the duplication is fixed.
+
+## Fix order
+
+1. Decide whether `Section` should forward consumer props to one node only; if it should forward to the outer one, `readElements` needs no change.
+2. Make the fixture tag elements the page owns.
+3. Register the page in `FAMILY_PAGES` and get `--check` green.
 
 ## Done when
 
