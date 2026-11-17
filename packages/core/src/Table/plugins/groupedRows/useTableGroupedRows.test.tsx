@@ -15,6 +15,7 @@ import type {TableColumn} from '../../types';
 import type {TableRowStatus} from '../../index';
 import {useTableRowStatus} from '../rowStatus';
 import {useTableGroupedRows} from './useTableGroupedRows';
+import {expectClassSet} from '../../../__tests__/classNameAssertions';
 
 interface Person extends Record<string, unknown> {
   id: string;
@@ -31,41 +32,6 @@ const people: Person[] = [
 const columns: TableColumn<Person>[] = [{key: 'name', header: 'Name'}];
 
 const EMPTY = new Set<string>();
-
-/** Read the StyleX declarations applied to an element under Vitest. */
-function cssDeclarationsOf(element: Element): string[] {
-  const classes = new Set(
-    (element as HTMLElement).className.split(/\s+/).filter(Boolean),
-  );
-  const declarations: string[] = [];
-
-  for (const sheet of Array.from(document.styleSheets)) {
-    for (const rule of Array.from(sheet.cssRules)) {
-      const text = rule.cssText;
-      const brace = text.indexOf('{');
-      if (brace === -1) {
-        continue;
-      }
-      const selector = text.slice(0, brace).replaceAll(':not(#\\#)', '').trim();
-      const match = /^\.([\w-]+)(.*)$/.exec(selector);
-      if (!match || !classes.has(match[1])) {
-        continue;
-      }
-      declarations.push(
-        text
-          .slice(brace + 1, text.lastIndexOf('}'))
-          .trim()
-          .replace(/;$/, ''),
-      );
-    }
-  }
-
-  return declarations;
-}
-
-function hasDeclaration(element: Element, declaration: string): boolean {
-  return cssDeclarationsOf(element).some(value => value.includes(declaration));
-}
 
 function Harness({
   rows = people,
@@ -225,8 +191,7 @@ describe('useTableGroupedRows', () => {
     });
     const builtInWrapper = builtInToggle.parentElement;
     expect(builtInWrapper).not.toBeNull();
-    expect(hasDeclaration(builtInWrapper!, 'position: sticky')).toBe(true);
-    expect(hasDeclaration(builtInWrapper!, 'width: fit-content')).toBe(true);
+    expectClassSet(builtInWrapper!, {includes: ['sticky', 'w-fit']});
     builtIn.unmount();
 
     render(<Harness renderGroupHeader={key => <span>{key}</span>} />);
@@ -239,9 +204,8 @@ describe('useTableGroupedRows', () => {
     // Preserve the custom renderer's full-row containing block. Only the
     // plugin-owned chevron is sticky, so it remains reachable on horizontal
     // scroll without constraining custom content to fit-content.
-    expect(hasDeclaration(customWrapper!, 'position: sticky')).toBe(false);
-    expect(hasDeclaration(customWrapper!, 'width: fit-content')).toBe(false);
-    expect(hasDeclaration(customToggle, 'position: sticky')).toBe(true);
+    expectClassSet(customWrapper!, {excludes: ['sticky', 'w-fit']});
+    expectClassSet(customToggle, {includes: ['sticky']});
   });
 
   it('renders nothing (no group headers) for empty data', () => {

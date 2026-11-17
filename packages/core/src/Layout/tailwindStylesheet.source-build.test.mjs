@@ -657,6 +657,17 @@ import {
 } from '../Table/plugins/rowStatus/rowStatusClasses';
 import {tablePaginationWrapperClassName} from '../Table/plugins/pagination/paginationClasses';
 import {
+  GROUPED_ROWS_CHEVRON_CLASS,
+  GROUPED_ROWS_CHEVRON_GLYPH_CLASS,
+  GROUPED_ROWS_CHEVRON_PINNED_CLASS,
+  GROUPED_ROWS_COUNT_CLASS,
+  GROUPED_ROWS_HEADER_CELL_CLASS,
+  GROUPED_ROWS_HEADER_INNER_CLASS,
+  GROUPED_ROWS_HEADER_INNER_PINNED_CLASS,
+  GROUPED_ROWS_HEADER_ROW_CLASS,
+  GROUPED_ROWS_LABEL_CLASS,
+} from '../Table/plugins/groupedRows/groupedRowsClasses';
+import {
   SORT_INDICATOR_CLASS,
   SORT_INDICATOR_UNSORTED_CLASS,
   SORT_RANK_CLASS,
@@ -3366,6 +3377,20 @@ function familyClassNames() {
       add(tablePaginationWrapperClassName({side, align}));
     }
   }
+
+  // The grouped-rows header: its row, spanning cell, inner row in both pin
+  // states, the chevron in both pin states, and the glyph in both rotations.
+  add(GROUPED_ROWS_HEADER_ROW_CLASS);
+  add(GROUPED_ROWS_HEADER_CELL_CLASS);
+  add(GROUPED_ROWS_HEADER_INNER_CLASS);
+  add(GROUPED_ROWS_HEADER_INNER_PINNED_CLASS);
+  add(GROUPED_ROWS_CHEVRON_CLASS);
+  add(GROUPED_ROWS_CHEVRON_PINNED_CLASS);
+  add(GROUPED_ROWS_CHEVRON_GLYPH_CLASS.base);
+  add(GROUPED_ROWS_CHEVRON_GLYPH_CLASS.collapsed);
+  add(GROUPED_ROWS_CHEVRON_GLYPH_CLASS.expanded);
+  add(GROUPED_ROWS_LABEL_CLASS);
+  add(GROUPED_ROWS_COUNT_CLASS);
 
   return [...names].sort();
 }

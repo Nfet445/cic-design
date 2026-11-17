@@ -4,7 +4,7 @@
 
 /**
  * @file useTableGroupedRows.tsx
- * @input React, StyleX, Icon, Table types + the flat data array
+ * @input React, Icon, Tailwind utilities, Table types + the flat data array
  * @output Exports useTableGroupedRows hook + config/result types with layout-safe group headers
  * @position Grouped-rows plugin; consumed by Table via plugins prop
  *
@@ -13,12 +13,6 @@
  */
 
 import {useCallback, useMemo, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  spacingVars,
-  colorVars,
-  fontWeightVars,
-} from '../../../theme/tokens.stylex';
 import {Icon} from '../../../Icon';
 import type {TablePlugin} from '../../types';
 import {
@@ -26,6 +20,18 @@ import {
   useComponentTranslator,
 } from '../../../i18n/useComponentTranslator';
 import english from '../../../i18n/generated-english/Table/plugins/groupedRows/useTableGroupedRows.generated';
+import {tw} from '../../../utils/tw';
+import {
+  GROUPED_ROWS_CHEVRON_CLASS,
+  GROUPED_ROWS_CHEVRON_GLYPH_CLASS,
+  GROUPED_ROWS_CHEVRON_PINNED_CLASS,
+  GROUPED_ROWS_COUNT_CLASS,
+  GROUPED_ROWS_HEADER_CELL_CLASS,
+  GROUPED_ROWS_HEADER_INNER_CLASS,
+  GROUPED_ROWS_HEADER_INNER_PINNED_CLASS,
+  GROUPED_ROWS_HEADER_ROW_CLASS,
+  GROUPED_ROWS_LABEL_CLASS,
+} from './groupedRowsClasses';
 
 registerEnglishFallback(english);
 
@@ -116,105 +122,6 @@ export interface UseTableGroupedRowsResult<T extends Record<string, unknown>> {
    */
   idKey: (item: T) => string;
 }
-
-const styles = stylex.create({
-  headerRow: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    userSelect: 'none',
-    backgroundColor: colorVars['--color-background-muted'],
-    // Divider beneath each group header row (Ernest review #2).
-    borderBottomWidth: '1px',
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-  headerCell: {
-    paddingBlock: spacingVars['--spacing-2'],
-    // The start gutter lives on headerInner instead, so that it travels with
-    // the heading when the heading pins. Left here, the heading would sit one
-    // gutter in at rest and jump flush the moment it stuck.
-    paddingInlineStart: 0,
-    paddingInlineEnd: spacingVars['--spacing-3'],
-  },
-  // Shared row layout. Custom renderers keep this full-width so their layout
-  // continues to use the full spanning cell.
-  headerInner: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    // No inline start padding on the cell, so the chevron aligns with the
-    // table's leading edge (Ernest review #1).
-    paddingInlineStart: spacingVars['--spacing-1'],
-  },
-  // The built-in heading moves with its chevron and can safely shrink-wrap.
-  headerInnerPinned: {
-    insetInlineStart: 0,
-    position: 'sticky',
-    width: 'fit-content',
-  },
-  // A custom header may rely on the full row width. Pin only the plugin-owned
-  // control so custom content keeps its original containing block.
-  customHeaderChevronPinned: {
-    insetInlineStart: spacingVars['--spacing-1'],
-    position: 'sticky',
-    zIndex: 1,
-  },
-  // Standalone chevron button with no heavy chrome (transparent, borderless,
-  // zero padding) so the icon sits flush with the start of the table
-  // (Ernest review #1) while staying keyboard-operable.
-  chevron: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: '0',
-    padding: 0,
-    margin: 0,
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    color: {
-      default: colorVars['--color-icon-secondary'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))':
-        colorVars['--color-icon-primary'],
-    },
-  },
-  chevronIcon: {
-    transitionProperty: 'transform',
-    transitionDuration: '150ms',
-  },
-  // The RTL mirror is folded into each state's transform rather than living on
-  // a parent span. Both are `transform`, so on one element the later value
-  // would win — spelling out `scaleX(-1) rotate(...)` per state composes them
-  // exactly as the nested elements did, while leaving a single element to
-  // carry the glyph's theme target.
-  chevronIconCollapsed: {
-    transform: {
-      default: 'rotate(0deg)',
-      ':is([dir="rtl"] *)': 'scaleX(-1) rotate(0deg)',
-    },
-  },
-  chevronIconExpanded: {
-    transform: {
-      default: 'rotate(90deg)',
-      ':is([dir="rtl"] *)': 'scaleX(-1) rotate(90deg)',
-    },
-  },
-  // Emphasized body text — same size as body, heavier weight (Ernest #3).
-  label: {
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    color: colorVars['--color-text-primary'],
-  },
-  count: {
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    color: colorVars['--color-text-secondary'],
-  },
-});
 
 /**
  * Groups a flat data array into collapsible section rows. Each distinct
@@ -374,9 +281,9 @@ export function useTableGroupedRows<T extends Record<string, unknown>>(
         const content: ReactNode = renderGroupHeader ? (
           renderGroupHeader(header.groupKey, header.count, collapsed)
         ) : (
-          <span {...stylex.props(styles.label)}>
+          <span className={GROUPED_ROWS_LABEL_CLASS}>
             {header.groupKey}{' '}
-            <span {...stylex.props(styles.count)}>({header.count})</span>
+            <span className={GROUPED_ROWS_COUNT_CLASS}>({header.count})</span>
           </span>
         );
         return {
@@ -387,25 +294,28 @@ export function useTableGroupedRows<T extends Record<string, unknown>>(
             // button below owns the disclosure state and keyboard interaction;
             // the native row keeps only its implicit row semantics.
             onClick: toggle,
+            className: tw(
+              props.htmlProps.className,
+              GROUPED_ROWS_HEADER_ROW_CLASS,
+            ),
           },
-          xstyle: [...props.xstyle, styles.headerRow],
           children: (
             // colSpan larger than the column count is clamped by the browser
             // to the actual number of columns, so the header always spans the
             // full width without the plugin knowing the column count.
-            <td colSpan={999} {...stylex.props(styles.headerCell)}>
+            <td colSpan={999} className={GROUPED_ROWS_HEADER_CELL_CLASS}>
               <span
-                {...stylex.props(
-                  styles.headerInner,
-                  !renderGroupHeader && styles.headerInnerPinned,
+                className={tw(
+                  GROUPED_ROWS_HEADER_INNER_CLASS,
+                  !renderGroupHeader && GROUPED_ROWS_HEADER_INNER_PINNED_CLASS,
                 )}>
                 {/* Standalone chevron button, flush with the table's start
                     edge (no heavy button chrome) — the keyboard control. */}
                 <button
                   type="button"
-                  {...stylex.props(
-                    styles.chevron,
-                    renderGroupHeader && styles.customHeaderChevronPinned,
+                  className={tw(
+                    GROUPED_ROWS_CHEVRON_CLASS,
+                    renderGroupHeader && GROUPED_ROWS_CHEVRON_PINNED_CLASS,
                   )}
                   onClick={e => {
                     e.stopPropagation();
@@ -432,12 +342,12 @@ export function useTableGroupedRows<T extends Record<string, unknown>>(
                     // The rotation rides on the glyph rather than a wrapper
                     // span so the theme target below reaches both the mark and
                     // its open/closed transform.
-                    xstyle={[
-                      styles.chevronIcon,
+                    className={tw(
+                      GROUPED_ROWS_CHEVRON_GLYPH_CLASS.base,
                       collapsed
-                        ? styles.chevronIconCollapsed
-                        : styles.chevronIconExpanded,
-                    ]}
+                        ? GROUPED_ROWS_CHEVRON_GLYPH_CLASS.collapsed
+                        : GROUPED_ROWS_CHEVRON_GLYPH_CLASS.expanded,
+                    )}
                   />
                 </button>
                 {content}
