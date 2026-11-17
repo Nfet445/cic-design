@@ -29,8 +29,11 @@ import {
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
+  dropdownMenuCheckableRowClassName,
   dropdownMenuDividerClassName,
   dropdownMenuItemClassName,
+  dropdownMenuMarkerClassName,
+  dropdownMenuRadioGroupClassName,
   dropdownMenuSheetClassName,
   dropdownMenuGroupHeadingClassName,
 } from '../DropdownMenu/dropdownMenuClasses';
@@ -1834,6 +1837,11 @@ function familyClassNames() {
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);
+  add(dropdownMenuMarkerClassName);
+  add(dropdownMenuRadioGroupClassName);
+  for (const isDisabled of [true, false]) {
+    add(dropdownMenuCheckableRowClassName({isDisabled}));
+  }
   for (const value of Object.values(dropdownMenuSheetClassName)) {
     add(value);
   }

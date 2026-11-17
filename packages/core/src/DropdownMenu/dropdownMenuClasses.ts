@@ -18,15 +18,21 @@ export const dropdownMenuDividerClassName = tw(
 );
 
 /**
+ * The radius a row steps back to: the menu's own, less its inner padding, so a
+ * row drawn against that padding reads as an inset panel. Both parts come from
+ * the menu, and the token is the fallback.
+ */
+const MENU_ITEM_RADIUS_CLASS =
+  'rounded-[max(0px,calc(var(--_dropdown-menu-radius,var(--spacing-2))_-_var(--_dropdown-menu-padding,--spacing-1)))]';
+
+/**
  * The row's box: full width, borderless, and sized by its padding rather than
- * a fixed height. The radius steps back from the menu's own so a row drawn
- * against the menu's inner padding reads as an inset panel; both parts come
- * from the menu, and the token is the fallback.
+ * a fixed height.
  */
 const MENU_ITEM_ROW_CLASS = tw(
   'box-border w-full',
   '[border-width:0] [border-style:none]',
-  'rounded-[max(0px,calc(var(--_dropdown-menu-radius,var(--spacing-2))_-_var(--_dropdown-menu-padding,--spacing-1)))]',
+  MENU_ITEM_RADIUS_CLASS,
   '[padding-inline:var(--spacing-2)]',
   '[font-family:var(--font-family-body)]',
   'text-[length:var(--text-label-size)]',
@@ -54,6 +60,39 @@ const MENU_ITEM_DESTRUCTIVE_CLASS = tw(
   '[--_item-label-color:var(--color-text-error)]',
   '[--_item-description-color:var(--color-text-error)]',
 );
+
+/**
+ * The box a checkable row shares with every other menu row: it fills the menu
+ * and steps back to the inset radius. `Item` sizes these rows, so they do not
+ * take `dropdownMenuItemClassName`'s padding.
+ */
+export function dropdownMenuCheckableRowClassName({
+  isDisabled,
+}: {
+  isDisabled: boolean;
+}): string {
+  return tw(
+    'w-full',
+    MENU_ITEM_RADIUS_CLASS,
+    'text-[color:var(--color-text-primary)]',
+    'cursor-pointer aria-disabled:cursor-default',
+    isDisabled && 'opacity-50',
+  );
+}
+
+/**
+ * Where a checkable row's marker sits: a raw flex child of the row, first by
+ * default and at the inline-end under a finger or pen. It never takes the
+ * pointer, so a press on the mark reaches the row, which owns the state.
+ */
+export const dropdownMenuMarkerClassName = tw(
+  'pointer-events-none order-0 ms-0',
+  'pointer-coarse:order-1 pointer-coarse:ms-auto',
+);
+
+/** The radio group's column: the menu's own inter-row gap, inside the group. */
+export const dropdownMenuRadioGroupClassName =
+  'flex flex-col gap-[var(--spacing-0-5)]';
 
 /** The row's classes, by size, variant and disabled state. */
 export function dropdownMenuItemClassName({
