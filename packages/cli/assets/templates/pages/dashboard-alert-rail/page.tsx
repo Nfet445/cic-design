@@ -28,7 +28,6 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   VStack,
   HStack,
@@ -885,20 +884,14 @@ function KpiTile({kpi, spark}: {kpi: Kpi; spark: number[]}) {
 
 // ============= RAIL SECTIONS =============
 
-const railStyles = stylex.create({
+const railStyles = {
   // Translucent, so the band reads the same on a card and on the panel.
-  header: {
-    backgroundColor: 'var(--color-background-muted)',
-  },
+  header: 'bg-[var(--color-background-muted)]',
   // The opaque layer the translucent band needs; without it the rows read
   // through the header as they scroll past.
-  stickyHeader: {
-    position: 'sticky',
-    insetBlockStart: 0,
-    zIndex: 1,
-    backgroundColor: 'var(--color-background-surface)',
-  },
-});
+  stickyHeader:
+    'sticky [inset-block-start:0] z-[1] bg-[var(--color-background-surface)]',
+} as const;
 
 /**
  * One labelled region of the triage rail. `hasStickyHeader` is the rail form:
@@ -926,8 +919,8 @@ function RailSection({
     <VStack gap={0}>
       <VStack
         gap={0}
-        xstyle={hasStickyHeader ? railStyles.stickyHeader : undefined}>
-        <VStack gap={1} padding={4} xstyle={railStyles.header}>
+        className={hasStickyHeader ? railStyles.stickyHeader : undefined}>
+        <VStack gap={1} padding={4} className={railStyles.header}>
           <HStack gap={2} vAlign="center">
             <Icon icon={icon} size="sm" color={iconColor} />
             <StackItem size="fill">
@@ -1256,28 +1249,18 @@ function dayLabel(i: number): string {
   return ago === 1 ? 'Yesterday' : `${ago} days ago`;
 }
 
-const uptimeStyles = stylex.create({
+const uptimeStyles = {
   // Below ~420px the row can't honor the 3px bar floor, so it scrolls rather
   // than thinning bars — that would hide the outage days this strip shows.
-  strip: {
-    display: 'flex',
-    gap: '2px',
-    overflowX: 'auto',
-    overscrollBehaviorX: 'contain',
-    scrollbarWidth: 'thin',
-  },
+  strip:
+    'flex gap-[2px] overflow-x-auto [overscroll-behavior-x:contain] [scrollbar-width:thin]',
   // No radius: at 3–8px wide the smallest token (4px) rounds a bar away.
-  bar: {
-    flexBasis: 0,
-    flexGrow: 1,
-    minWidth: '3px',
-    height: '30px',
-  },
+  bar: 'basis-0 grow min-w-[3px] h-[30px]',
   // Mirrors UPTIME_COLOR above.
-  operational: {backgroundColor: 'var(--color-success, #0D8626)'},
-  degraded: {backgroundColor: 'var(--color-warning, #E9AF08)'},
-  down: {backgroundColor: 'var(--color-error, #E3193B)'},
-});
+  operational: 'bg-[var(--color-success,#0D8626)]',
+  degraded: 'bg-[var(--color-warning,#E9AF08)]',
+  down: 'bg-[var(--color-error,#E3193B)]',
+} as const;
 
 /**
  * One service's 90-day strip — a single image to assistive tech, not 90
@@ -1292,11 +1275,11 @@ function UptimeStrip({entry}: {entry: ServiceUptime}) {
         }, ${entry.downDays} with downtime.`;
 
   return (
-    <div {...stylex.props(uptimeStyles.strip)} role="img" aria-label={summary}>
+    <div className={uptimeStyles.strip} role="img" aria-label={summary}>
       {entry.days.map((day, i) => (
         <div
           key={i}
-          {...stylex.props(uptimeStyles.bar, uptimeStyles[day])}
+          className={`${uptimeStyles.bar} ${uptimeStyles[day]}`}
           title={`${dayLabel(i)} — ${UPTIME_LABEL[day]}`}
         />
       ))}

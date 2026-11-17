@@ -71,8 +71,6 @@
 
 import {useCallback, useLayoutEffect, useMemo, useRef, useState} from 'react';
 
-import * as stylex from '@stylexjs/stylex';
-
 import {
   HStack,
   Layout,
@@ -82,12 +80,6 @@ import {
   StackItem,
   VStack,
 } from '@astryxdesign/core/Layout';
-import {
-  durationVars,
-  easeVars,
-  radiusVars,
-  spacingVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import {Heading, Text} from '@astryxdesign/core/Text';
 import {Avatar} from '@astryxdesign/core/Avatar';
 import {Badge} from '@astryxdesign/core/Badge';
@@ -913,32 +905,18 @@ const HIDE_SQUEEZED_CONTENT = {overflow: 'hidden'};
  * you tick rows and act on the set should not disagree about what that looks
  * like, and `table-filter` got there first.
  */
-const styles = stylex.create({
+const styles = {
   // A radius because the band is inset to the content line rather than run
   // full-bleed, so square corners would read as a clipped strip.
-  bulkBand: {
-    borderRadius: radiusVars['--radius-element'],
-  },
+  bulkBand: 'rounded-[var(--radius-element)]',
   // The band mounts the moment the first row is checked, so the entry is a
   // `@starting-style` transition rather than a keyframe or a mount flag: the
   // settled value is the one written here, so an interrupted transition still
   // lands correctly. Reduced motion collapses the duration rather than the
   // property, because a media query cannot nest inside `@starting-style`.
-  bulkBandEnter: {
-    opacity: 1,
-    transform: 'translateY(0)',
-    transitionProperty: 'opacity, transform',
-    transitionDuration: {
-      default: durationVars['--duration-medium'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-    '@starting-style': {
-      opacity: 0,
-      transform: `translateY(${spacingVars['--spacing-3']})`,
-    },
-  },
-});
+  bulkBandEnter:
+    'opacity-100 [translate:0_0] transition-[opacity,transform] [transition-duration:var(--duration-medium)] [transition-timing-function:var(--ease-standard)] motion-reduce:[transition-duration:0s] starting:opacity-0 starting:[translate:0_var(--spacing-3)]',
+} as const;
 
 /**
  * The timestamp, and the actions that take its place on hover.
@@ -2474,7 +2452,7 @@ export default function SupportInboxTemplate() {
                     variant="muted"
                     paddingInline={3}
                     paddingBlock={2}
-                    xstyle={[styles.bulkBand, styles.bulkBandEnter]}>
+                    className={`${styles.bulkBand} ${styles.bulkBandEnter}`}>
                     <HStack gap={3} vAlign="center" minHeight={28}>
                       <StackItem size="fill">
                         <HStack gap={1} vAlign="center">

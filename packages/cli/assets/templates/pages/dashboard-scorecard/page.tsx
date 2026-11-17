@@ -3,7 +3,6 @@
 'use client';
 
 import {useMemo, useState, type CSSProperties} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   VStack,
   HStack,
@@ -163,22 +162,14 @@ const KPIS: Kpi[] = [
 // The scorecard is one flat grid of 6 tiles: 1 column (small), 2 (medium),
 // 3 (large) — i.e. 1x6, 2x3, 3x2. The tiers are pinned to viewport width
 // rather than derived from tile width via auto-fill, so the breakpoints are
-// explicit. The ranges are non-overlapping, so exactly one ever matches and
-// the result can't depend on StyleX's at-rule ordering or on source order.
-const SCORECARD_MEDIUM = '@media (min-width: 768px) and (max-width: 1199.98px)';
-const SCORECARD_LARGE = '@media (min-width: 1200px)';
-
-// Overrides Grid's own grid-template-columns. Grid routes its track template
-// through a CSS var and applies `xstyle` last, so this wins.
-const scorecardStyles = stylex.create({
-  grid: {
-    gridTemplateColumns: {
-      default: '1fr',
-      [SCORECARD_MEDIUM]: 'repeat(2, 1fr)',
-      [SCORECARD_LARGE]: 'repeat(3, 1fr)',
-    },
-  },
-});
+// explicit. The ranges are non-overlapping, so exactly one ever matches.
+//
+// These override Grid's own track template. Grid's declaration sits in
+// `astryx-base`; a consumer class sits after that layer, so it wins whatever
+// the source order.
+const scorecardStyles = {
+  grid: 'grid-cols-[1fr] md:grid-cols-[repeat(2,1fr)] min-[1200px]:grid-cols-[repeat(3,1fr)]',
+} as const;
 
 // ============= OKR / GOAL ATTAINMENT =============
 
@@ -736,16 +727,14 @@ function SectionHeading({title, hint}: {title: string; hint?: string}) {
 
 // ============= PAGE CHROME =============
 
-const pageStyles = stylex.create({
+const pageStyles = {
   // Deepen the scroll container's bottom gutter past the padding={6} default so
   // the last section doesn't butt against the edge. The matching container var
   // is updated too, since bleed children (Divider, Section) read it to pull
   // themselves back out to the content edge.
-  contentBottomPad: {
-    paddingBlockEnd: 'var(--spacing-10)',
-    '--container-padding-block-end': 'var(--spacing-10)',
-  },
-});
+  contentBottomPad:
+    '[padding-block-end:var(--spacing-10)] [--container-padding-block-end:var(--spacing-10)]',
+} as const;
 
 // ============= MAIN =============
 
@@ -804,7 +793,7 @@ export default function ExecutiveReviewPage() {
         </LayoutHeader>
       }
       content={
-        <LayoutContent padding={6} xstyle={pageStyles.contentBottomPad}>
+        <LayoutContent padding={6} className={pageStyles.contentBottomPad}>
           <VStack gap={10}>
             {/* Narrative lives in the end rail; it folds in here when narrow. */}
             {isNarrow && (
@@ -817,7 +806,7 @@ export default function ExecutiveReviewPage() {
             {/* Scorecard row */}
             <VStack gap={6}>
               <SectionHeading title="Scorecards" hint="Performance metrics" />
-              <Grid gap={2} xstyle={scorecardStyles.grid}>
+              <Grid gap={2} className={scorecardStyles.grid}>
                 {KPIS.map(kpi => (
                   <ScorecardTile key={kpi.key} kpi={kpi} period={period} />
                 ))}
