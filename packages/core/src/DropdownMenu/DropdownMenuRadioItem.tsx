@@ -28,7 +28,6 @@ import {
   type PointerEvent,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {renderIconSlot, type IconType} from '../Icon';
 import {useIndicator} from '../Indicator';
 import {Item} from '../Item';
@@ -41,31 +40,11 @@ import {
   dropdownMenuMarkerClassName,
 } from './dropdownMenuClasses';
 import {focusMenuItemOnHover} from './menuItemHover';
-import {colorVars, focusVars} from '../theme/tokens.stylex';
 import {composeEventHandlers, mergeProps, themeProps} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {useDropdownMenuRadioGroupContext} from './DropdownMenuContext';
 import {keepDisabledRowUnfocused} from './menuItemRoles';
-
-const menuRowStateStyles = stylex.create({
-  row: {
-    // The row's paint stays unlayered. Item's own hover and press overlays are
-    // unlayered too, and a layered utility loses to them whatever the class
-    // order says, so the focused fill reads its paint here.
-    backgroundColor: {
-      default: 'transparent',
-      // menuPressLitRowClassName sets the variable on the row a held finger or pen
-      // lights.
-      ':focus': `var(--_menu-row-focus-paint, ${colorVars['--color-overlay-hover']})`,
-    },
-    // Rows show focus with a translucent overlay, which forced colors replace
-    // with the page color. The standard focus ring (focusOutlineStyles), drawn
-    // inside the row by its own width, marks the focused row in every mode.
-    // The ring and its offset share one tier, so the row's offset outranks the
-    // shared one only beside it, unlayered.
-    outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
-  },
-});
+import {menuRowStateStyles} from './menuRowState.stylex';
 
 // Matches the control sizes RadioList uses, so a radio reads the same in a
 // menu row as it does in a radio group.

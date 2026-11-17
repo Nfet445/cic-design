@@ -4,7 +4,8 @@
 
 /**
  * @file Spinner.tsx
- * @input Uses React, i18n (useComponentTranslator), StyleX, SVG rendering
+ * @input Uses React, i18n (useComponentTranslator), Tailwind class maps, SVG
+ *   rendering
  * @output Exports Spinner component, SpinnerProps, SpinnerSize, SpinnerShade types
  * @position Core implementation of spinner loading indicator
  *
@@ -19,7 +20,6 @@
 import {use, useId, useMemo, useRef, type ReactNode} from 'react';
 import {SpinnerOwnerContext} from './SpinnerOwnerContext';
 import * as stylex from '@stylexjs/stylex';
-import {colorVars, spacingVars} from '../theme/tokens.stylex';
 import type {BaseProps} from '../BaseProps';
 import {Text} from '../Text/Text';
 import {mergeProps} from '../utils/mergeProps';
@@ -31,7 +31,20 @@ import {
   useComponentTranslator,
 } from '../i18n/useComponentTranslator';
 import english from '../i18n/generated-english/Spinner/Spinner.generated';
-import {spinnerRotorStyles, syncRotationPhase} from './spinnerRotor';
+import {spinnerRotorTurnClassName, syncRotationPhase} from './spinnerRotor';
+import {tw} from '../utils/tw';
+import {
+  spinnerArcClassName,
+  spinnerCircleClassName,
+  spinnerClassName,
+  spinnerRingClassName,
+  spinnerRotorBoxClassName,
+  spinnerShadeClassName,
+  spinnerSizeClassName,
+  spinnerTrackClassName,
+  spinnerTrackOpacityClassName,
+  spinnerWrapperClassName,
+} from './spinnerClasses';
 
 registerEnglishFallback(english);
 
@@ -44,13 +57,11 @@ registerEnglishFallback(english);
  * only a literal in this file, and a test pins the two together.
  *
  * Themeable via `--spinner-arc-fraction`, declared alongside the other public
- * vars in `sizeStyles` below. Only the inline `strokeDasharray` attribute
+ * vars in `spinnerClasses.ts`. Only the inline `strokeDasharray` attribute
  * (the pre-stylesheet render) still reads the constant directly; the CSS side
  * composes the dash from the live var.
  */
 const ARC_FRACTION = 0.375;
-
-const PI = 3.141592653589793;
 
 const SIZES = {
   sm: {diameter: 10, border: 2},
@@ -60,23 +71,10 @@ const SIZES = {
 };
 
 /**
- * Opacity the track is drawn at, per shade. `77 / 255` is the `4D` the onMedia
- * track used to append to the token's hex — the same composite, but applied as
- * `stroke-opacity` to a color off the cascade, so it no longer depends on the
- * token being hex notation and it applies to a themed color too.
- */
-const TRACK_OPACITY: Record<SpinnerShade, number> = {
-  default: 1,
-  subtle: 1,
-  onMedia: 77 / 255,
-  inherit: 0.3,
-};
-
-/**
  * Where the resolved geometry lands: the public var, resolved into a registered
  * `<length>` the `calc()`s below can do arithmetic on. The box and the ring
  * read these; the public vars are declared once, on the element carrying the
- * theme target, by `sizeStyles`.
+ * theme target, by `spinnerSizeClassName`.
  */
 const RESOLVED_DIAMETER = '--_spinner-ring-diameter';
 const RESOLVED_STROKE = '--_spinner-ring-stroke';
@@ -160,197 +158,8 @@ registerSpinnerVars();
 // Styles
 // =============================================================================
 
-const styles = stylex.create({
-  wrapper: {
-    display: 'inline-flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-  },
-  spinner: {
-    display: 'inline-grid',
-    placeItems: 'center',
-    verticalAlign: 'middle',
-    // The public geometry vars, resolved into the registered `<length>` pair
-    // the arithmetic below needs. Reading them here rather than in each
-    // `calc()` keeps one place where a themed value enters the component, and
-    // it is the span that reads them whether the theme target is the span or
-    // the wrapper — a custom property inherits either way.
-    [RESOLVED_DIAMETER]: 'var(--spinner-diameter)',
-    [RESOLVED_STROKE]: 'var(--spinner-stroke-width)',
-    // The size of the box, composed here and applied as an inline style at the
-    // element, so that the box and the drawn ring come from the same two vars
-    // and a themed size moves both together — without the sizing moving from
-    // an inline style to a rule, which would hand a caller's `style={{width}}`
-    // a precedence over the box that it has never had.
-    [BOX_SIZE]: `calc(var(${RESOLVED_DIAMETER}) + var(${RESOLVED_STROKE}) * 2)`,
-
-    // The box is the ring's size, and a host does not get to take that away.
-    //
-    // `overflow: hidden` used to sit here, carried over from the canvas ring
-    // this component no longer draws. It clipped nothing — the painted circle
-    // is inscribed in the box, so hiding and showing the overflow render
-    // byte-identical pixels at every size, every shade, the labelled case and
-    // every rotation angle. What it did do is remove the floor under this box:
-    // a flex item whose overflow is not `visible` has an automatic minimum
-    // size of zero, so a narrow flex host was free to compress the box while
-    // the ring kept drawing at the size its own attributes ask for, and then
-    // the clip cut the ring off at the box edge. Ordinary rows hit it — a
-    // spinner beside a label in a 140px row lost 4px of its ring, one beside a
-    // `flex: 1 0 100px` sibling lost half of it — with nothing reporting a
-    // problem, because a sliced ring still spins.
-    //
-    // `flex-shrink: 0` then states the invariant directly rather than leaving
-    // it to the automatic minimum size, which a host takes away again the
-    // moment it sets `min-width: 0` on its items. A spinner that does not fit
-    // overflows its host visibly instead of being silently sliced.
-    flexShrink: 0,
-  },
-  ring: {
-    backfaceVisibility: 'hidden',
-    display: 'block',
-    // The track and the rotor share the one grid cell, stacked and centred.
-    gridArea: '1 / 1',
-    // The frame is the box, read from the same composed var the span is sized
-    // from — not from the size constant, which a theme cannot reach, and not
-    // from a percentage, which needs the grid area to be a definite size in
-    // both axes (an unresolved percentage height on an SVG falls back to the
-    // replaced-element default of 150px and drops the ring below the box).
-    // One expression, one source of truth, resolves in any layout.
-    width: `var(${BOX_SIZE})`,
-    height: `var(${BOX_SIZE})`,
-    // The svg is sized in CSS (100% of the span) rather than from the size
-    // constant, so one user unit is one CSS pixel AND the frame follows a
-    // themed diameter: the span's box is `diameter + 2 x stroke`, both public
-    // vars, so ring and frame move together. Sizing it from the constant
-    // instead left the svg larger than the box the moment a theme changed the
-    // diameter — an overflowing grid item aligns to start rather than centre,
-    // which put the ring 1.5-3.3px off across the four sizes.
-    overflow: 'visible',
-  },
-  // The rotor is the frame's size, so it turns about the ring's centre.
-  rotor: {
-    display: 'block',
-    gridArea: '1 / 1',
-    width: `var(${BOX_SIZE})`,
-    height: `var(${BOX_SIZE})`,
-  },
-  circle: {
-    fill: 'none',
-    // The ring is centred on the box (cx/cy 50%), so the arc's start offset
-    // pivots there too — as a CSS transform, since the SVG `transform`
-    // attribute would need that centre as a number in user units.
-    transformBox: 'fill-box',
-    transformOrigin: 'center',
-    strokeLinecap: 'round',
-    // The geometry the ring is actually drawn at. `r` and `stroke-width` are
-    // CSS properties on an SVG shape, and a CSS declaration outranks the
-    // presentation attribute of the same name — so the attributes below stay
-    // as the size's default (and as what a server render and a no-CSS render
-    // draw), and these take over the moment the cascade has a themed value.
-    r: `calc(var(${RESOLVED_DIAMETER}) / 2)`,
-    strokeWidth: `var(${RESOLVED_STROKE})`,
-  },
-  // The two ring colors ride `stroke` directly, read off the public vars the
-  // shade declares. The paint comes from the cascade, so every notation a
-  // theme can write — `var()`, `color-mix()`, and the `currentColor` the
-  // inherit shade is built on — resolves where it is used, and a color changed
-  // after mount repaints instead of going stale.
-  //
-  // The dash pattern is composed from the resolved diameter the same way, so a
-  // themed ring keeps the same fraction of arc rather than the same absolute
-  // dash. `pathLength` would be the shorter route to that, but it rescales the
-  // pattern against the path length the UA measures on its own approximation
-  // of the circle — 87.398 against the 87.965 of pi x 28 — which shortens the
-  // default arc by 0.64% and moves the cap by half a pixel. Composing the
-  // lengths keeps the default byte-identical to what it drew before.
-  //
-  // The fraction itself also rides a public var (`--spinner-arc-fraction`),
-  // unregistered like the other three color/geometry public vars — it is
-  // read as a bare `<number>` multiplier here, never summed with a unitless
-  // `0` the way the registered length pair guards against, so it needs no
-  // registration.
-  arc: {
-    stroke: 'var(--spinner-color)',
-    transform: 'rotate(-90deg)',
-    strokeDasharray: `calc(var(${RESOLVED_DIAMETER}) * ${PI} * var(--spinner-arc-fraction)) calc(var(${RESOLVED_DIAMETER}) * ${PI} * (1 - var(--spinner-arc-fraction)))`,
-  },
-  track: {stroke: 'var(--spinner-track-color)'},
-});
-
-// What each named `size` and `shade` resolve to. Both groups DECLARE the four
-// public vars, on the element that carries the `spinner` theme target, and
-// everything downstream reads them — so a theme's `@layer astryx-theme` rule
-// against `.astryx-spinner[data-size="xl"]` overrides the default the same way it does for
-// `--tree-list-indent` or `--button-focus-offset`, e.g.
-// spinner: { 'size:xl': { '--spinner-diameter': '40px' } }.
-//
-// Declaring is only safe because #5410 moved the compiled StyleX CSS inside
-// `@layer astryx-base`. Before it, StyleX emitted custom-property
-// declarations at priority 0 and therefore OUTSIDE its layers, and an
-// unlayered declaration beats every layer — so a StyleX-declared
-// `--spinner-diameter: 10px` shadowed the theme's own rule no matter how
-// specific the theme got. An earlier revision of this component worked around
-// that by never declaring the public var and reading it with the default as a
-// `var()` fallback; that is no longer necessary, and the fallback shape has a
-// cost of its own — with nothing declaring the var,
-// `theme-var-reachability.js` cannot find an element to check, so a documented
-// var reads as unreachable.
-// Arc fraction is not itself size-dependent, but it declares alongside the
-// two vars that are, on the same per-size condition (`!hasLabel` gate at the
-// call site) — it needs a home on whichever element carries the theme
-// target, and this is the object already wired to be there.
-const sizeStyles = stylex.create({
-  sm: {
-    '--spinner-diameter': `${SIZES.sm.diameter}px`,
-    '--spinner-stroke-width': `${SIZES.sm.border}px`,
-    '--spinner-arc-fraction': `${ARC_FRACTION}`,
-  },
-  md: {
-    '--spinner-diameter': `${SIZES.md.diameter}px`,
-    '--spinner-stroke-width': `${SIZES.md.border}px`,
-    '--spinner-arc-fraction': `${ARC_FRACTION}`,
-  },
-  lg: {
-    '--spinner-diameter': `${SIZES.lg.diameter}px`,
-    '--spinner-stroke-width': `${SIZES.lg.border}px`,
-    '--spinner-arc-fraction': `${ARC_FRACTION}`,
-  },
-  xl: {
-    '--spinner-diameter': `${SIZES.xl.diameter}px`,
-    '--spinner-stroke-width': `${SIZES.xl.border}px`,
-    '--spinner-arc-fraction': `${ARC_FRACTION}`,
-  },
-});
-
-const shadeStyles = stylex.create({
-  default: {
-    '--spinner-color': colorVars['--color-accent'],
-    '--spinner-track-color': colorVars['--color-track'],
-  },
-  subtle: {
-    '--spinner-color': colorVars['--color-text-secondary'],
-    '--spinner-track-color': colorVars['--color-track'],
-  },
-  onMedia: {
-    '--spinner-color': colorVars['--color-on-dark'],
-    '--spinner-track-color': colorVars['--color-on-dark'],
-  },
-  inherit: {
-    '--spinner-color': 'currentColor',
-    '--spinner-track-color': 'currentColor',
-  },
-});
-
-// The track's alpha is a property, not a color: it composites over whatever
-// color the shade or the theme supplies. `77 / 255` is the `4D` the onMedia
-// token's hex used to carry.
-const trackOpacityStyles = stylex.create({
-  default: {strokeOpacity: TRACK_OPACITY.default},
-  subtle: {strokeOpacity: TRACK_OPACITY.subtle},
-  onMedia: {strokeOpacity: TRACK_OPACITY.onMedia},
-  inherit: {strokeOpacity: TRACK_OPACITY.inherit},
-});
+// The class maps live in `spinnerClasses.ts`: the build scans that module,
+// and a class assembled here would reach the DOM with no rule behind it.
 
 // =============================================================================
 // Types
@@ -492,17 +301,19 @@ export function Spinner({
       {...(hasLabel ? {} : restProps)}
       {...mergeProps(
         hasLabel ? '' : themeProps('spinner', {size, shade}),
-        stylex.props(
-          styles.spinner,
-          // The defaults are declared on whichever element carries the theme
-          // target, and only there: when a label moves the target to the
-          // wrapper, this span must inherit the wrapper's value rather than
-          // declare its own, which would shadow a theme's override with the
-          // default it is trying to replace.
-          !hasLabel && sizeStyles[size],
-          !hasLabel && shadeStyles[shade],
-          !hasLabel && xstyle,
-        ),
+        {
+          className: tw(
+            spinnerClassName,
+            // The defaults are declared on whichever element carries the theme
+            // target, and only there: when a label moves the target to the
+            // wrapper, this span must inherit the wrapper's value rather than
+            // declare its own, which would shadow a theme's override with the
+            // default it is trying to replace.
+            !hasLabel && spinnerSizeClassName[size],
+            !hasLabel && spinnerShadeClassName[shade],
+            hasLabel ? null : xstyle && stylex.props(xstyle).className,
+          ),
+        },
         hasLabel ? undefined : className,
         // The box is sized here, after the caller's `style`, exactly as it was
         // before the geometry became themeable: the component's own size wins
@@ -524,27 +335,27 @@ export function Spinner({
         width={0}
         height={0}
         aria-hidden="true"
-        {...stylex.props(styles.ring)}>
+        className={spinnerRingClassName}>
         <circle
           cx="50%"
           cy="50%"
           r={diameter / 2}
           strokeWidth={border}
-          {...stylex.props(
-            styles.circle,
-            styles.track,
-            trackOpacityStyles[shade],
+          className={tw(
+            spinnerCircleClassName,
+            spinnerTrackClassName,
+            spinnerTrackOpacityClassName[shade],
           )}
         />
       </svg>
       <span
         ref={syncRotationPhase}
         aria-hidden="true"
-        {...stylex.props(styles.rotor, spinnerRotorStyles.turn)}>
+        className={tw(spinnerRotorBoxClassName, spinnerRotorTurnClassName)}>
         <svg
           width={frameSize}
           height={frameSize}
-          {...stylex.props(styles.ring)}>
+          className={spinnerRingClassName}>
           <circle
             cx="50%"
             cy="50%"
@@ -554,7 +365,7 @@ export function Spinner({
             // above composes the same lengths from the resolved diameter, so a
             // themed ring keeps this fraction of arc rather than this length.
             strokeDasharray={`${arcLength} ${circumference - arcLength}`}
-            {...stylex.props(styles.circle, styles.arc)}
+            className={tw(spinnerCircleClassName, spinnerArcClassName)}
           />
         </svg>
       </span>
@@ -572,12 +383,14 @@ export function Spinner({
       {...restProps}
       {...mergeProps(
         themeProps('spinner', {size, shade}),
-        stylex.props(
-          styles.wrapper,
-          sizeStyles[size],
-          shadeStyles[shade],
-          xstyle,
-        ),
+        {
+          className: tw(
+            spinnerWrapperClassName,
+            spinnerSizeClassName[size],
+            spinnerShadeClassName[shade],
+            xstyle && stylex.props(xstyle).className,
+          ),
+        },
         className,
         style,
       )}>

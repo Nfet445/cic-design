@@ -34,15 +34,14 @@ import {
   type PointerEvent,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {renderIconSlot, type IconType} from '../Icon';
 import {Item} from '../Item';
 import {useLinkComponent} from '../Link/useLinkComponent';
-import {colorVars, focusVars} from '../theme/tokens.stylex';
 import {composeEventHandlers, mergeProps} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {useDropdownMenuContext} from './DropdownMenuContext';
 import {dropdownMenuItemClassName} from './dropdownMenuClasses';
+import {menuRowStateStyles} from './menuRowState.stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLit.stylex';
 import {tw} from '../utils/tw';
@@ -50,34 +49,6 @@ import {focusMenuItemOnHover} from './menuItemHover';
 import {isModifiedClick, keepDisabledRowUnfocused} from './menuItemRoles';
 import {themeProps} from '../utils/themeProps';
 import {usePressFeedback} from '../hooks/usePressFeedback';
-
-const menuRowStateStyles = stylex.create({
-  row: {
-    // The row's paint stays unlayered. Item's own hover and press overlays are
-    // unlayered too, and a layered utility loses to them whatever the class
-    // order says, so the focused and pressed fills read their paint here.
-    backgroundColor: {
-      default: 'transparent',
-      // menuPressLitRowClassName sets the variable on the row a held finger or pen
-      // lights.
-      ':focus': `var(--_menu-row-focus-paint, ${colorVars['--color-overlay-hover']})`,
-      // The pressed look only where hover exists. Under a finger the row a
-      // press BEGAN on would otherwise stay painted while the highlight (focus)
-      // moves to the row under the finger — two rows lit. A held finger or pen
-      // sets the variable on the menu. Then only the lit row keeps the look.
-      '@media (hover: hover)': {
-        default: null,
-        ':active:where(:not(:disabled,[aria-disabled="true"]))': `var(--_menu-row-active-paint, ${colorVars['--color-overlay-pressed']})`,
-      },
-    },
-    // Rows show focus with a translucent overlay, which forced colors replace
-    // with the page color. The standard focus ring (focusOutlineStyles), drawn
-    // inside the row by its own width, marks the focused row in every mode.
-    // The ring and its offset share one tier, so the row's offset outranks the
-    // shared one only beside it, unlayered.
-    outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
-  },
-});
 
 export interface DropdownMenuItemProps extends Omit<
   BaseProps,
@@ -269,7 +240,11 @@ export function DropdownMenuItem({
       // the row under the release act.
       draggable={href != null ? false : undefined}
       isDisabled={isDisabled}
-      xstyle={[focusOutlineStyles.focusVisible, menuRowStateStyles.row, xstyle]}
+      xstyle={[
+        focusOutlineStyles.focusVisible,
+        menuRowStateStyles.paintedRow,
+        xstyle,
+      ]}
       {...mergeProps(
         themeProps('dropdown-menu-item', {
           size: menuSize,

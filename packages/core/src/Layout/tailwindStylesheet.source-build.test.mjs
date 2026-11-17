@@ -313,6 +313,11 @@ import {
   sectionOuterClassName,
 } from '../Section/sectionClasses';
 import {
+  scrollableAreaContentClassName,
+  scrollableAreaContentWithInlineOverflowClassName,
+  scrollableAreaViewportClassName,
+} from '../ScrollableArea/scrollableAreaClasses';
+import {
   SELECTOR_OPTION_EMBEDDED_CLASS,
   SELECTOR_ROW_CONTENT_CLASS,
   SELECTOR_ROW_MARK_COLUMN_CLASS,
@@ -634,6 +639,29 @@ import {
   timestampHoverCardValueClassName,
 } from '../Timestamp/timestampHoverCardClasses';
 import {
+  aspectRatioChildCenterClassName,
+  aspectRatioChildClassName,
+  aspectRatioChildContainClassName,
+  aspectRatioChildCoverClassName,
+  aspectRatioChildFillClassName,
+  aspectRatioClassName,
+  aspectRatioEllipseClassName,
+  aspectRatioRatioClassName,
+} from '../AspectRatio/aspectRatioClasses';
+import {
+  spinnerArcClassName,
+  spinnerCircleClassName,
+  spinnerClassName,
+  spinnerRingClassName,
+  spinnerRotorBoxClassName,
+  spinnerRotorTurnClassName,
+  spinnerShadeClassName,
+  spinnerSizeClassName,
+  spinnerTrackClassName,
+  spinnerTrackOpacityClassName,
+  spinnerWrapperClassName,
+} from '../Spinner/spinnerClasses';
+import {
   skeletonAnimateClassName,
   skeletonClassName,
   skeletonDelayClassName,
@@ -799,6 +827,18 @@ function familyClassNames() {
       add(sectionInnerClassName({dividers, variant}));
     }
   }
+  add(scrollableAreaViewportClassName({isFullBleed: false}));
+  add(
+    scrollableAreaViewportClassName({
+      height: 200,
+      isFullBleed: true,
+      maxWidth: '64rem',
+      minHeight: 40,
+      width: '100%',
+    }),
+  );
+  add(scrollableAreaContentClassName);
+  add(scrollableAreaContentWithInlineOverflowClassName);
   add(sectionOuterClassName({}));
   add(
     sectionOuterClassName({
@@ -2006,6 +2046,36 @@ function familyClassNames() {
   for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
     add(value);
   }
+  // AspectRatio: the box, its ratio reading the private variable, the ellipse
+  // clip, the child wrapper and its three fit arms.
+  add(aspectRatioClassName);
+  add(aspectRatioRatioClassName);
+  add(aspectRatioEllipseClassName);
+  add(aspectRatioChildClassName);
+  add(aspectRatioChildCenterClassName);
+  add(aspectRatioChildFillClassName);
+  add(aspectRatioChildCoverClassName);
+  add(aspectRatioChildContainClassName);
+  // Spinner: the wrapper, the box with its three geometry variables, the ring,
+  // the rotor's box and its one animation shorthand, the circle, the arc, the
+  // track and one class per size, per shade and per track alpha.
+  add(spinnerWrapperClassName);
+  add(spinnerClassName);
+  add(spinnerRingClassName);
+  add(spinnerRotorBoxClassName);
+  add(spinnerRotorTurnClassName);
+  add(spinnerCircleClassName);
+  add(spinnerArcClassName);
+  add(spinnerTrackClassName);
+  for (const value of Object.values(spinnerSizeClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(spinnerShadeClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(spinnerTrackOpacityClassName)) {
+    add(value);
+  }
   // Skeleton: the placeholder, the pulse, the two utility classes that read
   // the props' variables, and one class per radius.
   add(skeletonClassName);
@@ -2158,15 +2228,17 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // mostly one rule each, with the marker's two coarse-pointer arms and the
     // row's three radius parts already spelled elsewhere. Skeleton's map added
     // 25 — the placeholder, the pulse, the two classes that read the props'
-    // variables, and one per radius. With every family above the sheet sits at
+    // variables, and one per radius. With every family above the sheet sat at
     // 1212, and the windows merged since — the menu surface, EmptyState,
     // Timestamp — carried it further. The popover's map then moved from StyleX
     // to literal classes: its surface, both viewport-fit states, the two sizing
-    // classes, the anchor wrapper and both hidden close wrappers. The sheet
-    // measures 1254, so the ceiling follows the sum rather than one side.
-    // The checkbox field's row, box, press layers and native input added six,
-    // so the ceiling follows it to 1266.
-    expect(stylesheet.rules.size).toBeLessThan(1266);
+    // classes, the anchor wrapper and both hidden close wrappers. Spinner's box,
+    // ring, rotor, circle, arc, track and its twelve size, shade and alpha
+    // classes, AspectRatio's box, ratio, ellipse clip and four child arms, then
+    // ScrollableArea's platform, inset and both fade arms measured 1330 with
+    // every family above registered. The checkbox field's row, box, press
+    // layers and native input added six, so the ceiling follows the sum.
+    expect(stylesheet.rules.size).toBeLessThan(1380);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

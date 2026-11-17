@@ -39,63 +39,50 @@ import {
   type ScrollOverscroll,
   type ScrollStickyContainment,
 } from '../hooks/useScrollableArea';
-import {colorVars} from '../theme/tokens.stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {
+  scrollableAreaContentClassName,
+  scrollableAreaContentWithInlineOverflowClassName,
+  scrollableAreaSizeVars,
+  scrollableAreaViewportClassName,
+} from './scrollableAreaClasses';
 
-const styles = stylex.create({
-  viewport: {
-    boxSizing: 'border-box',
-    maxInlineSize: '100%',
-    maxBlockSize: '100%',
-    scrollbarColor: {
-      default: `${colorVars['--color-neutral']} transparent`,
-      // Touch screens keep the platform's own scroll indicator, which iOS
-      // shows only while scrolling, as UIScrollView does. A custom colour
-      // turns it into a faint bar that also shows in the gap a pull opens.
-      '@media (pointer: coarse)': 'auto',
-      '@media (forced-colors: active)': 'auto',
-    },
-    // Chromium can resolve CSS-only stuck/edge presentation for descendants.
-    // Unsupported engines keep the hook state as the behavior source of truth.
-    containerType: {
-      default: null,
-      '@supports (container-type: scroll-state)': 'scroll-state',
-    },
-  },
-  fullBleed: {
-    marginInlineStart: 'calc(-1 * var(--container-padding-inline-start, 0px))',
-    marginInlineEnd: 'calc(-1 * var(--container-padding-inline-end, 0px))',
-    maxInlineSize:
-      'calc(100% + var(--container-padding-inline-start, 0px) + var(--container-padding-inline-end, 0px))',
-    marginBlockStart: {
-      default: null,
-      ':first-child': 'calc(-1 * var(--container-padding-block-start, 0px))',
-    },
-    marginBlockEnd: {
-      default: null,
-      ':last-child': 'calc(-1 * var(--container-padding-block-end, 0px))',
-    },
-  },
-  content: {
-    boxSizing: 'border-box',
-    minInlineSize: '100%',
-    minBlockSize: '100%',
-  },
-  contentWithInlineOverflow: {
-    inlineSize: 'max-content',
-  },
-});
+type ScrollableAreaSizingStyle = React.CSSProperties &
+  Partial<
+    Record<
+      (typeof scrollableAreaSizeVars)[keyof typeof scrollableAreaSizeVars],
+      string
+    >
+  >;
 
-const dynamicStyles = stylex.create({
-  sizing: (
-    width: SizeValue | null,
-    height: SizeValue | null,
-    maxWidth: SizeValue | null,
-    minHeight: SizeValue | null,
-  ) => ({width, height, maxWidth, minHeight}),
-});
+/** A numeric size reads as pixels, as the StyleX declaration did. */
+function scrollableAreaSizeStyle({
+  height,
+  maxWidth,
+  minHeight,
+  width,
+}: {
+  height?: SizeValue;
+  maxWidth?: SizeValue;
+  minHeight?: SizeValue;
+  width?: SizeValue;
+}): ScrollableAreaSizingStyle {
+  const style: ScrollableAreaSizingStyle = {};
+  for (const [property, value] of [
+    [scrollableAreaSizeVars.width, width],
+    [scrollableAreaSizeVars.height, height],
+    [scrollableAreaSizeVars.maxWidth, maxWidth],
+    [scrollableAreaSizeVars.minHeight, minHeight],
+  ] as const) {
+    if (value != null) {
+      style[property] = typeof value === 'number' ? `${value}px` : value;
+    }
+  }
+  return style;
+}
 
 export type ScrollableAreaStickyContainment = ScrollStickyContainment;
 
@@ -193,22 +180,26 @@ export function ScrollableArea({
     stickyContainment,
   });
 
+  const xstyleProps = stylex.props(xstyle);
   const mergedViewportProps = mergeProps(
     themeProps('scrollable-area', {axis}),
-    stylex.props(
-      styles.viewport,
-      isFullBleed && styles.fullBleed,
-      focusOutlineStyles.focusVisible,
-      dynamicStyles.sizing(
-        width ?? null,
-        height ?? null,
-        maxWidth ?? null,
-        minHeight ?? null,
-      ),
-      xstyle,
+    stylex.props(focusOutlineStyles.focusVisible),
+    tw(
+      scrollableAreaViewportClassName({
+        isFullBleed,
+        width,
+        height,
+        maxWidth,
+        minHeight,
+      }),
+      xstyleProps.className,
+      className,
     ),
-    className,
-    style,
+    {
+      ...xstyleProps.style,
+      ...scrollableAreaSizeStyle({width, height, maxWidth, minHeight}),
+      ...style,
+    },
   );
   const viewportProps = getViewportProps<HTMLDivElement>({
     ...props,
@@ -216,40 +207,40 @@ export function ScrollableArea({
     ...mergedViewportProps,
   });
 
+  const paddingProps = stylex.props(
+    paddingStyles[padding],
+    containerPaddingInlineVarStyles[padding],
+    containerPaddingBlockStartVarStyles[padding],
+    containerPaddingBlockEndVarStyles[padding],
+    paddingInline != null && paddingInlineStyles[paddingInline],
+    paddingInline != null && containerPaddingInlineVarStyles[paddingInline],
+    paddingBlock != null && paddingBlockStyles[paddingBlock],
+    paddingBlock != null && containerPaddingBlockStartVarStyles[paddingBlock],
+    paddingBlock != null && containerPaddingBlockEndVarStyles[paddingBlock],
+    paddingInlineStart != null && paddingInlineStartStyles[paddingInlineStart],
+    paddingInlineStart != null &&
+      containerPaddingInlineStartVarStyles[paddingInlineStart],
+    paddingInlineEnd != null && paddingInlineEndStyles[paddingInlineEnd],
+    paddingInlineEnd != null &&
+      containerPaddingInlineEndVarStyles[paddingInlineEnd],
+    paddingBlockStart != null && paddingBlockStartStyles[paddingBlockStart],
+    paddingBlockStart != null &&
+      containerPaddingBlockStartVarStyles[paddingBlockStart],
+    paddingBlockEnd != null && paddingBlockEndStyles[paddingBlockEnd],
+    paddingBlockEnd != null &&
+      containerPaddingBlockEndVarStyles[paddingBlockEnd],
+  );
+
   return (
     <div {...viewportProps}>
       <div
         {...getContentProps<HTMLDivElement>({
-          ...stylex.props(
-            styles.content,
-            axis !== 'block' && styles.contentWithInlineOverflow,
-            paddingStyles[padding],
-            containerPaddingInlineVarStyles[padding],
-            containerPaddingBlockStartVarStyles[padding],
-            containerPaddingBlockEndVarStyles[padding],
-            paddingInline != null && paddingInlineStyles[paddingInline],
-            paddingInline != null &&
-              containerPaddingInlineVarStyles[paddingInline],
-            paddingBlock != null && paddingBlockStyles[paddingBlock],
-            paddingBlock != null &&
-              containerPaddingBlockStartVarStyles[paddingBlock],
-            paddingBlock != null &&
-              containerPaddingBlockEndVarStyles[paddingBlock],
-            paddingInlineStart != null &&
-              paddingInlineStartStyles[paddingInlineStart],
-            paddingInlineStart != null &&
-              containerPaddingInlineStartVarStyles[paddingInlineStart],
-            paddingInlineEnd != null &&
-              paddingInlineEndStyles[paddingInlineEnd],
-            paddingInlineEnd != null &&
-              containerPaddingInlineEndVarStyles[paddingInlineEnd],
-            paddingBlockStart != null &&
-              paddingBlockStartStyles[paddingBlockStart],
-            paddingBlockStart != null &&
-              containerPaddingBlockStartVarStyles[paddingBlockStart],
-            paddingBlockEnd != null && paddingBlockEndStyles[paddingBlockEnd],
-            paddingBlockEnd != null &&
-              containerPaddingBlockEndVarStyles[paddingBlockEnd],
+          ...paddingProps,
+          className: tw(
+            paddingProps.className,
+            scrollableAreaContentClassName,
+            axis !== 'block' &&
+              scrollableAreaContentWithInlineOverflowClassName,
           ),
         })}>
         {children}

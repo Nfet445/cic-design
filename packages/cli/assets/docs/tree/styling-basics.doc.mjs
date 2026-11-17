@@ -1,8 +1,9 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 /**
- * @file `astryx docs styling/styling-basics`: overview of styling approaches,
- * xstyle prop, Tailwind integration, className/style props, and rest props.
+ * @file `astryx docs styling/styling-basics`: what a component's classes are,
+ * the className and style merge order, a per-instance value as a class plus a
+ * custom property, the xstyle escape hatch, and rest props.
  */
 
 /** @type {import('@astryxdesign/cli/authoring').ReferenceDoc} */
@@ -14,9 +15,11 @@ export const docs = {
   placement: {parent: 'namespace:styling', slot: 'guides', order: 10},
   category: 'guide',
   description:
-    'Overview of styling approaches, xstyle prop, Tailwind integration, className/style props, and rest props.',
+    'What a component\u2019s classes are, the className and style merge order, a per-instance value as a class plus a custom property, the xstyle escape hatch, and rest props.',
   keywords: [
     'style',
+    'className',
+    'classes',
     'rest props',
     'data-testid',
     'ref',
@@ -28,97 +31,65 @@ export const docs = {
       content: [
         {
           type: 'prose',
-          text: 'Style components with `xstyle` (StyleX), `className` (Tailwind or your own CSS), or a styling library aliased to Astryx tokens. All of them resolve to the same tokens.',
+          text: 'Style a component with its props, then a class on `className`, then a token in your own CSS. All three compute to the same design tokens.',
         },
         {
           type: 'table',
           headers: ['Approach', 'Use for', 'Example'],
           rows: [
-            ['StyleX', 'Component-specific overrides, reusable styles, pseudo-classes, and typed tokens', '`const styles = stylex.create(...); <Button xstyle={styles.save} />`'],
-            ['Tailwind utilities', 'Page layout, wrappers, and utility styling', '`className="flex gap-3 p-4"`'],
-            ['className', 'Integrating with external CSS or Tailwind on components', '`className="my-card shadow-lg"`'],
-            ['Styling-library token aliases', 'Keeping Panda, Chakra, MUI, Emotion, styled-components, UnoCSS, CSS Modules, or Sass in sync with the system', "`colors.surface = 'var(--color-background-surface)'`"],
+            [
+              'Component props',
+              'A spacing step, an axis, a size, or a variant the component offers',
+              '`<Stack gap={2}>`',
+            ],
+            [
+              'className',
+              'A property the props do not name, or a class of your own',
+              '`<Card className="rounded-[var(--radius-element)]">`',
+            ],
+            [
+              'Tokens in your CSS',
+              'Your own markup and page chrome',
+              '`background: var(--color-background-card);`',
+            ],
+            [
+              'xstyle',
+              'A component-specific override kept from existing code',
+              '`<Card xstyle={styles.tight} />`',
+            ],
           ],
         },
         {
           type: 'prose',
-          text: 'Theming and dark mode work whichever you choose. For external styling libraries, see {@link namespace:styling-libraries}; it covers Tailwind, StyleX, Panda, Chakra, MUI, CSS-in-JS, CSS Modules, Sass, and `useTheme()` for non-CSS processing.',
+          text: 'Theming and dark mode work whichever you choose. For other styling libraries, see {@link namespace:styling-libraries}.',
         },
       ],
     },
     {
-      title: 'xstyle Prop',
+      title: 'What a Component Renders',
       content: [
         {
           type: 'prose',
-          text: 'Every component accepts an `xstyle` prop for style customization. It accepts StyleX styles created via `stylex.create()`, not inline objects or class name strings. StyleX styles are compiled at build time for optimal deduplication and dead-code elimination.',
+          text: 'A component writes literal classes, and the package stylesheet holds the declaration behind each one. Two props, two class sets:',
         },
         {
           type: 'code',
           lang: 'tsx',
-          label: 'Simple overrides',
-          code: `import * as stylex from '@stylexjs/stylex';
+          label: 'The classes two props produce',
+          code: `import {Button, Stack, StackItem} from '@astryxdesign/core';
 
-const overrides = stylex.create({
-  card: { maxWidth: 400, marginBlock: 16 },
-  saveButton: { alignSelf: 'flex-end' },
-});
+// flex flex-col gap-2
+<Stack gap={2}>
+  <StackItem>One</StackItem>
+  <StackItem>Two</StackItem>
+</Stack>
 
-<Card xstyle={overrides.card} />
-<Button label="Save" xstyle={overrides.saveButton} />`,
-        },
-        {
-          type: 'code',
-          lang: 'tsx',
-          label: 'Pseudo-classes and conditional styles',
-          code: `import * as stylex from '@stylexjs/stylex';
-
-const overrides = stylex.create({
-  card: {
-    boxShadow: {
-      default: 'none',
-      ':hover': { '@media (hover: hover)': '0 4px 12px rgba(0,0,0,0.1)' },
-    },
-  },
-});
-
-<Card xstyle={overrides.card}>...</Card>`,
-        },
-        {
-          type: 'list',
-          style: 'unordered',
-          items: [
-            'All xstyle values must come from stylex.create()',
-            'Pseudo-classes (:hover, :focus-visible) are supported inside stylex.create',
-            'All :hover styles MUST use @media (hover: hover) guard',
-            'For non-StyleX styling (Tailwind, external CSS), use className instead',
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Tailwind Integration',
-      content: [
-        {
-          type: 'prose',
-          text: 'The package ships a Tailwind v4 theme bridge that maps all design tokens to Tailwind utility classes. Import it once and use Tailwind classes backed by design tokens: colors, spacing, radius, shadows, and typography all resolve to the active theme.',
+// bg-[var(--color-accent)] text-[var(--color-on-accent)]
+<Button label="Save" variant="primary" />`,
         },
         {
           type: 'prose',
-          text: 'For the imports and the cascade-layer order to put in your global CSS, see {@link generic:tailwind}.',
-        },
-        {
-          type: 'code',
-          lang: 'tsx',
-          label: 'Tailwind utilities alongside components',
-          code: `<div className="text-primary bg-surface rounded-lg p-4 flex gap-3">
-  <Button label="Save" variant="primary" />
-  <Button label="Cancel" variant="secondary" />
-</div>`,
-        },
-        {
-          type: 'prose',
-          text: 'The bridge is pure CSS with zero JS. Theme changes (dark mode, custom themes) apply automatically because the utilities reference the same CSS custom properties that components use. This is the paved Tailwind path; for other styling libraries that follow the same aliasing pattern, see {@link namespace:styling-libraries}.',
+          text: 'Each class reads a token, so a theme switch changes what it computes to and nothing is rebuilt. The class set is what a test asserts, and it stays stable: a class exists because the component writes it.',
         },
       ],
     },
@@ -127,20 +98,77 @@ const overrides = stylex.create({
       content: [
         {
           type: 'prose',
-          text: 'Every component also accepts standard `className` and `style` props. `className` is appended after the component\'s own classes. `style` is merged after StyleX inline styles, so consumer values win on conflict.',
+          text: 'Every component accepts standard `className` and `style` props. `className` is appended after the component\u2019s own classes, and it carries no cascade layer, so a class you pass wins over the class the component set for the same property. `style` is merged last and beats every class, so keep it for a value one element really owns.',
         },
         {
           type: 'code',
           lang: 'tsx',
-          label: 'className with Tailwind utilities',
-          code: `<Card className="shadow-lg hover:shadow-xl transition-shadow">
-  ...
-</Card>
-<Button label="Save" className="my-app-save-btn" />`,
+          label: 'One class, one override',
+          code: `import {Card} from '@astryxdesign/core';
+
+// The card's own class sets rounded-[var(--radius-container)];
+// this one, appended after it, wins.
+<Card className="rounded-[var(--radius-element)]">...</Card>`,
         },
         {
           type: 'prose',
-          text: 'For layout and wrapper styling, Tailwind utilities on className work well. For component-specific overrides (padding, colors, borders), prefer xstyle; it integrates with StyleX deduplication and the component\'s internal style pipeline.',
+          text: 'For layout and wrapper styling, Tailwind utilities on `className` work well. For a component-specific override, first check whether a prop already offers the value: a prop computes a class the theme still reaches, which a class of your own does not.',
+        },
+      ],
+    },
+    {
+      title: 'A Value the Props Do Not Cover',
+      content: [
+        {
+          type: 'prose',
+          text: 'A per-instance value reaches the DOM two ways, and only the first is safe. A prop that takes the value writes it into a custom property on the element and names a class that reads it: `<Card width={320}>` renders `w-[var(--astryx-card-width)]` and sets `--astryx-card-width: 320px` inline. Nothing is declared inline, so your own class can still override the width.',
+        },
+        {
+          type: 'prose',
+          text: 'For your own element, do the same: the value goes in a custom property, the declaration in a class. An inline declaration instead would beat every class you pass, including one you meant to win inside a media query.',
+        },
+        {
+          type: 'code',
+          lang: 'tsx',
+          label: 'A computed width as a class plus a variable',
+          code: `import type {CSSProperties} from 'react';
+
+const panelWidth = '20rem';
+
+<div
+  className="w-[var(--app-panel-width)]"
+  style={{'--app-panel-width': panelWidth} as CSSProperties}
+/>`,
+        },
+        {
+          type: 'prose',
+          text: 'Name the variable after its owner, so a second one on the same element cannot collide, and read it from one class only.',
+        },
+      ],
+    },
+    {
+      title: 'The xstyle Escape Hatch',
+      content: [
+        {
+          type: 'prose',
+          text: 'Every component also accepts `xstyle`, which takes a StyleX style from `stylex.create()`, not an inline object and not a class name string. It is kept for one release for code that already passes one, and using it needs a StyleX compiler in your app, so new code should override with `className` instead.',
+        },
+        {
+          type: 'code',
+          lang: 'tsx',
+          label: 'An override that must win',
+          code: `import * as stylex from '@stylexjs/stylex';
+import {Card} from '@astryxdesign/core';
+
+const overrides = stylex.create({
+  tight: {padding: 'var(--spacing-6)'},
+});
+
+<Card xstyle={overrides.tight}>...</Card>`,
+        },
+        {
+          type: 'prose',
+          text: 'A StyleX rule carries no cascade layer, so it wins over every class on the element, including a class the component set and one you pass in `className`. That makes it the strongest override, and the one that is hardest for a later reader to see.',
         },
       ],
     },
@@ -173,7 +201,7 @@ const overrides = stylex.create({
         },
         {
           type: 'prose',
-          text: 'A few HTML attributes are intentionally omitted from the base type (contentEditable, dangerouslySetInnerHTML). children is not in the base type either; components that accept children declare it explicitly, so slot-based components don\'t silently drop JSX children.',
+          text: 'A few HTML attributes are intentionally omitted from the base type (contentEditable, dangerouslySetInnerHTML). children is not in the base type either; components that accept children declare it explicitly, so slot-based components don\u2019t silently drop JSX children.',
         },
       ],
     },

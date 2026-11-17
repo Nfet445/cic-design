@@ -2,10 +2,9 @@
 
 import {describe, it, expect, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
-import * as stylex from '@stylexjs/stylex';
 import {
   SPINNER_ARC_FRACTION,
-  spinnerRotorStyles,
+  spinnerRotorTurnClassName,
 } from '@astryxdesign/core/internal/spinner-rotor';
 import {CircularProgress} from './CircularProgress';
 
@@ -647,9 +646,7 @@ describe('CircularProgress', () => {
       render(<CircularProgress isIndeterminate label="Loading" size="lg" />);
       const ring = screen.getByRole('progressbar');
       // The rotor's own classes, so the timing is Spinner's, not a copy.
-      for (const token of (
-        stylex.props(spinnerRotorStyles.turn).className ?? ''
-      ).split(' ')) {
+      for (const token of spinnerRotorTurnClassName.split(' ')) {
         expect(ring).toHaveClass(token);
       }
       const circles = ring.querySelectorAll('circle');
