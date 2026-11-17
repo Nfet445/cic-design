@@ -377,3 +377,55 @@ Notes:
     eslint ran by hand before every commit.
   - `Comments/CommentMarkdown.test.tsx` is new for the same reason
     `LoadingMessage.test.tsx` was: the map needed one.
+
+## Window 6: the last twenty, timeboxed
+
+Branch `ticket/30-lab`, started with `Merge branch 'poc/tailwind-layout-primitives'`
+(no conflicts; the sheet test merged with both sides' maps listed).
+
+Committed, one component per commit:
+
+- `LineClamp` — `LineClamp/lineClampClasses.ts` holds the clamped box
+  (`[display:-webkit-box] [-webkit-box-orient:vertical] overflow-clip
+break-words [word-break:break-word]`), and the long `clip`-not-`hidden` reason
+  moved with it. `maxLines` stays an inline `WebkitLineClamp`, as it was: it is
+  a React inline style, not a map value.
+- `Stat` — `Stat/statClasses.ts`; the value size and the delta sentiment became
+  variant records (`statSizeClassNames`, `statSentimentClassNames`), so the
+  sheet test's collector now also walks an entry ending in `ClassNames`.
+- `SelectableCardGroup` — `SelectableCardGroup/selectableCardGroupClasses.ts`.
+- `DialogHeroHeader` — `DialogHeroHeader/dialogHeroHeaderClasses.ts`; the two
+  `xstyle` props on `Button` and `Heading` became `className`.
+- `PageControl` — `PageControl/pageControlClasses.ts`. The held platter's
+  `::before` opacity ships as two complete classes (`-hidden` / `-shown`),
+  because two `before:opacity-*` classes are ordered by the sheet. The three
+  per-instance variables were renamed from `--_page-control-*` to
+  `--astryx-page-control-*` in the component, `PageControlTouch.ts` and the
+  test (the ticket's rule for an instance value). The mask-free root keeps its
+  focus ring as `outline-none focus-visible:[outline-style:var(--focus-outline-style)]`
+  plus the three `[outline-*:var(--focus-outline-*)]` properties.
+
+Verified: `node packages/lab/scripts/build-css-tailwind.mjs`
+(`dist/lab-tailwind.css` 56.0 → 59.6 kB after the merge baseline),
+`pnpm exec vitest run packages/lab/src` → 102 files, 1335 tests pass; prettier
+and eslint clean on every touched file. `pnpm -F @astryxdesign/lab typecheck`
+still cannot answer on this worktree (no core declarations).
+
+Remaining 15 files, none started:
+
+| component | note |
+| --- | --- |
+| `LogStream` | one large map, `isTerminal` and level tints override a base colour, so each state needs a complete class; raw `TERM` greys stay as `[color:#…]` literals or become private variables |
+| `CircleCheckIndicator` | `circleCheck.stylex.ts` carries inset-shadow ring, forced-colors border and ancestor hover markers; the markers stay StyleX with their reason |
+| `CodeEditor` | one map |
+| `Chat/ChatVirtualizer` | one map, largest file |
+| `NavigationStack` | two maps, the second dynamic; `focusOutlineStyles` joins through `mergeProps` |
+| `CommentPin` | two maps: root plus per-size radius/padding `calc()` over `--size-element-*` |
+| `internal/useScrollEdgeEffect` | two maps; the veil's giant mask gradient is one arbitrary value, and the dynamic `geometry` arm needs the class + `--astryx-scroll-edge-*` variable shape |
+| `TabBar` | one map plus `tabBarItemMarker` ancestor focus and pressed conditions; those rules stay in `tabBar.stylex.ts` with their reason |
+| `SVGIcon/WeightedSVGIcon`, `SVGIcon/SVGIcon`, `SVGIcon/colors.stylex.ts`, `SVGIcon/variations.stylex.ts`, `SVGIcon/weighted.stylex.ts` | one family: the colour/optical-size/weight-range maps are shared style objects between the two components, so they move together or not at all |
+| `EmojiPicker` | one map (overlay half) |
+| `Radial/RadialChart` | one map |
+| `Tour/TourStep` | one map (overlay half) |
+| `CircularProgress` | three maps |
+| `TransferList/TransferListSelector` | one dynamic map; stays StyleX until core's `ComplexSelector` exposes a content class/style seam (window 2 note) |
