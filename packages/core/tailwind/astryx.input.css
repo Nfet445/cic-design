@@ -140,7 +140,9 @@
   from {
     opacity: 0;
     transform: translate(
-        calc(var(--_astryx-layer-enter-x, -1) * var(--_astryx-layer-enter-step)),
+        calc(
+          var(--_astryx-layer-enter-x, -1) * var(--_astryx-layer-enter-step)
+        ),
         calc(var(--_astryx-layer-enter-y, 0) * var(--_astryx-layer-enter-step))
       )
       scale(0.95);
@@ -185,7 +187,9 @@
   from {
     opacity: 0;
     transform: translate(
-        calc(var(--_astryx-layer-enter-x, -1) * var(--_astryx-layer-enter-step)),
+        calc(
+          var(--_astryx-layer-enter-x, -1) * var(--_astryx-layer-enter-step)
+        ),
         calc(var(--_astryx-layer-enter-y, 0) * var(--_astryx-layer-enter-step))
       )
       scale(0.95);
@@ -203,6 +207,35 @@
   from {
     opacity: 0;
     animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Dialog entrance: it travels from the trigger's side and settles at rest.
+   The runtime writes `--astryx-dialog-dir-x/-y` for the direction it picks, so
+   the keyframe reads variables instead of owning one direction. */
+@keyframes astryxDialogEnter {
+  from {
+    opacity: 0;
+    transform: translate(
+        var(--astryx-dialog-dir-x, 0px),
+        var(--astryx-dialog-dir-y, 16px)
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* A fullscreen dialog has no resting direction to travel from: it fades in
+   where it lands. */
+@keyframes astryxDialogEnterFullscreen {
+  from {
+    opacity: 0;
   }
   to {
     opacity: 1;

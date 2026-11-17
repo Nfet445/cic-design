@@ -29,6 +29,17 @@ import {
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
+  dialogInlineClassName,
+  dialogInnerClassName,
+  dialogRootClassName,
+} from '../Dialog/dialogClasses';
+import {
+  dialogHeaderActionsClassName,
+  dialogHeaderContainerClassName,
+  dialogHeaderSlotClassName,
+  dialogHeaderTitleBlockClassName,
+} from '../Dialog/dialogHeaderClasses';
+import {
   fieldAttachedStatusLayerClassName,
   fieldClassName,
   fieldHorizontalLabelAlignClassName,
@@ -424,6 +435,31 @@ function familyClassNames() {
   add(toolbarLoneStartSlotClassName());
   add(toolbarLoneEndSlotClassName());
   add(toolbarTabIndicatorClassName());
+  // The dialog family: the native <dialog> in each geometry, and the inline
+  // preview wrapper. Each entrance contributes its own animation-name arms.
+  for (const isFullscreen of [false, true]) {
+    for (const isPositioned of [false, true]) {
+      for (const entrance of ['slide', 'fade', 'none']) {
+        add(dialogRootClassName({entrance, isFullscreen, isPositioned}));
+      }
+    }
+    add(dialogInlineClassName({isFullscreen}));
+  }
+  add(dialogInnerClassName);
+  add(dialogHeaderContainerClassName);
+  add(dialogHeaderSlotClassName);
+  add(dialogHeaderTitleBlockClassName);
+  for (const hasBlockCompensation of [false, true]) {
+    for (const hasInlineCompensation of [false, true]) {
+      add(
+        dialogHeaderActionsClassName({
+          hasBlockCompensation,
+          hasInlineCompensation,
+        }),
+      );
+    }
+  }
+
   // The layout family: the shell frame, then every region combination. A
   // region edge publishes its inset and reads it back, so each combination
   // contributes its own arbitrary-property classes.
@@ -976,10 +1012,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // field family about 60, Table's sorting, filtering and selection maps
     // about 60, the choice-input rows of Selector, MultiSelector and Typeahead
     // about 85, the link-and-item family about 100 (Link, Citation,
-    // BreadcrumbItem, Token, Pagination and the avatar status dot), and the
-    // date and time inputs about 50. A scan that reaches component bodies or
-    // prose would add hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(820);
+    // BreadcrumbItem, Token, Pagination and the avatar status dot), the date
+    // and time inputs about 50, and the dialog family about 35. A scan that
+    // reaches component bodies or prose would add hundreds more.
+    expect(stylesheet.rules.size).toBeLessThan(860);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {
@@ -1377,6 +1413,8 @@ describe('dist/astryx-tailwind.css layer rules', () => {
       'astryxLayerEnterEndRtl',
       'astryxLayerEnterStartRtl',
       'astryxLayerFadeIn',
+      'astryxDialogEnter',
+      'astryxDialogEnterFullscreen',
     ]) {
       expect(stylesheet.compact, keyframe).toContain(`@keyframes${keyframe}{`);
     }
@@ -1402,6 +1440,34 @@ describe('dist/astryx-tailwind.css layer rules', () => {
     expect(
       stylesheet.compact.indexOf('animation-name:astryxLayerFadeIn;'),
     ).toBeGreaterThan(stylesheet.compact.indexOf('animation-name:none;'));
+  });
+
+  it('carries the dialog entrance and the dialog state classes', () => {
+    // The native `open` attribute is the dialog's open state, and its backdrop
+    // is a pseudo-element of the same element.
+    expect(stylesheet.blockOf('open:flex')).toContain('display:flex;');
+    expect(stylesheet.ruleFor('hidden')).toBe('display:none;');
+    expect(stylesheet.blockOf('backdrop:bg-[var(--color-overlay)]')).toContain(
+      '::backdrop{background-color:var(--color-overlay);}',
+    );
+    expect(stylesheet.compact).toContain(
+      '@keyframesastryxDialogEnter{from{opacity:0;transform:translate(var(--astryx-dialog-dir-x,0px),var(--astryx-dialog-dir-y,16px))scale(0.95);}',
+    );
+    expect(stylesheet.compact).toContain(
+      '@keyframesastryxDialogEnterFullscreen{from{opacity:0;}to{opacity:1;}}',
+    );
+  });
+
+  it('keeps the dialog coarse-pointer fade after its instant arm', () => {
+    // Both arms are Reduce Motion matches that only a pointer splits, so the
+    // later one in the sheet wins: the fade must follow the instant arm.
+    const flat = stylesheet.compact.replace(/\\/g, '');
+    const instant = flat.indexOf('.motion-reduce:open:[animation-name:none]{');
+    const fade = flat.indexOf(
+      '.motion-reduce:pointer-coarse:open:[animation-name:astryxDialogEnterFullscreen]{',
+    );
+    expect(instant).toBeGreaterThan(-1);
+    expect(fade).toBeGreaterThan(instant);
   });
 
   it('mirrors only the horizontal entrance under RTL', () => {

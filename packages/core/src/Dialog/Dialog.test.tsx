@@ -15,7 +15,6 @@ import {
   useState,
   type SyntheticEvent,
 } from 'react';
-import {readFileSync} from 'node:fs';
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import type {MockInstance} from 'vitest';
 import {
@@ -34,6 +33,7 @@ import {
 } from './Dialog';
 import {DialogHeader} from './DialogHeader';
 import {getFocusableElements, useFocusTrap} from '../hooks/useFocusTrap';
+import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
 import {useDialogContext} from './DialogContext';
 import {defineTheme, generateThemeCSS} from '../theme';
 import {
@@ -45,29 +45,6 @@ function generateThemeTestCSS(
   theme: Parameters<typeof generateThemeCSS>[0],
 ): string {
   return Object.values(generateThemeCSS(theme)).join('\n');
-}
-
-function extractConstDeclaration(source: string, name: string): string {
-  const start = source.indexOf(`const ${name} = stylex.keyframes({`);
-  if (start === -1) {
-    throw new Error(`Missing ${name} keyframes`);
-  }
-
-  const bodyStart = source.indexOf('{', start);
-  let depth = 0;
-  for (let index = bodyStart; index < source.length; index += 1) {
-    const char = source[index];
-    if (char === '{') {
-      depth += 1;
-    } else if (char === '}') {
-      depth -= 1;
-      if (depth === 0) {
-        return source.slice(start, index + 3);
-      }
-    }
-  }
-
-  throw new Error(`Unterminated ${name} keyframes`);
 }
 
 function extractThemeVars(css: string): Map<string, string> {
@@ -1594,41 +1571,52 @@ describe('Dialog', () => {
       );
 
       const dialog = screen.getByRole('dialog');
-      const inlineStyle = dialog.getAttribute('style') ?? '';
-      expect(inlineStyle).toContain('--x-width: 600px');
-      expect(inlineStyle).toContain(
-        '--x-maxWidth: min(100%, calc(100dvw - var(--spacing-4) - var(--spacing-4)))',
+      expectVariable(dialog, '--astryx-dialog-width', '600px');
+      expectVariable(
+        dialog,
+        '--astryx-dialog-max-width',
+        'min(100%, calc(100dvw - var(--spacing-4) - var(--spacing-4)))',
       );
-      expect(inlineStyle).toContain('--x-maxHeight: 70dvh');
+      expectVariable(dialog, '--astryx-dialog-max-height', '70dvh');
+      expectClassSet(dialog, {
+        includes: [
+          '[width:var(--astryx-dialog-width,auto)]',
+          '[max-height:var(--astryx-dialog-max-height,none)]',
+        ],
+      });
     });
 
-    it('uses opacity-only fullscreen keyframes while standard dialogs keep directional movement', () => {
-      const source = readFileSync(
-        'packages/core/src/Dialog/Dialog.tsx',
-        'utf8',
+    it('keeps the directional entrance for standard dialogs and the fade for fullscreen', () => {
+      render(
+        <Dialog isOpen={true} onOpenChange={() => {}} aria-label="Standard">
+          Content
+        </Dialog>,
       );
-      const enterDirectional = extractConstDeclaration(
-        source,
-        'enterDirectional',
-      );
-      const enterFullscreen = extractConstDeclaration(
-        source,
-        'enterFullscreen',
-      );
-      const fullscreenOpen = source.slice(
-        source.indexOf('  fullscreenOpen: {'),
-        source.indexOf('  fullscreenSafeArea: {'),
-      );
+      expectClassSet(screen.getByRole('dialog'), {
+        includes: [
+          'open:[animation-name:astryxDialogEnter]',
+          'motion-reduce:open:[animation-name:none]',
+          'motion-reduce:pointer-coarse:open:[animation-name:astryxDialogEnterFullscreen]',
+        ],
+      });
 
-      expect(enterDirectional).toContain('transform');
-      expect(enterDirectional).toContain('translate(var(--dialog-dir-x');
-      expect(enterDirectional).toContain('scale(0.95)');
-      expect(enterFullscreen).toContain('opacity');
-      expect(enterFullscreen).not.toContain('transform');
-      expect(enterFullscreen).not.toContain('translate');
-      expect(enterFullscreen).not.toContain('scale(');
-      expect(fullscreenOpen).toContain('enterFullscreen');
-      expect(fullscreenOpen).not.toContain('enterDirectional');
+      cleanup();
+      render(
+        <Dialog
+          isOpen={true}
+          onOpenChange={() => {}}
+          variant="fullscreen"
+          aria-label="Fullscreen">
+          Content
+        </Dialog>,
+      );
+      expectClassSet(screen.getByRole('dialog'), {
+        includes: [
+          'open:[animation-name:astryxDialogEnterFullscreen]',
+          'motion-reduce:open:[animation-name:none]',
+          'motion-reduce:pointer-coarse:open:[animation-name:astryxDialogEnterFullscreen]',
+        ],
+      });
     });
 
     it('maps fullscreen safe-area insets to logical sides in LTR and RTL', () => {
