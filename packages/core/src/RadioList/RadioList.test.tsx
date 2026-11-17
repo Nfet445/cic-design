@@ -28,7 +28,7 @@ import {
   rtlCenterInlineClassName,
 } from '../utils/rtlClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
-import {indicatorPressImageClassName} from '../privateAttributes/pressClasses';
+import {indicatorPressImageClassName} from '../Indicator/indicatorClasses';
 
 // A disabled row blocks pointers with a class, and jsdom has no sheet to
 // compute it from; find the row that carries the block instead.

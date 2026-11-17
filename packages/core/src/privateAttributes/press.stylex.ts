@@ -418,7 +418,8 @@ export const rowPressPaintStyles = stylex.create({
 /**
  * Ready-made press paint for a selection control. `handDown` goes on
  * CheckboxInput's row. The layer over the box or a RadioList option's circle
- * reads it, and paints the press from `pressClasses.ts`.
+ * reads it, and the indicator paints its own press from
+ * `Indicator/indicatorClasses.ts`.
  */
 export const indicatorPressPaintStyles = stylex.create({
   // A row hands its press image down to an indicator that paints its own

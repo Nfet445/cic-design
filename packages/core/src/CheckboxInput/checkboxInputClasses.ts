@@ -122,7 +122,8 @@ export function checkboxInputWrapperClassName({
 /**
  * The press layer the owner paints over the resolved indicator, so a plain
  * theme replacement keeps the pressed feedback. Its paint comes from
- * `pressClasses.ts`, which reads the scope and press attributes off the row.
+ * the indicator's press classes, which read the scope and press attributes off
+ * the row.
  */
 export const checkboxInputPressOverlayClassName = tw(
   'after:pointer-events-none after:absolute after:inset-0',
@@ -133,10 +134,12 @@ export const checkboxInputPressOverlayClassName = tw(
  * The press layer exists only over an indicator that does not paint its own
  * press: the circle mark draws its own.
  */
+/* eslint-disable @astryx/no-raw-private-attribute -- Tailwind scans class text, so the attribute has to be spelled here; privateAttributes/indicatorPress.stylex.ts owns the mark on a pressed indicator. */
 export const checkboxInputPressContentClassName = tw(
   "after:content-['']",
   'has-[[data-astryx-indicator-press]]:after:content-none',
 );
+/* eslint-enable @astryx/no-raw-private-attribute */
 
 /** Holds only the indicator, so the focus ring has one unambiguous target. */
 export const checkboxInputIndicatorSlotClassName = 'contents';

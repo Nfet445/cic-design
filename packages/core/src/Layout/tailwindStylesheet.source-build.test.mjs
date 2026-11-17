@@ -555,7 +555,7 @@ import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses
 import {
   indicatorPressFillClassName,
   indicatorPressImageClassName,
-} from '../privateAttributes/pressClasses';
+} from '../Indicator/indicatorClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {reorderingHandleCursorClassName} from '../privateAttributes/reorderingClasses';
 import {

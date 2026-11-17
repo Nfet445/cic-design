@@ -1,13 +1,14 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 /**
- * @file indicatorScope.ts
+ * @file privateAttributes/indicatorScope.stylex.ts
  * @input None
  * @output indicatorScopeProps, the private attribute an owning control puts on
  *   the row whose hover and focus reach its indicator
  * @position Owner module of the private indicator-scope attribute: the only
- *   file that names it. CheckboxInput and RadioListItem mark their rows, and
- *   `indicatorClasses.ts` reads it. No package entry exports it.
+ *   file that writes its name. CheckboxInput and RadioListItem spread the
+ *   props on their rows, and the indicator's hover classes read the attribute
+ *   in their class text. No package entry exports it.
  */
 
 /**

@@ -64,27 +64,6 @@ function elementOf(container: HTMLElement, selector: string): HTMLElement {
   return element as HTMLElement;
 }
 
-/**
- * Every rule text in the document, nested ones included. jsdom drops the
- * `color-mix()` declaration itself, so a test can read a selector here but not
- * a value; the built sheet covers the values.
- */
-function ruleTexts(): string[] {
-  const texts: string[] = [];
-  const walk = (list: CSSRuleList) => {
-    for (const rule of Array.from(list)) {
-      texts.push(rule.cssText);
-      if (rule instanceof CSSMediaRule) {
-        walk(rule.cssRules);
-      }
-    }
-  };
-  for (const sheet of Array.from(document.styleSheets)) {
-    walk(sheet.cssRules);
-  }
-  return texts;
-}
-
 describe('CheckboxIndicator classes', () => {
   it('paints a checked box at the small size from the size step and the accents', () => {
     const {container} = render(<CheckboxIndicator state="checked" size="sm" />);

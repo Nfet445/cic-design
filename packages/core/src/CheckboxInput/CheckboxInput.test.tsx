@@ -30,7 +30,7 @@ import {FOCUS_OUTLINE_PARTS} from '../utils/focusOutline.stylex';
 import {
   indicatorPressFillClassName,
   indicatorPressImageClassName,
-} from '../privateAttributes/pressClasses';
+} from '../Indicator/indicatorClasses';
 import {
   checkboxInputPressContentClassName,
   checkboxInputPressOverlayClassName,
@@ -1110,7 +1110,10 @@ describe('an indicator that paints its own press', () => {
     // reads the attribute is the press layer's `content`, which stays beside
     // this component.
     expect(
-      readFileSync('packages/core/src/internal/indicatorPress.ts', 'utf8'),
+      readFileSync(
+        'packages/core/src/privateAttributes/indicatorPress.stylex.ts',
+        'utf8',
+      ),
     ).toContain("'data-astryx-indicator-press'");
     expect(readFileSync('packages/core/src/index.ts', 'utf8')).not.toContain(
       'indicatorPress',

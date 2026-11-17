@@ -19,7 +19,6 @@
  */
 
 import React, {use, useId, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {RadioListContext} from './RadioList';
@@ -32,7 +31,7 @@ import {
   rtlCenterInlineBlockOffsetClassName,
   rtlCenterInlineClassName,
 } from '../utils/rtlClasses';
-import {indicatorScopeProps} from '../Indicator/indicatorScope';
+import {indicatorScopeProps} from '../privateAttributes/indicatorScope.stylex';
 import {useIndicatorFocusRing} from '../hooks/useIndicatorFocusRing';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -47,7 +46,7 @@ import {
   rowPressLayerStyles,
   rowPressPaintStyles,
 } from '../privateAttributes/press.stylex';
-import {indicatorPressImageClassName} from '../privateAttributes/pressClasses';
+import {indicatorPressImageClassName} from '../Indicator/indicatorClasses';
 import {rowStyles} from './radioListItemRow.stylex';
 import {
   radioListItemIndicatorSlotClassName,

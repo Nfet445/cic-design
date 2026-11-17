@@ -46,7 +46,7 @@ import {
   rtlCenterInlineClassName,
 } from '../utils/rtlClasses';
 import {withholdCallerHandlers} from '../utils/disabledInteraction';
-import {indicatorScopeProps} from '../Indicator/indicatorScope';
+import {indicatorScopeProps} from '../privateAttributes/indicatorScope.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {useIndicatorFocusRing} from '../hooks/useIndicatorFocusRing';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
@@ -69,7 +69,7 @@ import {CheckboxRowPressContext} from './CheckboxRowPressContext';
 import {
   indicatorPressFillClassName,
   indicatorPressImageClassName,
-} from '../privateAttributes/pressClasses';
+} from '../Indicator/indicatorClasses';
 import {
   checkboxInputClassName,
   checkboxInputIndicatorSlotClassName,

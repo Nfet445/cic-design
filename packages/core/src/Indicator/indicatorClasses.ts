@@ -55,6 +55,7 @@ const DISABLED_BORDER_CLASSES = 'border-[color:var(--color-border)]';
  * hover. The row marks itself with `data-astryx-indicator-scope`, so the
  * variant names an ancestor, not this element.
  */
+/* eslint-disable @astryx/no-raw-private-attribute -- Tailwind scans class text, so the attribute has to be spelled here; privateAttributes/indicatorScope.stylex.ts owns the name */
 const HOVER_BORDER_CLASSES = {
   unchecked:
     '[@media(hover:hover)]:[[data-astryx-indicator-scope]:hover_&]:border-[color:color-mix(in_srgb,var(--color-border-emphasized),var(--color-tint-hover)_20%)]',
@@ -235,3 +236,21 @@ export function checkSlotClassName({
       : 'text-[var(--color-accent)]',
   );
 }
+
+/**
+ * The `:active` fill of a press the controller does not paint. Under a coarse
+ * pointer the controller paints every press, so a finger gets no fill.
+ */
+export const indicatorPressFillClassName = tw(
+  'pointer-fine:[[data-astryx-indicator-scope]:active:not([data-astryx-press=on],[data-astryx-press=fading])_&]:after:bg-[var(--color-overlay-pressed)]',
+);
+
+/**
+ * The controller's press, as an image over the fill. An image change is
+ * discrete, so no transition can delay its onset; only the strength moves.
+ */
+export const indicatorPressImageClassName = tw(
+  '[[data-astryx-indicator-scope][data-astryx-press=on]_&]:after:[background-image:var(--_press-paint-image)]',
+  '[[data-astryx-indicator-scope][data-astryx-press=fading]_&]:after:[background-image:var(--_press-paint-image)]',
+);
+/* eslint-enable @astryx/no-raw-private-attribute */

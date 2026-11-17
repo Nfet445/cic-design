@@ -1,13 +1,14 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 /**
- * @file indicatorPress.ts
+ * @file privateAttributes/indicatorPress.stylex.ts
  * @input None
  * @output indicatorPressProps, the private attribute of an indicator that
  *   paints its own press
  * @position Owner module of the private indicator-press attribute: the only
- *   file that names it. Astryx's circle mark marks itself, and
- *   `checkboxInputClasses.ts` reads it. No package entry exports it.
+ *   file that writes its name. Astryx's circle mark marks itself, and
+ *   `checkboxInputClasses.ts` reads the mark in its class text. No package
+ *   entry exports it.
  */
 
 /**
