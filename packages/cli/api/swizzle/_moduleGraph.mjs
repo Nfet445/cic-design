@@ -357,12 +357,15 @@ function publicSurfaceOf(packageDir, srcRoot, originsOf) {
   const byOrigin = {value: new Map(), type: new Map()};
   /** @type {PublicSurface['byFile']} */
   const byFile = new Map();
+  /** The module each subpath names, so a subpath's own kind is knowable. */
+  const fileOf = new Map();
   for (const [subpath, sourceFile] of exportedSourceFiles(
     pkg,
     packageDir,
     srcRoot,
   )) {
     byFile.set(sourceFile, subpath);
+    fileOf.set(subpath, sourceFile);
     if (!CODE_FILE.test(sourceFile)) continue;
     for (const kind of /** @type {const} */ (['value', 'type'])) {
       for (const [name, origin] of originsOf(sourceFile, kind)) {
@@ -373,7 +376,7 @@ function publicSurfaceOf(packageDir, srcRoot, originsOf) {
       }
     }
   }
-  return {byOrigin, byFile, exportsField};
+  return {byOrigin, byFile, fileOf, exportsField};
 }
 
 /**
@@ -522,14 +525,22 @@ export function planCopy({
      * @returns {string|null}
      */
     const choosePublic = (subpaths, target, originFile) => {
-      const exact = originFile ? surface.byFile.get(originFile) : undefined;
-      if (exact && subpaths.includes(exact)) return exact;
-      if (
+      const stylexOrigin =
         STYLEX_FILE.test(target) ||
-        (originFile && STYLEX_FILE.test(originFile))
-      )
-        return null;
-      return pickSubpath(subpaths, target);
+        (originFile != null && STYLEX_FILE.test(originFile));
+      // A shim subpath may re-export a name that now lives in a plain module
+      // (a class map, a scale). Importing it from there would name the shim's
+      // own export, which is a different value, so only a StyleX origin may
+      // reach a StyleX subpath.
+      const options = stylexOrigin
+        ? subpaths
+        : subpaths.filter(
+            subpath => !STYLEX_FILE.test(surface.fileOf.get(subpath) ?? ''),
+          );
+      const exact = originFile ? surface.byFile.get(originFile) : undefined;
+      if (exact && options.includes(exact)) return exact;
+      if (stylexOrigin) return null;
+      return pickSubpath(options, target);
     };
 
     /**
