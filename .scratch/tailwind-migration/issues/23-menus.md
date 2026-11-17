@@ -369,9 +369,13 @@ packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` — 22 files,
 prettier and eslint clean on the touched files;
 `pnpm -F @astryxdesign/core typecheck` clean.
 
-The merge of `poc/tailwind-layout-primitives` was a no-op for the third window
-running: `a96b98d71` was already an ancestor of `ba40923d7`, so the sheet-test
-conflict did not appear.
+The merge of `poc/tailwind-layout-primitives` at the window's end carried
+ticket 47's Switch map (`82d950466`). Git auto-merged
+`Layout/tailwindStylesheet.source-build.test.mjs` this time — the two sides'
+imports and coverage statements did not overlap and both survived, `node
+--check` is clean — so no conflict needed resolving. The sheet measures
+186.2 kB with both maps and 844 tests pass; the ceiling stays 1380, the
+number the form-controls ticket set with its own measurement.
 
 Still open for this ticket, with what each needs:
 
