@@ -31,6 +31,7 @@ import * as lineClampClasses from './LineClamp/lineClampClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
 import * as scheduleClasses from './Schedule/scheduleClasses';
+import * as selectableCardGroupClasses from './SelectableCardGroup/selectableCardGroupClasses';
 import * as statClasses from './Stat/statClasses';
 import * as transferListClasses from './TransferList/transferListClasses';
 
