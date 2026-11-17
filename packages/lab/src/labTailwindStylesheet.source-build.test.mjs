@@ -21,9 +21,15 @@ import * as chatReactionBarClasses from './Chat/chatReactionBarClasses';
 import * as chatReasoningClasses from './ChatReasoning/chatReasoningClasses';
 import * as chatTypingIndicatorClasses from './Chat/chatTypingIndicatorClasses';
 import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
+import * as commentActionsClasses from './Comments/commentActionsClasses';
+import * as commentMarkdownClasses from './Comments/commentMarkdownClasses';
+import * as commentPartsClasses from './Comments/commentPartsClasses';
+import * as commentRowClasses from './Comments/commentRowClasses';
+import * as commentsClasses from './Comments/commentsClasses';
 import * as diffViewerClasses from './DiffViewer/diffViewerClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
+import * as scheduleClasses from './Schedule/scheduleClasses';
 import * as transferListClasses from './TransferList/transferListClasses';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -50,9 +56,15 @@ function labClassNames() {
     chatReasoningClasses,
     chatTypingIndicatorClasses,
     chatUnreadDividerClasses,
+    commentActionsClasses,
+    commentMarkdownClasses,
+    commentPartsClasses,
+    commentRowClasses,
+    commentsClasses,
     diffViewerClasses,
     listInputClasses,
     loadingMessageClasses,
+    scheduleClasses,
     transferListClasses,
   ]) {
     for (const [name, value] of Object.entries(map)) {

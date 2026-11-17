@@ -4,7 +4,7 @@
 
 /**
  * @file CommentComposer.tsx
- * @input Uses React, StyleX, ChatComposer, ChatComposerInput, ChatSendButton,
+ * @input Uses React, ChatComposer, ChatComposerInput, ChatSendButton,
  *   Popover, IconButton, Card, EmojiPicker, Typeahead's static source
  * @output Exports CommentComposer and CommentComposerProps, and the internal
  *   CommentComposerBase the Comments family's threads use
@@ -52,6 +52,7 @@ import {mergeProps, themeProps} from '@astryxdesign/core/utils';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {EmojiPicker} from '../EmojiPicker';
 import {agentToken} from './CommentMarkdown';
+import {commentComposerQuoteCardStyles} from './commentComposerOverrides.stylex';
 import {
   ErrorBanner,
   MetadataActionLink,
@@ -69,14 +70,6 @@ import type {
   CommentHighlightColor,
   CommentUploadedImage,
 } from './types';
-
-const styles = stylex.create({
-  // Concentric with the composer: its container radius less its compact
-  // padding is the inner radius.
-  quoteCard: {
-    borderRadius: radiusVars['--radius-inner'],
-  },
-});
 
 // ChatComposer's themeable radius variable, set on its frame so the body and
 // its concentric inner radius both follow: comment composers use the
@@ -433,7 +426,7 @@ export function CommentComposerBase({
                   elevation="none"
                   padding={2}
                   width="100%"
-                  xstyle={styles.quoteCard}
+                  xstyle={commentComposerQuoteCardStyles.base}
                   data-composer-anchor="quote">
                   <HStack gap={1} align="start" width="100%">
                     <StackItem size="fill">
