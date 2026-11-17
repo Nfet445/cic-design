@@ -222,18 +222,41 @@ astryxStatusDotPulse` sits in `packages/core/tailwind/astryx.input.css` and
 - `Timestamp.test.tsx` fails 5 ICU cases ("Timestamp calendar systems",
   `chinese` calendar) on `main` too; the count is unchanged.
 
+- `Timer` paints with Tailwind classes (`Timer/timerClasses.ts`): the `<time>`
+  inherited-property reset, with `tabular-nums` so the changing digits never
+  shift the layout. No test moved: `Timer.test.tsx` reads text, `dateTime` and
+  the consumer `xstyle` class only.
+- `MetadataList` paints with Tailwind classes (`MetadataList/metadataListClasses.ts`):
+  the column root, the title's bottom margin, the `dl` reset, the three grid
+  arms (side labels, stacked labels, multi-column, horizontal), the show-more
+  toggle with its disabled `aria-disabled` cursor arm, and one class that reads
+  `--_metadata-list-columns`. The four grid arms all paint
+  `grid-template-columns`, so the component joins exactly one.
+- `MetadataListItem` paints with its own map
+  (`MetadataList/metadataListItemClasses.ts`): the label and value type styles,
+  their `24px` row floors, the stacked wrapper with its own label and value
+  arms, and the icon wrapper.
+- The runtime grid template (a fixed `columns` count, or a custom
+  `label.width`) is a class plus an inline private variable, replacing
+  `dynamicStyles.gridTemplate`: the `dl` carries
+  `[grid-template-columns:var(--_metadata-list-columns)]` and the value rides
+  `style={{'--_metadata-list-columns': …}}`. The variable is private and set
+  from a prop, not a theme target, so no `derived[]` entry applies and the
+  derived-var source scan reports nothing; the registry test is green without
+  a new line.
+- No test moved in `MetadataList/` or `Timer/`: neither suite reads a computed
+  style or a StyleX debug name for these nodes.
+
 ## Left
 
 `Card`, `Divider`, `Banner`, `Badge`, `Code`, `Blockquote`, `StatusDot`,
-`Skeleton`, `EmptyState` and `Timestamp`/`TimestampHoverCard` are done. The
-rest of the ticket's files still carry their `stylex.create` maps:
+`Skeleton`, `EmptyState`, `Timestamp`/`TimestampHoverCard`, `Timer` and
+`MetadataList`/`MetadataListItem` are done. The rest of the ticket's files
+still carry their `stylex.create` maps:
 
-- `CodeBlock` (3), `Spinner` (4) plus `Spinner/spinnerRotor.ts` (1),
-  `ProgressBar` (4), `Outline` (3),
-  `AspectRatio` (2), `Thumbnail` (1), `MetadataList`/`MetadataListItem` (3),
-  `Timer` (1), `Timestamp`/`TimestampHoverCard` (3), `Toast`/`ToastViewport` (2),
-  `Carousel` (3), `Markdown` (5) plus `Markdown/plugins/HeadingLinksRenderer.tsx`
-  (2).
+- `CodeBlock` (3 maps), `ProgressBar` (4), `Outline` (3), `Thumbnail` (1),
+  `Toast`/`ToastViewport` (2), `Carousel` (3), `Markdown` (5) plus
+  `Markdown/plugins/HeadingLinksRenderer.tsx` (2).
 - One keyframe is still inside a `.ts` file:
   `Spinner/spinnerRotor.ts` (`rotation`, 100 turns per iteration, so
   `@keyframes astryxSpinnerRotor`). Skeleton is the worked example of the
@@ -271,9 +294,33 @@ rest of the ticket's files still carry their `stylex.create` maps:
   arms, and eight wrapper keys with `@starting-style` entries and a
   `:last-child`/`:first-child` gap arm. `Toast/Toast.tsx:83-150` is smaller but
   paints the swipe transform from three `--_toast-swipe-*` private vars.
-- `ProgressBar` computes its fill width and its mark position from props, so
-  those go through a class plus an inline `--astryx-*` variable, and its test
-  reads computed geometry.
+- `ProgressBar` is the next window's first file and does not fit a short one:
+  `ProgressBar/ProgressBar.tsx:156`, `:168` and `:181` are three keyframes
+  (slide, slide RTL, reduced-motion pulse) that become `@keyframes
+astryxProgressBar*` in `packages/core/tailwind/astryx.input.css`; `:194`,
+  `:434`, `:467` and `:501` are the four maps (frame, variants, mark-on-fill,
+  mark-on-track). Its fill paints one declaration group under four conditions
+  at once — `:dir(rtl)`, `pointer: coarse`, `forced-colors: active` and
+  `prefers-reduced-motion: reduce` — and the forced-colors key must beat the
+  coarse key, which is the case the class-plus-variable rule does not decide by
+  itself; the fill's `width`/`transform`/`transitionProperty` trio is the place
+  a tiny `progressBarFill.stylex.ts` exception may be needed, with the reason
+  in its header. The fill share and the mark position stay a class plus
+  `--_progress-bar-fill` / inline `insetInlineStart`.
+- `ProgressBar/ProgressBar.test.tsx` reads the compiled sheet in ten places
+  (`:253`, `:688`, `:716`, `:762`, `:805`, `:843`, `:884`, `:1025`, `:1072`,
+  `:1301`) and then reads the _map source text_ at `:1191-1215`
+  (`compact.slice(compact.indexOf('fill:{'))`), so the touch and forced-colors
+  arms are asserted against a literal that no longer exists once the map is a
+  class string. That block has to become `stylesheetOf(buildAstryxTailwindCss())`
+  reads over `blockOf`, as `Skeleton.test.tsx` did, and the `:1301` keyframe
+  read moves to the `@keyframes` name in that sheet.
+- `Thumbnail/Thumbnail.tsx:142` is one map of about twelve keys, but three of
+  them are pressed-state and hover-reveal rules (`:180` `interactive`, `:286`
+  the remove slot's offset vars) that share `interactionOverlay.stylex.ts` and
+  `useContainerReveal`, so it converts with those two seams open, not alone.
+- `Outline/Outline.tsx:138` is the row frame and its text, `:232`
+  `densityStyles` and `:243` `indentStyles` read the depth as a variable.
 - `Spinner`'s `sizeStyles` and `shadeStyles` declare the four public
   `--spinner-*` vars, and `theme-var-reachability.js` finds a var by the
   element that declares it — the converted classes must keep declaring them on
@@ -339,3 +386,31 @@ packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
 packages/core/src/theme packages/lab/src/CircularProgress` is green (2247
 tests). `pnpm -F @astryxdesign/core typecheck` and `eslint` are clean.
 Nothing is pushed.
+
+The sixth window was told `ProgressBar`, `Outline`/`Thumbnail`,
+`MetadataList`, `Timer`, `CodeBlock` in that order, and swapped the order after
+reading the files: `ProgressBar` carries three keyframes and four maps whose
+fill is decided by four stacked conditions at once, and its test scrapes the
+map's own source text at `ProgressBar.test.tsx:1191-1215` — a window of its own,
+recorded under Left with those line numbers. `Outline` and `Thumbnail` were left
+after it for the same reason (Outline's two maps read the depth, Thumbnail's
+remove slot shares the reveal seams). The two files it did convert:
+
+- `refactor(timer): перевести стили таймера на Tailwind-классы`
+- `refactor(metadata-list): перевести стили списка метаданных на Tailwind-классы`
+
+`timerClassName`, the six `metadataList*` names and the six
+`metadataListItem*` names are registered in `familyClassNames()` of
+`Layout/tailwindStylesheet.source-build.test.mjs`. `MetadataList` replaced its
+`dynamicStyles.gridTemplate` function with the class plus the private
+`--_metadata-list-columns` variable. No test in either directory moved.
+
+Verification after both commits: `node packages/core/scripts/build-css-tailwind.mjs`
+writes 185.3 kB (was 184.6 kB), `pnpm exec vitest run packages/core/src/Timer
+packages/core/src/MetadataList packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
+packages/core/src/theme` is green (1941 passed, 1 skipped) with the ceiling
+still `toBeLessThan(1380)` — the measured map is under it, so it did not move —
+prettier and eslint are clean, and `pnpm -F @astryxdesign/core typecheck` passes.
+`git merge poc/tailwind-layout-primitives` reports "Уже актуально": the window
+started from the trunk merge `9dafa1906`, so the sheet test needed no conflict
+resolution this time. Nothing is pushed.
