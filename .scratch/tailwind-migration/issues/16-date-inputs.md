@@ -370,3 +370,11 @@ What is left, measured on the integration branch with
 `DateTimeInput/DateTimeInput.tsx` 3, `DateInput/TouchDateField.tsx` 1. That is
 eight creations in three files. The sheet measured 1434 after the merge and the
 ceiling moved to 1540 with the rest of the wave.
+
+### Update after the touch-field merge
+
+`DateInput/TouchDateField.tsx` and `DateTimeInput/DateTimeInput.tsx` are classes
+now (`dateInputClasses.ts`, `dateTimeInputClasses.ts`); 1802 of 1803 date-family
+tests pass and the one failure is the pre-existing Chinese-calendar case.
+
+The only creation left in this ticket is `Calendar/styles.ts` — 4.
