@@ -1,6 +1,6 @@
 # side nav
 
-Status: ready-for-agent
+Status: done
 Blocked by: 18
 Wave: 6
 Family: `family:navigation-destinations`
@@ -83,34 +83,50 @@ Landed in `refactor(SideNav): переместить оформление SideNa
 
 ## Left
 
-- `packages/core/src/SideNav/SideNavHeading.tsx` — one `stylex.create` block
-  (`styles`, 25 members) and about 70 call sites, several of which pass members
-  into `focusOutlineProps`, so each paint has to move to `tw()` beside the
-  ring. The root's `:has(.astryx-nav-icon)` paddingInlineStart needs a class
-  plus a `has-[.astryx-nav-icon]:` variant, or a leftover, because the two
-  values come from one StyleX conditional.
-- `packages/core/src/TreeList/TreeListItem.tsx` — three blocks: `styles`,
-  `densityStyles`, `descriptionSizeStyles`, plus the `IndentStyle` type around
-  line 325 (class plus inline indent variable).
-- `packages/core/src/SideNav/SideNav.slotPresence.test.tsx` still reaches
-  `SideNavHeading` slots through `zeroIsInsideStyleXSlot(debugName)`; the
-  helper goes away with that component.
-- `SideNav.test.tsx` helpers `indentOf`, `ringSelectorsFor`,
-  `expectSharedFocusRing` read StyleX rules or debug names; they follow
-  `SideNavHeading` (and `indentOf` `TreeListItem`).
+- `SideNav.test.tsx` keeps its own `expectSharedFocusRing` and
+  `expectNoSharedFocusRing`; the shared `__tests__/insetFocusRing.ts` exports
+  only `expectSharedFocusRing`, so the negative helper has no home yet. No
+  helper in that file reads a StyleX declaration any more: they read `tw()`
+  class sets and the inline `--_tree-indent` / `--astryx-*` variables.
+- `TreeListItem.tsx` carries one narrow `eslint-disable` for
+  `@astryx/no-style-only-wrapper` on the `<div>` that holds the guide column:
+  `TreeListBranches` returns a fragment, so no child element can carry the
+  `ps-2` indent column, and the wrapper also keeps the pre-migration DOM.
 
 ## Result
 
-- `SideNav` and `SideNavItem` paint with Tailwind classes; `SideNavHeading` and
-  `TreeListItem` stay StyleX until the next pass, listed under Left.
-- Merged `poc/tailwind-layout-primitives` with no conflict: the branch does not
-  touch
-  `packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`, so this
-  ticket's `sideNavClassName` / `sideNavItemClassName` registrations and its
-  1040 budget stand. `node --check` on that file passes after the merge.
-- After the merge: `node packages/core/scripts/build-css-tailwind.mjs`,
+- The whole ticket's styling is Tailwind: `SideNav`, `SideNavItem`,
+  `SideNavHeading` and `TreeListItem` each read a literal class map from a
+  `*Classes.ts` file beside them. No `stylex.create` block is left in
+  `SideNav/` or `TreeList/` other than the family's shared interaction and focus
+  rings, which stay StyleX because an unlayered rule must outrank a class.
+- `SideNavHeading`: the roots' `:has(.astryx-nav-icon)` paddingInlineStart is
+  `[&:has(.astryx-nav-icon)]:ps-0` on the class; the built sheet carries it at
+  `packages/core/dist/astryx-tailwind.css` (`&:has(.astryx-nav-icon) {`).
+  Collapsed rows take their own `collapsedRoot` without `ps-2`/`pe-2`, so no
+  utility has to outrank another for the same property.
+- `TreeListItem`: `styles`, `densityStyles` and the three identical
+  `descriptionSizeStyles` arms became `treeListItemClassName` and
+  `treeListItemDensityClassName`. `IndentStyle` keeps its shape (a class plus
+  the inline `--_tree-indent` variable), and the row's z-index still reads the
+  `--_tree-focus-z` variable the treeitem publishes.
+- Tests that read compiled StyleX rules or debug names now read class sets:
+  the indent (padding not margin), the row-gap padding, the focus lift, the
+  focus z-index pair and the chevron column. `collectCssText` is gone from
+  `TreeList.test.tsx` because nothing in it reads StyleX CSS any more.
+- Sheet test: `sideNavHeadingClassName`, `treeListItemClassName` and
+  `treeListItemDensityClassName` are registered. The merged branch's ceiling of
+  1050 no longer fits 1055 rules, so it moves to 1060 with the reason in the
+  comment; the head-side rules reused almost every utility their families
+  already spell.
+- Commits: `36ec143e9` (SideNavHeading), `193444b91` (TreeListItem),
+  `dbb6cf199` (merge of `poc/tailwind-layout-primitives`, sheet-test conflict
+  resolved keeping both sides, `node --check` passes).
+- After the merge: `node packages/core/scripts/build-css-tailwind.mjs`
+  (`dist/astryx-tailwind.css`, 150.0 kB),
   `pnpm exec vitest run packages/core/src/SideNav packages/core/src/TreeList
 packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` — 6 files,
   538 tests pass; `pnpm exec eslint packages/core/src/SideNav
-packages/core/src/Layout` — 0 errors, 6 pre-existing warnings in
-  `SideNavCollapseStacking.a11y.chromium.spec.ts`.
+packages/core/src/TreeList packages/core/src/Layout` — 0 errors, 6 pre-existing
+  warnings in `SideNavCollapseStacking.a11y.chromium.spec.ts`; `pnpm exec tsc -p
+packages/core --noEmit` clean.
