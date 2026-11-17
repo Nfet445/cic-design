@@ -4,20 +4,22 @@
  * @file IconSize.stylex.ts
  * @input Reads the `icon` target's private `--_icon-width` /
  *   `--_icon-height` vars
- * @output The StyleX view of Icon sizing, kept for importers written against
- *   StyleX
+ * @output The StyleX view of Icon sizing, plus the class map the icon box
+ *   lookups moved to
  * @position Compatibility shim; Icon's own classes live in `./iconClasses` and
  *   the scale lives in `./IconSize`
  *
  * @deprecated Import `./iconClasses` for Icon's classes and `./IconSize` for
- * the scale. The styles below stay for `Button` and `Table`, which size their
- * own icon boxes through them, and disappear with them.
+ * the scale. The styles below disappear with the last importer of the
+ * subpath.
  *
  * SYNC: When the private vars change, update derivedVarRegistry.ts and the
  * `theming.vars` / `theming.derived` entries in Icon.doc.mjs.
  */
 
 import * as stylex from '@stylexjs/stylex';
+
+import {iconBoxClassName} from './iconBoxClasses';
 
 export type {IconSize} from './IconSize';
 
@@ -53,30 +55,9 @@ export const iconSizeStyles = stylex.create({
 });
 
 /**
- * Size styles for component-owned icon boxes. `fontSize` keeps 1em-based icons
- * in step with the box.
+ * The same lookup, now holding Tailwind class strings.
  *
- * @deprecated The icon box sizing moves to the owning component's classes.
+ * @deprecated Pass `iconBoxClassName[size]` to `className` or `tw`. This name
+ * stays so the subpath keeps resolving; it is not a StyleX style.
  */
-export const iconBoxSizeStyles = stylex.create({
-  xsm: {
-    width: '0.75rem',
-    height: '0.75rem',
-    fontSize: '0.75rem',
-  },
-  sm: {
-    width: '1rem',
-    height: '1rem',
-    fontSize: '1rem',
-  },
-  md: {
-    width: '1.25rem',
-    height: '1.25rem',
-    fontSize: '1.25rem',
-  },
-  lg: {
-    width: '1.5rem',
-    height: '1.5rem',
-    fontSize: '1.5rem',
-  },
-});
+export const iconBoxSizeStyles = iconBoxClassName;

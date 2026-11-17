@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 14 of 39 done, 2 waves done before the tickets existed.
+Progress: 16 of 40 done, 2 waves done before the tickets existed.
 
 ### Wave 0 — the harness
 
@@ -67,7 +67,7 @@ Progress: 14 of 39 done, 2 waves done before the tickets existed.
 
 ### Wave 5 — the shared style modules
 
-- [ ] `17-shared-stylex-modules` — `xstyle` becomes the only StyleX input left
+- [x] `17-shared-stylex-modules` — `xstyle` becomes the only StyleX input left
 
 ### Wave 6 — `family:navigation-destinations`
 
