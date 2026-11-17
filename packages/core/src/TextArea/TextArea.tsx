@@ -30,12 +30,15 @@ import {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
+import {spacingVars} from '../theme/tokens.stylex';
+import type {TextAreaSize} from './textAreaClasses';
 import {
-  colorVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+  textAreaClassName,
+  textAreaCounterClassName,
+  textAreaEndSlotClassName,
+  textAreaSizeClassName,
+  textAreaStartIconClassName,
+} from './textAreaClasses';
 import {
   Field,
   inputWrapperStyles,
@@ -49,6 +52,7 @@ import {withholdCallerHandlers} from '../utils/disabledInteraction';
 import {Spinner} from '../Spinner';
 import {useTooltip} from '../Tooltip';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {joinAriaIDs} from '../utils/inputAria';
 import type {BaseProps} from '../BaseProps';
 import {
@@ -87,121 +91,26 @@ const styles = stylex.create({
   // the character counter are absolutely-positioned overlays anchored to the
   // container corners. This keeps the native resize grip in the true
   // bottom-right corner and lets the scrollbar represent the full input area.
+  //
+  // The shared input wrapper's inset is zeroed with matching longhands, not the
+  // `padding` shorthand: StyleX ranks longhands above shorthands regardless of
+  // merge order. This arm stays StyleX because a class lives in a layer and an
+  // unlayered StyleX declaration always wins over it.
   wrapper: {
     zIndex: 1,
     display: 'block',
-    // Zero the shared wrapper inset with matching longhands, not the `padding`
-    // shorthand: StyleX ranks longhands above shorthands regardless of merge
-    // order, so a `padding: 0` shorthand loses to the base's
-    // paddingBlock/paddingInline. The wrapper would keep a duplicate inset that
-    // the <textarea>'s own padding then doubles — insetting the text and
-    // pushing the native resize grip in from the corner.
     paddingBlock: 0,
     paddingInline: 0,
     // Internal inline padding for the textarea's text. Defined on the wrapper
     // so the counter (a sibling overlay) inherits the same value and stays
-    // aligned with the text edge. Kept as an internal var so it can later be
-    // driven by a theme "padding" translation without touching either child.
+    // aligned with the text edge.
     '--_textarea-inline-padding': spacingVars['--spacing-2'],
-  },
-  textarea: {
-    display: 'block',
-    width: '100%',
-    boxSizing: 'border-box',
-    minWidth: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    // Base internal padding; overlays get their own reserved space below.
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: 'var(--_textarea-inline-padding)',
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    outline: 'none',
-    '::placeholder': {
-      color: colorVars['--color-text-secondary'],
-    },
-    resize: 'vertical',
-  },
-  textareaDisabled: {
-    cursor: 'default',
-  },
-  // Reserve start padding so text clears the start icon.
-  // inline inset + 16px icon (sm) + 8px gap
-  textareaWithStartIcon: {
-    paddingInlineStart: `calc(var(--_textarea-inline-padding) + ${spacingVars['--spacing-6']})`,
-  },
-  // Reserve end padding so text clears the status icon / spinner overlay.
-  // inline inset + 20px icon (md) + 4px gap
-  textareaWithStatus: {
-    paddingInlineEnd: `calc(var(--_textarea-inline-padding) + ${spacingVars['--spacing-6']})`,
-  },
-  // Reserve wider end padding when the spinner AND status icon both show.
-  // inline inset + 16px spinner + 8px gap + 20px icon + 4px gap
-  textareaWithBusyStatus: {
-    paddingInlineEnd: `calc(var(--_textarea-inline-padding) + ${spacingVars['--spacing-12']})`,
-  },
-  // Reserve bottom padding so text clears the character counter overlay.
-  textareaWithCounter: {
-    paddingBottom: spacingVars['--spacing-7'],
-  },
-  startIcon: {
-    position: 'absolute',
-    top: spacingVars['--spacing-2'],
-    insetInlineStart: 'var(--_textarea-inline-padding)',
-    pointerEvents: 'none',
-    display: 'flex',
-  },
-  endSlot: {
-    position: 'absolute',
-    top: spacingVars['--spacing-2'],
-    insetInlineEnd: 'var(--_textarea-inline-padding)',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-  },
-  // Character counter lives inside the input container, anchored bottom-right
-  // underneath the textarea, aligned to the same inline inset as the text.
-  counter: {
-    position: 'absolute',
-    bottom: spacingVars['--spacing-1'],
-    insetInlineEnd: 'var(--_textarea-inline-padding)',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-  },
-  counterError: {
-    color: colorVars['--color-text-error'],
-  },
-});
-
-const textareaSizeStyles = stylex.create({
-  sm: {},
-  md: {},
-  lg: {
-    paddingBlock: spacingVars['--spacing-2'],
   },
 });
 
 export type TextAreaStatusType = 'warning' | 'error' | 'success';
 
-export type TextAreaSize = 'sm' | 'md' | 'lg';
+export type {TextAreaSize} from './textAreaClasses';
 
 export interface TextAreaStatus {
   /**
@@ -649,7 +558,7 @@ export function TextArea({
           controlStyle,
         )}>
         {hasStartIcon && (
-          <span {...stylex.props(styles.startIcon)}>
+          <span className={textAreaStartIconClassName}>
             {renderIconSlot(startIcon, {size: 'sm', color: 'secondary'})}
           </span>
         )}
@@ -700,26 +609,21 @@ export function TextArea({
               : undefined
           }
           aria-busy={isBusy || undefined}
-          {...mergeProps(
-            themeProps('text-area-control'),
-            stylex.props(
-              styles.textarea,
-              textareaSizeStyles[size],
-              isDisabled && styles.textareaDisabled,
-              hasStartIcon && styles.textareaWithStartIcon,
-              // Reserve trailing space only when the end slot actually renders
-              // something (spinner or on-field status icon). The `detached`
-              // status variant suppresses the on-field icon — its glyph lives
-              // in the message box below — so reserving here would inset the
-              // text for an icon that never appears.
-              (isBusy || statusIcon != null) && styles.textareaWithStatus,
-              isBusy && statusIcon != null && styles.textareaWithBusyStatus,
-              maxLength != null && styles.textareaWithCounter,
+          {...mergeProps(themeProps('text-area-control'), {
+            className: tw(
+              textAreaClassName({
+                isDisabled,
+                hasStartIcon,
+                hasStatusIcon: isBusy || statusIcon != null,
+                isBusy,
+                hasCounter: maxLength != null,
+              }),
+              textAreaSizeClassName(size),
             ),
-          )}
+          })}
         />
         {(isBusy || statusIcon) && (
-          <span {...stylex.props(styles.endSlot)}>
+          <span className={textAreaEndSlotClassName}>
             {isBusy && <Spinner size="sm" aria-hidden="true" />}
             {statusIcon}
           </span>
@@ -728,13 +632,11 @@ export function TextArea({
         {maxLength != null && (
           <div
             id={counterID}
-            {...mergeProps(
-              themeProps('text-area-counter'),
-              stylex.props(
-                styles.counter,
-                valueLength > maxLength && styles.counterError,
-              ),
-            )}>
+            {...mergeProps(themeProps('text-area-counter'), {
+              className: textAreaCounterClassName({
+                isOverLimit: valueLength > maxLength,
+              }),
+            })}>
             {valueLength > maxLength && (
               // Non-color cue so the over-limit state isn't conveyed by the red
               // color alone (WCAG 1.4.1). Decorative — the count text and the

@@ -17,6 +17,7 @@ import userEvent from '@testing-library/user-event';
 import * as stylex from '@stylexjs/stylex';
 import {colorVars} from '../theme/tokens.stylex';
 import {TestIcon} from '../__tests__/TestIcon';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {TextArea} from './TextArea';
 import {InternationalizationProvider} from '../i18n';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
@@ -328,10 +329,14 @@ describe('TextArea', () => {
       );
       const parent = zeroTextParent(container);
       expect(parent).not.toBeNull();
-      expect(parent?.className).toContain('startIcon');
-      expect(screen.getByRole('textbox').className).toContain(
-        'textareaWithStartIcon',
-      );
+      expectClassSet(parent!, {
+        includes: ['absolute', 'start-[var(--_textarea-inline-padding)]'],
+      });
+      expectClassSet(screen.getByRole('textbox'), {
+        includes: [
+          'ps-[calc(var(--_textarea-inline-padding)_+_var(--spacing-6))]',
+        ],
+      });
     });
   });
 

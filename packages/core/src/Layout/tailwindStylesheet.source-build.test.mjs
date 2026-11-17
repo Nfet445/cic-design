@@ -23,6 +23,38 @@ import {
   buttonPressClassName,
 } from '../Button/buttonClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
+import {
+  fieldAttachedStatusLayerClassName,
+  fieldClassName,
+  fieldHorizontalLabelAlignClassName,
+  fieldHorizontalLabelsClassName,
+  fieldInputStatusWrapperClassName,
+} from '../Field/fieldClasses';
+import {
+  fieldDescriptionClassName,
+  fieldLabelClassName,
+  fieldLabelGroupClassName,
+  fieldLabelRowClassName,
+  fieldLabelStatusClassName,
+  fieldScreenReaderOnlyClassName,
+} from '../Field/fieldLabelClasses';
+import {inputClearButtonClassName} from '../Field/inputClearButtonClasses';
+import {
+  fileInputBoxClassName,
+  fileInputHiddenInputClassName,
+  fileInputTextClassName,
+} from '../FileInput/fileInputClasses';
+import {
+  textAreaClassName,
+  textAreaCounterClassName,
+  textAreaEndSlotClassName,
+  textAreaSizeClassName,
+  textAreaStartIconClassName,
+} from '../TextArea/textAreaClasses';
+import {
+  textInputClassName,
+  textInputHeightClassName,
+} from '../TextInput/textInputClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
@@ -423,6 +455,104 @@ function familyClassNames() {
     }
   }
 
+  // The input field family: the frame, the label slot and the text control.
+  for (const isLabelHidden of [false, true]) {
+    for (const width of [null, 240, '100%']) {
+      add(fieldClassName({isLabelHidden, width}));
+    }
+    add(fieldLabelGroupClassName({isLabelHidden}));
+    add(fieldLabelRowClassName({isLabelHidden}));
+    add(
+      fieldLabelClassName({
+        isDisabled: isLabelHidden,
+        isLabelHidden,
+      }),
+    );
+    add(
+      fieldDescriptionClassName({
+        forwardsClick: isLabelHidden,
+        isLabelHidden,
+      }),
+    );
+  }
+  for (const className of [
+    fieldHorizontalLabelsClassName,
+    fieldHorizontalLabelAlignClassName,
+    fieldInputStatusWrapperClassName,
+    fieldAttachedStatusLayerClassName,
+    fieldScreenReaderOnlyClassName,
+    fieldLabelStatusClassName,
+    inputClearButtonClassName,
+  ]) {
+    add(className);
+  }
+  for (const size of ['sm', 'md', 'lg']) {
+    add(textInputHeightClassName({size}));
+  }
+  add(textInputClassName({isDisabled: false}));
+  add(textInputClassName({isDisabled: true}));
+  for (const size of ['sm', 'md', 'lg']) {
+    add(textAreaSizeClassName(size));
+  }
+  for (const isDisabled of [false, true]) {
+    for (const hasStartIcon of [false, true]) {
+      for (const hasCounter of [false, true]) {
+        // The busy overlay replaces the status icon's inset, so the two never
+        // appear together and the pairs below are every reachable overlay.
+        for (const [isBusy, hasStatusIcon] of [
+          [false, false],
+          [false, true],
+          [true, true],
+        ]) {
+          add(
+            textAreaClassName({
+              isDisabled,
+              hasStartIcon,
+              hasCounter,
+              isBusy,
+              hasStatusIcon,
+            }),
+          );
+        }
+      }
+    }
+  }
+  for (const isDropzone of [false, true]) {
+    for (const isDisabled of [false, true]) {
+      for (const [isDragOver, isBusy] of [
+        [false, false],
+        [true, false],
+        [false, true],
+      ]) {
+        for (const status of [null, 'warning', 'error', 'success']) {
+          add(
+            fileInputBoxClassName({
+              isDropzone,
+              isSelectionDisabled: false,
+              isDragOver,
+              isDisabled,
+              isBusy,
+              status,
+            }),
+          );
+        }
+      }
+    }
+  }
+  for (const kind of ['placeholder', 'fileName']) {
+    for (const isCompact of [false, true]) {
+      for (const wraps of [false, true]) {
+        add(fileInputTextClassName({kind, isCompact, wraps}));
+      }
+    }
+  }
+  add(fileInputHiddenInputClassName);
+  add(textAreaStartIconClassName);
+  add(textAreaEndSlotClassName);
+  for (const isOverLimit of [false, true]) {
+    add(textAreaCounterClassName({isOverLimit}));
+  }
+
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
   for (const mode of ['light', 'dark', 'system']) {
@@ -493,6 +623,25 @@ describe('dist/astryx-tailwind.css declarations', () => {
         '[overflow-wrap:var(--_astryx-text-overflow-wrap,break-word)]',
       ),
     ).toBe('overflow-wrap:var(--_astryx-text-overflow-wrap,break-word);');
+  });
+
+  it('prints the field family utilities', () => {
+    // The width a consumer sets travels as a custom property the class reads,
+    // so one class serves every width.
+    expect(stylesheet.ruleFor('w-[var(--astryx-field-width)]')).toBe(
+      'width:var(--astryx-field-width);',
+    );
+    expect(
+      stylesheet.ruleFor(
+        '[--_field-status-overlap:calc(var(--size-element-md)_/_2)]',
+      ),
+    ).toBe('--_field-status-overlap:calc(var(--size-element-md)/2);');
+    expect(
+      stylesheet.ruleFor(
+        '[padding-block-start:calc(var(--border-width)_+_var(--spacing-1))]',
+      ),
+    ).toBe('padding-block-start:calc(var(--border-width)+var(--spacing-1));');
+    expect(stylesheet.ruleFor('h-5')).toBe('height:calc(var(--spacing-1)*5);');
   });
 
   it('keeps token utilities inside the astryx-base layer', () => {
