@@ -11,23 +11,18 @@ import {render, screen} from '@testing-library/react';
 import {describe, it, expect} from 'vitest';
 import * as stylex from '@stylexjs/stylex';
 import {colorVars} from '../theme/tokens.stylex';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {Citation} from './Citation';
 
 // StyleX emits one deterministic atomic class per property/value pair, so an
 // element carries a probe's class exactly when it has the same declaration.
 // The dev-mode debug class (contains "__") varies by source location and is
 // excluded from the comparison.
+// Citation's own paint is a set of Tailwind utility classes, which the
+// component test asserts by name through `expectClassSet`; the probe is left
+// for `xstyle`, which is still a StyleX input.
 const probe = stylex.create({
-  secondaryText: {color: colorVars['--color-text-secondary']},
-  accentText: {color: colorVars['--color-text-accent']},
-  badgeBackground: {backgroundColor: colorVars['--color-accent-muted']},
   consumerOverride: {color: colorVars['--color-text-accent']},
-  pointerCursor: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
 });
 
 function atomicClasses(style: (typeof probe)[keyof typeof probe]): string[] {
@@ -171,9 +166,9 @@ describe('Citation', () => {
   it('uses the secondary text color in the label variant', () => {
     render(<Citation source={source} number={1} data-testid="citation" />);
     const el = screen.getByTestId('citation');
-    for (const cls of atomicClasses(probe.secondaryText)) {
-      expect(el.classList.contains(cls)).toBe(true);
-    }
+    expectClassSet(el, {
+      includes: ['text-[color:var(--color-text-secondary)]'],
+    });
   });
 
   it('uses the secondary text color, not accent, in the number variant', () => {
@@ -186,12 +181,12 @@ describe('Citation', () => {
       />,
     );
     const el = screen.getByTestId('citation');
-    for (const cls of atomicClasses(probe.secondaryText)) {
-      expect(el.classList.contains(cls)).toBe(true);
-    }
-    for (const cls of atomicClasses(probe.accentText)) {
-      expect(el.classList.contains(cls)).toBe(false);
-    }
+    expectClassSet(el, {
+      includes: ['text-[color:var(--color-text-secondary)]'],
+    });
+    expectClassSet(el, {
+      excludes: ['text-[color:var(--color-text-accent)]'],
+    });
   });
 
   it('keeps the accent-muted badge background when the source has a url', () => {
@@ -207,9 +202,7 @@ describe('Citation', () => {
       />,
     );
     const el = screen.getByTestId('citation');
-    for (const cls of atomicClasses(probe.badgeBackground)) {
-      expect(el.classList.contains(cls)).toBe(true);
-    }
+    expectClassSet(el, {includes: ['bg-[var(--color-accent-muted)]']});
   });
 
   // The interactive (pointer) treatment is keyed on `source.url`: a citation
@@ -219,17 +212,13 @@ describe('Citation', () => {
   it('does not use the pointer cursor without a url in the label variant', () => {
     render(<Citation source={noUrlSource} number={1} data-testid="citation" />);
     const el = screen.getByTestId('citation');
-    for (const cls of atomicClasses(probe.pointerCursor)) {
-      expect(el.classList.contains(cls)).toBe(false);
-    }
+    expectClassSet(el, {excludes: ['cursor-pointer']});
   });
 
   it('uses the pointer cursor with a url in the label variant', () => {
     render(<Citation source={source} number={1} data-testid="citation" />);
     const el = screen.getByTestId('citation');
-    for (const cls of atomicClasses(probe.pointerCursor)) {
-      expect(el.classList.contains(cls)).toBe(true);
-    }
+    expectClassSet(el, {includes: ['cursor-pointer']});
   });
 
   it('does not use the pointer cursor without a url in the number variant', () => {
@@ -242,9 +231,7 @@ describe('Citation', () => {
       />,
     );
     const el = screen.getByTestId('citation');
-    for (const cls of atomicClasses(probe.pointerCursor)) {
-      expect(el.classList.contains(cls)).toBe(false);
-    }
+    expectClassSet(el, {excludes: ['cursor-pointer']});
   });
 
   it('uses the pointer cursor with a url in the number variant', () => {
@@ -257,9 +244,7 @@ describe('Citation', () => {
       />,
     );
     const el = screen.getByTestId('citation');
-    for (const cls of atomicClasses(probe.pointerCursor)) {
-      expect(el.classList.contains(cls)).toBe(true);
-    }
+    expectClassSet(el, {includes: ['cursor-pointer']});
   });
 
   // --- Source icon: image URL (back-compat) vs ReactNode ---------------------
