@@ -21,6 +21,7 @@ import * as chatReactionBarClasses from './Chat/chatReactionBarClasses';
 import * as chatReasoningClasses from './ChatReasoning/chatReasoningClasses';
 import * as chatTypingIndicatorClasses from './Chat/chatTypingIndicatorClasses';
 import * as chatUnreadDividerClasses from './Chat/chatUnreadDividerClasses';
+import * as commentMarkdownClasses from './Comments/commentMarkdownClasses';
 import * as diffViewerClasses from './DiffViewer/diffViewerClasses';
 import * as listInputClasses from './ListInput/listInputClasses';
 import * as loadingMessageClasses from './loadingMessageClasses';
@@ -50,6 +51,7 @@ function labClassNames() {
     chatReasoningClasses,
     chatTypingIndicatorClasses,
     chatUnreadDividerClasses,
+    commentMarkdownClasses,
     diffViewerClasses,
     listInputClasses,
     loadingMessageClasses,
