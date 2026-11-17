@@ -36,6 +36,10 @@ export const NETWORK_URL_PATTERNS = Object.freeze([
  * request of its own (the ones Playwright and Puppeteer pass for
  * automation, and a resolver and proxy that reach nothing: a page of local
  * files needs neither).
+ *
+ * `--password-store=basic` keeps Chrome away from the operating system's key
+ * store. On macOS without one, Chrome opens a Keychain dialog and the render
+ * waits for a person.
  */
 export const QUIET_BROWSER_ARGS = Object.freeze([
   '--disable-background-networking',
@@ -49,6 +53,7 @@ export const QUIET_BROWSER_ARGS = Object.freeze([
   '--metrics-recording-only',
   '--no-first-run',
   '--no-default-browser-check',
+  '--password-store=basic',
   '--no-pings',
   '--disable-features=OptimizationHints,Translate,MediaRouter,DialMediaRouteProvider,AutofillServerCommunication,CertificateTransparencyComponentUpdater,NetworkTimeServiceQuerying,InterestFeedContentSuggestions',
   '--no-proxy-server',

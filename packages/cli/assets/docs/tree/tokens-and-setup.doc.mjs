@@ -1,9 +1,9 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 /**
- * @file `astryx docs styling/tokens-and-setup`: the design token groups, the
- * stylesheet each package names, where the theme declares the token values,
- * and keeping Next.js webpack builds small.
+ * @file `astryx docs styling/tokens-and-setup`: using design tokens in custom
+ * styles, configuring a StyleX compiler for swizzled components, and keeping
+ * Next.js webpack builds small.
  */
 
 /** @type {import('@astryxdesign/cli/authoring').ReferenceDoc} */
@@ -15,12 +15,12 @@ export const docs = {
   placement: {parent: 'namespace:styling', slot: 'guides', order: 30},
   category: 'guide',
   description:
-    'The design token groups, the stylesheet each package names, where the token values are declared, and keeping Next.js webpack builds small.',
+    'Using design tokens in custom styles, configuring a StyleX compiler for swizzled components, and keeping Next.js webpack builds small.',
   keywords: [
-    'tokens',
-    'CSS variables',
-    'setup',
-    'stylesheet',
+    'StyleX setup',
+    'swizzle',
+    'webpack',
+    'Vite',
     'Next.js',
     'optimizePackageImports',
     'Server Components',
@@ -32,59 +32,41 @@ export const docs = {
       content: [
         {
           type: 'prose',
-          text: 'When writing custom styles, use design tokens instead of hardcoded values. A token is a CSS custom property: it adapts to the active theme and color mode, and a theme package declares its value. The library declares none of them, so a theme switch changes what your styles compute to with no stylesheet rebuilt.',
-        },
-        {
-          type: 'table',
-          headers: ['Group', 'Names', 'Example'],
-          rows: [
-            [
-              'Color',
-              '`--color-text-*`, `--color-background-*`, `--color-border`, `--color-accent`, `--color-on-*`, status colors',
-              '`--color-text-primary`, `--color-background-card`',
-            ],
-            [
-              'Spacing',
-              '`--spacing-0` through `--spacing-10`, in `0.25rem` steps',
-              '`--spacing-4` is `1rem`',
-            ],
-            [
-              'Radius',
-              '`--radius-inner`, `--radius-element`, `--radius-container`, `--radius-page`, `--radius-full`',
-              '`--radius-container`',
-            ],
-            [
-              'Shadow',
-              '`--shadow-low`, `--shadow-med`, `--shadow-high`, and the inset states',
-              '`--shadow-med`',
-            ],
-            [
-              'Size',
-              '`--size-element-sm`, `--size-element-md`, `--size-element-lg`',
-              '`--size-element-md`',
-            ],
-            [
-              'Typography',
-              '`--font-family-*`, `--font-size-*`, `--font-weight-*`, and the `--text-<role>-size|weight|leading` triples',
-              '`--text-body-size`, `--font-weight-semibold`',
-            ],
-          ],
+          text: 'When writing custom styles, use design tokens instead of hardcoded values. Tokens are CSS custom properties that adapt to the active theme and color mode. The system provides tokens for spacing, color, radius, shadow, typography, and size.',
         },
         {
           type: 'code',
-          lang: 'css',
-          label: 'Tokens in your own CSS',
-          code: `.surface {
-  padding: var(--spacing-4);
-  border-radius: var(--radius-container);
-  border: 1px solid var(--color-border);
-  background: var(--color-background-card);
-  box-shadow: var(--shadow-low);
-}`,
+          lang: 'tsx',
+          label: 'Using tokens in stylex.create',
+          code: `import * as stylex from '@stylexjs/stylex';
+
+const styles = stylex.create({
+  surface: {
+    padding: 'var(--spacing-4)',
+    borderRadius: 'var(--radius-container)',
+    backgroundColor: 'var(--color-background-surface)',
+  },
+});
+
+<Card xstyle={styles.surface} />`,
+        },
+        {
+          type: 'code',
+          lang: 'tsx',
+          label: 'Using typed token imports in stylex.create',
+          code: `import {colorVars, spacingVars, radiusVars} from '@astryxdesign/core/theme/tokens.stylex';
+
+const styles = stylex.create({
+  highlight: {
+    backgroundColor: colorVars['--color-accent-muted'],
+    padding: spacingVars['--spacing-3'],
+    borderRadius: radiusVars['--radius-element'],
+  },
+});`,
         },
         {
           type: 'prose',
-          text: 'A token is also what a utility class reads: `p-4` computes to `var(--spacing-4)`, and `bg-surface` to `var(--color-background-surface)`. Writing the token directly and writing the utility class reach the same value, and a theme changes both.',
+          text: 'Both approaches work: var() strings or typed imports from tokens.stylex. The typed imports give autocomplete and catch typos at build time.',
         },
         {
           type: 'prose',
@@ -93,29 +75,66 @@ export const docs = {
       ],
     },
     {
-      id: 'which-stylesheet',
-      title: 'Which Stylesheet to Import',
+      id: 'stylex-setup',
+      title: 'StyleX Build Setup (required for swizzled components)',
       content: [
         {
           type: 'prose',
-          text: 'Every code path loads the same prebuilt stylesheets, and no import compiles Astryx source. Core ships two component stylesheets while both forms of component exist: `astryx-tailwind.css` for the components whose own styles are utility classes, and `astryx.css` for the ones still on the previous stylesheet. Load both, then the theme.',
+          text: "Astryx components ship pre-compiled: `astryx.css` and each package's own stylesheet hold all of their styles, so consuming the published packages needs no StyleX setup. But `{@command swizzle <Component>}` copies the raw StyleX *source* into your app, and StyleX source requires a build-time StyleX compiler to produce atomic CSS. Without one, importing the component throws an error that starts `Unexpected 'stylex.create' call at runtime`, and the page does not render. If a swizzled component throws that error, the app is missing a StyleX compiler. The same applies if you author your own StyleX with `stylex.create()`.",
+        },
+        {
+          type: 'table',
+          headers: ['Bundler', 'StyleX plugin'],
+          rows: [
+            ['Webpack', '@stylexjs/webpack-plugin'],
+            [
+              'Vite / Rollup',
+              '@stylexjs/rollup-plugin (or a community Vite plugin)',
+            ],
+            [
+              'Babel (any bundler)',
+              '@stylexjs/babel-plugin + @stylexjs/postcss-plugin',
+            ],
+            [
+              'Next.js (App Router, SWC)',
+              'An SWC-based transform; see the Next.js note below',
+            ],
+          ],
+        },
+        {
+          type: 'prose',
+          text: "Next.js (App Router) is the sharp edge. StyleX's canonical compiler is a Babel plugin, but introducing a Babel config in Next.js disables the SWC compiler, and with it SWC-dependent features like `next/font`.",
+        },
+        {
+          type: 'prose',
+          text: "The repo's `apps/example-nextjs-stylex` takes the Babel path (`next/babel`, `@stylexjs/babel-plugin`, `@stylexjs/postcss-plugin`). Babel turns off SWC, so that app does not use `next/font`. To keep `next/font`, use an SWC transform such as `@stylexswc/nextjs-plugin`.",
         },
         {
           type: 'code',
-          lang: 'css',
-          label: 'globals.css',
-          code: `@import "@astryxdesign/core/reset.css";
-@import "@astryxdesign/core/astryx.css";
-@import "@astryxdesign/core/astryx-tailwind.css";
-@import "@astryxdesign/theme-neutral/theme.css";`,
+          lang: 'js',
+          label:
+            'next.config.mjs: SWC-based StyleX transform (keeps next/font working)',
+          code: `import stylexPlugin from '@stylexswc/nextjs-plugin';
+
+export default stylexPlugin({
+  rsOptions: {
+    // Resolve the Astryx token modules that swizzled source imports.
+    aliases: {'@/*': ['./src/*']},
+    unstable_moduleResolution: {type: 'commonJS'},
+  },
+})({
+  // your existing Next.js config
+});`,
         },
         {
-          type: 'prose',
-          text: 'Both component sheets register `@layer reset, astryx-base, astryx-theme;` and put every rule in `astryx-base`, so the order between them does not matter and one import never doubles a declaration. Your own CSS and Tailwind utilities load after the theme and win over a component class on the same element; {@link generic:styling-overview} gives the full statement.',
-        },
-        {
-          type: 'prose',
-          text: 'A page that loads no stylesheet renders unstyled markup: the classes reach the DOM and no rule exists for them. Pure theming needs no build step \u2014 a theme package is the stylesheet you import.',
+          type: 'list',
+          style: 'unordered',
+          items: [
+            "Symptom of a missing compiler: importing a swizzled component throws an error that starts `Unexpected 'stylex.create' call at runtime`, and the page does not render.",
+            'A Babel config turns off SWC in Next.js; skip it if you need `next/font`.',
+            'Pure theming (defineTheme + astryx theme build) needs NO StyleX compiler; only swizzled/authored StyleX source does.',
+            'Keep loading `astryx.css` with a StyleX compiler in place. The compiler builds your own and swizzled source only; never add `node_modules/@astryxdesign` to its inputs.',
+          ],
         },
       ],
     },
