@@ -43,7 +43,7 @@ import {
 import {listedLanguage, sameLanguages} from '../codeLanguages';
 import {CodeLineTokens} from '../codeLineTokens';
 
-/** The class the theme adds to every code block (editorTheme.ts). */
+/** The class the theme adds to every code block (editorThemeClasses.ts). */
 export const CODE_SYNTAX_CLASS = 'astryx-richtext-code';
 
 let hasInjectedRules = false;

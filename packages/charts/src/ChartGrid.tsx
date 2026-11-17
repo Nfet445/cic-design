@@ -8,8 +8,7 @@
  */
 
 import {useMemo} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {chartGridLineClassName} from './chartGridClasses';
 import {useChart} from './ChartContext';
 import {isBandScale} from './utils';
 import type {ScaleLinear, ScaleTime} from 'd3-scale';
@@ -26,13 +25,6 @@ export interface ChartGridProps {
    */
   tickCount?: number;
 }
-
-const styles = stylex.create({
-  gridLine: {
-    stroke: colorVars['--color-border-emphasized'],
-    strokeWidth: 1,
-  },
-});
 
 /**
  * Grid lines behind chart marks.
@@ -102,7 +94,7 @@ export function ChartGrid({
           x2={width}
           y1={pos}
           y2={pos}
-          {...stylex.props(styles.gridLine)}
+          className={chartGridLineClassName}
         />
       ))}
       {vLines.map(({value, pos}) => (
@@ -112,7 +104,7 @@ export function ChartGrid({
           x2={pos}
           y1={0}
           y2={height}
-          {...stylex.props(styles.gridLine)}
+          className={chartGridLineClassName}
         />
       ))}
     </g>
