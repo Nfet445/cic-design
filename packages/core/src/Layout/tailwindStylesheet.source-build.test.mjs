@@ -625,7 +625,21 @@ import {
 } from '../EmptyState/emptyStateClasses';
 import {timestampClassName} from '../Timestamp/timestampClasses';
 import {
+  chatMessageMetadataAssistantClassName,
+  chatMessageMetadataClassName,
+  chatMessageMetadataStatusErrorClassName,
+  chatMessageMetadataStatusPulseClassName,
+  chatMessageMetadataStatusRowClassName,
+  chatMessageMetadataUserClassName,
+  chatPastedTextFooterClassName,
+  chatPastedTextMetaClassName,
+  chatPastedTextPreviewClassName,
+  chatPastedTextPreviewTextClassName,
   chatSendButtonClassName,
+  chatSystemMessageClassName,
+  chatSystemMessageContentClassName,
+  chatSystemMessageDividerClassName,
+  chatSystemMessageIconClassName,
   chatTokenizedTextClassName,
   chatTokenizedTextTokenClassName,
 } from '../Chat/chatClasses';
@@ -2144,6 +2158,20 @@ function familyClassNames() {
   add(chatTokenizedTextClassName);
   add(chatTokenizedTextTokenClassName);
   add(chatSendButtonClassName);
+  add(chatPastedTextPreviewClassName);
+  add(chatPastedTextPreviewTextClassName);
+  add(chatPastedTextFooterClassName);
+  add(chatPastedTextMetaClassName);
+  add(chatSystemMessageClassName);
+  add(chatSystemMessageDividerClassName);
+  add(chatSystemMessageIconClassName);
+  add(chatSystemMessageContentClassName);
+  add(chatMessageMetadataClassName);
+  add(chatMessageMetadataUserClassName);
+  add(chatMessageMetadataAssistantClassName);
+  add(chatMessageMetadataStatusRowClassName);
+  add(chatMessageMetadataStatusErrorClassName);
+  add(chatMessageMetadataStatusPulseClassName);
   for (const orientation of ['vertical', 'horizontal']) {
     add(radioListClassName({orientation}));
   }
@@ -2236,8 +2264,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // ring, rotor, circle, arc, track and its twelve size, shade and alpha
     // classes, AspectRatio's box, ratio, ellipse clip and four child arms, then
     // ScrollableArea's platform, inset and both fade arms measured 1330 with
-    // every family above registered. The checkbox field's row, box, press
-    // layers and native input added six, so the ceiling follows the sum.
+    // every family above registered. The chat pasted-text preview, the system
+    // notice and the metadata row share almost every utility those maps already
+    // spell, and the checkbox field's row, box, press layers and native input
+    // added six; the sheet measures 1318 here and the ceiling keeps headroom.
     expect(stylesheet.rules.size).toBeLessThan(1380);
   });
 
