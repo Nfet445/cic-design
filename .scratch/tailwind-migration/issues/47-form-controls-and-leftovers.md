@@ -273,3 +273,58 @@ gated them. Each commit was preceded by the build, the directory's vitest run,
 prettier and eslint by hand. The killed runs left two `lint-staged automatic
 backup` stashes in the worktree; they hold another window's `Chat` files, so
 they are untouched.
+
+### 2026-11-17, window 4
+
+`Switch` partly converted, in the agreed order; 6 of its 8 `stylex.create`
+calls are gone. `Slider` and `Stepper` not started.
+
+Done and committed (`82d950466`):
+
+- `Switch/switchClasses.ts` — the field root (`w-[var(--astryx-switch-width)]`,
+  the width rides inline through `switchSizeStyle`), the label/switch row in
+  its four shape states (`gap-2`/`gap-0`, spread), the track's size box per
+  size (`h-5 w-8` / `h-6 w-10`) with the touch-action arm as
+  `[touch-action:pan-y_pinch-zoom]`, the label column's floor
+  (`min-h-5`/`min-h-6`) and the status gap (`mt-2`).
+  - `wrapperSizeStyles`, `labelWrapperSizeStyles`, `dynamicWidthStyles` are
+    gone; so are `styles.container`, `containerLabelHidden`, `containerSpread`,
+    `statusGap`, `switchWrapper`, `switchWrapperInteractive`, `labelWrapper`
+    and `description`.
+  - Assertion moved: `Switch.test.tsx` "drops the label gap when isLabelHidden"
+    read `getComputedStyle(row).gap`; it now reads `classesOf(row)` and the
+    `gap-0` token (`tw` keeps both `gap-2` and `gap-0`, so presence is the
+    state). No other assertion read a computed style or a debug name for the
+    converted keys.
+  - New exports registered in `familyClassNames()`; the rule ceiling did not
+    move (the sheet stayed 185.6 kB raw).
+
+Still in `Switch.tsx` for the next window, with line numbers on this commit:
+
+- `styles` at `packages/core/src/Switch/Switch.tsx:246` keeps `input` (283),
+  `inputCoarse` (294), `inputDisabled` (313), `inputBusy` (316), `track` (319),
+  `trackFocus` (444), `trackOff` (443 → see file), `trackOn`, `trackDisabled`,
+  `trackDisabledOff`, `thumb` (537) and `thumbOff`/`thumbOn`. These are the
+  three marker-scoped paints the earlier window kept: the ancestor-hover tint
+  (`switchScope`), the press layers `::before`/`::after` and the `:active`
+  pressed image (`switchScope`), and the focus ring
+  (`siblingBefore(':focus-visible', switchFocusInput)`). The supervisor's
+  decision stands: they move together into
+  `Switch/switchHoverPress.stylex.ts`. `trackSizeStyles` (116),
+  `thumbOffSizeStyles` (137), `thumbOnSizeStyles` (163) and
+  `pressOwnerStyles` (226) stay StyleX too: `Switch.test.tsx`'s `mouse look`
+  block reads `getComputedStyle` for the track's fill, padding, fade and the
+  thumb's size, slide and travel, and its `RTL thumb travel direction` block
+  scans the injected sheet for `translateX(±12|14px)`; both must convert to
+  class reads in the same commit that moves those keys.
+- `switchFill.ts`, `useSwitchTouch.ts` and `Switch.test.tsx` were not touched.
+
+Guards: `packages/core/src/Switch` plus the sheet test green (170 passed: 116
+in Switch's five files, 54 in the stylesheet test), sheet 185.6 kB raw with
+the ceiling unchanged; `pnpm -F @astryxdesign/core typecheck` green; prettier
+and eslint by hand (one `@astryx/no-style-only-wrapper` warning on the label
+column, the same warning `CheckboxInput.tsx` carries). Nothing pushed.
+
+Not started in this window: `Slider` (next in order), `Stepper`, `Collapsible`,
+`SelectableCard`, `Kbd`, `InfoTip`, `FormLayout`, `InputGroup` (3 files),
+`FieldStatus`, `Field` (3 files), all of Group B.
