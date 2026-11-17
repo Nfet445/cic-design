@@ -222,6 +222,10 @@ import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses'
 import {sideNavClassName} from '../SideNav/sideNavClasses';
 import {sideNavHeadingClassName} from '../SideNav/sideNavHeadingClasses';
 import {sideNavItemClassName} from '../SideNav/sideNavItemClasses';
+import {
+  treeListItemClassName,
+  treeListItemDensityClassName,
+} from '../TreeList/treeListItemClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLitClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {stackClassName} from '../Stack/stackClasses';
@@ -1650,6 +1654,14 @@ function familyClassNames() {
   }
 
   for (const value of Object.values(sideNavHeadingClassName)) {
+    add(value);
+  }
+
+  for (const value of Object.values(treeListItemClassName)) {
+    add(value);
+  }
+
+  for (const value of Object.values(treeListItemDensityClassName)) {
     add(value);
   }
 

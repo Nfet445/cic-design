@@ -26,28 +26,6 @@ function generateThemeTestCSS(theme: Parameters<typeof generateThemeCSS>[0]) {
   return [prose, component].filter(Boolean).join('\n\n');
 }
 
-/**
- * Concatenate all StyleX-injected CSS (both CSSOM sheets and <style> text) so
- * tests can assert on compiled stylesheet rules — jsdom does not resolve the
- * @layer cascade or compute layout, so structural CSS assertions read the
- * generated declarations directly.
- */
-function collectCssText(): string {
-  let out = '';
-  for (const sheet of Array.from(document.styleSheets)) {
-    try {
-      for (const rule of Array.from(sheet.cssRules)) {
-        out += rule.cssText + '\n';
-      }
-    } catch {
-      // ignore cross-origin sheets
-    }
-  }
-  out += Array.from(document.querySelectorAll('style'))
-    .map(s => s.textContent || '')
-    .join('\n');
-  return out;
-}
 const rowStyles = stylex.create({
   custom: {opacity: 0.75},
 });
@@ -729,18 +707,18 @@ describe('TreeList', () => {
       // selected fill therefore spans the list like a root row's, while its
       // content lands where a margin indent would have put it.
       render(<TreeList items={deepItems} />);
-      const rules = collectCssText();
-      expect(rules).toMatch(
-        /padding-inline-start:\s*var\(--_tree-indent,\s*0px\)/,
-      );
-      expect(rules).not.toMatch(/margin-inline-start:\s*var\(--_tree-indent/);
-
       const row = screen
         .getByText('Leaf')
         .closest<HTMLElement>('.astryx-tree-list-item')!;
       const indented = row.firstElementChild as HTMLElement;
-      expect(indented.className).toContain('indentedContent');
-      expect(row.className).not.toContain('indentedContent');
+      // jsdom cannot parse the built Tailwind sheet, so the assertion reads the
+      // class set the indent asks for: inline padding on an inner element, and
+      // never a margin.
+      expectClassSet(indented, {
+        includes: ['ps-[var(--_tree-indent,0px)]'],
+        excludes: ['ms-[var(--_tree-indent,0px)]'],
+      });
+      expect(row.className).not.toContain('ps-[var(--_tree-indent,0px)]');
     });
 
     it("keeps the indent when a caller sets the row's padding", () => {
@@ -763,9 +741,9 @@ describe('TreeList', () => {
         .closest<HTMLElement>('.astryx-tree-list-item')!;
       expect(row.style.paddingInlineStart).toBe('20px');
       expect(row.getAttribute('style')).toContain('--_tree-indent');
-      expect((row.firstElementChild as HTMLElement).className).toContain(
-        'indentedContent',
-      );
+      expectClassSet(row.firstElementChild as HTMLElement, {
+        includes: ['ps-[var(--_tree-indent,0px)]'],
+      });
     });
 
     describe('link rows', () => {
@@ -1085,19 +1063,36 @@ describe('TreeList', () => {
       );
       const rowOf = (label: string) =>
         screen.getByText(label).closest<HTMLElement>('.astryx-tree-list-item')!;
-      expect(rowOf('Plain').className).not.toContain('focusLift');
-      expect(rowOf('Run').className).toContain('focusLift');
-      expect(rowOf('Root').className).toContain('focusLift');
+      const lift = 'has-[:focus-visible]:z-[2]';
+      expectClassSet(rowOf('Plain'), {excludes: [lift]});
+      expectClassSet(rowOf('Run'), {includes: [lift]});
+      expectClassSet(rowOf('Root'), {includes: [lift]});
     });
 
     it('lifts the focused row above the guides so they never cut its ring', () => {
       // Each treeitem publishes its own focus as `--_tree-focus-z`, and the
       // row reads it as its z-index, so the focused row paints above the
       // guide columns (z-index 1). Nested treeitems redeclare the default.
-      render(<TreeList items={deepItems} />);
-      const rules = collectCssText();
-      expect(rules).toMatch(/--_tree-focus-z:\s*2/);
-      expect(rules).toMatch(/z-index:\s*var\(--_tree-focus-z,\s*auto\)/);
+      const {container} = render(<TreeList items={deepItems} />);
+      // jsdom cannot parse the built Tailwind sheet, so the assertion reads the
+      // classes: every treeitem declares the default and raises it on focus,
+      // and the row reads it back as its z-index.
+      for (const item of container.querySelectorAll('.astryx-tree-list-item')) {
+        const wrapper = item.parentElement!.parentElement!;
+        expectClassSet(wrapper, {
+          includes: [
+            '[--_tree-focus-z:auto]',
+            'focus-visible:[--_tree-focus-z:2]',
+          ],
+        });
+      }
+      // A row that draws the ring reads the variable back as its z-index.
+      expectClassSet(
+        screen
+          .getByText('Root')
+          .closest<HTMLElement>('.astryx-tree-list-item')!,
+        {includes: ['z-[var(--_tree-focus-z,auto)]']},
+      );
     });
   });
 
@@ -1261,26 +1256,15 @@ describe('TreeList', () => {
       expect(item).not.toBeNull();
       const rowWrapper = item!.parentElement!;
 
-      const rules = collectCssText();
-      // Map the rowWrapper's compiled class to its declaration block and assert
-      // it declares padding-block from the row-gap lever (half above/below).
-      const rowWrapperClass = Array.from(rowWrapper.classList).find(c =>
-        c.includes('rowWrapper'),
-      );
-      expect(rowWrapperClass).toBeDefined();
-      // The gap rides padding-block (collapse-proof), keyed off the lever.
-      expect(rules).toMatch(
-        /padding-block:\s*calc\(\s*var\(--tree-list-row-gap[^)]*\)\s*\/\s*2\s*\)/,
-      );
-      // And the paint target (tree-list-item / contentWrapper) must NOT carry a
-      // margin-block gap — the layout seam has moved off the paintable element.
-      const itemClass = Array.from(item!.classList).find(c =>
-        c.includes('contentWrapper'),
-      );
-      expect(itemClass).toBeDefined();
-      expect(rules).not.toMatch(
-        /margin-block:\s*calc\([^;]*var\(--tree-list-row-gap/,
-      );
+      // jsdom cannot parse the built Tailwind sheet, so the assertion reads the
+      // class set: the wrapper rides padding-block (collapse-proof), keyed off
+      // the row-gap lever at half above and half below.
+      expectClassSet(rowWrapper, {
+        includes: ['[padding-block:calc(var(--tree-list-row-gap,0px)/2)]'],
+      });
+      // And the paint target (tree-list-item) must NOT carry a margin gap — the
+      // layout seam has moved off the paintable element.
+      expect(item!.className).not.toContain('margin-block');
     });
   });
 
