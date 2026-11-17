@@ -66,6 +66,16 @@ import {
 } from '../Drawer/drawerClasses';
 import {bottomSheetEdgeTintClassName} from '../BottomSheet/bottomSheetEdgeTintClasses';
 import {
+  popoverAnchorWrapperClassName,
+  popoverCloseButtonWrapperClassName,
+  popoverContentWrapperClassName,
+  popoverExplicitWidthClassName,
+  popoverMatchTriggerClassName,
+  popoverSheetFallbackCloseClassName,
+  popoverSurfaceClassName,
+  popoverViewportFitClassName,
+} from '../Popover/popoverClasses';
+import {
   mobileNavContentClassName,
   mobileNavDialogClassName,
   mobileNavDrawerClassName,
@@ -216,6 +226,32 @@ import {
   touchTimeFieldWheelsClassName,
 } from '../TimeInput/touchTimeFieldClasses';
 import {centerClassName, centerSizingClassName} from '../Center/centerClasses';
+import {checkboxListItemClassName} from '../CheckboxList/checkboxListItemClasses';
+import {radioListClassName} from '../RadioList/radioListClasses';
+import {
+  checkboxInputClassName,
+  checkboxInputIndicatorSlotClassName,
+  checkboxInputLabelWrapperClassName,
+  checkboxInputNativeClassName,
+  checkboxInputPressOverlayClassName,
+  checkboxInputRowClassName,
+  checkboxInputRowPressImageClassName,
+  checkboxInputRowPressOverlayClassName,
+  checkboxInputWrapperClassName,
+} from '../CheckboxInput/checkboxInputClasses';
+import {
+  switchClassName,
+  switchContainerClassName,
+  switchLabelWrapperClassName,
+  switchStatusClassName,
+  switchWrapperClassName,
+} from '../Switch/switchClasses';
+import {
+  radioListItemIndicatorSlotClassName,
+  radioListItemInputClassName,
+  radioListItemPressOverlayClassName,
+  radioListItemWrapperClassName,
+} from '../RadioList/radioListItemClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
@@ -283,6 +319,11 @@ import {
   sectionInnerClassName,
   sectionOuterClassName,
 } from '../Section/sectionClasses';
+import {
+  scrollableAreaContentClassName,
+  scrollableAreaContentWithInlineOverflowClassName,
+  scrollableAreaViewportClassName,
+} from '../ScrollableArea/scrollableAreaClasses';
 import {
   SELECTOR_OPTION_EMBEDDED_CLASS,
   SELECTOR_ROW_CONTENT_CLASS,
@@ -579,6 +620,86 @@ import {
   dividerVerticalLabelClassName,
 } from '../Divider/dividerClasses';
 import {
+  emptyStateActionsClassName,
+  emptyStateActionsCompactClassName,
+  emptyStateClassName,
+  emptyStateCompactClassName,
+  emptyStateDescriptionClassName,
+  emptyStateDescriptionCompactClassName,
+  emptyStateTextGroupClassName,
+  emptyStateTitleClassName,
+  emptyStateTitleCompactClassName,
+} from '../EmptyState/emptyStateClasses';
+import {timestampClassName} from '../Timestamp/timestampClasses';
+import {timerClassName} from '../Timer/timerClasses';
+import {
+  metadataListClassName,
+  metadataListColumnsClassName,
+  metadataListGridClassName,
+  metadataListResetClassName,
+  metadataListTitleClassName,
+  metadataListToggleClassName,
+} from '../MetadataList/metadataListClasses';
+import {
+  metadataListItemIconClassName,
+  metadataListItemLabelClassName,
+  metadataListItemStackedClassName,
+  metadataListItemStackedLabelClassName,
+  metadataListItemStackedValueClassName,
+  metadataListItemValueClassName,
+} from '../MetadataList/metadataListItemClasses';
+import {
+  chatMessageMetadataAssistantClassName,
+  chatMessageMetadataClassName,
+  chatMessageMetadataStatusErrorClassName,
+  chatMessageMetadataStatusPulseClassName,
+  chatMessageMetadataStatusRowClassName,
+  chatMessageMetadataUserClassName,
+  chatPastedTextFooterClassName,
+  chatPastedTextMetaClassName,
+  chatPastedTextPreviewClassName,
+  chatPastedTextPreviewTextClassName,
+  chatSendButtonClassName,
+  chatSystemMessageClassName,
+  chatSystemMessageContentClassName,
+  chatSystemMessageDividerClassName,
+  chatSystemMessageIconClassName,
+  chatTokenizedTextClassName,
+  chatTokenizedTextTokenClassName,
+} from '../Chat/chatClasses';
+import {
+  timestampHoverCardActionClassName,
+  timestampHoverCardGridTemplateClassName,
+  timestampHoverCardLabelClassName,
+  timestampHoverCardListClassName,
+  timestampHoverCardRowClassName,
+  timestampHoverCardValueCellsClassName,
+  timestampHoverCardValueClassName,
+} from '../Timestamp/timestampHoverCardClasses';
+import {
+  aspectRatioChildCenterClassName,
+  aspectRatioChildClassName,
+  aspectRatioChildContainClassName,
+  aspectRatioChildCoverClassName,
+  aspectRatioChildFillClassName,
+  aspectRatioClassName,
+  aspectRatioEllipseClassName,
+  aspectRatioRatioClassName,
+} from '../AspectRatio/aspectRatioClasses';
+import {
+  spinnerArcClassName,
+  spinnerCircleClassName,
+  spinnerClassName,
+  spinnerRingClassName,
+  spinnerRotorBoxClassName,
+  spinnerRotorTurnClassName,
+  spinnerShadeClassName,
+  spinnerSizeClassName,
+  spinnerTrackClassName,
+  spinnerTrackOpacityClassName,
+  spinnerWrapperClassName,
+} from '../Spinner/spinnerClasses';
+import {
   skeletonAnimateClassName,
   skeletonClassName,
   skeletonDelayClassName,
@@ -744,6 +865,18 @@ function familyClassNames() {
       add(sectionInnerClassName({dividers, variant}));
     }
   }
+  add(scrollableAreaViewportClassName({isFullBleed: false}));
+  add(
+    scrollableAreaViewportClassName({
+      height: 200,
+      isFullBleed: true,
+      maxWidth: '64rem',
+      minHeight: 40,
+      width: '100%',
+    }),
+  );
+  add(scrollableAreaContentClassName);
+  add(scrollableAreaContentWithInlineOverflowClassName);
   add(sectionOuterClassName({}));
   add(
     sectionOuterClassName({
@@ -819,6 +952,20 @@ function familyClassNames() {
   // The bottom sheet's edge tint: the strip WebKit samples for the iOS toolbar
   // colour.
   add(bottomSheetEdgeTintClassName);
+
+  // The popover: its surface and content wrapper, the anchor wrapper, both
+  // viewport-fit states, the two sizing classes and both hidden close
+  // wrappers.
+  add(popoverAnchorWrapperClassName);
+  add(popoverSurfaceClassName);
+  add(popoverContentWrapperClassName);
+  for (const isScrollable of [false, true]) {
+    add(popoverViewportFitClassName({isScrollable}));
+  }
+  add(popoverExplicitWidthClassName);
+  add(popoverMatchTriggerClassName);
+  add(popoverCloseButtonWrapperClassName);
+  add(popoverSheetFallbackCloseClassName);
 
   // The mobile nav: the dialog in its two display states, the scrim, both
   // drawer edges in both motion states, the header row and its content area.
@@ -1914,6 +2061,79 @@ function familyClassNames() {
   for (const value of Object.values(bannerStatusControlClassName)) {
     add(value);
   }
+  // EmptyState: the container and its compact arm, the text column, the title
+  // and description with their compact sizes, and the action row.
+  add(emptyStateClassName);
+  add(emptyStateCompactClassName);
+  add(emptyStateTextGroupClassName);
+  add(emptyStateTitleClassName);
+  add(emptyStateTitleCompactClassName);
+  add(emptyStateDescriptionClassName);
+  add(emptyStateDescriptionCompactClassName);
+  add(emptyStateActionsClassName);
+  add(emptyStateActionsCompactClassName);
+  // Timestamp: the `<time>` reset and the hover card's list, row, label, value
+  // and action cells with its four grid templates.
+  add(timestampClassName);
+  add(timestampHoverCardListClassName);
+  add(timestampHoverCardRowClassName);
+  add(timestampHoverCardLabelClassName);
+  add(timestampHoverCardValueClassName);
+  add(timestampHoverCardValueCellsClassName);
+  add(timestampHoverCardActionClassName);
+  // Timer: the inherited-property reset of its `<time>`.
+  add(timerClassName);
+  // MetadataList: the root, the title, the `dl` reset, the three grid arms,
+  // the runtime grid-template class and the show-more toggle.
+  add(metadataListClassName);
+  add(metadataListTitleClassName);
+  add(metadataListResetClassName);
+  add(metadataListColumnsClassName);
+  for (const value of Object.values(metadataListGridClassName)) {
+    add(value);
+  }
+  add(metadataListToggleClassName);
+  // MetadataListItem: the label, the value, the stacked wrapper with its own
+  // label and value, and the icon wrapper.
+  add(metadataListItemLabelClassName);
+  add(metadataListItemValueClassName);
+  add(metadataListItemStackedClassName);
+  add(metadataListItemStackedLabelClassName);
+  add(metadataListItemStackedValueClassName);
+  add(metadataListItemIconClassName);
+  for (const value of Object.values(timestampHoverCardGridTemplateClassName)) {
+    add(value);
+  }
+  // AspectRatio: the box, its ratio reading the private variable, the ellipse
+  // clip, the child wrapper and its three fit arms.
+  add(aspectRatioClassName);
+  add(aspectRatioRatioClassName);
+  add(aspectRatioEllipseClassName);
+  add(aspectRatioChildClassName);
+  add(aspectRatioChildCenterClassName);
+  add(aspectRatioChildFillClassName);
+  add(aspectRatioChildCoverClassName);
+  add(aspectRatioChildContainClassName);
+  // Spinner: the wrapper, the box with its three geometry variables, the ring,
+  // the rotor's box and its one animation shorthand, the circle, the arc, the
+  // track and one class per size, per shade and per track alpha.
+  add(spinnerWrapperClassName);
+  add(spinnerClassName);
+  add(spinnerRingClassName);
+  add(spinnerRotorBoxClassName);
+  add(spinnerRotorTurnClassName);
+  add(spinnerCircleClassName);
+  add(spinnerArcClassName);
+  add(spinnerTrackClassName);
+  for (const value of Object.values(spinnerSizeClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(spinnerShadeClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(spinnerTrackOpacityClassName)) {
+    add(value);
+  }
   // Skeleton: the placeholder, the pulse, the two utility classes that read
   // the props' variables, and one class per radius.
   add(skeletonClassName);
@@ -1974,6 +2194,74 @@ function familyClassNames() {
     );
   }
 
+  for (const isSelected of [true, false]) {
+    add(checkboxListItemClassName({isSelected, className: undefined}));
+  }
+
+  // Chat: the tokenized text root and the inline box a token renders in.
+  add(chatTokenizedTextClassName);
+  add(chatTokenizedTextTokenClassName);
+  add(chatSendButtonClassName);
+  add(chatPastedTextPreviewClassName);
+  add(chatPastedTextPreviewTextClassName);
+  add(chatPastedTextFooterClassName);
+  add(chatPastedTextMetaClassName);
+  add(chatSystemMessageClassName);
+  add(chatSystemMessageDividerClassName);
+  add(chatSystemMessageIconClassName);
+  add(chatSystemMessageContentClassName);
+  add(chatMessageMetadataClassName);
+  add(chatMessageMetadataUserClassName);
+  add(chatMessageMetadataAssistantClassName);
+  add(chatMessageMetadataStatusRowClassName);
+  add(chatMessageMetadataStatusErrorClassName);
+  add(chatMessageMetadataStatusPulseClassName);
+  for (const orientation of ['vertical', 'horizontal']) {
+    add(radioListClassName({orientation}));
+  }
+  add(radioListItemIndicatorSlotClassName);
+  add(radioListItemPressOverlayClassName);
+  for (const size of ['sm', 'md']) {
+    add(radioListItemWrapperClassName({size}));
+    add(radioListItemInputClassName({size}));
+  }
+  // CheckboxInput: the field root at both width states, the row in its four
+  // shape states, and the fixed pieces.
+  for (const width of [null, 240]) {
+    add(checkboxInputClassName({width}));
+  }
+  for (const isLabelHidden of [false, true]) {
+    for (const hasHitArea of [false, true]) {
+      add(checkboxInputRowClassName({isLabelHidden, hasHitArea}));
+    }
+  }
+  for (const size of ['sm', 'md']) {
+    add(checkboxInputWrapperClassName({size}));
+    add(checkboxInputNativeClassName({size}));
+  }
+  add(checkboxInputRowPressImageClassName);
+  add(checkboxInputRowPressOverlayClassName);
+  add(checkboxInputPressOverlayClassName);
+  add(checkboxInputIndicatorSlotClassName);
+  add(checkboxInputLabelWrapperClassName);
+  // Switch: the field root at both width states, the row in its four shape
+  // states, the track box per size, the label column and the status gap.
+  for (const width of [null, 240]) {
+    add(switchClassName({width}));
+  }
+  for (const isLabelHidden of [false, true]) {
+    for (const isSpread of [false, true]) {
+      add(switchContainerClassName({isLabelHidden, isSpread}));
+    }
+  }
+  for (const size of ['sm', 'md']) {
+    for (const isInteractive of [false, true]) {
+      add(switchWrapperClassName({size, isInteractive}));
+    }
+    add(switchLabelWrapperClassName({size}));
+  }
+  add(switchStatusClassName);
+
   return [...names].sort();
 }
 
@@ -2029,9 +2317,19 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // mostly one rule each, with the marker's two coarse-pointer arms and the
     // row's three radius parts already spelled elsewhere. Skeleton's map added
     // 25 — the placeholder, the pulse, the two classes that read the props'
-    // variables, and one per radius. With every family above the sheet sits at
-    // 1212, so the ceiling follows the sum rather than one side.
-    expect(stylesheet.rules.size).toBeLessThan(1260);
+    // variables, and one per radius. With every family above the sheet sat at
+    // 1212, and the windows merged since — the menu surface, EmptyState,
+    // Timestamp — carried it further. The popover's map then moved from StyleX
+    // to literal classes: its surface, both viewport-fit states, the two sizing
+    // classes, the anchor wrapper and both hidden close wrappers. Spinner's box,
+    // ring, rotor, circle, arc, track and its twelve size, shade and alpha
+    // classes, AspectRatio's box, ratio, ellipse clip and four child arms, then
+    // ScrollableArea's platform, inset and both fade arms measured 1330 with
+    // every family above registered. The chat pasted-text preview, the system
+    // notice and the metadata row share almost every utility those maps already
+    // spell, and the checkbox field's row, box, press layers and native input
+    // added six; the sheet measures 1318 here and the ceiling keeps headroom.
+    expect(stylesheet.rules.size).toBeLessThan(1380);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

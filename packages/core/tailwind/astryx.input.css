@@ -276,6 +276,19 @@
   }
 }
 
+/* Spinner: the rotor's turn. One iteration holds 100 turns, so Chromium wakes
+   the main thread once in 100 turns instead of once a turn; each turn is 360
+   degrees, so the ring looks the same. A `transform` animation runs on the
+   compositor, so the ring keeps turning while a script runs. */
+@keyframes astryxSpinnerRotor {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(36000deg);
+  }
+}
+
 /* Skeleton pulse: ten equal steps up from 0.25 to 0.925, played back down by
    `alternate`. The steps are holds joined by 0.01% ramps with a linear timing
    function, not a `steps()` timing function: WebKit never composites a
@@ -342,5 +355,17 @@
   }
   100% {
     opacity: 0.925;
+  }
+}
+
+/* Chat message metadata: the "sending" status breathes while the message is in
+   flight. The frames live here because the build scans class maps only. */
+@keyframes astryxChatStatusPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }

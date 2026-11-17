@@ -9,7 +9,15 @@
  * SYNC: When Spinner.tsx changes, update tests to match new behavior
  */
 
-import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
+import {
+  beforeAll,
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+} from 'vitest';
 import {createRef, Profiler, StrictMode} from 'react';
 import {render, screen} from '@testing-library/react';
 import {SPINNER_ARC_FRACTION} from './spinnerRotor';
@@ -18,11 +26,21 @@ import {SpinnerOwnerContext} from './SpinnerOwnerContext';
 import {InternationalizationProvider} from '../i18n';
 import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
-import {getAllInjectedCss} from '../__tests__/forcedColors';
-import {declaredValue} from '../__tests__/stylexDeclarations';
+import {classesOf, stylesheetOf} from '../__tests__/classNameAssertions';
+import {spinnerRotorTurnClassName} from './spinnerRotor';
+import {buildAstryxTailwindCss} from '../../scripts/build-css-tailwind.mjs';
 
 const {announce} = vi.hoisted(() => ({announce: vi.fn()}));
 vi.mock('../hooks/useAnnounce', () => ({useAnnounce: () => announce}));
+
+let sheet: ReturnType<typeof stylesheetOf>;
+
+/** The package stylesheet the classes are built into. */
+const spinnerSheet = () => sheet;
+
+beforeAll(async () => {
+  sheet = stylesheetOf(await buildAstryxTailwindCss());
+});
 
 beforeEach(() => {
   announce.mockClear();
@@ -427,24 +445,17 @@ describe('Spinner ring', () => {
   // `SpinnerMotion.a11y.chromium.spec.ts` holds the frames.
   it('turns the arc by rotating the rotor, with nothing else animated', () => {
     render(<Spinner data-testid="spinner" />);
-    const css = getAllInjectedCss();
-    const name = declaredValue(rotor(), 'animation-name');
-    expect(name).toBeTruthy();
-    expect(declaredValue(rotor(), 'animation-timing-function')).toBe('linear');
-    expect(declaredValue(rotor(), 'animation-iteration-count')).toBe(
-      'infinite',
+    const rotorClasses = classesOf(rotor());
+    expect(rotorClasses).toEqual(
+      expect.arrayContaining(spinnerRotorTurnClassName.split(' ')),
     );
     // Its keyframes turn it by whole turns, by transform and nothing else.
-    // (jsdom's CSSOM lowercases the name in the rule but not in the at-rule.)
-    const keyframes = new RegExp(
-      `@keyframes ${name}\\s*\\{([\\s\\S]*?\\})\\s*\\}`,
-      'i',
-    ).exec(css)?.[1];
+    const keyframes =
+      /@keyframes astryxSpinnerRotor\s*\{([\s\S]*?)\}\s*\}/i.exec(
+        spinnerSheet().css,
+      )?.[1] ?? '';
     expect(keyframes).toMatch(/rotate\(0deg\)/);
     expect(keyframes).not.toMatch(/stroke|width|height|top|left/);
-    // One iteration holds many turns, and its duration is that many periods,
-    // so each turn still takes one period. Chromium wakes the main thread at
-    // each iteration boundary while React listens for `animationiteration`.
     const endDegrees = Math.max(
       ...[...(keyframes ?? '').matchAll(/rotate\((\d+)deg\)/g)].map(m =>
         Number(m[1]),
@@ -453,21 +464,27 @@ describe('Spinner ring', () => {
     const turns = endDegrees / 360;
     expect(Number.isInteger(turns)).toBe(true);
     expect(turns).toBeGreaterThanOrEqual(100);
-    const duration = declaredValue(rotor(), 'animation-duration') ?? '';
-    expect(duration).toMatch(
-      new RegExp(
-        `^calc\\(var\\(--_astryx-pre-tempo-duration-slow-min,.*\\) \\* ${turns}\\)$`,
-      ),
+    // One iteration holds many turns, and its duration is that many periods,
+    // so each turn still takes one period. Chromium wakes the main thread at
+    // each iteration boundary while React listens for `animationiteration`.
+    const animation = rotorClasses
+      .map(className => spinnerSheet().blockOf(className) ?? '')
+      .find(block => block.includes('--_astryx-pre-tempo-duration-slow-min'));
+    // The printed shorthand drops its spaces, so the assertion does too.
+    const flat = (animation ?? '').replace(/\s+/g, '');
+    expect(flat).toContain(
+      `calc(var(--_astryx-pre-tempo-duration-slow-min,var(--duration-slow-min))*${turns})`,
     );
+    expect(flat).toContain('linear');
+    expect(flat).toContain('infinite');
     // Its own compositing layer from the first frame.
-    expect(declaredValue(rotor(), 'will-change')).toBe('transform');
+    expect(rotorClasses).toContain('[will-change:transform]');
     // Nothing else in the spinner animates: not the arc, not the track.
     for (const el of [
       ...screen.getByTestId('spinner').querySelectorAll('svg, circle'),
     ]) {
-      expect(declaredValue(el, 'animation-name')).toBeNull();
+      expect(classesOf(el).some(name => name.includes('animate-'))).toBe(false);
     }
-    expect(css).not.toMatch(/@keyframes[^{]*\{[^}]*stroke-dashoffset/);
   });
 
   it('renders once and never again while the ring turns', () => {

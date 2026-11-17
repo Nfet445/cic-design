@@ -18,13 +18,23 @@ import userEvent from '@testing-library/user-event';
 import {
   hasReleaseFade,
   readsPressStrength,
-  rulesDeclaredFor,
   rulesWithSelector,
 } from '../__tests__/pressState';
 import {RadioList} from './RadioList';
 import {RadioListItem} from './RadioListItem';
-import {expectClassSet} from '../__tests__/classNameAssertions';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
+
+// A disabled row blocks pointers with a class, and jsdom has no sheet to
+// compute it from; find the row that carries the block instead.
+function pointerBlockingRow(control: HTMLElement): HTMLElement | null {
+  for (let node = control.parentElement; node; node = node.parentElement) {
+    if (classesOf(node).includes('pointer-events-none')) {
+      return node;
+    }
+  }
+  return null;
+}
 
 // Mock showPopover/hidePopover (not implemented in jsdom) so the tooltip layer
 // reflects its open state via a `popover-open` attribute the tests can assert.
@@ -214,13 +224,12 @@ describe('RadioList', () => {
       </RadioList>,
     );
 
-    // userEvent honors `pointer-events: none`, so clicking the disabled row's
-    // delegate surface is genuinely blocked (it refuses and throws) rather than
-    // merely ignored by the handler — the guarantee this PR's delegation relies
-    // on.
-    await expect(user.click(screen.getByLabelText('Option A'))).rejects.toThrow(
-      /pointer-events/i,
-    );
+    // The block is a class now, so jsdom cannot compute `pointer-events` for
+    // user-event to honour. Assert the class on the row and that a click still
+    // reaches no handler.
+    const control = screen.getByLabelText('Option A');
+    expect(pointerBlockingRow(control)).not.toBeNull();
+    await user.click(control);
     expect(handleChange).not.toHaveBeenCalled();
   });
 
@@ -233,13 +242,9 @@ describe('RadioList', () => {
       </RadioList>,
     );
 
-    // userEvent honors `pointer-events: none`, so clicking the disabled row's
-    // delegate surface is genuinely blocked (it refuses and throws) rather than
-    // merely ignored by the handler — the guarantee this PR's delegation relies
-    // on.
-    await expect(user.click(screen.getByLabelText('Option A'))).rejects.toThrow(
-      /pointer-events/i,
-    );
+    const control = screen.getByLabelText('Option A');
+    expect(pointerBlockingRow(control)).not.toBeNull();
+    await user.click(control);
     expect(handleChange).not.toHaveBeenCalled();
   });
 
@@ -1151,9 +1156,11 @@ describe('forced colors (WCAG 1.4.11)', () => {
 });
 
 /** Does the element's own CSS paint the row's mouse press (`--_radio-row-press`)? */
+// The layer reads the row's press paint through a class, and jsdom has no
+// sheet to resolve it; the class token is the assertion.
 function readsRowPress(el: Element): boolean {
-  return rulesDeclaredFor(el).some(rule =>
-    rule.includes('var(--_radio-row-press'),
+  return classesOf(el).some(className =>
+    className.includes('var(--_radio-row-press'),
   );
 }
 

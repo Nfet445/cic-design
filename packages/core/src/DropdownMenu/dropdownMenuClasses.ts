@@ -162,3 +162,142 @@ export const dropdownMenuGroupHeadingClassName = tw(
   'text-[color:var(--color-text-secondary)]',
   'select-none',
 );
+
+// -----------------------------------------------------------------------------
+// The pointer popover
+// -----------------------------------------------------------------------------
+
+/** A per-instance lift of the menu's block cap; the viewport still bounds it. */
+export const dropdownMenuMaxBlockSizeVar =
+  '--astryx-dropdown-menu-max-block-size';
+
+/** The menu's width when the caller states one. */
+export const dropdownMenuInlineSizeVar = '--astryx-dropdown-menu-inline-size';
+
+const POPOVER_INLINE_CAP =
+  '[max-inline-size:calc(100vi_-_max(var(--spacing-4),env(safe-area-inset-left,0px))_-_var(--astryx-layer-inset-inline-start,0px)_-_max(var(--spacing-4),env(safe-area-inset-right,0px))_-_var(--astryx-layer-inset-inline-end,0px))]';
+const POPOVER_INLINE_CAP_FALLBACK =
+  '[@supports_not_(inline-size:100vi)]:[max-inline-size:calc(100vw_-_var(--spacing-4)_-_var(--spacing-4)_-_var(--astryx-layer-inset-inline-start,0px)_-_var(--astryx-layer-inset-inline-end,0px))]';
+// The menu's own cap on the placement axis sits under the viewport one, and
+// `menuMaxHeight` lifts it through the variable.
+const POPOVER_BLOCK_CAP =
+  '[max-block-size:min(var(--astryx-dropdown-menu-max-block-size,300px),calc(100dvb_-_max(var(--spacing-4),env(safe-area-inset-top,0px))_-_var(--astryx-layer-inset-block-start,0px)_-_max(var(--spacing-4),env(safe-area-inset-bottom,0px))_-_var(--astryx-layer-inset-block-end,0px)),var(--_layer-keyboard-max-block-size,100dvb))]';
+const POPOVER_BLOCK_CAP_FALLBACK =
+  '[@supports_not_(block-size:100dvb)]:[max-block-size:min(var(--astryx-dropdown-menu-max-block-size,300px),calc(100vh_-_var(--spacing-4)_-_var(--astryx-layer-inset-block-start,0px)_-_var(--spacing-4)_-_var(--astryx-layer-inset-block-end,0px)),var(--_layer-keyboard-max-block-size,100vh))]';
+
+// A sub-menu's drilled-in view with a header or footer renders in the surface
+// host that follows the menu, as the frame marked
+// `data-astryx-submenu-regions="view"`. The rule reads that from the DOM, so
+// no state mirrors which view shows.
+/* eslint-disable @astryx/no-raw-private-attribute -- Tailwind scans class text, so the attribute has to be spelled here */
+const STEPS_ASIDE_FOR_VIEW_CLASS =
+  '[&:has(~_[data-astryx-submenu-host]_>_[data-astryx-submenu-regions=view]:not([hidden]))]:hidden';
+/* eslint-enable @astryx/no-raw-private-attribute */
+
+/** The heel of a finger held on the trigger keeps no native affordances. */
+export const dropdownMenuTriggerPressableClassName = tw(
+  '[-webkit-touch-callout:none]',
+  'select-none',
+);
+
+/** The trigger's held state: the pressed overlay as its fill. */
+export const dropdownMenuTriggerOpenClassName =
+  '[background-image:linear-gradient(var(--color-overlay-pressed),var(--color-overlay-pressed))]';
+
+/**
+ * The menu's own surface: the rows' column, the menu's radius and padding
+ * handed to the rows, both viewport caps, and the step aside while a
+ * drilled-in sub-menu view shows beside it. The ring is the focus owner's, so
+ * the box draws none.
+ */
+export const dropdownMenuPopoverClassName = tw(
+  'box-border flex flex-col',
+  'gap-[var(--spacing-0-5)]',
+  STEPS_ASIDE_FOR_VIEW_CLASS,
+  'outline-none',
+  '[-webkit-touch-callout:none]',
+  'select-none',
+  POPOVER_INLINE_CAP,
+  POPOVER_INLINE_CAP_FALLBACK,
+  POPOVER_BLOCK_CAP,
+  POPOVER_BLOCK_CAP_FALLBACK,
+  '[--_dropdown-menu-radius:var(--radius-container)]',
+  '[--_dropdown-menu-padding:var(--spacing-1)]',
+  'p-[var(--spacing-1)]',
+  'rounded-[var(--_dropdown-menu-radius)]',
+  'opacity-100',
+  '[transition-property:opacity]',
+  '[transition-duration:var(--duration-fast)]',
+  '[transition-timing-function:var(--ease-standard)]',
+);
+
+/** A menu that scrolls owns the vertical pan and stops it chaining away. */
+export const dropdownMenuScrollClassName = tw(
+  'overflow-y-auto',
+  'overflow-x-hidden',
+  'overscroll-contain',
+);
+
+/**
+ * With a header or footer, the regions and the menu share one column under the
+ * menu's block cap: the regions keep their height and the menu shrinks and
+ * scrolls between them.
+ */
+export const dropdownMenuRegionsFrameClassName = tw(
+  'box-border flex flex-col',
+  POPOVER_BLOCK_CAP,
+  POPOVER_BLOCK_CAP_FALLBACK,
+);
+
+/** The menu's share of that column: it takes the room and may shrink to none. */
+export const dropdownMenuMenuInFrameClassName = tw(
+  'grow',
+  'shrink',
+  '[min-block-size:0]',
+);
+
+/** Where a sub-menu with a header or footer renders its surface: beside the
+ * menu, owning no box, so the popover's layout is unchanged. */
+export const dropdownMenuSurfaceHostClassName = 'contents';
+
+/** A header or footer inside the frame: its height is its own. */
+export const dropdownMenuRegionClassName = tw(
+  'shrink-0',
+  'p-[var(--spacing-1)]',
+);
+
+/** A header or footer steps aside for a drilled-in view, as the menu does. */
+export const dropdownMenuStepsAsideForViewClassName =
+  STEPS_ASIDE_FOR_VIEW_CLASS;
+
+/**
+ * The layer box: the same block cap the menu paints, so the layer's flip
+ * decision sees the height the menu takes.
+ */
+export const dropdownMenuPopoverViewportClassName = tw(
+  'box-border',
+  POPOVER_BLOCK_CAP,
+  POPOVER_BLOCK_CAP_FALLBACK,
+);
+
+// Without a width the menu prefers the trigger's minimum width, clamped by the
+// runtime's cap because a CSS minimum beats a maximum. An engine without the
+// dynamic inline unit takes the `@supports` arm.
+const MATCH_TRIGGER_WIDTH =
+  '[min-width:min(anchor-size(width),calc(100vi_-_max(var(--spacing-4),env(safe-area-inset-left,0px))_-_var(--astryx-layer-inset-inline-start,0px)_-_max(var(--spacing-4),env(safe-area-inset-right,0px))_-_var(--astryx-layer-inset-inline-end,0px)))]';
+const MATCH_TRIGGER_WIDTH_FALLBACK =
+  '[@supports_not_(inline-size:100vi)]:[min-width:min(anchor-size(width),calc(100vw_-_var(--spacing-4)_-_var(--spacing-4)_-_var(--astryx-layer-inset-inline-start,0px)_-_var(--astryx-layer-inset-inline-end,0px)))]';
+
+/** The layer box's width with no explicit `menuWidth`. */
+export const dropdownMenuPopoverMatchTriggerClassName = tw(
+  MATCH_TRIGGER_WIDTH,
+  MATCH_TRIGGER_WIDTH_FALLBACK,
+);
+
+/** The layer box's minimum width when the caller states one. */
+export const dropdownMenuPopoverMinWidthClassName =
+  'min-w-[var(--astryx-dropdown-menu-inline-size,auto)]';
+
+/** The layer box's fixed width when the caller states one. */
+export const dropdownMenuPopoverFixedWidthClassName =
+  'w-[var(--astryx-dropdown-menu-inline-size,auto)]';

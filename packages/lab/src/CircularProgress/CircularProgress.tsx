@@ -30,7 +30,7 @@ import {
 } from '@astryxdesign/core/theme/tokens.stylex';
 import {
   SPINNER_ARC_FRACTION,
-  spinnerRotorStyles,
+  spinnerRotorTurnClassName,
   syncRotationPhase,
 } from '@astryxdesign/core/internal/spinner-rotor';
 import {mergeProps} from '@astryxdesign/core/utils';
@@ -655,9 +655,13 @@ export function CircularProgress({
           height={diameter}
           viewBox={`0 0 ${diameter} ${diameter}`}
           ref={isIndeterminate ? syncRotationPhase : undefined}
-          {...stylex.props(
-            isIndeterminate ? styles.svgIndeterminate : styles.svg,
-            isIndeterminate && spinnerRotorStyles.turn,
+          {...mergeProps(
+            stylex.props(
+              isIndeterminate ? styles.svgIndeterminate : styles.svg,
+            ),
+            isIndeterminate
+              ? {className: spinnerRotorTurnClassName}
+              : undefined,
           )}>
           <circle
             {...mergeProps(

@@ -13,16 +13,7 @@ export const docs = {
   title: 'Styling components',
   summary:
     'Customize component appearance: xstyle, Tailwind, className, rest props, compound components, data attribute selectors, tokens, and StyleX setup.',
-  keywords: [
-    'styling',
-    'xstyle',
-    'className',
-    'override',
-    'customize',
-    'css',
-    'StyleX',
-    'tokens',
-  ],
+  keywords: ['styling', 'xstyle', 'override', 'customize', 'css', 'StyleX'],
   slots: {
     guides: {title: 'Guides', accepts: {kinds: ['generic']}},
   },

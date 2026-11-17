@@ -1,6 +1,6 @@
 # menus
 
-Status: partly done — `DropdownMenuDivider`, `DropdownMenuGroup`, `DropdownMenuItem`, the bottom-sheet frame and `DropdownMenuSubMenu`'s row, flyout and drill-in list landed; the popover container, the selectable rows, `ContextMenu`, `MoreMenu` and the option menus wait (see Result)
+Status: done except the nav heading menus and the option menus — every menu row, surface, sheet and sub-menu class is a Tailwind map; `NavHeadingMenu`, `NavHeadingMenuItem`, `Selector` and `MultiSelector` wait (see Result)
 Blocked by: 22
 Wave: 7
 Family: `family:action-groups`
@@ -208,3 +208,124 @@ Left for the rest of this ticket:
 - `Selector`/`MultiSelector` option menus and `NavHeadingMenu`.
 - The sheet-size gate has ~10 rules of room left under 1050 after this window;
   the popover container will need the constant raised with its reason.
+
+### Window 5
+
+Landed, one commit per file:
+
+- `ContextMenu.tsx` — `ef9ecef7b`. The whole `styles` block (11 keys) is
+  `ContextMenu/contextMenuClasses.ts`. Three parts are worth knowing:
+  - `popoverCustomWidth` became a class plus `--astryx-context-menu-min-inline-size`
+    set on the layer container, so a consumer class still overrides it; the
+    variable is in `ContextMenu.doc.mjs` and the registry allowlist.
+  - the 1px cursor anchor keeps `left`/`top` inline (runtime geometry) and its
+    box is the class `contextMenuCursorAnchorClassName`.
+  - the sheet heading row reuses `dropdownMenuSheetClassName.header`/
+    `.rootHeading`/`.viewHeading` instead of a second copy.
+- `DropdownMenu.tsx` — `f118555dd`. `styles` (18 keys) and `dynamicStyles` (2)
+  are gone; `DropdownMenu/dropdownMenuClasses.ts` grew a "pointer popover"
+  section. Decisions the next window needs to keep:
+  - `menuMaxHeight` lifts the menu cap through
+    `--astryx-dropdown-menu-max-block-size`, read by both the menu's cap class
+    and `dropdownMenuPopoverViewportClassName`, so the layer's flip decision
+    still sees the height the menu takes. The cap class keeps `300px` as the
+    variable's fallback.
+  - `menuWidth` writes `--astryx-dropdown-menu-inline-size` and picks
+    `min-w-`/`w-` from `resolvedMenuWidth.property`, so the fixed and minimum
+    cases stay distinct without a second inline declaration.
+  - `stepsAsideForView` is one `[&:has(~ [data-astryx-submenu-host] >
+[data-astryx-submenu-regions=view]:not([hidden]))]:hidden` utility, with a
+    narrow `@astryx/no-raw-private-attribute` disable for the scan.
+  - `popoverMatchTrigger` keeps the `@supports_not_(inline-size:100vi)` arm
+    around the same `min(anchor-size(width), …)` clamp.
+  - tests: the four `DropdownMenu.test.tsx` groups that read `toHaveStyle` now
+    read the class set or the inline variable; `DropdownMenuSubMenu.test.tsx`
+    gained a `stepsAside()` helper that asserts the DOM shape the `:has()` rule
+    reads, because jsdom parses no stylesheet.
+  - sheet: 170.4 kB, rules still under the 1200 ceiling; the ceiling did not
+    move.
+
+Left for the next window, in this order (the window closed at the 20-minute
+mark with items 3–5 still open):
+
+1. `DropdownMenuSubMenu.tsx`:
+   - `triggerStyles.row` is the documented unlayered survivor (Item's overlays +
+     the shared ring) — same shape as the three row creates in item 4.
+   - `triggerStyles.caret` (`display:flex; align-items:center`) — check whether
+     `dropdownMenuSubMenuTriggerClassName` can carry `flex items-center` on the
+     caret slot; the comment says a style-only wrapper rule reads it, so verify
+     that rule first.
+   - `flyoutStyles` (4 keys) goes to `useLayer` as `xstyle`; the layer takes
+     `className` and `style` too, so the viewport cap becomes a class and the
+     widths become classes plus an inline variable, as in `DropdownMenu.tsx`.
+   - `regionStyles.frame` is the same frame as
+     `dropdownMenuRegionsFrameClassName`; `dynamicRegionStyles.viewMaxHeight`
+     is the drill-in cap and needs the cap-as-variable seam (the root's
+     `menuMaxHeight` reaches the view through the same variable name).
+2. The three identical `menuRowStateStyles` (`DropdownMenuCheckboxItem.tsx:53`,
+   `DropdownMenuRadioItem.tsx:50`, `DropdownMenuItem.tsx:54`, plus
+   `DropdownMenuSubMenu.tsx`'s `triggerStyles.row`) fold into one shared
+   `.stylex.ts` beside them: `:focus` paint from
+   `--_menu-row-focus-paint` and the `-1 * focus-outline-width` offset, unlayered
+   because Item's overlays and the focus ring are.
+3. `menuTouchAction.stylex.ts` stays this window: seven call sites outside this
+   family pass it as `xstyle`, so converting it edits other families. Recorded
+   as a documented survivor; the next window that is allowed to touch those
+   files can do it in one commit.
+
+### Window 6
+
+The five items the window opened with were already landed when it started:
+`DropdownMenu.tsx` keeps no create (`f118555dd`), `ContextMenu.tsx` keeps none
+(`ef9ecef7b`), and the four row-state copies are one
+`DropdownMenu/menuRowState.stylex.ts` (`a07ab3a91`). So this window closed the
+two survivors and the stale assertion that kept the suite red, one commit per
+file:
+
+- `DropdownMenu/menuTouchAction.stylex.ts` — `04f3c61c0`, with the count fixed
+  in the follow-up. It stays, and the header now carries the reason: the values
+  face no unlayered rule, so the class form works; what blocks the swap is
+  ownership. Six of its seven call sites are other components
+  (`SideNav/SideNavHeading.tsx:237`, `TopNav/TopNavHeading.tsx:232`,
+  `TopNav/TopNavMenu.tsx:451`, `TabList/TabMenu.tsx:253`,
+  `Breadcrumbs/BreadcrumbItem.tsx:647`, `NavMenu/NavHeadingMenu.tsx:221`), each
+  passing the pair to `stylex.props()` beside its own state styles, so the
+  conversion rewrites those components in the same commit. The class strings it
+  would become are already in `dropdownMenuSubMenuClasses.ts`: the flyout's own
+  `dropdownMenuSubMenuTouchClassName` and `dropdownMenuSubMenuTouchPinchClassName`
+  (`:86`, `:92`).
+- `DropdownMenuSubMenu.tsx` — `6e8100752`. `triggerStyles.caret` stays, and the
+  comment now says why the check settled it that way: the
+  `@astryx/no-style-only-wrapper` rule keeps a `<span>` over one Astryx child
+  only while the style it applies resolves to a structural property
+  (`display`, `alignItems` in `internal/eslint-plugin-astryx/no-style-only-wrapper.js`),
+  and a class string resolves to no style at all, so the wrapper would be
+  reported. `triggerStyles.row` was already gone; this create is the file's
+  only one.
+- `MoreMenu/MoreMenu.test.tsx` — `5893342d4`. The suite was red on the branch
+  (749 tests, one failure): "keeps the trigger visually pressed while the menu
+  is open" asserted `DropdownMenu__styles.triggerOpen`, a StyleX debug name the
+  trigger stopped printing when it moved to `dropdownMenuTriggerOpenClassName`.
+  It reads the class set through `expectClassSet` now, in both directions.
+- Merge of `poc/tailwind-layout-primitives`: `41d043870` was already an ancestor
+  (`86532c368`), so the merge was a no-op and the sheet-test conflict the
+  window expected did not appear.
+
+Verification: `node packages/core/scripts/build-css-tailwind.mjs` (184.6 kB),
+`pnpm exec vitest run packages/core/src/DropdownMenu
+packages/core/src/ContextMenu packages/core/src/MoreMenu packages/core/src/Item
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` — 27 files,
+749 passed; prettier and eslint clean on the three files;
+`pnpm -F @astryxdesign/core typecheck` clean. No class was added, so the sheet
+coverage block and its ceiling did not move.
+
+Still open for this ticket, in this order:
+
+1. `NavMenu/NavHeadingMenu.tsx` (creates at `:36` and `:44`) and
+   `NavMenu/NavHeadingMenuItem.tsx` (`:36`, `:79`) — the last two menu files
+   with a create of their own.
+2. `Selector/Selector.tsx` (`:143`, `:507`), `Selector/SelectorBottomSheet.tsx`
+   (`:24`) and `MultiSelector/MultiSelector.tsx` (`:154`, `:418`) — the option
+   menus the family still owns.
+3. `menuTouchAction.stylex.ts` and its six foreign call sites in one commit,
+   when a window is allowed to edit those families.

@@ -2,28 +2,17 @@
 
 'use client';
 
-import * as stylex from '@stylexjs/stylex';
 import {ScrollableArea} from '@astryxdesign/core/ScrollableArea';
 import {Card} from '@astryxdesign/core/Card';
 import {Grid} from '@astryxdesign/core/Grid';
 import {VStack} from '@astryxdesign/core/Layout';
 import {Heading, Text} from '@astryxdesign/core/Text';
-import {
-  borderVars,
-  colorVars,
-  radiusVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
-
-const styles = stylex.create({
+const styles = {
   // A hairline frame so the nested viewport's edge — the edge the gesture
   // meets — is visible.
-  sectionFrame: {
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-    borderRadius: radiusVars['--radius-element'],
-  },
-});
+  sectionFrame:
+    '[border-width:var(--border-width)] border-solid border-border rounded-md',
+} as const;
 
 const SHARED = [
   {id: 'brand', title: 'Brand refresh', meta: 'Priya Raman'},
@@ -92,7 +81,7 @@ export default function ScrollableAreaOverscrollChaining() {
               label="Shared with you"
               height={150}
               padding={2}
-              xstyle={styles.sectionFrame}>
+              className={styles.sectionFrame}>
               <FileGrid files={SHARED} />
             </ScrollableArea>
             <Text type="supporting">
@@ -112,7 +101,7 @@ export default function ScrollableAreaOverscrollChaining() {
               overscroll="contain"
               height={150}
               padding={2}
-              xstyle={styles.sectionFrame}>
+              className={styles.sectionFrame}>
               <FileGrid files={ARCHIVED} />
             </ScrollableArea>
             <Text type="supporting">

@@ -3,8 +3,6 @@
 'use client';
 
 import {Fragment} from 'react';
-import * as stylex from '@stylexjs/stylex';
-
 import {Divider} from '@astryxdesign/core/Divider';
 import {useContainerReveal} from '@astryxdesign/core/hooks';
 import {Icon} from '@astryxdesign/core/Icon';
@@ -20,13 +18,13 @@ const TABS = [
   {name: 'Interaction prototype', isActive: false},
 ];
 
-const styles = stylex.create({
-  strip: {minWidth: 0, flexShrink: 1, scrollbarWidth: 'none'},
-  rule: {height: 16},
-  hidden: {visibility: 'hidden'},
-  tab: {flexShrink: 1, width: 164, minWidth: 96},
-  action: {margin: 'calc(-1 * var(--spacing-1))', transitionProperty: 'none'},
-});
+const styles = {
+  strip: 'min-w-0 shrink [scrollbar-width:none]',
+  rule: 'h-4',
+  hidden: 'invisible',
+  tab: 'w-[164px] min-w-24 shrink',
+  action: '-m-1 [transition-property:none]',
+} as const;
 function DocumentTab({name, isActive}: (typeof TABS)[number]) {
   const {getContainerProps, getContentRevealProps} = useContainerReveal();
   const revealProps = getContentRevealProps({
@@ -54,10 +52,10 @@ function DocumentTab({name, isActive}: (typeof TABS)[number]) {
           variant="ghost"
           size="sm"
           icon={<Icon icon={XMarkIcon} size="sm" />}
-          {...mergeProps(revealProps, stylex.props(styles.action))}
+          {...mergeProps(revealProps, {className: styles.action})}
         />
       }
-      xstyle={styles.tab}
+      className={styles.tab}
     />
   );
 }
@@ -72,16 +70,15 @@ export default function ItemDocumentTabs() {
         paddingInline={2}
         paddingBlock={1}
         isScrollable
-        xstyle={styles.strip}>
+        className={styles.strip}>
         {TABS.map((tab, index) => (
           <Fragment key={tab.name}>
             {index > 0 ? (
               <Divider
                 orientation="vertical"
-                xstyle={[
-                  styles.rule,
-                  (TABS[index - 1]?.isActive || tab.isActive) && styles.hidden,
-                ]}
+                className={`${styles.rule} ${
+                  TABS[index - 1]?.isActive || tab.isActive ? styles.hidden : ''
+                }`}
               />
             ) : null}
             <DocumentTab {...tab} />

@@ -370,12 +370,25 @@ const CROSS_COMPONENT_VARS: Record<string, string[]> = {
  */
 const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // No standard CSS property maps onto these — they are component behaviors.
+  // A per-instance minimum width: the `menuWidth` prop writes the variable and
+  // the width class reads it. No standard property maps the prop onto a theme.
+  '--astryx-context-menu-min-inline-size',
+  // The menu surface's per-instance size: `menuWidth` and `menuMaxHeight` write
+  // the variables and the size classes read them, so no standard property is
+  // the theme's lever.
+  '--astryx-dropdown-menu-inline-size',
+  '--astryx-dropdown-menu-max-block-size',
   '--button-focus-offset',
   '--button-icon-only-aspect',
   '--_avatar-group-overlap',
   '--_field-status-overlap',
   '--_codeblock-gutter-width',
   '--_tab-indicator-bottom',
+  // The layer viewport fit writes these three on the anchored layer at render
+  // time; no theme author sets a popover's size cap or width.
+  '--astryx-popover-max-inline-size',
+  '--astryx-popover-max-block-size',
+  '--astryx-popover-width',
   // Hit-area outset on a ::after overlay, and whether that overlay is
   // generated at all — `inset` and `content` on a pseudo-element are not
   // properties a theme author sets on the component.
