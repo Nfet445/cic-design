@@ -483,6 +483,7 @@ import {
   fieldStatusDetachedIconClassName,
 } from '../FieldStatus/fieldStatusClasses';
 import {entryAnimationClassName} from '../hooks/entryAnimationClasses';
+import {inputStatusIconButtonClassName} from '../hooks/inputStatusIconClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
   iconColorClassName,
@@ -3311,6 +3312,8 @@ function familyClassNames() {
   for (const preset of ['slideDown', 'slideUp', 'fadeIn', 'scaleIn']) {
     add(entryAnimationClassName(preset));
   }
+  // useInputStatusIcon: the tooltip-variant status button's chrome.
+  add(inputStatusIconButtonClassName);
   // Field: the hidden label's info button and the panel search row.
   add(fieldLabelHiddenInfoTipClassName);
   add(panelSearchInputWrapperClassName);
