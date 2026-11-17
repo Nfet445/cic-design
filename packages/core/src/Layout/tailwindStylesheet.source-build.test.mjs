@@ -341,6 +341,14 @@ import {
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';
 import {kbdKeyClassName, kbdWrapperClassName} from '../Kbd/kbdClasses';
 import {infoTipTriggerClassName} from '../InfoTip/infoTipClasses';
+import {
+  fieldStatusAttachedClassName,
+  fieldStatusBaseClassName,
+  fieldStatusColorClassName,
+  fieldStatusDetachedClassName,
+  fieldStatusDetachedContentClassName,
+  fieldStatusDetachedIconClassName,
+} from '../FieldStatus/fieldStatusClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
   iconColorClassName,
@@ -2641,6 +2649,16 @@ function familyClassNames() {
   add(kbdKeyClassName);
   // InfoTip: the one info button, whatever its size.
   add(infoTipTriggerClassName);
+  // FieldStatus: the message box in both placements, the detached content row
+  // and glyph, and one fill per status type.
+  add(fieldStatusBaseClassName);
+  add(fieldStatusAttachedClassName);
+  add(fieldStatusDetachedClassName);
+  add(fieldStatusDetachedContentClassName);
+  add(fieldStatusDetachedIconClassName);
+  for (const type of ['warning', 'error', 'success']) {
+    add(fieldStatusColorClassName[type]);
+  }
   // Switch: the field root at both width states, the row in its four shape
   // states, the track box per size, the label column and the status gap.
   for (const width of [null, 240]) {
