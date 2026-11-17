@@ -3,13 +3,8 @@
 'use client';
 
 import {useId, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Card} from '@astryxdesign/core/Card';
-import {
-  Field,
-  inputStatusBorderStyles,
-  inputWrapperStyles,
-} from '@astryxdesign/core/Field';
+import {Field, fieldInputWrapperClassName} from '@astryxdesign/core/Field';
 import type {FieldStatusPlacement, InputStatus} from '@astryxdesign/core/Field';
 import {useInputStatusIcon} from '@astryxdesign/core/hooks';
 import {VStack} from '@astryxdesign/core/Layout';
@@ -18,24 +13,19 @@ import {
   SegmentedControlItem,
 } from '@astryxdesign/core/SegmentedControl';
 import {Text} from '@astryxdesign/core/Text';
-import {colorVars, spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {tw} from '@astryxdesign/core/utils';
 
 const VALID_CODE = 'SAVE20';
 
-const styles = stylex.create({
-  field: {
-    paddingInline: spacingVars['--spacing-3'],
-  },
-  input: {
-    flexGrow: 1,
-    minWidth: 0,
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    color: colorVars['--color-text-primary'],
-    font: 'inherit',
-    outline: 'none',
-  },
-});
+const styles = {
+  /*
+   * The published box draws the border, its status colour and both rings; the
+   * demo widens its inline padding to the third spacing step.
+   */
+  field: 'px-[var(--spacing-3)]',
+  input:
+    'grow min-w-0 border-none bg-transparent text-[color:var(--color-text-primary)] [font:inherit] outline-none',
+} as const;
 
 function CouponField({statusVariant}: {statusVariant: FieldStatusPlacement}) {
   const [code, setCode] = useState('SAVE10');
@@ -72,11 +62,9 @@ function CouponField({statusVariant}: {statusVariant: FieldStatusPlacement}) {
       status={status && {...status, messageID: messageId}}
       statusVariant={statusVariant}>
       <div
-        {...stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
+        className={tw(
+          fieldInputWrapperClassName({status: status?.type}),
           styles.field,
-          status && inputStatusBorderStyles[status.type],
         )}>
         <input
           id={inputId}
@@ -86,7 +74,7 @@ function CouponField({statusVariant}: {statusVariant: FieldStatusPlacement}) {
           placeholder="Enter a coupon code"
           value={code}
           onChange={e => setCode(e.target.value)}
-          {...stylex.props(styles.input)}
+          className={styles.input}
         />
         {statusIcon}
       </div>

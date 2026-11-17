@@ -6,8 +6,9 @@ import {useState} from 'react';
 import {Card} from '@astryxdesign/core/Card';
 import {usePressFeedback} from '@astryxdesign/core/hooks';
 import {
-  focusOutlineStyles,
-  interactionOverlayStyles,
+  focusOutlineFocusVisibleClassName,
+  interactionOverlayBackgroundImageClassName,
+  tw,
 } from '@astryxdesign/core/utils';
 import {DemoHint, PlayingCardContents} from '@astryx-docs/demo-content';
 
@@ -20,10 +21,10 @@ export default function UsePressFeedbackHookUsage() {
     <DemoHint text="Press and hold the card to see the press; tap, click, Enter or Space to flip it.">
       <Card
         {...pressable}
-        xstyle={[
-          interactionOverlayStyles.backgroundImage,
-          focusOutlineStyles.focusVisible,
-        ]}
+        className={tw(
+          interactionOverlayBackgroundImageClassName,
+          focusOutlineFocusVisibleClassName,
+        )}
         width={120}
         padding={1}
         role="button"

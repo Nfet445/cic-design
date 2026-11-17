@@ -1,7 +1,6 @@
 # published class seams
 
-Status: ready-for-agent
-Blocked by: 07, 41
+Status: done
 Wave: 9
 Ticket: 52
 Parent: `00-epic-stylex-to-tailwind-4`
@@ -55,3 +54,48 @@ every parked marker is a consumer that had no seam to call.
   and each is asserted in the stylesheet test's coverage walk.
 - `pnpm exec vitest run --project node packages/cli/api/template` passes.
 - A changeset of category `component` records the new exports.
+
+## Progress
+
+Five seams, one commit each, `feat` with a Russian description:
+
+- `877b80dfa feat(core): публиковать tw() из точки входа пакета` — `tw.ts`
+  states its public position and carries the caller example;
+  `utils/index.ts` exports it beside `mergeProps`, so the root entry and
+  `@astryxdesign/core/utils` hand out the same function.
+  `utils/tw.public.test.ts` reads both entries, never the relative path.
+- `cbf2c189e feat(layout): публиковать внутренний слой раскладки и границу
+отступов оверлея` — `layoutClasses.ts` gains `layoutPaddingResetClassName`,
+  the fifteen properties of `overlayPaddingReset.reset` as arbitrary utilities
+  (`--container-padding-*` and `--container-corner-*` `0px`,
+  `--layout-padding-*` and `--_section-padding-propagated` `initial`); the
+  `--astryx-section-padding` variable stays out because a reset must not eat the
+  section's own opt-out. `Layout/layoutPaddingReset.public.test.ts` reads the
+  StyleX source and fails when the two forms drift. `Layout` exports it beside
+  `layoutInnerClassName`.
+- `5c1cb1601 feat(field): публиковать классы рамки поля и статусной границы`
+  — `fieldInputWrapperClassName({status})` draws `inputWrapperStyles.base` and
+  `.textField`; the wrapper takes the status so one class owns `border-color`
+  (the rule `FileInput/fileInputClasses.ts:18-36` states). `fieldStatusBorderClassName`
+  gives the three status colours. `Field/fieldInputWrapper.public.test.ts`.
+- `ffd94fb8d feat(utils): публиковать классы кольца фокуса и оверлея
+взаимодействия` — `focusOutlineFocusVisibleClassName` repeats the four
+  longhands of `focusOutlineStyles.focusVisible`;
+  `interactionOverlayBackgroundImageClassName` repeats the hover and pressed
+  gradients with the `:where(:not(:disabled,[aria-disabled="true"]))` guard, the
+  coarse-pointer reset, and the `data-astryx-press` arms. The press arms read
+  `var(--_press-paint-image, …)`: a page that loads this class without the StyleX
+  strength still paints the pressed token, at full strength and without the
+  release fade — the file states that as a `shortcut:` comment.
+  `utils/publishedClassArms.public.test.ts`.
+- Window 5 converts the four parked templates and lands the ticket 45 guard
+  test; ticket 45 is closed.
+
+Every class the seams publish is registered in `familyClassNames()` of
+`Layout/tailwindStylesheet.source-build.test.mjs`, so the coverage walk asserts
+a rule for each one. No `*.doc.mjs` change: the seams add no component prop and
+no `--astryx-*` variable, so `derivedVarRegistry.test.ts` sees nothing new.
+
+`pnpm -F @astryxdesign/core typecheck` fails only on the pre-existing
+`src/Markdown/Markdown.doc.mjs(247,7): error TS2741` in a file this ticket does
+not touch.

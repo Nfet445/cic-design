@@ -1,7 +1,6 @@
 # press layers and own-ring containers
 
 Status: ready-for-agent
-Blocked by: 52
 Wave: 9
 Ticket: 53
 Parent: `00-epic-stylex-to-tailwind-4`

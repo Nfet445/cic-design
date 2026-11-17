@@ -37,10 +37,12 @@ const SRC = path.resolve(__dirname, '..');
 /**
  * The utility, the list row's press layer, the press attribute's owner
  * module (the selector a themed press uses) and the controller define the
- * model; they are not surfaces.
+ * model; they are not surfaces. So does the utility's class-era twin, which
+ * states the same arms as utility class text.
  */
 const MODEL_FILES = new Set([
   'utils/interactionOverlay.stylex.ts',
+  'utils/interactionOverlayClasses.ts',
   'privateAttributes/press.stylex.ts',
   'privateAttributes/press.ts',
   'utils/pressFeedback.ts',
