@@ -2,57 +2,84 @@
 
 /**
  * @file inputFontFloor.test.ts
- * @input Uses node:fs and node:path to read the text-control sources
+ * @input Uses node:fs and node:path to read the text-control sources, the
+ *   class maps that state the floor, and the package's Tailwind build
  * @output Invariants for the 16px input floor shared by every text control
- * @position Family-wide source test, in the source-reading style of
+ * @position Family-wide source and sheet test, in the source-reading style of
  *   reset.test.ts. jsdom's CSSOM drops declarations nested inside @supports,
- *   so the iOS branch cannot be asserted against injected rules — the
- *   runtime half (no bare coarse-pointer floor) lives in TextInput.test.tsx.
+ *   so the iOS branch cannot be asserted against injected rules; the runtime
+ *   half (`TextInput.test.tsx`) asserts only the ungated class it must not
+ *   carry.
  */
 
 import {readFileSync, readdirSync} from 'node:fs';
 import path from 'node:path';
 
-import {describe, expect, it} from 'vitest';
+import {beforeAll, describe, expect, it} from 'vitest';
+
+import {buildAstryxTailwindCss} from '../scripts/build-css-tailwind.mjs';
+import {stylesheetOf, type Stylesheet} from './__tests__/classNameAssertions';
 
 /**
- * Every control that floors its text to 16px. iOS Safari zooms the page when
- * a focused control renders under 16px; no other coarse-pointer browser does.
- * `-webkit-touch-callout` is implemented by iOS WebKit alone, so each floor
- * nests `@supports (-webkit-touch-callout: none)` inside the coarse-pointer
- * query: iPhones and iPads keep the zoom guard, while Android and touch
- * laptops keep the theme's own type scale instead of an inflated 16px.
+ * Every text control that floors its text to 16px, named by the file that
+ * states the floor. iOS Safari zooms the page when a focused control renders
+ * under 16px; no other coarse-pointer browser does. `-webkit-touch-callout` is
+ * implemented by iOS WebKit alone, so each floor nests
+ * `@supports (-webkit-touch-callout: none)` inside the coarse-pointer query:
+ * iPhones and iPads keep the zoom guard, while Android and touch laptops keep
+ * the theme's own type scale instead of an inflated 16px.
+ *
+ * A migrated control states the floor as a utility class string in its class
+ * map; a control still on StyleX states it as a declaration in its own source.
+ * Both forms are read the same way, so a control moves between them without
+ * leaving the list.
  */
-const FLOORED_CONTROLS = [
+const FLOORED_FLOOR_FILES = [
+  // Migrated: the class map carries the utility.
+  'DateRangeInput/dateRangeInputClasses.ts',
+  'FileInput/fileInputClasses.ts',
+  'TextArea/textAreaClasses.ts',
+  'TextInput/textInputClasses.ts',
+  'TimeInput/timeInputClasses.ts',
+  // Still on StyleX: the component source carries the declaration.
   'Chat/ChatComposerInput.tsx',
   'CommandPalette/CommandPaletteInput.tsx',
   'ComplexSelector/ComplexSelector.tsx',
   'DateInput/DateInput.tsx',
   'DateInput/NativeDateField.tsx',
   'DateInput/TouchDateField.tsx',
-  'DateRangeInput/DateRangeInput.tsx',
   'DateTimeInput/DateTimeInput.tsx',
   'DateTimeInput/TouchDateTimeField.tsx',
   'DateTimeInput/nativePickerSegmentStyles.ts',
   'Field/PanelSearchInput.tsx',
-  'FileInput/FileInput.tsx',
   'NumberInput/NumberInput.tsx',
   'Selector/Selector.tsx',
-  'TextArea/TextArea.tsx',
-  'TextInput/TextInput.tsx',
-  'TimeInput/TimeInput.tsx',
   'Typeahead/BaseTypeahead.tsx',
   // The rich-text package carries the same floor; its path is relative to
   // packages/core/src.
   '../../richtext/src/RichTextEditor.tsx',
 ];
 
-/** A font floor applied to every coarse pointer, iOS or not. */
-const BARE_COARSE_FLOOR = `'@media (pointer: coarse)': \`max(1rem`;
+/** The utility class that states the floor, both variants in order. */
+const IOS_GATED_CLASS_FLOOR =
+  /pointer-coarse:\[@supports\(-webkit-touch-callout:none\)\]:text-\[length:max\(1rem,var\(--text-(?:body|label)-size\)\)\]/;
 
-/** The same floor, gated to iOS WebKit inside the coarse-pointer query. */
-const IOS_GATED_FLOOR =
+/** The same floor as a StyleX declaration: the coarse query's only member. */
+const IOS_GATED_STYLEX_FLOOR =
   /'@media \(pointer: coarse\)': \{\s*'@supports \(-webkit-touch-callout: none\)': `max\(1rem, \$\{typeScaleVars\['--text-(?:body|label)-size'\]\}\)`/;
+
+/**
+ * A floor every coarse pointer gets, iOS or not: the regression both forms can
+ * introduce, by dropping the support query that gates them.
+ */
+const BARE_COARSE_FLOORS = [
+  "'@media (pointer: coarse)': `max(1rem",
+  'pointer-coarse:text-[length:max(1rem',
+];
+
+/** The class the migrated controls ship, spelled with its floored size. */
+const SHIPPED_FLOOR_CLASS =
+  'pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]';
 
 /** Collect every non-test component source under `dir`, recursively. */
 function componentSources(dir: string): string[] {
@@ -77,11 +104,17 @@ function componentSources(dir: string): string[] {
 describe('the 16px input floor', () => {
   it('gates every floored text control to iOS alone', () => {
     // Guards the loop below against the list silently emptying out.
-    expect(FLOORED_CONTROLS.length).toBeGreaterThanOrEqual(18);
-    for (const file of FLOORED_CONTROLS) {
+    expect(FLOORED_FLOOR_FILES.length).toBeGreaterThanOrEqual(18);
+    for (const file of FLOORED_FLOOR_FILES) {
       const source = readFileSync(path.resolve(__dirname, file), 'utf8');
-      expect(source, file).toMatch(IOS_GATED_FLOOR);
-      expect(source, file).not.toContain(BARE_COARSE_FLOOR);
+      expect(
+        IOS_GATED_CLASS_FLOOR.test(source) ||
+          IOS_GATED_STYLEX_FLOOR.test(source),
+        file,
+      ).toBe(true);
+      for (const bare of BARE_COARSE_FLOORS) {
+        expect(source, file).not.toContain(bare);
+      }
     }
   });
 
@@ -99,8 +132,34 @@ describe('the 16px input floor', () => {
         file,
         source: readFileSync(file, 'utf8'),
       }))
-      .filter(({source}) => source.includes(BARE_COARSE_FLOOR))
+      .filter(({source}) =>
+        BARE_COARSE_FLOORS.some(bare => source.includes(bare)),
+      )
       .map(({file}) => path.relative(__dirname, file));
     expect(offenders).toEqual([]);
+  });
+
+  describe('the built sheet', () => {
+    let stylesheet: Stylesheet;
+
+    beforeAll(async () => {
+      stylesheet = stylesheetOf(await buildAstryxTailwindCss());
+    });
+
+    it('ships the floor under the coarse query only where iOS implements the gate', () => {
+      // What the browser reads: the coarse query, then the iOS support query,
+      // then the floor. The class map states the same two variants in order;
+      // this pins the rule the build compiles from it, so a dropped gate would
+      // floor every touch device.
+      expect(stylesheet.blockOf(SHIPPED_FLOOR_CLASS)).toBe(
+        '@media(pointer:coarse){@supports(-webkit-touch-callout:none){font-size:max(1rem,var(--text-body-size));}}',
+      );
+    });
+
+    it('floors no text on a coarse pointer alone', () => {
+      expect(stylesheet.compact).not.toMatch(
+        /@media\(pointer:coarse\)\{font-size:max\(1rem/,
+      );
+    });
   });
 });

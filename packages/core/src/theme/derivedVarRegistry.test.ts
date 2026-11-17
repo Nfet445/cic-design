@@ -385,6 +385,10 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // property maps onto it: a theme sets the cap through maxWidth and
   // `--astryx-layout-content-width`, which this follows.
   '--astryx-layout-alignment-width',
+  // A wheel pane's block size: one geometry constant shared by TimeInput and
+  // the touch date wheels. No standard property maps onto it; a theme sizes
+  // the control through the field family, not through this.
+  '--astryx-time-wheels-block-size',
   // The border width a host draws where its touch hit layer reaches past,
   // such as a divided ListItem's divider (0 on the last row).
   // The ::after layer adds it to its offset, so the band starts past the

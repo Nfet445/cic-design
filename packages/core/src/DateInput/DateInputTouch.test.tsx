@@ -45,6 +45,11 @@ import {InputGroup} from '../InputGroup';
 import {InternationalizationProvider} from '../i18n';
 import {DateInput} from './DateInput';
 import {
+  dateInputPaneBlockSizeClassName,
+  pickerWheelColumnClassName,
+  pickerWheelRowClassName,
+} from './dateInputClasses';
+import {
   toMonthIndex,
   monthIndexOf,
   fromMonthIndex,
@@ -3038,9 +3043,14 @@ describe('DateInput — scroll CSS (definition-level)', () => {
     expect(tokens).toContain(`wheelItemSize: '${WHEEL_ROW_HEIGHT}px'`);
     expect(tokens).toContain("daySize: '44px'");
     expect(tokens).toContain('export const WEEKS_PER_PANE = 6;');
-    const source = read('PickerWheel.tsx');
-    expect(source).toContain('blockSize: dateInputTouchGeometry.paneBlockSize');
-    expect(source).toContain("fontSize: typeScaleVars['--text-large-size']");
+    // Read off the classes the column and the row apply, which is where the
+    // pitch and the text size now live.
+    expect(pickerWheelColumnClassName).toContain(
+      dateInputPaneBlockSizeClassName,
+    );
+    expect(pickerWheelRowClassName).toContain(
+      'text-[length:var(--text-large-size)]',
+    );
   });
 
   it('insets the sheet content equally on every edge', () => {
