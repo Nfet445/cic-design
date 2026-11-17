@@ -28,6 +28,7 @@ import {
   avatarStatusDotVariantClassName,
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
+import * as lightboxClasses from '../Lightbox/lightboxClasses';
 import {
   markdownBlockIndentClassName,
   markdownBlockSpacingClassName,
@@ -2804,6 +2805,11 @@ function familyClassNames() {
   add(thumbnailRemoveSlotClassName);
   add(thumbnailDisabledClassName);
   add(thumbnailUploadOverlayClassName);
+  // Lightbox: the viewer's frame, a page's rail slot and the caption's shown,
+  // clamped or open state. Each export is a literal class string.
+  for (const value of Object.values(lightboxClasses)) {
+    add(value);
+  }
   // ToastViewport: the popover reset with its safe-area gutters in both
   // directions, the four placements, both empty and filled, the outlet that
   // renders a portaled viewport in place of itself, and every row state.
@@ -4062,6 +4068,19 @@ describe('dist/astryx-tailwind.css layer rules', () => {
     );
     expect(stylesheet.compact).toContain(
       '@keyframesastryxDialogEnterFullscreen{from{opacity:0;}to{opacity:1;}}',
+    );
+  });
+
+  it('lets the lightbox caption band drop its backing', () => {
+    // The band's backing and its transparent arm are one class each, so both
+    // sit at the same specificity and the later one in `utilities` wins.
+    expect(stylesheet.ruleFor('bg-transparent')).toBe(
+      'background-color:transparent;',
+    );
+    expect(stylesheet.compact.indexOf('.bg-transparent{')).toBeGreaterThan(
+      stylesheet.compact.indexOf(
+        'background-color:color-mix(in srgb,var(--color-on-light) 90%,transparent)',
+      ),
     );
   });
 

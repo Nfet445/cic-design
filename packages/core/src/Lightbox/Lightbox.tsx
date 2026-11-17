@@ -37,15 +37,9 @@ import {
   type ComponentProps,
   type ReactNode,
 } from 'react';
+import type {CSSProperties} from 'react';
 import {flushSync} from 'react-dom';
 import * as stylex from '@stylexjs/stylex';
-import type {StyleXStyles} from '@stylexjs/stylex';
-import {
-  colorVars,
-  focusVars,
-  spacingVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import {Icon} from '../Icon';
 import {IconButton} from '../IconButton';
 import {announceInModal} from '../hooks/useAnnounce';
@@ -60,7 +54,7 @@ import {mergeProps, rtlStyles} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
@@ -74,6 +68,24 @@ import {useFocusRegionContainment} from '../hooks/useFocusTrap';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {isRtlElement} from '../hooks/isRtlElement';
 import {
+  lightboxCaptionBandClassName,
+  lightboxCaptionBandTransparentClassName,
+  lightboxCaptionBodyClassName,
+  lightboxCaptionClampedClassName,
+  lightboxCaptionFlowClassName,
+  lightboxCaptionInBandClassName,
+  lightboxCaptionOpenClassName,
+  lightboxCaptionTextBesideToggleClassName,
+  lightboxCaptionTextOpenClassName,
+  lightboxCaptionTextToggleOwnLineClassName,
+  lightboxCaptionToggleClassName,
+  lightboxCaptionTogglePlaceClassName,
+  lightboxCaptionTogglePlaceHiddenClassName,
+  lightboxCaptionTogglePlaceShownClassName,
+  lightboxCaptionClassName,
+  lightboxPageClassName,
+  lightboxPageMediaClassName,
+  lightboxPageMediaZoomTargetClassName,
   lightboxChromeLayerClassName,
   lightboxCloseButtonClassName,
   lightboxContainerClassName,
@@ -208,210 +220,43 @@ export interface LightboxProps extends BaseProps<HTMLDialogElement> {
 /** Set on the stage while a mouse or a pen hovers over the fitted photo. */
 const OVER_PHOTO_ATTRIBUTE = 'data-lightbox-over-photo';
 
-// The caption's backing: the controls' backing colour, darker, so the caption
-// keeps 4.5:1 over any photo or backdrop behind it (WCAG 2.2 1.4.3).
-const CAPTION_BACKING = `color-mix(in srgb, ${colorVars['--color-on-light']} 90%, transparent)`;
+/**
+ * The values a page carries for its own classes: the rail's offset, the
+ * toggle's measured size, and the place's generated lines. They ride
+ * variables, so one class serves every page and a consumer `xstyle` still
+ * overrides what the class reads.
+ */
+type LightboxInstanceState = CSSProperties &
+  Partial<
+    Record<
+      | '--astryx-lightbox-page-offset'
+      | '--astryx-lightbox-caption-toggle-width'
+      | '--astryx-lightbox-caption-toggle-lines'
+      | '--_lightbox-caption-place-lines',
+      string
+    >
+  >;
 
-const styles = stylex.create({
-  // The zoom button's box clips, so its focus ring sits inside its edge.
-  zoomButtonFocusInset: {
-    outlineOffset: {
-      default: '0',
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-  },
-  // The photo box is the zoom button. It takes the stage's cursor, not the
-  // reset's button cursor, so the zoom-in cursor shows only over the photo.
-  pageMediaZoomTarget: {
-    touchAction: 'none',
-    cursor: {
-      default: 'inherit',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // One page per item, the stage's size, at index × (width + gap). The pages
-  // stack in the track's one column, offset by their relative inset. Each has
-  // its own layer. Through a busy main thread, Mobile Safari moves the track
-  // but cannot paint what it had not painted. So a page that slides in must be
-  // painted whole before it moves.
-  page: {
-    position: 'relative',
-    gridColumn: '1',
-    gridRow: '1 / span 2',
-    display: 'grid',
-    gridTemplateColumns: '100%',
-    gridTemplateRows: 'subgrid',
-    minHeight: 0,
-    willChange: 'transform',
-  },
-  // A page's photo box: the zoom stage of the current page, in the photo
-  // row. Its caption sits in the caption band below it, so the viewer's size
-  // never changes with the item.
-  pageMedia: {
-    gridRow: '1',
-    minHeight: 0,
-    minWidth: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    // ZOOM_DISMISSING_ATTRIBUTE: a photo dragged to dismiss draws outside its
-    // box, above its caption band and below the controls. The drag fades the
-    // band, which makes it a stacking context painted after the box.
-    overflow: {default: 'hidden', ':is([data-zoom-dismissing])': 'visible'},
-    zIndex: {default: null, ':is([data-zoom-dismissing])': 1},
-  },
-  // A gallery's caption band, under every page's photo. It is two caption
-  // lines tall whatever the caption, so the photo area stays the same. Its
-  // lines are the caption's own type, on the caption's backing. Its padding
-  // clears the screen's bottom edge and the safe area there.
-  captionBand: {
-    gridRow: '2',
-    position: 'relative',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    minWidth: 0,
-    boxSizing: 'content-box',
-    // The caption Text's type, so `2lh` is two caption lines.
-    // SYNC: the caption Text's `type` in this file.
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    blockSize: `calc(${spacingVars['--spacing-2']} + 2lh)`,
-    paddingBlockEnd: `calc(${spacingVars['--spacing-3']} + env(safe-area-inset-bottom, 0px))`,
-    backgroundColor: CAPTION_BACKING,
-  },
-  // The band under an open caption, which brings its own backing.
-  captionBandUnderOpen: {
-    backgroundColor: 'transparent',
-  },
-  // A page with no caption keeps the band's space, so its photo sits where
-  // every other page's does. It shows no backing there.
-  captionBandBare: {
-    backgroundColor: 'transparent',
-  },
-  captionInBand: {
-    display: 'flex',
-    minWidth: 0,
-    maxWidth: '100%',
-  },
-  // The caption's Text and its toggle. The toggle is out of the flow, so the
-  // Text takes the whole width.
-  captionBody: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'flex-start',
-    minWidth: 0,
-    maxWidth: '100%',
-  },
-  // Lets the clamped Text shrink inside the band.
-  captionClamped: {
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  // The caption's lines in one block, so the clamp counts them and the floats
-  // in it wrap them. Every state renders it, with or without a toggle.
-  captionFlow: {
-    display: 'block',
-  },
-  // Physical floats: StyleX keys `inline-end` on the page's direction. So a
-  // right-to-left caption flips them, as the toggle follows its own.
-  // The toggle's place at the end of the caption's last line. The text wraps
-  // around it, so the clamp's ellipsis comes just before the toggle. Without
-  // a toggle it has no box, so it moves no line.
-  captionTogglePlace: {
-    float: {
-      default: 'right',
-      ':is([dir="rtl"] *)': 'left',
-    },
-    display: 'none',
-    // Also set while the place is not shown, so the open caption's count
-    // reads it then.
-    marginInlineStart: spacingVars['--spacing-1'],
-    overflow: 'hidden',
-    whiteSpace: 'pre',
-    userSelect: 'none',
-    // The clamp draws an ellipsis on its last line. The place shows nothing.
-    visibility: 'hidden',
-    // The lines are generated, so the caption's text and its ranges hold
-    // none of them. Each line is a no-break space, and the place shows as
-    // many as the caption does. An open caption scrolls once it passes 60 %
-    // of the viewport, and then the place is not shown. 240 lines cover that
-    // at a 10px line in a window 4,000px tall.
-    '::before': {
-      content: `"${'\\A0\\A'.repeat(239)}\\A0"`,
-    },
-  },
-  // The place shows one line box for each line the caption shows. Layout
-  // rounds line boxes to its own grid, and each engine rounds them its own
-  // way. So the place ends exactly where the caption's last line ends. Only
-  // its last line keeps the text away.
-  captionTogglePlaceShown: (width: number, lines: number) => ({
-    display: '-webkit-box',
-    WebkitBoxOrient: 'vertical',
-    WebkitLineClamp: lines,
-    inlineSize: width,
-    shapeOutside: 'inset(calc(100% - 1lh + 0.5px) 0 0 0)',
-  }),
-  // The caption's link over its place: the caption's last line, inside the
-  // Text's inline padding. It takes the caption's font and line height, so
-  // it sits on that line as its text does.
-  // SYNC: `caption`'s paddingInline.
-  captionToggle: {
-    position: 'absolute',
-    insetInlineEnd: spacingVars['--spacing-3'],
-    insetBlockEnd: 0,
-  },
-  // A block that does not fit beside the toggle's place sits below the place,
-  // so the place leaves the flow. The toggle takes a line of its own under
-  // the caption's last line.
-  captionTextToggleOwnLine: {
-    paddingBlockEnd: '1lh',
-  },
-  // The toggle's own display wins over `hidden`'s, so this hides it.
-  captionToggleHidden: {
-    display: 'none',
-  },
-  // An open caption that scrolls keeps its toggle's width clear at every
-  // line's end. The toggle stays in view as the lines move.
-  captionTextBesideToggle: (width: number) => ({
-    paddingInlineEnd: `calc(${spacingVars['--spacing-3']} + ${width}px + ${spacingVars['--spacing-1']})`,
-  }),
-  // The open caption: the same element, out of the band and over the
-  // photo's bottom, on the controls' scrim. Its last line and the toggle stay
-  // where they were, and it grows upward.
-  captionOpen: {
-    position: 'absolute',
-    insetInline: 0,
-    insetBlockEnd: 0,
-    justifyContent: 'center',
-    maxWidth: 'none',
-    paddingBlockEnd: `calc(${spacingVars['--spacing-3']} + env(safe-area-inset-bottom, 0px))`,
-    backgroundColor: CAPTION_BACKING,
-  },
-  // The open caption's text, up to 60 % of the viewport tall. A finger
-  // scrolls a longer one, and the toggle stays in view beside it. A pinch on
-  // it still zooms the page.
-  captionTextOpen: {
-    maxBlockSize: `calc(60dvh - ${spacingVars['--spacing-3']} - env(safe-area-inset-bottom, 0px))`,
-    overflowY: 'auto',
-    touchAction: 'pan-y pinch-zoom',
-  },
-  // The caption's box. Its type and color are the caption Text's, and both of
-  // its lines start at one edge.
-  caption: {
-    paddingBlockStart: spacingVars['--spacing-2'],
-    paddingBlockEnd: 0,
-    paddingInline: spacingVars['--spacing-3'],
-    maxWidth: '600px',
-    flexShrink: 0,
-  },
+const pageOffsetStyle = (index: number): LightboxInstanceState => ({
+  '--astryx-lightbox-page-offset': `calc(${index} * (100% + ${zoomMedia.viewer.pageGap}px))`,
 });
 
-const pageStyles = stylex.create({
-  position: (index: number) => ({
-    insetInlineStart: `calc(${index} * (100% + ${zoomMedia.viewer.pageGap}px))`,
-  }),
+const captionToggleStyle = (
+  width: number,
+  lines: number,
+): LightboxInstanceState => ({
+  '--astryx-lightbox-caption-toggle-width': `${width}px`,
+  '--astryx-lightbox-caption-toggle-lines': `${lines}`,
 });
+
+/** 240 lines cover an open caption that scrolls at a 10 px line in a 4,000 px
+ * tall window. Each line is a no-break space and a line break, so the text and
+ * its ranges hold none of them. */
+const CAPTION_PLACE_LINES = `"${'\\A0\\A'.repeat(239)}\\A0"`;
+
+const captionPlaceLinesStyle: LightboxInstanceState = {
+  '--_lightbox-caption-place-lines': CAPTION_PLACE_LINES,
+};
 
 /**
  * Pan distance (px) per arrow-key press while zoomed. Offsets move the
@@ -1900,24 +1745,23 @@ export function Lightbox({
                           // accessibility tree.
                           inert={i !== index ? true : undefined}
                           aria-hidden={i !== index ? true : undefined}
-                          {...stylex.props(
-                            styles.page,
-                            pageStyles.position(i),
-                          )}>
+                          className={lightboxPageClassName}
+                          style={pageOffsetStyle(i)}>
                           <div
                             ref={i === index ? pageMediaRef : undefined}
                             data-lightbox-page-media=""
                             {...(isZoomTarget && i === index
                               ? zoomButtonProps
                               : undefined)}
-                            {...stylex.props(
-                              styles.pageMedia,
-                              isZoomTarget && styles.pageMediaZoomTarget,
+                            className={tw(
+                              lightboxPageMediaClassName,
                               isZoomTarget &&
-                                i === index && [
-                                  focusOutlineStyles.focusVisible,
-                                  styles.zoomButtonFocusInset,
-                                ],
+                                lightboxPageMediaZoomTargetClassName,
+                              isZoomTarget &&
+                                i === index &&
+                                focusOutlineProps.focusVisible(
+                                  lightboxOverrideStyles.zoomButtonFocusInset,
+                                ).className,
                             )}>
                             {renderMedia(mediaArray[i], i === index)}
                           </div>
@@ -1926,13 +1770,11 @@ export function Lightbox({
                               ref={
                                 i === index ? currentCaptionBandRef : undefined
                               }
-                              {...stylex.props(
-                                styles.captionBand,
-                                !isRenderable(mediaArray[i].caption) &&
-                                  styles.captionBandBare,
-                                i === index &&
-                                  isCaptionOpen &&
-                                  styles.captionBandUnderOpen,
+                              className={tw(
+                                lightboxCaptionBandClassName,
+                                (!isRenderable(mediaArray[i].caption) ||
+                                  (i === index && isCaptionOpen)) &&
+                                  lightboxCaptionBandTransparentClassName,
                               )}>
                               {isRenderable(mediaArray[i].caption) && (
                                 // The page's one caption: clamped in the
@@ -1940,13 +1782,22 @@ export function Lightbox({
                                 <div
                                   id={i === index ? fullCaptionId : undefined}
                                   data-lightbox-caption=""
-                                  {...stylex.props(
-                                    styles.captionInBand,
+                                  className={tw(
+                                    lightboxCaptionInBandClassName,
                                     i === index &&
                                       isCaptionOpen &&
-                                      styles.captionOpen,
+                                      lightboxCaptionOpenClassName,
                                   )}>
-                                  <div {...stylex.props(styles.captionBody)}>
+                                  <div
+                                    className={lightboxCaptionBodyClassName}
+                                    style={
+                                      i === index
+                                        ? captionToggleStyle(
+                                            captionToggleWidth,
+                                            captionShownLines,
+                                          )
+                                        : undefined
+                                    }>
                                     <Text
                                       ref={
                                         i === index
@@ -1960,32 +1811,32 @@ export function Lightbox({
                                         i === index && isCaptionOpen ? 0 : 2
                                       }
                                       hasTruncateTooltip={false}
-                                      xstyle={[
-                                        styles.caption,
-                                        styles.captionClamped,
+                                      className={tw(
+                                        lightboxCaptionClassName,
+                                        lightboxCaptionClampedClassName,
                                         i === index &&
                                           isCaptionOpen &&
-                                          styles.captionTextOpen,
+                                          lightboxCaptionTextOpenClassName,
                                         i === index &&
                                           hasCaptionToggle &&
                                           isCaptionScrolling &&
-                                          styles.captionTextBesideToggle(
-                                            captionToggleWidth,
-                                          ),
+                                          lightboxCaptionTextBesideToggleClassName,
                                         i === index &&
                                           hasCaptionToggle &&
                                           isCaptionOpen &&
                                           isCaptionPlaceOff &&
                                           !isCaptionScrolling &&
-                                          styles.captionTextToggleOwnLine,
-                                      ]}>
+                                          lightboxCaptionTextToggleOwnLineClassName,
+                                      )}>
                                       <div
                                         ref={
                                           i === index
                                             ? bandCaptionFlowRef
                                             : undefined
                                         }
-                                        {...stylex.props(styles.captionFlow)}>
+                                        className={
+                                          lightboxCaptionFlowClassName
+                                        }>
                                         <span
                                           ref={
                                             i === index
@@ -1993,16 +1844,15 @@ export function Lightbox({
                                               : undefined
                                           }
                                           aria-hidden="true"
-                                          {...stylex.props(
-                                            styles.captionTogglePlace,
+                                          className={tw(
+                                            lightboxCaptionTogglePlaceClassName,
                                             i === index &&
                                               hasCaptionTogglePlace &&
-                                              captionShownLines > 0 &&
-                                              styles.captionTogglePlaceShown(
-                                                captionToggleWidth,
-                                                captionShownLines,
-                                              ),
+                                              captionShownLines > 0
+                                              ? lightboxCaptionTogglePlaceShownClassName
+                                              : lightboxCaptionTogglePlaceHiddenClassName,
                                           )}
+                                          style={captionPlaceLinesStyle}
                                         />
                                         {mediaArray[i].caption}
                                       </div>
@@ -2037,14 +1887,11 @@ export function Lightbox({
                                           });
                                           countOpenCaption();
                                         }}
-                                        xstyle={
-                                          [
-                                            styles.captionToggle,
-                                            touchHitAreaStyles.layer,
-                                            !hasCaptionToggle &&
-                                              styles.captionToggleHidden,
-                                          ] as StyleXStyles
-                                        }>
+                                        className={tw(
+                                          lightboxCaptionToggleClassName,
+                                          stylex.props(touchHitAreaStyles.layer)
+                                            .className,
+                                        )}>
                                         {isCaptionOpen
                                           ? t('@astryx.lightbox.captionLess')
                                           : t('@astryx.lightbox.captionMore')}
