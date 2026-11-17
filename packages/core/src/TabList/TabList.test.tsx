@@ -14,11 +14,8 @@ import {describe, it, expect, vi, beforeAll, afterAll} from 'vitest';
 import {act, render, screen, fireEvent, waitFor} from '@testing-library/react';
 import {__resetMenuPressForTest} from '../hooks/useMenuPress';
 import userEvent from '@testing-library/user-event';
-import {
-  hasPressedArm,
-  hasReleaseFade,
-  readsPressStrength,
-} from '../__tests__/pressState';
+import {hasReleaseFade} from '../__tests__/pressState';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {TabList} from './TabList';
 import type {TabListProps} from './TabList';
 import {Tab} from './Tab';
@@ -1721,13 +1718,21 @@ describe('pressed state', () => {
       </TabList>,
     );
     const tab = screen.getByRole('button', {name: 'Settings'});
-    // The hover surface is a child layer read off the tab; the press paints
-    // the same layer, so the assertion is on that layer.
+    // The hover surface is a child layer read off the tab through the group;
+    // the press paints the same layer, so the assertion is on that layer's
+    // classes. jsdom cannot parse the built Tailwind sheet, so a computed
+    // style would assert nothing.
     const surface = tab.querySelector('span[aria-hidden="true"]');
     if (surface == null) {
       throw new Error('the tab has no hover surface to press');
     }
-    expect(hasPressedArm(surface)).toBe(true);
+    expectClassSet(tab, {
+      includes: [
+        'active:[--_tab-overlay:var(--color-overlay-pressed)]',
+        '[@media(hover:hover)]:active:[--_tab-overlay:var(--color-overlay-pressed)]',
+      ],
+    });
+    expectClassSet(surface, {includes: ['bg-[var(--_tab-overlay)]']});
   });
 
   it('does not activate a disabled button tab or call its handler', async () => {
@@ -1874,10 +1879,18 @@ describe('pressed state', () => {
       throw new Error('the tab has no hover surface to press');
     }
     // The controller writes the tab; the tab owns the strength and its
-    // release, and the surface paints the pressed token at that strength on
-    // both touch arms.
+    // release, and the surface paints the pressed image on both touch arms.
+    // The arm is read off the surface's class list: jsdom cannot parse the
+    // built Tailwind sheet, so a computed style would assert nothing.
     expect(hasReleaseFade(tab)).toBe(true);
-    expect(readsPressStrength(surface, '[data-astryx-press="on"]')).toBe(true);
-    expect(readsPressStrength(surface)).toBe(true);
+    expectClassSet(tab, {
+      includes: [
+        'pointer-coarse:[&[data-astryx-press=on]]:[--_tab-press-image:var(--_press-paint-image)]',
+        'pointer-coarse:[&[data-astryx-press=fading]]:[--_tab-press-image:var(--_press-paint-image)]',
+      ],
+    });
+    expectClassSet(surface, {
+      includes: ['[background-image:var(--_tab-press-image,none)]'],
+    });
   });
 });
