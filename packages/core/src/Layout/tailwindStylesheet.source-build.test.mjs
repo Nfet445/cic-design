@@ -107,6 +107,11 @@ import {
   listItemRowClassName,
   listItemTaskMarkerContainerClassName,
 } from '../List/listItemClasses';
+import {
+  listReorderHandleClassName,
+  listReorderLineClassName,
+} from '../List/listReorderHandleClasses';
+import {listReorderHintButtonClassName} from '../List/listReorderHintClasses';
 
 import {
   fieldAttachedStatusLayerClassName,
@@ -124,6 +129,11 @@ import {
   fieldScreenReaderOnlyClassName,
 } from '../Field/fieldLabelClasses';
 import {inputClearButtonClassName} from '../Field/inputClearButtonClasses';
+import {
+  dateInputControlClassName,
+  dateInputSizeClassName,
+  dateInputToggleClassName,
+} from '../DateInput/dateInputClasses';
 import {
   fileInputBoxClassName,
   fileInputHiddenInputClassName,
@@ -363,6 +373,36 @@ import {
   topNavFeaturedCardLinkClassName,
   topNavFeaturedCardTitleClassName,
 } from '../TopNav/topNavMegaMenuFeaturedCardClasses';
+import {
+  topNavMegaMenuChevronClassName,
+  topNavMegaMenuChevronOpenClassName,
+  topNavMegaMenuDrawerChevronClassName,
+  topNavMegaMenuDrawerChevronExpandedClassName,
+  topNavMegaMenuDrawerFeaturedClassName,
+  topNavMegaMenuDrawerHeaderClassName,
+  topNavMegaMenuDrawerItemsClassName,
+  topNavMegaMenuDrawerItemsInnerClassName,
+  topNavMegaMenuDrawerSectionClassName,
+  topNavMegaMenuFeaturedClassName,
+  topNavMegaMenuItemsClassName,
+  topNavMegaMenuPanelAnimationClassName,
+  topNavMegaMenuPanelClassName,
+  topNavMegaMenuPanelContentClassName,
+  topNavMegaMenuPanelViewportFitClassName,
+  topNavMegaMenuTriggerClassName,
+  topNavMegaMenuTriggerOpenClassName,
+} from '../TopNav/topNavMegaMenuClasses';
+import {
+  topNavMegaMenuItemClassName,
+  topNavMegaMenuItemContentClassName,
+  topNavMegaMenuItemDescriptionClassName,
+  topNavMegaMenuItemDrawerClassName,
+  topNavMegaMenuItemDrawerContentClassName,
+  topNavMegaMenuItemDrawerDescriptionClassName,
+  topNavMegaMenuItemDrawerIconClassName,
+  topNavMegaMenuItemIconClassName,
+  topNavMegaMenuItemTitleClassName,
+} from '../TopNav/topNavMegaMenuItemClasses';
 import {
   topNavMenuChevronClassName,
   topNavMenuChevronOpenClassName,
@@ -735,6 +775,39 @@ function familyClassNames() {
     add(className());
   }
 
+  // The mega menu keeps its open fill and its drawer collapse on the same
+  // `aria-expanded`/`aria-hidden` keys, and its panel state on `:popover-open`.
+  for (const className of [
+    topNavMegaMenuTriggerClassName,
+    topNavMegaMenuTriggerOpenClassName,
+    topNavMegaMenuChevronClassName,
+    topNavMegaMenuChevronOpenClassName,
+    topNavMegaMenuPanelAnimationClassName,
+    topNavMegaMenuPanelViewportFitClassName,
+    topNavMegaMenuPanelClassName,
+    topNavMegaMenuPanelContentClassName,
+    topNavMegaMenuItemsClassName,
+    topNavMegaMenuFeaturedClassName,
+    topNavMegaMenuDrawerSectionClassName,
+    topNavMegaMenuDrawerHeaderClassName,
+    topNavMegaMenuDrawerChevronClassName,
+    topNavMegaMenuDrawerChevronExpandedClassName,
+    topNavMegaMenuDrawerItemsClassName,
+    topNavMegaMenuDrawerItemsInnerClassName,
+    topNavMegaMenuDrawerFeaturedClassName,
+    topNavMegaMenuItemClassName,
+    topNavMegaMenuItemIconClassName,
+    topNavMegaMenuItemContentClassName,
+    topNavMegaMenuItemTitleClassName,
+    topNavMegaMenuItemDescriptionClassName,
+    topNavMegaMenuItemDrawerClassName,
+    topNavMegaMenuItemDrawerIconClassName,
+    topNavMegaMenuItemDrawerContentClassName,
+    topNavMegaMenuItemDrawerDescriptionClassName,
+  ]) {
+    add(className());
+  }
+
   // The tooltip and hover-card surfaces, their content padding and the
   // trigger's dashed hint.
   for (const className of [
@@ -954,6 +1027,17 @@ function familyClassNames() {
   }
   // The date range field: the closed trigger, its calendar button, the
   // popover body and the preset column.
+  // The date field: its calendar toggle, the typed control and the wrapper's
+  // size.
+  for (const size of ['sm', 'md', 'lg']) {
+    add(dateInputSizeClassName({size}));
+  }
+  for (const isDisabled of [false, true]) {
+    add(dateInputToggleClassName({isDisabled}));
+    for (const isInvalid of [false, true]) {
+      add(dateInputControlClassName({isDisabled, isInvalid}));
+    }
+  }
   for (const size of ['sm', 'md', 'lg']) {
     add(dateRangeInputSizeClassName({size}));
     add(timeInputSizeClassName({size}));
@@ -1447,6 +1531,15 @@ function familyClassNames() {
   ]) {
     add(className);
   }
+
+  // The reorder machinery: the handle answers the row's `align`, and the
+  // list's insertion line and the mode hint's buttons carry no axis.
+  for (const rowAlign of [undefined, 'center', 'start', 'first-line']) {
+    add(listReorderHandleClassName({rowAlign}));
+  }
+  add(listReorderLineClassName);
+  add(listReorderHintButtonClassName({isText: false}));
+  add(listReorderHintButtonClassName({isText: true}));
 
   add(citationIconWrapClassName);
   add(citationIconClassName);

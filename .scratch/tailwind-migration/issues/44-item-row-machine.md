@@ -1,6 +1,6 @@
 # the item row machine
 
-Status: ready-for-agent
+Status: done
 Blocked by: none
 Wave: 6
 Family: `family:navigation-destinations`
@@ -57,3 +57,25 @@ session publishes it as `listStyle`, a `StyleXStyles` value in
 `listReorderContext.ts` and applied through `stylex.props` in `List.tsx`, so
 moving it to a class changes that contract to a `className` in the same
 commit.
+
+The last three blocks went the same way, in `5f128dfe3` and `643f60b77`. The
+handle is `List/listReorderHandleClasses.ts`: its frame, its three lines as a
+`before:` bar and two shadows, the `aria-pressed` and `aria-disabled` states,
+the forced-colors highlight, and the coarse-pointer `touch-action` that leaves
+a flick to scroll the page. The insertion line moved into the same file, so
+`ListReorderSession` publishes `listClassName` alone and `List.tsx` no longer
+composes a StyleX value for it. The mode hint's buttons are
+`List/listReorderHintClasses.ts`. The focus ring, the touch hit layer and the
+cursor stay shared StyleX layers; the handle only overrides the ring's offset
+with a class, as `Link` already does in clamped text, and both sheets land in
+`astryx-base`, where the sheet order decides.
+
+The sheet stayed under its gate at 997 rules; the budget comment did not need
+a new number.
+
+One latent defect is carried over, not introduced: the `first-line` arm's
+`margin-block-start: calc((var(--text-body-leading) - 28px) / 2)` mixes a
+unitless ratio with px, so the declaration is invalid and the browser drops
+it. The arm renders as `start` does. Fixing it is a visual change
+(`calc((1em * var(--text-body-leading) - 28px) / 2)`, the form
+`listItemMarkerContainerClassName` uses), so it belongs to its own ticket.

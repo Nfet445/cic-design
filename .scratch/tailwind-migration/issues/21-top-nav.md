@@ -1,6 +1,6 @@
 # top nav
 
-Status: ready-for-agent
+Status: done
 Blocked by: 18
 Wave: 6
 Family: `family:navigation-destinations`
@@ -57,10 +57,43 @@ budget there stays 820 until the merged sheet needs more.
 
 ## Result
 
-`TopNav` bar, `FeaturedCard`, `TopNavItem`, `TopNavHeading` and `TopNavMenu`
-are class maps (`topNavItemClasses.ts`, `topNavHeadingClasses.ts`,
-`topNavMenuClasses.ts`, `topNavMegaMenuFeaturedCardClasses.ts`). Merged
-`4ffc4bafc`, `8b3b75fb4`, `a12b5f5b1`, `0dd913d17`.
+Status: done (`ticket/21-top-nav`). The whole `TopNav/` family paints from
+Tailwind class maps: `topNavClasses.ts`, `topNavItemClasses.ts`,
+`topNavHeadingClasses.ts`, `topNavMenuClasses.ts`,
+`topNavMegaMenuFeaturedCardClasses.ts`, `topNavMegaMenuClasses.ts` and
+`topNavMegaMenuItemClasses.ts`. Earlier commits: `4ffc4bafc`, `8b3b75fb4`,
+`a12b5f5b1`, `0dd913d17`.
 
-Left: `TopNavMegaMenu.tsx` (1 `stylex.create`), `TopNavMegaMenuItem.tsx` (1)
-and the map its test reads.
+This ticket's last commits:
+
+- `909f2059d` — `topNavMegaMenuClasses.ts` and `topNavMegaMenuItemClasses.ts`,
+  registered in the sheet test's coverage block (26 accessors, every class has a
+  rule; the budget stays `toBeLessThan(1020)`).
+- `0412ec8d7` — `TopNavMegaMenu.tsx` and `TopNavMegaMenuItem.tsx` render from
+  the maps. StyleX stays only where it composes another family: the shared focus
+  ring and `navItemStyles.item`, which ticket 44 owns. The panel's entrance
+  travels as `className` through `popover.render()`.
+- `4385475d4` — changeset `topnav-mega-menu-tailwind-classes.md`.
+- `cc6c57924` — merge of `poc/tailwind-layout-primitives`; the sheet test did
+  not conflict, so both sides were already one block.
+
+Moved assertions:
+
+- `TopNavMegaMenu.test.tsx` — "clips the drawer section only while it is
+  collapsed" read `getComputedStyle`, which jsdom cannot derive from the built
+  sheet; it now pins the drawer-items class set (the clip and the
+  `[aria-hidden=false]` release), the inner box, and the `aria-hidden` the
+  section publishes after the click.
+- `TopNav.slotPresence.test.tsx` — the mega-menu item icon cases compared the
+  StyleX debug name through `[class*="desktopIcon"]`; they now use the class-set
+  form, as the TopNavMenu cases already did.
+- `TopNavMegaMenu.reduced-motion.source-build.test.mjs` — the Babel/StyleX rule
+  scan found nothing once the map moved. It now reads the built sheet and
+  asserts the four reduced-motion arms, and that `@starting-style` prints after
+  `[&:popover-open]:opacity-100`, since equal specificity leaves order deciding.
+
+Verification: `node packages/core/scripts/build-css-tailwind.mjs`,
+`pnpm exec vitest run packages/core/src/TopNav
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` (339
+passed), `pnpm exec eslint packages/core/src/TopNav`,
+`pnpm exec prettier --write`.

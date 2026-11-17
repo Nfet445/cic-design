@@ -43,14 +43,19 @@ import {
 } from '@astryxdesign/core';
 import {useMergedRefs} from '@astryxdesign/core/hooks';
 import {mergeProps} from '@astryxdesign/core/utils';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
 import * as stylex from '@stylexjs/stylex';
+import {
+  chartAreaClassName,
+  chartContainerClassName,
+  chartTitleClassName,
+} from './chartClasses';
 import {ChartLegend, type ChartLegendProps} from './ChartLegend';
 import {deriveLegendItems} from './legend';
 import {ChartTooltip, type ChartTooltipProps} from './ChartTooltip';
 import {useChartColors} from './useChartColors';
 import {formatList} from './formatters';
 import {isUtilityMarkType} from './types';
+import {tw} from './tw';
 
 export interface ChartProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root chart container. */
@@ -105,20 +110,6 @@ const MAX_TABLE_POINTS = 100;
 function tableCell(value: unknown): string {
   return value == null ? '' : String(value);
 }
-
-const styles = stylex.create({
-  container: {
-    width: '100%',
-  },
-  title: {
-    marginBlockEnd: spacingVars['--spacing-4'],
-  },
-  chartArea: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'clip',
-  },
-});
 
 /**
  * Renders several series against one responsive x/y coordinate system.
@@ -360,12 +351,10 @@ export function Chart({
     return (
       <div
         ref={mergedContainerRef}
-        {...mergeProps(
-          stylex.props(styles.container, xstyle),
-          {style: {height: safeHeight}},
-          className,
-          style,
-        )}
+        {...mergeProps(stylex.props(xstyle), {
+          className: tw(chartContainerClassName, className),
+          style: {height: safeHeight, ...style},
+        })}
         {...rest}
       />
     );
@@ -374,10 +363,13 @@ export function Chart({
   return (
     <div
       ref={mergedContainerRef}
-      {...mergeProps(stylex.props(styles.container, xstyle), className, style)}
+      {...mergeProps(stylex.props(xstyle), {
+        className: tw(chartContainerClassName, className),
+        style,
+      })}
       {...rest}>
       {(title || subtitle) && (
-        <div {...stylex.props(styles.title)}>
+        <div className={chartTitleClassName}>
           {title && (
             <Text type="body" weight="semibold" display="block">
               {title}
@@ -396,7 +388,7 @@ export function Chart({
         ) : isLegendHorizontal ? (
           <HStack gap={4}>
             {legendPosition === 'start' && legendElement}
-            <div {...stylex.props(styles.chartArea)}>{renderSvg()}</div>
+            <div className={chartAreaClassName}>{renderSvg()}</div>
             {legendPosition === 'end' && legendElement}
           </HStack>
         ) : (

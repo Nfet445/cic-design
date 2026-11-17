@@ -36,6 +36,7 @@ import {stylesheetOf, type Stylesheet} from './__tests__/classNameAssertions';
  */
 const FLOORED_FLOOR_FILES = [
   // Migrated: the class map carries the utility.
+  'DateInput/dateInputClasses.ts',
   'DateRangeInput/dateRangeInputClasses.ts',
   'FileInput/fileInputClasses.ts',
   'TextArea/textAreaClasses.ts',
@@ -45,7 +46,6 @@ const FLOORED_FLOOR_FILES = [
   'Chat/ChatComposerInput.tsx',
   'CommandPalette/CommandPaletteInput.tsx',
   'ComplexSelector/ComplexSelector.tsx',
-  'DateInput/DateInput.tsx',
   'DateInput/NativeDateField.tsx',
   'DateInput/TouchDateField.tsx',
   'DateTimeInput/DateTimeInput.tsx',
@@ -57,7 +57,7 @@ const FLOORED_FLOOR_FILES = [
   'Typeahead/BaseTypeahead.tsx',
   // The rich-text package carries the same floor; its path is relative to
   // packages/core/src.
-  '../../richtext/src/RichTextEditor.tsx',
+  '../../richtext/src/richTextEditorClasses.ts',
 ];
 
 /** The utility class that states the floor, both variants in order. */
