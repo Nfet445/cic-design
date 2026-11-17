@@ -98,9 +98,15 @@ written into the ticket.
   level, add the `it(` closer or `import {` opener the halves need, remove any
   extra `  });` that closes the `describe` early, and run `node --check` before
   vitest. Then set one ceiling with the measured number in the comment.
-- A new `--astryx-*` variable needs both a `*.doc.mjs` entry and a line in
-  `packages/core/src/theme/derivedVarRegistry.test.ts`; otherwise the guard
-  fails **after** the merge, in whichever ticket merges next.
+- Migrating one component trips four guards at once, and every one wants the
+  class map rather than an exception: `theme/derivedVarRegistry.test.ts` (a new
+  variable needs the `*.doc.mjs` `theming.vars[]`/`derived[]` entry, a
+  `theme/derivedVarRegistry.ts` record and its `DIR_TO_REGISTRY_KEY` line),
+  `theme/themeMotion.test.ts` (a literal `var()` must be read from the map once
+  it moves), `theme/themingTargets.test.ts` (an exception that no longer applies
+  is deleted, not kept) and `theme/dynamicType.test.ts` together with
+  `inputFontFloor.test.ts` (repoint to the map file). Otherwise the guard fails
+  **after** the merge, in whichever ticket merges next.
 - Concurrency: three windows is the safe number. Six made every suite four
   minutes long and killed the windows at their 1800 s limit with the work
   uncommitted.
