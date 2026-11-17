@@ -522,6 +522,10 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // `labelLines`/`descriptionLines` prop and the clamp class reads it. A theme
   // changes the line count through the prop, not through CSS.
   '--astryx-item-line-clamp',
+  // A row height the caller sized (a virtualized body hands each row its own).
+  // BaseTable writes it inline per row and the fixed-height class reads it, so
+  // no standard property is the theme's lever.
+  '--astryx-table-row-height',
   // The rail's geometry per page, and the caption toggle's measured width and
   // line count: Lightbox writes all three on render and its own classes read
   // them. No standard property maps a page's index or a measured toggle onto
