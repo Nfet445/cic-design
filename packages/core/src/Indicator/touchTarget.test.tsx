@@ -21,6 +21,8 @@ import {CheckboxListItem} from '../CheckboxList/CheckboxListItem';
 import {RadioList} from '../RadioList/RadioList';
 import {RadioListItem} from '../RadioList/RadioListItem';
 import {HIT_INSET_PROPERTIES, resetHitAreaForTests} from '../utils/hitArea';
+import {checkboxInputRowClassName} from '../CheckboxInput/checkboxInputClasses';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 
 interface Declared {
@@ -123,8 +125,13 @@ describe('CheckboxInput under a finger', () => {
     expect(valueOf(row, 'min-height', null)).toBeUndefined();
     expect(hasHitLayer(row)).toBe(true);
     // The row holds the band only under a finger; a mouse sees no change.
-    expect(valueOf(row, 'position', TOUCH)).toBe('relative');
-    expect(valueOf(row, 'position', null)).toBeUndefined();
+    const rowClass = checkboxInputRowClassName({
+      isLabelHidden: false,
+      hasHitArea: true,
+    });
+    expect(rowClass.split(' ')).toContain('pointer-coarse:relative');
+    expect(classesOf(row)).toEqual(expect.arrayContaining(rowClass.split(' ')));
+    expect(classesOf(row)).not.toContain('relative');
   });
 
   it('gives a label-hidden, disabled or read-only checkbox no hit band', () => {
