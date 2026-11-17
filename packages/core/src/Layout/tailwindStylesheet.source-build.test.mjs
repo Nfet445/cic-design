@@ -323,6 +323,26 @@ import {
   topNavFeaturedCardLinkClassName,
   topNavFeaturedCardTitleClassName,
 } from '../TopNav/topNavMegaMenuFeaturedCardClasses';
+import {
+  topNavMenuChevronClassName,
+  topNavMenuChevronOpenClassName,
+  topNavMenuContainerClassName,
+  topNavMenuDrawerHeaderClassName,
+  topNavMenuDrawerItemClassName,
+  topNavMenuDrawerItemDescriptionClassName,
+  topNavMenuDrawerItemIconClassName,
+  topNavMenuDrawerItemTextClassName,
+  topNavMenuDrawerItemsClassName,
+  topNavMenuDrawerItemsInnerClassName,
+  topNavMenuDrawerSectionClassName,
+  topNavMenuItemClassName,
+  topNavMenuItemContentClassName,
+  topNavMenuItemDescriptionClassName,
+  topNavMenuItemIconClassName,
+  topNavMenuItemTitleClassName,
+  topNavMenuTriggerClassName,
+  topNavMenuTriggerOpenClassName,
+} from '../TopNav/topNavMenuClasses';
 import {mediaThemeClassName} from '../theme/mediaThemeClasses';
 import {toggleButtonClassName} from '../ToggleButton/toggleButtonClasses';
 import {toggleButtonGroupClassName} from '../ToggleButton/toggleButtonGroupClasses';
@@ -627,6 +647,31 @@ function familyClassNames() {
     topNavHeadingPopoverHeadingClassName,
     topNavHeadingPopoverChevronWithGlyphClassName,
     topNavHeadingPopoverAnchorClassName,
+  ]) {
+    add(className());
+  }
+
+  // The menu trigger keeps its open fill and the drawer its collapse, both
+  // keyed off the `aria-expanded` and `aria-hidden` the menu already writes.
+  for (const className of [
+    topNavMenuTriggerClassName,
+    topNavMenuTriggerOpenClassName,
+    topNavMenuChevronClassName,
+    topNavMenuChevronOpenClassName,
+    topNavMenuContainerClassName,
+    topNavMenuItemClassName,
+    topNavMenuItemIconClassName,
+    topNavMenuItemContentClassName,
+    topNavMenuItemTitleClassName,
+    topNavMenuItemDescriptionClassName,
+    topNavMenuDrawerSectionClassName,
+    topNavMenuDrawerHeaderClassName,
+    topNavMenuDrawerItemsClassName,
+    topNavMenuDrawerItemsInnerClassName,
+    topNavMenuDrawerItemClassName,
+    topNavMenuDrawerItemIconClassName,
+    topNavMenuDrawerItemTextClassName,
+    topNavMenuDrawerItemDescriptionClassName,
   ]) {
     add(className());
   }

@@ -34,6 +34,7 @@ import {
   topNavMobileHeadingClassName,
   topNavStartContentClassName,
 } from './topNavClasses';
+import {topNavMenuDrawerItemIconClassName} from './topNavMenuClasses';
 import {TopNavMobileContentContext} from './TopNavMobileContentContext';
 import {NavHeadingMenu} from '../NavMenu/NavHeadingMenu';
 import {NavHeadingMenuItem} from '../NavMenu/NavHeadingMenuItem';
@@ -357,12 +358,12 @@ describe('TopNavMenu drawer item icon follows isRenderable', () => {
 
   it.each(EMPTY_VALUES)('renders no icon for %s', (_label, value) => {
     renderDrawerMenu(value);
-    expect(document.querySelector('[class*="itemIcon"]')).toBeNull();
+    expect(slotOf(topNavMenuDrawerItemIconClassName())).toBeNull();
   });
 
   it('renders an icon of 0 inside its slot', () => {
     renderDrawerMenu(0);
-    expect(zeroIsInsideStyleX('itemIcon')).toBe(true);
+    expect(zeroIsInside(topNavMenuDrawerItemIconClassName())).toBe(true);
   });
 });
 

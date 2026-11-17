@@ -7,7 +7,8 @@ export const docs = {
   subComponentOf: 'TopNav',
   displayName: 'Top Nav Mega Menu Item',
   isHiddenFromOverview: true,
-  description: 'An individual item inside an TopNavMegaMenu. Renders itself in both desktop (popover grid) and mobile drawer modes via render mode context.',
+  description:
+    'An individual item inside an TopNavMegaMenu. Renders itself in both desktop (popover grid) and mobile drawer modes via render mode context.',
   props: [
     {
       name: 'title',
@@ -47,7 +48,8 @@ export const docs = {
     {
       name: 'as',
       type: 'LinkComponentType',
-      description: 'Custom component to render instead of <a> for link items. Overrides the provider-level default set by LinkProvider.',
+      description:
+        'Custom component to render instead of <a> for link items. Overrides the provider-level default set by LinkProvider.',
     },
   ],
 };
@@ -56,7 +58,8 @@ export const docsZh = {
   name: 'TopNavMegaMenuItem',
   isHiddenFromOverview: true,
   displayName: 'Top Nav Mega Menu Item',
-  description: '超级菜单中的单个项目。在桌面端（弹出层网格）和移动抽屉模式中都会自行渲染。',
+  description:
+    '超级菜单中的单个项目。在桌面端（弹出层网格）和移动抽屉模式中都会自行渲染。',
   props: [
     {
       name: 'title',
@@ -87,7 +90,8 @@ export const docsZh = {
     {
       name: 'as',
       type: 'LinkComponentType',
-      description: '用于替代 <a> 的自定义链接组件。覆盖 LinkProvider 设置的默认组件。',
+      description:
+        '用于替代 <a> 的自定义链接组件。覆盖 LinkProvider 设置的默认组件。',
     },
   ],
 };
@@ -96,7 +100,8 @@ export const docsDense = {
   name: 'TopNavMegaMenuItem',
   isHiddenFromOverview: true,
   displayName: 'Top Nav Mega Menu Item',
-  description: 'Individual mega menu item. Renders in desktop popover grid + mobile drawer modes via context.',
+  description:
+    'Individual mega menu item. Renders in desktop popover grid + mobile drawer modes via context.',
   propDescriptions: {
     title: 'Display title.',
     description: 'Description below title.',
