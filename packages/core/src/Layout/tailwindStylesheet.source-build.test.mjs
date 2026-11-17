@@ -132,6 +132,31 @@ import {
   sectionInnerClassName,
   sectionOuterClassName,
 } from '../Section/sectionClasses';
+import {
+  SELECTOR_OPTION_EMBEDDED_CLASS,
+  SELECTOR_ROW_CONTENT_CLASS,
+  SELECTOR_ROW_MARK_COLUMN_CLASS,
+  selectorOptionRowClassName,
+} from '../Selector/selectorOptionClasses';
+import {
+  MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
+  MULTI_SELECTOR_ACTION_CELL_CLASS,
+  MULTI_SELECTOR_CHECKBOX_CLASS,
+  MULTI_SELECTOR_CHECKBOX_END_CLASS,
+  MULTI_SELECTOR_OPTION_CELL_CLASS,
+  MULTI_SELECTOR_ROW_LABEL_CLASS,
+  multiSelectorOptionRowClassName,
+} from '../MultiSelector/multiSelectorOptionClasses';
+import {
+  TYPEAHEAD_DEFAULT_ITEM_CLASS,
+  TYPEAHEAD_ITEM_CONTENT_CLASS,
+  TYPEAHEAD_ITEM_DESCRIPTION_CLASS,
+  TYPEAHEAD_ITEM_DISABLED_CLASS,
+  TYPEAHEAD_ITEM_FRAME_CLASS,
+  TYPEAHEAD_ITEM_LABEL_CLASS,
+  TYPEAHEAD_ROW_CONTENT_CLASS,
+  typeaheadRowClassName,
+} from '../Typeahead/typeaheadClasses';
 import {tableCellClassName} from '../Table/tableCellClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
 import {tableRowClassName} from '../Table/tableRowClasses';
@@ -657,6 +682,76 @@ function familyClassNames() {
   add(TABLE_SCROLL_WRAPPER_RING_INSET_CLASS);
   add(TABLE_SCROLL_WRAPPER_BLOCK_VIEWPORT_CLASS);
 
+  // The choice-input rows: every size crossed with the four row states, so a
+  // state no other test renders still has its rule.
+  for (const size of ['sm', 'md', 'lg']) {
+    for (const isHighlighted of [false, true]) {
+      for (const isKeyboardHighlighted of [false, true]) {
+        for (const isSelected of [false, true]) {
+          for (const isDisabled of [false, true]) {
+            add(
+              selectorOptionRowClassName({
+                isDisabled,
+                isHighlighted,
+                isKeyboardHighlighted,
+                isSelected,
+                size,
+              }),
+            );
+          }
+        }
+      }
+    }
+  }
+  add(SELECTOR_ROW_CONTENT_CLASS);
+  add(SELECTOR_ROW_MARK_COLUMN_CLASS);
+  add(SELECTOR_OPTION_EMBEDDED_CLASS);
+
+  // MultiSelector rows: both row kinds (option and Select All) across every
+  // size, the grid layout and each runtime state.
+  for (const size of ['sm', 'md', 'lg']) {
+    for (const isSelectAll of [false, true]) {
+      for (const isGrid of [false, true]) {
+        for (const isHighlighted of [false, true]) {
+          for (const isDisabled of [false, true]) {
+            add(
+              multiSelectorOptionRowClassName({
+                isDisabled,
+                isGrid,
+                isHighlighted,
+                isSelectAll,
+                size,
+              }),
+            );
+          }
+        }
+      }
+    }
+  }
+  add(MULTI_SELECTOR_ROW_LABEL_CLASS);
+  add(MULTI_SELECTOR_CHECKBOX_CLASS);
+  add(MULTI_SELECTOR_CHECKBOX_END_CLASS);
+  add(MULTI_SELECTOR_OPTION_CELL_CLASS);
+  add(MULTI_SELECTOR_ACTION_CELL_CLASS);
+  add(MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS);
+
+  // Typeahead result rows: each size crossed with highlighted and selected,
+  // plus the default item's own parts.
+  for (const size of ['sm', 'md', 'lg']) {
+    for (const isHighlighted of [false, true]) {
+      for (const isSelected of [false, true]) {
+        add(typeaheadRowClassName({isHighlighted, isSelected, size}));
+      }
+    }
+  }
+  add(TYPEAHEAD_ROW_CONTENT_CLASS);
+  add(TYPEAHEAD_DEFAULT_ITEM_CLASS);
+  add(TYPEAHEAD_ITEM_FRAME_CLASS);
+  add(TYPEAHEAD_ITEM_CONTENT_CLASS);
+  add(TYPEAHEAD_ITEM_LABEL_CLASS);
+  add(TYPEAHEAD_ITEM_DESCRIPTION_CLASS);
+  add(TYPEAHEAD_ITEM_DISABLED_CLASS);
+
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
   for (const mode of ['light', 'dark', 'system']) {
@@ -705,10 +800,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // The layout primitives and the words in their comments produce about 190
     // rules, the Button map about 115, the Text map about 65, Section and
     // Toolbar about 40, the layout shell and region maps about 110, the input
-    // field family about 60, and Table's sorting, filtering and selection maps
-    // about 60. A scan that reaches component bodies or prose would add
-    // hundreds more.
-    expect(stylesheet.rules.size).toBeLessThan(620);
+    // field family about 60, Table's sorting, filtering and selection maps
+    // about 60, and the choice-input rows of Selector, MultiSelector and
+    // Typeahead about 85. A scan that reaches component bodies or prose would
+    // add hundreds more. The budget covers the date-range and time-field maps
+    // merged alongside them.
+    expect(stylesheet.rules.size).toBeLessThan(660);
   });
 
   it('prints the Text type scale, clamp and wrap tokens', () => {

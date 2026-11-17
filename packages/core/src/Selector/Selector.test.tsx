@@ -46,6 +46,13 @@ import {Theme} from '../theme/Theme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {colorVars, spacingVars} from '../theme/tokens.stylex';
 import {selectorPresentationStyles} from './selectorPresentation.stylex';
+import {
+  SELECTOR_ROW_DISABLED_CLASS,
+  SELECTOR_ROW_MARK_COLUMN_CLASS,
+  SELECTOR_ROW_SELECTED_CLASS,
+  selectorOptionRowClassName,
+} from './selectorOptionClasses';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {groupStyles} from '../InputGroup/groupStyles';
 import {COMPACT_TOUCH_PRESENTATION_QUERY} from '../hooks/useAdaptivePresentation';
 
@@ -4408,9 +4415,13 @@ describe('Selector indicatorPosition', () => {
             ? row.firstElementChild
             : row.lastElementChild;
         expect(markColumn).not.toBeNull();
-        expect(markColumn).toHaveStyle({
-          display: isSelected ? 'inline-flex' : 'none',
+        // The column is a class, not a computed declaration. The unchecked
+        // mark draws nothing, so the column is empty and its own `:empty`
+        // class removes it from layout; a checked mark has a child to show.
+        expectClassSet(markColumn!, {
+          includes: SELECTOR_ROW_MARK_COLUMN_CLASS.split(' '),
         });
+        expect(markColumn!.childElementCount === 0).toBe(!isSelected);
       }
     },
   );
@@ -4442,7 +4453,9 @@ describe('Selector indicatorPosition', () => {
             : row.lastElementChild;
         const radio = row.querySelector('.astryx-radio-indicator');
         const content = row.querySelector('.astryx-selector-option');
-        expect(markColumn).toHaveStyle({display: 'inline-flex'});
+        expectClassSet(markColumn!, {
+          includes: SELECTOR_ROW_MARK_COLUMN_CLASS.split(' '),
+        });
         expect(radio).not.toBeNull();
         expect(content).not.toBeNull();
         expect(
@@ -5527,7 +5540,7 @@ describe('Selector in a narrow row', () => {
       />,
     );
     const root = container.querySelector('.astryx-field')!;
-    expect(getComputedStyle(root).minWidth).toBe('0');
+    expectClassSet(root, {includes: ['min-w-0']});
   });
 
   it('keeps an explicit width alongside the reset', () => {
@@ -5542,7 +5555,7 @@ describe('Selector in a narrow row', () => {
     );
     const root = container.querySelector('.astryx-field')!;
     expect(root.getAttribute('style')).toContain('80');
-    expect(getComputedStyle(root).minWidth).toBe('0');
+    expectClassSet(root, {includes: ['min-w-0']});
   });
 
   it('lets a narrow list shrink an option so its label can ellipsize', () => {
@@ -5558,7 +5571,57 @@ describe('Selector in a narrow row', () => {
     const option = screen
       .getByRole('option', {hidden: true})
       .querySelector('.astryx-selector-option')!;
-    expect(getComputedStyle(option).minWidth).toBe('0');
+    expectClassSet(option, {includes: ['min-w-0']});
+  });
+});
+
+describe('Selector option row classes', () => {
+  it('states selection in weight and aria-selected together', () => {
+    render(
+      <Selector
+        label="Fruit"
+        options={OPTIONS}
+        value="Banana"
+        onChange={() => {}}
+        isDefaultOpen
+      />,
+    );
+
+    for (const row of screen.getAllByRole('option', h)) {
+      const isSelected = row.getAttribute('aria-selected') === 'true';
+      const expected = selectorOptionRowClassName({
+        isDisabled: false,
+        isHighlighted: false,
+        isKeyboardHighlighted: false,
+        isSelected,
+        size: 'md',
+      }).split(' ');
+      expectClassSet(row, {
+        includes: expected,
+        excludes: isSelected ? [] : [SELECTOR_ROW_SELECTED_CLASS],
+      });
+    }
+  });
+
+  it('dims an unavailable row on the class the mark reads', () => {
+    render(
+      <Selector
+        label="Fruit"
+        options={[
+          {value: 'Apple', label: 'Apple'},
+          {label: 'Banana', value: 'Banana', disabled: true},
+        ]}
+        value="Apple"
+        onChange={() => {}}
+        isDefaultOpen
+      />,
+    );
+
+    const disabledRow = screen
+      .getAllByRole('option', h)
+      .find(row => row.textContent === 'Banana')!;
+    expect(disabledRow).toHaveAttribute('aria-disabled', 'true');
+    expectClassSet(disabledRow, {includes: [SELECTOR_ROW_DISABLED_CLASS]});
   });
 });
 

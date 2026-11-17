@@ -4,6 +4,11 @@ import {describe, expect, it} from 'vitest';
 import {fireEvent, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {Selector} from './Selector';
+import {
+  SELECTOR_ROW_HIGHLIGHT_CLASS,
+  SELECTOR_ROW_KEYBOARD_HIGHLIGHT_CLASS,
+} from './selectorOptionClasses';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {compositeOver, contrastRatio} from '../theme/contrast';
 import {resolveThemeToken} from '../theme/tokens';
 import {parseColor} from '../utils/color';
@@ -42,10 +47,21 @@ function option(name: string): HTMLElement {
   return row as HTMLElement;
 }
 
+/**
+ * The ring is a class, not a computed declaration: jsdom cannot read the built
+ * Tailwind sheet, so the class set is what says the row draws one.
+ */
+const RING_CLASSES = SELECTOR_ROW_KEYBOARD_HIGHLIGHT_CLASS.split(' ');
+const RING_COLOR_CLASS = '[outline-color:var(--focus-outline-color)]';
+const RING_OFFSET_CLASS =
+  '[outline-offset:calc(-1*var(--focus-outline-width))]';
+const HIGHLIGHT_FILL_CLASS = SELECTOR_ROW_HIGHLIGHT_CLASS;
+/** The token each state class paints, read from the class's own value. */
+const RING_COLOR_TOKEN = '--focus-outline-color';
+const HIGHLIGHT_FILL_TOKEN = '--color-overlay-hover';
+
 function hasRing(row: HTMLElement): boolean {
-  return getComputedStyle(row)
-    .getPropertyValue('outline-color')
-    .includes('--focus-outline-color');
+  return classesOf(row).includes(RING_COLOR_CLASS);
 }
 
 /** The token a `var(--name)` value reads, or null for any other value. */
@@ -61,14 +77,17 @@ function indicatorContrast(row: HTMLElement, mode: 'light' | 'dark'): number {
   const listbox = resolveThemeToken(null, '--color-background-popover', {
     mode,
   });
-  const style = getComputedStyle(row);
-  const ringToken = tokenOf(style.getPropertyValue('outline-color'));
+  const classes = classesOf(row);
+  const ringToken = classes.includes(RING_COLOR_CLASS)
+    ? RING_COLOR_TOKEN
+    : null;
   if (ringToken != null) {
     return contrastRatio(resolveThemeToken(null, ringToken, {mode}), listbox);
   }
-  const fillToken = tokenOf(style.backgroundColor);
-  expect(fillToken).not.toBeNull();
-  const fill = parseColor(resolveThemeToken(null, fillToken ?? '', {mode}));
+  expect(classes).toContain(HIGHLIGHT_FILL_CLASS);
+  const fill = parseColor(
+    resolveThemeToken(null, HIGHLIGHT_FILL_TOKEN, {mode}),
+  );
   const backdrop = parseColor(listbox);
   expect(fill).not.toBeNull();
   expect(backdrop).not.toBeNull();
@@ -88,9 +107,11 @@ describe('Selector active option indicator', () => {
 
     const row = activeOption(field);
     expect(row).toHaveTextContent('Banana');
-    expect(hasRing(row)).toBe(true);
-    expect(getComputedStyle(row).getPropertyValue('outline-offset')).toContain(
-      '--focus-outline-width',
+    expectClassSet(row, {includes: RING_CLASSES});
+    expectClassSet(row, {includes: [RING_OFFSET_CLASS]});
+    // The ring's painted colour is read through the class, not computed.
+    expect(tokenOf('[outline-color:var(--focus-outline-color)]')).toBe(
+      RING_COLOR_TOKEN,
     );
   });
 
