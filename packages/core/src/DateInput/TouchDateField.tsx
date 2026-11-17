@@ -707,7 +707,7 @@ export function TouchDateField({
               interactionOverlayStyles.backgroundColor,
               focusOutlineStyles.focusVisible,
             ),
-            {className: touchDateTitleClassName},
+            touchDateTitleClassName,
           )}>
           <span className={touchDateTitleTextClassName}>{monthYearLabel}</span>
           <Icon
@@ -746,9 +746,10 @@ export function TouchDateField({
             label={t('@astryx.calendar.previousMonth')}
             icon={
               <span
-                {...mergeProps(stylex.props(rtlStyles.mirror), {
-                  className: touchDateMonthArrowIconClassName,
-                })}>
+                {...mergeProps(
+                  stylex.props(rtlStyles.mirror),
+                  touchDateMonthArrowIconClassName,
+                )}>
                 <Icon icon="chevronLeft" size="sm" color="inherit" />
               </span>
             }
@@ -765,9 +766,10 @@ export function TouchDateField({
             label={t('@astryx.calendar.nextMonth')}
             icon={
               <span
-                {...mergeProps(stylex.props(rtlStyles.mirror), {
-                  className: touchDateMonthArrowIconClassName,
-                })}>
+                {...mergeProps(
+                  stylex.props(rtlStyles.mirror),
+                  touchDateMonthArrowIconClassName,
+                )}>
                 <Icon icon="chevronRight" size="sm" color="inherit" />
               </span>
             }
@@ -958,11 +960,12 @@ export function TouchDateField({
         aria-disabled={isEffectivelyDisabled || undefined}
         aria-label={t('@astryx.dateInput.openCalendar')}
         tabIndex={-1}
-        {...mergeProps(stylex.props(focusOutlineStyles.focusVisible), {
-          className: touchDateFieldIconButtonClassName({
+        {...mergeProps(
+          stylex.props(focusOutlineStyles.focusVisible),
+          touchDateFieldIconButtonClassName({
             isDisabled: isEffectivelyDisabled,
           }),
-        })}>
+        )}>
         <Icon
           icon="calendar"
           size="sm"
