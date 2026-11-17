@@ -52,7 +52,6 @@ import type {IndicatorPosition} from '../Indicator';
 import {Badge} from '../Badge';
 import {
   colorVars,
-  focusVars,
   sizeVars,
   spacingVars,
   radiusVars,
@@ -76,6 +75,7 @@ import {
 } from '../Selector/utils';
 import {useMultiCombobox} from './hooks';
 import {getInputARIA, isImeKeyEvent, mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {joinAriaIDs} from '../utils/inputAria';
 import {
   disabledInteractionProps,
@@ -104,6 +104,15 @@ import {themeProps} from '../utils/themeProps';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
+import {
+  MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
+  MULTI_SELECTOR_ACTION_CELL_CLASS,
+  MULTI_SELECTOR_CHECKBOX_CLASS,
+  MULTI_SELECTOR_CHECKBOX_END_CLASS,
+  MULTI_SELECTOR_OPTION_CELL_CLASS,
+  MULTI_SELECTOR_ROW_LABEL_CLASS,
+  multiSelectorOptionRowClassName,
+} from './multiSelectorOptionClasses';
 import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
@@ -376,17 +385,6 @@ const styles = stylex.create({
     minWidth: 'anchor-size(width)',
   },
 
-  // Select-all wrapper
-  selectAllWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-
   // Section heading. Plain secondary text, no rules — the same treatment
   // DropdownMenu and CommandPaletteGroup already use for a group heading in a
   // panel list. A labeled Divider (line–text–line) reads as a separator, and
@@ -405,101 +403,6 @@ const styles = stylex.create({
   // Divider
   divider: {
     marginBlock: spacingVars['--spacing-1'],
-  },
-
-  // Individual item
-  item: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    borderRadius: radiusVars['--radius-element'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    // Row typography lives here, not on the label span, so a theme override on
-    // the row target reaches both the fallback label and renderOption output
-    // (a declaration on the span would win over the inherited row value).
-    // Matches Selector, whose option row owns its typography the same way.
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    outline: 'none',
-  },
-  itemHighlighted: {
-    backgroundColor: colorVars['--color-overlay-hover'],
-  },
-  itemDisabled: {
-    opacity: 0.5,
-    color: colorVars['--color-text-disabled'],
-    cursor: 'default',
-  },
-
-  // Decorative checkbox (non-interactive, purely visual)
-  checkboxDecorative: {
-    pointerEvents: 'none',
-    display: 'flex',
-    flexShrink: 0,
-  },
-  // Pushed to the row's far edge rather than sitting against the label, which
-  // is what an end-positioned control means here. The row is not
-  // `space-between` (a truncating label plus a trailing control is what wants
-  // the auto margin), and `renderOption` content is not wrapped in a growing
-  // span, so the margin has to live on the checkbox itself.
-  checkboxDecorativeEnd: {
-    marginInlineStart: 'auto',
-  },
-
-  // Label text for items (rendered outside checkbox for correct click
-  // behavior). Typography is inherited from the row; this only handles
-  // truncation.
-  itemLabel: {
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-
-  // Grid rows (spec:AST-058): the row carries today's option chrome (padding,
-  // radius, highlight); its two cells split it into the option's click
-  // target and the action's slot. The action cell is a real cell for the
-  // active-descendant ring, drawn with the shared focus-outline parts because
-  // no element inside the popup has DOM focus.
-  gridRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-  },
-  optionCell: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    flexGrow: 1,
-    flexShrink: 1,
-    minWidth: 0,
-    alignSelf: 'stretch',
-  },
-  actionCell: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-    borderRadius: radiusVars['--radius-element'],
-  },
-  // The standard ring, from the focus tokens themselves: inside
-  // `stylex.create` StyleX resolves an imported `defineVars` group, and a
-  // plain object such as `FOCUS_OUTLINE_PARTS` compiles to variables nothing
-  // defines.
-  actionCellActive: {
-    outlineWidth: focusVars['--focus-outline-width'],
-    outlineStyle: focusVars['--focus-outline-style'],
-    outlineColor: focusVars['--focus-outline-color'],
-    outlineOffset: focusVars['--focus-outline-offset'],
   },
 
   // Empty state
@@ -521,34 +424,6 @@ const sizeStyles = stylex.create({
   },
   lg: {
     height: sizeVars['--size-element-lg'],
-  },
-});
-
-const itemSizeStyles = stylex.create({
-  sm: {
-    padding: spacingVars['--spacing-1'],
-  },
-  md: {
-    paddingBlock: spacingVars['--spacing-1-5'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  lg: {
-    padding: spacingVars['--spacing-2'],
-  },
-});
-
-const selectAllSizeStyles = stylex.create({
-  sm: {
-    paddingInline: spacingVars['--spacing-1'],
-    paddingBlock: spacingVars['--spacing-0-5'],
-  },
-  md: {
-    paddingInline: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-1'],
-  },
-  lg: {
-    paddingInline: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-1'],
   },
 });
 
@@ -2147,9 +2022,9 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
       const checkbox = isCreate ? null : (
         <div
           inert
-          {...stylex.props(
-            styles.checkboxDecorative,
-            indicatorPosition === 'end' && styles.checkboxDecorativeEnd,
+          className={tw(
+            MULTI_SELECTOR_CHECKBOX_CLASS,
+            indicatorPosition === 'end' && MULTI_SELECTOR_CHECKBOX_END_CLASS,
           )}>
           <CheckboxInput
             label=""
@@ -2168,7 +2043,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
           {renderOption && !isSelectAll && !isCreate ? (
             renderOption(item)
           ) : (
-            <span {...stylex.props(styles.itemLabel)}>
+            <span className={MULTI_SELECTOR_ROW_LABEL_CLASS}>
               {item.label ?? item.value}
             </span>
           )}
@@ -2221,14 +2096,13 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
               selected: isSelected ? 'selected' : null,
               disabled: item.disabled ? 'disabled' : null,
             }),
-            stylex.props(
-              styles.item,
-              isSelectAll ? selectAllSizeStyles[size] : itemSizeStyles[size],
-              isSelectAll && styles.selectAllWrapper,
-              isHighlighted && styles.itemHighlighted,
-              item.disabled && styles.itemDisabled,
-              isGrid && styles.gridRow,
-            ),
+            multiSelectorOptionRowClassName({
+              isDisabled: item.disabled === true,
+              isGrid,
+              isHighlighted,
+              isSelectAll,
+              size,
+            }),
           )}>
           {isGrid ? (
             <>
@@ -2237,7 +2111,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
                 id={`${getItemId(flatIndex)}-option`}
                 onClick={toggle}
                 onMouseEnter={() => onItemMouseEnter(item, flatIndex, 'option')}
-                {...stylex.props(styles.optionCell)}>
+                className={MULTI_SELECTOR_OPTION_CELL_CLASS}>
                 {content}
               </div>
               <div
@@ -2249,12 +2123,12 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
                     ? () => onItemMouseEnter(item, flatIndex, 'action')
                     : undefined
                 }
-                {...stylex.props(
-                  styles.actionCell,
+                className={tw(
+                  MULTI_SELECTOR_ACTION_CELL_CLASS,
                   isHighlighted &&
                     highlightedCell === 'action' &&
                     isKeyboardHighlight &&
-                    styles.actionCellActive,
+                    MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
                 )}>
                 {isSelectAll || isCreate ? null : item.action}
               </div>

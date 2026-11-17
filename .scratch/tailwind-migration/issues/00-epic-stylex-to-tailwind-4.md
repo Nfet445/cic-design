@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 20 of 42 done, 2 waves done before the tickets existed.
+Progress: 23 of 42 done, 2 waves done before the tickets existed.
 
 ### Wave 0 — the harness
 
@@ -62,7 +62,7 @@ Progress: 20 of 42 done, 2 waves done before the tickets existed.
 ### Wave 4 — `family:input-fields` in three pull requests
 
 - [x] `14-field-and-text-inputs` — `Field`, `TextInput`, `TextArea`, `NumberInput`, `FileInput`
-- [ ] `15-choice-inputs` — `Selector`, `MultiSelector`, `ComplexSelector`, `Typeahead`
+- [x] `15-choice-inputs` — `Selector`, `MultiSelector`, `ComplexSelector`, `Typeahead`
 - [ ] `16-date-inputs` — `DateInput`, `DateRangeInput`, `DateTimeInput`, `TimeInput`
 
 ### Wave 5 — the shared style modules
@@ -99,11 +99,12 @@ Progress: 20 of 42 done, 2 waves done before the tickets existed.
 - [ ] `34-swizzle-and-render-pipeline` — ejected source states its stylesheet
 - [ ] `35-deprecate-stylex-subpaths` — 80 export entries, one release
 - [ ] `37-table-row-and-cell` — row and body cell
-- [ ] `38-data-token-sheet` — 56 data tokens get their own sheet
+- [x] `38-data-token-sheet` — 56 data tokens get their own sheet
 - [ ] `39-layout-regions-page` — a check page that does not contradict the classes
 - [x] `40-integration-regressions` — repair the wave's merged failures
 - [ ] `41-shared-modules-after-consumers` — the seven creations whose consumers own the property
 - [ ] `42-table-plugin-styles` — the table plugins and the cells they borrow
+- [x] `43-full-suite-green` — the full core suite back to its known-failing count
 - [ ] `36-remove-stylex` — `@stylexjs` leaves the repository
 
 ## Done when

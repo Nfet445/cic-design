@@ -303,6 +303,15 @@ export const docs = {
         states: ['disabled'],
       },
     ],
+    vars: [
+      {
+        name: '--astryx-time-wheels-block-size',
+        description:
+          'Block size of a wheel pane, shared with the touch date wheels. A geometry constant, never a theme value',
+        default: 'dateInputTouchGeometry.paneBlockSize',
+        private: true,
+      },
+    ],
   },
 };
 
@@ -490,6 +499,15 @@ export const docsZh = {
         className: 'astryx-time-input',
         visualProps: ['size', 'status'],
         states: ['disabled'],
+      },
+    ],
+    vars: [
+      {
+        name: '--astryx-time-wheels-block-size',
+        description:
+          'Block size of a wheel pane, shared with the touch date wheels. A geometry constant, never a theme value',
+        default: 'dateInputTouchGeometry.paneBlockSize',
+        private: true,
       },
     ],
   },

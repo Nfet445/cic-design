@@ -59,12 +59,9 @@ import {Icon} from '../Icon';
 import {Spinner} from '../Spinner';
 import {SpinnerOwnerContext} from '../Spinner/SpinnerOwnerContext';
 import {
-  borderVars,
   colorVars,
   spacingVars,
-  radiusVars,
   typographyVars,
-  fontWeightVars,
   typeScaleVars,
 } from '../theme/tokens.stylex';
 import {
@@ -78,6 +75,11 @@ import {warnOnce} from '../utils/devWarning';
 import type {BaseProps} from '../BaseProps';
 import type {SearchContext, SearchableItem, SearchSource} from './types';
 import {themeProps} from '../utils/themeProps';
+import {
+  TYPEAHEAD_DEFAULT_ITEM_CLASS,
+  TYPEAHEAD_ROW_CONTENT_CLASS,
+  typeaheadRowClassName,
+} from './typeaheadClasses';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {FOCUSABLE_SELECTOR} from '../hooks/focusableSelector';
@@ -429,51 +431,6 @@ const styles = stylex.create({
     color: colorVars['--color-text-secondary'],
     userSelect: 'none',
   },
-  item: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%',
-    padding: spacingVars['--spacing-2'],
-    borderRadius: radiusVars['--radius-element'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    outline: 'none',
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    textAlign: 'start',
-  },
-  itemHighlighted: {
-    backgroundColor: colorVars['--color-overlay-hover'],
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'Highlight',
-    },
-    outlineStyle: {
-      default: null,
-      '@media (forced-colors: active)': 'solid',
-    },
-    outlineWidth: {
-      default: null,
-      '@media (forced-colors: active)': borderVars['--border-width'],
-    },
-  },
-  itemSelected: {
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  itemContent: {
-    display: 'flex',
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-  defaultItem: {
-    minWidth: 0,
-    width: '100%',
-  },
   emptyState: {
     padding: spacingVars['--spacing-3'],
     textAlign: 'center',
@@ -490,24 +447,6 @@ const styles = stylex.create({
     justifyContent: 'center',
     flexShrink: 0,
     padding: spacingVars['--spacing-1'],
-  },
-});
-
-/**
- * Size-specific overrides for dropdown list items.
- * Matches the pattern used by DropdownMenuItem / Selector so that
- * an `sm` typeahead renders compact list items.
- */
-const itemSizeStyles = stylex.create({
-  sm: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  md: {
-    paddingBlock: spacingVars['--spacing-1-5'],
-  },
-  lg: {
-    paddingBlock: spacingVars['--spacing-2'],
   },
 });
 
@@ -2336,18 +2275,20 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
                       index === highlightedIndex ? 'highlighted' : null,
                     selected: isSelected ? 'selected' : null,
                   }),
-                  stylex.props(
-                    styles.item,
-                    itemSizeStyles[size],
-                    index === highlightedIndex && styles.itemHighlighted,
-                    isSelected && styles.itemSelected,
-                  ),
+                  typeaheadRowClassName({
+                    isHighlighted: index === highlightedIndex,
+                    isSelected,
+                    size,
+                  }),
                 )}>
-                <span {...stylex.props(styles.itemContent)}>
+                <span className={TYPEAHEAD_ROW_CONTENT_CLASS}>
                   {renderItem ? (
                     renderItem(item)
                   ) : (
-                    <TypeaheadItem item={item} xstyle={styles.defaultItem} />
+                    <TypeaheadItem
+                      item={item}
+                      className={TYPEAHEAD_DEFAULT_ITEM_CLASS}
+                    />
                   )}
                 </span>
                 {isSelected && <Icon icon="check" size="sm" color="primary" />}

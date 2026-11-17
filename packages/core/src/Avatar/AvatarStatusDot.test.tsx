@@ -2,8 +2,7 @@
 
 import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {Avatar} from './Avatar';
 import {AvatarStatusDot, type AvatarStatusDotVariant} from './AvatarStatusDot';
 
@@ -179,65 +178,38 @@ describe('AvatarStatusDot', () => {
     it('fills the ring variant with surface and inks it with the variant colour', () => {
       // A ring only reads as hollow if its interior is not the variant
       // colour, so `neutral` inverts: surface fill, coloured stroke.
-      // StyleX atomic classes are deterministic, so a local probe pins it.
-      const probe = stylex.create({
-        ring: {
-          backgroundColor: colorVars['--color-background-surface'],
-          color: colorVars['--color-text-secondary'],
-        },
-      });
       const dot = renderDot({variant: 'neutral'}, 48);
-      const atomicClasses = (stylex.props(probe.ring).className ?? '')
-        .split(' ')
-        // Dev mode prepends a per-file `File__style.key` debug class that
-        // legitimately differs between the probe and the component.
-        .filter(cls => !cls.includes('__'));
-      expect(atomicClasses.length).toBeGreaterThan(0);
-      for (const cls of atomicClasses) {
-        expect(dot.className).toContain(cls);
-      }
+      expectClassSet(dot, {
+        includes: [
+          'bg-[var(--color-background-surface)]',
+          'text-[color:var(--color-text-secondary)]',
+        ],
+      });
     });
 
     it('uses each filled status plate matching on-fill ink role', () => {
-      const probe = stylex.create({
-        successInk: {color: colorVars['--color-on-success']},
-        errorInk: {color: colorVars['--color-on-error']},
-      });
       const cases = [
-        ['success', probe.successInk],
-        ['error', probe.errorInk],
+        ['success', 'text-[color:var(--color-on-success)]'],
+        ['error', 'text-[color:var(--color-on-error)]'],
       ] as const;
 
-      for (const [variant, ink] of cases) {
-        const inkClasses = (stylex.props(ink).className ?? '')
-          .split(' ')
-          .filter(cls => !cls.includes('__'));
-        expect(inkClasses.length).toBeGreaterThan(0);
+      for (const [variant, inkClassName] of cases) {
         const dot = renderDot({variant}, 48);
-        for (const cls of inkClasses) {
-          expect(dot.className).toContain(cls);
-        }
+        expectClassSet(dot, {includes: [inkClassName]});
       }
     });
 
     it('lets a user icon inherit the dot ink instead of hard-coding surface', () => {
       // Surface ink on the surface-filled ring variant would be invisible.
-      const probe = stylex.create({
-        surfaceInk: {color: colorVars['--color-background-surface']},
-      });
       renderDot(
         {variant: 'neutral', icon: <svg data-testid="user-icon" />},
         48,
       );
       const iconWrapper = screen.getByTestId('user-icon')
         .parentElement as HTMLElement;
-      const surfaceInkClasses = (stylex.props(probe.surfaceInk).className ?? '')
-        .split(' ')
-        .filter(cls => !cls.includes('__'));
-      expect(surfaceInkClasses.length).toBeGreaterThan(0);
-      for (const cls of surfaceInkClasses) {
-        expect(iconWrapper.className).not.toContain(cls);
-      }
+      expectClassSet(iconWrapper, {
+        excludes: ['text-[color:var(--color-background-surface)]'],
+      });
     });
 
     it('renders no glyph for custom augmented variants (documented: they must bring their own non-colour mark)', () => {

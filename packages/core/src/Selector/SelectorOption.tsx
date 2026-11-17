@@ -11,25 +11,14 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '@stylexjs/stylex';
 import {renderIconSlot, type IconType} from '../Icon';
 import {Item} from '../Item';
 import {useSelectorRowLayout} from './SelectorRowLayoutContext';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {SELECTOR_OPTION_EMBEDDED_CLASS} from './selectorOptionClasses';
 import {themeProps} from '../utils/themeProps';
-
-const embeddedStyles = stylex.create({
-  root: {
-    paddingBlock: 0,
-    paddingInline: 0,
-    borderRadius: 0,
-    // The host row lays this out as a flex item, whose automatic minimum
-    // size is the full label width. Without the reset a long label runs
-    // past a narrow popover and is clipped instead of ellipsizing.
-    minWidth: 0,
-  },
-});
 
 export interface SelectorOptionProps {
   /**
@@ -137,8 +126,12 @@ export function SelectorOption({
       description={description}
       layout={enforcedLayout === 'inline' ? 'inline' : layout}
       endContent={endContent}
-      xstyle={[embeddedStyles.root, xstyle]}
-      {...mergeProps(themeProps('selector-option'), {className, style})}
+      xstyle={xstyle}
+      {...mergeProps(
+        themeProps('selector-option'),
+        tw(SELECTOR_OPTION_EMBEDDED_CLASS, className),
+        style,
+      )}
     />
   );
 }
