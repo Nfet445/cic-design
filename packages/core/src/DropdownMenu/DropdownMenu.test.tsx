@@ -34,6 +34,8 @@ import {DropdownMenuSubMenu} from './DropdownMenuSubMenu';
 import {Divider} from '../Divider';
 import {Tooltip} from '../Tooltip/Tooltip';
 import {rtlStyles} from '../utils';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {itemDensityClassName} from '../Item/itemClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {spacingVars} from '../theme/tokens.stylex';
