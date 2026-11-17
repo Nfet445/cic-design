@@ -4,7 +4,7 @@
 
 /**
  * @file ChatUnreadDivider.tsx
- * @input Uses React, StyleX, theme tokens
+ * @input Uses React, the divider class map, theme props
  * @output Exports ChatUnreadDivider component and ChatUnreadDividerProps
  * @position Error-colored rule marking where unread messages begin
  *
@@ -18,17 +18,15 @@
  * - /apps/storybook/stories/ChatAdditions.stories.tsx (examples)
  */
 
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-  fontWeightVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {mergeProps} from '@astryxdesign/core/utils';
 import {themeProps} from '@astryxdesign/core/utils';
+import {tw} from '../tw';
+import {
+  chatUnreadDividerLabelClassName,
+  chatUnreadDividerRootClassName,
+  chatUnreadDividerRuleClassName,
+} from './chatUnreadDividerClasses';
 
 export interface ChatUnreadDividerProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element */
@@ -40,33 +38,6 @@ export interface ChatUnreadDividerProps extends BaseProps<HTMLDivElement> {
    */
   label?: string;
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    paddingBlock: spacingVars['--spacing-1'],
-  },
-  line: {
-    flexGrow: 1,
-    height: 1,
-    backgroundColor: colorVars['--color-error'],
-  },
-  label: {
-    flexShrink: 0,
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-bold'],
-    color: colorVars['--color-text-error'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-  },
-});
 
 // =============================================================================
 // Component
@@ -100,12 +71,12 @@ export function ChatUnreadDivider({
       data-testid={testId}
       {...mergeProps(
         themeProps('chat-unread-divider'),
-        stylex.props(styles.root, xstyle),
+        {className: tw(chatUnreadDividerRootClassName, xstyle)},
         className,
         styleProp,
       )}>
-      <span {...stylex.props(styles.line)} />
-      <span {...stylex.props(styles.label)}>{label}</span>
+      <span className={chatUnreadDividerRuleClassName} />
+      <span className={chatUnreadDividerLabelClassName}>{label}</span>
     </div>
   );
 }

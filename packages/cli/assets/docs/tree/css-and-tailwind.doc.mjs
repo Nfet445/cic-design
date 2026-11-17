@@ -157,11 +157,11 @@ export const docs = {
         },
         {
           type: 'prose',
-          text: '`xstyle` still renders a StyleX style, and is kept for one release for existing code. It carries no cascade layer, so it wins over every class, including a component class and your own utility. New code overrides with `className`.',
+          text: '`xstyle` still takes a StyleX style. It is kept for one release for existing code, and new code overrides with `className`; {@link generic:styling-basics} covers the escape hatch.',
         },
         {
           type: 'prose',
-          text: 'A value you compute per instance never goes in an inline declaration, which would beat every class a caller passes. Set a custom property on the element and read it from a class instead; {@link generic:styling-basics} has the worked example.',
+          text: 'A value you compute per instance is a class, never an inline declaration; {@link generic:styling-basics} has the worked example.',
         },
       ],
     },

@@ -159,7 +159,7 @@ export const docs = {
         },
         {
           type: 'prose',
-          text: 'A value the props do not cover stays in a class: put the value in a custom property on the element and read it from a class. An inline declaration instead would beat every class a caller passes, including a media-query override. {@link generic:styling-basics} shows both forms.',
+          text: 'A value the props do not cover stays a class, never an inline declaration: {@link generic:styling-basics} shows the custom property form and why it wins the cascade.',
         },
       ],
     },

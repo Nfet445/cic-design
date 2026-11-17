@@ -18,7 +18,6 @@ export const docs = {
     'The design token groups, the stylesheet each package names, where the token values are declared, and keeping Next.js webpack builds small.',
   keywords: [
     'tokens',
-    'CSS variables',
     'setup',
     'stylesheet',
     'Next.js',
@@ -98,7 +97,7 @@ export const docs = {
       content: [
         {
           type: 'prose',
-          text: 'Every code path loads the same prebuilt stylesheets, and no import compiles Astryx source. Core ships two component stylesheets while both forms of component exist: `astryx-tailwind.css` for the components whose own styles are utility classes, and `astryx.css` for the ones still on the previous stylesheet. Load both, then the theme.',
+          text: 'Every code path loads the same prebuilt stylesheets, and no import compiles Astryx source. Core ships two component stylesheets while both forms of component exist; {@link generic:styling-overview} says which components each one styles, and the order to load them in.',
         },
         {
           type: 'code',
@@ -111,11 +110,11 @@ export const docs = {
         },
         {
           type: 'prose',
-          text: 'Both component sheets register `@layer reset, astryx-base, astryx-theme;` and put every rule in `astryx-base`, so the order between them does not matter and one import never doubles a declaration. Your own CSS and Tailwind utilities load after the theme and win over a component class on the same element; {@link generic:styling-overview} gives the full statement.',
+          text: 'A component class is declared once across the two sheets, so loading both never doubles a declaration. {@link generic:styling-overview} gives the layer statement and what loads after the theme.',
         },
         {
           type: 'prose',
-          text: 'A page that loads no stylesheet renders unstyled markup: the classes reach the DOM and no rule exists for them. Pure theming needs no build step \u2014 a theme package is the stylesheet you import.',
+          text: 'Pure theming needs no build step: a theme package is the stylesheet you import, and {@link generic:styling-overview} covers a page that loads none.',
         },
       ],
     },
