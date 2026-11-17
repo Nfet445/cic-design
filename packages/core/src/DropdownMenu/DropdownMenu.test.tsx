@@ -35,7 +35,6 @@ import {Divider} from '../Divider';
 import {Tooltip} from '../Tooltip/Tooltip';
 import {rtlStyles} from '../utils';
 import {expectClassSet} from '../__tests__/classNameAssertions';
-import {itemDensityClassName} from '../Item/itemClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {spacingVars} from '../theme/tokens.stylex';
@@ -303,7 +302,10 @@ describe('DropdownMenu', () => {
     await user.click(screen.getByRole('button', {name: /Project actions/}));
 
     const heading = screen.getByRole('heading', {name: 'Project actions'});
-    expect(heading).toHaveStyle({marginInlineStart: 'var(--spacing-3)'});
+    // The heading's inset is a class now, so it is read off the class set.
+    expectClassSet(heading, {
+      includes: ['[margin-inline-start:var(--spacing-3)]'],
+    });
     // The menu's content element takes the sheet's content padding itself,
     // with no wrapper: nothing above the first row but the band the sheet
     // keeps under its grab bar, 4px at the sides.
