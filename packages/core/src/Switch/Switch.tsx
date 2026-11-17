@@ -31,12 +31,9 @@ import {
 import * as stylex from '@stylexjs/stylex';
 import {
   colorVars,
-  spacingVars,
   radiusVars,
   durationVars,
   easeVars,
-  typographyVars,
-  typeScaleVars,
   focusVars,
   shadowVars,
 } from '../theme/tokens.stylex';
@@ -46,10 +43,19 @@ import type {IconType} from '../Icon';
 import type {InputStatus} from '../Field/types';
 import {Spinner} from '../Spinner';
 import {useTooltip} from '../Tooltip';
-import {mergeProps, mergeRefs, rtlStyles} from '../utils';
+import {mergeProps, rtlStyles} from '../utils';
 import {switchFocusInput, switchScope} from './switch.markers.stylex';
 import type {BaseProps} from '../BaseProps';
 import type {SizeValue} from '../utils/types';
+import {tw} from '../utils/tw';
+import {
+  switchClassName,
+  switchContainerClassName,
+  switchLabelWrapperClassName,
+  switchSizeStyle,
+  switchStatusClassName,
+  switchWrapperClassName,
+} from './switchClasses';
 import {themeProps} from '../utils/themeProps';
 import {useAnnounce} from '../hooks/useAnnounce';
 
@@ -75,7 +81,7 @@ import {watchHitArea, writeHitInsets} from '../utils/hitArea';
 /**
  * The track box of each size, px (width × height), for the touch
  * presentation's thumb geometry.
- * SYNC: wrapperSizeStyles and trackSizeStyles below.
+ * SYNC: switchClasses.ts (the wrapper's size box) and trackSizeStyles below.
  */
 const TRACK_SIZE = {sm: [32, 20], md: [40, 24]} as const;
 
@@ -108,17 +114,6 @@ const HIT_TOP = 'var(--astryx-hit-inset-top, 0px)';
 const HIT_RIGHT = 'var(--astryx-hit-inset-right, 0px)';
 const HIT_BOTTOM = 'var(--astryx-hit-inset-bottom, 0px)';
 const HIT_LEFT = 'var(--astryx-hit-inset-left, 0px)';
-
-const wrapperSizeStyles = stylex.create({
-  sm: {
-    width: 32,
-    height: 20,
-  },
-  md: {
-    width: 40,
-    height: 24,
-  },
-});
 
 // Every touch value sits in the same property as the mouse value, as a
 // nested condition, never in a later style. A later style that names a
@@ -243,48 +238,7 @@ const pressOwnerStyles = stylex.create({
   },
 });
 
-const labelWrapperSizeStyles = stylex.create({
-  sm: {
-    minHeight: 20,
-  },
-  md: {
-    minHeight: 24,
-  },
-});
-
 const styles = stylex.create({
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-  },
-  // A hidden label is sr-only, so its wrapper is a zero-width flex item — the
-  // row gap would still be painted beside the track, making the field box
-  // wider than the control it contains. Matches CheckboxInput.
-  containerLabelHidden: {
-    gap: 0,
-  },
-  containerSpread: {
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  statusGap: {
-    marginTop: spacingVars['--spacing-2'],
-  },
-  switchWrapper: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-    isolation: 'isolate',
-  },
-  // Horizontal touch moves are the switch's drag and vertical ones the page's
-  // scroll, under any primary pointer. A touchscreen laptop's finger counts
-  // too. It is set in CSS so it holds before hydration. A disabled or loading
-  // switch takes no drag, so it leaves every move to the page.
-  switchWrapperInteractive: {
-    touchAction: 'pan-y pinch-zoom',
-  },
   input: {
     position: 'absolute',
     top: '50%',
@@ -489,7 +443,6 @@ const styles = stylex.create({
         focusVars['--focus-outline-offset'],
     },
   },
-  // State-dependent colors with ancestor hover behavior
   trackOff: {
     backgroundColor: {
       default: colorVars['--color-background-gray'],
@@ -671,16 +624,6 @@ const styles = stylex.create({
       '@media (forced-colors: active)': 'HighlightText',
     },
   },
-  labelWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-  },
-  description: {
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    color: colorVars['--color-text-secondary'],
-  },
 });
 
 export type SwitchLabelPosition = 'start' | 'end';
@@ -815,11 +758,6 @@ export interface SwitchProps extends Omit<BaseProps, 'onChange'> {
    */
   size?: 'sm' | 'md';
 }
-
-// Dynamic field width (number -> px, string used as-is).
-const dynamicWidthStyles = stylex.create({
-  width: (width: SizeValue | null) => ({width}),
-});
 
 /**
  * A toggle switch component for boolean values.
@@ -990,11 +928,10 @@ export function Switch({
   const switchElement = (
     <div
       ref={surfaceRef}
-      {...stylex.props(
-        styles.switchWrapper,
-        wrapperSizeStyles[size],
-        !isDisabled && !isBusy && styles.switchWrapperInteractive,
-      )}>
+      className={switchWrapperClassName({
+        size,
+        isInteractive: !isDisabled && !isBusy,
+      })}>
       <input
         ref={useMergedRefs(ref, disabledMessageTooltip.positionRef, inputRef)}
         id={id}
@@ -1066,7 +1003,7 @@ export function Switch({
   );
 
   const labelElement = (
-    <div {...stylex.props(styles.labelWrapper, labelWrapperSizeStyles[size])}>
+    <div className={switchLabelWrapperClassName({size})}>
       <FieldLabel
         // See CheckboxInput: the control names its own label target rather
         // than the label guessing at its placement.
@@ -1092,9 +1029,9 @@ export function Switch({
           labelPosition: labelPosition !== 'end' ? labelPosition : undefined,
           labelSpacing: labelSpacing !== 'hug' ? labelSpacing : undefined,
         }),
-        stylex.props(width != null && dynamicWidthStyles.width(width), xstyle),
-        className,
-        style,
+        stylex.props(xstyle),
+        tw(switchClassName({width}), className),
+        {...switchSizeStyle(width), ...style},
       )}
       {...rest}
       // Native `disabled` suppressed clicks and key events on the switch; the
@@ -1115,15 +1052,20 @@ export function Switch({
         }}
         {...(isDisabled ? undefined : pressable)}
         {...pressHoldsDragProps(!isDisabled)}
-        {...stylex.props(
-          styles.container,
-          isLabelHidden && styles.containerLabelHidden,
-          labelSpacing === 'spread' && styles.containerSpread,
-          !isDisabled && switchScope,
-          // The touch press's strength and release live on the row the
-          // controller writes to; the track and thumb inherit and paint it.
-          !isDisabled && interactionOverlayStyles.pressedAlpha,
-          !isDisabled && pressOwnerStyles.pressedAlphaLayered,
+        {...mergeProps(
+          tw(
+            switchContainerClassName({
+              isLabelHidden,
+              isSpread: labelSpacing === 'spread',
+            }),
+          ),
+          stylex.props(
+            !isDisabled && switchScope,
+            // The touch press's strength and release live on the row the
+            // controller writes to; the track and thumb inherit and paint it.
+            !isDisabled && interactionOverlayStyles.pressedAlpha,
+            !isDisabled && pressOwnerStyles.pressedAlphaLayered,
+          ),
         )}>
         {' '}
         {/* Keyed, so a labelPosition change moves the nodes instead of
@@ -1145,7 +1087,7 @@ export function Switch({
           message={status.message}
           id={statusMessageID}
           variant="detached"
-          xstyle={styles.statusGap}
+          className={switchStatusClassName}
         />
       )}
       {showsDisabledMessage &&
