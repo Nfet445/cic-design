@@ -21,9 +21,12 @@
  */
 
 import {useCallback, useMemo, useState, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {DropdownMenuDrillIn} from './DropdownMenuContext';
 import {useCompactDefinition} from '../utils/touchPresentation';
+import {
+  dropdownMenuTreeClassName,
+  dropdownMenuTreeHiddenClassName,
+} from './dropdownMenuClasses';
 
 /**
  * The same compact-touch condition the root presentation uses to decide the
@@ -40,17 +43,6 @@ function matchesCompactTouch(query: string): boolean {
     window.matchMedia(query).matches
   );
 }
-
-const styles = stylex.create({
-  // The wrappers add no box of their own, so the menu's flex gap still runs
-  // between the rows exactly as it does without them.
-  tree: {
-    display: 'contents',
-  },
-  treeHidden: {
-    display: 'none',
-  },
-});
 
 export interface UseMenuDrillInReturn {
   /** The context value for `DropdownMenuContext.drillIn`. */
@@ -116,10 +108,14 @@ export function useMenuDrillIn(isOpen: boolean): UseMenuDrillInReturn {
           <div
             hidden={isDrilled}
             inert={isDrilled}
-            {...stylex.props(styles.tree, isDrilled && styles.treeHidden)}>
+            className={
+              isDrilled
+                ? dropdownMenuTreeHiddenClassName
+                : dropdownMenuTreeClassName
+            }>
             {content}
           </div>
-          <div ref={setHost} {...stylex.props(styles.tree)} />
+          <div ref={setHost} className={dropdownMenuTreeClassName} />
         </>
       );
     },

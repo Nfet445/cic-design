@@ -134,7 +134,9 @@ import {
   createMonthModel,
   dateInMonth,
 } from './monthGeometry';
+import {dateInputSizeClassName} from './dateInputClasses';
 import {dateInputTouchSizes, dateInputTouchGeometry} from './tokens.stylex';
+import {tw} from '../utils/tw';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -171,21 +173,6 @@ const TOUCH_TARGET = dateInputTouchSizes.daySize;
  * and not half of one.
  */
 const SWAP_DURATION = durationVars['--duration-fast'];
-
-const sizeStyles = stylex.create({
-  sm: {
-    height: sizeVars['--size-element-sm'],
-    minWidth: 180,
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-    minWidth: 180,
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
-    minWidth: 180,
-  },
-});
 
 const styles = stylex.create({
   // ---- the closed field ----
@@ -1343,7 +1330,6 @@ export function TouchDateField({
         stylex.props(
           inputWrapperStyles.base,
           inputWrapperStyles.textField,
-          sizeStyles[size],
           styles.wrapper,
           // Disabled paint belongs to the disabled state only; a busy field
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
@@ -1358,7 +1344,7 @@ export function TouchDateField({
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
-        controlClassName,
+        tw(dateInputSizeClassName({size}), controlClassName),
         controlStyle,
       )}>
       {inputGroup && <VisuallyHidden id={inputLabelID}>{label}</VisuallyHidden>}
