@@ -102,7 +102,7 @@ import {
   MenuBottomSheetActionList,
   preloadMenuBottomSheetActionList,
 } from './lazyMenuBottomSheet';
-import {menuBottomSheetStyles} from './menuBottomSheet.stylex';
+import {menuBottomSheetClassName} from './menuBottomSheetClasses';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
 import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
 import {
@@ -754,12 +754,8 @@ function DropdownMenuBottomSheet({
       className={tw(
         dropdownMenuSheetClassName.viewHeading,
         submenuPath.length === 0 && dropdownMenuSheetClassName.rootHeading,
-      )}
-      xstyle={
-        submenuPath.length === 0
-          ? menuBottomSheetStyles.headingAlone
-          : undefined
-      }>
+        submenuPath.length === 0 && menuBottomSheetClassName.headingAlone,
+      )}>
       {currentTitle}
     </Heading>
   );
@@ -829,8 +825,12 @@ function DropdownMenuBottomSheet({
           {...rest}
           {...mergeProps(
             themeProps('dropdown-menu', {presentation: 'bottom-sheet'}),
-            stylex.props(menuBottomSheetStyles.content, xstyle),
-            tw(dropdownMenuSheetClassName.content, className),
+            stylex.props(xstyle),
+            tw(
+              dropdownMenuSheetClassName.content,
+              menuBottomSheetClassName.content,
+              className,
+            ),
             style,
           )}>
           {submenuPath.length > 0 ? (

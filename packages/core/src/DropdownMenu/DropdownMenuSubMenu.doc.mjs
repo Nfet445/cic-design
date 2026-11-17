@@ -135,7 +135,8 @@ export const docsDense = {
     presentation:
       "'flyout' beside the row | 'drill-in' replaces the rows + Back row | 'adaptive' (default) drills in on a coarse pointer",
     delay: 'hover wait before the flyout opens, ms (default 150)',
-    hideDelay: 'how long the flyout stays after the pointer leaves, ms (default 200)',
+    hideDelay:
+      'how long the flyout stays after the pointer leaves, ms (default 200)',
     header:
       'content above the rows, outside the menu; surface becomes a modal dialog named by the row (Tab wraps, Escape returns to the row)',
     footer: 'content below the rows, outside the menu; same rules as header',

@@ -125,6 +125,44 @@ Still in StyleX in this file, with the reason:
 - The caret's slot wrapper: the style is structural, and the rule against a
   style-only wrapper reads that from a style module, not from a class string.
 
+Window 4 (this branch, after merging `poc/tailwind-layout-primitives` once):
+
+- `DropdownMenuCheckboxItem`, `DropdownMenuRadioItem` (`15a1e7aaf`): the row box
+  (`w-full`, the inset radius, the text color, the pointer cursor and the
+  disabled opacity) is `dropdownMenuCheckableRowClassName`, and the marker's
+  place in the row — first, at the inline-end under `pointer-coarse` — is
+  `dropdownMenuMarkerClassName`, handed to the indicator's `className`. The row
+  keeps `Item`'s own padding: it never took `dropdownMenuItemClassName`'s box,
+  so the shared map is not the row's owner here. `menuRowStateStyles` stays
+  (the `:focus` paint and the `outlineOffset`, the ticket 17/44 reason), the
+  same block `DropdownMenuItem` keeps.
+- `DropdownMenuRadioGroup`: the column and the menu's inter-row gap are
+  `dropdownMenuRadioGroupClassName`; the create is gone.
+- The bottom sheet and the drill-in (`19b2643ac`): `menuBottomSheet.stylex.ts`
+  is replaced by `DropdownMenu/menuBottomSheetClasses.ts` (the content box with
+  its container variables, the lone heading's gap, and the action list's list,
+  destructive row, structural item, section and section heading).
+  `MenuBottomSheetActionList` and `useMenuDrillIn` are class-only now;
+  `renderDropdownItems`' data section heading reuses
+  `dropdownMenuGroupHeadingClassName`, which it duplicated exactly. The
+  drill-in wrappers are `dropdownMenuTreeClassName` (`contents`) and
+  `dropdownMenuTreeHiddenClassName` (`hidden`) — the `hidden` attribute alone
+  loses to a `contents` class in `astryx-base`.
+- `DropdownMenu.test.tsx` read the sheet content box with `toHaveStyle`; jsdom
+  only resolved it because StyleX injected the declarations, so it reads the
+  class set now.
+- The merge resolved two conflicts: `DropdownMenu.tsx` keeps this side's
+  `themeProps` + `tw(...)` shape, and `DropdownMenuSubMenu.tsx` takes the
+  merged side's `tw(...)` call, which also put `layerAnimations.end` in the
+  class list where it had been handed to `stylex.props` (that pair was the
+  branch's only type error before the merge).
+- Sheet: 1187 rules, ceiling moved to 1200 with the reason in the test.
+- Tests: `pnpm exec vitest run packages/core/src/DropdownMenu
+packages/core/src/ContextMenu packages/core/src/MoreMenu
+packages/core/src/NavMenu
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` — 609
+  passed.
+
 Left for the rest of this ticket:
 
 - `DropdownMenu.tsx`: `styles` (18 keys) and `dynamicStyles` (2). The parts that
@@ -154,8 +192,19 @@ Left for the rest of this ticket:
   `dynamicRegionStyles`, which need the cap-as-variable seam because the
   drilled view takes the root menu's `menuMaxHeight`, and the four `popover*`
   keys, which `useLayer` receives as `xstyle`.
-- `ContextMenu.tsx` (1 create), `MoreMenu.tsx` (verify first: it may already be
-  clean), `MenuBottomSheet*`, `useMenuDrillIn.tsx`, `renderDropdownItems.tsx`.
+- `ContextMenu.tsx` (1 create). `MoreMenu.tsx` verified clean in window 4: it
+  has no create of its own. `MenuBottomSheet*`, `useMenuDrillIn.tsx` and
+  `renderDropdownItems.tsx` landed in window 4.
+- `menuTouchAction.stylex.ts`: still StyleX. Its two keys are read by seven
+  call sites outside this family (`SideNav/SideNavHeading.tsx`,
+  `TabList/TabMenu.tsx`, `TopNav/TopNavHeading.tsx`, `TopNav/TopNavMenu.tsx`,
+  `Breadcrumbs/BreadcrumbItem.tsx`, `NavMenu/NavHeadingMenu.tsx` and
+  `DropdownMenu/DropdownMenu.tsx`), each passing the value as `xstyle`, so the
+  swap to a class string edits another family's component. The window left it
+  rather than widen into those files; the module owner is this ticket, so the
+  next window can convert it and its call sites at once.
+- `NavMenu/NavHeadingMenu.tsx` (two creates) and `NavHeadingMenuItem.tsx` (two
+  creates) did not start; the window closed on the bottom sheet.
 - `Selector`/`MultiSelector` option menus and `NavHeadingMenu`.
 - The sheet-size gate has ~10 rules of room left under 1050 after this window;
   the popover container will need the constant raised with its reason.

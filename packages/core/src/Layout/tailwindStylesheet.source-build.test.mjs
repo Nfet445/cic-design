@@ -29,11 +29,20 @@ import {
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
+  dropdownMenuCheckableRowClassName,
   dropdownMenuDividerClassName,
   dropdownMenuItemClassName,
+  dropdownMenuMarkerClassName,
+  dropdownMenuRadioGroupClassName,
   dropdownMenuSheetClassName,
   dropdownMenuGroupHeadingClassName,
+  dropdownMenuTreeClassName,
+  dropdownMenuTreeHiddenClassName,
 } from '../DropdownMenu/dropdownMenuClasses';
+import {
+  menuBottomSheetActionListClassName,
+  menuBottomSheetClassName,
+} from '../DropdownMenu/menuBottomSheetClasses';
 import {
   dropdownMenuSubMenuDrillInClassName,
   dropdownMenuSubMenuFlyoutClassName,
@@ -1881,10 +1890,23 @@ function familyClassNames() {
   // The menu family's leaves: the rule between groups, the heading that names
   // one.
   add(dropdownMenuDividerClassName);
+  add(dropdownMenuMarkerClassName);
+  add(dropdownMenuRadioGroupClassName);
+  for (const isDisabled of [true, false]) {
+    add(dropdownMenuCheckableRowClassName({isDisabled}));
+  }
   for (const value of Object.values(dropdownMenuSheetClassName)) {
     add(value);
   }
   add(dropdownMenuGroupHeadingClassName);
+  add(dropdownMenuTreeClassName);
+  add(dropdownMenuTreeHiddenClassName);
+  for (const value of Object.values(menuBottomSheetClassName)) {
+    add(value);
+  }
+  for (const value of Object.values(menuBottomSheetActionListClassName)) {
+    add(value);
+  }
   for (const size of ['sm', 'md', 'lg']) {
     add(
       dropdownMenuItemClassName({
@@ -1965,8 +1987,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // sum of the two families is smaller than their parts. The sub-menu's
     // flyout surface, its scroll gesture and the two cap fallbacks under
     // `@supports` added 13. The display-and-feedback family's Badge, Code,
-    // Blockquote and StatusDot maps added about 45 more. With every family
-    // above the sheet sits at 1182, so the ceiling follows the sum rather
+    // Blockquote and StatusDot maps added about 45 more. The menu's checkable
+    // rows, its marker placement, the radio group's column, the sheet's
+    // content box and action list, and the two drill-in wrappers added 18:
+    // mostly one rule each, with the marker's two coarse-pointer arms and the
+    // row's three radius parts already spelled elsewhere. With every family
+    // above the sheet sits at 1187, so the ceiling follows the sum rather
     // than one side.
     expect(stylesheet.rules.size).toBeLessThan(1260);
   });
