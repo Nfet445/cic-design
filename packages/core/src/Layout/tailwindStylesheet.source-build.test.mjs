@@ -29,6 +29,11 @@ import {
 } from '../Avatar/avatarStatusDotClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import {
+  dropdownMenuDividerClassName,
+  dropdownMenuItemClassName,
+  dropdownMenuGroupHeadingClassName,
+} from '../DropdownMenu/dropdownMenuClasses';
+import {
   alertDialogActionsRowClassName,
   alertDialogStackedActionClassName,
 } from '../AlertDialog/alertDialogClasses';
@@ -1647,6 +1652,27 @@ function familyClassNames() {
   for (const value of Object.values(sideNavItemClassName)) {
     add(value);
   }
+
+  // The menu family's leaves: the rule between groups, the heading that names
+  // one.
+  add(dropdownMenuDividerClassName);
+  add(dropdownMenuGroupHeadingClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(
+      dropdownMenuItemClassName({
+        isDestructive: false,
+        isDisabled: false,
+        size,
+      }),
+    );
+  }
+  add(
+    dropdownMenuItemClassName({
+      isDestructive: true,
+      isDisabled: true,
+      size: 'md',
+    }),
+  );
 
   return [...names].sort();
 }
