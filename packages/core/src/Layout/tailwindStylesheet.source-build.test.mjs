@@ -350,6 +350,24 @@ import {
 } from '../Field/panelSearchInputClasses';
 import {fieldLabelHiddenInfoTipClassName} from '../Field/fieldLabelClasses';
 import {
+  collapsibleChevronClassName,
+  collapsibleChevronClosedClassName,
+  collapsibleChevronOpenClassName,
+  collapsibleChevronStartClassName,
+  collapsibleChevronStartClosedClassName,
+  collapsibleChevronStartOpenClassName,
+  collapsibleContentClassName,
+  collapsibleContentDensityClassName,
+  collapsibleContentHiddenClassName,
+  collapsibleDividedClassName,
+  collapsibleGroupWrapperClassName,
+  collapsibleRootClassName,
+  collapsibleTriggerClassName,
+  collapsibleTriggerDensityClassName,
+  collapsibleTriggerDisabledClassName,
+  collapsibleTriggerLabelClassName,
+} from '../Collapsible/collapsibleClasses';
+import {
   fieldStatusAttachedClassName,
   fieldStatusBaseClassName,
   fieldStatusColorClassName,
@@ -2667,6 +2685,27 @@ function familyClassNames() {
   add(panelSearchInputKeyboardFocusClassName);
   add(panelSearchInputIconClassName);
   add(panelSearchInputInputClassName);
+  // Collapsible and its group: the root, the trigger and its label, the chevron
+  // in both orientations and states, the content region, the divider, and one
+  // padding pair per density.
+  add(collapsibleRootClassName);
+  add(collapsibleTriggerClassName);
+  add(collapsibleTriggerLabelClassName);
+  add(collapsibleTriggerDisabledClassName);
+  add(collapsibleChevronClassName);
+  add(collapsibleChevronOpenClassName);
+  add(collapsibleChevronClosedClassName);
+  add(collapsibleChevronStartClassName);
+  add(collapsibleChevronStartOpenClassName);
+  add(collapsibleChevronStartClosedClassName);
+  add(collapsibleContentClassName);
+  add(collapsibleContentHiddenClassName);
+  add(collapsibleDividedClassName);
+  add(collapsibleGroupWrapperClassName);
+  for (const density of ['compact', 'balanced', 'spacious']) {
+    add(collapsibleTriggerDensityClassName[density]);
+    add(collapsibleContentDensityClassName[density]);
+  }
   add(fieldStatusAttachedClassName);
   add(fieldStatusDetachedClassName);
   add(fieldStatusDetachedContentClassName);

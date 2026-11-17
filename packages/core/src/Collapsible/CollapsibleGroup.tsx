@@ -40,17 +40,10 @@ import type {
   CollapsibleGroupPresentationValue,
 } from './CollapsibleGroupContext';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
 import type {BaseProps} from '../BaseProps';
-
-const styles = stylex.create({
-  // The wrapper lays items out in a column; between-item hairlines are drawn
-  // by each Collapsible (borderBlockStart, suppressed on :first-child).
-  wrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-});
+import {collapsibleGroupWrapperClassName} from './collapsibleClasses';
 
 export interface CollapsibleGroupProps extends Omit<
   BaseProps<HTMLElement>,
@@ -264,8 +257,8 @@ export function CollapsibleGroup({
         themeProps('collapsible-group', {
           density: resolvedDensity ?? undefined,
         }),
-        stylex.props(styles.wrapper, xstyle),
-        className,
+        stylex.props(xstyle),
+        tw(collapsibleGroupWrapperClassName, className),
         style,
       )}
       {...props}>

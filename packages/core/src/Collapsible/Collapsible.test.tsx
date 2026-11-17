@@ -13,6 +13,7 @@ import {describe, it, expect, vi} from 'vitest';
 import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {hasPressedArm} from '../__tests__/pressState';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {Collapsible} from './Collapsible';
 import {CollapsibleGroup} from './CollapsibleGroup';
 
@@ -229,7 +230,7 @@ describe('Collapsible', () => {
         </Collapsible>,
       );
       const content = contentFor(screen.getByRole('button'));
-      expect(content).not.toHaveStyle({display: 'none'});
+      expectClassSet(content, {excludes: ['hidden']});
     });
 
     it('does not toggle its group item when disabled', async () => {
@@ -575,7 +576,7 @@ describe('Collapsible', () => {
       const label = [...button.children].find(
         el => el.textContent?.trim() !== '',
       );
-      expect(label).toHaveStyle({flexGrow: 1});
+      expectClassSet(label as HTMLElement, {includes: ['grow']});
     });
 
     it('does not leak the group position into a nested collapsible', () => {
