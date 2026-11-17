@@ -58,7 +58,9 @@ describe('ChatDictationButton', () => {
     });
     const {container} = render(<ChatDictationButton dictation={dictation} />);
 
-    const bar = container.querySelector('[aria-hidden="true"] > span')!;
+    const bar = container.querySelector<HTMLElement>(
+      '[aria-hidden="true"] > span',
+    )!;
     const barStyle = bar.style.getPropertyValue(chatDictationBarVars.color);
     expect(barStyle).toContain('color-mix(in srgb');
     expect(barStyle).toContain(colorVars['--color-accent']);
