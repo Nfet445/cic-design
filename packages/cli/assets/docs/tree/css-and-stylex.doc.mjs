@@ -1,21 +1,20 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 /**
- * @file `astryx docs styling-libraries/css-and-tailwind`: the integration
- * principle, plain CSS / CSS Modules, and Tailwind utilities that read the
- * system's tokens.
+ * @file `astryx docs styling-libraries/css-and-stylex`: core integration
+ * principle, plain CSS / CSS Modules, and StyleX typed-token imports.
  */
 
 /** @type {import('@astryxdesign/cli/authoring').ReferenceDoc} */
 
 export const docs = {
   type: 'generic',
-  name: 'css-and-tailwind',
-  title: 'CSS & Tailwind',
+  name: 'css-and-stylex',
+  title: 'CSS & StyleX',
   placement: {parent: 'namespace:styling-libraries', slot: 'guides', order: 10},
   category: 'guide',
   description:
-    'The integration principle, plain CSS / CSS Modules, and Tailwind utilities over the system tokens.',
+    'Core integration principle, plain CSS / CSS Modules, and StyleX typed-token imports.',
 
   sections: [
     {
@@ -23,7 +22,7 @@ export const docs = {
       content: [
         {
           type: 'prose',
-          text: 'Keep the system as the source of truth for theme values. Components carry Tailwind utility classes that read design tokens from CSS custom properties such as `--color-text-primary`, `--color-background-card`, `--spacing-4`, and `--radius-container`. Other styling libraries should map their own semantic tokens, utility names, or theme objects to those system CSS variables whenever possible.',
+          text: 'Keep the system as the source of truth for theme values. Components read design tokens from CSS custom properties such as `--color-text-primary`, `--color-background-surface`, `--spacing-4`, and `--radius-container`. Other styling libraries should map their own semantic tokens, utility names, or theme objects to those system CSS variables whenever possible.',
         },
         {
           type: 'prose',
@@ -47,19 +46,19 @@ export const docs = {
           headers: ['Path', 'Use when', 'Value shape'],
           rows: [
             [
-              'The component classes',
-              'You style a component with its own props, or override one class',
-              '`className="rounded-[var(--radius-element)]"`',
-            ],
-            [
               'CSS variable aliases',
               'The library ultimately writes CSS and accepts string values',
               '`var(--color-text-primary)`',
             ],
             [
-              'Tailwind utilities backed by tokens',
-              'You write your own markup and want utility classes on the system tokens',
-              '`text-primary bg-surface gap-2`',
+              'StyleX token imports',
+              'You are writing StyleX styles in application code',
+              "`colorVars['--color-text-primary']`",
+            ],
+            [
+              'Tailwind bridge',
+              'You want utility classes backed by active system tokens',
+              '`@astryxdesign/core/tailwind-theme.css`',
             ],
             [
               'Design token resolver APIs',
@@ -88,7 +87,7 @@ export const docs = {
           items: [
             'Copy raw hex/px values into a second theme object when a `var(...)` reference would work.',
             'Run a second unsynchronized dark-mode provider that disagrees with Theme.',
-            "Make another library's CSS variables the source of truth for the system. Some consumers need token values outside the DOM.",
+            'Make another library\'s CSS variables the source of truth for the system. Some consumers need token values outside the DOM.',
           ],
         },
       ],
@@ -98,14 +97,14 @@ export const docs = {
       content: [
         {
           type: 'prose',
-          text: 'The simplest integration is direct CSS variable usage. CSS Modules scope class names, but system token variables are global/inherited values supplied by the theme stylesheet.',
+          text: 'The simplest integration is direct CSS variable usage. CSS Modules scope class names, but system token variables are global/inherited values supplied by package CSS and the active theme.',
         },
         {
           type: 'code',
           lang: 'css',
           label: 'Card.module.css',
           code: `.card {
-  background: var(--color-background-card);
+  background: var(--color-background-surface);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-container);
@@ -119,49 +118,31 @@ export const docs = {
       ],
     },
     {
-      title: 'Tailwind',
+      title: 'StyleX',
       content: [
         {
           type: 'prose',
-          text: 'A component ships its classes in the same stylesheet you load. `@astryxdesign/core/astryx-tailwind.css` holds them inside `@layer astryx-base`, so your own utilities, which Tailwind writes in `utilities` above it, win on the same element without a specificity trick. Tokens reach both sides: a component class and your `bg-surface` or `gap-2` read the same custom properties, so a theme switch changes what every one of them computes to.',
+          text: 'For StyleX styles, prefer the typed token exports from `@astryxdesign/core/theme/tokens.stylex`. They provide autocomplete and catch token-name typos while still resolving through the same system CSS variables at runtime.',
         },
         {
           type: 'code',
           lang: 'tsx',
-          label: 'Your utilities beside a component',
-          code: `<div className="flex flex-col gap-4">
-  <div className="rounded-[var(--radius-container)] bg-surface p-4 text-primary">
-    ...
-  </div>
-  <Button label="Save" variant="primary" />
-</div>`,
+          label: 'Typed token imports',
+          code: `import * as stylex from '@stylexjs/stylex';
+import {colorVars, spacingVars, radiusVars} from '@astryxdesign/core/theme/tokens.stylex';
+
+const styles = stylex.create({
+  panel: {
+    backgroundColor: colorVars['--color-background-surface'],
+    color: colorVars['--color-text-primary'],
+    padding: spacingVars['--spacing-4'],
+    borderRadius: radiusVars['--radius-container'],
+  },
+});`,
         },
         {
           type: 'prose',
-          text: 'Your utility pipeline needs the token mapping only for the token-named utilities you write yourself; {@link generic:tailwind} gives those imports and the layer order. Every class an Astryx component carries is already compiled into the package stylesheet, so a page needs no Astryx build step.',
-        },
-      ],
-    },
-    {
-      title: 'Overriding a Component',
-      content: [
-        {
-          type: 'prose',
-          text: '`className` is appended after the classes the component writes, and your class is unlayered, so it wins over any declaration a component class sets — no `!important`. For one property on one element this is the whole override:',
-        },
-        {
-          type: 'code',
-          lang: 'tsx',
-          label: 'One class, one override',
-          code: `<Card className="rounded-[var(--radius-element)]">...</Card>`,
-        },
-        {
-          type: 'prose',
-          text: '`xstyle` still renders a StyleX style, and is kept for one release for existing code. It carries no cascade layer, so it wins over every class, including a component class and your own utility. New code overrides with `className`.',
-        },
-        {
-          type: 'prose',
-          text: 'A value you compute per instance never goes in an inline declaration, which would beat every class a caller passes. Set a custom property on the element and read it from a class instead; {@link generic:styling-basics} has the worked example.',
+          text: 'Use `xstyle` for component overrides and `stylex.props()` for your own DOM nodes. Use `className` when integrating a non-StyleX styling library.',
         },
       ],
     },

@@ -1159,22 +1159,21 @@
   "styling-libraries": {
     "type": "docs.node",
     "children": [
-      "styling-libraries/css-and-tailwind",
+      "styling-libraries/css-and-stylex",
       "styling-libraries/tailwind",
       "styling-libraries/other-libraries",
       "styling-libraries/non-css-processing"
     ],
     "mentions": []
   },
-  "styling-libraries/css-and-tailwind": {
+  "styling-libraries/css-and-stylex": {
     "type": "docs.detail",
     "sections": [
       "core-principle",
       "choose-an-integration-path",
       "best-practices",
       "plain-css-and-css-modules",
-      "tailwind",
-      "overriding-a-component"
+      "stylex"
     ],
     "mentions": []
   },
@@ -1208,10 +1207,11 @@
   "styling-overview": {
     "type": "docs.detail",
     "sections": [
-      "what-ships",
-      "load",
-      "order",
-      "choose",
+      "pick-a-path",
+      "plain",
+      "tailwind",
+      "stylex-own-code",
+      "other-packages",
       "what-each-file-does",
       "further-reading"
     ],
@@ -1231,10 +1231,9 @@
     "type": "docs.detail",
     "sections": [
       "overview",
-      "what-a-component-renders",
+      "xstyle-prop",
+      "tailwind-integration",
       "classname-and-style-props",
-      "a-value-the-props-do-not-cover",
-      "the-xstyle-escape-hatch",
       "rest-props-prop-drilling"
     ],
     "mentions": []
@@ -1243,7 +1242,7 @@
     "type": "docs.detail",
     "sections": [
       "design-tokens",
-      "which-stylesheet",
+      "stylex-setup",
       "nextjs-webpack"
     ],
     "mentions": [
