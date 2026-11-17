@@ -56,7 +56,6 @@ import {
 } from '../Field/inputStyles.stylex';
 import {usePopover} from '../Popover/usePopover';
 import {useTooltip} from '../Tooltip/useTooltip';
-import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import {useAnnounce} from '../hooks/useAnnounce';
 import {
   type AdaptivePresentation,
@@ -64,17 +63,26 @@ import {
 } from '../hooks/useAdaptivePresentation';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {useIsHydrating} from '../hooks/useIsHydrating';
-import {
-  spacingVars,
-  colorVars,
-  sizeVars,
-  typeScaleVars,
-  typographyVars,
-  fontWeightVars,
-} from '../theme/tokens.stylex';
+import {spacingVars} from '../theme/tokens.stylex';
 import {useSize} from '../SizeContext/SizeContext';
 import {isFocusDetached} from '../utils/isFocusDetached';
 import {isRenderable} from '../utils/isRenderable';
+import {mergeProps} from '../utils/mergeProps';
+import {tw} from '../utils/tw';
+import {
+  powerSearchPopoverLayerClassName,
+  powerSearchResultCountClassName,
+  powerSearchSheetTriggerClassName,
+  powerSearchSheetTriggerContentClassName,
+  powerSearchSheetTriggerEndClassName,
+  powerSearchSheetTriggerPlaceholderClassName,
+  powerSearchSheetTriggerSizeClassName,
+  powerSearchSheetTriggerStartIconWithTokensClassName,
+  powerSearchSheetTriggerWithTokensClassName,
+  powerSearchSheetTriggerWrapperClassName,
+  powerSearchSheetTriggerWrapperWithTokensClassName,
+  powerSearchTokenValueClassName,
+} from './powerSearchClasses';
 import {useInternalConfig} from './useInternalConfig';
 import {usePowerSearchSource} from './usePowerSearchSource';
 import {formatFilterValue} from './formatFilterValue';
@@ -155,125 +163,6 @@ const OPERATOR_VALUE_TYPE_TO_ICON: Record<string, IconName> = {
 // Token value rendering
 // =============================================================================
 
-const tokenValueStyles = stylex.create({
-  value: {
-    fontWeight: fontWeightVars['--font-weight-bold'],
-  },
-});
-
-const popoverLayerStyles = stylex.create({
-  layer: {
-    width: 'anchor-size(width)',
-    // Floor for comfortable editing, clamped by the layer runtime's viewport
-    // cap (spec:AST-059 FR7) rather than by the room beside the anchor; the
-    // runtime flips or slides the editor into view when it does not fit there
-    // (#4761).
-    minWidth: stylex.firstThatWorks(
-      `min(400px, ${layerViewportInset.maxInlineSize})`,
-      `min(400px, ${layerViewportInset.maxInlineSizeFallback})`,
-    ),
-  },
-});
-
-const resultCountStyles = stylex.create({
-  text: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    whiteSpace: 'nowrap',
-  },
-});
-
-// The sheet presentation's trigger field: the same control box as the
-// tokenizer field, with display-only tokens and one button as its only tab
-// stop.
-const sheetTriggerSizeStyles = stylex.create({
-  sm: {minHeight: sizeVars['--size-element-sm']},
-  md: {minHeight: sizeVars['--size-element-md']},
-  lg: {minHeight: sizeVars['--size-element-lg']},
-});
-
-const sheetTriggerStyles = stylex.create({
-  wrapper: {
-    position: 'relative',
-    flexWrap: 'nowrap',
-    gap: spacingVars['--spacing-1'],
-    height: 'auto',
-    cursor: {
-      default: 'pointer',
-      ':is([aria-disabled="true"])': 'default',
-    },
-  },
-  wrapperWithTokens: {
-    paddingBlock: `calc(${spacingVars['--spacing-1']} - 1px)`,
-    paddingInline: `calc(${spacingVars['--spacing-1']} - 1px)`,
-  },
-  contentSection: {
-    position: 'relative',
-    minWidth: 0,
-    flexGrow: 1,
-    display: 'flex',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    columnGap: spacingVars['--spacing-1'],
-    rowGap: `calc(${spacingVars['--spacing-1']} - 1px)`,
-  },
-  startIconWithTokens: {
-    marginInlineStart: `calc(${spacingVars['--spacing-2']} - ${spacingVars['--spacing-1']} + 1px)`,
-  },
-  // The only tab stop in the field. It stays visually borderless while the
-  // wrapper delegates taps on tokens and empty space to it.
-  trigger: {
-    appearance: 'none',
-    flex: '1 1 40px',
-    minWidth: '40px',
-    alignSelf: 'stretch',
-    display: 'flex',
-    alignItems: 'center',
-    paddingBlock: 0,
-    paddingInline: spacingVars['--spacing-1'],
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: colorVars['--color-text-secondary'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    textAlign: 'start',
-    whiteSpace: 'nowrap',
-    cursor: {
-      default: 'pointer',
-      ':is([aria-disabled="true"])': 'default',
-    },
-    outline: 'none',
-  },
-  // A placeholder longer than the trigger ends in an ellipsis inside it, as
-  // Selector's value does. It never runs under the result count or past the
-  // field's border.
-  placeholder: {
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  // Once a token is present the empty trigger covers the token lane instead
-  // of reserving 40px or wrapping onto an otherwise blank row.
-  triggerWithTokens: {
-    position: 'absolute',
-    inset: 0,
-    minWidth: 0,
-    padding: 0,
-  },
-  endSection: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    flexShrink: 0,
-    paddingInlineEnd: spacingVars['--spacing-1'],
-  },
-});
-
 // The sheet flow (three standalone sheets, the sheet editors) only
 // renders for the bottom-sheet presentation. Loading it on demand keeps it out
 // of pages whose PowerSearch stays a tokenizer field.
@@ -317,7 +206,7 @@ function PowerSearchSheetHost(
 }
 
 function PowerSearchTokenValue({text}: {text: string}) {
-  return <span {...stylex.props(tokenValueStyles.value)}>{text}</span>;
+  return <span className={powerSearchTokenValueClassName}>{text}</span>;
 }
 
 // =============================================================================
@@ -1398,7 +1287,9 @@ export function PowerSearch({
     const resultCountNode =
       // eslint-disable-next-line @astryx/no-nullish-jsx-guard -- `resultCountText` is a formatted string, not a slot
       resultCountText != null ? (
-        <span {...stylex.props(resultCountStyles.text)}>{resultCountText}</span>
+        <span className={powerSearchResultCountClassName}>
+          {resultCountText}
+        </span>
       ) : null;
 
     if (resultCountNode && endContent) {
@@ -1534,18 +1425,24 @@ export function PowerSearch({
             onFocus={handleTriggerFocusWithin}
             onBlur={handleTriggerBlurWithin}
             aria-disabled={isDisabled ? true : undefined}
-            {...stylex.props(
-              inputWrapperStyles.base,
-              inputWrapperStyles.textField,
-              sheetTriggerStyles.wrapper,
-              filters.length > 0 && sheetTriggerStyles.wrapperWithTokens,
-              sheetTriggerSizeStyles[size],
-              isDisabled && inputWrapperStyles.disabled,
-              status && inputStatusBorderStyles[status.type],
-              status &&
-                !isDisabled &&
-                inputStatusHoverShadowStyles[status.type],
-              status && inputStatusFocusWithinStyles[status.type],
+            {...mergeProps(
+              tw(
+                powerSearchSheetTriggerWrapperClassName,
+                filters.length > 0 &&
+                  powerSearchSheetTriggerWrapperWithTokensClassName,
+                powerSearchSheetTriggerSizeClassName(size),
+              ),
+              stylex.props(
+                inputWrapperStyles.base,
+                inputWrapperStyles.textField,
+                isDisabled && inputWrapperStyles.disabled,
+                status && inputStatusBorderStyles[status.type],
+                status &&
+                  !isDisabled &&
+                  inputStatusHoverShadowStyles[status.type],
+                status && inputStatusFocusWithinStyles[status.type],
+                xstyle,
+              ),
             )}>
             {/* The trigger's name is the label plus everything visible here:
                 the placeholder, or the tokens, so speech input can say what
@@ -1553,12 +1450,12 @@ export function PowerSearch({
                 (WCAG 2.5.3). */}
             <div
               id={triggerContentId}
-              {...stylex.props(sheetTriggerStyles.contentSection)}>
+              className={powerSearchSheetTriggerContentClassName}>
               {isRenderable(startIcon as React.ReactNode) && (
                 <span
-                  {...stylex.props(
+                  className={tw(
                     filters.length > 0 &&
-                      sheetTriggerStyles.startIconWithTokens,
+                      powerSearchSheetTriggerStartIconWithTokensClassName,
                   )}>
                   {renderIconSlot(startIcon, {size: 'sm', color: 'secondary'})}
                 </span>
@@ -1583,12 +1480,13 @@ export function PowerSearch({
                 aria-expanded={isSheetOpen}
                 aria-labelledby={`${triggerLabelId} ${triggerContentId}`}
                 aria-describedby={triggerDescribedBy}
-                {...stylex.props(
-                  sheetTriggerStyles.trigger,
-                  filters.length > 0 && sheetTriggerStyles.triggerWithTokens,
+                className={tw(
+                  powerSearchSheetTriggerClassName,
+                  filters.length > 0 &&
+                    powerSearchSheetTriggerWithTokensClassName,
                 )}>
                 {filters.length === 0 ? (
-                  <span {...stylex.props(sheetTriggerStyles.placeholder)}>
+                  <span className={powerSearchSheetTriggerPlaceholderClassName}>
                     {placeholder}
                   </span>
                 ) : null}
@@ -1597,9 +1495,9 @@ export function PowerSearch({
             {(endContent || isRenderable(resultCountText)) && (
               <div
                 ref={endLaneRef}
-                {...stylex.props(sheetTriggerStyles.endSection)}>
+                className={powerSearchSheetTriggerEndClassName}>
                 {isRenderable(resultCountText) && (
-                  <span {...stylex.props(resultCountStyles.text)}>
+                  <span className={powerSearchResultCountClassName}>
                     {resultCountText}
                   </span>
                 )}
@@ -1687,7 +1585,7 @@ export function PowerSearch({
         placement: 'below',
         alignment: 'start',
         offset: spacingVars['--spacing-1'],
-        xstyle: popoverLayerStyles.layer,
+        className: powerSearchPopoverLayerClassName,
       })}
     </>
   );
