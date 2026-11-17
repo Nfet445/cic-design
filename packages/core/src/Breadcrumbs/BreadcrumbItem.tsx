@@ -61,8 +61,11 @@ import {usePopoverInternal} from '../Popover/usePopover';
 import {useListFocus} from '../hooks/useListFocus';
 import {useMenuPress} from '../hooks/useMenuPress';
 import {pressOnItemsOnly} from '../hooks/menuPressOnItems';
-import {menuTouchActionStyles} from '../DropdownMenu/menuTouchAction.stylex';
 import {useMenuOverflow} from '../DropdownMenu/useMenuOverflow';
+import {
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
 import {useTypeahead} from '../hooks/useTypeahead';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
 import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
@@ -641,11 +644,11 @@ function BreadcrumbMenuTrigger({
           onKeyDown={listKeyDown}
           {...mergeProps(
             themeProps('breadcrumb-menu'),
-            stylex.props(
-              menuStyles.menu,
+            stylex.props(menuStyles.menu),
+            tw(
               hasOverflow
-                ? menuTouchActionStyles.scrolls
-                : menuTouchActionStyles.fits,
+                ? dropdownMenuSubMenuTouchClassName
+                : dropdownMenuSubMenuTouchPinchClassName,
             ),
           )}>
           <DropdownMenuContext value={contextValue}>

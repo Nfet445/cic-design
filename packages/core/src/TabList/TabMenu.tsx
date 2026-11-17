@@ -4,7 +4,7 @@
 
 /**
  * @file TabMenu.tsx
- * @input Uses React, StyleX, usePopover, TabListContext
+ * @input Uses React, usePopover, TabListContext
  * @output Exports TabMenu component, TabMenuProps type, TabMenuOption type
  * @position Menu trigger button; opens dropdown of overflow menu items and
  *   mirrors selected tab indicator positioning
@@ -17,7 +17,6 @@
  */
 
 import React, {useCallback, useId, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Icon} from '../Icon';
 import {renderIconSlot, type IconType} from '../Icon';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
@@ -25,8 +24,11 @@ import {usePopoverInternal} from '../Popover/usePopover';
 import {MENU_ITEM_SELECTOR} from '../DropdownMenu/menuItemRoles';
 import {useListFocus} from '../hooks/useListFocus';
 import {useMenuPress} from '../hooks/useMenuPress';
-import {menuTouchActionStyles} from '../DropdownMenu/menuTouchAction.stylex';
 import {useMenuOverflow} from '../DropdownMenu/useMenuOverflow';
+import {
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
 import {useTabListContext} from './TabListContext';
 import type {TabListSize} from './TabListContext';
 import {
@@ -248,12 +250,12 @@ export function TabMenu({
           onFocus={handleFocus}
           {...mergeProps(
             themeProps('tab-menu-dropdown'),
-            stylex.props(
+            tw(
+              TAB_MENU_DROPDOWN_CLASS,
               hasOverflow
-                ? menuTouchActionStyles.scrolls
-                : menuTouchActionStyles.fits,
+                ? dropdownMenuSubMenuTouchClassName
+                : dropdownMenuSubMenuTouchPinchClassName,
             ),
-            TAB_MENU_DROPDOWN_CLASS,
           )}>
           <span role="presentation" className={TAB_MENU_HEADING_CLASS}>
             {label}

@@ -19,8 +19,11 @@ import type {BaseProps} from '../BaseProps';
 import {useInternalListFocus} from '../hooks/useListFocus';
 import {useMenuPress} from '../hooks/useMenuPress';
 import {pressOnItemsOnly} from '../hooks/menuPressOnItems';
-import {menuTouchActionStyles} from '../DropdownMenu/menuTouchAction.stylex';
 import {useMenuOverflow} from '../DropdownMenu/useMenuOverflow';
+import {
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
 import {useTypeahead} from '../hooks/useTypeahead';
 import {themeProps} from '../utils/themeProps';
@@ -211,15 +214,13 @@ export function NavHeadingMenu({
         data-testid={testId}
         {...mergeProps(
           themeProps('nav-heading-menu', {size}),
-          stylex.props(
-            hasOverflow
-              ? menuTouchActionStyles.scrolls
-              : menuTouchActionStyles.fits,
-            xstyle,
-          ),
+          stylex.props(xstyle),
           tw(
             navHeadingMenuClassName,
             navHeadingMenuMinWidthClassName[size],
+            hasOverflow
+              ? dropdownMenuSubMenuTouchClassName
+              : dropdownMenuSubMenuTouchPinchClassName,
             className,
           ),
           overrideStyle,

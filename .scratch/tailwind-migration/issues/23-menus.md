@@ -412,3 +412,49 @@ none`), `popover` (`anchor-size(width)`), `emptyState`, `sectionHeading` and
    trigger's `height` per size.
 6. `menuTouchAction.stylex.ts` and its six foreign call sites in one commit,
    when a window is allowed to edit those families.
+
+### Window 8
+
+The assigned delta was already landed when the window opened: `DropdownMenu.tsx`
+and `ContextMenu.tsx` keep no create, the four row-state copies are one
+`DropdownMenu/menuRowState.stylex.ts`, and `DropdownMenuSubMenu.tsx` keeps only
+`triggerStyles.caret` (the no-style-only-wrapper case). The window found one
+real gap and closed the last survivor, as two commits:
+
+- `e5bc3ff2c` — coverage. `Layout/tailwindStylesheet.source-build.test.mjs` never
+  listed the maps window 5 added: `dropdownMenuClasses.ts`'s pointer-popover
+  section (`dropdownMenuPopoverClassName`, its three width arms, the frame, the
+  region, the surface host, the scroll, the step aside, the trigger's two
+  states, the layer box) and all of `ContextMenu/contextMenuClasses.ts`. A class
+  without a rule passed here silently; now it fails. No rule was added, so the
+  sheet and the 1380 ceiling did not move.
+- `62e28c834` — `menuTouchAction.stylex.ts` is deleted and its two values are
+  the class strings the sub-menu map already held
+  (`dropdownMenuSubMenuTouchClassName`, `dropdownMenuSubMenuTouchPinchClassName`).
+  The module crossed into five closed families — `SideNav/SideNavHeading.tsx`,
+  `TopNav/TopNavHeading.tsx`, `TopNav/TopNavMenu.tsx`, `TabList/TabMenu.tsx`,
+  `Breadcrumbs/BreadcrumbItem.tsx` — because this ticket owns the module and a
+  documented survivor here blocks the final StyleX removal. Each site swapped
+  its `stylex.props()` argument for the class joined into its own `tw()`; every
+  other StyleX value at those sites stayed, `xstyle` last. `TabMenu.tsx` and
+  `TopNavMenu.tsx` dropped their `stylex` import; `NavHeadingMenu.tsx`,
+  `BreadcrumbItem.tsx`, `SideNavHeading.tsx` and `TopNavHeading.tsx` keep it.
+  The header lines that named StyleX were corrected where the import went.
+- `DropdownMenu.test.tsx`: "owns touch scrolling" asserted a StyleX hash of the
+  declaration; it reads `dropdownMenuSubMenuTouchPinchClassName` and excludes
+  the pan class and `[touch-action:none]`. "caps menu height and only scrolls
+  when content overflows" now asserts the pair in both directions, so the
+  overflow branch of the swap is covered.
+
+Verification: `node packages/core/scripts/build-css-tailwind.mjs` (194.9 kB),
+`pnpm exec vitest run` on `DropdownMenu`, `ContextMenu`, `MoreMenu`, `SideNav`,
+`TopNav`, `TabList`, `Breadcrumbs`, `NavMenu` and the stylesheet test — 36
+files, 1416 passed; `pnpm -F @astryxdesign/core typecheck` clean; prettier and
+eslint clean on the touched files.
+
+Still open for this ticket: the option menus of the family, which no window has
+started — `Selector/Selector.tsx:143` (31 keys), `Selector.tsx:507` (three
+sizes), `Selector/SelectorBottomSheet.tsx:24` (two keys),
+`MultiSelector/MultiSelector.tsx:154` (about 25 keys) and `:418` (three sizes).
+Every menu surface and row in `DropdownMenu/`, `ContextMenu/`, `MoreMenu/` and
+`NavMenu/` is a class map now.
