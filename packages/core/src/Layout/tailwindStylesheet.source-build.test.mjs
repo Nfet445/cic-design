@@ -622,8 +622,22 @@ import {
   tokenizerIdleSpinnerClassName,
   tokenizerLayerClassName,
   tokenizerOverflowTextClassName,
+  tokenizerSheetBodyClassName,
+  tokenizerSheetCreateLabelClassName,
+  tokenizerSheetCreateRowClassName,
+  tokenizerSheetEmptyClassName,
+  tokenizerSheetEmptyHostClassName,
   tokenizerSheetFieldClassName,
   tokenizerSheetFieldDisabledClassName,
+  tokenizerSheetFooterClassName,
+  tokenizerSheetListClassName,
+  tokenizerSheetPendingClassName,
+  tokenizerSheetRowClassName,
+  tokenizerSheetRowDisabledClassName,
+  tokenizerSheetRowItemClassName,
+  tokenizerSheetRowLabelClassName,
+  tokenizerSheetRowsClassName,
+  tokenizerSheetSearchRowClassName,
   tokenizerSheetTriggerClassName,
   tokenizerSheetTriggerPlaceholderClassName,
   tokenizerSheetTriggerPlaceholderDisabledClassName,
@@ -3402,6 +3416,22 @@ function familyClassNames() {
   add(tokenizerSheetTriggerWithTokensClassName);
   add(tokenizerSheetTriggerPlaceholderClassName);
   add(tokenizerSheetTriggerPlaceholderDisabledClassName);
+  // The sheet's content column, its scrolling list and rows, the create row,
+  // the footer and the empty and pending hosts.
+  add(tokenizerSheetBodyClassName);
+  add(tokenizerSheetSearchRowClassName);
+  add(tokenizerSheetListClassName);
+  add(tokenizerSheetRowsClassName);
+  add(tokenizerSheetRowItemClassName);
+  add(tokenizerSheetRowClassName);
+  add(tokenizerSheetRowDisabledClassName);
+  add(tokenizerSheetRowLabelClassName);
+  add(tokenizerSheetCreateRowClassName);
+  add(tokenizerSheetCreateLabelClassName);
+  add(tokenizerSheetFooterClassName);
+  add(tokenizerSheetEmptyHostClassName);
+  add(tokenizerSheetEmptyClassName);
+  add(tokenizerSheetPendingClassName);
 
   return [...names].sort();
 }

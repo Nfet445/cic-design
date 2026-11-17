@@ -178,3 +178,59 @@ export const tokenizerSheetTriggerPlaceholderClassName =
 
 export const tokenizerSheetTriggerPlaceholderDisabledClassName =
   'forced-colors:text-[color:GrayText]';
+
+/** The sheet's content column: the search row, the list and the footer. */
+export const tokenizerSheetBodyClassName = tw(
+  'flex h-full min-h-0 flex-col px-3 pt-2 pb-3',
+);
+
+// The sheet has no dedicated close button; it keeps the gesture, the scrim and
+// Escape, and the footer's Done.
+export const tokenizerSheetSearchRowClassName = 'pb-2';
+
+/** The scrolling list, and the stable-order rows inside it. */
+export const tokenizerSheetListClassName =
+  'flex min-h-0 grow flex-col overflow-y-auto';
+
+export const tokenizerSheetRowsClassName = 'flex flex-col';
+
+/** A listitem that lets its row take part in the list's own layout. */
+export const tokenizerSheetRowItemClassName = 'contents';
+
+/** One checkbox row: the label and the indicator, on the sheet's own paint. */
+export const tokenizerSheetRowClassName = tw(
+  'flex w-full min-h-11 items-center justify-between gap-2 px-1 py-2',
+  'border-0 rounded-[var(--radius-element)] bg-transparent text-start',
+  '[font-family:inherit] text-[color:var(--color-text-primary)]',
+  'cursor-pointer [&:is(:disabled,[aria-disabled=true])]:cursor-default',
+);
+
+/**
+ * An `aria-disabled` row gets no system disabled paint in forced colors, so
+ * GrayText is the platform's disabled affordance there.
+ */
+export const tokenizerSheetRowDisabledClassName =
+  'forced-colors:text-[color:GrayText]';
+
+/** The row's label takes what the indicator leaves. */
+export const tokenizerSheetRowLabelClassName = 'grow min-w-0';
+
+/** The create row, and the label it takes the width with. */
+export const tokenizerSheetCreateRowClassName =
+  'flex w-full min-h-11 items-center gap-2 px-1 py-2';
+
+export const tokenizerSheetCreateLabelClassName = 'grow min-w-0';
+
+/** The footer stays at the sheet's end, in every list state. */
+export const tokenizerSheetFooterClassName =
+  'flex items-center gap-2 pt-3 mt-auto';
+
+/** Hosts the empty state in the list's column without a box of its own. */
+export const tokenizerSheetEmptyHostClassName = 'contents';
+
+/** The empty state takes the list's remaining height. */
+export const tokenizerSheetEmptyClassName = 'grow';
+
+/** Holds the pending indicator's row at a row's height. */
+export const tokenizerSheetPendingClassName =
+  'flex min-h-11 items-center justify-center py-2';
