@@ -35,6 +35,14 @@ import {
   dropdownMenuGroupHeadingClassName,
 } from '../DropdownMenu/dropdownMenuClasses';
 import {
+  dropdownMenuSubMenuDrillInClassName,
+  dropdownMenuSubMenuFlyoutClassName,
+  dropdownMenuSubMenuScrollClassName,
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+  dropdownMenuSubMenuTriggerClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
+import {
   alertDialogActionsRowClassName,
   alertDialogStackedActionClassName,
 } from '../AlertDialog/alertDialogClasses';
@@ -1846,6 +1854,20 @@ function familyClassNames() {
       size: 'md',
     }),
   );
+  add(dropdownMenuSubMenuDrillInClassName);
+  add(dropdownMenuSubMenuFlyoutClassName);
+  add(dropdownMenuSubMenuScrollClassName);
+  add(dropdownMenuSubMenuTouchClassName);
+  add(dropdownMenuSubMenuTouchPinchClassName);
+  for (const isOpen of [true, false]) {
+    add(
+      dropdownMenuSubMenuTriggerClassName({
+        isDisabled: false,
+        size: 'md',
+        isOpen,
+      }),
+    );
+  }
 
   return [...names].sort();
 }
@@ -1883,7 +1905,6 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // side-nav row's class map added its own transition and popover utilities.
     // The display-and-feedback family added Card's thirteen variant
     // backgrounds, four elevation variables and its sizing classes, which took
-    // backgrounds, four elevation variables and its sizing classes, which took
     // the sheet from 1016 rules to 1042. Divider's row, line, weight, label
     // and full-bleed classes added 8, Banner's status fills and their
     // forced-colors outlines, the text column and the content area added 26.
@@ -1894,8 +1915,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // scrim — about 60 — and the mobile nav about 30: its dialog, the scrim's
     // fade, both drawer edges in both motion states, and the header. Card's
     // four elevation variables were reused by the dialog family maps, so the
-    // sum of the two families is smaller than their parts. With every family
-    // above the sheet sits at 1121.
+    // sum of the two families is smaller than their parts. The sub-menu's
+    // flyout surface, its scroll gesture and the two cap fallbacks under
+    // `@supports` added 13. With every family above the sheet sits at about
+    // 1134, so the ceiling follows the sum rather than one side.
     expect(stylesheet.rules.size).toBeLessThan(1160);
   });
 

@@ -830,10 +830,8 @@ function DropdownMenuBottomSheet({
           {...mergeProps(
             themeProps('dropdown-menu', {presentation: 'bottom-sheet'}),
             stylex.props(menuBottomSheetStyles.content, xstyle),
-            {
-              className: tw(dropdownMenuSheetClassName.content, className),
-              style,
-            },
+            tw(dropdownMenuSheetClassName.content, className),
+            style,
           )}>
           {submenuPath.length > 0 ? (
             <div className={dropdownMenuSheetClassName.header}>
