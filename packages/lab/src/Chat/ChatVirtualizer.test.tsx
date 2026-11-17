@@ -5,6 +5,10 @@ import {render, act, screen, waitFor} from '@testing-library/react';
 import {createRef, useLayoutEffect} from 'react';
 import {TOUCH_QUERY} from '@astryxdesign/core/internal/touch';
 import {ChatVirtualizer, type ChatVirtualizerHandle} from './ChatVirtualizer';
+import {
+  chatVirtualizerContentClassName,
+  chatVirtualizerScrollerClassName,
+} from './chatVirtualizerClasses';
 
 // jsdom has no real layout (offsetHeight is 0, ResizeObserver never fires),
 // so these tests cover the CONTRACT layer — rendering shape, key handling,
@@ -31,6 +35,20 @@ function renderList(
     />,
   );
 }
+
+describe('ChatVirtualizer classes', () => {
+  it('carries the scroller and content class maps', () => {
+    const {container} = renderList(rows(2));
+    const scroller = container.firstElementChild as HTMLElement;
+    expect(scroller.className.split(' ')).toContain(
+      chatVirtualizerScrollerClassName,
+    );
+    const content = scroller.firstElementChild as HTMLElement;
+    for (const token of chatVirtualizerContentClassName.split(' ')) {
+      expect(content.className.split(' ')).toContain(token);
+    }
+  });
+});
 
 describe('ChatVirtualizer', () => {
   it('renders two aria-hidden spacers around the windowed rows', () => {
