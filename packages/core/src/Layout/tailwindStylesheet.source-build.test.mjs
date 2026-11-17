@@ -33,12 +33,35 @@ import {
   dropdownMenuDividerClassName,
   dropdownMenuItemClassName,
   dropdownMenuMarkerClassName,
+  dropdownMenuMenuInFrameClassName,
+  dropdownMenuPopoverClassName,
+  dropdownMenuPopoverFixedWidthClassName,
+  dropdownMenuPopoverMatchTriggerClassName,
+  dropdownMenuPopoverMinWidthClassName,
+  dropdownMenuPopoverViewportClassName,
   dropdownMenuRadioGroupClassName,
+  dropdownMenuRegionClassName,
+  dropdownMenuRegionsFrameClassName,
+  dropdownMenuScrollClassName,
   dropdownMenuSheetClassName,
   dropdownMenuGroupHeadingClassName,
+  dropdownMenuStepsAsideForViewClassName,
+  dropdownMenuSurfaceHostClassName,
   dropdownMenuTreeClassName,
   dropdownMenuTreeHiddenClassName,
+  dropdownMenuTriggerOpenClassName,
+  dropdownMenuTriggerPressableClassName,
 } from '../DropdownMenu/dropdownMenuClasses';
+import {
+  contextMenuCursorAnchorClassName,
+  contextMenuPopoverClassName,
+  contextMenuPopoverWidthClassName,
+  contextMenuSheetInsetClassName,
+  contextMenuSheetMenuClassName,
+  contextMenuTouchPanClassName,
+  contextMenuTouchPinchClassName,
+  contextMenuTriggerClassName,
+} from '../ContextMenu/contextMenuClasses';
 import {
   menuBottomSheetActionListClassName,
   menuBottomSheetClassName,
@@ -46,6 +69,12 @@ import {
 import {
   dropdownMenuSubMenuDrillInClassName,
   dropdownMenuSubMenuFlyoutClassName,
+  dropdownMenuSubMenuFlyoutMinWidthClassName,
+  dropdownMenuSubMenuFlyoutViewportClassName,
+  dropdownMenuSubMenuFrameMenuClassName,
+  dropdownMenuSubMenuRegionsFrameCapClassName,
+  dropdownMenuSubMenuRegionsFrameClassName,
+  dropdownMenuSubMenuRegionsSurfaceClassName,
   dropdownMenuSubMenuScrollClassName,
   dropdownMenuSubMenuTouchClassName,
   dropdownMenuSubMenuTouchPinchClassName,
@@ -2272,6 +2301,39 @@ function familyClassNames() {
       }),
     );
   }
+  // The pointer popover: the trigger's two states, the surface with its caps
+  // and the step aside, the frame a menu with a header or footer takes, the
+  // layer box and its three width arms. A sub-menu repeats the surface's caps
+  // and the frame, because a drilled-in view caps where the root menu does.
+  add(dropdownMenuTriggerPressableClassName);
+  add(dropdownMenuTriggerOpenClassName);
+  add(dropdownMenuPopoverClassName);
+  add(dropdownMenuScrollClassName);
+  add(dropdownMenuRegionsFrameClassName);
+  add(dropdownMenuMenuInFrameClassName);
+  add(dropdownMenuSurfaceHostClassName);
+  add(dropdownMenuRegionClassName);
+  add(dropdownMenuStepsAsideForViewClassName);
+  add(dropdownMenuPopoverViewportClassName);
+  add(dropdownMenuPopoverMatchTriggerClassName);
+  add(dropdownMenuPopoverMinWidthClassName);
+  add(dropdownMenuPopoverFixedWidthClassName);
+  add(dropdownMenuSubMenuFlyoutMinWidthClassName);
+  add(dropdownMenuSubMenuFlyoutViewportClassName);
+  add(dropdownMenuSubMenuRegionsFrameClassName);
+  add(dropdownMenuSubMenuRegionsFrameCapClassName);
+  add(dropdownMenuSubMenuRegionsSurfaceClassName);
+  add(dropdownMenuSubMenuFrameMenuClassName);
+  // The context menu: the trigger wrapper, the cursor anchor, the popover and
+  // its width, both touch actions, and the frame its menu takes in a sheet.
+  add(contextMenuTriggerClassName);
+  add(contextMenuCursorAnchorClassName);
+  add(contextMenuPopoverClassName);
+  add(contextMenuPopoverWidthClassName);
+  add(contextMenuTouchPinchClassName);
+  add(contextMenuTouchPanClassName);
+  add(contextMenuSheetMenuClassName);
+  add(contextMenuSheetInsetClassName);
 
   for (const isSelected of [true, false]) {
     add(checkboxListItemClassName({isSelected, className: undefined}));
