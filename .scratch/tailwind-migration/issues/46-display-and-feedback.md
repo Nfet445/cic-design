@@ -1,6 +1,6 @@
 # display and feedback surfaces
 
-Status: claimed
+Status: done
 Blocked by: 09
 Wave: 8
 Ticket: 46
@@ -490,3 +490,9 @@ resolution this time. Nothing is pushed.
   `--astryx-bottom-sheet-keyboard-inset` (`BottomSheet/BottomSheetPanel.tsx:1098`,
   another family) and `Markdown/Markdown.test.tsx` expects a `withCounter`
   class that the List conversion replaced with `[counter-increment:astryx-list]`.
+
+## Comments
+
+- 2026-11-17: closed. Every component in the ticket draws from a class map; `Markdown` was the last, and `Markdown/markdownClasses.ts` holds its roots, heading row with the level type and copy control, the first/middle/last density spacing of eleven block kinds, the code, table, hr and image blocks, and the inline and streaming marks.
+- `Markdown` renders consumer HTML, so every map still ends in `tw(map, className)` and the consumer's `xstyle` reaches the same element; one small `Markdown/markdownChildOverrides.stylex.ts` keeps the child rules a class cannot express.
+- `ToastViewport` and `CodeBlock` landed earlier in the ticket; `Skeleton`, `ProgressBar`, `Thumbnail`, `Badge`, `Timer`, `MetadataList` and `AspectRatio` all draw from their maps now.

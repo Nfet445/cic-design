@@ -44,16 +44,14 @@ const FLOORED_FLOOR_FILES = [
   'TextInput/textInputClasses.ts',
   'TimeInput/timeInputClasses.ts',
   'Chat/chatClasses.ts',
+  'CommandPalette/commandPaletteInputClasses.ts',
+  'Field/panelSearchInputClasses.ts',
+  'Typeahead/typeaheadClasses.ts',
   // Still on StyleX: the component source carries the declaration.
-  'CommandPalette/CommandPaletteInput.tsx',
   'ComplexSelector/ComplexSelector.tsx',
-  'DateInput/TouchDateField.tsx',
-  'DateTimeInput/DateTimeInput.tsx',
   'DateTimeInput/nativePickerSegmentClasses.ts',
-  'Field/PanelSearchInput.tsx',
   'NumberInput/NumberInput.tsx',
   'Selector/Selector.tsx',
-  'Typeahead/BaseTypeahead.tsx',
   // The rich-text package carries the same floor; its path is relative to
   // packages/core/src.
   '../../richtext/src/richTextEditorClasses.ts',
@@ -103,7 +101,11 @@ function componentSources(dir: string): string[] {
 describe('the 16px input floor', () => {
   it('gates every floored text control to iOS alone', () => {
     // Guards the loop below against the list silently emptying out.
-    expect(FLOORED_FLOOR_FILES.length).toBeGreaterThanOrEqual(18);
+    // Sixteen files carry the floor: one class map per floored control, and
+    // the rich-text editor. The count fell from eighteen when the date and
+    // typeahead fields moved their declarations into the maps that their
+    // siblings already shared.
+    expect(FLOORED_FLOOR_FILES.length).toBeGreaterThanOrEqual(16);
     for (const file of FLOORED_FLOOR_FILES) {
       const source = readFileSync(path.resolve(__dirname, file), 'utf8');
       expect(

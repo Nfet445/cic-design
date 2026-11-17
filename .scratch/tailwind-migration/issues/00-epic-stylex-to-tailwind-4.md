@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 35 of 50 tickets done, plus two waves (layout primitives,
+Progress: 36 of 50 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -93,7 +93,7 @@ buttons) that landed before the tickets were written.
 - [x] `28-table-behaviour` — sorting, filtering, selection, virtualised body
 - [x] `29-charts-and-richtext` — two packages get their own sheets
 - [ ] `30-lab` — 58 creations in two halves
-- [ ] `46-display-and-feedback` — Card, Divider, Markdown, Code, Spinner, Toast, Carousel
+- [x] `46-display-and-feedback` — Card, Divider, Markdown, Code, Spinner, Toast, Carousel
 - [ ] `47-form-controls-and-leftovers` — Switch, Checkbox, Radio, Slider, Stepper, and the family leftovers
 - [x] `48-chat-surface` — thirteen files and twenty-three creations
 
