@@ -44,3 +44,22 @@ export const chatPastedTextFooterClassName = tw(
 export const chatPastedTextMetaClassName = tw(
   'text-[length:var(--text-supporting-size)] text-[color:var(--color-text-secondary)]',
 );
+
+/** A system notice: centered muted supporting text, one line of padding. */
+export const chatSystemMessageClassName = tw(
+  'flex items-center justify-center gap-2 py-1',
+  '[font-family:var(--font-family-body)]',
+  'text-[length:var(--text-supporting-size)] font-normal',
+  'text-[color:var(--color-text-secondary)] text-center',
+);
+
+/** The divider variant's wrapper: the Divider spans the whole row. */
+export const chatSystemMessageDividerClassName = 'w-full';
+
+/** The notice's icon slot: it never shrinks away from the text. */
+export const chatSystemMessageIconClassName =
+  'inline-flex items-center shrink-0';
+
+/** The notice's text row: the icon and the words sit six pixels apart. */
+export const chatSystemMessageContentClassName =
+  'inline-flex items-center gap-1.5';

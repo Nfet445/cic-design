@@ -614,6 +614,10 @@ import {
   chatPastedTextPreviewClassName,
   chatPastedTextPreviewTextClassName,
   chatSendButtonClassName,
+  chatSystemMessageClassName,
+  chatSystemMessageContentClassName,
+  chatSystemMessageDividerClassName,
+  chatSystemMessageIconClassName,
   chatTokenizedTextClassName,
   chatTokenizedTextTokenClassName,
 } from '../Chat/chatClasses';
@@ -2071,6 +2075,10 @@ function familyClassNames() {
   add(chatPastedTextPreviewTextClassName);
   add(chatPastedTextFooterClassName);
   add(chatPastedTextMetaClassName);
+  add(chatSystemMessageClassName);
+  add(chatSystemMessageDividerClassName);
+  add(chatSystemMessageIconClassName);
+  add(chatSystemMessageContentClassName);
   for (const orientation of ['vertical', 'horizontal']) {
     add(radioListClassName({orientation}));
   }
