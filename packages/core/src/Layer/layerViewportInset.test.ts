@@ -103,6 +103,12 @@ describe('layerViewportInset (spec:AST-059)', () => {
     const offenders = sourceFiles(root)
       .filter(file => {
         const source = readFileSync(file, 'utf8');
+        // Reading the shared insets is how a capped layer is meant to work, so
+        // a consumer that does is never an offender: DateRangeInput's popover
+        // subtracts `--astryx-layer-inset-*` from its own cap.
+        if (source.includes('var(--astryx-layer-inset-')) {
+          return false;
+        }
         // A gutter of its own, or a size capped to the span beside the
         // trigger: `100%` of a position-area region minus the gutter.
         return (
