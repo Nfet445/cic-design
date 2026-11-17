@@ -21,7 +21,6 @@ import {
   type RefCallback,
 } from 'react';
 import {createTriggerFocusGate} from '../utils/triggerFocus';
-import * as stylex from '@stylexjs/stylex';
 import {
   useLayer,
   type ContextRenderProps,
@@ -33,34 +32,15 @@ import {
   type LayerTouchTrigger,
 } from '../Layer/useTouchTrigger';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
+import {
+  hoverCardContentClassName,
+  hoverCardSurfaceClassName,
+} from './hoverCardClasses';
 import {registerLayerSurface} from '../Layer/layerSurfacePress';
 import {useKeyedLayerDismissal} from '../Layer/useLayerDismissal';
-import {
-  colorVars,
-  shadowVars,
-  radiusVars,
-  spacingVars,
-} from '../theme/tokens.stylex';
+import {spacingVars} from '../theme/tokens.stylex';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
-
-const styles = stylex.create({
-  // Base container styles passed to useLayer
-  container: {
-    backgroundColor: colorVars['--color-background-surface'],
-    '--_hovercard-radius': radiusVars['--radius-container'],
-    borderRadius: 'var(--_hovercard-radius)',
-    boxShadow: shadowVars['--shadow-med'],
-  },
-  // Content wrapper for padding and interaction events.
-  content: {
-    display: 'block',
-    paddingBlockStart: spacingVars['--spacing-3'],
-    paddingBlockEnd: spacingVars['--spacing-3'],
-    paddingInlineStart: spacingVars['--spacing-3'],
-    paddingInlineEnd: spacingVars['--spacing-3'],
-  },
-});
 
 /**
  * The card lives in its trigger's document, which can be an iframe or a
@@ -306,8 +286,6 @@ export function useHoverCard(options: HoverCardOptions = {}): HoverCardReturn {
     id: layerId,
     render: renderLayer,
   } = layer;
-
-  const popoverXstyle = styles.container;
 
   const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -681,12 +659,13 @@ export function useHoverCard(options: HoverCardOptions = {}): HoverCardReturn {
         // Consumer surface style props land on the layer container — the
         // themed surface (bg/radius/shadow) where the theme class lives — so
         // customizing the card targets the same element as the theme. The inner
-        // div keeps `styles.content` for padding.
-        xstyle: [popoverXstyle, props?.xstyle],
+        // div carries `hoverCardContentClassName` for padding.
+        xstyle: props?.xstyle,
         className: tw(
           themeClassName,
           props?.className,
           layerAnimations[renderPlacement],
+          hoverCardSurfaceClassName,
         ),
         style: props?.style,
         // useLayer mounts only after it has verified or corrected the parent,
@@ -701,7 +680,7 @@ export function useHoverCard(options: HoverCardOptions = {}): HoverCardReturn {
           // interactive-ancestor walk, so a clickable container around the
           // trigger leaves it alone; document listeners still see it.
           ref={registerLayerSurface}
-          {...stylex.props(styles.content)}
+          className={hoverCardContentClassName}
           onMouseEnter={() => {
             // Touch synthesizes these over the card too; letting a tap inside
             // register as "hovering content" would block every later hide.
@@ -748,7 +727,6 @@ export function useHoverCard(options: HoverCardOptions = {}): HoverCardReturn {
       label,
       clearTimeouts,
       scheduleHide,
-      popoverXstyle,
       isTouchPointerRef,
     ],
   );
