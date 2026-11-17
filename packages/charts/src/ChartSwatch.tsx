@@ -14,8 +14,14 @@
  * ```
  */
 
-import {memo} from 'react';
-import * as stylex from '@stylexjs/stylex';
+import {memo, type CSSProperties} from 'react';
+import {
+  CHART_SWATCH_COLOR_VARIABLE,
+  chartSwatchClassName,
+  chartSwatchFillClassName,
+  chartSwatchVariantClassName,
+} from './chartSwatchClasses';
+import {tw} from './tw';
 
 /**
  * Visual variant — drives shape.
@@ -31,27 +37,6 @@ export interface ChartSwatchProps {
   variant?: ChartSwatchVariant;
 }
 
-const styles = stylex.create({
-  base: {
-    flexShrink: 0,
-  },
-  square: {
-    width: 8,
-    height: 8,
-    borderRadius: 2,
-    marginInline: 1,
-  },
-  line: {
-    width: 10,
-    height: 3,
-    borderRadius: 1.5,
-  },
-  // Runtime color → dynamic StyleX (not an inline style), per repo convention.
-  fill: (color: string) => ({
-    backgroundColor: color,
-  }),
-});
-
 /**
  * Color swatch primitive.
  *
@@ -64,7 +49,14 @@ function ChartSwatchImpl({color, variant = 'square'}: ChartSwatchProps) {
   return (
     <div
       aria-hidden
-      {...stylex.props(styles.base, styles[variant], styles.fill(color))}
+      className={tw(
+        chartSwatchClassName,
+        chartSwatchVariantClassName[variant],
+        chartSwatchFillClassName,
+      )}
+      // A series colour is data, not a token: the caller owns the value, so it
+      // rides the variable the fill class reads.
+      style={{[CHART_SWATCH_COLOR_VARIABLE]: color} as CSSProperties}
     />
   );
 }

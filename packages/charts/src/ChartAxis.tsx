@@ -19,9 +19,11 @@
  */
 
 import {useCallback, useMemo} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {characterCount, truncateCharacters} from '@astryxdesign/core/utils';
-import {colorVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {
+  chartAxisLineClassName,
+  chartAxisTickMarkClassName,
+} from './chartAxisClasses';
 import {useChart} from './ChartContext';
 import {isBandScale} from './utils';
 import type {ScaleLinear, ScaleTime} from 'd3-scale';
@@ -49,17 +51,6 @@ export interface ChartAxisProps {
   /** Show perpendicular tick marks at each tick label. Default: `false`. */
   showTicks?: boolean;
 }
-
-const styles = stylex.create({
-  axisLine: {
-    stroke: colorVars['--color-text-primary'],
-    strokeWidth: 1,
-  },
-  tickMark: {
-    stroke: colorVars['--color-text-primary'],
-    strokeWidth: 1,
-  },
-});
 
 const TICK_SIZE = 6;
 
@@ -215,7 +206,7 @@ export function ChartAxis({
           x2={isHorizontal ? width : 0}
           y1={isHorizontal ? axisLineY : 0}
           y2={isHorizontal ? axisLineY : height}
-          {...stylex.props(styles.axisLine)}
+          className={chartAxisLineClassName}
         />
       )}
       {ticks.map(({value, offset, label}) => {
@@ -236,7 +227,9 @@ export function ChartAxis({
                 transition: tickTransition,
                 opacity: isVisible ? 1 : 0,
               }}>
-              {showTicks && <line y2={y} {...stylex.props(styles.tickMark)} />}
+              {showTicks && (
+                <line y2={y} className={chartAxisTickMarkClassName} />
+              )}
               <text
                 y={position === 'bottom' ? TICK_SIZE + 12 : -(TICK_SIZE + 4)}
                 textAnchor="middle"
@@ -257,7 +250,9 @@ export function ChartAxis({
               transition: tickTransition,
               opacity: isVisible ? 1 : 0,
             }}>
-            {showTicks && <line x2={x} {...stylex.props(styles.tickMark)} />}
+            {showTicks && (
+              <line x2={x} className={chartAxisTickMarkClassName} />
+            )}
             <text
               x={position === 'left' ? -(TICK_SIZE + 4) : TICK_SIZE + 4}
               dy="0.32em"
