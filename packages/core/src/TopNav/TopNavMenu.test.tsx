@@ -19,6 +19,8 @@ import {TopNavRenderContext} from './TopNavRenderContext';
 import {TopNavMenu} from './TopNavMenu';
 import {__resetMenuPressForTest} from '../hooks/useMenuPress';
 import {expectNativeLinkClicks} from '../hooks/__tests__/menuLinkClicks';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {topNavMenuDrawerItemsClassName} from './topNavMenuClasses';
 
 const mockItems = [
   {
@@ -249,6 +251,8 @@ describe('TopNavMenu — drawer focus ring', () => {
 
   it('clips the drawer section only while it is collapsed', async () => {
     // The ring paints outside the item, so a permanent clip would cut it off.
+    // The clip is the collapsed state itself, keyed off `aria-hidden`, and the
+    // open state turns it off after the collapse animation has finished.
     const user = userEvent.setup();
     render(
       <TopNavRenderContext value="drawer">
@@ -259,11 +263,22 @@ describe('TopNavMenu — drawer focus ring', () => {
     const section = document.getElementById(
       trigger.getAttribute('aria-controls') ?? '',
     )!;
-    expect(getComputedStyle(section).overflow).toBe('hidden');
-    expect(getComputedStyle(section.firstElementChild!).overflow).toBe('');
+    expectClassSet(section, {
+      includes: ['overflow-hidden', '[grid-template-rows:0fr]'],
+    });
+    // The visible arm only applies while `aria-hidden` is false, so the clip
+    // cannot outlive the open.
+    expect(topNavMenuDrawerItemsClassName()).toContain(
+      '[&[aria-hidden=false]]:overflow-visible',
+    );
+    expect(section).toHaveAttribute('aria-hidden', 'true');
+    // The inner box is never a clip, so an open item's ring is not cut off.
+    expectClassSet(section.firstElementChild!, {
+      excludes: ['overflow-hidden'],
+    });
 
     await user.click(trigger);
-    expect(getComputedStyle(section).overflow).toBe('visible');
+    expect(section).toHaveAttribute('aria-hidden', 'false');
   });
 });
 
