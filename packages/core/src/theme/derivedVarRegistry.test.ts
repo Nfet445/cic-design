@@ -393,6 +393,12 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // wheel shares with its touch siblings; the colour and weight are read from
   // the text tokens, so a theme changes those tokens, not these vars.
   '--astryx-date-pane-block-size',
+  // The month scroller's measured geometry: where each pane sits, how wide it
+  // is, and the whole strip's width. All three are written from the scrollport
+  // the scroller measured, so no theme value stands behind them.
+  '--astryx-date-pane-inline-start',
+  '--astryx-date-pane-inline-size',
+  '--astryx-date-spacer-inline-size',
   '--astryx-date-wheel-item-size',
   '--astryx-date-wheel-row-offset',
   '--astryx-date-wheel-row-color',

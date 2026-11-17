@@ -184,6 +184,187 @@ export const pickerWheelRowClassName = tw(
   'select-none',
 );
 
+/**
+ * The month scroller's measured geometry: the spacer's full inline size, and
+ * one pane's place and width along it. The scroller measures its own box, so
+ * every value is per instance and rides a variable the element writes.
+ */
+export type DateInputMonthScrollerStyle = CSSProperties &
+  Partial<
+    Record<
+      | '--astryx-date-pane-inline-start'
+      | '--astryx-date-pane-inline-size'
+      | '--astryx-date-spacer-inline-size',
+      string
+    >
+  >;
+
+/** The variable the spacer reads to hold every pane at once. */
+export function dateInputMonthSpacerStyle(
+  inlineSize: number,
+): DateInputMonthScrollerStyle {
+  return {'--astryx-date-spacer-inline-size': `${inlineSize}px`};
+}
+
+/** The variables one pane reads: where it starts, and how wide it is. */
+export function dateInputMonthPaneStyle({
+  insetInlineStart,
+  inlineSize,
+}: {
+  insetInlineStart: number;
+  inlineSize: number;
+}): DateInputMonthScrollerStyle {
+  return {
+    '--astryx-date-pane-inline-start': `${insetInlineStart}px`,
+    '--astryx-date-pane-inline-size': `${inlineSize}px`,
+  };
+}
+
+/**
+ * The month scrollport. `box-sizing` is stated rather than inherited from the
+ * reset: the pane size, the snap offsets and the virtualization all key off
+ * the measured box.
+ *
+ * `pan-x` splits the gesture by axis — horizontal pans stay with the calendar
+ * and vertical ones reach the sheet as swipe-to-dismiss.
+ */
+export const monthScrollerClassName = tw(
+  'relative',
+  'box-border',
+  '[block-size:var(--astryx-date-pane-block-size)]',
+  'overflow-x-auto',
+  'overflow-y-hidden',
+  '[scroll-snap-type:x_mandatory]',
+  'overscroll-contain',
+  '[scrollbar-width:none]',
+  '[touch-action:pan-x]',
+);
+
+/** The spacer that holds every month's pane, so no pane is ever unmounted. */
+export const monthScrollerSpacerClassName = tw(
+  'relative',
+  'block',
+  'h-full',
+  '[inline-size:var(--astryx-date-spacer-inline-size)]',
+);
+
+/**
+ * One month, as a six-row grid, placed into the spacer. No
+ * `scroll-snap-stop: always`: a fling may carry past several months.
+ */
+export const monthPaneClassName = tw(
+  'absolute',
+  'inset-y-0',
+  '[block-size:var(--astryx-date-pane-block-size)]',
+  '[inset-inline-start:var(--astryx-date-pane-inline-start)]',
+  '[inline-size:var(--astryx-date-pane-inline-size)]',
+  '[scroll-snap-align:start]',
+  'grid',
+  'grid-cols-7',
+  'grid-rows-6',
+);
+
+/** A week lays its cells straight into the pane's grid. */
+export const monthRowClassName = 'contents';
+
+/** One grid cell, which centres the day's tap target. */
+export const monthCellClassName = tw(
+  'relative',
+  'flex',
+  'items-center',
+  'justify-center',
+);
+
+/**
+ * A day's tap target: the full cell, floored at the touch target size, and no
+ * browser chrome of its own. A tap must not also select the number inside it.
+ */
+export const monthDayClassName = tw(
+  'flex',
+  'items-center',
+  'justify-center',
+  'w-full',
+  'h-full',
+  'min-w-[44px]',
+  'min-h-[44px]',
+  'p-0',
+  'm-0',
+  '[border-width:0]',
+  '[border-style:none]',
+  'bg-transparent',
+  'text-[color:var(--color-text-primary)]',
+  'text-[length:var(--text-body-size)]',
+  'font-normal',
+  'cursor-pointer',
+  'disabled:cursor-default',
+  'select-none',
+  '[-webkit-tap-highlight-color:transparent]',
+  '[&[aria-disabled=true]]:cursor-default',
+);
+
+/**
+ * A day from the month either side. Muted exactly as the desktop calendar mutes
+ * it: the secondary colour and half opacity together are what make it read as
+ * context rather than as a dimmer choice.
+ */
+export const monthDayOutsideClassName = tw(
+  'text-[color:var(--color-text-secondary)]',
+  'opacity-50',
+);
+
+/**
+ * A day the range rules out. It fades whatever colour the day already had
+ * instead of recolouring it, so a spilled day stays a step apart from an
+ * in-month one and both land lighter than an enabled spill day.
+ *
+ * The opacity keys off `aria-disabled`, not a plain utility: the outside arm's
+ * `opacity-50` is a plain utility too, and two plain utilities are ordered by
+ * the sheet rather than by the class attribute.
+ */
+export const monthDayDisabledClassName = tw(
+  '[&[aria-disabled=true]]:opacity-30',
+  'cursor-default',
+);
+
+/**
+ * The circular puck inside the tap target. Sizing the puck rather than the
+ * button keeps the target at the full cell while the visual stays a circle.
+ */
+export const monthDayPuckClassName = tw(
+  'flex',
+  'items-center',
+  'justify-center',
+  'size-[36px]',
+  'rounded-full',
+  '[border-width:var(--border-width)]',
+  'border-solid',
+  'border-transparent',
+  'bg-transparent',
+  '[transition-property:background-color,_color,_border-color]',
+  '[transition-duration:var(--duration-fast)]',
+);
+
+/**
+ * The hover tint, guarded twice: a touch screen must not keep it on the last
+ * tapped day, and a disabled day must not take it either.
+ */
+export const monthDayPuckHoverableClassName =
+  '[@media(hover:hover)]:[&:hover:where(:not(:disabled,[aria-disabled=true]))]:bg-[var(--color-overlay-hover)]';
+
+/** Today, marked on the puck rather than on the day's text. */
+export const monthDayPuckTodayClassName = tw(
+  'border-[color:var(--color-border-emphasized)]',
+  'font-semibold',
+);
+
+/** The selection puck. The caller does not apply the hover tint beside it. */
+export const monthDayPuckSelectedClassName = tw(
+  'bg-[color:var(--color-accent)]',
+  'border-[color:var(--color-accent)]',
+  'text-[color:var(--color-on-accent)]',
+  'font-semibold',
+);
+
 /** The calendar toggle beside the typed date: a glyph, no box of its own. */
 // The toggle keeps its focus ring in StyleX (`focusOutlineStyles`), a shared
 // rule the class map does not own; the ring is not a property this map sets.

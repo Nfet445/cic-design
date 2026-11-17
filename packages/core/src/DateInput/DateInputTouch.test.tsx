@@ -46,6 +46,10 @@ import {InternationalizationProvider} from '../i18n';
 import {DateInput} from './DateInput';
 import {
   dateInputPaneBlockSizeClassName,
+  monthDayDisabledClassName,
+  monthDayOutsideClassName,
+  monthPaneClassName,
+  monthScrollerClassName,
   pickerWheelColumnClassName,
   pickerWheelRowClassName,
 } from './dateInputClasses';
@@ -2856,37 +2860,32 @@ describe('DateInput — scroll CSS (definition-level)', () => {
   };
 
   it('pages the month scroller one whole pane at a time, horizontally', () => {
-    const source = read('MonthScroller.tsx');
-    expect(source).toContain("scrollSnapType: 'x mandatory'");
-    expect(source).toContain("scrollSnapAlign: 'start'");
+    expect(monthScrollerClassName).toContain('[scroll-snap-type:x_mandatory]');
+    expect(monthPaneClassName).toContain('[scroll-snap-align:start]');
     // pan-x is what splits the gesture by axis: horizontal pans stay with the
     // calendar, vertical ones reach the sheet as swipe-to-dismiss. Without it
     // the two would fight again, the way they did when this scrolled down.
-    expect(source).toContain("touchAction: 'pan-x'");
-    // The pane and the scrollport must come from the same expression, or a
-    // pane stops being exactly one screen and every snap offset drifts.
-    expect(
-      source.match(/blockSize: dateInputTouchGeometry\.paneBlockSize/g),
-    ).toHaveLength(2);
+    expect(monthScrollerClassName).toContain('[touch-action:pan-x]');
+    // The pane and the scrollport must read the same variable, or a pane stops
+    // being exactly one screen and every snap offset drifts.
+    expect(monthScrollerClassName).toContain(
+      '[block-size:var(--astryx-date-pane-block-size)]',
+    );
+    expect(monthPaneClassName).toContain(
+      '[block-size:var(--astryx-date-pane-block-size)]',
+    );
   });
 
   it('positions panes with logical properties, so RTL mirrors', () => {
-    const source = read('MonthScroller.tsx');
-    // Scoped to the style objects: `scrollTo({left})` is the DOM API and is
-    // supposed to say left — it is the CSS that must stay logical, because
-    // physical `left` would lay the months out identically in both directions
-    // while the scroll math mirrored, and the two would disagree under RTL.
-    const styles = source
-      .slice(
-        source.indexOf('const styles = stylex.create('),
-        source.indexOf('export interface MonthScrollerHandle'),
-      )
-      // Comments explain the rule ("insetInlineStart, not left") and would
-      // otherwise trip it.
-      .replace(/\/\/.*$/gm, '');
-    expect(styles).toContain('insetInlineStart');
-    expect(styles).not.toMatch(/\bleft:/);
-    expect(styles).not.toMatch(/\bright:/);
+    // The scroller's `scrollTo({left})` is the DOM API and is supposed to say
+    // left — it is the CSS that must stay logical, because physical `left`
+    // would lay the months out identically in both directions while the scroll
+    // math mirrored, and the two would disagree under RTL.
+    expect(monthPaneClassName).toContain(
+      '[inset-inline-start:var(--astryx-date-pane-inline-start)]',
+    );
+    expect(monthPaneClassName).not.toMatch(/(^|\s)-?left-/);
+    expect(monthPaneClassName).not.toMatch(/(^|\s)-?right-/);
   });
 
   /**
@@ -2916,9 +2915,19 @@ describe('DateInput — scroll CSS (definition-level)', () => {
     expect(structural.length).toBeGreaterThan(0);
     expect(theme.length).toBeGreaterThan(0);
 
-    // And the touch pane carries all of it, in its one object.
-    const touch = declarations(read('MonthScroller.tsx'), 'dayOutside');
-    expect(touch).toEqual(expect.arrayContaining([...structural, ...theme]));
+    // And the touch pane encodes all of it, in its one class.
+    const colour = theme.find(declaration => declaration.startsWith('color:'));
+    expect(colour).toBeDefined();
+    const colourVar = /colorVars\['([^']+)'\]/.exec(colour!)?.[1];
+    expect(colourVar).toBeDefined();
+    expect(monthDayOutsideClassName).toContain(`var(${colourVar})`);
+
+    const fade = structural.find(declaration =>
+      declaration.startsWith('opacity:'),
+    );
+    expect(fade).toBeDefined();
+    const fadePercent = Number(/opacity:\s*([\d.]+)/.exec(fade!)![1]) * 100;
+    expect(monthDayOutsideClassName).toContain(`opacity-${fadePercent}`);
   });
 
   /**
@@ -2937,17 +2946,17 @@ describe('DateInput — scroll CSS (definition-level)', () => {
   it('fades disabled days as the desktop does, rather than recolouring them', () => {
     const desktop = read('../Calendar/styles.ts');
     const theme = declarationsIn(desktop, 'dayCellTheme', 'dayDisabled');
-    const touch = declarations(read('MonthScroller.tsx'), 'dayDisabled');
 
     // Whatever opacity the desktop fades to, this pane fades to the same one.
     const fade = theme.find(d => d.startsWith('opacity:'));
     expect(fade).toBeDefined();
-    expect(touch).toContain(fade);
+    const fadePercent = Number(/opacity:\s*([\d.]+)/.exec(fade!)![1]) * 100;
+    expect(monthDayDisabledClassName).toContain(`opacity-${fadePercent}`);
 
     // And no colour of its own: a colour would override the secondary one a
     // spilled day carries, collapsing "disabled" and "disabled and adjacent"
     // into a single shade.
-    expect(touch.some(d => d.startsWith('color:'))).toBe(false);
+    expect(monthDayDisabledClassName).not.toMatch(/text-\[color:/);
     // Parity, not a rule of this pane's own — if the desktop ever starts
     // recolouring a disabled day, this fires and says to follow it.
     expect(theme.some(d => d.startsWith('color:'))).toBe(false);
@@ -2961,8 +2970,10 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    */
   it('lets disabled win over outside on a spilled day past min/max', () => {
     const applied = read('MonthScroller.tsx');
-    const outside = applied.indexOf('day.isOutside && styles.dayOutside');
-    const disabled = applied.indexOf('isDisabled && styles.dayDisabled');
+    const outside = applied.indexOf(
+      'day.isOutside && monthDayOutsideClassName',
+    );
+    const disabled = applied.indexOf('isDisabled && monthDayDisabledClassName');
     expect(outside).toBeGreaterThan(-1);
     expect(outside).toBeLessThan(disabled);
   });
@@ -2970,7 +2981,7 @@ describe('DateInput — scroll CSS (definition-level)', () => {
   it('keeps the month scroller and the wheels on border-box', () => {
     // Load-bearing: clientHeight is the pane height, the snap offsets and the
     // virtualization all at once.
-    expect(read('MonthScroller.tsx')).toContain("boxSizing: 'border-box'");
+    expect(monthScrollerClassName).toContain('box-border');
     expect(read('Wheel.tsx')).toContain("boxSizing: 'border-box'");
   });
 
