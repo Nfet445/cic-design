@@ -1,6 +1,6 @@
 # menus
 
-Status: partly done — `DropdownMenuDivider`, `DropdownMenuGroup`, `DropdownMenuItem`, the bottom-sheet frame and `DropdownMenuSubMenu`'s row, flyout and drill-in list landed; the popover container, the selectable rows, `ContextMenu`, `MoreMenu` and the option menus wait (see Result)
+Status: done except the nav heading menus and the option menus — every menu row, surface, sheet and sub-menu class is a Tailwind map; `NavHeadingMenu`, `NavHeadingMenuItem`, `Selector` and `MultiSelector` wait (see Result)
 Blocked by: 22
 Wave: 7
 Family: `family:action-groups`
@@ -272,3 +272,60 @@ mark with items 3–5 still open):
    family pass it as `xstyle`, so converting it edits other families. Recorded
    as a documented survivor; the next window that is allowed to touch those
    files can do it in one commit.
+
+### Window 6
+
+The five items the window opened with were already landed when it started:
+`DropdownMenu.tsx` keeps no create (`f118555dd`), `ContextMenu.tsx` keeps none
+(`ef9ecef7b`), and the four row-state copies are one
+`DropdownMenu/menuRowState.stylex.ts` (`a07ab3a91`). So this window closed the
+two survivors and the stale assertion that kept the suite red, one commit per
+file:
+
+- `DropdownMenu/menuTouchAction.stylex.ts` — `04f3c61c0`, with the count fixed
+  in the follow-up. It stays, and the header now carries the reason: the values
+  face no unlayered rule, so the class form works; what blocks the swap is
+  ownership. Six of its seven call sites are other components
+  (`SideNav/SideNavHeading.tsx:237`, `TopNav/TopNavHeading.tsx:232`,
+  `TopNav/TopNavMenu.tsx:451`, `TabList/TabMenu.tsx:253`,
+  `Breadcrumbs/BreadcrumbItem.tsx:647`, `NavMenu/NavHeadingMenu.tsx:221`), each
+  passing the pair to `stylex.props()` beside its own state styles, so the
+  conversion rewrites those components in the same commit. The class strings it
+  would become are already in `dropdownMenuSubMenuClasses.ts`: the flyout's own
+  `dropdownMenuSubMenuTouchClassName` and `dropdownMenuSubMenuTouchPinchClassName`
+  (`:86`, `:92`).
+- `DropdownMenuSubMenu.tsx` — `6e8100752`. `triggerStyles.caret` stays, and the
+  comment now says why the check settled it that way: the
+  `@astryx/no-style-only-wrapper` rule keeps a `<span>` over one Astryx child
+  only while the style it applies resolves to a structural property
+  (`display`, `alignItems` in `internal/eslint-plugin-astryx/no-style-only-wrapper.js`),
+  and a class string resolves to no style at all, so the wrapper would be
+  reported. `triggerStyles.row` was already gone; this create is the file's
+  only one.
+- `MoreMenu/MoreMenu.test.tsx` — `5893342d4`. The suite was red on the branch
+  (749 tests, one failure): "keeps the trigger visually pressed while the menu
+  is open" asserted `DropdownMenu__styles.triggerOpen`, a StyleX debug name the
+  trigger stopped printing when it moved to `dropdownMenuTriggerOpenClassName`.
+  It reads the class set through `expectClassSet` now, in both directions.
+- Merge of `poc/tailwind-layout-primitives`: `41d043870` was already an ancestor
+  (`86532c368`), so the merge was a no-op and the sheet-test conflict the
+  window expected did not appear.
+
+Verification: `node packages/core/scripts/build-css-tailwind.mjs` (184.6 kB),
+`pnpm exec vitest run packages/core/src/DropdownMenu
+packages/core/src/ContextMenu packages/core/src/MoreMenu packages/core/src/Item
+packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` — 27 files,
+749 passed; prettier and eslint clean on the three files;
+`pnpm -F @astryxdesign/core typecheck` clean. No class was added, so the sheet
+coverage block and its ceiling did not move.
+
+Still open for this ticket, in this order:
+
+1. `NavMenu/NavHeadingMenu.tsx` (creates at `:36` and `:44`) and
+   `NavMenu/NavHeadingMenuItem.tsx` (`:36`, `:79`) — the last two menu files
+   with a create of their own.
+2. `Selector/Selector.tsx` (`:143`, `:507`), `Selector/SelectorBottomSheet.tsx`
+   (`:24`) and `MultiSelector/MultiSelector.tsx` (`:154`, `:418`) — the option
+   menus the family still owns.
+3. `menuTouchAction.stylex.ts` and its six foreign call sites in one commit,
+   when a window is allowed to edit those families.
