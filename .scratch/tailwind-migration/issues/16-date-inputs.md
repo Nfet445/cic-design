@@ -356,3 +356,17 @@ a dozen source-text reads in `DateInputTouch.test.tsx`), then
 `sizeStyles` 301, and the `/.inputInvalid\b/` assertion at
 `DateTimeInput.test.tsx`), then `Calendar/styles.ts`. The changeset still names
 the same patch.
+
+### Update after the wheel merge
+
+`DateInput/Wheel.tsx` landed with `scrollWheel*` classes in
+`dateInputClasses.ts` and the five frames `astryxWheelTip`,
+`astryxWheelTipAndDim`, `astryxWheelDim`, `astryxWheelFade` in
+`packages/core/tailwind/astryx.input.css`.
+
+What is left, measured on the integration branch with
+`grep -rn "stylex.create(" packages/core/src/{DateInput,DateTimeInput,Calendar,TimeInput,DateRangeInput}`
+(without tests and `.stylex.ts`): `Calendar/styles.ts` 4,
+`DateTimeInput/DateTimeInput.tsx` 3, `DateInput/TouchDateField.tsx` 1. That is
+eight creations in three files. The sheet measured 1434 after the merge and the
+ceiling moved to 1540 with the rest of the wave.
