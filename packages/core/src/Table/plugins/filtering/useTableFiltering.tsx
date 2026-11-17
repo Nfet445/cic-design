@@ -24,8 +24,15 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {spacingVars, radiusVars} from '../../../theme/tokens.stylex';
+import {
+  FILTER_INLINE_SLOT_CLASS,
+  FILTER_POPOVER_ACTIONS_CLASS,
+  FILTER_POPOVER_ACTIONS_SPACER_CLASS,
+  FILTER_POPOVER_CONTENT_CLASS,
+  FILTER_POPOVER_SLOT_CLASS,
+  filterPlaceholderClassName,
+  filterTriggerClassName,
+} from './filterClasses';
 import {Icon} from '../../../Icon';
 import {Button} from '../../../Button';
 import {Popover} from '../../../Popover';
@@ -363,72 +370,6 @@ const FilterVariantContext = createSharedContext<TableFilterVariant>(
   'popover',
 );
 FilterVariantContext.displayName = 'FilterVariantContext';
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const filterStyles = stylex.create({
-  afterPopover: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  afterInline: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-1'],
-    marginTop: spacingVars['--spacing-1'],
-    minWidth: 0,
-  },
-  triggerButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    borderRadius: radiusVars['--radius-element'],
-    flexShrink: 0,
-    // Minimum 44px touch target on coarse pointer devices (iOS guideline).
-    '@media (pointer: coarse)': {
-      minWidth: '44px',
-      minHeight: '44px',
-    },
-  },
-  triggerInactive: {
-    opacity: {
-      default: 0.35,
-      ':is(th:hover *)': 1,
-      ':focus-visible': 1,
-    },
-  },
-  triggerActive: {
-    opacity: 1,
-  },
-  popoverContent: {
-    width: '240px',
-  },
-  popoverActions: {
-    display: 'flex',
-    gap: spacingVars['--spacing-2'],
-    marginTop: spacingVars['--spacing-2'],
-  },
-  popoverActionsSpacer: {
-    flex: 1,
-  },
-  placeholder: {
-    height: '32px',
-  },
-  placeholderCompact: {
-    height: '28px',
-  },
-});
 
 // =============================================================================
 // Filter Control Components
@@ -1002,21 +943,21 @@ function PopoverFilterTrigger({
       alignment="start"
       content={
         <FilterStoreContext value={draftStore}>
-          <div {...stylex.props(filterStyles.popoverContent)}>
+          <div className={FILTER_POPOVER_CONTENT_CLASS}>
             <FilterControl
               columnKey={columnKey}
               header={header}
               operatorValue={operatorValue}
               size="md"
             />
-            <div {...stylex.props(filterStyles.popoverActions)}>
+            <div className={FILTER_POPOVER_ACTIONS_CLASS}>
               <Button
                 label={t('@astryx.table.filter.reset')}
                 variant="ghost"
                 size="sm"
                 onClick={handleClear}
               />
-              <div {...stylex.props(filterStyles.popoverActionsSpacer)} />
+              <div className={FILTER_POPOVER_ACTIONS_SPACER_CLASS} />
               <Button
                 label={t('@astryx.table.filter.apply')}
                 variant="primary"
@@ -1031,10 +972,7 @@ function PopoverFilterTrigger({
         type="button"
         aria-label={t('@astryx.tableFiltering.filterByColumn', {header})}
         aria-haspopup="dialog"
-        {...stylex.props(
-          filterStyles.triggerButton,
-          hasValue ? filterStyles.triggerActive : filterStyles.triggerInactive,
-        )}>
+        className={filterTriggerClassName(hasValue)}>
         <Icon
           icon="funnel"
           size="xsm"
@@ -1080,7 +1018,7 @@ function FilterSlot({
   operatorValue: OperatorValue;
 }) {
   return (
-    <div {...stylex.props(filterStyles.afterPopover)}>
+    <div className={FILTER_POPOVER_SLOT_CLASS}>
       <PopoverFilterTrigger
         columnKey={columnKey}
         header={header}
@@ -1105,13 +1043,12 @@ function InlineFilterSlot({
 }) {
   const variant = use(FilterVariantContext);
   const size = 'sm';
-  const placeholderStyle =
-    variant === 'inline-compact'
-      ? filterStyles.placeholderCompact
-      : filterStyles.placeholder;
+  const placeholderClassName = filterPlaceholderClassName(
+    variant === 'inline-compact',
+  );
 
   return (
-    <div {...stylex.props(filterStyles.afterInline)}>
+    <div className={FILTER_INLINE_SLOT_CLASS}>
       {operatorValue != null ? (
         <FilterControl
           columnKey={columnKey}
@@ -1121,7 +1058,7 @@ function InlineFilterSlot({
           hasClear
         />
       ) : (
-        <div aria-hidden="true" {...stylex.props(placeholderStyle)} />
+        <div aria-hidden="true" className={placeholderClassName} />
       )}
     </div>
   );

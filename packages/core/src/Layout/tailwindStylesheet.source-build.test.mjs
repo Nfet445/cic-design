@@ -76,6 +76,22 @@ import {
 } from '../Section/sectionClasses';
 import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
 import {
+  FILTER_INLINE_SLOT_CLASS,
+  FILTER_POPOVER_ACTIONS_CLASS,
+  FILTER_POPOVER_ACTIONS_SPACER_CLASS,
+  FILTER_POPOVER_CONTENT_CLASS,
+  FILTER_POPOVER_SLOT_CLASS,
+  filterPlaceholderClassName,
+  filterTriggerClassName,
+} from '../Table/plugins/filtering/filterClasses';
+import {SELECTION_CELL_CLASS} from '../Table/plugins/selection/selectionClasses';
+import {
+  SORT_INDICATOR_CLASS,
+  SORT_INDICATOR_UNSORTED_CLASS,
+  SORT_RANK_CLASS,
+  sortButtonClassName,
+} from '../Table/plugins/sortable/sortClasses';
+import {
   textClassName,
   truncationTooltipContentClassName,
 } from '../Text/textClasses';
@@ -391,6 +407,23 @@ function familyClassNames() {
     }
   }
 
+  for (const align of [undefined, 'start', 'center', 'end']) {
+    add(sortButtonClassName(align));
+  }
+  add(SORT_INDICATOR_CLASS);
+  add(SORT_INDICATOR_UNSORTED_CLASS);
+  add(SORT_RANK_CLASS);
+  add(filterTriggerClassName(true));
+  add(filterTriggerClassName(false));
+  add(filterPlaceholderClassName(true));
+  add(filterPlaceholderClassName(false));
+  add(FILTER_POPOVER_SLOT_CLASS);
+  add(FILTER_POPOVER_CONTENT_CLASS);
+  add(FILTER_POPOVER_ACTIONS_CLASS);
+  add(FILTER_POPOVER_ACTIONS_SPACER_CLASS);
+  add(FILTER_INLINE_SLOT_CLASS);
+  add(SELECTION_CELL_CLASS);
+
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
   for (const mode of ['light', 'dark', 'system']) {
@@ -486,6 +519,22 @@ describe('dist/astryx-tailwind.css declarations', () => {
     expect(
       stylesheet.ruleFor('[border-bottom-width:var(--border-width)]'),
     ).toBe('border-bottom-width:var(--border-width);');
+  });
+
+  it('keeps the filter trigger a touch target only on a coarse pointer', () => {
+    expect(stylesheet.blockOf('pointer-coarse:[min-width:44px]')).toContain(
+      'min-width:44px;',
+    );
+    expect(stylesheet.blockOf('pointer-coarse:[min-width:44px]')).toContain(
+      '@media(pointer:coarse)',
+    );
+  });
+
+  it('dims an unused header control until its header is hovered', () => {
+    expect(stylesheet.blockOf('opacity-[0.35]')).toContain('opacity:0.35;');
+    expect(stylesheet.blockOf('[&:is(th:hover_*)]:opacity-100')).toContain(
+      '&:is(th:hover*){',
+    );
   });
 
   it('draws the section divider on one border width', () => {

@@ -21,6 +21,7 @@ import type {
 } from './useTableFiltering';
 import type {PowerSearchConfig} from '../../../PowerSearch/types';
 import type {TableColumn} from '../../types';
+import {expectClassSet} from '../../../__tests__/classNameAssertions';
 
 // =============================================================================
 // Test Data
@@ -123,10 +124,16 @@ const allFilterColumns: TableColumn<TestRow>[] = [
 
 function FilterTable({
   columns = defaultColumns,
-  variant = 'popover' as TableFilterVariant,
+  variant = 'popover',
   config = searchConfig,
+  initialFilters = {},
+}: {
+  columns?: TableColumn<TestRow>[];
+  variant?: TableFilterVariant;
+  config?: PowerSearchConfig;
+  initialFilters?: TableFilterState;
 }) {
-  const [filters, setFilters] = useState<TableFilterState>({});
+  const [filters, setFilters] = useState<TableFilterState>(initialFilters);
 
   const filterPlugin = useTableFiltering<TestRow>({
     filters,
@@ -354,6 +361,90 @@ describe('useTableFiltering', () => {
       expect(() =>
         render(<FilterTable columns={noFilterColumns} />),
       ).not.toThrow();
+    });
+  });
+});
+
+describe('useTableFiltering — layout classes', () => {
+  it('draws the popover trigger as a bare icon button', () => {
+    render(<FilterTable />);
+
+    expectClassSet(screen.getByRole('button', {name: 'Filter Name'}), {
+      includes: [
+        'inline-flex',
+        'items-center',
+        'justify-center',
+        'shrink-0',
+        'p-0',
+        'bg-transparent',
+      ],
+    });
+  });
+
+  it('holds a coarse-pointer target for the popover trigger', () => {
+    render(<FilterTable />);
+
+    expectClassSet(screen.getByRole('button', {name: 'Filter Name'}), {
+      includes: [
+        'pointer-coarse:[min-width:44px]',
+        'pointer-coarse:[min-height:44px]',
+      ],
+    });
+  });
+
+  it('dims an unused trigger and shows a filtering one at full opacity', () => {
+    const {unmount} = render(<FilterTable />);
+    expectClassSet(screen.getByRole('button', {name: 'Filter Name'}), {
+      includes: ['opacity-[0.35]'],
+      excludes: ['opacity-100'],
+    });
+    unmount();
+
+    render(
+      <FilterTable initialFilters={{name: {type: 'text', value: 'Ali'}}} />,
+    );
+    expectClassSet(screen.getByRole('button', {name: 'Filter Name'}), {
+      includes: ['opacity-100'],
+      excludes: ['opacity-[0.35]'],
+    });
+  });
+
+  it('stacks the inline slot and sizes its placeholder by variant', () => {
+    const inlineColumns: TableColumn<TestRow>[] = [
+      {key: 'name', header: 'Name', filter: 'name'},
+    ];
+    // A field the search config does not define leaves the slot without a
+    // control, which is the reserved-space placeholder.
+    const emptyConfig: PowerSearchConfig = {name: 'empty', fields: []};
+    const {unmount} = render(
+      <FilterTable
+        variant="inline"
+        columns={inlineColumns}
+        config={emptyConfig}
+      />,
+    );
+    const placeholder = screen
+      .getAllByRole('columnheader')[0]
+      .querySelector('[aria-hidden="true"]');
+    expectClassSet(placeholder?.parentElement as Element, {
+      includes: ['flex', 'flex-col', 'gap-1', 'mt-1', 'min-w-0'],
+    });
+    expectClassSet(placeholder as Element, {includes: ['h-8']});
+    unmount();
+
+    render(
+      <FilterTable
+        variant="inline-compact"
+        columns={inlineColumns}
+        config={emptyConfig}
+      />,
+    );
+    const compactPlaceholder = screen
+      .getAllByRole('columnheader')[0]
+      .querySelector('[aria-hidden="true"]');
+    expectClassSet(compactPlaceholder as Element, {
+      includes: ['h-7'],
+      excludes: ['h-8'],
     });
   });
 });

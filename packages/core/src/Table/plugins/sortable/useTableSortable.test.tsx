@@ -18,6 +18,7 @@ import {useTableSortable, type TableSortState} from './useTableSortable';
 import type {ComponentIconMap} from '../../../Icon/index';
 import {defineTheme} from '../../../theme/defineTheme';
 import {Theme} from '../../../theme/Theme';
+import {expectClassSet} from '../../../__tests__/classNameAssertions';
 
 // =============================================================================
 // Test Data
@@ -785,6 +786,70 @@ describe('useTableSortable — header alignment', () => {
     );
 
     expect(buttonFor(/^age$/i).className).toBe(buttonFor(/^name$/i).className);
+  });
+});
+
+describe('useTableSortable — layout classes', () => {
+  it('fills the header cell with a flex row button', () => {
+    render(<SortableTable />);
+
+    expectClassSet(screen.getByRole('button', {name: 'Name'}), {
+      includes: ['flex', 'items-center', 'gap-1', 'w-full', 'h-full'],
+      excludes: ['justify-center', 'justify-end'],
+    });
+  });
+
+  it('mirrors the column alignment onto the button main axis', () => {
+    render(
+      <SortableTable
+        columns={[
+          {key: 'name', header: 'Name', sortable: true, align: 'center'},
+          {key: 'age', header: 'Age', sortable: true, align: 'end'},
+        ]}
+      />,
+    );
+
+    expectClassSet(screen.getByRole('button', {name: 'Name'}), {
+      includes: ['justify-center'],
+      excludes: ['justify-end'],
+    });
+    expectClassSet(screen.getByRole('button', {name: 'Age'}), {
+      includes: ['justify-end'],
+      excludes: ['justify-center'],
+    });
+  });
+
+  it('dims the unsorted indicator and restores it on hover and focus', () => {
+    render(<SortableTable />);
+
+    // The indicator slot is the wrapper the glyph rendered into: it takes no
+    // block size, so a larger themed glyph overflows instead of growing the
+    // header row.
+    const indicator = screen
+      .getByRole('button', {name: 'Name'})
+      .querySelector('.astryx-icon')?.parentElement;
+    expectClassSet(indicator as Element, {
+      includes: [
+        'inline-flex',
+        '[height:0px]',
+        'opacity-[0.35]',
+        '[&:is(th:hover_*)]:opacity-100',
+        'focus-visible:opacity-100',
+      ],
+    });
+  });
+
+  it('leaves a sorted indicator at full opacity', () => {
+    render(
+      <SortableTable
+        initialSort={[{sortKey: 'name', direction: 'ascending'}]}
+      />,
+    );
+
+    const indicator = screen
+      .getByRole('button', {name: 'Name'})
+      .querySelector('.astryx-icon')?.parentElement;
+    expectClassSet(indicator as Element, {excludes: ['opacity-[0.35]']});
   });
 });
 
