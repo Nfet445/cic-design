@@ -4,7 +4,8 @@
 
 /**
  * @file Timer.tsx
- * @input Uses an optional start time, standardized format, Timestamp typography, BaseProps, and React ref
+ * @input Uses an optional start time, standardized format, Timestamp typography,
+ *   the timer class map, BaseProps, and React ref
  * @output Exports Timer, TimerProps, and TimerFormat with non-rendering elapsed-time updates
  * @position Core content primitive for elapsed duration in active operations
  *
@@ -18,31 +19,18 @@
  */
 
 import {useEffect, useRef, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {Text} from '../Text';
 import type {TextColor, TextSize, TextType, TextWeight} from '../theme/types';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
+import {timerClassName} from './timerClasses';
 
 const ONE_SECOND_MS = 1000;
 const ONE_MINUTE_MS = 60 * ONE_SECOND_MS;
 const ONE_HOUR_SECONDS = 60 * 60;
 const MAX_TIMEOUT_MS = 2_147_483_647;
-
-const styles = stylex.create({
-  time: {
-    color: 'inherit',
-    display: 'inline',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    fontStyle: 'normal',
-    fontVariantNumeric: 'tabular-nums',
-    fontWeight: 'inherit',
-    lineHeight: 'inherit',
-  },
-});
 
 export type TimerFormat = 'elapsed' | 'clock';
 
@@ -249,7 +237,7 @@ export function Timer({
         {...rest}
         ref={mergedRef}
         dateTime="PT0S"
-        {...stylex.props(styles.time)}>
+        className={timerClassName}>
         {initialPresentation.text}
       </time>
     </Text>
