@@ -112,8 +112,24 @@ Remaining, smallest first:
 - The four large pages: `table-filter` (64), `canvas-editor` (42),
   `table-collapsible`, `dashboard-*`.
 
-`pnpm -F @astryxdesign/cli typecheck:strict` renders `assets/**/*.tsx`, so the
-class maps it reads must stay literal; `esbuild` parsed every converted file.
+The guard test named in **Done when** cannot land before the last conversion:
+written now, it would fail on the 40 templates that still carry StyleX. It
+lands with the final file, in the shape of
+`packages/core/src/inputFontFloor.test.ts` — read every file under
+`packages/cli/assets/templates/**` and fail on `@stylexjs/stylex` or `xstyle`.
+
+Window 1 checks: `esbuild --loader:.tsx=tsx` parsed all 15 changed templates,
+`prettier --check` clean, `eslint` on them reports one pre-existing warning in
+`pages/ai-chat/page.tsx` (`consistent-type-assertions`, not this change),
+`pnpm check:knowledge` aligned, and `vitest run --project node
+packages/cli/foundation/discovery/doc-types.test.mjs
+packages/cli/clients/cli/__tests__/cliManifest.test.ts` passed (27 tests). The
+`pnpm exec vitest run packages/cli` invocation from **Verification** matches no
+test files by itself — it needs `--project node` and a real path.
+
+Merging `poc/tailwind-layout-primitives` at the close of the window said
+`Уже актуально`: the branch head (`3b460df42`) already reached this branch
+through `12add4df7`, so no merge commit was needed.
 
 ## Notes
 
