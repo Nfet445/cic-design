@@ -534,14 +534,27 @@ describe('useMenuPress — the row a held press lights (spec:AST-094 FR27, FR43)
         'utf8',
       );
       expect(source).toContain('menuPressLitRowClassName,');
-      expect(source).toContain('var(--_menu-row-focus-paint, ');
+      expect(source).toContain('menuRowStateStyles.');
     }
-    // The one family with an :active background reads its variable there.
-    const item = readFileSync(
-      resolve(__dirname, '../DropdownMenu/DropdownMenuItem.tsx'),
+    // The row's focus paint reads the variable the lit class sets.
+    const rowState = readFileSync(
+      resolve(__dirname, '../DropdownMenu/menuRowState.stylex.ts'),
       'utf8',
     );
-    expect(item).toContain('var(--_menu-row-active-paint, ');
+    expect(rowState).toContain('var(--_menu-row-focus-paint, ');
+    // The one family with an :active background reads its variable there too.
+    expect(rowState).toContain('var(--_menu-row-active-paint, ');
+    // Both variables are set by the lit class, not by the row's own map.
+    const litClasses = readFileSync(
+      resolve(__dirname, '../privateAttributes/menuPressLitClasses.ts'),
+      'utf8',
+    );
+    expect(litClasses).toContain(
+      '[--_menu-row-focus-paint:var(--color-overlay-pressed)]',
+    );
+    expect(litClasses).toContain(
+      '[--_menu-row-active-paint:var(--color-overlay-pressed)]',
+    );
   });
 });
 
