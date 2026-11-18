@@ -453,6 +453,13 @@ export interface ComplexSelectorProps<Value> extends Omit<
   onOpenChange?: (isOpen: boolean) => void;
   /** StyleX styles for the popup content container. */
   contentXstyle?: StyleXStyles;
+  /**
+   * Class name for the popup content container. A width the content computes
+   * for itself reaches the box as `contentStyle` beside this class.
+   */
+  contentClassName?: string;
+  /** Inline styles for the popup content container. */
+  contentStyle?: React.CSSProperties;
   /** Test ID for the trigger button. */
   'data-testid'?: string;
 }
@@ -517,6 +524,8 @@ export function ComplexSelector<Value>({
   renderTrigger,
   onOpenChange,
   contentXstyle,
+  contentClassName,
+  contentStyle,
   containerXstyle,
   containerClassName,
   containerStyle,
@@ -775,6 +784,8 @@ export function ComplexSelector<Value>({
       {...mergeProps(
         COMPLEX_SELECTOR_CONTENT_CLASS,
         stylex.props(contentXstyle),
+        contentClassName,
+        contentStyle,
       )}>
       {children(optimisticValue, commitValue, close, {
         isOpen,
