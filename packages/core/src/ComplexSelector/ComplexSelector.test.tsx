@@ -25,6 +25,12 @@ import * as stylex from '@stylexjs/stylex';
 import {focusVars} from '../theme/tokens.stylex';
 import {ComplexSelector, type ComplexSelectorHandle} from './ComplexSelector';
 import {readAnchorNames} from '../Layer/anchorName';
+import {
+  layerPlacementBlockEndClassName,
+  layerPlacementBlockStartClassName,
+} from '../Layer/layerClasses';
+import {LAYER_CLEARANCE_PROPERTY} from '../Layer/layerSlideRules';
+import {classesOf} from '../__tests__/classNameAssertions';
 
 const originalMatches = HTMLElement.prototype.matches;
 
@@ -188,12 +194,11 @@ describe('ComplexSelector', () => {
     // The clearance rides the edge facing the trigger and the viewport gutter
     // the far edge; a position-try flip swaps the two with the area, so the
     // gap survives opening upward (spec:AST-059 FR1, FR4). jsdom resolves
-    // neither the var indirection nor logical margins, so read the
-    // debug-mode declarations it emits.
-    const blockStart = popup.style.getPropertyValue('--x-marginBlockStart');
-    expect(blockStart).not.toBe('');
-    expect(popup.style.getPropertyValue('--x-marginBlockEnd')).toBe('');
-    expect(popup.className).toContain('useLayer__styles.placementBelow');
+    // neither the var indirection nor logical margins, so read the clearance
+    // property and the placement class the layer applies.
+    expect(popup.style.getPropertyValue(LAYER_CLEARANCE_PROPERTY)).not.toBe('');
+    expect(classesOf(popup)).toContain(layerPlacementBlockStartClassName);
+    expect(classesOf(popup)).not.toContain(layerPlacementBlockEndClassName);
   });
 
   it('runs changeAction through the provided onChange helper', async () => {
