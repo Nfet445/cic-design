@@ -20,16 +20,15 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {colorVars, radiusVars, spacingVars} from '../theme/tokens.stylex';
 
 export const thumbnailRemoveButtonStyles = stylex.create({
   overrides: {
-    '--_button-radius': `calc(${radiusVars['--radius-element']} - ${spacingVars['--spacing-1']})`,
+    '--_button-radius': `calc(var(--radius-element) - var(--spacing-1))`,
     position: 'relative',
     height: 20,
     minWidth: 20,
-    backgroundColor: colorVars['--color-overlay'],
-    color: colorVars['--color-on-dark'],
+    backgroundColor: 'var(--color-overlay)',
+    color: 'var(--color-on-dark)',
     '--_thumbnail-hit-inset': {
       default: '0px',
       '@media (pointer: coarse)': '-2px',
