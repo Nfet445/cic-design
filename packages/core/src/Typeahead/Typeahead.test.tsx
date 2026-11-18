@@ -3324,7 +3324,7 @@ describe('end controls stay in flow', () => {
       />,
     );
     const token = container.querySelector('.astryx-token') as HTMLElement;
-    expect(getComputedStyle(token).position).toBe('absolute');
+    expectClassSet(token, {includes: ['absolute']});
   });
 
   it('lets the token take the pointer that the hidden input would swallow', () => {
@@ -3400,13 +3400,12 @@ describe('the value is bounded by the content lane', () => {
     // is past the clear button.
     const {container} = renderWithValue();
     const token = container.querySelector('.astryx-token') as HTMLElement;
-    const style = getComputedStyle(token);
-    expect(style.insetInlineEnd).toBe('0');
     // `fit-content` against that pair of insets is what shrink-wraps the
     // label yet still caps it at the lane; the `auto` end margin is what
     // keeps the pair from being over-constrained and dropping the end inset.
-    expect(style.width).toBe('fit-content');
-    expect(style.marginInlineEnd).toBe('auto');
+    expectClassSet(token, {
+      includes: ['[inset-inline-end:0]', 'w-fit', '[margin-inline-end:auto]'],
+    });
   });
 });
 

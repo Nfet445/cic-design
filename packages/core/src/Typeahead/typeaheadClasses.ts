@@ -212,3 +212,23 @@ export const typeaheadEndLaneClassName = tw(
 export const typeaheadContentLaneClassName = tw(
   'relative flex items-center self-stretch flex-1 min-w-0',
 );
+
+/**
+ * The value token, painted over the input rather than beside it: in flow the
+ * token would add its own width to the row. It is bounded by the content lane
+ * at both ends, so a long value ellipsizes at the lane's edge instead of
+ * running under the end controls; the `auto` end margin keeps those two insets
+ * from being over-constrained. The negative inline start and the zero block
+ * start put it 3px inside the field's own padding on both axes, where it has
+ * always sat.
+ */
+export const TYPEAHEAD_TOKEN_OVERLAY_CLASS = tw(
+  'absolute',
+  '[inset-block-start:0]',
+  '[inset-inline-start:calc(-1*(var(--spacing-1)_-_1px))]',
+  '[inset-inline-end:0]',
+  'w-fit',
+  '[margin-block:0]',
+  '[margin-inline-start:0]',
+  '[margin-inline-end:auto]',
+);

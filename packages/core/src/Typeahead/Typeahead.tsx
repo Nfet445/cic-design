@@ -64,6 +64,7 @@ import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext
 import {getInputARIA, isImeKeyEvent, mergeProps} from '../utils';
 import {joinAriaIDs} from '../utils/inputAria';
 import {
+  TYPEAHEAD_TOKEN_OVERLAY_CLASS,
   typeaheadContentLaneClassName,
   typeaheadEndLaneClassName,
   typeaheadWrapperSizeClassName,
@@ -281,28 +282,6 @@ const styles = stylex.create({
     // must not swallow clicks meant for it, or for the wrapper's own
     // click-to-edit.
     pointerEvents: 'none',
-  },
-  // Painted over the input rather than beside it. In flow the token would add
-  // its own width to the row, which is the same value-dependent sizing from
-  // the other direction — a long value would grow the field.
-  //
-  // Bounded by the content lane at both ends. `fit-content` shrink-wraps the
-  // label but resolves against the space left between the two insets, so a
-  // long value ellipsizes at the lane's edge instead of running under the end
-  // controls; the `auto` end margin is what keeps that pair of insets from
-  // being over-constrained, which would drop the end one and let the token
-  // overflow again. The negative inline start and the zero block start put it
-  // where it has always sat: the lane's padding box is the field's content
-  // box, 3px inside the field's own padding on both axes.
-  tokenOverlay: {
-    position: 'absolute' as const,
-    insetBlockStart: 0,
-    insetInlineStart: `calc(-1 * (var(--spacing-1) - 1px))`,
-    insetInlineEnd: 0,
-    width: 'fit-content',
-    marginBlock: 0,
-    marginInlineStart: 0,
-    marginInlineEnd: 'auto',
   },
 });
 
@@ -734,7 +713,7 @@ export function Typeahead<T extends SearchableItem>({
                       .filter(Boolean)
                       .join(' ') || undefined
                   }
-                  xstyle={styles.tokenOverlay}
+                  className={TYPEAHEAD_TOKEN_OVERLAY_CLASS}
                 />
               </>
             )}
