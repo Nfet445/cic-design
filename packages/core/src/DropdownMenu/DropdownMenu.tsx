@@ -104,7 +104,7 @@ import {
 import {menuBottomSheetClassName} from './menuBottomSheetClasses';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
 import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {isRenderable, mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import {tw} from '../utils/tw';
 import {
@@ -1767,7 +1767,7 @@ function DropdownMenuPopover({
         {
           placement,
           alignment,
-          offset: spacingVars['--spacing-1'],
+          offset: spacingVarNames['--spacing-1'],
           className: tw(
             dropdownMenuPopoverViewportClassName,
             popoverWidthClassName,

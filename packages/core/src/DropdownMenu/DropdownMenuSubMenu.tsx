@@ -79,7 +79,6 @@ import {useTypeahead} from '../hooks/useTypeahead';
 import {useMenuOverflow} from './useMenuOverflow';
 import {resolveMenuWidth} from './menuWidth';
 import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 import {
   composeEventHandlers,
   isImeKeyEvent,
@@ -1279,7 +1278,7 @@ export function DropdownMenuSubMenu(
               {
                 placement: 'end',
                 alignment: 'start',
-                offset: spacingVars['--spacing-1'],
+                offset: 'var(--spacing-1)',
                 className: tw(
                   dropdownMenuSubMenuFlyoutViewportClassName,
                   flyoutWidthClassName,

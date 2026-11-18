@@ -14,7 +14,6 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {colorVars, focusVars} from '../theme/tokens.stylex';
 
 const styles = stylex.create({
   row: {
@@ -22,14 +21,14 @@ const styles = stylex.create({
       default: 'transparent',
       // menuPressLitRowClassName sets the variable on the row a held finger or pen
       // lights.
-      ':focus': `var(--_menu-row-focus-paint, ${colorVars['--color-overlay-hover']})`,
+      ':focus': `var(--_menu-row-focus-paint, var(--color-overlay-hover))`,
     },
     // Rows show focus with a translucent overlay, which forced colors replace
     // with the page color. The standard focus ring (focusOutlineStyles), drawn
     // inside the row by its own width, marks the focused row in every mode.
     // The ring and its offset share one tier, so the row's offset outranks the
     // shared one only beside it, unlayered.
-    outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
+    outlineOffset: `calc(-1 * var(--focus-outline-width))`,
   },
   // The item row and the sub-menu trigger repaint the held look as well: their
   // own fill is unlayered, so `Item`'s press overlay loses to it.
@@ -38,17 +37,17 @@ const styles = stylex.create({
       default: 'transparent',
       // menuPressLitRowClassName sets the variable on the row a held finger or pen
       // lights.
-      ':focus': `var(--_menu-row-focus-paint, ${colorVars['--color-overlay-hover']})`,
+      ':focus': `var(--_menu-row-focus-paint, var(--color-overlay-hover))`,
       // The pressed look only where hover exists. Under a finger the row a
       // press BEGAN on would otherwise stay painted while the highlight (focus)
       // moves to the row under the finger — two rows lit. A held finger or pen
       // sets the variable on the menu. Then only the lit row keeps the look.
       '@media (hover: hover)': {
         default: null,
-        ':active:where(:not(:disabled,[aria-disabled="true"]))': `var(--_menu-row-active-paint, ${colorVars['--color-overlay-pressed']})`,
+        ':active:where(:not(:disabled,[aria-disabled="true"]))': `var(--_menu-row-active-paint, var(--color-overlay-pressed))`,
       },
     },
-    outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
+    outlineOffset: `calc(-1 * var(--focus-outline-width))`,
   },
 });
 
