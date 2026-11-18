@@ -31,6 +31,7 @@ import {avatarShapeClassName} from '../Avatar/avatarClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import * as lightboxClasses from '../Lightbox/lightboxClasses';
 import {
+  breadcrumbMenuClassName,
   breadcrumbsListClassName,
   breadcrumbsNavClassName,
 } from '../Breadcrumbs/breadcrumbsClasses';
@@ -3703,6 +3704,7 @@ function familyClassNames() {
   // Breadcrumbs: the trail frame and its wrapping list row.
   add(breadcrumbsNavClassName);
   add(breadcrumbsListClassName);
+  add(breadcrumbMenuClassName);
 
   add(markdownCodeBlockWrapperClassName);
   add(markdownTableWrapperClassName);
