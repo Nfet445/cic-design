@@ -61,3 +61,20 @@ shapes, and each needs the seam its ticket names before it moves:
 The removal order that follows from this: finish 30 and 41, publish the seams in 52, then convert the
 remaining consumers, then this ticket drops `@stylexjs` from the four packages, retires the StyleX half
 of `packages/build` and `scripts/build-css.mjs`, and decides `astryx.css` (OQ1).
+
+## Comments — measured frontier after ticket 53
+
+The component maps are gone; what remains is two families:
+
+- 31 `stylex.create` sites in 24 non-test component files (`Tokenizer/Tokenizer.tsx` 4,
+  `SideNav/SideNavItem.tsx` 2, `Typeahead/Typeahead.tsx` 2, `Resizable/ResizeHandle.tsx` 2,
+  `Table/plugins/stickyColumns/useTableStickyColumns.tsx` 2, and one each in twelve others).
+- 101 sites in 43 `*.stylex.ts` modules, dominated by the shared utilities every component composes:
+  `Layout/container.stylex.ts` 15, `Text/text.stylex.ts` 15, `Layout/padding.stylex.ts` 14,
+  `Stack/stack.stylex.ts` 6, `Field/inputStyles.stylex.ts` 5, then the markers and one-rule
+  `*Overrides.stylex.ts` modules.
+
+So removal is not one ticket's work: tickets 54 (layout, text and stack utilities), 55 (field and input
+wrappers), 56 (focus ring, press layers and the override modules) and 57 (tables, overlays and leaves)
+have to land first. Until then the runtime, the babel plugin and the 20 deprecated `*.stylex` subpaths
+stay.

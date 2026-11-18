@@ -88,7 +88,7 @@ Measured before starting, so the next agent does not repeat the analysis:
   `privateAttributes/pressClasses.ts:rowPressPaintRadioRowClassName`. The row's own paint is
   one inherited custom property, so one class token per pointer arm: the base one carries
   `:active:not([data-astryx-press="on"],[data-astryx-press="fading"]):not(:has(<nested
-  controls>))` and `pointer-coarse:` the same with `transparent`. Both rules print, the
+controls>))` and `pointer-coarse:` the same with `transparent`. Both rules print, the
   coarse one after the base one at the same specificity. `RadioList/RadioListItem.tsx` appends
   the class through `mergeProps(themeProps(…), {className}, style)`; `RadioListItem`'s
   `xstyle` keeps only `rowPressLayerStyles.cellWithoutLayer` and its own row styles.
