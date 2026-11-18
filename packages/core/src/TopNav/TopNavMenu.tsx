@@ -26,6 +26,7 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
+import * as stylex from '@stylexjs/stylex';
 import {usePopoverInternal} from '../Popover/usePopover';
 import {useMenuHover} from '../hooks/useMenuHover';
 import {useMenuPress} from '../hooks/useMenuPress';
@@ -48,7 +49,6 @@ import {useCloseMobileDrawerOnActivate} from '../AppShell/useCloseMobileDrawerOn
 import {useLinkComponent} from '../Link/useLinkComponent';
 import {isSafeUrl} from '../utils/safeUrl';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
@@ -326,12 +326,16 @@ export function TopNavMenu({
           aria-controls={`${menuId}-items`}
           {...pressable}
           {...mergeProps(
-            focusOutlineProps.focusVisible(
+            stylex.props(
               navItemStyles.item,
               interactionOverlayStyles.backgroundColor,
               xstyle,
             ),
-            tw(topNavMenuDrawerHeaderClassName(), className),
+            tw(
+              topNavMenuDrawerHeaderClassName(),
+              className,
+              focusOutlineFocusVisibleClassName,
+            ),
             style,
           )}>
           {label}
@@ -364,11 +368,14 @@ export function TopNavMenu({
                     item.onClick?.();
                   })}
                   {...mergeProps(
-                    focusOutlineProps.focusVisible(
+                    stylex.props(
                       navItemStyles.item,
                       interactionOverlayStyles.backgroundColor,
                     ),
-                    {className: topNavMenuDrawerItemClassName()},
+                    tw(
+                      topNavMenuDrawerItemClassName(),
+                      focusOutlineFocusVisibleClassName,
+                    ),
                   )}>
                   {isRenderable(item.icon) && (
                     <span className={topNavMenuDrawerItemIconClassName()}>
@@ -413,11 +420,12 @@ export function TopNavMenu({
         )}
         {...mergeProps(
           themeProps('top-nav-menu'),
-          focusOutlineProps.focusVisible(xstyle),
+          stylex.props(xstyle),
           tw(
             topNavMenuTriggerClassName(),
             topNavMenuTriggerOpenClassName(),
             className,
+            focusOutlineFocusVisibleClassName,
           ),
           style,
         )}>
