@@ -16,7 +16,6 @@
 import {Suspense, useMemo, useRef, useState} from 'react';
 import type React from 'react';
 import {Fragment} from 'react';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import type {TextDisplay} from '../theme/types';
 import {CodeBlock, Code} from '../CodeBlock';
 import {parseFenceLanguage} from '../CodeBlock/tokenizer';
@@ -42,7 +41,9 @@ import {
   markdownBlockWidthClassName,
   markdownBlockWidthStyle,
   markdownBoldClassName,
+  markdownCellMinWidthStyle,
   markdownCenterAlignClassName,
+  markdownCodeBlockWidthClassName,
   markdownCodeBlockWrapperClassName,
   markdownFadeInClassName,
   markdownHeadingClassName,
@@ -57,13 +58,10 @@ import {
   markdownProseWidthStyle,
   markdownRootClassName,
   markdownStrikethroughClassName,
+  markdownTablePartClassName,
   markdownTableWrapperClassName,
   type MarkdownBlockKind,
 } from './markdownClasses';
-import {
-  markdownCodeBlockOverrides,
-  markdownTablePartStyles,
-} from './markdownChildOverrides.stylex';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {useStreamingText} from '../hooks/useStreamingText';
 import {computeBoundaries, computeSegments} from './streaming';
@@ -391,7 +389,7 @@ export interface MarkdownProps<
  * wrapping rules.
  */
 function MarkdownTableCellCode({children}: {children: string}) {
-  return <Code xstyle={markdownTablePartStyles.code}>{children}</Code>;
+  return <Code className={markdownTablePartClassName.code}>{children}</Code>;
 }
 
 // ---------------------------------------------------------------------------
@@ -1003,7 +1001,7 @@ function getBlockKind(node: RenderBlockNode): MarkdownBlockKind {
 /**
  * Content-derived width floors for a Markdown table's columns, in `ch`.
  *
- * Once the cells stop clamping themselves (see `markdownTablePartStyles`),
+ * Once the cells stop clamping themselves (see `markdownTablePartClassName`),
  * automatic table layout already gives every column its min-content — the
  * longest unbreakable token — so no identifier can split mid-word. That floor
  * is honest but not readable: a prose column's longest word is short, so six
@@ -1055,22 +1053,22 @@ function computeTableColumnMinWidths(node: RenderTable): number[] {
 }
 
 /**
- * The alignment and column-rule styles for a Markdown table cell. For a cell
+ * The alignment and column-rule classes for a Markdown table cell. For a cell
  * that reads against its table, the table's start is the cell's end, so an
  * explicit alignment and the rule swap logical sides.
  */
-function tableCellSideStyles(
+function tableCellSideClassNames(
   align: MarkdownAstTableAlignment | undefined,
   isAgainstTable: boolean,
-): ReadonlyArray<StyleXStyles | false> {
+): ReadonlyArray<string | false> {
   return [
-    align === 'center' && markdownTablePartStyles.alignCenter,
+    align === 'center' && markdownTablePartClassName.alignCenter,
     align === 'right' &&
       (isAgainstTable
-        ? markdownTablePartStyles.alignStart
-        : markdownTablePartStyles.alignEnd),
-    align === 'left' && isAgainstTable && markdownTablePartStyles.alignEnd,
-    isAgainstTable && markdownTablePartStyles.ruleOnTableEnd,
+        ? markdownTablePartClassName.alignStart
+        : markdownTablePartClassName.alignEnd),
+    align === 'left' && isAgainstTable && markdownTablePartClassName.alignEnd,
+    isAgainstTable && markdownTablePartClassName.ruleOnTableEnd,
   ];
 }
 
@@ -1293,14 +1291,13 @@ function renderBlock(
             // RichText, so a reader sees whole lines and the read/edit switch
             // moves no block (spec:AST-061 FR5, DEC-9).
             isWrapped
-            xstyle={
+            className={tw(
+              contentWidthValue != null && markdownCodeBlockWidthClassName,
+              contentAlign === 'center' && markdownCenterAlignClassName,
+            )}
+            style={
               contentWidthValue != null
-                ? markdownCodeBlockOverrides.blockWidth(contentWidthValue)
-                : undefined
-            }
-            className={
-              contentAlign === 'center'
-                ? markdownCenterAlignClassName
+                ? markdownBlockWidthStyle(contentWidthValue)
                 : undefined
             }
           />
@@ -1720,7 +1717,7 @@ function renderBlock(
           <Table
             dividers="grid"
             textOverflow="wrap"
-            xstyle={markdownTablePartStyles.tableOuterEdge}>
+            className={markdownTablePartClassName.tableOuterEdge}>
             <TableHeader>
               <TableRow>
                 {header?.children.map((h, i) => (
@@ -1728,16 +1725,15 @@ function renderBlock(
                     // eslint-disable-next-line @eslint-react/no-array-index-key -- markdown table columns are positional by definition
                     key={i}
                     dir={blockDirection(h, directionScope)}
-                    xstyle={[
-                      markdownTablePartStyles.headerCell,
-                      markdownTablePartStyles.cellMinWidth(
-                        `${colMinWidths[i]}ch`,
-                      ),
-                      ...tableCellSideStyles(
+                    className={tw(
+                      markdownTablePartClassName.headerCell,
+                      markdownTablePartClassName.cellMinWidth,
+                      ...tableCellSideClassNames(
                         node.align[i],
                         readsAgainstTable(h),
                       ),
-                    ]}>
+                    )}
+                    style={markdownCellMinWidthStyle(`${colMinWidths[i]}ch`)}>
                     {h.children.map((c, j) =>
                       renderInline(
                         c,
@@ -1762,13 +1758,13 @@ function renderBlock(
                     // eslint-disable-next-line @eslint-react/no-array-index-key -- markdown table cells are positional by row and column
                     key={j}
                     dir={blockDirection(cell, directionScope)}
-                    xstyle={[
-                      markdownTablePartStyles.cell,
-                      ...tableCellSideStyles(
+                    className={tw(
+                      markdownTablePartClassName.cell,
+                      ...tableCellSideClassNames(
                         node.align[j],
                         readsAgainstTable(cell),
                       ),
-                    ]}>
+                    )}>
                     {cell.children.map((c, k) =>
                       renderInline(
                         c,

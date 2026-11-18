@@ -24,13 +24,13 @@ import {tw} from '../../utils/tw';
 import {
   markdownCenterAlignClassName,
   markdownHeadingLinksControlSlotClassName,
+  markdownHeadingLinksCopyButtonClassName,
   markdownHeadingLinksGlyphClassName,
   markdownHeadingLinksProbeClassName,
   markdownHeadingRowClassName,
   markdownProseWidthClassName,
   markdownProseWidthStyle,
 } from '../markdownClasses';
-import {markdownHeadingLinksCopyButtonStyles} from '../markdownChildOverrides.stylex';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -136,8 +136,8 @@ export function HeadingLinksRenderer({
           }
           isIconOnly
           onClick={handleClick}
-          xstyle={markdownHeadingLinksCopyButtonStyles.overrides}
           className={tw(
+            markdownHeadingLinksCopyButtonClassName,
             rtlCenterInlineClassName,
             rtlCenterInlineBlockOffsetClassName.half,
           )}

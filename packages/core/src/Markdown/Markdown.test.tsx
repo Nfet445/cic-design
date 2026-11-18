@@ -25,7 +25,6 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Markdown} from './Markdown';
 import {markdownSourceLinesPlugin} from './plugins';
 import type {
@@ -36,17 +35,12 @@ import type {
 import type {ParseOptions} from './index';
 import {stubMatchMedia} from '../__tests__/stubMatchMedia';
 import {parseOutlineFromMarkdown} from '../Outline/parseOutlineFromMarkdown';
-import {spacingVars} from '../theme/tokens.stylex';
 import {LIST_ITEM_COUNTER} from '../List/listItemClasses';
 import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
-import {markdownProseWidthClassName} from './markdownClasses';
-
-const tableCellSpacingProbe = stylex.create({
-  cell: {
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-});
+import {
+  markdownProseWidthClassName,
+  markdownTablePartClassName,
+} from './markdownClasses';
 
 describe('Markdown', () => {
   it('renders with role="document"', () => {
@@ -724,11 +718,9 @@ describe('Markdown', () => {
     const {container} = render(
       <Markdown>{'| A | B |\n| --- | --- |\n| 1 | 2 |'}</Markdown>,
     );
-    const spacingClasses = (
-      stylex.props(tableCellSpacingProbe.cell).className ?? ''
-    )
+    const spacingClasses = markdownTablePartClassName.cell
       .split(' ')
-      .filter(className => className !== '' && !className.includes('__'));
+      .filter(className => className.includes('padding-'));
     const cells = container.querySelectorAll('th, td');
 
     expect(spacingClasses.length).toBeGreaterThan(0);
@@ -1561,9 +1553,11 @@ describe('Markdown contentWidth', () => {
     expectClassSet(paragraph, {includes: [markdownProseWidthClassName]});
     expectVariable(paragraph, PROSE_WIDTH_VAR, '680px');
     // A code block spans the column, with the prose measure as its floor.
-    expect(container.querySelector('pre')?.getAttribute('style')).toContain(
-      '--x-minWidth: min(680px, 100%)',
-    );
+    expectClassSet(container.querySelector('pre')!, {
+      includes: [
+        '[.astryx-markdown-codeblock_&]:[min-width:min(var(--astryx-markdown-block-width),100%)]',
+      ],
+    });
   });
 
   it('lets prose span the column with contentWidth="100%"', () => {

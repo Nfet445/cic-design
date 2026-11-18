@@ -216,6 +216,108 @@ export const markdownTableWrapperClassName = tw(
   '[--container-padding-block-end:0px]',
 );
 
+// Child-component overrides
+//
+// Table, CodeBlock, Button and Code paint these properties with `astryx-base`
+// utilities of their own, and two utilities on one property leave the sheet to
+// decide the winner. Each override therefore names the Markdown block it stands
+// in, which outranks the child's plain utility whatever order the sheet prints.
+//
+// Table sizes wrap-mode cells with `max-width: 0` + `word-break: break-word`,
+// and its header cell adds nowrap and ellipsis. Those defaults zero a column's
+// min-content, so automatic layout divides the container equally: a six-column
+// Markdown table squashes to a few characters per cell, identifiers split
+// mid-word, header labels ellipsize, and nothing overflows into the Scroll
+// region that exists to take the width. Here the cell reports an honest
+// min-content, the header wraps instead of truncating, and `box-sizing:
+// content-box` keeps the per-column `ch` floor a floor on the text box rather
+// than on the padded border box, so the floor means the same number of
+// characters at every density. Data-driven `Table` keeps its released wrap
+// mode; only Markdown's part is restyled.
+export const markdownTablePartClassName = {
+  cell: tw(
+    '[.astryx-markdown-table_&]:[box-sizing:content-box]',
+    '[.astryx-markdown-table_&]:[max-width:none]',
+    '[.astryx-markdown-table_&]:[overflow:visible]',
+    '[.astryx-markdown-table_&]:[overflow-wrap:break-word]',
+    '[.astryx-markdown-table_&]:[padding-block:var(--spacing-2)]',
+    '[.astryx-markdown-table_&]:[padding-inline:var(--spacing-2)]',
+    '[.astryx-markdown-table_&]:[word-break:normal]',
+  ),
+  headerCell: tw(
+    '[.astryx-markdown-table_&]:[box-sizing:content-box]',
+    '[.astryx-markdown-table_&]:[max-width:none]',
+    '[.astryx-markdown-table_&]:[overflow:visible]',
+    '[.astryx-markdown-table_&]:[overflow-wrap:break-word]',
+    '[.astryx-markdown-table_&]:[padding-block:var(--spacing-2)]',
+    '[.astryx-markdown-table_&]:[padding-inline:var(--spacing-2)]',
+    '[.astryx-markdown-table_&]:[text-overflow:clip]',
+    '[.astryx-markdown-table_&]:[white-space:normal]',
+    '[.astryx-markdown-table_&]:[word-break:normal]',
+  ),
+  // Inline Code sets `word-break: break-word` so a long token cannot widen a
+  // paragraph. Inside a table cell that same rule zeroes the token's
+  // min-content and splits an identifier across lines; the cell keeps it whole
+  // and lets the column carry the width instead.
+  code: '[.astryx-markdown-table_&]:[word-break:normal]',
+  // A cell that reads against its table draws the column rule on the table's
+  // inline-end side, which is the cell's own inline-start.
+  ruleOnTableEnd: tw(
+    '[.astryx-markdown-table_&]:[border-inline-end-width:0]',
+    '[.astryx-markdown-table_&]:[border-inline-start-width:var(--border-width)]',
+    '[.astryx-markdown-table_&:last-child]:[border-inline-start-width:0]',
+    '[.astryx-markdown-table_&]:[border-inline-start-style:solid]',
+    '[.astryx-markdown-table_&]:[border-inline-start-color:var(--color-border)]',
+  ),
+  // The grid's outer edge. `dividers="grid"` draws the lines *between* cells
+  // and stops at the table's rim, so without this the top, bottom, and sides
+  // stay open and the grid reads as unfinished. On the table element, not the
+  // wrapper, so `border-collapse: collapse` merges it with the cell lines into
+  // one 1px rule rather than doubling up at the edge.
+  tableOuterEdge: tw(
+    '[.astryx-markdown-table_&]:[border-width:var(--border-width)]',
+    '[.astryx-markdown-table_&]:[border-style:solid]',
+    '[.astryx-markdown-table_&]:[border-color:var(--color-border)]',
+  ),
+  alignStart: '[.astryx-markdown-table_&]:[text-align:start]',
+  alignCenter: '[.astryx-markdown-table_&]:[text-align:center]',
+  alignEnd: '[.astryx-markdown-table_&]:[text-align:end]',
+  /** Reads the per-column floor the cell carries in its own inline style. */
+  cellMinWidth:
+    '[.astryx-markdown-table_&]:[min-width:var(--astryx-markdown-cell-min-width)]',
+} as const;
+
+/**
+ * A code block's prose floor. CodeBlock's fit-content box carries a `min-width`
+ * utility of its own, and the prose measure has to widen past it, so this one
+ * property cannot be a second utility. The width arrives as a variable, like
+ * the block's own, because a caller picks it at render time.
+ */
+export const markdownCodeBlockWidthClassName =
+  '[.astryx-markdown-codeblock_&]:[min-width:min(var(--astryx-markdown-block-width),100%)]';
+
+/**
+ * The heading's copy control: a sm icon-only Button, centered on the `#` in the
+ * hidden baseline probe so the control's own box never widens the row. Button
+ * sets `position: relative`, its own box size, padding and text style, so each
+ * declaration here names the document root to outrank it.
+ */
+export const markdownHeadingLinksCopyButtonClassName = tw(
+  '[.astryx-markdown_&]:absolute',
+  '[.astryx-markdown_&]:[inset-block-start:50%]',
+  '[.astryx-markdown_&]:[inline-size:var(--size-element-sm)]',
+  '[.astryx-markdown_&]:[block-size:var(--size-element-sm)]',
+  '[.astryx-markdown_&]:pointer-coarse:[inline-size:24px]',
+  '[.astryx-markdown_&]:pointer-coarse:[block-size:24px]',
+  '[.astryx-markdown_&]:[padding-block:0]',
+  '[.astryx-markdown_&]:[padding-inline:0]',
+  '[.astryx-markdown_&]:[color:inherit]',
+  '[.astryx-markdown_&]:[font-family:inherit]',
+  '[.astryx-markdown_&]:[font-size:inherit]',
+  '[.astryx-markdown_&]:[font-weight:inherit]',
+  '[.astryx-markdown_&]:[line-height:inherit]',
+);
+
 // HR
 export const markdownHrClassName = tw(
   'border-x-0 border-b-0',
@@ -253,7 +355,9 @@ export const markdownFadeInClassName = tw(
 export type MarkdownGeometryStyle = CSSProperties &
   Partial<
     Record<
-      '--astryx-markdown-prose-width' | '--astryx-markdown-block-width',
+      | '--astryx-markdown-prose-width'
+      | '--astryx-markdown-block-width'
+      | '--astryx-markdown-cell-min-width',
       string
     >
   >;
@@ -266,6 +370,13 @@ export function markdownProseWidthStyle(width: string): MarkdownGeometryStyle {
 /** The width a block that can overflow the prose column asks for. */
 export function markdownBlockWidthStyle(width: string): MarkdownGeometryStyle {
   return {'--astryx-markdown-block-width': width};
+}
+
+/** The `ch` floor a Markdown table column asks for on each of its cells. */
+export function markdownCellMinWidthStyle(
+  width: string,
+): MarkdownGeometryStyle {
+  return {'--astryx-markdown-cell-min-width': width};
 }
 
 export const markdownProseWidthClassName =
