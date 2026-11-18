@@ -62,6 +62,29 @@ The removal order that follows from this: finish 30 and 41, publish the seams in
 remaining consumers, then this ticket drops `@stylexjs` from the four packages, retires the StyleX half
 of `packages/build` and `scripts/build-css.mjs`, and decides `astryx.css` (OQ1).
 
+Measured after ticket 36B. Converted to literal classes in a `*Classes.ts` map, one file per
+commit, each registered in `Layout/tailwindStylesheet.source-build.test.mjs`:
+`Table/TableCell.tsx`, `Table/TableRow.tsx`, `Table/TableHeaderCell.tsx`, `SideNav/SideNav.tsx`,
+`AppShell/AppShell.tsx` (its area fills only), `hooks/anchoredHint.tsx`,
+`Chat/ChatComposerDrawer.tsx`, `lab/src/TransferList/TransferListSelector.tsx` (lab sheet).
+
+Four sites keep their map, and each names its blocker in place:
+
+- `SideNav/SideNavItem.tsx` — `leftoverStyles` and `indentStyles` lose to
+  `NavItem/navItemStyles.stylex.ts`, which is unlayered and paints the same `padding-inline-*` and
+  size; the seam is the NavItem class map, not a new attribute.
+- `DropdownMenu/DropdownMenuSubMenu.tsx` — `triggerStyles.caret` sits on a style-only wrapper,
+  which the lint rule reports once the style arrives as a class; the rule has to accept a class
+  that resolves to a real declaration first.
+- `AppShell/AppShell.tsx` — `mainFocusTarget`, `mainElevatedCorner`, `mainSafeAreaEnd` and
+  `panelAutoFill` arrive through `LayoutContent`/`LayoutPanel`'s `xstyle`, whose own class paints
+  `outline`, padding, `overflow` and `flex` in the same layer. `mainSafeAreaEnd` also composes with
+  the container padding variable, so sheet order cannot replace last-wins; the seam is a Layout
+  class that owns the safe-area inset as its own arm.
+
+`SideNav/SideNav.tsx` and `Chat/ChatComposerDrawer.tsx` hold no map any more; only their `@input`
+headers still name StyleX. No changeset: no prop, export or theme variable changed.
+
 ## Comments — measured frontier after ticket 53
 
 The component maps are gone; what remains is two families:
