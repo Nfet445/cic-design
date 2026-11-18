@@ -34,7 +34,6 @@ import React, {
   type ReactNode,
   type MouseEvent,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {BreadcrumbContext, type BreadcrumbsVariant} from './Breadcrumbs';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
@@ -48,6 +47,7 @@ import {
   breadcrumbItemClassName,
   breadcrumbLinkClassName,
   breadcrumbLinkColorClassName,
+  breadcrumbMenuLayerClassName,
   breadcrumbSeparatorClassName,
   breadcrumbSizeClassName,
   breadcrumbStartIconClassName,
@@ -170,15 +170,6 @@ function BreadcrumbSeparator({separator}: {separator: ReactNode}) {
     </span>
   );
 }
-
-// The layer's `render` takes a StyleX value only, so the popover's own box
-// stays one until that seam carries a class.
-const menuStyles = stylex.create({
-  popover: {
-    minWidth: '160px',
-    marginBlock: 'var(--spacing-1)',
-  },
-});
 
 // =============================================================================
 // Component
@@ -647,7 +638,7 @@ function BreadcrumbMenuTrigger({
         {
           placement: 'below',
           alignment: 'start',
-          xstyle: menuStyles.popover,
+          className: breadcrumbMenuLayerClassName,
         },
       )}
     </>

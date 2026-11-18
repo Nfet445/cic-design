@@ -69,6 +69,11 @@ const chevronClassName = tw(
   'size-[var(--text-supporting-size)] [font-size:var(--text-supporting-size)]',
 );
 
+/** The trigger's menu layer: a floor wide enough for two short item labels,
+ * and the same step off the trigger every other anchored menu takes. It sits
+ * outside `breadcrumbMenuClassName`, which is the box the rows are laid out in. */
+const menuLayerClassName = tw('min-w-[160px]', 'my-1');
+
 export {
   buttonResetClassName as breadcrumbButtonResetClassName,
   chevronClassName as breadcrumbChevronClassName,
@@ -78,6 +83,7 @@ export {
   itemClassName as breadcrumbItemClassName,
   linkClassName as breadcrumbLinkClassName,
   linkColorClassName as breadcrumbLinkColorClassName,
+  menuLayerClassName as breadcrumbMenuLayerClassName,
   separatorClassName as breadcrumbSeparatorClassName,
   sizeClassName as breadcrumbSizeClassName,
   startIconClassName as breadcrumbStartIconClassName,
