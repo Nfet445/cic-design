@@ -47,6 +47,7 @@ import {useInteractiveRole} from '../hooks/useInteractiveRole';
 import {themeDataAttributes, themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayPressedBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {disabledInteractionProps} from '../utils/disabledInteraction';
 import {
@@ -343,13 +344,19 @@ export function Link({
         {...mergeProps(
           themeProps('link', {color}),
           stylex.props(
+            // The strength and the release; the press paint is a class below.
+            !isDisabled && interactionOverlayStyles.pressedAlpha,
+            xstyle,
+          ),
+          tw(
+            rootClassName,
+            className,
             // The system's pressed overlay behind the text; the hover stays
             // the colour change above, so a press is the one background it
             // paints.
-            !isDisabled && interactionOverlayStyles.pressedBackgroundColor,
-            xstyle,
+            !isDisabled && interactionOverlayPressedBackgroundColorClassName,
+            focusOutlineFocusVisibleClassName,
           ),
-          tw(rootClassName, className, focusOutlineFocusVisibleClassName),
           style,
         )}
         {...props}
@@ -397,10 +404,16 @@ export function Link({
         {...mergeProps(
           themeProps('link', {color}),
           stylex.props(
-            !isDisabled && interactionOverlayStyles.pressedBackgroundColor,
+            // The strength and the release; the press paint is a class below.
+            !isDisabled && interactionOverlayStyles.pressedAlpha,
             xstyle,
           ),
-          tw(rootClassName, className, focusOutlineFocusVisibleClassName),
+          tw(
+            rootClassName,
+            className,
+            !isDisabled && interactionOverlayPressedBackgroundColorClassName,
+            focusOutlineFocusVisibleClassName,
+          ),
           style,
         )}
         {...props}
