@@ -124,7 +124,6 @@ import {OverflowList} from '../OverflowList';
 import {useLayer} from '../Layer/useLayer';
 import {useTooltip} from '../Tooltip';
 import {useAnnounce} from '../hooks/useAnnounce';
-import {colorVars, spacingVars} from '../theme/tokens.stylex';
 import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
@@ -436,8 +435,8 @@ type TokenizerAcceptedProps<T extends SearchableItem> = Omit<
 
 // How far the end lane sits from the field's inline-end border, named once
 // because the input's reserve is derived from the same value.
-const END_LANE_INSET = spacingVars['--spacing-2'];
-const TOKEN_ROW_INSET = `calc(${spacingVars['--spacing-1']} - 1px)`;
+const END_LANE_INSET = 'var(--spacing-2)';
+const TOKEN_ROW_INSET = `calc(var(--spacing-1) - 1px)`;
 /**
  * Where a grouped strip's edge fade turns opaque, and how far focus scrolling
  * keeps a focused control from a faded edge. The fade is transparent across
@@ -447,7 +446,7 @@ const TOKEN_ROW_INSET = `calc(${spacingVars['--spacing-1']} - 1px)`;
 // Kept in sync with useEndLaneReserve: wrapperWithTokens reads the custom
 // property directly, to keep token rows and the input short of the lane.
 const END_LANE_RESERVE_VAR = '--astryx-tokenizer-end-lane-reserve';
-const INPUT_TEXT_INSET = `calc(${spacingVars['--spacing-2']} - ${spacingVars['--spacing-1']} + 1px)`;
+const INPUT_TEXT_INSET = `calc(var(--spacing-2) - var(--spacing-1) + 1px)`;
 // The content width an empty, focused input has beyond its inset, so its
 // caret has room to draw.
 const INPUT_CARET_ROOM = '2px';
@@ -464,7 +463,7 @@ const styles = stylex.create({
   wrapper: {
     position: 'relative',
     flexWrap: 'wrap',
-    gap: spacingVars['--spacing-1'],
+    gap: 'var(--spacing-1)',
     cursor: {
       default: 'text',
       ':is(:disabled,[aria-disabled="true"])': 'default',
@@ -517,7 +516,7 @@ const styles = stylex.create({
     width: 0,
     marginInlineStart: {
       default: 0,
-      ':placeholder-shown:is(:not(:focus), :read-only)': `calc(-1 * ${spacingVars['--spacing-1']})`,
+      ':placeholder-shown:is(:not(:focus), :read-only)': `calc(-1 * var(--spacing-1))`,
     },
     // Gives the caret room back to the row, so the field keeps its width and
     // the input does not wrap.
@@ -552,11 +551,11 @@ const styles = stylex.create({
     minWidth: '40px',
     flex: '1 1 40px',
     width: 0,
-    paddingInlineStart: `calc(${spacingVars['--spacing-2']} - ${spacingVars['--spacing-1']} + 1px)`,
+    paddingInlineStart: `calc(var(--spacing-2) - var(--spacing-1) + 1px)`,
   },
   sheetTokenDisabled: {
     color: {
-      default: colorVars['--color-text-primary'],
+      default: 'var(--color-text-primary)',
       '@media (forced-colors: active)': 'GrayText',
     },
   },

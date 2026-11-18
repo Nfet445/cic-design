@@ -75,7 +75,6 @@ import {
   tokenizerSheetRowsClassName,
   tokenizerSheetSearchRowClassName,
 } from './tokenizerClasses';
-import {colorVars, sizeVars, spacingVars} from '../theme/tokens.stylex';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -106,15 +105,15 @@ const styles = stylex.create({
   // border. The sheet is not, so its field takes the shared input box at the
   // `lg` height.
   searchField: {
-    minHeight: sizeVars['--size-element-lg'],
-    paddingBlock: spacingVars['--spacing-1'],
+    minHeight: 'var(--size-element-lg)',
+    paddingBlock: 'var(--spacing-1)',
   },
   // An aria-disabled row gets no system disabled paint in forced colors;
   // GrayText is the platform's disabled affordance there. The default repeats
   // the indicator's disabled border, since StyleX merges per property.
   indicatorDisabled: {
     borderColor: {
-      default: colorVars['--color-border'],
+      default: 'var(--color-border)',
       '@media (forced-colors: active)': 'GrayText',
     },
   },
