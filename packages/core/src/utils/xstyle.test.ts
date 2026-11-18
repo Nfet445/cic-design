@@ -12,7 +12,14 @@ import * as stylex from '@stylexjs/stylex';
 import {describe, expect, it} from 'vitest';
 import {xstyleProps} from './xstyle';
 
-const probe = stylex.create({root: {color: 'red'}});
+const probe = stylex.create({
+  root: {color: 'red'},
+  dynamic: (width: string) => ({minWidth: width}),
+});
+
+// An aliased call stays out of the compiler, so the list reaches `stylex.props`
+// as a runtime value.
+const runtimeProps = stylex.props;
 
 describe('xstyleProps', () => {
   it('treats a class as a class', () => {
@@ -28,6 +35,11 @@ describe('xstyleProps', () => {
     const {className, style} = xstyleProps(probe.root);
     expect(className).toBe(stylex.props(probe.root).className);
     expect(style).toBeUndefined();
+  });
+
+  it('still carries a dynamic StyleX value, which arrives as a list', () => {
+    const value = probe.dynamic('12rem');
+    expect(xstyleProps(value)).toEqual(runtimeProps(value));
   });
 
   it('states nothing when the consumer states nothing', () => {
