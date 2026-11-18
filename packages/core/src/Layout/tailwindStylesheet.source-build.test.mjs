@@ -30,6 +30,7 @@ import {
 import {avatarShapeClassName} from '../Avatar/avatarClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import * as lightboxClasses from '../Lightbox/lightboxClasses';
+import {APP_SHELL_SKIP_LINK_CLASS} from '../AppShell/appShellClasses';
 import {
   breadcrumbMenuClassName,
   breadcrumbsListClassName,
@@ -2878,6 +2879,7 @@ function familyClassNames() {
   add(sideNavClassName.drawerFooterIcons);
   add(sideNavClassName.resizableContainer);
   add(sideNavClassName.resizableHandle);
+  add(APP_SHELL_SKIP_LINK_CLASS);
   add(sideNavClassName.topbar);
   add(sideNavClassName.topbarIcons);
   for (const value of Object.values(sideNavItemClassName)) {
