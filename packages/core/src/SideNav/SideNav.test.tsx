@@ -10,7 +10,15 @@
  */
 
 import React from 'react';
-import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
+import {
+  beforeAll,
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+} from 'vitest';
 import {
   render,
   screen,
@@ -26,9 +34,19 @@ import {
   focusOutlineSuppressedClassName,
   focusOutlineWithinFirstChildClassName,
 } from '../utils/focusOutlineClasses';
-import {getForcedColorsRules} from '../__tests__/forcedColors';
-import {classesOf} from '../__tests__/classNameAssertions';
+import {
+  classesOf,
+  stylesheetOf,
+  type Stylesheet,
+} from '../__tests__/classNameAssertions';
+import {buildAstryxTailwindCss} from '../../scripts/build-css-tailwind.mjs';
 import {sideNavClassName} from './sideNavClasses';
+import {
+  SIDE_NAV_INDENT_VAR,
+  sideNavItemIndentClassName,
+  sideNavItemPrimaryIndentClassName,
+} from './sideNavItemClasses';
+import {navItemSelectedClassName} from '../NavItem/navItemClasses';
 import {Button} from '../Button';
 import {SideNav} from './SideNav';
 import {__resetMenuPressForTest} from '../hooks/useMenuPress';
@@ -1257,15 +1275,15 @@ describe('SideNavItem', () => {
     const general = screen.getByRole('link', {name: 'General'});
     const advanced = screen.getByRole('link', {name: 'Advanced'});
     expect(indentOf(top)).toBeNull();
-    expect(indentOf(advanced)).toBe(
-      'calc(var(--spacing-2) + 2 * var(--spacing-6))',
-    );
+    expect(indentOf(advanced)).toBe('2');
+    expect(classesOf(advanced)).toContain(sideNavItemIndentClassName('md'));
 
     // A split row (own href plus children) keeps the wrapper's base padding
     // and puts the steps on the link, so the whole indent is clickable
     // instead of dead space that still shows hover and press feedback.
     expect(indentOf(general.parentElement!)).toBeNull();
-    expect(indentOf(general)).toBe('calc(1 * var(--spacing-6))');
+    expect(indentOf(general)).toBe('1');
+    expect(classesOf(general)).toContain(sideNavItemPrimaryIndentClassName());
   });
 
   it('clips the children group only while it is collapsed', async () => {
@@ -1303,7 +1321,8 @@ describe('SideNavItem', () => {
     );
     const alpha = screen.getByRole('link', {name: 'Alpha'});
     expect(indentOf(alpha.parentElement!)).toBeNull();
-    expect(indentOf(alpha)).toBe('calc(1 * var(--spacing-6))');
+    expect(indentOf(alpha)).toBe('1');
+    expect(classesOf(alpha)).toContain(sideNavItemPrimaryIndentClassName());
   });
 
   it("composes a caller's style with the indent on a nested row", () => {
@@ -1325,13 +1344,11 @@ describe('SideNavItem', () => {
     // Ordinary row: the link is the row.
     const general = screen.getByRole('link', {name: 'General'});
     expect(general.style.color).toBe('rebeccapurple');
-    expect(indentOf(general)).toBe(
-      'calc(var(--spacing-2) + 1 * var(--spacing-6))',
-    );
+    expect(indentOf(general)).toBe('1');
     // Split row: the caller's style still lands on the primary link.
     const security = screen.getByRole('link', {name: 'Security'});
     expect(security.style.color).toBe('rebeccapurple');
-    expect(indentOf(security)).toBe('calc(1 * var(--spacing-6))');
+    expect(indentOf(security)).toBe('1');
   });
 
   it("keeps a caller's className on the row element", () => {
@@ -1400,9 +1417,7 @@ describe('SideNavItem', () => {
     const security = screen.getByRole('link', {name: 'Security'});
     expect(security.style.paddingInlineStart).toBe('20px');
     // A row whose caller sets no padding keeps its indent.
-    expect(indentOf(screen.getByRole('link', {name: 'Keys'}))).toBe(
-      'calc(var(--spacing-2) + 2 * var(--spacing-6))',
-    );
+    expect(indentOf(screen.getByRole('link', {name: 'Keys'}))).toBe('2');
   });
 
   it('indents a small nested row from the small row padding', () => {
@@ -1411,9 +1426,9 @@ describe('SideNavItem', () => {
         <SideNavItem label="General" href="/settings/general" size="sm" />
       </SideNavItem>,
     );
-    expect(indentOf(screen.getByRole('link', {name: 'General'}))).toBe(
-      'calc(var(--spacing-1) + 1 * var(--spacing-6))',
-    );
+    const general = screen.getByRole('link', {name: 'General'});
+    expect(indentOf(general)).toBe('1');
+    expect(classesOf(general)).toContain(sideNavItemIndentClassName('sm'));
   });
 
   it('does not indent the first level of a collapsed rail flyout', async () => {
@@ -1433,9 +1448,7 @@ describe('SideNavItem', () => {
     const advanced = screen.getByRole('link', {name: 'Advanced', hidden: true});
     expect(indentOf(general)).toBeNull();
     expect(indentOf(general.parentElement!)).toBeNull();
-    expect(indentOf(advanced)).toBe(
-      'calc(var(--spacing-2) + 1 * var(--spacing-6))',
-    );
+    expect(indentOf(advanced)).toBe('1');
   });
 
   it('passes data-testid', () => {
@@ -3148,15 +3161,9 @@ function expectSharedFocusRing(el: Element) {
  * StyleX value, so it rides the row's inline style as a custom property;
  * read the value rather than the generated property name.
  */
+/** The nesting depth an element's indent class reads, or null for no indent. */
 function indentOf(el: HTMLElement): string | null {
-  const {style} = el;
-  for (let i = 0; i < style.length; i++) {
-    const value = style.getPropertyValue(style[i]).trim();
-    if (value.includes('var(--spacing-6)')) {
-      return value;
-    }
-  }
-  return null;
+  return el.style.getPropertyValue(SIDE_NAV_INDENT_VAR).trim() || null;
 }
 
 function expectNoSharedFocusRing(el: Element) {
@@ -3395,10 +3402,16 @@ describe('SideNav focus ring (A15)', () => {
 });
 
 // jsdom cannot emulate forced-colors rendering, so these assert that the
-// compiled output carries the rules the selected row relies on. The rendered
-// behaviour was measured in Chromium under `forced-colors: active` — see the
-// evidence on #4880.
+// classes the selected row carries exist in the built sheet with the
+// declarations it relies on. The rendered behaviour was measured in Chromium
+// under `forced-colors: active` — see the evidence on #4880.
 describe('forced colors (WCAG 1.4.11)', () => {
+  let sheet: Stylesheet;
+
+  beforeAll(async () => {
+    sheet = stylesheetOf(await buildAstryxTailwindCss());
+  });
+
   it('compiles forced-colors overrides so the current page survives Windows High Contrast', () => {
     render(
       <SideNav>
@@ -3408,20 +3421,36 @@ describe('forced colors (WCAG 1.4.11)', () => {
         </SideNavSection>
       </SideNav>,
     );
-    const css = getForcedColorsRules();
+    const row = screen.getByRole('link', {name: 'Dashboard'});
+    const selectedClasses = navItemSelectedClassName().split(' ');
+    const fillArm =
+      selectedClasses.find(
+        className =>
+          className.includes('forced-colors:bg-[color:Highlight]') &&
+          !className.includes(':hover'),
+      ) ?? '';
+    const labelArm =
+      selectedClasses.find(className =>
+        className.includes('forced-colors:text-[color:HighlightText]'),
+      ) ?? '';
     // `--color-neutral` is a background: forced colors flatten it to Canvas
     // and the selected row loses every trace of being selected. Highlight /
     // HighlightText is the platform convention that survives.
-    expect(css).toContain('background-color: highlight;');
-    expect(css).toContain('color: highlighttext;');
+    expect(classesOf(row)).toContain(fillArm);
+    expect(classesOf(row)).toContain(labelArm);
+    expect(sheet.blockOf(fillArm)).toContain('background-color:Highlight;');
+    expect(sheet.blockOf(labelArm)).toContain('color:HighlightText;');
     // The hover fill has to hold the Highlight too, or hovering the current
     // page repaints it with the ordinary hover overlay and erases the state.
-    // Nesting it inside the hover media query is what wins that fight: the
-    // rule compiles to a triple-class selector, which outranks `item`'s
-    // single-class hover overlay no matter the source order.
-    expect(css).toMatch(
-      /@media \(hover: hover\)[\s\S]*?forced-colors: active[\s\S]*?:hover[\s\S]*?background-color: highlight/,
-    );
+    // The arm repeats the selected qualifier inside the hover media query, so
+    // it outranks the overlay's own hover rule by specificity rather than by
+    // the sheet's order.
+    expect(
+      classesOf(row).some(className =>
+        className.includes('aria-current=page]:hover') &&
+        className.includes('forced-colors:bg-[color:Highlight]'),
+      ),
+    ).toBe(true);
   });
 
   it('does not opt nav rows out of UA colour remapping', () => {

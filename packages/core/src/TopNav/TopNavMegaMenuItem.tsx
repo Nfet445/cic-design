@@ -4,7 +4,7 @@
 
 /**
  * @file TopNavMegaMenuItem.tsx
- * @input Uses React, navItemStyles, TopNavRenderContext, and the Tailwind
+ * @input Uses React, navItemClassName, TopNavRenderContext, and the Tailwind
  *   classes in topNavMegaMenuItemClasses.ts
  * @output Exports TopNavMegaMenuItem component and props
  * @position Individual item inside an TopNavMegaMenu — renders itself in both
@@ -19,7 +19,7 @@
 
 import React, {type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {navItemStyles} from '../NavItem/navItemStyles.stylex';
+import {navItemClassName} from '../NavItem/navItemClasses';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {useTopNavRenderMode} from './TopNavRenderContext';
@@ -142,11 +142,11 @@ export function TopNavMegaMenuItem({
         {...mergeProps(
           themeProps('top-nav-mega-menu-item', {mode: 'drawer'}),
           stylex.props(
-            navItemStyles.item,
             // The strength and the release; the colour is a class below.
             interactionOverlayStyles.pressedAlpha,
           ),
           tw(
+            navItemClassName(),
             topNavMegaMenuItemDrawerClassName(),
             className,
             interactionOverlayBackgroundColorClassName,

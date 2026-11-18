@@ -7,7 +7,7 @@
  *   in the drawer
  * @position Style primitives; scanned by the Tailwind build
  *
- * The drawer item sits on the shared nav row (`navItemStyles.item`), so its
+ * The drawer item sits on the shared nav row (`navItemClassName()`), so its
  * classes carry only the padding and alignment that row does not.
  *
  * SYNC: When modified, update:

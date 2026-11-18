@@ -23,7 +23,6 @@ import * as layerViewportInset from '@astryxdesign/core/Layer/layerViewportInset
 import * as container from '@astryxdesign/core/Layout/container.stylex';
 import * as edgeCompensation from '@astryxdesign/core/Layout/edgeCompensation.stylex';
 import * as padding from '@astryxdesign/core/Layout/padding.stylex';
-import * as navItemStyles from '@astryxdesign/core/NavItem/navItemStyles.stylex';
 import * as selectorPresentation from '@astryxdesign/core/Selector/selectorPresentation.stylex';
 import * as stack from '@astryxdesign/core/Stack/stack.stylex';
 import * as stackItem from '@astryxdesign/core/Stack/stackItem.stylex';
@@ -36,7 +35,6 @@ import * as interactionOverlay from '@astryxdesign/core/utils/interactionOverlay
 /** The style namespaces that a component's `xstyle` accepts. */
 type XstyleNamespaces = {
   iconSizeStyles: typeof iconSize.iconSizeStyles;
-  navItemStyles: typeof navItemStyles.navItemStyles;
   selectorPresentationStyles: typeof selectorPresentation.selectorPresentationStyles;
   focusOutlineStyles: typeof focusOutline.focusOutlineStyles;
   interactionOverlayStyles: typeof interactionOverlay.interactionOverlayStyles;
@@ -111,7 +109,6 @@ const styleNamespacesBySubpath = {
   './Layout/container.stylex': [],
   './Layout/edgeCompensation.stylex': [],
   './Layout/padding.stylex': [],
-  './NavItem/navItemStyles.stylex': ['navItemStyles'],
   './Selector/selectorPresentation.stylex': ['selectorPresentationStyles'],
   './Stack/stack.stylex': [],
   './Stack/stackItem.stylex': [],
@@ -132,7 +129,6 @@ const modulesBySubpath: Readonly<
   './Layout/container.stylex': container,
   './Layout/edgeCompensation.stylex': edgeCompensation,
   './Layout/padding.stylex': padding,
-  './NavItem/navItemStyles.stylex': navItemStyles,
   './Selector/selectorPresentation.stylex': selectorPresentation,
   './Stack/stack.stylex': stack,
   './Stack/stackItem.stylex': stackItem,

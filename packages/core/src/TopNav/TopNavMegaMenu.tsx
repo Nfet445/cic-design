@@ -49,7 +49,7 @@ import {Icon} from '../Icon';
 import {mergeProps, composeEventHandlers} from '../utils';
 import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
-import {navItemStyles} from '../NavItem/navItemStyles.stylex';
+import {navItemClassName} from '../NavItem/navItemClasses';
 import {useTopNavSlot} from './TopNavContext';
 import {useTopNavRenderMode} from './TopNavRenderContext';
 import {themeProps} from '../utils/themeProps';
@@ -412,11 +412,11 @@ function DrawerMegaMenu({
         {...mergeProps(
           themeProps('top-nav-mega-menu', {mode: 'drawer'}),
           stylex.props(
-            navItemStyles.item,
             // The strength and the release; the colour is a class below.
             interactionOverlayStyles.pressedAlpha,
           ),
           tw(
+            navItemClassName(),
             topNavMegaMenuDrawerHeaderClassName(),
             className,
             interactionOverlayBackgroundColorClassName,

@@ -598,6 +598,12 @@ import {
   layerViewportFitClassName,
 } from '../Layer/layerClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
+import {
+  navItemClassName,
+  navItemDisabledClassName,
+  navItemSelectedClassName,
+  navItemSizeClassName,
+} from '../NavItem/navItemClasses';
 import {sideNavClassName} from '../SideNav/sideNavClasses';
 import {sideNavHeadingClassName} from '../SideNav/sideNavHeadingClasses';
 import {
@@ -606,7 +612,12 @@ import {
   navHeadingMenuItemContentClassName,
   navHeadingMenuMinWidthClassName,
 } from '../NavMenu/navHeadingMenuClasses';
-import {sideNavItemClassName} from '../SideNav/sideNavItemClasses';
+import {
+  sideNavItemClassName,
+  sideNavItemCollapsedSquareClassName,
+  sideNavItemIndentClassName,
+  sideNavItemPrimaryIndentClassName,
+} from '../SideNav/sideNavItemClasses';
 import {
   treeListItemClassName,
   treeListItemDensityClassName,
@@ -3013,9 +3024,25 @@ function familyClassNames() {
   add(APP_SHELL_AREA_TRANSPARENT_CLASS);
   add(sideNavClassName.topbar);
   add(sideNavClassName.topbarIcons);
+  // The shared nav row, its state arms and its three sizes.
+  add(navItemClassName());
+  add(navItemSelectedClassName());
+  add(navItemDisabledClassName());
+  add(navItemSizeClassName('sm'));
+  add(navItemSizeClassName('md'));
+  add(navItemSizeClassName('lg'));
   for (const value of Object.values(sideNavItemClassName)) {
     add(value);
   }
+  // The collapsed rail's square and the nesting indent, one arm per size, and
+  // the indent the split row puts on its primary control.
+  add(sideNavItemCollapsedSquareClassName('sm'));
+  add(sideNavItemCollapsedSquareClassName('md'));
+  add(sideNavItemCollapsedSquareClassName('lg'));
+  add(sideNavItemIndentClassName('sm'));
+  add(sideNavItemIndentClassName('md'));
+  add(sideNavItemIndentClassName('lg'));
+  add(sideNavItemPrimaryIndentClassName());
 
   for (const value of Object.values(sideNavHeadingClassName)) {
     add(value);

@@ -29,7 +29,7 @@ import {usePopoverInternal} from '../Popover/usePopover';
 import {Link} from '../Link';
 import {Icon} from '../Icon';
 import {Tooltip} from '../Tooltip';
-import {navItemStyles} from '../NavItem/navItemStyles.stylex';
+import {navItemClassName} from '../NavItem/navItemClasses';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
@@ -287,11 +287,11 @@ export function SideNavHeading({
           {...mergeProps(
             themeProps('side-nav-heading'),
             stylex.props(
-              navItemStyles.item,
               // The strength and the release; the colour is a class below.
               interactionOverlayStyles.pressedAlpha,
             ),
             tw(
+              navItemClassName(),
               sideNavHeadingClassName.collapsedRoot,
               className,
               interactionOverlayBackgroundColorClassName,
@@ -317,11 +317,11 @@ export function SideNavHeading({
             {...mergeProps(
               themeProps('side-nav-heading'),
               stylex.props(
-                navItemStyles.item,
                 // The strength and the release; the colour is a class below.
                 interactionOverlayStyles.pressedAlpha,
               ),
               tw(
+                navItemClassName(),
                 sideNavHeadingClassName.collapsedRoot,
                 sideNavHeadingClassName.menuTrigger,
                 className,

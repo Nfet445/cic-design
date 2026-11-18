@@ -23,7 +23,13 @@ import type {BaseProps} from '../BaseProps';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {useTopNavRenderMode} from './TopNavRenderContext';
-import {navItemStyles, type NavItemSize} from '../NavItem/navItemStyles.stylex';
+import {
+  navItemClassName,
+  navItemDisabledClassName,
+  navItemSelectedClassName,
+  navItemSizeClassName,
+  type NavItemSize,
+} from '../NavItem/navItemClasses';
 import {mergeProps} from '../utils';
 import {useCloseMobileDrawerOnActivate} from '../AppShell/useCloseMobileDrawerOnActivate';
 import {themeProps} from '../utils/themeProps';
@@ -253,14 +259,14 @@ export function TopNavItem({
             selected: isSelected ? 'selected' : null,
           }),
           stylex.props(
-            navItemStyles.item,
             // The strength and the release; the colour is a class below.
             interactionOverlayStyles.pressedAlpha,
-            navItemStyles[size],
-            isSelected && navItemStyles.selected,
-            isDisabled && navItemStyles.disabled,
           ),
           tw(
+            navItemClassName(),
+            navItemSizeClassName(size),
+            isSelected && navItemSelectedClassName(),
+            isDisabled && navItemDisabledClassName(),
             className,
             interactionOverlayBackgroundColorClassName,
             focusOutlineFocusVisibleClassName,
@@ -302,9 +308,9 @@ export function TopNavItem({
         stylex.props(
           // The strength and the release; the colour is a class below.
           interactionOverlayStyles.pressedAlpha,
-          isDisabled && navItemStyles.disabled,
         ),
         tw(
+          isDisabled && navItemDisabledClassName(),
           topNavItemClassName(),
           isSelected && topNavItemSelectedClassName(),
           isIconOnly && topNavItemIconOnlyClassName(),

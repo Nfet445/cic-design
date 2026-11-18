@@ -51,7 +51,7 @@ export * from './Link';
 export * from './List';
 export * from './MetadataList';
 export * from './NavIcon';
-// NavItem (navItemStyles) is internal — shared styles consumed by SideNav/TopNav/MobileNav
+// NavItem (navItemClasses) is internal — the shared row consumed by SideNav/TopNav/MobileNav
 export * from './NavMenu';
 export * from './Slider';
 export * from './Stack';
