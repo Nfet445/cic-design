@@ -24,8 +24,8 @@
  */
 
 import {useCallback, useEffect, useRef, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {tw} from '../utils/tw';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import type {
   FieldInputBaseProps,
   FieldPartStyleProps,
@@ -40,7 +40,6 @@ import {formatLocaleTime} from '../utils/timeFormat';
 import type {ThemeProps} from '../utils/themeProps';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {
-  focusOutlineStyles,
   formatISOTime,
   isTimeInRange,
   parseISOTime,
@@ -338,9 +337,9 @@ export function NativeTimeSegment({
         aria-label={openPickerLabel}
         tabIndex={-1}
         className={tw(
-          stylex.props(focusOutlineStyles.focusVisible).className,
           nativePickerSegmentIconButtonClassName,
           isEffectivelyDisabled && nativePickerSegmentDisabledClassName,
+          focusOutlineFocusVisibleClassName,
         )}>
         <Icon icon="clock" size="sm" color="secondary" {...iconThemeProps} />
       </button>

@@ -154,6 +154,12 @@ export const docs = {
         'Styles applied to the trigger wrapper. Accepts `stylex.create()` values, not inline style objects.',
     },
     {
+      name: 'triggerClassName',
+      type: 'string',
+      description:
+        'Class names applied to the trigger wrapper, after `triggerXstyle`.',
+    },
+    {
       name: 'triggerAs',
       type: "'div' | 'span'",
       description:

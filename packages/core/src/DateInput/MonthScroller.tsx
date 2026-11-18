@@ -41,12 +41,10 @@ import {
   useState,
 } from 'react';
 import {flushSync} from 'react-dom';
-import * as stylex from '@stylexjs/stylex';
 import {useCalendarDays} from '../Calendar/hooks/useCalendarDays';
 import {useDirection} from '../i18n/useDirection';
 import {useLocale} from '../i18n/useLocale';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {mergeProps} from '../utils/mergeProps';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
 import {
   dateInputMonthPaneStyle,
@@ -821,19 +819,15 @@ function MonthPane({
                   }}
                   onFocus={() => onDayFocus(day.date)}
                   onKeyDown={event => onDayKeyDown(event, day.date)}
-                  {...mergeProps(
-                    stylex.props(focusOutlineStyles.focusVisible),
-                    {
-                      // Outside FIRST, so disabled wins where both apply: a
-                      // spilled day past the range is unselectable, and must
-                      // not be painted more available than the in-month days
-                      // beside it.
-                      className: tw(
-                        monthDayClassName,
-                        day.isOutside && monthDayOutsideClassName,
-                        isDisabled && monthDayDisabledClassName,
-                      ),
-                    },
+                  className={tw(
+                    // Outside FIRST, so disabled wins where both apply: a
+                    // spilled day past the range is unselectable, and must
+                    // not be painted more available than the in-month days
+                    // beside it.
+                    monthDayClassName,
+                    day.isOutside && monthDayOutsideClassName,
+                    isDisabled && monthDayDisabledClassName,
+                    focusOutlineFocusVisibleClassName,
                   )}>
                   <span
                     className={tw(

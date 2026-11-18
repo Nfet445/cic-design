@@ -43,6 +43,13 @@ const HEADER_DIVIDER_CLASS = tw(
   '[border-bottom-color:var(--color-border)]',
 );
 
+/**
+ * The context menu's trigger wrapper, unpositioned so a header plugin's
+ * overlay, such as a resize boundary, positions against the cell and sits on
+ * its edge.
+ */
+export const tableHeaderCellTriggerClassName = 'static';
+
 export interface TableHeaderCellClassNameOptions {
   density: TableDensity;
   /** The table divides its columns, so every header cell but the last draws a divider. */

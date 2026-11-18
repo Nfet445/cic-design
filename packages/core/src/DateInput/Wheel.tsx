@@ -35,8 +35,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {focusOutlineStyles, mergeProps} from '../utils';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
 import {
   playReducedMotionDip,
@@ -489,9 +488,9 @@ export function ScrollWheel({
         onWheel={() => {
           lastPointerRef.current = 'wheel';
         }}
-        {...mergeProps(
-          stylex.props(focusOutlineStyles.focusVisible),
+        className={tw(
           scrollWheelScrollerClassName,
+          focusOutlineFocusVisibleClassName,
         )}>
         {options.map((option, index) => (
           <div

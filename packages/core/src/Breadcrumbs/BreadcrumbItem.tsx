@@ -35,7 +35,7 @@ import React, {
   type MouseEvent,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {radiusVars, spacingVars} from '../theme/tokens.stylex';
+import {spacingVars} from '../theme/tokens.stylex';
 import {BreadcrumbContext, type BreadcrumbsVariant} from './Breadcrumbs';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
@@ -66,9 +66,9 @@ import {
   dropdownMenuSubMenuTouchClassName,
   dropdownMenuSubMenuTouchPinchClassName,
 } from '../DropdownMenu/dropdownMenuSubMenuClasses';
+import {breadcrumbMenuClassName} from './breadcrumbsClasses';
 import {useTypeahead} from '../hooks/useTypeahead';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
-import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import {renderDropdownItems} from '../DropdownMenu/renderDropdownItems';
 import {
   DropdownMenuContext,
@@ -171,25 +171,9 @@ function BreadcrumbSeparator({separator}: {separator: ReactNode}) {
   );
 }
 
+// The layer's `render` takes a StyleX value only, so the popover's own box
+// stays one until that seam carries a class.
 const menuStyles = stylex.create({
-  menu: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-    // 300 px, and no taller than its layer's block-size cap, which folds in
-    // the software keyboard's.
-    maxHeight: stylex.firstThatWorks(
-      `min(300px, ${layerViewportInset.maxBlockSize})`,
-      `min(300px, ${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-    overflowY: 'auto',
-    '--_dropdown-menu-radius': radiusVars['--radius-container'],
-    '--_dropdown-menu-padding': spacingVars['--spacing-1'],
-    padding: spacingVars['--spacing-1'],
-    borderRadius: 'var(--_dropdown-menu-radius)',
-    userSelect: 'none',
-  },
   popover: {
     minWidth: '160px',
     marginBlock: spacingVars['--spacing-1'],
@@ -644,8 +628,8 @@ function BreadcrumbMenuTrigger({
           onKeyDown={listKeyDown}
           {...mergeProps(
             themeProps('breadcrumb-menu'),
-            stylex.props(menuStyles.menu),
             tw(
+              breadcrumbMenuClassName,
               hasOverflow
                 ? dropdownMenuSubMenuTouchClassName
                 : dropdownMenuSubMenuTouchPinchClassName,

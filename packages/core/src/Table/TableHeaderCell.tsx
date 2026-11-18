@@ -20,7 +20,10 @@ import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '../theme/types';
 import type {TableContextActions} from './types';
 import {useTableContext} from './useTableCellStyles';
-import {tableHeaderCellClassName} from './tableHeaderCellClasses';
+import {
+  tableHeaderCellClassName,
+  tableHeaderCellTriggerClassName,
+} from './tableHeaderCellClasses';
 import {
   hasTableContextActions,
   wrapInTableContextMenu,
@@ -47,14 +50,6 @@ export interface TableHeaderCellProps extends BaseProps<HTMLTableCellElement> {
    */
   contextMenuActions?: TableContextActions;
 }
-
-// The context menu trigger stays on StyleX until ContextMenu itself carries
-// class names: `triggerXstyle` only accepts a StyleX style.
-const headerTriggerStyles = stylex.create({
-  unpositioned: {
-    position: 'static',
-  },
-});
 
 /**
  * TableHeaderCell — a `<th>` wrapper for header cells.
@@ -108,7 +103,7 @@ export function TableHeaderCell({
   const content = wrapInTableContextMenu(
     children,
     contextMenuActions,
-    ctx && hasContextMenu ? headerTriggerStyles.unpositioned : undefined,
+    ctx && hasContextMenu ? tableHeaderCellTriggerClassName : undefined,
   );
 
   return (

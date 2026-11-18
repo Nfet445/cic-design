@@ -38,7 +38,10 @@ import {BusyStartSettleContext} from './busyStartSettle';
 import {useDialogContext} from '../Dialog/DialogContext';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {
+  focusOutlineFocusVisibleClassName,
+  focusOutlineSuppressedClassName,
+} from '../utils/focusOutlineClasses';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -259,11 +262,11 @@ export function CommandPaletteInput({
       <input
         {...props}
         ref={useMergedRefs(ref, inputRef, modalityRef)}
-        {...mergeProps(
+        className={tw(
+          commandPaletteInputFieldClassName,
           isKeyboardFocus
-            ? focusOutlineProps.focusVisible()
-            : focusOutlineProps.suppressed(),
-          {className: commandPaletteInputFieldClassName},
+            ? focusOutlineFocusVisibleClassName
+            : focusOutlineSuppressedClassName,
         )}
         type="text"
         // Autocorrect would rewrite names and identifiers.

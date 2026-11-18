@@ -145,6 +145,7 @@ import {
   touchDateWeekdayClassName,
   touchDateWeekdaysClassName,
 } from './dateInputClasses';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
 import {
   registerEnglishFallback,
@@ -951,11 +952,11 @@ export function TouchDateField({
         aria-disabled={isEffectivelyDisabled || undefined}
         aria-label={t('@astryx.dateInput.openCalendar')}
         tabIndex={-1}
-        {...mergeProps(
-          stylex.props(focusOutlineStyles.focusVisible),
+        className={tw(
           touchDateFieldIconButtonClassName({
             isDisabled: isEffectivelyDisabled,
           }),
+          focusOutlineFocusVisibleClassName,
         )}>
         <Icon
           icon="calendar"

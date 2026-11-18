@@ -507,8 +507,8 @@ export const monthDayPuckSelectedClassName = tw(
 );
 
 /** The calendar toggle beside the typed date: a glyph, no box of its own. */
-// The toggle keeps its focus ring in StyleX (`focusOutlineStyles`), a shared
-// rule the class map does not own; the ring is not a property this map sets.
+// The focus ring is not a property this map sets; the caller joins
+// `focusOutlineFocusVisibleClassName` beside this class.
 export function dateInputToggleClassName({
   isDisabled,
 }: {

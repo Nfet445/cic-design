@@ -75,5 +75,20 @@ export function scrollableAreaViewportClassName({
   );
 }
 
+/**
+ * The viewport's own overflow on both axes. Each axis takes one of three
+ * effective values from the hook's measurement, which a class cannot express,
+ * so the hook writes the value inline and these declarations read it —
+ * defaulting to `clip` while the viewport fits its content.
+ */
+export const scrollableAreaOverflowClassName =
+  '[overflow-x:var(--astryx-scrollable-overflow-x,clip)] [overflow-y:var(--astryx-scrollable-overflow-y,clip)]';
+
+/** The custom properties the hook's per-axis overflow value travels in. */
+export const scrollableAreaOverflowVars = {
+  x: '--astryx-scrollable-overflow-x',
+  y: '--astryx-scrollable-overflow-y',
+} as const;
+
 /** The single block content box the viewport observes. */
 export const scrollableAreaContentClassName = CONTENT_CLASSES;

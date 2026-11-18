@@ -81,6 +81,7 @@ import {
 import {ensureHighlightStyles} from './highlightStyles';
 import {applyHighlightRangesChunked} from './highlightRanges';
 import {themeProps} from '../utils/themeProps';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {SyntaxTheme, type SyntaxThemeDefinition} from '../theme/syntax';
 import {
@@ -878,10 +879,10 @@ export function CodeBlock({
             : undefined
         }
         {...mergeProps(
-          focusOutlineProps.focusVisible(),
           tw(
             codeBlockHeaderClassName,
             canCollapse && codeBlockHeaderCollapsibleClassName,
+            focusOutlineFocusVisibleClassName,
           ),
         )}>
         <span

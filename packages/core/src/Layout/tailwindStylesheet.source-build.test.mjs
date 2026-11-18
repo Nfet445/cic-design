@@ -31,6 +31,7 @@ import {avatarShapeClassName} from '../Avatar/avatarClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import * as lightboxClasses from '../Lightbox/lightboxClasses';
 import {
+  breadcrumbMenuClassName,
   breadcrumbsListClassName,
   breadcrumbsNavClassName,
 } from '../Breadcrumbs/breadcrumbsClasses';
@@ -611,6 +612,7 @@ import {
 import {
   scrollableAreaContentClassName,
   scrollableAreaContentWithInlineOverflowClassName,
+  scrollableAreaOverflowClassName,
   scrollableAreaViewportClassName,
 } from '../ScrollableArea/scrollableAreaClasses';
 import {
@@ -749,8 +751,14 @@ import {
   tokenizerStartIconWithTokensClassName,
   tokenizerTokenClassName,
 } from '../Tokenizer/tokenizerClasses';
-import {tableCellClassName} from '../Table/tableCellClasses';
-import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
+import {
+  tableCellClassName,
+  tableCellTriggerClassName,
+} from '../Table/tableCellClasses';
+import {
+  tableHeaderCellClassName,
+  tableHeaderCellTriggerClassName,
+} from '../Table/tableHeaderCellClasses';
 import {tableRowClassName} from '../Table/tableRowClasses';
 import {
   FILTER_INLINE_SLOT_CLASS,
@@ -2020,8 +2028,10 @@ function familyClassNames() {
   }
 
   for (const density of ['compact', 'balanced', 'spacious']) {
+    add(tableCellTriggerClassName(density));
     for (const hasColumnDivider of [false, true]) {
       for (const hasContextMenu of [false, true]) {
+        add(tableHeaderCellTriggerClassName);
         add(
           tableHeaderCellClassName({
             density,
@@ -3527,6 +3537,7 @@ function familyClassNames() {
   // The anchored keyboard hint's key row and its label.
   add(anchoredHintKeysClassName);
   add(anchoredHintLabelClassName);
+  add(scrollableAreaOverflowClassName);
   // Field: the hidden label's info button and the panel search row.
   add(fieldLabelHiddenInfoTipClassName);
   add(panelSearchInputWrapperClassName);
@@ -3725,6 +3736,7 @@ function familyClassNames() {
   // Breadcrumbs: the trail frame and its wrapping list row.
   add(breadcrumbsNavClassName);
   add(breadcrumbsListClassName);
+  add(breadcrumbMenuClassName);
 
   add(markdownCodeBlockWrapperClassName);
   add(markdownTableWrapperClassName);
