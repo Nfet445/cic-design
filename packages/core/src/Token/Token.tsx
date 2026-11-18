@@ -26,7 +26,6 @@ import {useInteractiveRole} from '../hooks/useInteractiveRole';
 import {TokenLink} from './TokenLink';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   focusOwnerProps,
@@ -261,7 +260,7 @@ export function Token({
         tabIndex={0}
         {...mergeProps(
           themeProps('token', {color, size, disabled: 'disabled'}),
-          focusOutlineProps.focusVisible(xstyle),
+          stylex.props(xstyle),
           tw(
             tokenClassName({
               size,
@@ -270,6 +269,7 @@ export function Token({
               isDisabled: true,
             }),
             className,
+            focusOutlineFocusVisibleClassName,
           ),
           style,
         )}
@@ -296,10 +296,7 @@ export function Token({
               size,
               disabled: isDisabled ? 'disabled' : null,
             }),
-            focusOutlineProps.focusVisible(
-              interactionOverlayStyles.backgroundImage,
-              xstyle,
-            ),
+            stylex.props(interactionOverlayStyles.backgroundImage, xstyle),
             tw(
               tokenClassName({
                 size,
@@ -308,6 +305,7 @@ export function Token({
                 isDisabled,
               }),
               className,
+              focusOutlineFocusVisibleClassName,
             ),
             style,
           )}
