@@ -697,6 +697,7 @@ import {
   typeaheadInputClassName,
   typeaheadInputDisabledClassName,
   typeaheadRowClassName,
+  typeaheadWrapperSizeClassName,
 } from '../Typeahead/typeaheadClasses';
 import {
   tokenizerEndLaneClassName,
@@ -733,6 +734,7 @@ import {
   tokenizerSheetTriggerPlaceholderClassName,
   tokenizerSheetTriggerPlaceholderDisabledClassName,
   tokenizerSheetTriggerWithTokensClassName,
+  tokenizerFieldSizeClassName,
   tokenizerStartIconWithTokensClassName,
   tokenizerTokenClassName,
 } from '../Tokenizer/tokenizerClasses';
@@ -2374,6 +2376,9 @@ function familyClassNames() {
   add(typeaheadInputDisabledClassName);
   add(typeaheadEndLaneClassName);
   add(typeaheadContentLaneClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(typeaheadWrapperSizeClassName[size]);
+  }
 
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
@@ -3714,12 +3719,15 @@ function familyClassNames() {
   add(markdownBlockIndentClassName);
   add(markdownMarkerGutterClassName);
 
-  // Tokenizer's own boxes: the token pill and the wrapper a `renderToken`
-  // pill renders into, the start icon beside tokens, the end lane in both
+  // Tokenizer's own boxes: the field's size floor, the token pill and the
+  // wrapper a `renderToken` pill renders into, the start icon beside tokens, the end lane in both
   // placements at every size, the grouped track with each edge fade, the
   // collapsed summary, the expanded layer, and the bottom sheet's field,
   // trigger and placeholder in both disabled states.
   add(tokenizerTokenClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(tokenizerFieldSizeClassName[size]);
+  }
   add(tokenizerStartIconWithTokensClassName);
   add(tokenizerEndLaneClassName);
   for (const size of ['sm', 'md', 'lg']) {

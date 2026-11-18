@@ -57,7 +57,7 @@ import {renderIconSlot, type IconType} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {Spinner} from '../Spinner';
 import {SpinnerOwnerContext} from '../Spinner/SpinnerOwnerContext';
-import {spacingVars, sizeVars} from '../theme/tokens.stylex';
+import {spacingVars} from '../theme/tokens.stylex';
 import {inputGroupItemProps} from '../InputGroup/groupStyles';
 import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
@@ -67,6 +67,7 @@ import {joinAriaIDs} from '../utils/inputAria';
 import {
   typeaheadContentLaneClassName,
   typeaheadEndLaneClassName,
+  typeaheadWrapperSizeClassName,
 } from './typeaheadClasses';
 import {TrailingKeyDownContext} from './trailingKeyDown';
 import {
@@ -304,12 +305,6 @@ const styles = stylex.create({
     marginInlineStart: 0,
     marginInlineEnd: 'auto',
   },
-});
-
-const wrapperSizeStyles = stylex.create({
-  sm: {minHeight: sizeVars['--size-element-sm']},
-  md: {minHeight: sizeVars['--size-element-md']},
-  lg: {minHeight: sizeVars['--size-element-lg']},
 });
 
 // =============================================================================
@@ -674,7 +669,7 @@ export function Typeahead<T extends SearchableItem>({
       ? joinAriaIDs(ariaLabelledBy ?? fieldLabelId, ariaLabelledByProp)
       : ariaLabelledBy;
 
-  const sizeStyle = wrapperSizeStyles[size];
+  const sizeClassName = typeaheadWrapperSizeClassName[size];
 
   const typeaheadContent = (
     <>
@@ -693,8 +688,9 @@ export function Typeahead<T extends SearchableItem>({
         {...(inputGroup ? inputGroupItemProps : undefined)}
         {...mergeProps(
           themeProps('typeahead', {size, status: status?.type}),
-          stylex.props(styles.wrapper, sizeStyle, controlXstyle),
+          stylex.props(styles.wrapper, controlXstyle),
           tw(
+            sizeClassName,
             inputGroup && inputGroupMemberClassName,
             fieldInputWrapperClassName({status: status?.type}),
             isDisabled && fieldInputWrapperDisabledClassName,

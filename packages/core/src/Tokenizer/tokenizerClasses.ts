@@ -4,7 +4,8 @@
  * @file tokenizerClasses.ts
  * @input A tokenizer's size, presentation, disabled state and grouped scroll
  *   state
- * @output Utility class names for the token row, the start icon, the end lane,
+ * @output Utility class names for the field's size floor, the token row, the
+ *   start icon, the end lane,
  *   the grouped track and its edge fades, the expanded layer and the bottom
  *   sheet's field, trigger and placeholder
  * @position Style primitives; scanned by the Tailwind build
@@ -18,6 +19,13 @@
  */
 
 import {tw} from '../utils/tw';
+
+/** The field's size floor, the same one the shared input box takes. */
+export const tokenizerFieldSizeClassName: Record<'sm' | 'md' | 'lg', string> = {
+  sm: 'min-h-[var(--size-element-sm)]',
+  md: 'min-h-[var(--size-element-md)]',
+  lg: 'min-h-[var(--size-element-lg)]',
+};
 
 /** A token in the row, and the wrapper a `renderToken` pill renders into. */
 export const tokenizerTokenClassName = tw(
