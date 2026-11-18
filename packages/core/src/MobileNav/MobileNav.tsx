@@ -54,13 +54,13 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Button} from '../Button';
 import {Icon} from '../Icon';
 import {Heading} from '../Heading/Heading';
 import {useAppShellMobile} from '../AppShell/AppShellMobileContext';
 import {holdEntranceInput} from '../Layer/holdEntranceInput';
 import {mergeProps, composeEventHandlers} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {tw} from '../utils/tw';
@@ -554,7 +554,7 @@ export function MobileNav({
       id={dialogId}
       {...mergeProps(
         themeProps('mobile-nav', {side: resolvedSide}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           overlayPaddingReset.reset,
           mobileNavDialogClassName({isPresentationHeld, isOpen}),

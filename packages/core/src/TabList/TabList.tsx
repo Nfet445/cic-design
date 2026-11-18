@@ -30,12 +30,12 @@ import React, {
   type AriaRole,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {TabListContext} from './TabListContext';
 import type {TabListSize} from './TabListContext';
 import {useSize} from '../SizeContext/SizeContext';
 import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {useListFocus} from '../hooks/useListFocus';
 import {useKeyboardHint} from '../hooks/useKeyboardHint';
 import {useScrollOverflow} from '../hooks/useScrollOverflow';
@@ -465,7 +465,7 @@ export function TabList({
         {...{[EDGE_COMP_ATTR]: ''}}
         {...mergeProps(
           themeProps('tab-list', {size}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             tabListNavClassName({isFill: layout === 'fill'}),
             hasDivider && TAB_LIST_DIVIDER_CLASS,

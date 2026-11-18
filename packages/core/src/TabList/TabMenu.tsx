@@ -17,7 +17,6 @@
  */
 
 import React, {useCallback, useId, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Icon} from '../Icon';
 import {renderIconSlot, type IconType} from '../Icon';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
@@ -48,6 +47,7 @@ import {
   tabMenuTriggerClassName,
 } from './tabListClasses';
 import {composeEventHandlers, mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import type {BaseProps} from '../BaseProps';
@@ -209,7 +209,7 @@ export function TabMenu({
         onClick={composeEventHandlers(handleToggle, onClick)}
         {...mergeProps(
           themeProps('tab-menu'),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             tabMenuTriggerClassName({size, hasSelectedOption}),
             className,

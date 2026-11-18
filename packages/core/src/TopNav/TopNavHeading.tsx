@@ -21,13 +21,13 @@
  */
 
 import {useMemo, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {usePopoverInternal} from '../Popover/usePopover';
 import {Link} from '../Link';
 import {Icon} from '../Icon';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import type {BaseProps} from '../BaseProps';
@@ -369,7 +369,7 @@ export function TopNavHeading({
         data-testid={testId}
         {...mergeProps(
           themeProps('top-nav-heading'),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             topNavHeadingClassName(),
             rootColumns && topNavHeadingColumnsClassName(rootColumns),
@@ -395,7 +395,7 @@ export function TopNavHeading({
         data-testid={testId}
         {...mergeProps(
           themeProps('top-nav-heading'),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             topNavHeadingClassName(),
             rootColumns && topNavHeadingColumnsClassName(rootColumns),
@@ -425,7 +425,7 @@ export function TopNavHeading({
           {...triggerProps}
           {...mergeProps(
             themeProps('top-nav-heading'),
-            stylex.props(xstyle),
+            xstyleProps(xstyle),
             tw(
               topNavHeadingClassName(),
               rootColumns && topNavHeadingColumnsClassName(rootColumns),
@@ -507,7 +507,7 @@ export function TopNavHeading({
           {...triggerProps}
           {...mergeProps(
             themeProps('top-nav-heading'),
-            stylex.props(xstyle),
+            xstyleProps(xstyle),
             tw(
               topNavHeadingClassName(),
               rootColumns && topNavHeadingColumnsClassName(rootColumns),
@@ -601,7 +601,7 @@ export function TopNavHeading({
         data-testid={testId}
         {...mergeProps(
           themeProps('top-nav-heading'),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             topNavHeadingClassName(),
             topNavHeadingColumnsClassName(linkColumns),
@@ -675,7 +675,7 @@ export function TopNavHeading({
       data-testid={testId}
       {...mergeProps(
         themeProps('top-nav-heading'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           topNavHeadingClassName(),
           rootColumns && topNavHeadingColumnsClassName(rootColumns),

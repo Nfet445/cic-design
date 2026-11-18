@@ -13,11 +13,11 @@
  */
 
 import React, {useCallback, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {renderIconSlot, type IconType} from '../Icon';
 import {Text} from '../Text';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
 import {mergeProps} from '../utils/mergeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {useFocusAcrossSwap} from '../utils/useFocusAcrossSwap';
 import type {BaseProps} from '../BaseProps';
 import {useNavHeadingMenuContext} from './NavMenuContext';
@@ -123,7 +123,7 @@ export function NavHeadingMenuItem({
       data-testid={testId}
       {...mergeProps(
         themeProps('nav-heading-menu-item', {size}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(navHeadingMenuItemClassName({isDisabled, size}), className),
         style,
       )}>

@@ -19,7 +19,6 @@
  */
 
 import React, {useMemo, useCallback, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {SegmentedControlContext} from './SegmentedControlContext';
 import {segmentedControlClassName} from './segmentedControlClasses';
 import {useInternalListFocus} from '../hooks/useListFocus';
@@ -31,6 +30,7 @@ import type {
   SegmentedControlLayout,
 } from './SegmentedControlContext';
 import {mergeProps, composeEventHandlers} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {joinAriaIDs} from '../utils/inputAria';
 import {useSize} from '../SizeContext/SizeContext';
 import type {BaseProps} from '../BaseProps';
@@ -286,7 +286,7 @@ export function SegmentedControl({
         onBlur={composeEventHandlers(onBlurProp, hint.onBlur)}
         {...mergeProps(
           themeProps('segmented-control', {size}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             segmentedControlClassName({
               isFill: layout === 'fill',

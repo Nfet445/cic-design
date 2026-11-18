@@ -13,8 +13,8 @@
  */
 
 import React, {use, useCallback, useMemo, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {useInternalListFocus} from '../hooks/useListFocus';
 import {useMenuPress} from '../hooks/useMenuPress';
@@ -214,7 +214,7 @@ export function NavHeadingMenu({
         data-testid={testId}
         {...mergeProps(
           themeProps('nav-heading-menu', {size}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             navHeadingMenuClassName,
             navHeadingMenuMinWidthClassName[size],
