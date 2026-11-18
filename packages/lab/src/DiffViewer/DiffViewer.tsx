@@ -72,7 +72,7 @@ import {
   SyntaxTheme,
   type SyntaxThemeDefinition,
 } from '@astryxdesign/core/theme/syntax';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {spacingVarNames} from '@astryxdesign/core/theme';
 import {
   focusOutlineFocusVisibleClassName,
   isRenderable,
@@ -780,9 +780,9 @@ const TAB_SIZE = 2;
 
 // Column widths, also used to place pinned cells and size split panes.
 const MARKER_WIDTH: Record<DiffViewerChangeIndicator, string> = {
-  classic: `calc(1ch + ${spacingVars['--spacing-1']} + ${spacingVars['--spacing-2']})`,
-  bars: spacingVars['--spacing-3'],
-  none: spacingVars['--spacing-2'],
+  classic: `calc(1ch + ${spacingVarNames['--spacing-1']} + ${spacingVarNames['--spacing-2']})`,
+  bars: spacingVarNames['--spacing-3'],
+  none: spacingVarNames['--spacing-2'],
 };
 
 /* A per-instance value is a private variable a class reads, never an inline
@@ -793,7 +793,7 @@ function customProperty(name: `--${string}`, value: string): CSSProperties {
 }
 
 function gutterWidth(digits: number): string {
-  return `calc(${digits}ch + 2 * ${spacingVars['--spacing-2']})`;
+  return `calc(${digits}ch + 2 * ${spacingVarNames['--spacing-2']})`;
 }
 
 // ---------------------------------------------------------------------------
