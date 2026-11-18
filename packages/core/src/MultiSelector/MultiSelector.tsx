@@ -115,7 +115,10 @@ import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
 import type {SizeValue} from '../utils/types';
 import {useSize} from '../SizeContext/SizeContext';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {
+  focusOutlineFocusVisibleClassName,
+  focusOutlineWithinClassName,
+} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
@@ -2402,7 +2405,6 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             variant === 'secondary' && styles.triggerSecondary,
             variant === 'ghost' && styles.triggerGhost,
             variant !== 'input' && interactionOverlayStyles.pressedAlpha,
-            variant !== 'input' && focusOutlineStyles.focusWithin,
             surface.isTriggerFocusRingSuppressed &&
               selectorPresentationStyles.pointerRestoredFocus,
             isEffectivelyReadOnly && styles.triggerReadOnly,
@@ -2428,6 +2430,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
               isDisabled &&
               !surface.isTriggerFocusRingSuppressed &&
               fieldInputWrapperFocusScopeClassName.direct,
+            variant !== 'input' && focusOutlineWithinClassName,
             controlClassName,
             // The hover and press paint; its strength and release stay the
             // StyleX arm above.
@@ -2516,9 +2519,9 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
               aria-describedby={statusTooltip.describedBy}
               {...keepOpenProps}
               onClick={e => e.stopPropagation()}
-              {...mergeProps(
+              className={tw(
                 MULTI_SELECTOR_STATUS_BUTTON_CLASS,
-                stylex.props(focusOutlineStyles.focusVisible),
+                focusOutlineFocusVisibleClassName,
               )}>
               <Icon
                 icon={STATUS_ICON_MAP[status.type]}
