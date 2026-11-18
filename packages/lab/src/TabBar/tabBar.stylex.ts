@@ -20,11 +20,11 @@
 
 import * as stylex from '@stylexjs/stylex';
 import {
-  colorVars,
-  durationVars,
-  easeVars,
-  focusVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
+  colorVarNames,
+  durationVarNames,
+  easeVarNames,
+  focusVarNames,
+} from '@astryxdesign/core/theme';
 
 export const tabBarItemMarker: ReturnType<typeof stylex.defineMarker> =
   stylex.defineMarker();
@@ -35,7 +35,7 @@ export const tabBarMarkerStyles = stylex.create({
     outlineStyle: {
       default: 'none',
       [stylex.when.ancestor(':focus-visible', tabBarItemMarker)]:
-        focusVars['--focus-outline-style'],
+        'var(--focus-outline-style)',
     },
   },
   /**
@@ -50,7 +50,7 @@ export const tabBarMarkerStyles = stylex.create({
       position: 'absolute',
       inset: 0,
       borderRadius: 'inherit',
-      backgroundColor: colorVars['--color-overlay-pressed'],
+      backgroundColor: 'var(--color-overlay-pressed)',
       pointerEvents: 'none',
       opacity: {
         default: 0,
@@ -58,8 +58,8 @@ export const tabBarMarkerStyles = stylex.create({
       },
       transitionProperty: 'opacity',
       transitionDuration: {
-        default: durationVars['--duration-exit'],
-        '@media (prefers-reduced-motion: reduce)': `min(${durationVars['--duration-exit']}, 200ms)`,
+        default: 'var(--duration-exit)',
+        '@media (prefers-reduced-motion: reduce)': `min(var(--duration-exit), 200ms)`,
         // Repeated inside the Reduce Motion branch, where a media rule
         // outranks the plain one, so the onset stays at once there too.
         [stylex.when.ancestor('[data-tab-bar-pressed]', tabBarItemMarker)]: {
@@ -67,7 +67,7 @@ export const tabBarMarkerStyles = stylex.create({
           '@media (prefers-reduced-motion: reduce)': '0s',
         },
       },
-      transitionTimingFunction: easeVars['--ease-exit'],
+      transitionTimingFunction: 'var(--ease-exit)',
     },
   },
 });
