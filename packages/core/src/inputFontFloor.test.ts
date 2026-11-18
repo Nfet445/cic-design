@@ -63,7 +63,7 @@ const IOS_GATED_CLASS_FLOOR =
 
 /** The same floor as a StyleX declaration: the coarse query's only member. */
 const IOS_GATED_STYLEX_FLOOR =
-  /'@media \(pointer: coarse\)': \{\s*'@supports \(-webkit-touch-callout: none\)': ['`]max\(1rem, (?:var\(--text-(?:body|label)-size\)|\$\{typeScaleVars\['--text-(?:body|label)-size'\]\})\)['`]/;
+  /'@media \(pointer: coarse\)': \{\s*'@supports \(-webkit-touch-callout: none\)':\s*['`]max\(1rem, (?:var\(--text-(?:body|label)-size\)|\$\{typeScaleVars\['--text-(?:body|label)-size'\]\})\)['`]/;
 
 /**
  * A floor every coarse pointer gets, iOS or not: the regression both forms can
