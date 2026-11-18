@@ -179,6 +179,14 @@ describe('time grid initial position', () => {
     vi.useRealTimers();
   });
 
+  it('puts the focus ring immediately after its scroll viewport', () => {
+    render(<Harness initialDate={Date.UTC(2026, 4, 13) as Instant} />);
+    expect(viewport()).toHaveAttribute('data-scroll-axis');
+    expect(viewport().nextElementSibling).toHaveClass(
+      'astryx-schedule-focus-ring',
+    );
+  });
+
   it('opens a week containing today one hour before now', () => {
     vi.setSystemTime(Date.UTC(2026, 4, 13, 14, 0));
     render(<Harness initialDate={Date.UTC(2026, 4, 13, 14, 0) as Instant} />);

@@ -479,27 +479,47 @@
   }
 }
 
+@utility astryx-switch-press-layer {
+  @media (forced-colors: none) and (not (pointer: coarse)) {
+    [data-astryx-switch-scope]:active & {
+      background-image: linear-gradient(
+        var(--color-overlay-pressed),
+        var(--color-overlay-pressed)
+      );
+    }
+  }
+
+  @media (pointer: coarse) {
+    [data-astryx-switch-scope][data-astryx-press] &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      @media (forced-colors: none) {
+        background-color: var(--color-overlay-pressed);
+      }
+    }
+
+    [data-astryx-switch-scope][data-astryx-press='fading'] &::before {
+      opacity: 0;
+      animation: astryxSwitchPressRelease var(--duration-exit) var(--ease-exit)
+        both;
+      @media (prefers-reduced-motion: reduce) {
+        animation-duration: min(var(--duration-exit), 200ms);
+      }
+    }
+  }
+}
+
 /* Switch: under a finger the press rides on a layer of the track and the thumb.
-   The layers' arms read the row's press marker, so switchHoverPress.stylex.ts
-   names the frames and keeps the clock. */
+   The row's press state starts the layer's release. */
 @keyframes astryxSwitchPressRelease {
   from {
     opacity: 1;
   }
   to {
     opacity: 0;
-  }
-}
-
-/* Switch: the row holds the press's strength for the layers above. With any
-   pointer but a coarse one the row releases it itself, on the same clock as
-   the shared overlay's release. */
-@keyframes astryxSwitchPressStrength {
-  from {
-    --astryx-press-alpha: 1;
-  }
-  to {
-    --astryx-press-alpha: 0;
   }
 }
 

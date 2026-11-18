@@ -767,6 +767,7 @@ describe('TabBar class map', () => {
       tab.style.getPropertyValue('--astryx-tab-bar-column-start'),
     ).not.toBe('');
     expect(carries(tab.firstElementChild, tabBarItemBoxClassName)).toBe(true);
+    expect(tab.firstElementChild).toHaveClass('astryx-tab-feedback');
     expect(carries(screen.getByText('Home'), tabBarLabelClassName)).toBe(true);
   });
 

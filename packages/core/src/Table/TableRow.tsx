@@ -17,9 +17,7 @@
 
 import {use, type ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '../theme/types';
-import {tableRowMarker} from './table.stylex';
 import {glidingDividerRowClassName} from './glidingDivider';
 import {tableRowClassName} from './tableRowClasses';
 import {TableContext} from './TableContext';
@@ -89,7 +87,6 @@ export function TableRow({
         {...props}
         {...mergeProps(
           themeProps('table-row'),
-          stylex.props(tableRowMarker),
           tw(xstyleProps(xstyle).className, incomingClassName),
           {...xstyleProps(xstyle).style, ...incomingStyle},
         )}>
@@ -133,7 +130,6 @@ export function TableRow({
             carriesGlide && glidingDividerRowClassName,
           ),
         }),
-        stylex.props(tableRowMarker),
         tw(xstyleProps(xstyle).className, incomingClassName),
         {...xstyleProps(xstyle).style, ...incomingStyle},
       )}>

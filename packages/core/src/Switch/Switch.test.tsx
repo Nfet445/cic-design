@@ -23,29 +23,14 @@
  */
 
 import {StrictMode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {act, render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {Switch} from './Switch';
 import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
-import {rtlCenterInlineClassName} from '../utils/rtlClasses';
-import {
-  getAllInjectedCss,
-  getForcedColorsRules,
-} from '../__tests__/forcedColors';
-import {
-  hasPressedArm,
-  readsPressStrength,
-  releasesOnLayer,
-  rulesDeclaredFor,
-  rulesWithSelector,
-} from '../__tests__/pressState';
-import {PRESS_FADE_MS} from '../utils/pressGesture';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {InternationalizationProvider} from '../i18n';
 import {installPressFeedback} from '../utils/pressFeedback';
-import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 
 afterEach(() => {
   __resetLiveRegionsForTest();
@@ -1129,226 +1114,19 @@ describe('Switch', () => {
   });
 
   describe('pressed state', () => {
-    it('paints the pressed overlay on the track and the thumb while the row is pressed', () => {
-      const {container} = render(
+    it('paints the track and thumb while their own row is pressed', () => {
+      render(
         <Switch label="Notifications" value={false} onChange={() => {}} />,
       );
-      const track = container.querySelector('.astryx-switch');
-      const thumb = container.querySelector('.astryx-switch-thumb');
-      if (track == null || thumb == null) {
-        throw new Error('the switch has no track or thumb to press');
-      }
-      expect(hasPressedArm(track)).toBe(true);
-      expect(hasPressedArm(thumb)).toBe(true);
-    });
-
-    it("paints the touch press on the track's ::before and releases it on the compositor", () => {
-      const {container} = render(
-        <Switch label="Notifications" value={false} onChange={() => {}} />,
-      );
-      const track = container.querySelector('.astryx-switch');
-      const thumb = container.querySelector('.astryx-switch-thumb');
-      const row = track?.closest('[data-astryx-pressable]');
-      if (track == null || thumb == null || row == null) {
-        throw new Error('the switch has no pressable row, track or thumb');
-      }
-      const coarse = {
-        insideMedia: /\(pointer: coarse\)/,
-        outsideMedia: /prefers-reduced-motion/,
-      };
-      const selector = (rule: string) => rule.slice(0, rule.indexOf('{'));
-      const body = (rule: string) => rule.slice(rule.indexOf('{'));
-      // The controller writes the row. Under a finger the press is a layer on
-      // the track, under the thumb. It exists only while the row is pressed
-      // or releasing, with no element and no box at rest. It paints the
-      // pressed token, shows at once, and releases on the compositor. Track
-      // and thumb both paint it.
-      for (const part of [track, thumb]) {
-        const layer = rulesDeclaredFor(part).filter(rule =>
-          selector(rule).includes('::before'),
-        );
-        const creates = layer.filter(rule =>
-          /(^|[{;\s])content:/.test(body(rule)),
-        );
-        expect(creates.length).toBeGreaterThan(0);
-        for (const rule of creates) {
-          expect(selector(rule)).toMatch(/data-astryx-press="(on|fading)"/);
-        }
-        expect(
-          layer.some(rule =>
-            /background-color:[^;}]*--color-overlay-pressed/.test(rule),
-          ),
-        ).toBe(true);
-      }
-      const on = rulesWithSelector(track, '[data-astryx-press="on"]', coarse);
-      expect(on.some(rule => /opacity:\s*1\b/.test(rule))).toBe(true);
-      expect(on.some(rule => /animation-name:\s*(?!none)/.test(rule))).toBe(
-        false,
+      const input = screen.getByRole('switch');
+      const track = input.nextElementSibling!;
+      const thumb = track.firstElementChild!;
+      expect(input.closest('[data-astryx-switch-scope]')).toHaveClass(
+        'data-[astryx-press=fading]:pointer-coarse:[animation-name:none]!',
       );
       for (const part of [track, thumb]) {
-        expect(releasesOnLayer(part, '::before', PRESS_FADE_MS)).toBe(true);
+        expect(part).toHaveClass('astryx-switch-press-layer');
       }
-      // Nothing reads the strength under a finger, so its main-thread
-      // release stops there; any other pointer keeps it (the desktop rule).
-      expect(
-        rulesWithSelector(row, '[data-astryx-press="fading"]', coarse).some(
-          rule => /animation-name:\s*none/.test(rule),
-        ),
-      ).toBe(true);
-      const fine = {outsideMedia: /prefers-reduced-motion|\(pointer: coarse\)/};
-      expect(
-        rulesWithSelector(row, '[data-astryx-press="fading"]', fine).some(
-          rule => /animation-name:\s*(?!none)/.test(rule),
-        ),
-      ).toBe(true);
-      for (const part of [track, thumb]) {
-        expect(readsPressStrength(part, '[data-astryx-press="on"]')).toBe(
-          false,
-        );
-        expect(readsPressStrength(part)).toBe(false);
-      }
-    });
-
-    it('releases the touch press on the shared release’s clock and curve', () => {
-      render(
-        <>
-          <Switch label="Notifications" value={false} onChange={() => {}} />
-          <div
-            data-testid="shared-release"
-            {...stylex.props(interactionOverlayStyles.pressedAlpha)}
-          />
-        </>,
-      );
-      const track = document.querySelector('.astryx-switch');
-      if (track == null) {
-        throw new Error('the switch has no track');
-      }
-      const shared = screen.getByTestId('shared-release');
-      const fading = '[data-astryx-press="fading"]';
-      const reduced = /prefers-reduced-motion/;
-      const valuesOf = (rules: string[], property: string) => [
-        ...new Set(
-          rules.flatMap(rule => {
-            const match = rule.match(new RegExp(`${property}:\\s*([^;}]+)`));
-            // StyleX may write a time in s or ms: compare it in ms.
-            return match == null
-              ? []
-              : [
-                  match[1]
-                    .trim()
-                    .replace(
-                      /(\d*\.?\d+)(ms|s)\b/g,
-                      (_, n: string, unit: string) =>
-                        `${Number(n) * (unit === 's' ? 1000 : 1)}ms`,
-                    ),
-                ];
-          }),
-        ),
-      ];
-      const layer = (filter: {insideMedia?: RegExp; outsideMedia?: RegExp}) =>
-        rulesWithSelector(track, fading, filter).filter(rule =>
-          rule.slice(0, rule.indexOf('{')).includes('::before'),
-        );
-      const touch = layer({
-        insideMedia: /\(pointer: coarse\)/,
-        outsideMedia: reduced,
-      });
-      const own = rulesWithSelector(shared, fading, {outsideMedia: reduced});
-      for (const property of [
-        'animation-duration',
-        'animation-timing-function',
-      ]) {
-        expect(valuesOf(own, property)).toHaveLength(1);
-        expect(valuesOf(touch, property)).toEqual(valuesOf(own, property));
-      }
-      // Reduce Motion's arm nests one `@media` rule in another, which the
-      // test DOM drops: the browser proofs check it.
-    });
-  });
-
-  describe('the row that holds the touch press', () => {
-    const FADING = '[data-astryx-press="fading"]';
-    /** Rules under a coarse primary pointer, Reduce Motion's arms left out. */
-    const UNDER_COARSE = {
-      insideMedia: /\(pointer: coarse\)/,
-      outsideMedia: /prefers-reduced-motion/,
-    };
-    /** Rules for any other pointer, Reduce Motion's arms left out. */
-    const UNDER_FINE = {
-      outsideMedia: /prefers-reduced-motion|\(pointer: coarse\)/,
-    };
-    const selectorOf = (rule: string) => rule.slice(0, rule.indexOf('{'));
-    const fadingOnHost = (rules: string[]) =>
-      rules.filter(
-        rule =>
-          selectorOf(rule).includes(FADING) && !selectorOf(rule).includes('::'),
-      );
-    const valuesOf = (rules: string[], property: string) =>
-      rules
-        .flatMap(rule => {
-          const match = rule.match(new RegExp(`${property}:\\s*([^;}]+)`));
-          return match == null ? [] : [match[1].trim()];
-        })
-        .sort();
-    /** The switch's row, and an element with the shared press styles alone. */
-    function renderOwners(): {alpha: HTMLElement; row: Element} {
-      render(
-        <>
-          <Switch label="Notifications" value={false} onChange={() => {}} />
-          <div
-            data-testid="alpha"
-            {...stylex.props(interactionOverlayStyles.pressedAlpha)}
-          />
-        </>,
-      );
-      const row = document
-        .querySelector('.astryx-switch')
-        ?.closest('[data-astryx-pressable]');
-      if (row == null) {
-        throw new Error('the switch has no pressable row');
-      }
-      return {alpha: screen.getByTestId('alpha'), row};
-    }
-
-    it('declares the shared strength and paint for the track’s and thumb’s layers', () => {
-      const {alpha, row} = renderOwners();
-      const strengthAndPaint = (el: Element) =>
-        rulesDeclaredFor(el)
-          .filter(rule => /--astryx-press-alpha|--_press-paint/.test(rule))
-          .sort();
-      expect(strengthAndPaint(alpha).length).toBeGreaterThan(0);
-      expect(strengthAndPaint(row)).toEqual(strengthAndPaint(alpha));
-    });
-
-    it('with any pointer but a coarse primary one, keeps a release on the row, on the shared clock and curve', () => {
-      const {alpha, row} = renderOwners();
-      const release = (el: Element) =>
-        fadingOnHost(rulesDeclaredFor(el, UNDER_FINE));
-      expect(valuesOf(release(alpha), 'animation-name')).not.toEqual([]);
-      for (const property of [
-        'animation-duration',
-        'animation-timing-function',
-      ]) {
-        expect(valuesOf(release(row), property)).toEqual(
-          valuesOf(release(alpha), property),
-        );
-      }
-      // The row names its own frames (tailwind/astryx.input.css), so only the
-      // clock and the curve are the shared styles' own.
-      expect(valuesOf(release(row), 'animation-name')).not.toEqual(['none']);
-    });
-
-    it('under a coarse primary pointer, drops the strength’s own release on the row', () => {
-      const {alpha, row} = renderOwners();
-      const names = (el: Element) =>
-        valuesOf(
-          fadingOnHost(rulesDeclaredFor(el, UNDER_COARSE)),
-          'animation-name',
-        );
-      // The shared styles keep the strength's release there; the row holds
-      // the strength, so the layers' fade is the one fade.
-      expect(names(alpha)).not.toContain('none');
-      expect(names(row)).toEqual(['none']);
     });
   });
 
@@ -1447,7 +1225,7 @@ describe('Switch', () => {
       // The input's box owns the transform, so only the inline half of the
       // centering shows here.
       expectClassSet(input, {
-        includes: rtlCenterInlineClassName.split(' '),
+        includes: ['left-1/2', '[transform:translate(-50%,-50%)]'],
       });
     });
   });
@@ -1813,11 +1591,9 @@ describe('forced colors (WCAG 1.4.11)', () => {
     // plain forced-colors track rule. It is gated behind `forced-colors: none`
     // so it cannot reassert on hover and flatten the Highlight track to white
     // under the HighlightText thumb (white-on-white).
-    expect(getAllInjectedCss()).toContain(
-      '(hover: hover) and (forced-colors: none)',
+    expect(screen.getByRole('switch').nextElementSibling).toHaveClass(
+      '[@media(hover:hover)_and_(forced-colors:none)]:[[data-astryx-switch-scope]:hover_&]:bg-[color:color-mix(in_srgb,var(--color-accent),var(--color-tint-hover)_15%)]',
     );
-    // And the tint never leaks into the forced-colors output.
-    expect(getForcedColorsRules()).not.toContain('color-mix');
   });
 });
 

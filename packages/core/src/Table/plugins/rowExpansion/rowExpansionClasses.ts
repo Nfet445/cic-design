@@ -108,3 +108,17 @@ export function rowExpansionPanelIndentClassName(
 /** Whole-row-click expansion: signal the row is interactive. */
 export const ROW_EXPANSION_CLICKABLE_ROW_CLASS =
   'cursor-pointer [&:is(:disabled,[aria-disabled=true])]:cursor-default';
+
+export const rowExpansionChevronCellClassName = '[&&&]:ps-0';
+export const rowExpansionChevronHeaderClassName = '[&&&]:ps-0 [&&&]:pe-0';
+export const rowExpansionExpandedCellClassName =
+  '[&&]:[--_table-row-divider-width:0px] [&&]:border-b-0';
+
+export const rowExpansionPanelDividerClassName = tw(
+  '[--_table-row-divider-width:var(--_table-panel-divider-width,var(--border-width))]',
+  '[border-bottom-width:var(--_table-panel-divider-width,var(--border-width))]',
+  '[border-bottom-style:var(--_table-panel-divider-style,solid)]',
+  '[border-bottom-color:var(--_table-panel-divider-color,var(--color-border))]',
+  '[[data-expansion-panel]:last-child_>_&]:border-b-0',
+  '[[data-expansion-panel]:last-child_>_&]:[--_table-row-divider-width:0px]',
+);

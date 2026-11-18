@@ -26,7 +26,6 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {useListFocus, useMergedRefs} from '@astryxdesign/core/hooks';
 import {useTouchPresentation} from '@astryxdesign/core/internal/touch';
@@ -34,7 +33,6 @@ import {useTranslator} from '@astryxdesign/core/i18n';
 import {Icon} from '@astryxdesign/core/Icon';
 import {mergeProps, themeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {tw} from '../tw';
-import {tabBarItemMarker, tabBarMarkerStyles} from './tabBar.stylex';
 import {
   tabBarBadgeClassName,
   tabBarBadgeGeometryClassName,
@@ -508,7 +506,6 @@ export function TabBar({
                 themeProps('tab-bar-item', {
                   selected: isSelected ? 'selected' : null,
                 }),
-                stylex.props(tabBarItemMarker),
                 tw(tabBarItemClassName, tabBarColumnClassName),
                 {
                   '--astryx-tab-bar-column-start': start,
@@ -516,10 +513,6 @@ export function TabBar({
                 },
               )}>
               <span
-                {...stylex.props(
-                  tabBarMarkerStyles.itemBox,
-                  tabBarMarkerStyles.pressLayer,
-                )}
                 className={tw(
                   tabBarItemBoxClassName,
                   // At rest the tab draws its selected look; while the lens

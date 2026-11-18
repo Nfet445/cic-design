@@ -258,6 +258,26 @@ async function writeCache(cacheDir, name, data) {
   await rename(temporary, file);
 }
 
+/** Drop formatting whitespace without rewriting selectors or values. */
+export function compactTailwindFormatting(root) {
+  root.walk(node => {
+    if (node.type === 'comment') {
+      return;
+    }
+    node.raws.before = '';
+    if (node.nodes != null) {
+      node.raws.after = '';
+    }
+    if (node.type === 'decl') {
+      node.raws.between = ':';
+    }
+    if (node.type === 'rule') {
+      node.raws.between = '';
+    }
+  });
+  root.raws.after = '';
+}
+
 /**
  * Compile a package's stylesheet without writing it, so a test can assert the
  * declarations the build produces.
@@ -269,6 +289,7 @@ async function writeCache(cacheDir, name, data) {
  * @param {string} options.banner the sheet's first comment.
  * @param {string} [options.layer] the layer every rule sits in.
  * @param {string} [options.cacheDir] where the entries and the sheet are kept.
+ * @param {boolean} [options.compact] omit formatting whitespace in the generated CSS.
  * @param {string} [options.cacheVersion] bumped when this file changes the
  *   sheet it compiles: the key cannot see the code that reads it.
  * @param {(report: {hits: number, misses: number, reused: boolean}) => void}
@@ -282,6 +303,7 @@ export async function buildTailwindStylesheet({
   layer = ASTRYX_BASE_LAYER,
   cacheDir = path.resolve(root, 'node_modules/.cache/astryx-tailwind-css'),
   cacheVersion = '1',
+  compact = false,
   onCacheReport,
 }) {
   const require = createRequire(path.join(root, 'package.json'));
@@ -301,7 +323,7 @@ export async function buildTailwindStylesheet({
     entries,
     input,
     inputCss,
-    cacheVersion,
+    compact ? `${cacheVersion}:compact` : cacheVersion,
   );
 
   const cached = await readCachedSheet(cacheDir, key);
@@ -327,6 +349,9 @@ export async function buildTailwindStylesheet({
         }
         if (wrapper.nodes.length > 0) {
           cssRoot.append(wrapper);
+        }
+        if (compact) {
+          compactTailwindFormatting(cssRoot);
         }
       },
     };
