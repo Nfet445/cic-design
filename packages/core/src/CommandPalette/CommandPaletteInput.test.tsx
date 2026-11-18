@@ -10,12 +10,11 @@
 import {createRef} from 'react';
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {render, screen, fireEvent, act} from '@testing-library/react';
-import * as stylex from '@stylexjs/stylex';
 import {CommandPaletteInput} from './CommandPaletteInput';
 import {CommandPaletteContext} from './CommandPaletteContext';
 import {Dialog} from '../Dialog';
 import type {CommandPaletteContextValue} from './CommandPaletteContext';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 
 beforeEach(() => {
@@ -315,9 +314,7 @@ describe('CommandPaletteInput', () => {
   it('draws the shared ring only when keyboard navigation acquired focus', () => {
     render(<CommandPaletteInput hasAutoFocus={false} />);
     const input = screen.getByRole('searchbox');
-    const ringClasses = stylex
-      .props(focusOutlineStyles.focusVisible)
-      .className!.split(' ');
+    const ringClasses = focusOutlineFocusVisibleClassName.split(' ');
     const isRinged = () =>
       ringClasses.every(className => input.classList.contains(className));
 

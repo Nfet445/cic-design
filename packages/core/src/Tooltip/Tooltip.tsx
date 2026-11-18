@@ -22,7 +22,7 @@ import React, {
 } from 'react';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {tw} from '../utils/tw';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   useTooltip,
   type TooltipFocusTrigger,
@@ -330,16 +330,14 @@ export function Tooltip({
   if (textOnly) {
     // The span is a tab stop Astryx adds: it draws the shared ring, which a
     // theme restyles through the focus-outline tokens.
-    const focusProps = focusOutlineProps.focusVisible();
     return (
       <>
         <span
           ref={tooltip.ref}
           tabIndex={0}
           aria-describedby={tooltip.describedBy}
-          {...focusProps}
           className={tw(
-            focusProps.className,
+            focusOutlineFocusVisibleClassName,
             tooltipWrapperClassName.inline,
             showHoverIndication && tooltipHoverIndicationClassName,
           )}>
