@@ -95,7 +95,8 @@ export const docsDense = {
   description: 'Scrollable main content area.',
   propDescriptions: {
     children: 'Content.',
-    padding: 'Internal padding on spacing scale. Overrides layout container default.',
+    padding:
+      'Internal padding on spacing scale. Overrides layout container default.',
     isScrollable:
       'Enable scrollable overflow. With arithmetic contentWidth values, the scrollport reaches open sides while context-aware insets align children.',
     label:

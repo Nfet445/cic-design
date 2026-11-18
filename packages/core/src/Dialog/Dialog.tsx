@@ -80,10 +80,6 @@ import {container} from '../Layout/container.stylex';
 import {containerCornerStyles} from '../Layout/containerCorners.stylex';
 import type {SpacingToken} from '../Layout/container.stylex';
 import {
-  paddingStyles,
-  containerPaddingInlineVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingBlockEndVarStyles,
   spacingStepToToken,
   overlayPaddingReset,
 } from '../Layout/padding.stylex';
@@ -641,18 +637,6 @@ export function Dialog({
                   maxHeight: standardSizing?.maxHeight,
                 },
           ),
-          !useThemeDefault &&
-            effectivePadding !== 4 &&
-            paddingStyles[effectivePadding],
-          !useThemeDefault &&
-            effectivePadding !== 4 &&
-            containerPaddingInlineVarStyles[effectivePadding],
-          !useThemeDefault &&
-            effectivePadding !== 4 &&
-            containerPaddingBlockStartVarStyles[effectivePadding],
-          !useThemeDefault &&
-            effectivePadding !== 4 &&
-            containerPaddingBlockEndVarStyles[effectivePadding],
           isFullscreen &&
             useThemeDefault &&
             dialogFullscreenSafeAreaStyles.fullscreenSafeArea,

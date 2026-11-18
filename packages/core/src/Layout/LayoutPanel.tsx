@@ -51,12 +51,6 @@ import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {moveFocusLeftBehind, noteFocusWithin} from '../utils/focusReturn';
 import {useFocusLeavingChange} from '../utils/useFocusLeavingChange';
 import {themeProps} from '../utils/themeProps';
-import {
-  paddingStyles,
-  containerPaddingInlineVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingBlockEndVarStyles,
-} from './padding.stylex';
 
 const returnFalse = () => false;
 
@@ -321,19 +315,14 @@ export function LayoutPanel({
               isEnd: isEndPanel,
               isScrollable: isScrollable && !isZeroWidth,
               isZeroWidth,
+              padding,
             }),
             effectiveWidth != null && layoutPanelWidthClassName,
             hasDivider && dividerClassName,
             shouldCollapseSpacing && collapseClassName,
           ),
         }),
-        stylex.props(
-          padding != null && paddingStyles[padding],
-          padding != null && containerPaddingInlineVarStyles[padding],
-          padding != null && containerPaddingBlockStartVarStyles[padding],
-          padding != null && containerPaddingBlockEndVarStyles[padding],
-          xstyle,
-        ),
+        stylex.props(xstyle),
         className,
         {...style, ...widthStyle},
       )}

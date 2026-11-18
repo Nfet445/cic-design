@@ -12,15 +12,11 @@
 import {describe, it, expect, vi} from 'vitest';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
 import {Toolbar} from './Toolbar';
 import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
 import {Button} from '../Button/Button';
 import {MoreMenu} from '../MoreMenu';
-import {
-  paddingBlockStyles,
-  paddingInlineStyles,
-} from '../Layout/padding.stylex';
+import {containerPaddingByEdgeClassName} from '../Layout/paddingClasses';
 
 describe('Toolbar', () => {
   it('renders with toolbar role', () => {
@@ -156,19 +152,19 @@ describe('Toolbar', () => {
     (size, blockPadding) => {
       const {container} = render(<Toolbar label="Actions" size={size} />);
       const sectionInner = container.querySelector('.astryx-section');
-      const expectedBlockClasses = stylex
-        .props(paddingBlockStyles[blockPadding])
-        .className?.split(' ')
-        .filter(Boolean);
-      const compactInlineClasses = stylex
-        .props(paddingInlineStyles[1])
-        .className?.split(' ')
-        .filter(Boolean);
+      const expectedBlockClasses = containerPaddingByEdgeClassName({
+        paddingBlockStart: blockPadding,
+        paddingBlockEnd: blockPadding,
+      }).split(' ');
+      const compactInlineClasses = containerPaddingByEdgeClassName({
+        paddingInlineStart: 1,
+        paddingInlineEnd: 1,
+      }).split(' ');
 
       expect(sectionInner).toBeInTheDocument();
       expect(expectedBlockClasses).not.toHaveLength(0);
-      expect(sectionInner).toHaveClass(...(expectedBlockClasses ?? []));
-      expect(sectionInner).not.toHaveClass(...(compactInlineClasses ?? []));
+      expect(sectionInner).toHaveClass(...expectedBlockClasses);
+      expect(sectionInner).not.toHaveClass(...compactInlineClasses);
     },
   );
 

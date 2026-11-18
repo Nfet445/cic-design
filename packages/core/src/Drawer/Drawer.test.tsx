@@ -1392,7 +1392,11 @@ describe('Drawer', () => {
             computed.getPropertyValue(`--container-padding-${edge}`),
             edge,
           ).toBe(expected);
-          expect(computed.getPropertyValue(property), edge).toBe(expected);
+          // The applied edge reads what was published, so a bleed child
+          // subtracts exactly the inset it sits in.
+          expect(computed.getPropertyValue(property), edge).toBe(
+            `var(--container-padding-${edge})`,
+          );
         }
         expect(computed.getPropertyValue('--container-padding-block-end')).toBe(
           expected,

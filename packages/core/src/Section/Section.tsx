@@ -19,21 +19,10 @@ import type {BaseProps} from '../BaseProps';
 import {container} from '../Layout/container.stylex';
 import type {SpacingToken} from '../Layout/container.stylex';
 import {
-  paddingStyles,
-  paddingInlineStyles,
-  paddingInlineStartStyles,
-  paddingInlineEndStyles,
-  paddingBlockStyles,
-  paddingBlockStartStyles,
-  paddingBlockEndStyles,
-  containerPaddingInlineVarStyles,
-  containerPaddingInlineStartVarStyles,
-  containerPaddingInlineEndVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingBlockEndVarStyles,
-  sectionPaddingPropagationStyles,
-  spacingStepToToken,
-} from '../Layout/padding.stylex';
+  containerPaddingByEdgeClassName,
+  sectionPaddingClassName,
+} from '../Layout/paddingClasses';
+import {spacingStepToToken} from '../Layout/padding.stylex';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
@@ -233,6 +222,26 @@ export function Section({
   const useThemeDefault = padding == null;
   const effectivePadding = padding ?? 4;
   const paddingToken = spacingStepToToken[effectivePadding] as SpacingToken;
+  // One value per edge: an axis prop covers its two edges, a per-edge prop
+  // wins over it, and `padding` covers what none of them set.
+  const paddingEdges = {
+    paddingBlockEnd:
+      paddingBlockEnd ??
+      paddingBlock ??
+      (useThemeDefault ? undefined : effectivePadding),
+    paddingBlockStart:
+      paddingBlockStart ??
+      paddingBlock ??
+      (useThemeDefault ? undefined : effectivePadding),
+    paddingInlineEnd:
+      paddingInlineEnd ??
+      paddingInline ??
+      (useThemeDefault ? undefined : effectivePadding),
+    paddingInlineStart:
+      paddingInlineStart ??
+      paddingInline ??
+      (useThemeDefault ? undefined : effectivePadding),
+  };
   const xstyleProps = stylex.props(xstyle);
   const outerInlineStyle: React.CSSProperties = {
     ...xstyleProps.style,
@@ -254,7 +263,11 @@ export function Section({
       <div
         {...mergeProps(
           mergeProps(themeProps('section', {variant}), {
-            className: sectionInnerClassName({dividers, variant}),
+            className: tw(
+              sectionInnerClassName({dividers, variant}),
+              !useThemeDefault && sectionPaddingClassName(effectivePadding),
+              containerPaddingByEdgeClassName(paddingEdges),
+            ),
           }),
           stylex.props(
             ...container(
@@ -267,47 +280,6 @@ export function Section({
                     paddingOuterY: paddingToken,
                   },
             ),
-            !useThemeDefault &&
-              effectivePadding !== 4 &&
-              paddingStyles[effectivePadding],
-            !useThemeDefault &&
-              effectivePadding !== 4 &&
-              containerPaddingInlineVarStyles[effectivePadding],
-            !useThemeDefault &&
-              effectivePadding !== 4 &&
-              containerPaddingBlockStartVarStyles[effectivePadding],
-            !useThemeDefault &&
-              effectivePadding !== 4 &&
-              containerPaddingBlockEndVarStyles[effectivePadding],
-            !useThemeDefault &&
-              sectionPaddingPropagationStyles[effectivePadding],
-            paddingInline != null && paddingInlineStyles[paddingInline],
-            paddingInline != null &&
-              containerPaddingInlineVarStyles[paddingInline],
-            paddingBlock != null && paddingBlockStyles[paddingBlock],
-            paddingBlock != null &&
-              containerPaddingBlockStartVarStyles[paddingBlock],
-            paddingBlock != null &&
-              containerPaddingBlockEndVarStyles[paddingBlock],
-            // Per-edge overrides come last so they win over `paddingBlock`
-            // and `padding` on their own edge. The matching container var is
-            // updated alongside so bleed children (Table, Divider, nested
-            // Section) compensate against the padding actually applied.
-            paddingBlockStart != null &&
-              paddingBlockStartStyles[paddingBlockStart],
-            paddingBlockStart != null &&
-              containerPaddingBlockStartVarStyles[paddingBlockStart],
-            paddingBlockEnd != null && paddingBlockEndStyles[paddingBlockEnd],
-            paddingBlockEnd != null &&
-              containerPaddingBlockEndVarStyles[paddingBlockEnd],
-            paddingInlineStart != null &&
-              paddingInlineStartStyles[paddingInlineStart],
-            paddingInlineStart != null &&
-              containerPaddingInlineStartVarStyles[paddingInlineStart],
-            paddingInlineEnd != null &&
-              paddingInlineEndStyles[paddingInlineEnd],
-            paddingInlineEnd != null &&
-              containerPaddingInlineEndVarStyles[paddingInlineEnd],
           ),
         )}>
         {children}

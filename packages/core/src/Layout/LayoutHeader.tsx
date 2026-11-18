@@ -31,13 +31,7 @@ import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
-import {
-  paddingStyles,
-  paddingBlockEndStyles,
-  containerPaddingInlineVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingBlockEndVarStyles,
-} from './padding.stylex';
+import {containerPaddingByEdgeClassName} from './paddingClasses';
 
 export interface LayoutHeaderProps extends BaseProps<HTMLDivElement> {
   ref?: React.Ref<HTMLDivElement>;
@@ -153,20 +147,15 @@ export function LayoutHeader({
       {...props}
       data-divider={resolvedHasDivider || undefined}>
       <div
-        {...mergeProps(
-          {className: layoutHeaderInnerClassName},
-          stylex.props(
-            padding != null && paddingStyles[padding],
-            padding != null && containerPaddingInlineVarStyles[padding],
-            padding != null && containerPaddingBlockStartVarStyles[padding],
-            padding != null && containerPaddingBlockEndVarStyles[padding],
-            // Per-edge override last so it wins over `padding` on its own edge.
-            // The container var moves with it so bleed children compensate
-            // against the padding actually applied, not the one asked for.
-            paddingBlockEnd != null && paddingBlockEndStyles[paddingBlockEnd],
-            paddingBlockEnd != null &&
-              containerPaddingBlockEndVarStyles[paddingBlockEnd],
-          ),
+        className={tw(
+          layoutHeaderInnerClassName,
+          (padding != null || paddingBlockEnd != null) &&
+            containerPaddingByEdgeClassName({
+              paddingBlockEnd: paddingBlockEnd ?? padding,
+              paddingBlockStart: padding,
+              paddingInlineEnd: padding,
+              paddingInlineStart: padding,
+            }),
         )}>
         {children}
       </div>

@@ -84,7 +84,6 @@ import {useCollapsible} from '../Collapsible/useCollapsible';
 import type {CollapsibleConfig} from '../Collapsible/useCollapsible';
 import {composeEventHandlers, isRenderable, mergeProps} from '../utils';
 import type {Elevation} from '../utils/types';
-import {edgeCompSlot} from '../Layout/edgeCompensation.stylex';
 import {themeProps} from '../utils/themeProps';
 import type {BannerStatusMap, BannerContainerMap} from './index';
 import {
@@ -531,11 +530,7 @@ export function Banner({
           )}
         </div>
         {showEndArea && (
-          <div
-            {...mergeProps(
-              stylex.props(edgeCompSlot.inset(spacingVars['--spacing-2'])),
-              {className: bannerEndAreaClassName},
-            )}>
+          <div className={bannerEndAreaClassName}>
             {endContent}
             {hasToggle && (
               <Button

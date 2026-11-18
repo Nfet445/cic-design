@@ -19,19 +19,9 @@ import type {ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {
-  paddingStyles,
-  paddingInlineStyles,
-  paddingInlineStartStyles,
-  paddingInlineEndStyles,
-  paddingBlockStyles,
-  paddingBlockStartStyles,
-  paddingBlockEndStyles,
-  containerPaddingInlineVarStyles,
-  containerPaddingInlineStartVarStyles,
-  containerPaddingInlineEndVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingBlockEndVarStyles,
-} from '../Layout/padding.stylex';
+  containerPaddingByEdgeClassName,
+  paddingEdgeClassName,
+} from '../Layout/paddingClasses';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {
   useScrollableArea,
@@ -207,37 +197,23 @@ export function ScrollableArea({
     ...mergedViewportProps,
   });
 
-  const paddingProps = stylex.props(
-    paddingStyles[padding],
-    containerPaddingInlineVarStyles[padding],
-    containerPaddingBlockStartVarStyles[padding],
-    containerPaddingBlockEndVarStyles[padding],
-    paddingInline != null && paddingInlineStyles[paddingInline],
-    paddingInline != null && containerPaddingInlineVarStyles[paddingInline],
-    paddingBlock != null && paddingBlockStyles[paddingBlock],
-    paddingBlock != null && containerPaddingBlockStartVarStyles[paddingBlock],
-    paddingBlock != null && containerPaddingBlockEndVarStyles[paddingBlock],
-    paddingInlineStart != null && paddingInlineStartStyles[paddingInlineStart],
-    paddingInlineStart != null &&
-      containerPaddingInlineStartVarStyles[paddingInlineStart],
-    paddingInlineEnd != null && paddingInlineEndStyles[paddingInlineEnd],
-    paddingInlineEnd != null &&
-      containerPaddingInlineEndVarStyles[paddingInlineEnd],
-    paddingBlockStart != null && paddingBlockStartStyles[paddingBlockStart],
-    paddingBlockStart != null &&
-      containerPaddingBlockStartVarStyles[paddingBlockStart],
-    paddingBlockEnd != null && paddingBlockEndStyles[paddingBlockEnd],
-    paddingBlockEnd != null &&
-      containerPaddingBlockEndVarStyles[paddingBlockEnd],
-  );
+  // One value per edge: an axis prop covers its two edges, a per-edge prop
+  // wins over it, and `padding` covers what none of them set. The content
+  // paints the edge and also publishes it, so a bleed child compensates.
+  const contentPaddingEdges = {
+    paddingBlockEnd: paddingBlockEnd ?? paddingBlock ?? padding,
+    paddingBlockStart: paddingBlockStart ?? paddingBlock ?? padding,
+    paddingInlineEnd: paddingInlineEnd ?? paddingInline ?? padding,
+    paddingInlineStart: paddingInlineStart ?? paddingInline ?? padding,
+  };
 
   return (
     <div {...viewportProps}>
       <div
         {...getContentProps<HTMLDivElement>({
-          ...paddingProps,
           className: tw(
-            paddingProps.className,
+            paddingEdgeClassName(contentPaddingEdges),
+            containerPaddingByEdgeClassName(contentPaddingEdges),
             scrollableAreaContentClassName,
             axis !== 'block' &&
               scrollableAreaContentWithInlineOverflowClassName,

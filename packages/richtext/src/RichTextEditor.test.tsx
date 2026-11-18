@@ -63,7 +63,7 @@ import {registerIcons, resetIcons} from '@astryxdesign/core/Icon';
 import {EDGE_COMP_ATTR} from '@astryxdesign/core/Layout';
 import type {BaseProps} from '@astryxdesign/core';
 import {Theme, defineTheme} from '@astryxdesign/core/theme';
-import {rtlStyles} from '@astryxdesign/core/utils';
+import {RTL_MIRROR_CLASS} from '@astryxdesign/core/utils';
 import {InternationalizationProvider} from '@astryxdesign/core/i18n';
 import {
   RichTextEditorAutoLinkPlugin,
@@ -1576,14 +1576,10 @@ describe('RichTextEditorToolbar', () => {
     const {container} = render(
       <RichTextEditor label="Notes" toolbar={<RichTextEditorToolbar />} />,
     );
-    // The atomic class only; dev builds add a debug name with a dot in it.
-    const mirrorClass = (stylex.props(rtlStyles.mirror).className ?? '')
-      .split(' ')
-      .find(name => !name.includes('__'));
-    expect(mirrorClass).toBeDefined();
-    const mirrored = [
-      ...container.getElementsByClassName(mirrorClass ?? ''),
-    ].map(element => element.closest('button')?.getAttribute('aria-label'));
+    const mirrorClass = RTL_MIRROR_CLASS;
+    const mirrored = [...container.getElementsByClassName(mirrorClass)].map(
+      element => element.closest('button')?.getAttribute('aria-label'),
+    );
     expect(mirrored).toEqual(['Undo', 'Redo']);
   });
 });
@@ -2297,7 +2293,7 @@ describe('isReadOnly + isDisabled combined', () => {
     expect(textbox).not.toHaveAttribute('tabindex', '0');
     const wrapper = container.querySelector('.astryx-rich-text-editor');
     expect(wrapper).not.toBeNull();
-    expect(getComputedStyle(wrapper as Element).opacity).toBe('0.5');
+    expect(wrapper?.className).toContain('opacity-50');
   });
 
   it('swaps disabled semantics for read-only semantics on rerender', () => {

@@ -213,11 +213,13 @@ describe('overlayPaddingReset', () => {
     });
     // ...while the page Section outside the overlay still propagates it.
     // (jsdom does not resolve the token reference to its 40px value.)
-    const pageSection = document.querySelector<HTMLElement>('.astryx-section');
-    expect(
-      getComputedStyle(pageSection as HTMLElement).getPropertyValue(
-        '--_section-padding-propagated',
-      ),
-    ).toBe('var(--spacing-10)');
+    expectClassSet(
+      document.querySelector<HTMLElement>('.astryx-section') as HTMLElement,
+      {
+        includes: [
+          declaration('--_section-padding-propagated', 'var(--spacing-10)'),
+        ],
+      },
+    );
   });
 });

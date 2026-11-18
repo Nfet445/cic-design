@@ -1843,7 +1843,6 @@ function familyClassNames() {
     layoutSinglePanelMiddleClassName,
     layoutSingleStartPanelClassName,
     layoutSingleEndPanelClassName,
-    layoutFullBleedClassName,
     layoutHeaderInnerClassName,
     layoutHeaderDividerClassName,
     layoutFooterInnerClassName,
@@ -4108,6 +4107,33 @@ describe('dist/astryx-tailwind.css declarations', () => {
     );
     expect(both).toContain(
       'flex-basis:calc(2*var(--astryx-toolbar-lane-inset));',
+    );
+  });
+
+  it('pulls a compensated lane in by the inset it publishes', () => {
+    expect(
+      stylesheet.blockOf(
+        '[&:has(>_[data-astryx-edge-comp]:first-child)]:ms-[calc(-1*var(--astryx-toolbar-lane-inset))]',
+      ),
+    ).toContain(
+      '&:has(>[data-astryx-edge-comp]:first-child){margin-inline-start:calc(-1*var(--astryx-toolbar-lane-inset));}',
+    );
+    expect(
+      stylesheet.blockOf(
+        '[&:has(>_[data-astryx-edge-comp]:last-child)]:me-[calc(-1*var(--astryx-toolbar-lane-inset))]',
+      ),
+    ).toContain(
+      '&:has(>[data-astryx-edge-comp]:last-child){margin-inline-end:calc(-1*var(--astryx-toolbar-lane-inset));}',
+    );
+  });
+
+  it('pulls a banner end area in by one step when a flat control sits there', () => {
+    expect(
+      stylesheet.blockOf(
+        '[&:has(>_[data-astryx-edge-comp]:first-child)]:ms-[calc(-1*var(--spacing-2))]',
+      ),
+    ).toContain(
+      '&:has(>[data-astryx-edge-comp]:first-child){margin-inline-start:calc(-1*var(--spacing-2));}',
     );
   });
 

@@ -11,7 +11,11 @@ export const docs = {
   type: 'generic',
   name: 'i18n-rtl-and-testing',
   title: 'RTL & Testing',
-  placement: {parent: 'namespace:internationalization', slot: 'guides', order: 30},
+  placement: {
+    parent: 'namespace:internationalization',
+    slot: 'guides',
+    order: 30,
+  },
   category: 'guide',
   description:
     'Text direction (RTL), pseudo-locale testing, and contributor guidance for developers and translators.',
@@ -159,19 +163,18 @@ function SaveButton() {
         },
         {
           type: 'prose',
-          text: 'Render one fixed glyph and wrap it in the shared `rtlStyles.mirror` (a `scaleX(-1)` that only applies under `[dir="rtl"]`). It flips from the ancestor `dir` through the cascade, so it works on the server with no hydration flash. Do not pick `chevronLeft` vs `chevronRight` in JS. This is how Pagination, Calendar, and Carousel handle their chevrons.',
+          text: 'Render one fixed glyph and give it the shared `RTL_MIRROR_CLASS` (a `scaleX(-1)` that only applies under `[dir="rtl"]`). It flips from the ancestor `dir` through the cascade, so it works on the server with no hydration flash. Do not pick `chevronLeft` vs `chevronRight` in JS. This is how Pagination, Calendar, and Carousel handle their chevrons.',
         },
         {
           type: 'code',
           lang: 'tsx',
           label: 'Mirror a directional icon with CSS',
-          code: `import * as stylex from '@stylexjs/stylex';
-import {rtlStyles} from '@astryxdesign/core';
+          code: `import {RTL_MIRROR_CLASS} from '@astryxdesign/core/utils';
 
 function NextButton() {
   // One glyph; CSS flips it under RTL. No direction read.
   return (
-    <span {...stylex.props(rtlStyles.mirror)}>
+    <span className={RTL_MIRROR_CLASS}>
       <Icon icon="chevronRight" />
     </span>
   );

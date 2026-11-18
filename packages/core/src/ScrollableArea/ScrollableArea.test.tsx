@@ -2,7 +2,6 @@
 
 import {readFileSync} from 'node:fs';
 import {act, render, screen} from '@testing-library/react';
-import * as stylex from '@stylexjs/stylex';
 import {
   beforeAll,
   afterEach,
@@ -12,7 +11,6 @@ import {
   it,
   vi,
 } from 'vitest';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import {
   expectVariable,
   stylesheetOf,
@@ -20,36 +18,10 @@ import {
 } from '../__tests__/classNameAssertions';
 import {buildAstryxTailwindCss} from '../../scripts/build-css-tailwind.mjs';
 import {
-  containerPaddingBlockEndVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingInlineEndVarStyles,
-  containerPaddingInlineStartVarStyles,
-  paddingBlockEndStyles,
-  paddingBlockStartStyles,
-  paddingInlineEndStyles,
-  paddingInlineStartStyles,
-} from '../Layout/padding.stylex';
+  containerPaddingByEdgeClassName,
+  paddingEdgeClassName,
+} from '../Layout/paddingClasses';
 import {ScrollableArea} from './ScrollableArea';
-
-/**
- * Atomic (hashed) class names for a style, excluding dev-mode debug names —
- * two style maps declaring the same property/value share the hash atom, so
- * these tokens are comparable across maps while debug names are not. Accepts
- * the custom-property var styles, whose entries are not typed as StyleXStyles.
- */
-function classTokens(style: object): string[] {
-  return (stylex.props(style as StyleXStyles).className ?? '')
-    .split(' ')
-    .filter(token => token && !token.includes('__'));
-}
-
-/** Each logical edge's applied padding atom and published inset variable. */
-const PADDING_EDGES = [
-  [paddingInlineStartStyles, containerPaddingInlineStartVarStyles],
-  [paddingInlineEndStyles, containerPaddingInlineEndVarStyles],
-  [paddingBlockStartStyles, containerPaddingBlockStartVarStyles],
-  [paddingBlockEndStyles, containerPaddingBlockEndVarStyles],
-] as const;
 
 function setGeometry(
   element: HTMLElement,
@@ -311,9 +283,11 @@ describe('ScrollableArea', () => {
     expect(viewport.className).toBe(defaultViewportClass);
     expect(content.className).not.toBe(defaultContentClass);
     const source = stylesSource();
-    expect(source).toContain('containerPaddingInlineVarStyles[padding]');
     expect(source).toContain(
-      'containerPaddingInlineEndVarStyles[paddingInlineEnd]',
+      'paddingInlineEnd: paddingInlineEnd ?? paddingInline ?? padding',
+    );
+    expect(source).toContain(
+      'containerPaddingByEdgeClassName(contentPaddingEdges)',
     );
   });
 
@@ -361,17 +335,24 @@ describe('ScrollableArea', () => {
       .firstElementChild as HTMLElement;
     const contentClasses = new Set(content.className.split(' '));
 
-    // StyleX keeps one atom per property, so the winning atom being present
-    // means every overridden one was dropped.
-    PADDING_EDGES.forEach(([atoms, inset], index) => {
-      for (const style of [atoms[edges[index]], inset[edges[index]]]) {
-        const tokens = classTokens(style);
-        expect(tokens.length).toBeGreaterThan(0);
-        for (const token of tokens) {
-          expect(contentClasses).toContain(token);
-        }
+    // One class decides one property, so the winner's class is present and no
+    // other step's class competes with it.
+    const resolved = {
+      paddingInlineStart: edges[0],
+      paddingInlineEnd: edges[1],
+      paddingBlockStart: edges[2],
+      paddingBlockEnd: edges[3],
+    };
+    for (const classText of [
+      paddingEdgeClassName(resolved),
+      containerPaddingByEdgeClassName(resolved),
+    ]) {
+      const classes = classText.split(' ');
+      expect(classes).toHaveLength(4);
+      for (const token of classes) {
+        expect(contentClasses).toContain(token);
       }
-    });
+    }
   });
 
   it('keeps inherited container bleed opt-in on the viewport', () => {
