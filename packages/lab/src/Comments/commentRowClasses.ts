@@ -48,3 +48,24 @@ export const commentRowControlRowBleedClassName = '-ms-2';
 /** A selectable surface takes the pointer; a disabled one drops it. */
 export const commentRowSurfaceClassName =
   'cursor-pointer [&:is(:disabled,[aria-disabled=true])]:cursor-default';
+
+/**
+ * A selected thread keeps `Card`'s default variant and takes the muted fill.
+ * The repeated attribute doubles the class's specificity, so the fill beats the
+ * variant's own `bg-[var(--color-background-card)]` whatever order the two
+ * rules print in.
+ */
+export const commentRowSelectedFillClassName =
+  '[&[data-thread-surface=card][data-thread-surface=card]]:[background-color:var(--color-background-muted)]';
+
+/**
+ * The system ring on the surface while the row's hidden toggle holds focus.
+ * That toggle is clicked, not tabbed to, so `:focus-visible` never matches it
+ * and the ring follows the row's own focus state instead.
+ */
+export const commentRowFocusRingClassName = tw(
+  '[outline-style:var(--focus-outline-style)]',
+  '[outline-width:var(--focus-outline-width)]',
+  '[outline-color:var(--focus-outline-color)]',
+  '[outline-offset:var(--focus-outline-offset)]',
+);

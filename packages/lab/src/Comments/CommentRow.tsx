@@ -66,9 +66,11 @@ import {
   commentRowAgentBadgeClassName,
   commentRowAuthorNameClassName,
   commentRowControlRowBleedClassName,
+  commentRowFocusRingClassName,
   commentRowHeaderClassName,
   commentRowMetadataBesideActionsClassName,
   commentRowMetadataClassName,
+  commentRowSelectedFillClassName,
   commentRowSurfaceClassName,
   commentRowThreadRowsClassName,
   commentRowTypingIndicatorClassName,
@@ -165,9 +167,11 @@ function ThreadSurface({
     </VisuallyHidden>
   ) : null;
   const interactionProps = isSelectable ? {onClick, onMouseUp} : {};
-  const sharedClassName = tw(isSelectable && commentRowSurfaceClassName);
+  const sharedClassName = tw(
+    isSelectable && commentRowSurfaceClassName,
+    isSelectable && isFocused && commentRowFocusRingClassName,
+  );
   const sharedXstyle = [
-    isSelectable && isFocused && commentRowSurfaceStyles.focused,
     isFilled && commentRowSurfaceStyles.selectedForcedColors,
   ];
 
@@ -203,13 +207,11 @@ function ThreadSurface({
       elevation="none"
       padding={3}
       width="100%"
-      xstyle={[
-        isFilled && commentRowSurfaceStyles.selectedFill,
-        ...sharedXstyle,
-      ]}
+      xstyle={sharedXstyle}
       className={tw(
         commentPartsSectionDividerOverlapClassName,
         sharedClassName,
+        isFilled && commentRowSelectedFillClassName,
         revealProps.className,
       )}
       style={revealProps.style}
