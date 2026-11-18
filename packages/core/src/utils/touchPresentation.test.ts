@@ -315,9 +315,10 @@ describe('touch presentation', () => {
     };
     walk(root);
     expect(drifted).toEqual([]);
-    // Core writes the touch key as a literal in many places; a class map that
-    // spells the gate as a Tailwind `pointer-coarse` variant is not one.
-    expect(pointerLiterals).toBeGreaterThanOrEqual(50);
+    // A floor, not a list: it catches a walk that stopped finding files. The
+    // number fell as the touch gates moved from quoted StyleX keys into
+    // `pointer-coarse:` class text, and only DEC-9 escapes still spell one.
+    expect(pointerLiterals).toBeGreaterThanOrEqual(30);
   });
 
   it('keeps every iOS gate in core spelled and nested as the resolver', () => {
