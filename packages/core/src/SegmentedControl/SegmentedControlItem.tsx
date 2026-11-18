@@ -31,7 +31,8 @@ import type {SegmentedControlSize} from './SegmentedControlContext';
 import {mergeProps, composeEventHandlers} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import * as stylex from '@stylexjs/stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {isRenderable} from '../utils/isRenderable';
@@ -151,7 +152,7 @@ export function SegmentedControlItem({
           selected: isSelected ? 'selected' : null,
           disabled: isItemDisabled ? 'disabled' : null,
         }),
-        focusOutlineProps.focusVisible(
+        stylex.props(
           // The shared hover and pressed overlay, on the segments a press can
           // change: the selected segment keeps its raised surface as it is.
           !isSelected &&
@@ -169,6 +170,7 @@ export function SegmentedControlItem({
             isLabelHidden,
             isTouchPresentation: ctx.isTouchPresentation === true,
           }),
+          focusOutlineFocusVisibleClassName,
           className,
         ),
         style,

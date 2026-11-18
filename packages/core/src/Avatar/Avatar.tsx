@@ -61,7 +61,8 @@ import {mergeProps} from '../utils';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {themeProps} from '../utils/themeProps';
 import {firstCharacter} from '../utils/characters';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import * as stylex from '@stylexjs/stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {useTooltip} from '../Tooltip/useTooltip';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {useLinkComponent} from '../Link/useLinkComponent';
@@ -709,7 +710,7 @@ export function Avatar({
   // `<a>`/`<button>` and the static `<div>` carry the exact same box.
   const rootStylexProps = mergeProps(
     themeProps('avatar', {size: resolvedSize, shape: resolvedShape}),
-    focusOutlineProps.focusVisible(
+    stylex.props(
       avatarGroup && avatarGroupStyles.ring,
       avatarGroup && avatarGroupStyles.overlap,
       avatarGroup && avatarGroupDynamicStyles.overlap(-avatarGroup.overlap),
@@ -719,6 +720,7 @@ export function Avatar({
       avatarRootClassName,
       avatarShapeClassName[resolvedShape],
       isInteractive && avatarInteractiveClassName,
+      focusOutlineFocusVisibleClassName,
       className,
     ),
     // A resolved size is a per-instance number, so it reaches CSS as the

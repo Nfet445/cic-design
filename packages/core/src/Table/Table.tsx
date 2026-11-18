@@ -21,7 +21,7 @@ import {use, useMemo, type ReactElement, type Ref} from 'react';
 import {TableRuntimeContext, registerTableScrollWrapper} from './tableRuntime';
 import {mergeRefs} from '../utils/mergeRefs';
 import * as stylex from '@stylexjs/stylex';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {BaseTable} from './BaseTable';
 import {TableContext} from './TableContext';
 import {useBaseTablePlugins} from './useBaseTablePlugins';
@@ -198,15 +198,14 @@ function TableScrollWrapper({
     ref: wrapperRef,
     ...mergeProps(
       themeProps('table-scroll-wrapper'),
-      stylex.props(
-        // A tab stop once the table scrolls inline: the shared ring, which a
-        // theme restyles through the focus-outline tokens.
-        focusOutlineStyles.focusVisible,
-        ...(pluginStyles ?? []),
-      ),
+      stylex.props(...(pluginStyles ?? [])),
       tw(
         TABLE_SCROLL_WRAPPER_CLASS,
+        // A tab stop once the table scrolls inline: the shared ring, which a
+        // theme restyles through the focus-outline tokens, sat inside its own
+        // box by the inset class beside it.
         TABLE_SCROLL_WRAPPER_RING_INSET_CLASS,
+        focusOutlineFocusVisibleClassName,
         hasBlockViewport && TABLE_SCROLL_WRAPPER_BLOCK_VIEWPORT_CLASS,
         pluginClassName,
       ),
