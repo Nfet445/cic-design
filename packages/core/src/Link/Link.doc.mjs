@@ -6,7 +6,16 @@ export const docs = {
   name: 'Link',
   displayName: 'Link',
   category: 'Action',
-  keywords: ["link","anchor","href","hyperlink","navigation","url","external","textlink"],
+  keywords: [
+    'link',
+    'anchor',
+    'href',
+    'hyperlink',
+    'navigation',
+    'url',
+    'external',
+    'textlink',
+  ],
   playground: {
     defaults: {
       href: '#',
@@ -14,9 +23,7 @@ export const docs = {
     },
   },
   theming: {
-    targets: [
-      {className: 'astryx-link', visualProps: ['color']},
-    ],
+    targets: [{className: 'astryx-link', visualProps: ['color']}],
   },
   components: [
     {
@@ -33,7 +40,8 @@ export const docs = {
         {
           name: 'label',
           type: 'string',
-          description: 'Accessible label (aria-label). Only use when children are not self-descriptive (e.g. icon-only links). Omit for text links; the link text is the accessible name.',
+          description:
+            'Accessible label (aria-label). Only use when children are not self-descriptive (e.g. icon-only links). Omit for text links; the link text is the accessible name.',
         },
         {
           name: 'href',
@@ -50,7 +58,8 @@ export const docs = {
         {
           name: 'isDisabled',
           type: 'boolean',
-          description: 'Disables the link. It cannot navigate or run `onClick`, keeps its Tab stop, and is announced as disabled.',
+          description:
+            'Disables the link. It cannot navigate or run `onClick`, keeps its Tab stop, and is announced as disabled.',
           default: 'false',
         },
         {
@@ -109,7 +118,8 @@ export const docs = {
         {
           name: 'type',
           type: "'body' | 'large' | 'label' | 'supporting' | 'code' | 'display-1' | 'display-2' | 'display-3' | 'inherit'",
-          description: 'Text type forwarded to Text, or a custom text type the theme defines. Use `inherit` for a link inside a Text, so the link takes the size and line height of the text around it.',
+          description:
+            'Text type forwarded to Text, or a custom text type the theme defines. Use `inherit` for a link inside a Text, so the link takes the size and line height of the text around it.',
           default: "'body'",
         },
         {
@@ -149,9 +159,11 @@ export const docs = {
         {
           name: 'ref',
           type: 'Ref<HTMLAnchorElement | HTMLButtonElement>',
-          description: 'Ref to the root element: the anchor, or the button when the link renders as a button.',
+          description:
+            'Ref to the root element: the anchor, or the button when the link renders as a button.',
         },
-      ],    },
+      ],
+    },
     {
       name: 'LinkProvider',
       isHiddenFromOverview: true,
@@ -191,19 +203,64 @@ export const docs = {
     description:
       'A styled anchor for inline and standalone text navigation. Supports external links, underline variants, tooltips, and custom link components for router integration. Use it for navigating between pages or to external URLs.',
     bestPractices: [
-      { guidance: true, description: 'Write descriptive, concise link text that clearly communicates the destination.' },
-      { guidance: true, description: 'Set `isStandalone` when the link appears outside of inline text, so it receives proper base font sizing.' },
-      { guidance: true, description: 'Put a Link inside a <Text maxLines> to truncate it with the surrounding text; inside a clamped Text the link flows in the text\'s lines.' },
-      { guidance: true, description: 'Only set `label` when the link content is not descriptive text (e.g. an icon-only link). For text links, the visible text is already the accessible name; adding `label` overrides it for screen readers, which is harmful.' },
-      { guidance: false, description: 'Use Link for actions that do not navigate; use a Button instead.' },
-      { guidance: false, description: 'Use generic text like "click here" or "read more"; describe the destination.' },
-      { guidance: false, description: 'Set `label` on text links; `aria-label` prevents assistive technology from reading the actual link content.' },
-      { guidance: false, description: 'Give a Link inside a clamped Text its own `display` or `maxLines`, or render it as a button (`onClick` with no `href`), and expect the outer clamp to cut it; that Link keeps its own box.' },
-      { guidance: false, description: 'Put a Link with block-level content, such as an HStack with an icon, inside a clamped Text; block content breaks the clamp. Clamp a text-only Link, or place the composed Link outside the clamp.' },
+      {
+        guidance: true,
+        description:
+          'Write descriptive, concise link text that clearly communicates the destination.',
+      },
+      {
+        guidance: true,
+        description:
+          'Set `isStandalone` when the link appears outside of inline text, so it receives proper base font sizing.',
+      },
+      {
+        guidance: true,
+        description:
+          "Put a Link inside a <Text maxLines> to truncate it with the surrounding text; inside a clamped Text the link flows in the text's lines.",
+      },
+      {
+        guidance: true,
+        description:
+          'Only set `label` when the link content is not descriptive text (e.g. an icon-only link). For text links, the visible text is already the accessible name; adding `label` overrides it for screen readers, which is harmful.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use Link for actions that do not navigate; use a Button instead.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use generic text like "click here" or "read more"; describe the destination.',
+      },
+      {
+        guidance: false,
+        description:
+          'Set `label` on text links; `aria-label` prevents assistive technology from reading the actual link content.',
+      },
+      {
+        guidance: false,
+        description:
+          'Give a Link inside a clamped Text its own `display` or `maxLines`, or render it as a button (`onClick` with no `href`), and expect the outer clamp to cut it; that Link keeps its own box.',
+      },
+      {
+        guidance: false,
+        description:
+          'Put a Link with block-level content, such as an HStack with an icon, inside a clamped Text; block content breaks the clamp. Clamp a text-only Link, or place the composed Link outside the clamp.',
+      },
     ],
     anatomy: [
-      {name: 'Label', required: true, description: 'The visible text of the link.'},
-      {name: 'External icon', required: false, description: 'Extra-small icon after the label when `isExternalLink` is set. It takes the link color. Screen readers hear the new-tab text instead of the icon.'},
+      {
+        name: 'Label',
+        required: true,
+        description: 'The visible text of the link.',
+      },
+      {
+        name: 'External icon',
+        required: false,
+        description:
+          'Extra-small icon after the label when `isExternalLink` is set. It takes the link color. Screen readers hear the new-tab text instead of the icon.',
+      },
     ],
   },
 };
@@ -213,16 +270,13 @@ export const docsZh = {
   name: 'Link',
   displayName: 'Link',
   theming: {
-    targets: [
-      {className: 'astryx-link', visualProps: ['color']},
-    ],
+    targets: [{className: 'astryx-link', visualProps: ['color']}],
   },
   components: [
     {
       name: 'Link',
       displayName: 'Link',
-      description:
-        '带有变体、外部链接支持和多态渲染的样式化锚点链接。',
+      description: '带有变体、外部链接支持和多态渲染的样式化锚点链接。',
       props: [
         {
           name: 'as',
@@ -232,7 +286,8 @@ export const docsZh = {
         {
           name: 'label',
           type: 'string',
-          description: '无障碍标签（aria-label）。仅在子内容不是描述性文本时使用（如纯图标链接）。文本链接请省略此项。',
+          description:
+            '无障碍标签（aria-label）。仅在子内容不是描述性文本时使用（如纯图标链接）。文本链接请省略此项。',
         },
         {
           name: 'href',
@@ -248,7 +303,8 @@ export const docsZh = {
         {
           name: 'isDisabled',
           type: 'boolean',
-          description: '禁用链接。链接不能导航，也不会运行 `onClick`；它保留 Tab 焦点位置，并被读作已禁用。',
+          description:
+            '禁用链接。链接不能导航，也不会运行 `onClick`；它保留 Tab 焦点位置，并被读作已禁用。',
           default: 'false',
         },
         {
@@ -260,7 +316,8 @@ export const docsZh = {
         {
           name: 'newTabLabel',
           type: 'string',
-          description: '向屏幕阅读器announce外部链接将在新标签页打开的文本。可覆盖以本地化。',
+          description:
+            '向屏幕阅读器announce外部链接将在新标签页打开的文本。可覆盖以本地化。',
           default: "'(opens in new tab)'",
         },
         {
@@ -303,8 +360,7 @@ export const docsZh = {
       name: 'LinkProvider',
       isHiddenFromOverview: true,
       displayName: 'Link Provider',
-      description:
-        '为子树中所有 Astryx 链接组件设置默认链接组件的 Provider。',
+      description: '为子树中所有 Astryx 链接组件设置默认链接组件的 Provider。',
       props: [
         {
           name: 'component',
@@ -325,19 +381,64 @@ export const docsZh = {
     description:
       'A styled anchor for inline and standalone text navigation. Supports external links, underline variants, tooltips, and custom link components for router integration. Use it for navigating between pages or to external URLs.',
     bestPractices: [
-      { guidance: true, description: 'Write descriptive, concise link text that clearly communicates the destination.' },
-      { guidance: true, description: 'Set `isStandalone` when the link appears outside of inline text, so it receives proper base font sizing.' },
-      { guidance: true, description: 'Put a Link inside a <Text maxLines> to truncate it with the surrounding text; inside a clamped Text the link flows in the text\'s lines.' },
-      { guidance: true, description: 'Only set `label` when the link content is not descriptive text (e.g. an icon-only link). For text links, the visible text is already the accessible name; adding `label` overrides it for screen readers, which is harmful.' },
-      { guidance: false, description: 'Use Link for actions that do not navigate; use a Button instead.' },
-      { guidance: false, description: 'Use generic text like "click here" or "read more"; describe the destination.' },
-      { guidance: false, description: 'Set `label` on text links; `aria-label` prevents assistive technology from reading the actual link content.' },
-      { guidance: false, description: 'Give a Link inside a clamped Text its own `display` or `maxLines`, or render it as a button (`onClick` with no `href`), and expect the outer clamp to cut it; that Link keeps its own box.' },
-      { guidance: false, description: 'Put a Link with block-level content, such as an HStack with an icon, inside a clamped Text; block content breaks the clamp. Clamp a text-only Link, or place the composed Link outside the clamp.' },
+      {
+        guidance: true,
+        description:
+          'Write descriptive, concise link text that clearly communicates the destination.',
+      },
+      {
+        guidance: true,
+        description:
+          'Set `isStandalone` when the link appears outside of inline text, so it receives proper base font sizing.',
+      },
+      {
+        guidance: true,
+        description:
+          "Put a Link inside a <Text maxLines> to truncate it with the surrounding text; inside a clamped Text the link flows in the text's lines.",
+      },
+      {
+        guidance: true,
+        description:
+          'Only set `label` when the link content is not descriptive text (e.g. an icon-only link). For text links, the visible text is already the accessible name; adding `label` overrides it for screen readers, which is harmful.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use Link for actions that do not navigate; use a Button instead.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use generic text like "click here" or "read more"; describe the destination.',
+      },
+      {
+        guidance: false,
+        description:
+          'Set `label` on text links; `aria-label` prevents assistive technology from reading the actual link content.',
+      },
+      {
+        guidance: false,
+        description:
+          'Give a Link inside a clamped Text its own `display` or `maxLines`, or render it as a button (`onClick` with no `href`), and expect the outer clamp to cut it; that Link keeps its own box.',
+      },
+      {
+        guidance: false,
+        description:
+          'Put a Link with block-level content, such as an HStack with an icon, inside a clamped Text; block content breaks the clamp. Clamp a text-only Link, or place the composed Link outside the clamp.',
+      },
     ],
     anatomy: [
-      {name: 'Label', required: true, description: 'The visible text of the link.'},
-      {name: 'External icon', required: false, description: 'Extra-small icon after the label when `isExternalLink` is set. It takes the link color. Screen readers hear the new-tab text instead of the icon.'},
+      {
+        name: 'Label',
+        required: true,
+        description: 'The visible text of the link.',
+      },
+      {
+        name: 'External icon',
+        required: false,
+        description:
+          'Extra-small icon after the label when `isExternalLink` is set. It takes the link color. Screen readers hear the new-tab text instead of the icon.',
+      },
     ],
   },
 };
@@ -350,19 +451,64 @@ export const docsDense = {
     description:
       'A styled anchor for inline and standalone text navigation. Supports external links, underline variants, tooltips, and custom link components for router integration. Use it for navigating between pages or to external URLs.',
     bestPractices: [
-      { guidance: true, description: 'Write descriptive, concise link text that clearly communicates the destination.' },
-      { guidance: true, description: 'Set `isStandalone` when the link appears outside of inline text, so it receives proper base font sizing.' },
-      { guidance: true, description: 'Put a Link inside a <Text maxLines> to truncate it with the surrounding text; inside a clamped Text the link flows in the text\'s lines.' },
-      { guidance: true, description: 'Only set `label` when the link content is not descriptive text (e.g. an icon-only link). For text links, the visible text is already the accessible name; adding `label` overrides it for screen readers, which is harmful.' },
-      { guidance: false, description: 'Use Link for actions that do not navigate; use a Button instead.' },
-      { guidance: false, description: 'Use generic text like "click here" or "read more"; describe the destination.' },
-      { guidance: false, description: 'Set `label` on text links; `aria-label` prevents assistive technology from reading the actual link content.' },
-      { guidance: false, description: 'Give a Link inside a clamped Text its own `display` or `maxLines`, or render it as a button (`onClick` with no `href`), and expect the outer clamp to cut it; that Link keeps its own box.' },
-      { guidance: false, description: 'Put a Link with block-level content, such as an HStack with an icon, inside a clamped Text; block content breaks the clamp. Clamp a text-only Link, or place the composed Link outside the clamp.' },
+      {
+        guidance: true,
+        description:
+          'Write descriptive, concise link text that clearly communicates the destination.',
+      },
+      {
+        guidance: true,
+        description:
+          'Set `isStandalone` when the link appears outside of inline text, so it receives proper base font sizing.',
+      },
+      {
+        guidance: true,
+        description:
+          "Put a Link inside a <Text maxLines> to truncate it with the surrounding text; inside a clamped Text the link flows in the text's lines.",
+      },
+      {
+        guidance: true,
+        description:
+          'Only set `label` when the link content is not descriptive text (e.g. an icon-only link). For text links, the visible text is already the accessible name; adding `label` overrides it for screen readers, which is harmful.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use Link for actions that do not navigate; use a Button instead.',
+      },
+      {
+        guidance: false,
+        description:
+          'Use generic text like "click here" or "read more"; describe the destination.',
+      },
+      {
+        guidance: false,
+        description:
+          'Set `label` on text links; `aria-label` prevents assistive technology from reading the actual link content.',
+      },
+      {
+        guidance: false,
+        description:
+          'Give a Link inside a clamped Text its own `display` or `maxLines`, or render it as a button (`onClick` with no `href`), and expect the outer clamp to cut it; that Link keeps its own box.',
+      },
+      {
+        guidance: false,
+        description:
+          'Put a Link with block-level content, such as an HStack with an icon, inside a clamped Text; block content breaks the clamp. Clamp a text-only Link, or place the composed Link outside the clamp.',
+      },
     ],
     anatomy: [
-      {name: 'Label', required: true, description: 'The visible text of the link.'},
-      {name: 'External icon', required: false, description: 'Extra-small icon after the label when `isExternalLink` is set. It takes the link color. Screen readers hear the new-tab text instead of the icon.'},
+      {
+        name: 'Label',
+        required: true,
+        description: 'The visible text of the link.',
+      },
+      {
+        name: 'External icon',
+        required: false,
+        description:
+          'Extra-small icon after the label when `isExternalLink` is set. It takes the link color. Screen readers hear the new-tab text instead of the icon.',
+      },
     ],
   },
   components: [
@@ -373,10 +519,12 @@ export const docsDense = {
         'Styled anchor link w/ variants, external link support, polymorphic rendering.',
       propDescriptions: {
         as: 'Custom component to render instead of <a>',
-        label: 'Accessible label (aria-label). Only for non-text content like icon-only links.',
+        label:
+          'Accessible label (aria-label). Only for non-text content like icon-only links.',
         href: 'Link destination URL. Shared rule blocks javascript:, vbscript:, data:text/html after scheme normalization on every Astryx-owned navigation path. Ordinary URLs, fragments, safe custom schemes, and accepted downloads are preserved. Rejected => inert, no custom router. No bypass prop; exceptional caller-owned rendering is outside the guarantee. Image/resource policy is separate.',
         hasUnderline: 'Always show underline',
-        isDisabled: 'Disables link: no navigation or onClick; keeps Tab stop; announced as disabled',
+        isDisabled:
+          'Disables link: no navigation or onClick; keeps Tab stop; announced as disabled',
         isExternalLink: 'Opens new tab w/ external icon and safe rel tokens',
         newTabLabel: 'SR text announcing an external link opens in a new tab',
         target:
@@ -397,7 +545,8 @@ export const docsDense = {
       description:
         'Provider setting default link component for all Astryx links in subtree.',
       propDescriptions: {
-        component: 'Component for all link elements. Accepted href/to follow the Link href rule; structured fields including protocol are checked, preserving identity. Either rejected => inert content, no router invocation or fallback.',
+        component:
+          'Component for all link elements. Accepted href/to follow the Link href rule; structured fields including protocol are checked, preserving identity. Either rejected => inert content, no router invocation or fallback.',
         children: 'Subtree',
       },
     },

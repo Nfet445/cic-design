@@ -97,6 +97,7 @@ import {focusOutlineWithinClassName} from '../utils/focusOutlineClasses';
 import {rowPressLayerStyles} from '../privateAttributes/press.stylex';
 import {isCoarsePointer} from '../utils/coarsePointer';
 import {disabledInteractionProps} from '../utils/disabledInteraction';
+import {xstyleProps} from '../utils/xstyle';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
   swipeHostOf,
@@ -865,7 +866,6 @@ export function Item({
               : rowPressLayerStyles.cellOnImagePressOnly),
           swipeAttachment?.rootStyle,
           hasDeprecatedSwipe && swipeHostStyles.root,
-          xstyle,
         ),
         tw(
           itemClassName({
@@ -888,8 +888,9 @@ export function Item({
               ? interactionOverlayBackgroundImageClassName
               : interactionOverlayBackgroundColorClassName),
           className,
+          xstyleProps(xstyle).className,
         ),
-        style,
+        {...xstyleProps(xstyle).style, ...style},
       )}
       role={role}
       onClick={primaryOnClick}>

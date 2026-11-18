@@ -143,7 +143,6 @@ export function AvatarGroupOverflow({
             // The press tint and the ring are the shared press and ring
             // machines: their unlayered arms must outrank a layer utility.
             interactionOverlayStyles.backgroundImageOnNeutral,
-            xstyle,
           ),
           tw(
             avatarGroupOverflowClassName.base,
@@ -152,8 +151,13 @@ export function AvatarGroupOverflow({
             avatarShapeClassName[shape],
             focusOutlineFocusVisibleClassName,
             className,
+            xstyleProps(xstyle).className,
           ),
-          {...overflowBoxStyle(numericSize, overlap), ...style},
+          {
+            ...overflowBoxStyle(numericSize, overlap),
+            ...xstyleProps(xstyle).style,
+            ...style,
+          },
         )}>
         {content}
       </button>

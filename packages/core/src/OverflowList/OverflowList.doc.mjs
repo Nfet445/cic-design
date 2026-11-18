@@ -5,7 +5,8 @@ const anatomy = [
   {
     name: 'List',
     required: true,
-    description: 'Visible horizontal list container for the currently shown content.',
+    description:
+      'Visible horizontal list container for the currently shown content.',
   },
   {
     name: 'Items',

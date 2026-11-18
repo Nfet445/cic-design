@@ -54,6 +54,7 @@ import {
 } from '../Field/fieldParts';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import type {TranslatorFn} from '../i18n';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -790,7 +791,7 @@ export function FileInput({
         {...dragDropProps}
         {...mergeProps(
           themeProps('file-input', {mode, status: status?.type ?? null}),
-          stylex.props(controlXstyle),
+          xstyleProps(controlXstyle),
           // The third positional argument is a class string, not a props
           // object: an object there is read as the inline style.
           tw(

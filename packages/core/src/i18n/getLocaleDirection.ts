@@ -21,7 +21,8 @@ export function getLocaleDirection(locale: string): 'ltr' | 'rtl' {
   try {
     const loc = new Intl.Locale(locale);
     // @ts-expect-error — older engines expose accessor form `.textInfo`
-    const info = typeof loc.getTextInfo === 'function' ? loc.getTextInfo() : loc.textInfo;
+    const info =
+      typeof loc.getTextInfo === 'function' ? loc.getTextInfo() : loc.textInfo;
     return info?.direction === 'rtl' ? 'rtl' : 'ltr';
   } catch {
     return 'ltr';

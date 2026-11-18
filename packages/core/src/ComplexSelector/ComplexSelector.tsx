@@ -71,6 +71,7 @@ import {tw} from '../utils/tw';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import type {FieldStatusPlacement} from '../Field/fieldStatusPlacement';
 import {
@@ -886,7 +887,6 @@ export function ComplexSelector<Value>({
             variant !== 'input' && isDisabled && styles.triggerGhostDisabled,
             isDisabled && styles.disabled,
             triggerLabel == null && styles.placeholder,
-            controlXstyle,
           ),
           tw(
             fieldInputWrapperClassName(),
@@ -903,8 +903,9 @@ export function ComplexSelector<Value>({
             // The hover and press paint; its strength and release stay the
             // StyleX arm above.
             variant !== 'input' && interactionOverlayBackgroundImageClassName,
+            xstyleProps(controlXstyle).className,
           ),
-          controlStyle,
+          {...xstyleProps(controlXstyle).style, ...controlStyle},
         )}>
         {isRenderable(startIconSlot) && startIconSlot}
         <button

@@ -40,6 +40,7 @@ import {
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {radioListClassName} from './radioListClasses';
 
 /**
@@ -415,7 +416,7 @@ export function RadioList({
         aria-required={isEffectivelyRequired || undefined}
         {...mergeProps(
           themeProps('radio-list', {orientation, size}),
-          stylex.props(controlXstyle),
+          xstyleProps(controlXstyle),
           tw(radioListClassName({orientation}), controlClassName),
           controlStyle,
         )}>

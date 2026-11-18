@@ -131,6 +131,7 @@ import {
   wheelBounds,
 } from '../TimeInput/timeWheelRules';
 import {useTouchPresentation} from '../utils/touchPresentation';
+import {xstyleProps} from '../utils/xstyle';
 import {
   DEFAULT_MONTH_REACH,
   clampIndex,
@@ -1099,7 +1100,7 @@ export function TouchDateTimeField({
             status: status?.type ?? null,
             disabled: isDisabled ? 'disabled' : null,
           }),
-          stylex.props(controlXstyle),
+          xstyleProps(controlXstyle),
           tw(dateTimeInputRowClassName, controlClassName),
           controlStyle,
         )}>

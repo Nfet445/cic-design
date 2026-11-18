@@ -41,6 +41,7 @@ import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useTouchHitArea} from '../utils/touchHitArea';
 import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 export interface SegmentedControlItemProps extends BaseProps<HTMLButtonElement> {
   ref?: React.Ref<HTMLButtonElement>;
@@ -159,7 +160,6 @@ export function SegmentedControlItem({
             !isItemDisabled &&
             interactionOverlayStyles.pressedAlpha,
           hasHitArea && touchHitAreaStyles.layer,
-          xstyle,
         ),
         tw(
           segmentedItemClassName({
@@ -177,8 +177,9 @@ export function SegmentedControlItem({
             interactionOverlayBackgroundColorClassName,
           focusOutlineFocusVisibleClassName,
           className,
+          xstyleProps(xstyle).className,
         ),
-        style,
+        {...xstyleProps(xstyle).style, ...style},
       )}>
       {iconElement}
       {!isLabelHidden && (

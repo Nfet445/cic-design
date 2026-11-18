@@ -152,6 +152,7 @@ import {
 } from '../i18n/useComponentTranslator';
 import english from '../i18n/generated-english/Tokenizer/Tokenizer.generated';
 import {isRenderable} from '../utils/isRenderable';
+import {xstyleProps} from '../utils/xstyle';
 
 registerEnglishFallback(english);
 
@@ -1727,7 +1728,7 @@ export function Tokenizer<T extends SearchableItem>({
           status: localStatus?.type,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(controlXstyle),
+        xstyleProps(controlXstyle),
         tw(
           tokenizerRowClassName(
             isTruncated || (localStatus != null && !isDisabled && isInGroupRow),
@@ -1988,7 +1989,6 @@ export function Tokenizer<T extends SearchableItem>({
               // The field keeps the inline field's height for its size step,
               // as Selector's bottom-sheet trigger does; the sheet's own rows
               // and search field carry the touch-sized targets.
-              status && !isDisabled && controlXstyle,
             ),
             tw(
               tokenizerRowClassName(false),
@@ -1999,8 +1999,14 @@ export function Tokenizer<T extends SearchableItem>({
               tokenizerSheetFieldClassName(isDisabled),
               isDisabled && tokenizerSheetFieldDisabledClassName,
               controlClassName,
+              xstyleProps(status && !isDisabled ? controlXstyle : undefined)
+                .className,
             ),
-            controlStyle,
+            {
+              ...xstyleProps(status && !isDisabled ? controlXstyle : undefined)
+                .style,
+              ...controlStyle,
+            },
           )}>
           {isRenderable(startIcon as ReactNode) && (
             <span
@@ -2164,7 +2170,7 @@ export function Tokenizer<T extends SearchableItem>({
               status: localStatus?.type,
               disabled: isDisabled ? 'disabled' : null,
             }),
-            stylex.props(
+            xstyleProps(
               localStatus &&
                 !isDisabled &&
                 // The placeholder is the element in the group's flex row.
@@ -2180,7 +2186,12 @@ export function Tokenizer<T extends SearchableItem>({
               isDisabled && fieldInputWrapperDisabledClassName,
               controlClassName,
             ),
-            controlStyle,
+            {
+              ...xstyleProps(
+                localStatus && !isDisabled ? controlXstyle : undefined,
+              ).style,
+              ...controlStyle,
+            },
           )}>
           {isTruncated && (
             <>

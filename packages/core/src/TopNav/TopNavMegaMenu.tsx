@@ -415,15 +415,15 @@ function DrawerMegaMenu({
             navItemStyles.item,
             // The strength and the release; the colour is a class below.
             interactionOverlayStyles.pressedAlpha,
-            xstyle,
           ),
           tw(
             topNavMegaMenuDrawerHeaderClassName(),
             className,
             interactionOverlayBackgroundColorClassName,
             focusOutlineFocusVisibleClassName,
+            xstyleProps(xstyle).className,
           ),
-          style,
+          {...xstyleProps(xstyle).style, ...style},
         )}>
         {label}
         <Icon

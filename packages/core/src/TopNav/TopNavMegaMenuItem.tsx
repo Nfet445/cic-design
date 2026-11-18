@@ -33,6 +33,7 @@ import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOv
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {isRenderable} from '../utils/isRenderable';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   topNavMegaMenuItemClassName,
   topNavMegaMenuItemContentClassName,
@@ -144,15 +145,15 @@ export function TopNavMegaMenuItem({
             navItemStyles.item,
             // The strength and the release; the colour is a class below.
             interactionOverlayStyles.pressedAlpha,
-            xstyle,
           ),
           tw(
             topNavMegaMenuItemDrawerClassName(),
             className,
             interactionOverlayBackgroundColorClassName,
             focusOutlineFocusVisibleClassName,
+            xstyleProps(xstyle).className,
           ),
-          style,
+          {...xstyleProps(xstyle).style, ...style},
         )}>
         {isRenderable(icon) && (
           <div className={topNavMegaMenuItemDrawerIconClassName()}>{icon}</div>
@@ -187,15 +188,15 @@ export function TopNavMegaMenuItem({
         stylex.props(
           // The strength and the release; the colour is a class below.
           interactionOverlayStyles.pressedAlpha,
-          xstyle,
         ),
         tw(
           topNavMegaMenuItemClassName(),
           className,
           interactionOverlayBackgroundColorClassName,
           focusOutlineFocusVisibleClassName,
+          xstyleProps(xstyle).className,
         ),
-        style,
+        {...xstyleProps(xstyle).style, ...style},
       )}>
       {isRenderable(icon) && (
         <div className={topNavMegaMenuItemIconClassName()}>{icon}</div>

@@ -11,10 +11,7 @@
 
 // Unified stack component
 export {Stack} from './Stack';
-export type {
-  StackProps,
-  StackAlignment,
-} from './Stack';
+export type {StackProps, StackAlignment} from './Stack';
 
 // Convenience wrappers (re-exported from their own directories)
 export {HStack, type HStackProps} from '../HStack';

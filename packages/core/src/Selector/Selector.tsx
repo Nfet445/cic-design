@@ -110,6 +110,7 @@ import {
 } from '../privateAttributes/focusOwner.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {inputGroupItemProps} from '../InputGroup/groupStyles';
 import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
@@ -2029,7 +2030,6 @@ export function Selector<T extends SelectorOptionType>(
               // group's row height, connected edge radii, and focus stacking.
               inputGroup &&
               styles.triggerInGroup,
-            controlXstyle,
           ),
           tw(
             variant !== 'ghost' && inputGroup && inputGroupMemberClassName,
@@ -2054,8 +2054,9 @@ export function Selector<T extends SelectorOptionType>(
             variant !== 'input' &&
               !surface.isTriggerFocusRingSuppressed &&
               focusOwnerRingClassName,
+            xstyleProps(controlXstyle).className,
           ),
-          controlStyle,
+          {...xstyleProps(controlXstyle).style, ...controlStyle},
         )}>
         {startIcon &&
           renderIconSlot(startIcon, {size: 'sm', color: 'secondary'})}

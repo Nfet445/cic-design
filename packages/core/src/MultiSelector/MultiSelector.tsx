@@ -115,6 +115,7 @@ import {
 } from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
   MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
@@ -2401,12 +2402,6 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
               isEffectivelyReadOnly &&
               styles.triggerGhostReadOnly,
             optimisticValue.length === 0 && styles.triggerPlaceholder,
-            variant === 'input' &&
-              status &&
-              !isDisabled &&
-              // Grouped secondary triggers keep their neutral fill but take the
-              // group's row height, connected edge radii, and focus stacking.
-              controlXstyle,
           ),
           tw(
             variant !== 'ghost' && inputGroup && inputGroupMemberClassName,
@@ -2428,8 +2423,13 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             // sheet.
             !(inputGroup && variant !== 'ghost') &&
               MULTI_SELECTOR_TRIGGER_SIZE_CLASS[size],
+            xstyleProps(
+              variant === 'input' && status && !isDisabled
+                ? controlXstyle
+                : undefined,
+            ).className,
           ),
-          controlStyle,
+          {...xstyleProps(controlXstyle).style, ...controlStyle},
         )}>
         {startIcon &&
           renderIconSlot(startIcon, {size: 'sm', color: 'secondary'})}

@@ -26,7 +26,8 @@ const anatomy = [
   {
     name: 'Caller-rendered item label',
     required: false,
-    description: 'Non-string Item label content rendered directly by the caller.',
+    description:
+      'Non-string Item label content rendered directly by the caller.',
   },
   {
     name: 'Item description',
@@ -56,17 +57,45 @@ export const docs = {
   playground: {
     defaults: {
       children: [
-        {__element: 'NavHeadingMenuItem', props: {label: 'Dashboard', href: '#'}},
-        {__element: 'NavHeadingMenuItem', props: {label: 'Analytics', href: '#'}},
-        {__element: 'NavHeadingMenuItem', props: {label: 'Settings', href: '#'}},
+        {
+          __element: 'NavHeadingMenuItem',
+          props: {label: 'Dashboard', href: '#'},
+        },
+        {
+          __element: 'NavHeadingMenuItem',
+          props: {label: 'Analytics', href: '#'},
+        },
+        {
+          __element: 'NavHeadingMenuItem',
+          props: {label: 'Settings', href: '#'},
+        },
       ],
     },
   },
   props: [
-    {name: 'children', type: 'ReactNode', required: true, description: 'Menu items.'},
-    {name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Controls min-width and item padding.'},
-    {name: 'minWidth', type: 'number | string', description: 'Minimum width override.'},
-    {name: 'xstyle', type: 'StyleXStyles', description: 'StyleX styles for layout customization (margins, positioning, sizing). Must be a stylex.create() value, not an inline style object like style={{}}.'},
+    {
+      name: 'children',
+      type: 'ReactNode',
+      required: true,
+      description: 'Menu items.',
+    },
+    {
+      name: 'size',
+      type: "'sm' | 'md' | 'lg'",
+      default: "'md'",
+      description: 'Controls min-width and item padding.',
+    },
+    {
+      name: 'minWidth',
+      type: 'number | string',
+      description: 'Minimum width override.',
+    },
+    {
+      name: 'xstyle',
+      type: 'StyleXStyles',
+      description:
+        'StyleX styles for layout customization (margins, positioning, sizing). Must be a stylex.create() value, not an inline style object like style={{}}.',
+    },
   ],
   theming: {
     targets: [
@@ -85,7 +114,8 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsDense = {
-  description: 'Accessible menu container + items for nav heading popovers. NavHeadingMenu = role="menu" w/ keyboard nav; NavHeadingMenuItem renders selectable items.',
+  description:
+    'Accessible menu container + items for nav heading popovers. NavHeadingMenu = role="menu" w/ keyboard nav; NavHeadingMenuItem renders selectable items.',
   usage: {
     anatomy,
     description:

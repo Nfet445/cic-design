@@ -93,6 +93,7 @@ import {
 } from '../Field/fieldParts';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {useLocale} from '../i18n';
 import {formatEditableNumber} from './numberParser';
 import {
@@ -1237,7 +1238,7 @@ export function NumberInput({
           disabled: isDisabled ? 'disabled' : null,
           readonly: isReadOnly ? 'readonly' : null,
         }),
-        stylex.props(fieldStatus && !isDisabled && controlXstyle),
+        xstyleProps(fieldStatus && !isDisabled ? controlXstyle : undefined),
         tw(
           inputGroup && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: fieldStatus?.type}),

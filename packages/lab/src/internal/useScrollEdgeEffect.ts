@@ -16,8 +16,7 @@
  * The veil's shape lives in scrollEdgeEffectClasses.ts.
  */
 
-import * as stylex from '@stylexjs/stylex';
-import type {StyleXStyles} from '@stylexjs/stylex';
+import type {AstryxXStyle} from '@astryxdesign/core/utils';
 import {useCallback, useEffect, useRef, type RefObject} from 'react';
 import {
   getGestureHost,
@@ -26,7 +25,7 @@ import {
   type SpringDescription,
 } from '@astryxdesign/core/internal/touch';
 import {colorVarNames} from '@astryxdesign/core/theme';
-import {observeResize} from '@astryxdesign/core/utils';
+import {observeResize, xstyleProps} from '@astryxdesign/core/utils';
 import {useMotionEngine} from './useMotionEngine';
 import {
   scrollEdgeLayerClassName,
@@ -76,14 +75,14 @@ export interface UseScrollEdgeEffectOptions {
    */
   readonly color?: string;
   /** Extra styles for the layer, e.g. its stacking order. */
-  readonly layerXstyle?: StyleXStyles;
+  readonly layerXstyle?: AstryxXStyle;
   /** Extra classes for the layer, e.g. its stacking order. */
   readonly layerClassName?: string;
   /**
    * Extra styles for the sentinel. Insets of `auto` leave it at its static
    * position, the top of the content, with no positioned wrapper.
    */
-  readonly sentinelXstyle?: StyleXStyles;
+  readonly sentinelXstyle?: AstryxXStyle;
   /**
    * Extra classes for the sentinel. In a caller that has left StyleX, its
    * insets of `auto` keep it at its static position.
@@ -314,10 +313,10 @@ export function useScrollEdgeEffect({
         scrollEdgeLayerClassName,
         scrollEdgeLayerMaskClassName,
         layerClassName,
-        layerXstyle != null && stylex.props(layerXstyle).className,
+        xstyleProps(layerXstyle).className,
       ),
       style: {
-        ...stylex.props(layerXstyle).style,
+        ...xstyleProps(layerXstyle).style,
         // Both are lengths a caller chooses, so they travel as properties the
         // classes read, not as classes the build cannot name.
         '--_scroll-edge-bar-bottom': edge,
@@ -330,7 +329,7 @@ export function useScrollEdgeEffect({
       className: tw(
         scrollEdgeSentinelClassName,
         sentinelClassName,
-        sentinelXstyle != null && stylex.props(sentinelXstyle).className,
+        xstyleProps(sentinelXstyle).className,
       ),
     },
   };

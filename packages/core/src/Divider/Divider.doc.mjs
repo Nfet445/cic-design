@@ -21,15 +21,22 @@ const anatomy = [
   },
 ];
 
-
-
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 
 export const docs = {
   name: 'Divider',
   displayName: 'Divider',
   category: 'Layout',
-  keywords: ["divider","separator","hr","rule","line","border","spacer","horizontal rule"],
+  keywords: [
+    'divider',
+    'separator',
+    'hr',
+    'rule',
+    'line',
+    'border',
+    'spacer',
+    'horizontal rule',
+  ],
   props: [
     {
       name: 'orientation',
@@ -70,11 +77,24 @@ export const docs = {
   },
   usage: {
     anatomy,
-    description: 'A visual separator that divides content into distinct sections. Use to create clear boundaries between groups of related content, or to demarcate interactive regions within a layout.',
+    description:
+      'A visual separator that divides content into distinct sections. Use to create clear boundaries between groups of related content, or to demarcate interactive regions within a layout.',
     bestPractices: [
-      { guidance: true, description: 'Use subtle dividers between related content sections and strong dividers for high-contrast boundaries.' },
-      { guidance: true, description: 'Add a label to the divider when sections need a visible category heading.' },
-      { guidance: false, description: 'Overuse dividers; rely on spacing and layout to separate content when possible.' },
+      {
+        guidance: true,
+        description:
+          'Use subtle dividers between related content sections and strong dividers for high-contrast boundaries.',
+      },
+      {
+        guidance: true,
+        description:
+          'Add a label to the divider when sections need a visible category heading.',
+      },
+      {
+        guidance: false,
+        description:
+          'Overuse dividers; rely on spacing and layout to separate content when possible.',
+      },
     ],
   },
 };
@@ -122,11 +142,24 @@ export const docsZh = {
   },
   usage: {
     anatomy,
-    description: 'A visual separator that divides content into distinct sections. Use to create clear boundaries between groups of related content, or to demarcate interactive regions within a layout.',
+    description:
+      'A visual separator that divides content into distinct sections. Use to create clear boundaries between groups of related content, or to demarcate interactive regions within a layout.',
     bestPractices: [
-      { guidance: true, description: 'Use subtle dividers between related content sections and strong dividers for high-contrast boundaries.' },
-      { guidance: true, description: 'Add a label to the divider when sections need a visible category heading.' },
-      { guidance: false, description: 'Overuse dividers; rely on spacing and layout to separate content when possible.' },
+      {
+        guidance: true,
+        description:
+          'Use subtle dividers between related content sections and strong dividers for high-contrast boundaries.',
+      },
+      {
+        guidance: true,
+        description:
+          'Add a label to the divider when sections need a visible category heading.',
+      },
+      {
+        guidance: false,
+        description:
+          'Overuse dividers; rely on spacing and layout to separate content when possible.',
+      },
     ],
   },
 };
@@ -136,11 +169,24 @@ export const docsDense = {
   description: 'visual separator w/ optional label, using Astryx design tokens',
   usage: {
     anatomy,
-    description: 'A visual separator that divides content into distinct sections. Use to create clear boundaries between groups of related content, or to demarcate interactive regions within a layout.',
+    description:
+      'A visual separator that divides content into distinct sections. Use to create clear boundaries between groups of related content, or to demarcate interactive regions within a layout.',
     bestPractices: [
-      { guidance: true, description: 'Use subtle dividers between related content sections and strong dividers for high-contrast boundaries.' },
-      { guidance: true, description: 'Add a label to the divider when sections need a visible category heading.' },
-      { guidance: false, description: 'Overuse dividers; rely on spacing and layout to separate content when possible.' },
+      {
+        guidance: true,
+        description:
+          'Use subtle dividers between related content sections and strong dividers for high-contrast boundaries.',
+      },
+      {
+        guidance: true,
+        description:
+          'Add a label to the divider when sections need a visible category heading.',
+      },
+      {
+        guidance: false,
+        description:
+          'Overuse dividers; rely on spacing and layout to separate content when possible.',
+      },
     ],
   },
   propDescriptions: {

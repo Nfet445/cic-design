@@ -34,17 +34,20 @@ export const docs = {
       {
         name: 'Base content',
         required: false,
-        description: 'The media, card, or bounded surface that the overlay sits on top of.',
+        description:
+          'The media, card, or bounded surface that the overlay sits on top of.',
       },
       {
         name: 'Scrim',
         required: false,
-        description: 'Optional dark or light overlay background that improves content contrast.',
+        description:
+          'Optional dark or light overlay background that improves content contrast.',
       },
       {
         name: 'Overlay content',
         required: true,
-        description: 'Actions, labels, or supporting content rendered above the base surface.',
+        description:
+          'Actions, labels, or supporting content rendered above the base surface.',
       },
     ],
   },
@@ -109,7 +112,8 @@ export const docs = {
     {
       name: 'children',
       type: 'ReactNode',
-      description: 'Base content such as an image, video, card, or media surface that the overlay sits on top of.',
+      description:
+        'Base content such as an image, video, card, or media surface that the overlay sits on top of.',
       slotElements: [
         {
           __element: 'AspectRatio',
@@ -138,12 +142,14 @@ export const docs = {
     {
       name: 'isOpen',
       type: 'boolean',
-      description: 'Controlled visibility override. When set, this takes precedence over showOn and touch toggle behavior.',
+      description:
+        'Controlled visibility override. When set, this takes precedence over showOn and touch toggle behavior.',
     },
     {
       name: 'scrim',
       type: "'dark' | 'light' | false",
-      description: 'Scrim background mode. Set to false to render overlay content without a scrim background.',
+      description:
+        'Scrim background mode. Set to false to render overlay content without a scrim background.',
       default: "'dark'",
     },
     {
@@ -167,12 +173,14 @@ export const docs = {
     {
       name: 'className',
       type: 'string',
-      description: 'CSS class name(s) appended to the root element. Prefer xstyle for styling when possible.',
+      description:
+        'CSS class name(s) appended to the root element. Prefer xstyle for styling when possible.',
     },
     {
       name: 'style',
       type: 'React.CSSProperties',
-      description: 'Inline styles applied to the root element. Prefer xstyle for design-system styling.',
+      description:
+        'Inline styles applied to the root element. Prefer xstyle for design-system styling.',
     },
     {
       name: 'ref',
@@ -190,14 +198,26 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsDense = {
-  description: 'layered content over media/card surfaces with scrim + hover/focus/controlled reveal',
+  description:
+    'layered content over media/card surfaces with scrim + hover/focus/controlled reveal',
   usage: {
     description:
       'Overlay layers compact actions or supporting content over media, cards, or bounded surfaces with optional dark/light scrim and hover/focus/controlled reveal. Host attributes and DOM handlers reach the root element.',
     bestPractices: [
-      {guidance: true, description: 'Use for short contextual actions/labels tied to the underlying surface.'},
-      {guidance: true, description: 'Keep content compact and legible over the scrim.'},
-      {guidance: false, description: 'Do not use for floating anchored surfaces; use Popover, Tooltip, or Dialog.'},
+      {
+        guidance: true,
+        description:
+          'Use for short contextual actions/labels tied to the underlying surface.',
+      },
+      {
+        guidance: true,
+        description: 'Keep content compact and legible over the scrim.',
+      },
+      {
+        guidance: false,
+        description:
+          'Do not use for floating anchored surfaces; use Popover, Tooltip, or Dialog.',
+      },
     ],
   },
   propDescriptions: {

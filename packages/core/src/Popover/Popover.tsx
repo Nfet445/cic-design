@@ -74,6 +74,7 @@ import {spacingVarNames} from '../theme/tokenVars';
 import {InteractiveRoleContext} from '../InteractiveRoleContext/InteractiveRoleContext';
 import type {SpacingStep} from '../utils/types';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   popoverAnchorWrapperClassName,
   popoverExplicitWidthClassName,
@@ -512,7 +513,6 @@ export function Popover({
     // Surface padding is a usePopover option so it lands on that same box,
     // where a theme's `padding` replaces it instead of nesting inside it.
     padding,
-    xstyle,
     // The viewport fit travels as a class, and the entrance runs on the
     // surface: an anchored layer lays out again on each frame its own style
     // animates.
@@ -520,8 +520,9 @@ export function Popover({
       layerAnimations[placement],
       popoverViewportFitClassName({isScrollable: hasOverflow}),
       className,
+      xstyleProps(xstyle).className,
     ),
-    style,
+    style: {...xstyleProps(xstyle).style, ...style},
     onShow: handlePopoverShow,
     onHide: handlePopoverHide,
     onCloseStart: surfaceMotion.closeStart,
@@ -1040,12 +1041,13 @@ export function Popover({
         placement,
         alignment,
         offset: spacingVarNames['--spacing-1'],
-        xstyle,
-        className:
+        className: tw(
           explicitWidth == null
             ? popoverMatchTriggerClassName
             : popoverExplicitWidthClassName,
-        style: surfaceSizeVariables,
+          xstyleProps(xstyle).className,
+        ),
+        style: {...xstyleProps(xstyle).style, ...surfaceSizeVariables},
       });
 
   // Sibling mode: render only the popover (no wrapper needed)

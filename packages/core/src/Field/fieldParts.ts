@@ -18,8 +18,8 @@
  */
 
 import {type CSSProperties, use} from 'react';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
+import type {AstryxXStyle} from '../utils/xstyle';
 import {FormLayoutContext} from '../FormLayout/FormLayoutContext';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {useDevWarning} from '../hooks/useDevWarning';
@@ -32,12 +32,12 @@ export type FieldInputForbiddenStyleProp = 'xstyle' | 'className' | 'style';
 // eslint-disable-next-line @astryx/require-base-props, @astryx/require-ref-prop
 export interface FieldContainerStyleProps {
   /**
-   * StyleX styles for the field container (the Field box around the label,
-   * control, and status). Has no effect where no Field box renders: inside
-   * InputGroup (style the InputGroup instead) and in a `horizontal-labels`
-   * FormLayout.
+   * The consumer's own override for the field container (the Field box around
+   * the label, control, and status), as a class or an inline style. Has no
+   * effect where no Field box renders: inside InputGroup (style the InputGroup
+   * instead) and in a `horizontal-labels` FormLayout.
    */
-  containerXstyle?: StyleXStyles;
+  containerXstyle?: AstryxXStyle;
   /** Class name for the field container. Same targeting as `containerXstyle`. */
   containerClassName?: string;
   /** Inline styles for the field container. Same targeting as `containerXstyle`. */
@@ -49,11 +49,11 @@ export interface FieldContainerStyleProps {
 // eslint-disable-next-line @astryx/require-base-props, @astryx/require-ref-prop
 export interface FieldControlStyleProps {
   /**
-   * StyleX styles for the visual control box: the element that paints the
-   * field border and background and holds its icons and end controls. Never
-   * the native input.
+   * The consumer's own override for the visual control box, as a class or an
+   * inline style: the element that paints the field border and background and
+   * holds its icons and end controls. Never the native input.
    */
-  controlXstyle?: StyleXStyles;
+  controlXstyle?: AstryxXStyle;
   /** Class name for the visual control box. */
   controlClassName?: string;
   /** Inline styles for the visual control box. */
@@ -76,7 +76,7 @@ export type FieldInputBaseProps<T extends HTMLElement = HTMLElement> = Omit<
 
 /** Styling props to pass to Field's own `xstyle`/`className`/`style`. */
 export interface FieldContainerTarget {
-  xstyle?: StyleXStyles;
+  xstyle?: AstryxXStyle;
   className?: string;
   style?: CSSProperties;
 }

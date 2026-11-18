@@ -83,6 +83,7 @@ import {
   returnFocusForLastInput,
 } from '../utils/focusReturn';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
+import {xstyleProps} from '../utils/xstyle';
 import {
   BottomSheetPanel,
   type BottomSheetPanelMotion,
@@ -1109,7 +1110,7 @@ function SwitcherBottomSheetItem({
     ...switcherDialogProps
   } = dialogProps;
   const dialogPresentationProps = mergeProps(
-    stylex.props(switcherXstyle),
+    xstyleProps(switcherXstyle),
     bottomSheetDialogClassName({
       isPresented,
       isPanelHost: false,

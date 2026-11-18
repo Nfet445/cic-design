@@ -76,6 +76,7 @@ import {
   sliderValueAnchorClassName,
 } from './sliderClasses';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {
@@ -1410,7 +1411,7 @@ export function Slider({ref, ...props}: SliderProps) {
               orientation,
               disabled: isDisabled ? 'disabled' : null,
             }),
-            stylex.props(controlXstyle),
+            xstyleProps(controlXstyle),
             tw(
               sliderControlClassName({isHorizontal, isDisabled}),
               controlClassName,

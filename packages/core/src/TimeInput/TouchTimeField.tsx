@@ -74,6 +74,7 @@ import {
   type ISOTimeString,
 } from '../utils';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
+import {xstyleProps} from '../utils/xstyle';
 import type {TimeInputProps} from './TimeInput';
 import {TimeWheels} from '../DateInput/datePickerTouch';
 import {
@@ -320,7 +321,7 @@ export function TouchTimeField({
           status: status?.type ?? null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(controlXstyle),
+        xstyleProps(controlXstyle),
         tw(
           inputGroup && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: status?.type}),

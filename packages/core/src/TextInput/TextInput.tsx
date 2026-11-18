@@ -82,6 +82,7 @@ import {themeProps} from '../utils/themeProps';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
 import {setInputValue} from '../utils/setInputValue';
+import {xstyleProps} from '../utils/xstyle';
 import type {FieldStatusPlacement} from '../Field/fieldStatusPlacement';
 import {
   registerEnglishFallback,
@@ -454,7 +455,7 @@ export function TextInput({
           disabled: isDisabled ? 'disabled' : null,
           readonly: isReadOnly ? 'readonly' : null,
         }),
-        stylex.props(controlXstyle),
+        xstyleProps(controlXstyle),
         tw(
           inputGroup && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: status?.type}),

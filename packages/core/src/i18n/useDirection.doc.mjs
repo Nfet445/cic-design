@@ -62,8 +62,7 @@ export const docsDense = {
     bestPractices: [
       {
         guidance: true,
-        description:
-          'Prefer CSS logical properties before using useDirection.',
+        description: 'Prefer CSS logical properties before using useDirection.',
       },
       {
         guidance: true,

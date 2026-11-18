@@ -22,8 +22,15 @@
 import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '@stylexjs/stylex';
 
-/** A consumer's override: a class, a style object, or a legacy StyleX value. */
-export type AstryxXStyle = string | React.CSSProperties | StyleXStyles;
+/**
+ * A consumer's override: a class, a style object, a legacy StyleX value, or a
+ * list of those composed left to right.
+ */
+export type AstryxXStyle =
+  | string
+  | React.CSSProperties
+  | StyleXStyles
+  | ReadonlyArray<AstryxXStyle | false | null | undefined>;
 
 export type XStyleProps = {
   className?: string;
@@ -33,6 +40,11 @@ export type XStyleProps = {
 /**
  * Classify an `xstyle` value into the two slots an element accepts.
  *
+ * A list is flattened left to right: classes join, style objects shallow-merge
+ * so the later one wins, and a StyleX value contributes its class. A component
+ * that composes its own paint with the caller's value passes one list, and the
+ * caller's entry sits last so it still wins.
+ *
  * A StyleX value is still accepted while the package ships StyleX; that branch
  * goes away with the last `*.stylex` export, and the prop's type narrows to
  * `string | React.CSSProperties` in the same change.
@@ -40,6 +52,9 @@ export type XStyleProps = {
 export function xstyleProps(xstyle?: AstryxXStyle): XStyleProps {
   if (xstyle == null) {
     return {};
+  }
+  if (Array.isArray(xstyle)) {
+    return mergeXStyleList(xstyle);
   }
   if (typeof xstyle === 'string') {
     return xstyle.length > 0 ? {className: xstyle} : {};
@@ -49,6 +64,28 @@ export function xstyleProps(xstyle?: AstryxXStyle): XStyleProps {
     return stylex.props(legacy);
   }
   return {style: xstyle as React.CSSProperties};
+}
+
+function mergeXStyleList(values: ReadonlyArray<AstryxXStyle>): XStyleProps {
+  const classes: string[] = [];
+  let style: React.CSSProperties | undefined;
+  for (const value of values) {
+    const resolved = xstyleProps(value);
+    if (resolved.className) {
+      classes.push(resolved.className);
+    }
+    if (resolved.style) {
+      style = {...style, ...resolved.style};
+    }
+  }
+  const merged: XStyleProps = {};
+  if (classes.length > 0) {
+    merged.className = classes.join(' ');
+  }
+  if (style) {
+    merged.style = style;
+  }
+  return merged;
 }
 
 /**

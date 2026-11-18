@@ -347,7 +347,6 @@ export function Link({
           stylex.props(
             // The strength and the release; the press paint is a class below.
             !isDisabled && interactionOverlayStyles.pressedAlpha,
-            xstyle,
           ),
           tw(
             rootClassName,
@@ -357,8 +356,9 @@ export function Link({
             // paints.
             !isDisabled && interactionOverlayPressedBackgroundColorClassName,
             focusOutlineFocusVisibleClassName,
+            xstyleProps(xstyle).className,
           ),
-          style,
+          {...xstyleProps(xstyle).style, ...style},
         )}
         {...props}
         {...reflectedAttributes}
@@ -407,15 +407,15 @@ export function Link({
           stylex.props(
             // The strength and the release; the press paint is a class below.
             !isDisabled && interactionOverlayStyles.pressedAlpha,
-            xstyle,
           ),
           tw(
             rootClassName,
             className,
             !isDisabled && interactionOverlayPressedBackgroundColorClassName,
             focusOutlineFocusVisibleClassName,
+            xstyleProps(xstyle).className,
           ),
-          style,
+          {...xstyleProps(xstyle).style, ...style},
         )}
         {...props}
         {...reflectedAttributes}>

@@ -44,6 +44,8 @@ import {useTouchHitArea} from '../utils/touchHitArea';
 import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 import {infoTipTriggerClassName} from './infoTipClasses';
 import {pickDataAttributes} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
+import {tw} from '../utils/tw';
 
 registerEnglishFallback(english);
 
@@ -174,10 +176,9 @@ export function InfoTip({
           stylex.props(
             focusOutlineStyles.focusVisible,
             touchHitAreaStyles.layer,
-            xstyle,
           ),
-          className,
-          style,
+          tw(className, xstyleProps(xstyle).className),
+          {...xstyleProps(xstyle).style, ...style},
         )}>
         <Icon icon="info" size={size} />
       </button>

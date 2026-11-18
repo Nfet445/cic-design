@@ -65,6 +65,7 @@ import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {useSize} from '../SizeContext/SizeContext';
 import {themeProps} from '../utils/themeProps';
 import {characterCount} from '../utils/characters';
+import {xstyleProps} from '../utils/xstyle';
 import {
   textEntryTraitAttributes,
   type TextEntryTraitProps,
@@ -517,14 +518,15 @@ export function TextArea({
             disabled: isDisabled ? 'disabled' : null,
             readonly: isReadOnly ? 'readonly' : null,
           }),
-          stylex.props(wrapperStyles.root, controlXstyle),
+          stylex.props(wrapperStyles.root),
           tw(
             fieldInputWrapperClassName({status: status?.type}),
             isDisabled && fieldInputWrapperDisabledClassName,
             isDisabled && fieldInputWrapperFocusScopeClassName.direct,
+            xstyleProps(controlXstyle).className,
             controlClassName,
           ),
-          controlStyle,
+          {...xstyleProps(controlXstyle).style, ...controlStyle},
         )}>
         {hasStartIcon && (
           <span className={textAreaStartIconClassName}>

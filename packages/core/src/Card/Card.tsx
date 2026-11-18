@@ -36,6 +36,7 @@ import {
 } from './cardClasses';
 import {cardBorderStyles} from './cardBorder.stylex';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 // =============================================================================
 // Variant type
@@ -239,10 +240,9 @@ export function Card({
           // container class above publishes. It stays a StyleX rule so it
           // outranks them.
           variant === 'default' && cardBorderStyles.padding,
-          xstyle,
         ),
-        className,
-        style,
+        tw(className, xstyleProps(xstyle).className),
+        {...xstyleProps(xstyle).style, ...style},
       )}
       {...props}>
       {children}

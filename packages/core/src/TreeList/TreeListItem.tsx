@@ -34,7 +34,7 @@ import {
 } from '../hooks/useClickableContainer';
 import {Icon} from '../Icon';
 import {mergeProps} from '../utils/mergeProps';
-import {xstyleProps} from '../utils/xstyle';
+import {xstyleProps, type AstryxXStyle} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {useFocusAcrossSwap} from '../utils/useFocusAcrossSwap';
 import {useLinkComponent} from '../Link/useLinkComponent';
@@ -79,7 +79,7 @@ export interface TreeListItemInternalProps {
   isDisabled?: boolean;
   isSelected?: boolean;
   /** Consumer styles for the row element. See `TreeListItemData`. */
-  xstyle?: stylex.StyleXStyles;
+  xstyle?: AstryxXStyle;
   className?: string;
   style?: React.CSSProperties;
   hasChildren: boolean;

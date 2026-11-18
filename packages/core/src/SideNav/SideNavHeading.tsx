@@ -290,15 +290,15 @@ export function SideNavHeading({
               navItemStyles.item,
               // The strength and the release; the colour is a class below.
               interactionOverlayStyles.pressedAlpha,
-              xstyle,
             ),
             tw(
               sideNavHeadingClassName.collapsedRoot,
               className,
               interactionOverlayBackgroundColorClassName,
               focusOutlineFocusVisibleClassName,
+              xstyleProps(xstyle).className,
             ),
-            style,
+            {...xstyleProps(xstyle).style, ...style},
           )}>
           {collapsedIcon}
         </LinkComponent>
@@ -320,7 +320,6 @@ export function SideNavHeading({
                 navItemStyles.item,
                 // The strength and the release; the colour is a class below.
                 interactionOverlayStyles.pressedAlpha,
-                xstyle,
               ),
               tw(
                 sideNavHeadingClassName.collapsedRoot,
@@ -328,8 +327,9 @@ export function SideNavHeading({
                 className,
                 interactionOverlayBackgroundColorClassName,
                 focusOutlineFocusVisibleClassName,
+                xstyleProps(xstyle).className,
               ),
-              style,
+              {...xstyleProps(xstyle).style, ...style},
             )}>
             {collapsedIcon}
           </button>

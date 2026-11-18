@@ -67,6 +67,7 @@ import {
 } from '../Layout/padding.stylex';
 import {subscribeInput} from '../utils/inputStream';
 import type {SpacingStep} from '../utils/types';
+import {xstyleProps} from '../utils/xstyle';
 import {
   isValidSnapPoint,
   resolveSnapPoints,
@@ -1009,7 +1010,6 @@ export function BottomSheetPanel({
             bottomSheetSheetMotionStyles.sheetClosingCrossFade,
           isFading && bottomSheetSheetMotionStyles.sheetFading,
           isEntrySettled && bottomSheetSheetMotionStyles.sheetSettled,
-          xstyle,
         ),
         tw(
           overlayPaddingReset.reset,
@@ -1020,6 +1020,7 @@ export function BottomSheetPanel({
             isInactive,
           }),
           className,
+          xstyleProps(xstyle).className,
         ),
         {
           ['--_sheet-budget' as string]: budget,
@@ -1029,6 +1030,7 @@ export function BottomSheetPanel({
             : isRetained || isClosing
               ? {height: hostHeight}
               : {}),
+          ...xstyleProps(xstyle).style,
           ...style,
         },
       )}>

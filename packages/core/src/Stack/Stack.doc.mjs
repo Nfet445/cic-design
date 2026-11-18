@@ -10,7 +10,8 @@ const anatomy = [
   {
     name: 'Item',
     required: false,
-    description: 'Optional StackItem wrapper that controls one item in the stack.',
+    description:
+      'Optional StackItem wrapper that controls one item in the stack.',
   },
   {
     name: 'Content',
@@ -26,7 +27,19 @@ export const docs = {
   displayName: 'Stack',
   group: 'Layout',
   category: 'Layout',
-  keywords: ["stack","hstack","vstack","flexbox","flex","spacing","gap","horizontal","vertical","row","column"],
+  keywords: [
+    'stack',
+    'hstack',
+    'vstack',
+    'flexbox',
+    'flex',
+    'spacing',
+    'gap',
+    'horizontal',
+    'vertical',
+    'row',
+    'column',
+  ],
   theming: {
     targets: [
       {className: 'astryx-stack', visualProps: ['direction', 'gap', 'wrap']},
@@ -109,44 +122,48 @@ export const docs = {
         {
           name: 'isScrollable',
           type: 'boolean',
-          description:
-            'Enables scrollable overflow (overflow: auto).',
+          description: 'Enables scrollable overflow (overflow: auto).',
           default: 'false',
         },
         {
           name: 'width',
           type: 'SizeValue',
-          description: "Width of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
+          description:
+            "Width of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
         },
         {
           name: 'height',
           type: 'SizeValue',
-          description: "Height of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
+          description:
+            "Height of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
         },
         {
           name: 'maxWidth',
           type: 'SizeValue',
-          description: "Maximum width of the stack container.",
+          description: 'Maximum width of the stack container.',
         },
         {
           name: 'minHeight',
           type: 'SizeValue',
-          description: "Minimum height of the stack container.",
+          description: 'Minimum height of the stack container.',
         },
         {
           name: 'hAlign',
           type: "'start' | 'center' | 'end' | 'between' | 'around' | 'evenly' | 'stretch'",
-          description: "Horizontal alignment. When direction='horizontal': main-axis (justify-content). When direction='vertical': cross-axis (align-items).",
+          description:
+            "Horizontal alignment. When direction='horizontal': main-axis (justify-content). When direction='vertical': cross-axis (align-items).",
         },
         {
           name: 'vAlign',
           type: "'start' | 'center' | 'end' | 'between' | 'around' | 'evenly' | 'stretch'",
-          description: "Vertical alignment. When direction='horizontal': cross-axis (align-items). When direction='vertical': main-axis (justify-content).",
+          description:
+            "Vertical alignment. When direction='horizontal': cross-axis (align-items). When direction='vertical': main-axis (justify-content).",
         },
         {
           name: 'justify',
           type: "'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'",
-          description: "Main-axis alignment alias. Resolves to hAlign (horizontal) or vAlign (vertical). Note: use 'between', NOT 'space-between'.",
+          description:
+            "Main-axis alignment alias. Resolves to hAlign (horizontal) or vAlign (vertical). Note: use 'between', NOT 'space-between'.",
         },
         {
           name: 'align',
@@ -179,12 +196,14 @@ export const docs = {
         {
           name: 'className',
           type: 'string',
-          description: 'Class name added to the stack element, after the component styles.',
+          description:
+            'Class name added to the stack element, after the component styles.',
         },
         {
           name: 'style',
           type: 'CSSProperties',
-          description: 'Inline styles for the stack element. width, height, maxWidth, and minHeight win over the same properties here.',
+          description:
+            'Inline styles for the stack element. width, height, maxWidth, and minHeight win over the same properties here.',
         },
         {
           name: 'ref',
@@ -269,22 +288,26 @@ export const docs = {
         {
           name: 'width',
           type: 'SizeValue',
-          description: "Width of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
+          description:
+            "Width of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
         },
         {
           name: 'height',
           type: 'SizeValue',
-          description: "Height of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
+          description:
+            "Height of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
         },
         {
           name: 'maxWidth',
           type: 'SizeValue',
-          description: "Maximum width of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
+          description:
+            "Maximum width of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
         },
         {
           name: 'minHeight',
           type: 'SizeValue',
-          description: "Minimum height of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
+          description:
+            "Minimum height of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
         },
         {
           name: 'hAlign',
@@ -300,12 +323,14 @@ export const docs = {
         {
           name: 'justify',
           type: "'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'",
-          description: 'Main-axis alignment alias for hAlign. Mirrors CSS justify-content. When hAlign is also set, hAlign wins.',
+          description:
+            'Main-axis alignment alias for hAlign. Mirrors CSS justify-content. When hAlign is also set, hAlign wins.',
         },
         {
           name: 'align',
           type: "'start' | 'center' | 'end' | 'stretch'",
-          description: 'Cross-axis alignment alias for vAlign. Mirrors CSS align-items. When vAlign is also set, vAlign wins.',
+          description:
+            'Cross-axis alignment alias for vAlign. Mirrors CSS align-items. When vAlign is also set, vAlign wins.',
         },
         {
           name: 'wrap',
@@ -333,19 +358,22 @@ export const docs = {
         {
           name: 'className',
           type: 'string',
-          description: 'Class name added to the stack element, after the component styles.',
+          description:
+            'Class name added to the stack element, after the component styles.',
         },
         {
           name: 'style',
           type: 'CSSProperties',
-          description: 'Inline styles for the stack element. width, height, maxWidth, and minHeight win over the same properties here.',
+          description:
+            'Inline styles for the stack element. width, height, maxWidth, and minHeight win over the same properties here.',
         },
         {
           name: 'ref',
           type: 'Ref<HTMLElement>',
           description: 'Ref to the rendered stack element.',
         },
-      ],    },
+      ],
+    },
     {
       name: 'VStack',
       isHiddenFromOverview: true,
@@ -421,22 +449,26 @@ export const docs = {
         {
           name: 'width',
           type: 'SizeValue',
-          description: "Width of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
+          description:
+            "Width of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
         },
         {
           name: 'height',
           type: 'SizeValue',
-          description: "Height of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
+          description:
+            "Height of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
         },
         {
           name: 'maxWidth',
           type: 'SizeValue',
-          description: "Maximum width of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
+          description:
+            "Maximum width of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
         },
         {
           name: 'minHeight',
           type: 'SizeValue',
-          description: "Minimum height of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
+          description:
+            "Minimum height of the stack container. Numbers are treated as pixels, strings are used as-is (e.g., '100%').",
         },
         {
           name: 'hAlign',
@@ -452,12 +484,14 @@ export const docs = {
         {
           name: 'justify',
           type: "'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'",
-          description: 'Main-axis alignment alias for vAlign. Mirrors CSS justify-content.',
+          description:
+            'Main-axis alignment alias for vAlign. Mirrors CSS justify-content.',
         },
         {
           name: 'align',
           type: "'start' | 'center' | 'end' | 'stretch'",
-          description: 'Cross-axis alignment alias for hAlign. Mirrors CSS align-items.',
+          description:
+            'Cross-axis alignment alias for hAlign. Mirrors CSS align-items.',
         },
         {
           name: 'wrap',
@@ -485,12 +519,14 @@ export const docs = {
         {
           name: 'className',
           type: 'string',
-          description: 'Class name added to the stack element, after the component styles.',
+          description:
+            'Class name added to the stack element, after the component styles.',
         },
         {
           name: 'style',
           type: 'CSSProperties',
-          description: 'Inline styles for the stack element. width, height, maxWidth, and minHeight win over the same properties here.',
+          description:
+            'Inline styles for the stack element. width, height, maxWidth, and minHeight win over the same properties here.',
         },
         {
           name: 'ref',
@@ -509,7 +545,11 @@ export const docs = {
         wrapper: {component: 'HStack', props: {gap: 2, width: 300}},
         defaults: {
           size: 'fill',
-          children: {__element: 'Card', props: {padding: 3}, children: 'Fills the row'},
+          children: {
+            __element: 'Card',
+            props: {padding: 3},
+            children: 'Fills the row',
+          },
         },
       },
       props: [
@@ -553,7 +593,8 @@ export const docs = {
         {
           name: 'className',
           type: 'string',
-          description: 'Class name added to the item element, after the component styles.',
+          description:
+            'Class name added to the item element, after the component styles.',
         },
         {
           name: 'style',
@@ -573,9 +614,21 @@ export const docs = {
     description:
       'Stack arranges items in a row or column with consistent spacing. Use the gap prop to control the space between items.',
     bestPractices: [
-      { guidance: true, description: 'Use the gap prop for spacing between items; don\'t add margins manually.' },
-      { guidance: true, description: 'Use StackItem with size="fill" to make one item stretch and fill the leftover space.' },
-      { guidance: false, description: 'Nest stacks inside stacks; try wrap="wrap" first to let items flow to the next line.' },
+      {
+        guidance: true,
+        description:
+          "Use the gap prop for spacing between items; don't add margins manually.",
+      },
+      {
+        guidance: true,
+        description:
+          'Use StackItem with size="fill" to make one item stretch and fill the leftover space.',
+      },
+      {
+        guidance: false,
+        description:
+          'Nest stacks inside stacks; try wrap="wrap" first to let items flow to the next line.',
+      },
     ],
   },
 };
@@ -608,12 +661,14 @@ export const docsZh = {
         {
           name: 'width',
           type: 'SizeValue',
-          description: '堆叠容器的宽度。数字按像素处理，字符串原样使用（如 \'100%\'）。',
+          description:
+            "堆叠容器的宽度。数字按像素处理，字符串原样使用（如 '100%'）。",
         },
         {
           name: 'height',
           type: 'SizeValue',
-          description: '堆叠容器的高度。数字按像素处理，字符串原样使用（如 \'100%\'）。',
+          description:
+            "堆叠容器的高度。数字按像素处理，字符串原样使用（如 '100%'）。",
         },
         {
           name: 'hAlign',
@@ -629,12 +684,14 @@ export const docsZh = {
         {
           name: 'justify',
           type: "'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'",
-          description: 'hAlign 的别名。对应 CSS justify-content。同时设置 hAlign 时，以 hAlign 为准。',
+          description:
+            'hAlign 的别名。对应 CSS justify-content。同时设置 hAlign 时，以 hAlign 为准。',
         },
         {
           name: 'align',
           type: "'start' | 'center' | 'end' | 'stretch'",
-          description: 'vAlign 的别名。对应 CSS align-items。同时设置 vAlign 时，以 vAlign 为准。',
+          description:
+            'vAlign 的别名。对应 CSS align-items。同时设置 vAlign 时，以 vAlign 为准。',
         },
         {
           name: 'wrap',
@@ -665,8 +722,7 @@ export const docsZh = {
       name: 'VStack',
       isHiddenFromOverview: true,
       displayName: 'V Stack',
-      description:
-        '垂直堆叠组件，将元素从上到下排列。支持多态渲染。',
+      description: '垂直堆叠组件，将元素从上到下排列。支持多态渲染。',
       props: [
         {
           name: 'gap',
@@ -677,12 +733,14 @@ export const docsZh = {
         {
           name: 'width',
           type: 'SizeValue',
-          description: '堆叠容器的宽度。数字按像素处理，字符串原样使用（如 \'100%\'）。',
+          description:
+            "堆叠容器的宽度。数字按像素处理，字符串原样使用（如 '100%'）。",
         },
         {
           name: 'height',
           type: 'SizeValue',
-          description: '堆叠容器的高度。数字按像素处理，字符串原样使用（如 \'100%\'）。',
+          description:
+            "堆叠容器的高度。数字按像素处理，字符串原样使用（如 '100%'）。",
         },
         {
           name: 'hAlign',
@@ -728,8 +786,7 @@ export const docsZh = {
       name: 'StackItem',
       isHiddenFromOverview: true,
       displayName: 'Stack Item',
-      description:
-        '堆叠子元素，用于控制堆叠中单个元素的行为。支持多态渲染。',
+      description: '堆叠子元素，用于控制堆叠中单个元素的行为。支持多态渲染。',
       props: [
         {
           name: 'size',
@@ -741,8 +798,7 @@ export const docsZh = {
         {
           name: 'crossAlignSelf',
           type: "'start' | 'center' | 'end' | 'stretch'",
-          description:
-            '覆盖此元素的交叉轴对齐方式，忽略父堆叠的对齐设置。',
+          description: '覆盖此元素的交叉轴对齐方式，忽略父堆叠的对齐设置。',
         },
         {
           name: 'as',
@@ -763,24 +819,49 @@ export const docsZh = {
     description:
       'Stack arranges items in a row or column with consistent spacing. Use the gap prop to control the space between items.',
     bestPractices: [
-      { guidance: true, description: 'Use the gap prop for spacing between items; don\'t add margins manually.' },
-      { guidance: true, description: 'Use StackItem with size="fill" to make one item stretch and fill the leftover space.' },
-      { guidance: false, description: 'Nest stacks inside stacks; try wrap="wrap" first to let items flow to the next line.' },
+      {
+        guidance: true,
+        description:
+          "Use the gap prop for spacing between items; don't add margins manually.",
+      },
+      {
+        guidance: true,
+        description:
+          'Use StackItem with size="fill" to make one item stretch and fill the leftover space.',
+      },
+      {
+        guidance: false,
+        description:
+          'Nest stacks inside stacks; try wrap="wrap" first to let items flow to the next line.',
+      },
     ],
   },
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsDense = {
-  description: 'Stack layout primitives for horizontal/vertical sequences using flexbox w/ themed spacing tokens.',
+  description:
+    'Stack layout primitives for horizontal/vertical sequences using flexbox w/ themed spacing tokens.',
   usage: {
     anatomy,
     description:
       'Stack arranges items in a row or column with consistent spacing. Use the gap prop to control the space between items.',
     bestPractices: [
-      { guidance: true, description: 'Use the gap prop for spacing between items; don\'t add margins manually.' },
-      { guidance: true, description: 'Use StackItem with size="fill" to make one item stretch and fill the leftover space.' },
-      { guidance: false, description: 'Nest stacks inside stacks; try wrap="wrap" first to let items flow to the next line.' },
+      {
+        guidance: true,
+        description:
+          "Use the gap prop for spacing between items; don't add margins manually.",
+      },
+      {
+        guidance: true,
+        description:
+          'Use StackItem with size="fill" to make one item stretch and fill the leftover space.',
+      },
+      {
+        guidance: false,
+        description:
+          'Nest stacks inside stacks; try wrap="wrap" first to let items flow to the next line.',
+      },
     ],
   },
   components: [
@@ -788,15 +869,20 @@ export const docsDense = {
       name: 'HStack',
       isHiddenFromOverview: true,
       displayName: 'H Stack',
-      description: 'Horizontal stack; inline direction (left to right in LTR, right to left in RTL), polymorphic rendering.',
+      description:
+        'Horizontal stack; inline direction (left to right in LTR, right to left in RTL), polymorphic rendering.',
       propDescriptions: {
         gap: 'Number literal spacing step: 0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10. Use gap={4} not gap="4".',
-        width: "Width of container. Numbers=pixels, strings=as-is (e.g. '100%').",
-        height: "Height of container. Numbers=pixels, strings=as-is (e.g. '100%').",
+        width:
+          "Width of container. Numbers=pixels, strings=as-is (e.g. '100%').",
+        height:
+          "Height of container. Numbers=pixels, strings=as-is (e.g. '100%').",
         hAlign: 'Horizontal (main-axis) alignment.',
         vAlign: 'Vertical (cross-axis) alignment.',
-        justify: 'Main-axis alignment alias for hAlign. Mirrors CSS justify-content. An explicit hAlign wins.',
-        align: 'Cross-axis alignment alias for vAlign. Mirrors CSS align-items. An explicit vAlign wins.',
+        justify:
+          'Main-axis alignment alias for hAlign. Mirrors CSS justify-content. An explicit hAlign wins.',
+        align:
+          'Cross-axis alignment alias for vAlign. Mirrors CSS align-items. An explicit vAlign wins.',
         wrap: 'Flex wrap behavior.',
         as: 'HTML element to render as container.',
         children: 'Stack content.',
@@ -810,12 +896,16 @@ export const docsDense = {
       description: 'Vertical stack; top-to-bottom, polymorphic rendering.',
       propDescriptions: {
         gap: 'Number literal spacing step: 0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10. Use gap={4} not gap="4".',
-        width: "Width of container. Numbers=pixels, strings=as-is (e.g. '100%').",
-        height: "Height of container. Numbers=pixels, strings=as-is (e.g. '100%').",
+        width:
+          "Width of container. Numbers=pixels, strings=as-is (e.g. '100%').",
+        height:
+          "Height of container. Numbers=pixels, strings=as-is (e.g. '100%').",
         hAlign: 'Horizontal (cross-axis) alignment.',
         vAlign: 'Vertical (main-axis) alignment.',
-        justify: 'Main-axis alignment alias for vAlign. Mirrors CSS justify-content.',
-        align: 'Cross-axis alignment alias for hAlign. Mirrors CSS align-items.',
+        justify:
+          'Main-axis alignment alias for vAlign. Mirrors CSS justify-content.',
+        align:
+          'Cross-axis alignment alias for hAlign. Mirrors CSS align-items.',
         wrap: 'Flex wrap behavior.',
         as: 'HTML element to render as container.',
         children: 'Stack content.',
@@ -825,10 +915,12 @@ export const docsDense = {
       name: 'StackItem',
       isHiddenFromOverview: true,
       displayName: 'Stack Item',
-      description: 'Controls individual item behavior in stack; polymorphic rendering.',
+      description:
+        'Controls individual item behavior in stack; polymorphic rendering.',
       propDescriptions: {
         size: 'Flex grow: static=natural size, fill=expand to remaining space.',
-        crossAlignSelf: 'Override cross-axis alignment for this item, ignoring parent.',
+        crossAlignSelf:
+          'Override cross-axis alignment for this item, ignoring parent.',
         as: 'HTML element to render as wrapper.',
         children: 'Item content.',
       },

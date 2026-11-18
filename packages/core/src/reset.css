@@ -40,7 +40,6 @@
 @layer reset, astryx-base, astryx-theme;
 
 @layer reset {
-
   /* ===========================================================================
      Box Model
      =========================================================================== */
@@ -49,7 +48,9 @@
    * Use border-box globally. Prevents padding/border from affecting
    * element dimensions — the single most impactful reset.
    */
-  :where(*), :where(*)::before, :where(*)::after {
+  :where(*),
+  :where(*)::before,
+  :where(*)::after {
     box-sizing: border-box;
   }
 
@@ -57,7 +58,9 @@
    * Reset borders to 0-width solid. This lets you add a border by just
    * setting border-width — no need to also specify border-style.
    */
-  :where(*), :where(*)::before, :where(*)::after {
+  :where(*),
+  :where(*)::before,
+  :where(*)::after {
     border-width: 0;
     border-style: solid;
     border-color: currentColor;
@@ -143,8 +146,9 @@
    * that browsers apply to code elements.
    */
   :where(code, kbd, samp, pre) {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-      'Liberation Mono', 'Courier New', monospace;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+      'Courier New', monospace;
     font-size: 1em;
   }
 
@@ -269,7 +273,7 @@
    */
   :where(input, textarea)::placeholder {
     opacity: 1;
-    color: var(--color-text-secondary, light-dark(#4E606F, #AAAFB5));
+    color: var(--color-text-secondary, light-dark(#4e606f, #aaafb5));
   }
 
   /*
@@ -378,11 +382,11 @@
    *
    * Values: "light" | "dark" | omitted (defaults to light dark = system)
    */
-  :where(html[data-theme="light"]) {
+  :where(html[data-theme='light']) {
     color-scheme: light;
   }
 
-  :where(html[data-theme="dark"]) {
+  :where(html[data-theme='dark']) {
     color-scheme: dark;
   }
 
@@ -400,11 +404,11 @@
    * Token overrides (text/icon/accent) are theme-level (generateOnMediaCSS).
    * Dual-prefix (astryx + legacy xds) during the compat window.
    */
-  :where([data-astryx-media="dark"]) {
+  :where([data-astryx-media='dark']) {
     color-scheme: dark;
   }
 
-  :where([data-astryx-media="light"]) {
+  :where([data-astryx-media='light']) {
     color-scheme: light;
   }
 }

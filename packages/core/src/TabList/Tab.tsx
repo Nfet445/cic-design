@@ -45,6 +45,7 @@ import {EDGE_COMP_ATTR} from '../Layout/edgeCompensation.stylex';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {isRenderable} from '../utils/isRenderable';
+import {xstyleProps} from '../utils/xstyle';
 
 export interface TabProps extends BaseProps<HTMLButtonElement> {
   /**
@@ -235,14 +236,14 @@ export function Tab({
         // The touch press's strength and release live on the tab the
         // controller writes to; the hover layer inherits and paints it.
         !isDisabled && interactionOverlayStyles.pressedAlpha,
-        xstyle,
       ),
       tw(
         tabClassName({size, isSelected, isFill}),
         className,
         focusOutlineFocusVisibleClassName,
+        xstyleProps(xstyle).className,
       ),
-      style,
+      {...xstyleProps(xstyle).style, ...style},
     ),
   };
 

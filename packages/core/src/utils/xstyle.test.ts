@@ -42,6 +42,34 @@ describe('xstyleProps', () => {
     expect(xstyleProps(value)).toEqual(runtimeProps(value));
   });
 
+  it('composes a list left to right, the later entry winning', () => {
+    const first = {
+      '--button-width': '8rem',
+      color: 'blue',
+    } as React.CSSProperties;
+    const second = {color: 'red'} as React.CSSProperties;
+    expect(xstyleProps([first, second])).toEqual({
+      style: {'--button-width': '8rem', color: 'red'},
+    });
+  });
+
+  it('appends a class after a StyleX value so the class still wins', () => {
+    const {className} = xstyleProps([probe.root, 'my-app-button']);
+    expect(className).toBe(
+      `${stylex.props(probe.root).className} my-app-button`,
+    );
+  });
+
+  it('flattens a nested list', () => {
+    expect(
+      xstyleProps([
+        ['my-app-button', {color: 'red'}],
+        undefined,
+        'my-app-field',
+      ]),
+    ).toEqual({className: 'my-app-button my-app-field', style: {color: 'red'}});
+  });
+
   it('states nothing when the consumer states nothing', () => {
     expect(xstyleProps(undefined)).toEqual({});
     expect(xstyleProps('')).toEqual({});

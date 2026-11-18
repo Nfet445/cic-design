@@ -4,7 +4,7 @@
 
 /**
  * @file ListItem.tsx
- * @input Uses React, ReactNode, StyleXStyles, the List row edge treatment
+ * @input Uses React, ReactNode, the List row edge treatment
  *   and the class maps in List/listItemClasses.ts. It also uses the touch hit area (utils/touchHitArea.ts and
  *   its layer), the travelling marker of an update's slide
  *   (List/listLayoutUpdates.ts) and CheckboxInput. It reads the marker or task
@@ -37,11 +37,11 @@
  */
 
 import {use, useMemo, useRef, type ReactNode} from 'react';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {ListContext, type ListMarker} from './ListContext';
 import {CheckboxInput} from '../CheckboxInput/CheckboxInput';
 import {mergeProps} from '../utils/mergeProps';
+import type {AstryxXStyle} from '../utils/xstyle';
 import {rowPressLayerStyles} from '../privateAttributes/press.stylex';
 import {Item, servesSwipeActions} from '../Item/Item';
 import {ItemListRowContext} from '../Item/ItemListRowContext';
@@ -414,11 +414,11 @@ export function ListItem({
         [
           hasDividers && isTouchTarget && rowPressLayerStyles.overDividers,
           isTouchTarget && touchHitAreaStyles.layer,
-          // A focused handle rings itself; the row's focus-within ring stays
-          // off for it (two rings, and the list clips the row's sides).
+          // A focused handle rings itself; the row's focus-within ring stays off
+          // for it (two rings, and the list clips the row's sides).
           reorderHandle && reorder?.session.rowStyle,
           xstyle,
-        ] as StyleXStyles
+        ] as AstryxXStyle
       }
       {...mergeProps(themeProps('list-item'), {
         className: tw(

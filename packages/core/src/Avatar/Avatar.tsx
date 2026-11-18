@@ -63,6 +63,7 @@ import {themeProps} from '../utils/themeProps';
 import {firstCharacter} from '../utils/characters';
 import * as stylex from '@stylexjs/stylex';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {useTooltip} from '../Tooltip/useTooltip';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {useLinkComponent} from '../Link/useLinkComponent';
@@ -714,7 +715,6 @@ export function Avatar({
       avatarGroup && avatarGroupStyles.ring,
       avatarGroup && avatarGroupStyles.overlap,
       avatarGroup && avatarGroupDynamicStyles.overlap(-avatarGroup.overlap),
-      xstyle,
     ),
     tw(
       avatarRootClassName,
@@ -722,10 +722,15 @@ export function Avatar({
       isInteractive && avatarInteractiveClassName,
       focusOutlineFocusVisibleClassName,
       className,
+      xstyleProps(xstyle).className,
     ),
     // A resolved size is a per-instance number, so it reaches CSS as the
     // variable the sizing classes read; a caller's `style` still wins.
-    {[avatarVars.size]: `${numericSize}px`, ...style} as AvatarInstanceStyle,
+    {
+      [avatarVars.size]: `${numericSize}px`,
+      ...xstyleProps(xstyle).style,
+      ...style,
+    } as AvatarInstanceStyle,
   );
 
   let rootElement: ReactNode;

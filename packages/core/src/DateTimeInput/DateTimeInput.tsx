@@ -108,6 +108,7 @@ import {
   dateTimeInputTimeOptionClassName,
 } from './dateTimeInputClasses';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {useLocale} from '../i18n';
 import {
   formatLocaleTime,
@@ -1642,7 +1643,7 @@ function PointerDateTimeField({
             status: shownStatus?.type ?? null,
             disabled: isDisabled ? 'disabled' : null,
           }),
-          stylex.props(controlXstyle),
+          xstyleProps(controlXstyle),
           tw(
             dateTimeInputRowClassName,
             usesNativePicker && dateTimeInputNativeRowClassName,

@@ -85,6 +85,7 @@ import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import type {FieldStatusPlacement} from '../Field/fieldStatusPlacement';
 import {setInputValue} from '../utils/setInputValue';
+import {xstyleProps} from '../utils/xstyle';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -648,16 +649,17 @@ export function Typeahead<T extends SearchableItem>({
         {...(inputGroup ? inputGroupItemProps : undefined)}
         {...mergeProps(
           themeProps('typeahead', {size, status: status?.type}),
-          stylex.props(styles.wrapper, controlXstyle),
+          stylex.props(styles.wrapper),
           tw(
             sizeClassName,
             inputGroup && inputGroupMemberClassName,
             fieldInputWrapperClassName({status: status?.type}),
             isDisabled && fieldInputWrapperDisabledClassName,
             isDisabled && fieldInputWrapperFocusScopeClassName.nested,
+            xstyleProps(controlXstyle).className,
             controlClassName,
           ),
-          controlStyle,
+          {...xstyleProps(controlXstyle).style, ...controlStyle},
         )}>
         {startIcon &&
           renderIconSlot(startIcon, {size: 'sm', color: 'secondary'})}

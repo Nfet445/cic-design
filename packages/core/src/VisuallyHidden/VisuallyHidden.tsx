@@ -17,7 +17,7 @@
 import {createElement, type ElementType, type ReactNode, type Ref} from 'react';
 import type {BaseProps} from '../BaseProps';
 import {visuallyHiddenClassName} from './visuallyHiddenClasses';
-import type {StyleXStyles} from '@stylexjs/stylex';
+import type {AstryxXStyle} from '../utils/xstyle';
 
 /**
  * VisuallyHidden is deliberately styling-free: it exists to *not* be seen, so it
@@ -62,7 +62,7 @@ export interface VisuallyHiddenProps extends Omit<
    * applied to the element, and a planned minor removes it — the migration is to
    * delete the prop.
    */
-  xstyle?: StyleXStyles;
+  xstyle?: AstryxXStyle;
 }
 
 /**

@@ -58,13 +58,17 @@ describe('core postinstall — isAstryxInitialized (shared contract)', () => {
     expect(isAstryxInitialized(tmp)).toBe(false);
   });
 
-  it.each(['AGENTS.md', 'CLAUDE.md', '.claude/CLAUDE.md', '.cursorrules', '.hermes.md', 'HERMES.md'])(
-    'detects the marker in %s',
-    file => {
-      write(file, `# doc\n${MARKER}\nbody`);
-      expect(isAstryxInitialized(tmp)).toBe(true);
-    },
-  );
+  it.each([
+    'AGENTS.md',
+    'CLAUDE.md',
+    '.claude/CLAUDE.md',
+    '.cursorrules',
+    '.hermes.md',
+    'HERMES.md',
+  ])('detects the marker in %s', file => {
+    write(file, `# doc\n${MARKER}\nbody`);
+    expect(isAstryxInitialized(tmp)).toBe(true);
+  });
 
   it('detects the legacy XDS marker', () => {
     write('AGENTS.md', '<!-- XDS:START -->');
@@ -125,12 +129,23 @@ describe('core postinstall — inside a monorepo package', () => {
     const installed = path.join(tmp, 'node_modules/@astryxdesign/core/scripts');
     fs.mkdirSync(installed, {recursive: true});
     for (const file of ['postinstall.mjs', 'agent-doc-state.mjs']) {
-      fs.copyFileSync(path.join(CORE, 'scripts', file), path.join(installed, file));
+      fs.copyFileSync(
+        path.join(CORE, 'scripts', file),
+        path.join(installed, file),
+      );
     }
-    return spawnSync(process.execPath, [path.join(installed, 'postinstall.mjs')], {
-      env: {...process.env, INIT_CWD: path.join(tmp, 'packages/app'), npm_command: 'install'},
-      encoding: 'utf8',
-    });
+    return spawnSync(
+      process.execPath,
+      [path.join(installed, 'postinstall.mjs')],
+      {
+        env: {
+          ...process.env,
+          INIT_CWD: path.join(tmp, 'packages/app'),
+          npm_command: 'install',
+        },
+        encoding: 'utf8',
+      },
+    );
   };
   beforeEach(() => {
     fs.mkdirSync(path.join(tmp, '.git'));
@@ -147,29 +162,42 @@ describe('core postinstall — inside a monorepo package', () => {
   it('still nudges when no folder up to the repository root ran init', () => {
     const r = install();
     expect(r.status).toBe(0);
-    expect(r.stdout).toMatch(/finish setup and install the Astryx agent prompt/);
+    expect(r.stdout).toMatch(
+      /finish setup and install the Astryx agent prompt/,
+    );
   });
 });
 
 describe('core postinstall — shouldNudge', () => {
   const DEP = '/proj/node_modules/@astryxdesign/core/scripts/postinstall.mjs';
-  const NPX = '/Users/x/.npm/_npx/a1/node_modules/@astryxdesign/core/scripts/postinstall.mjs';
+  const NPX =
+    '/Users/x/.npm/_npx/a1/node_modules/@astryxdesign/core/scripts/postinstall.mjs';
   const REPO = '/repo/packages/core/scripts/postinstall.mjs';
 
   it('nudges for a real dependency install when not set up', () => {
-    expect(shouldNudge({scriptPath: DEP, npmCommand: 'install', isSetUp: false})).toBe(true);
+    expect(
+      shouldNudge({scriptPath: DEP, npmCommand: 'install', isSetUp: false}),
+    ).toBe(true);
   });
   it('quiet in the monorepo/source', () => {
-    expect(shouldNudge({scriptPath: REPO, npmCommand: 'install', isSetUp: false})).toBe(false);
+    expect(
+      shouldNudge({scriptPath: REPO, npmCommand: 'install', isSetUp: false}),
+    ).toBe(false);
   });
   it('quiet during npx transient install (_npx path)', () => {
-    expect(shouldNudge({scriptPath: NPX, npmCommand: 'install', isSetUp: false})).toBe(false);
+    expect(
+      shouldNudge({scriptPath: NPX, npmCommand: 'install', isSetUp: false}),
+    ).toBe(false);
   });
   it('quiet during npx (npm_command=exec)', () => {
-    expect(shouldNudge({scriptPath: DEP, npmCommand: 'exec', isSetUp: false})).toBe(false);
+    expect(
+      shouldNudge({scriptPath: DEP, npmCommand: 'exec', isSetUp: false}),
+    ).toBe(false);
   });
   it('quiet once set up', () => {
-    expect(shouldNudge({scriptPath: DEP, npmCommand: 'install', isSetUp: true})).toBe(false);
+    expect(
+      shouldNudge({scriptPath: DEP, npmCommand: 'install', isSetUp: true}),
+    ).toBe(false);
   });
   it('quiet with no arguments at all', () => {
     expect(shouldNudge({})).toBe(false);

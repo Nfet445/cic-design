@@ -32,7 +32,7 @@
  */
 
 import React, {useCallback, type ComponentType, type SVGProps} from 'react';
-import type {StyleXStyles} from '@stylexjs/stylex';
+import type {AstryxXStyle} from '../utils/xstyle';
 import {useThemeDefinition} from '../theme/useTheme';
 import {resolveIcon} from './globalIconRegistry';
 import type {IconName, NamespacedIconName} from './globalIconRegistry';
@@ -168,17 +168,18 @@ export interface IconProps extends Omit<
    */
   label?: string;
   /**
-   * StyleX styles created via `stylex.create()`. Stays unlayered, so a
-   * consumer rule still wins over the icon's own utilities, and it merges
-   * before `className` and `style`.
+   * The consumer's own override, applied after the icon's own classes and
+   * before `className` and `style`. A class is unlayered, so a consumer rule
+   * wins over the icon's utilities; an object is inline style and wins over
+   * both.
    *
    * @example
    * ```
-   * const overrides = stylex.create({ root: { opacity: 0.5 } });
-   * <Icon icon="search" xstyle={overrides.root} />
+   * <Icon icon="search" xstyle="my-app-icon" />
+   * <Icon icon="search" xstyle={{opacity: 0.5}} />
    * ```
    */
-  xstyle?: StyleXStyles;
+  xstyle?: AstryxXStyle;
 }
 
 type IconA11yProps =
@@ -313,7 +314,7 @@ function IconFromRegistry({
   a11yProps: IconA11yProps;
   className?: string;
   style?: React.CSSProperties;
-  xstyle?: StyleXStyles;
+  xstyle?: AstryxXStyle;
   svgRef?: React.Ref<SVGSVGElement>;
   spanProps?: Omit<SVGProps<SVGSVGElement>, 'ref' | 'color'>;
 }) {

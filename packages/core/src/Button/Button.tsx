@@ -92,6 +92,7 @@ import {
   buttonWidthVar,
 } from './buttonClasses';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 registerEnglishFallback(english);
 
@@ -509,15 +510,13 @@ export function Button({
       ? null
       : {[buttonWidthVar]: typeof width === 'number' ? `${width}px` : width};
 
-  // Shared StyleX props for both button and link rendering. `xstyle` stays last
-  // so a consumer style still lands after the component's own atoms.
+  // Shared StyleX props for both button and link rendering.
   const sharedStylexProps = stylex.props(
     interactionOverlayStyles.backgroundImage,
     // The press the controller writes, on a layer under the label whose
     // release runs on the compositor.
     rowPressLayerStyles.cell,
     rowPressLayerStyles.cellOnImage,
-    xstyle,
   );
 
   const sharedMergedProps = mergeProps(
@@ -546,8 +545,8 @@ export function Button({
       ),
       style: widthStyle ?? undefined,
     },
-    className,
-    style,
+    tw(className, xstyleProps(xstyle).className),
+    {...xstyleProps(xstyle).style, ...style},
   );
 
   const iconSize = iconSizeByButtonSize[size];

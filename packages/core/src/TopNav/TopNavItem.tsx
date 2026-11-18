@@ -35,6 +35,7 @@ import {
   withholdCallerHandlers,
 } from '../utils/disabledInteraction';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   topNavItemClassName,
   topNavItemIconOnlyClassName,
@@ -258,14 +259,14 @@ export function TopNavItem({
             navItemStyles[size],
             isSelected && navItemStyles.selected,
             isDisabled && navItemStyles.disabled,
-            xstyle,
           ),
           tw(
             className,
             interactionOverlayBackgroundColorClassName,
             focusOutlineFocusVisibleClassName,
+            xstyleProps(xstyle).className,
           ),
-          style,
+          {...xstyleProps(xstyle).style, ...style},
         )}
         {...callerProps}
         {...(isDisabled && !isAction ? disabledInteractionProps() : null)}
@@ -302,7 +303,6 @@ export function TopNavItem({
           // The strength and the release; the colour is a class below.
           interactionOverlayStyles.pressedAlpha,
           isDisabled && navItemStyles.disabled,
-          xstyle,
         ),
         tw(
           topNavItemClassName(),
@@ -311,8 +311,9 @@ export function TopNavItem({
           className,
           interactionOverlayBackgroundColorClassName,
           focusOutlineFocusVisibleClassName,
+          xstyleProps(xstyle).className,
         ),
-        style,
+        {...xstyleProps(xstyle).style, ...style},
       )}
       {...callerProps}
       {...(isDisabled && !isAction ? disabledInteractionProps() : null)}

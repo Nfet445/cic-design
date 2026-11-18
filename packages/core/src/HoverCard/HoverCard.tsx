@@ -34,6 +34,7 @@ import {
 } from './useHoverCard';
 import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   hoverCardHoverIndicationClassName,
   hoverCardWrapperClassName,
@@ -362,9 +363,8 @@ export function HoverCard({
   // final layer inline when the parent is safe or portal it outside a <p>,
   // link, or other ancestor that cannot contain it safely.
   const renderedHoverCard = hoverCard.renderHoverCard(content, {
-    xstyle,
-    className,
-    style,
+    className: tw(className, xstyleProps(xstyle).className),
+    style: {...xstyleProps(xstyle).style, ...style},
   });
 
   // For text-only children: use inline span with ref on wrapper

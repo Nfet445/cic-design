@@ -77,6 +77,7 @@ import {useToday} from '../hooks/useToday';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {xstyleProps} from '../utils/xstyle';
 import {useLocale} from '../i18n';
 import type {Locale} from '../i18n/types';
 import type {FieldStatusPlacement} from '../Field/fieldStatusPlacement';
@@ -630,7 +631,9 @@ export function DateRangeInput({
             status: status?.type ?? null,
             disabled: isDisabled ? 'disabled' : null,
           }),
-          stylex.props(status && !isEffectivelyDisabled && controlXstyle),
+          xstyleProps(
+            status && !isEffectivelyDisabled ? controlXstyle : undefined,
+          ),
           tw(
             fieldInputWrapperClassName({status: status?.type}),
             isEffectivelyDisabled && fieldInputWrapperDisabledClassName,

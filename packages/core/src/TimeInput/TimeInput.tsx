@@ -99,6 +99,7 @@ import {
   type TimeInputSize,
 } from './timeInputClasses';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 registerEnglishFallback(english);
 
@@ -775,7 +776,7 @@ function TimeField({
           status: fieldStatus?.type ?? null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(fieldStatus && !isDisabled && controlXstyle),
+        xstyleProps(fieldStatus && !isDisabled ? controlXstyle : undefined),
         tw(
           inputGroup && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: fieldStatus?.type}),

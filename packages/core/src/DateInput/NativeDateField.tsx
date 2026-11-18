@@ -84,6 +84,7 @@ import {
 import {chainEventHandlers} from '../utils/chainEventHandlers';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -473,11 +474,11 @@ export function NativeDateField({
           status: fieldStatus?.type ?? null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(
+        xstyleProps(
           // Disabled paint belongs to the disabled state only; a busy field
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
-          fieldStatus && !isEffectivelyDisabled && controlXstyle,
+          fieldStatus && !isEffectivelyDisabled ? controlXstyle : undefined,
         ),
         tw(
           inputGroup && inputGroupMemberClassName,

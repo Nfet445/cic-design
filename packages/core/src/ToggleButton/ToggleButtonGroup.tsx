@@ -40,7 +40,7 @@ import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 import {toggleButtonGroupClassName} from './toggleButtonGroupClasses';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
-import type {StyleXStyles} from '@stylexjs/stylex';
+import type {AstryxXStyle} from '../utils/xstyle';
 import {themeProps} from '../utils/themeProps';
 import {xstyleProps} from '../utils/xstyle';
 
@@ -118,16 +118,16 @@ interface ToggleButtonGroupBaseProps extends Omit<
   isDisabled?: boolean;
 
   /**
-   * StyleX styles for layout customization (margins, positioning, sizing).
-   * Must be a `stylex.create()` value — not an inline style object.
+   * The consumer's own override for layout (margins, positioning, sizing), as
+   * a class or an inline style object.
    *
    * @example
    * ```
-   * const styles = stylex.create({ wrapper: { marginTop: 8 } });
-   * <ToggleButtonGroup xstyle={styles.wrapper} />
+   * <ToggleButtonGroup xstyle="my-app-group" />
+   * <ToggleButtonGroup xstyle={{marginTop: 8}} />
    * ```
    */
-  xstyle?: StyleXStyles;
+  xstyle?: AstryxXStyle;
 
   /** Test ID for testing frameworks. */
   'data-testid'?: string;
