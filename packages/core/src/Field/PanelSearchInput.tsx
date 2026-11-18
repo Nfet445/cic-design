@@ -48,6 +48,7 @@ import {mergeProps} from '../utils/mergeProps';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {textEntryTraitAttributes} from './textEntryTraits';
 import {
@@ -198,7 +199,7 @@ export function PanelSearchInput({
     <div
       onKeyDown={onContainerKeyDown}
       {...mergeProps(
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(panelSearchInputWrapperClassName, className),
         style,
       )}>

@@ -17,7 +17,6 @@
  */
 
 import {type ReactNode, use} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import type {SizeValue} from '../utils/types';
 import {FieldLabel} from './FieldLabel';
@@ -38,6 +37,7 @@ import {FormLayoutContext} from '../FormLayout/FormLayoutContext';
 import {Text} from '../Text/Text';
 import {VisuallyHidden} from '../VisuallyHidden/VisuallyHidden';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import type {FieldStatusPlacement} from './fieldStatusPlacement';
 
 export type {SizeValue} from '../utils/types';
@@ -258,7 +258,7 @@ export function Field({
           mergeProps(themeProps('field', {layout: 'horizontal-labels'}), {
             className: fieldHorizontalLabelsClassName,
           }),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           className,
           style,
         )}>
@@ -292,7 +292,7 @@ export function Field({
         mergeProps(themeProps('field'), {
           className: fieldClassName({isLabelHidden, width}),
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         {...fieldSizeStyle(width), ...style},
       )}

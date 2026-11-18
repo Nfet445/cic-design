@@ -17,7 +17,6 @@
  */
 
 import {useMemo, useRef, type ReactNode, type RefObject} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils/mergeProps';
 
@@ -25,6 +24,7 @@ import {renderIconSlot} from '../Icon/Icon';
 import type {IconType} from '../Icon';
 import {InfoTip} from '../InfoTip/InfoTip';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {
   fieldDescriptionClassName,
   fieldLabelClassName,
@@ -230,7 +230,7 @@ export function FieldLabel({
         mergeProps(themeProps('field-label'), {
           className: fieldLabelClassName({isDisabled, isLabelHidden}),
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}>

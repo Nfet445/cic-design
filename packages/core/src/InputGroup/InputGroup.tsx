@@ -20,7 +20,6 @@
  */
 
 import {use, useId, useMemo, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Field, type InputStatus} from '../Field';
 import {SizeProvider, useSize} from '../SizeContext/SizeContext';
 import {mergeProps} from '../utils';
@@ -29,6 +28,7 @@ import {InputGroupContext} from './InputGroupContext';
 import {InputGroupInternalContext} from './InputGroupInternalContext';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   inputGroupClassName,
   inputGroupDisabledClassName,
@@ -197,7 +197,7 @@ export function InputGroup({
                   size,
                   status: status?.type ?? null,
                 }),
-                stylex.props(xstyle),
+                xstyleProps(xstyle),
                 tw(
                   inputGroupClassName,
                   inputGroupSizeClassName[size],

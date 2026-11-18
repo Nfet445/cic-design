@@ -21,7 +21,6 @@
 
 import {useMemo, type ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {
   FormLayoutContext,
   type EntryErrorBehavior,
@@ -31,6 +30,7 @@ import {
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {formLayoutDirectionClassName} from './formLayoutClasses';
 
 // =============================================================================
@@ -149,7 +149,7 @@ export function FormLayout({
         {...props}
         {...mergeProps(
           themeProps('form-layout', {direction}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(formLayoutDirectionClassName[direction], className),
           style,
         )}>

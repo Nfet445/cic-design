@@ -19,7 +19,6 @@
 'use client';
 
 import React from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
@@ -34,6 +33,7 @@ import {
 } from './fieldStatusClasses';
 import {useEntryAnimation} from '../hooks/useEntryAnimation';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {Icon} from '../Icon/Icon';
 import type {IconName} from '../Icon';
 import type {FieldStatusVariantMap} from './index';
@@ -157,7 +157,7 @@ export function FieldStatus({
       {...rest}
       {...mergeProps(
         themeProps('field-status', {type, variant}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           entryClassName,
           fieldStatusBaseClassName,

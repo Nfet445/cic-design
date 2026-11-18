@@ -16,7 +16,6 @@
  */
 
 import React, {type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
@@ -24,6 +23,7 @@ import {tw} from '../utils/tw';
 import {inputGroupItemProps} from './groupStyles';
 import {inputGroupTextClassName} from './inputGroupClasses';
 import {textDirectionProps} from '../utils/textDirection';
+import {xstyleProps} from '../utils/xstyle';
 
 export interface InputGroupTextProps extends BaseProps<HTMLDivElement> {
   ref?: React.Ref<HTMLDivElement>;
@@ -63,7 +63,7 @@ export function InputGroupText({
       {...inputGroupItemProps}
       {...mergeProps(
         themeProps('input-group-text'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(inputGroupTextClassName, className),
         style,
       )}>
