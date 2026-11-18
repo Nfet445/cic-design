@@ -6,17 +6,25 @@
  * @output Functional tests for the sticky-columns plugin
  * @position Test file; validates pinning, cumulative offsets, edges, no-op
  *
- * Note: `position: sticky` and the z-index/background are applied via StyleX
- * (compiled to classNames), which jsdom does not resolve to `element.style`.
- * The plugin sets the per-column *offset* (`insetInlineStart`/`insetInlineEnd`)
- * as an inline style, so these tests assert on those inline offsets — the
- * jsdom-visible, plugin-owned signal that a column is pinned and at what offset.
+ * Note: `position: sticky`, the z-index and the background come from Tailwind
+ * class text, which jsdom applies to no `element.style`. The plugin sets the
+ * per-column *offset* (`insetInlineStart`/`insetInlineEnd`) as an inline style,
+ * so the pin tests assert on those offsets — the jsdom-visible, plugin-owned
+ * signal that a column is pinned and at what offset. One test asserts the class
+ * text itself, so a dropped class name cannot pass unnoticed.
  */
 
 import {afterEach, describe, it, expect, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {Table} from '../../Table';
 import {useTableStickyColumns} from './useTableStickyColumns';
+import {
+  stickyColumnBodyCellClassName,
+  stickyColumnCellClassName,
+  stickyColumnHeaderCellClassName,
+  stickyColumnShadowEndClassName,
+  stickyColumnShadowStartClassName,
+} from './stickyColumnClasses';
 import {useTableColumnResize} from '../columnResize/useTableColumnResize';
 import {useTableRowIndex} from '../rowIndex/useTableRowIndex';
 import {pixel, proportional} from '../../columnUtils';
@@ -69,6 +77,37 @@ describe('useTableStickyColumns', () => {
     }
     render(<Harness />);
     expect(getHeader('Name').style.insetInlineStart).toBe('0px');
+  });
+
+  it('marks each pinned cell with the pinned-column class text', () => {
+    function Harness() {
+      const sticky = useTableStickyColumns<Row>({
+        startKeys: ['name'],
+        endKeys: ['status'],
+      });
+      return (
+        <Table
+          data={data}
+          columns={columns}
+          idKey="id"
+          plugins={{stickyColumns: sticky}}
+        />
+      );
+    }
+    render(<Harness />);
+    expect(getHeader('Name').className).toContain(stickyColumnCellClassName);
+    expect(getHeader('Name').className).toContain(
+      stickyColumnHeaderCellClassName,
+    );
+    expect(getHeader('Name').className).toContain(
+      stickyColumnShadowStartClassName,
+    );
+    expect(getHeader('Status').className).toContain(
+      stickyColumnShadowEndClassName,
+    );
+    const firstBodyCell = screen.getByText('Alice').closest('td');
+    expect(firstBodyCell).not.toBeNull();
+    expect(firstBodyCell!.className).toContain(stickyColumnBodyCellClassName);
   });
 
   it("adds a row-number column's windowed extra width to the pinned offsets after it", () => {
