@@ -59,7 +59,6 @@
 
 import * as stylex from '@stylexjs/stylex';
 import {reducedMotionFadeConsts} from '../motion/reducedMotion.stylex';
-import {colorVars, durationVars, easeVars} from '../theme/tokens.stylex';
 
 /**
  * The touch press's strength on the surface the controller painted, 0 to 1.
@@ -90,9 +89,9 @@ export const pressConsts = stylex.defineConsts({
  * follows the theme's tempo. The controller's timer reads the
  * same property.
  */
-const PRESS_RELEASE_DURATION = durationVars['--duration-exit'];
+const PRESS_RELEASE_DURATION = 'var(--duration-exit)';
 /** The same clock under Reduce Motion, no longer than the Reduce Motion fade. */
-const PRESS_RELEASE_DURATION_REDUCED = `min(${durationVars['--duration-exit']}, ${reducedMotionFadeConsts.duration})`;
+const PRESS_RELEASE_DURATION_REDUCED = `min(var(--duration-exit), ${reducedMotionFadeConsts.duration})`;
 
 const ENABLED = ':where(:not(:disabled,[aria-disabled="true"]))';
 const HOVER_HOVER = '@media (hover: hover)';
@@ -113,9 +112,9 @@ const PRESSED_FADING: string = '[data-astryx-press="fading"]';
 
 const PRESS_ALPHA = pressVars['--astryx-press-alpha'];
 
-const hoverImage = `linear-gradient(${colorVars['--color-overlay-hover']}, ${colorVars['--color-overlay-hover']})`;
-const pressedImage = `linear-gradient(${colorVars['--color-overlay-pressed']}, ${colorVars['--color-overlay-pressed']})`;
-const neutralImage = `linear-gradient(${colorVars['--color-neutral']}, ${colorVars['--color-neutral']})`;
+const hoverImage = `linear-gradient(var(--color-overlay-hover), var(--color-overlay-hover))`;
+const pressedImage = `linear-gradient(var(--color-overlay-pressed), var(--color-overlay-pressed))`;
+const neutralImage = `linear-gradient(var(--color-neutral), var(--color-neutral))`;
 
 /**
  * The pressed token at the touch press's current strength: the one
@@ -129,7 +128,7 @@ const neutralImage = `linear-gradient(${colorVars['--color-neutral']}, ${colorVa
  * `var(--_press-paint-image)` and never rebuild the expression;
  * pressPaintSource.test.ts holds it to this file.
  */
-const pressedOverlayColor = `color-mix(in srgb, ${colorVars['--color-overlay-pressed']} calc(${PRESS_ALPHA} * 100%), transparent)`;
+const pressedOverlayColor = `color-mix(in srgb, var(--color-overlay-pressed) calc(${PRESS_ALPHA} * 100%), transparent)`;
 const pressPaint = {
   '--_press-paint': pressedOverlayColor,
   '--_press-paint-image':
@@ -150,7 +149,7 @@ const pressRelease = stylex.keyframes({
  * token; interactionOverlay.cell.test.ts and Switch.test.tsx fail if they
  * differ.
  */
-const RELEASE_EASE = easeVars['--ease-exit'];
+const RELEASE_EASE = 'var(--ease-exit)';
 
 /**
  * The touch press's strength and its release, on the element the controller
@@ -219,13 +218,13 @@ export const interactionOverlayStyles = stylex.create({
       [ENABLED]: {
         default: null,
         ':active': {
-          default: colorVars['--color-overlay-pressed'],
+          default: 'var(--color-overlay-pressed)',
           [COARSE]: 'transparent',
         },
         [HOVER_HOVER]: {
           default: null,
-          ':hover': colorVars['--color-overlay-hover'],
-          ':active': colorVars['--color-overlay-pressed'],
+          ':hover': 'var(--color-overlay-hover)',
+          ':active': 'var(--color-overlay-pressed)',
         },
         // While the controller paints, the colour arms yield to the image. A
         // device with a touchscreen beside a mouse matches `:active` and the
@@ -303,7 +302,7 @@ export const interactionOverlayStyles = stylex.create({
       [ENABLED]: {
         default: null,
         ':active': {
-          default: colorVars['--color-overlay-pressed'],
+          default: 'var(--color-overlay-pressed)',
           [COARSE]: 'transparent',
         },
         // The mouse arm yields to the image while the controller paints; see

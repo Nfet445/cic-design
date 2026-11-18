@@ -965,12 +965,12 @@ describe('the release', () => {
       'utf8',
     );
     expect(source).toContain(
-      "const PRESS_RELEASE_DURATION = durationVars['--duration-exit'];",
+      "const PRESS_RELEASE_DURATION = 'var(--duration-exit)';",
     );
     expect(source).toContain(
-      "`min(${durationVars['--duration-exit']}, ${reducedMotionFadeConsts.duration})`",
+      "`min(var(--duration-exit), ${reducedMotionFadeConsts.duration})`",
     );
-    expect(source).toContain("const RELEASE_EASE = easeVars['--ease-exit'];");
+    expect(source).toContain("const RELEASE_EASE = 'var(--ease-exit)';");
     expect(source).toMatch(
       /'@media \(prefers-reduced-motion: reduce\)': PRESS_RELEASE_DURATION_REDUCED/,
     );

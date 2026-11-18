@@ -100,7 +100,7 @@ describe('press layer clock', () => {
   it("plays the strength release's clock, the exit duration with DR2's bound under Reduce Motion, so the layer and the strength land together (spec:AST-094 FR5)", () => {
     const clocksOf = (file: string) =>
       readFileSync(resolve(__dirname, file), 'utf8').match(
-        /(?:durationVars\['--duration-exit'\]|`min\(\$\{durationVars\['--duration-exit'\]\}, \$\{reducedMotionFadeConsts\.duration\}\)`);/g,
+        /(?:'var\(--duration-exit\)'|`min\(var\(--duration-exit\), \$\{reducedMotionFadeConsts\.duration\}\)`);/g,
       ) ?? [];
     const layer = clocksOf('../privateAttributes/press.stylex.ts');
     expect(layer.length).toBe(2);
