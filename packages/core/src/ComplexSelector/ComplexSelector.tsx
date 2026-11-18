@@ -51,13 +51,6 @@ import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
 import {usePopover} from '../Popover/usePopover';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {useInputStatusIcon} from '../hooks/useInputStatusIcon';
-import {
-  colorVars,
-  fontWeightVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import {focusOutlineWithinComboboxClassName} from '../utils/focusOutlineClasses';
 import {isRenderable, mergeProps} from '../utils';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
@@ -110,29 +103,29 @@ const styles = stylex.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
+    gap: 'var(--spacing-2)',
     width: '100%',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    fontFamily: typographyVars['--font-family-body'],
+    paddingBlock: 'var(--spacing-2)',
+    paddingInline: 'var(--spacing-3)',
+    fontFamily: 'var(--font-family-body)',
     // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
     // control sits under 16px, and only iOS WebKit implements
     // -webkit-touch-callout to key the coarse-pointer floor to it.
     fontSize: {
-      default: typeScaleVars['--text-label-size'],
+      default: 'var(--text-label-size)',
       '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-label-size']})`,
+        '@supports (-webkit-touch-callout: none)': 'max(1rem, var(--text-label-size))',
       },
     },
-    lineHeight: typeScaleVars['--text-label-leading'],
-    color: colorVars['--color-text-primary'],
+    lineHeight: 'var(--text-label-leading)',
+    color: 'var(--color-text-primary)',
     cursor: {
       default: 'pointer',
       ':is(:disabled,[aria-disabled="true"])': 'default',
     },
   },
   placeholder: {
-    color: colorVars['--color-text-secondary'],
+    color: 'var(--color-text-secondary)',
   },
   triggerGhost: {
     width: 'auto',
@@ -146,7 +139,7 @@ const styles = stylex.create({
         },
       ':focus-within': 'none',
     },
-    fontWeight: fontWeightVars['--font-weight-medium'],
+    fontWeight: 'var(--font-weight-medium)',
     transitionProperty: {
       default: 'background-image, background-color, color, opacity, transform',
       // The press scale goes at once as the list opens.
@@ -167,7 +160,7 @@ const styles = stylex.create({
   // and the neutral resting fill used by secondary buttons.
   triggerSecondary: {
     borderWidth: 0,
-    backgroundColor: colorVars['--color-neutral'],
+    backgroundColor: 'var(--color-neutral)',
     boxShadow: {
       default: 'none',
       ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
@@ -176,7 +169,7 @@ const styles = stylex.create({
         },
       ':focus-within': 'none',
     },
-    fontWeight: fontWeightVars['--font-weight-medium'],
+    fontWeight: 'var(--font-weight-medium)',
     transitionProperty: {
       default: 'background-image, background-color, color, opacity, transform',
       // The press scale goes at once as the list opens.
@@ -805,7 +798,7 @@ export function ComplexSelector<Value>({
   const popup = popover.render(content, {
     placement,
     alignment,
-    offset: spacingVars['--spacing-1'],
+    offset: 'var(--spacing-1)',
     xstyle: styles.popover,
   });
 
