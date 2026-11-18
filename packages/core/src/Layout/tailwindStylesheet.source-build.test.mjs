@@ -428,8 +428,10 @@ import {infoTipTriggerClassName} from '../InfoTip/infoTipClasses';
 import {navIconClassName} from '../NavIcon/navIconClasses';
 import {formLayoutDirectionClassName} from '../FormLayout/formLayoutClasses';
 import {
+  inputGroupButtonAddonClassName,
   inputGroupClassName,
   inputGroupDisabledClassName,
+  inputGroupMemberClassName,
   inputGroupSizeClassName,
   inputGroupTextClassName,
 } from '../InputGroup/inputGroupClasses';
@@ -3448,6 +3450,8 @@ function familyClassNames() {
     add(inputGroupSizeClassName[size]);
   }
   add(inputGroupTextClassName);
+  add(inputGroupMemberClassName);
+  add(inputGroupButtonAddonClassName);
   // ComplexSelector: the trigger button, its text, status and chevron slots,
   // the popup content box and one height per size.
   add(COMPLEX_SELECTOR_TRIGGER_CLASS);
@@ -3933,9 +3937,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // per-side padding took it to 2104, and the container's own padding then
     // moved out of StyleX as well: each component's theme chain and each
     // spacing token a padding prop accepts now prints its own class, and the
-    // Layout outer insets it publishes took the sheet to 2215. The ceiling
-    // keeps its headroom above that.
-    expect(stylesheet.rules.size).toBeLessThan(2230);
+    // Layout outer insets it publishes took the sheet to 2215. Ticket 55's
+    // group addon states — the marker-scoped height, four corner resets and
+    // the keyboard rank — and the Selector, Typeahead and Tokenizer wrapper
+    // rows took it to 2228. The ceiling keeps its headroom above that.
+    expect(stylesheet.rules.size).toBeLessThan(2260);
   });
 
   it('prints a RadioList row’s coarse press arm after its mouse arm', () => {

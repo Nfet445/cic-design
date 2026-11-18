@@ -9,7 +9,6 @@
  * SYNC: When Button.tsx changes, update tests to match new behavior
  */
 
-import {readFileSync} from 'node:fs';
 import {describe, it, expect, vi} from 'vitest';
 import {
   render,
@@ -39,6 +38,7 @@ import {PRESS_FADE_MS} from '../utils/pressGesture';
 import {Badge} from '../Badge/Badge';
 import {ButtonGroup} from '../ButtonGroup';
 import {InputGroup} from '../InputGroup';
+import {inputGroupButtonAddonClassName} from '../InputGroup/inputGroupClasses';
 import {TextInput} from '../TextInput';
 import {IconButton} from '../IconButton';
 import {InternationalizationProvider} from '../i18n';
@@ -72,24 +72,15 @@ describe('Button', () => {
     );
 
     const addon = screen.getByRole('button', {name: 'Save'});
-    expect(addon.className).toContain('groupStyles.buttonAddon');
-
-    // jsdom cannot resolve this compound StyleX focus selector. Keep the
-    // direct-child keyboard stacking rule explicit at its definition instead.
-    const groupStylesSource = readFileSync(
-      'packages/core/src/InputGroup/groupStyles.ts',
-      'utf8',
-    );
-    expect(groupStylesSource).toContain(
-      '`${DIRECT_INPUT_GROUP_ADDON}:focus-visible`',
-    );
-    expect(groupStylesSource).toMatch(
-      /zIndex:\s*\{\s*default: null,\s*\[DIRECT_INPUT_GROUP_ADDON_FOCUS_VISIBLE\]: 2,/,
-    );
+    expectClassSet(addon, {
+      includes: inputGroupButtonAddonClassName.split(' '),
+    });
 
     rerender(<Button label="Save" />);
     const standalone = screen.getByRole('button', {name: 'Save'});
-    expect(standalone.className).not.toContain('groupStyles.buttonAddon');
+    expectClassSet(standalone, {
+      excludes: inputGroupButtonAddonClassName.split(' '),
+    });
   });
 
   it('renders children instead of label when provided', () => {

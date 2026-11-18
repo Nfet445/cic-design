@@ -44,6 +44,28 @@ export const inputGroupMemberClassName = tw(
 );
 
 /**
+ * A Button that sits directly in the group row. It runs the row's full height
+ * and squares the corners it shares with a neighbour: the leading edge when it
+ * is not the row's first member, the trailing edge when a member follows it.
+ * Its keyboard ring rises above the shared edge.
+ *
+ * Only a direct child adapts, so a Button a member renders internally keeps
+ * its own geometry.
+ */
+/* eslint-disable @astryx/no-raw-private-attribute -- Tailwind scans class text,
+   so the group marker has to be spelled literally; its owner module cannot
+   supply it through interpolation. */
+export const inputGroupButtonAddonClassName = tw(
+  '[:where(.astryx-input-group>[data-astryx-input-group-item])]:h-full',
+  '[:where(.astryx-input-group>[data-astryx-input-group-item]):not(:first-child)]:rounded-ss-none',
+  '[:where(.astryx-input-group>[data-astryx-input-group-item]):not(:first-child)]:rounded-es-none',
+  '[:where(.astryx-input-group>[data-astryx-input-group-item]):nth-last-child(1_of_:not([popover]):not(template):not(dialog))]:rounded-se-none',
+  '[:where(.astryx-input-group>[data-astryx-input-group-item]):nth-last-child(1_of_:not([popover]):not(template):not(dialog))]:rounded-ee-none',
+  '[:where(.astryx-input-group>[data-astryx-input-group-item]):focus-visible]:z-2',
+);
+/* eslint-enable @astryx/no-raw-private-attribute */
+
+/**
  * The prefix or suffix cell. Its inline-start edge overlaps the neighbour's
  * border, and only the row's first and last cells keep the outer corners.
  */

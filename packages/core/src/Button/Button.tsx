@@ -49,10 +49,8 @@ import {
 } from '../hooks/pressGroupContext';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
-import {
-  groupStyles as inputGroupStyles,
-  inputGroupItemProps,
-} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupButtonAddonClassName} from '../InputGroup/inputGroupClasses';
 import {mergeProps} from '../utils/mergeProps';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useTouchHitArea} from '../utils/touchHitArea';
@@ -519,7 +517,6 @@ export function Button({
     // release runs on the compositor.
     rowPressLayerStyles.cell,
     rowPressLayerStyles.cellOnImage,
-    inputGroup != null && buttonGroup == null && inputGroupStyles.buttonAddon,
     xstyle,
   );
 
@@ -537,7 +534,15 @@ export function Button({
     {
       // Under a coarse primary pointer the button keeps its press layer from
       // the touch to the end of the release (`controlPressHeldClassName`).
-      className: tw(layoutClassName, controlPressHeldClassName),
+      className: tw(
+        layoutClassName,
+        controlPressHeldClassName,
+        // Inside a group the addon runs the row's height and squares the
+        // corners it shares with a neighbour.
+        inputGroup != null &&
+          buttonGroup == null &&
+          inputGroupButtonAddonClassName,
+      ),
       style: widthStyle ?? undefined,
     },
     className,
