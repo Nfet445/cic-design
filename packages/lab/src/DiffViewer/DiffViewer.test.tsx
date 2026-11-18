@@ -13,7 +13,8 @@ import {
   diffViewerMarkerSlimClassName,
   diffViewerStickyClassName,
 } from './diffViewerClasses';
-import {focusOutlineProps} from '@astryxdesign/core/utils';
+import {focusOutlineFocusVisibleClassName} from '@astryxdesign/core/utils';
+import {expectClassSet} from '../../../core/src/__tests__/classNameAssertions';
 import {parseUnifiedDiff} from './parseUnifiedDiff';
 import type {DiffViewerFile, DiffViewerLineRef} from './diffTypes';
 import {createDiffFile} from './createDiffFile';
@@ -899,10 +900,10 @@ describe('DiffViewer', () => {
       <DiffViewer file={FILE} onLineNumberClick={() => {}} />,
     );
     const button = container.querySelector('[data-diff-line-button]');
-    const ring = focusOutlineProps.focusVisible().className ?? '';
-    const classes = new Set(button?.classList);
-    expect(ring).not.toBe('');
-    expect(ring.split(' ').every(c => classes.has(c))).toBe(true);
+    expect(button).not.toBeNull();
+    expectClassSet(button as Element, {
+      includes: focusOutlineFocusVisibleClassName.split(' '),
+    });
   });
 
   it('paints a changed row and its changed words from the class map', () => {

@@ -74,7 +74,7 @@ import {
 } from '@astryxdesign/core/theme/syntax';
 import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {
-  focusOutlineProps,
+  focusOutlineFocusVisibleClassName,
   isRenderable,
   mergeProps,
   themeProps,
@@ -1162,8 +1162,8 @@ export function DiffViewer({
               line: number,
             })}
             onClick={event => onLineNumberClick(actionRef, event)}
-            {...mergeProps(
-              focusOutlineProps.focusVisible(),
+            className={tw(
+              focusOutlineFocusVisibleClassName,
               diffViewerGutterButtonClassName,
             )}>
             {number}
@@ -1762,8 +1762,8 @@ export function DiffViewer({
             aria-expanded={!isCollapsed}
             aria-controls={bodyId}
             onClick={toggleCollapsed}
-            {...mergeProps(
-              focusOutlineProps.focusVisible(),
+            className={tw(
+              focusOutlineFocusVisibleClassName,
               diffViewerToggleClassName,
             )}>
             <span
