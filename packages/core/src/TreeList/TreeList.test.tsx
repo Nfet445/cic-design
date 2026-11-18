@@ -18,7 +18,6 @@ import {TreeList} from './TreeList';
 import type {TreeListItemData} from './TreeListTypes';
 import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
-import {FOCUS_OUTLINE} from '../utils/focusOutline.stylex';
 import {expectClassSet} from '../__tests__/classNameAssertions';
 
 function generateThemeTestCSS(theme: Parameters<typeof generateThemeCSS>[0]) {
@@ -398,24 +397,19 @@ describe('TreeList', () => {
     const mid = screen.getByText('Mid').closest('li')!;
     const leaf = screen.getByText('Leaf').closest('li')!;
 
-    // A keydown before .focus() establishes keyboard modality so jsdom's
-    // :focus-visible heuristic applies deterministically, regardless of
-    // pointer events left over from other tests in this file.
-    fireEvent.keyDown(document.body, {key: 'Tab'});
-    root.focus();
-    expect(root).toHaveFocus();
-
-    expect(
-      getComputedStyle(root).getPropertyValue('--_focus-outline').trim(),
-    ).toBe(FOCUS_OUTLINE);
-    // Mid and Leaf are DOM descendants of Root's <li> (nested <ul role="group">
-    // subtrees) — their own outline var must stay unset, not inherit Root's.
-    expect(getComputedStyle(mid).getPropertyValue('--_focus-outline')).toBe(
-      'none',
-    );
-    expect(getComputedStyle(leaf).getPropertyValue('--_focus-outline')).toBe(
-      'none',
-    );
+    // jsdom cannot resolve the built sheet, so the assertion reads the
+    // classes: every treeitem publishes its own ring and raises it only on its
+    // own `:focus-visible`, so a focused parent's variable never reaches a
+    // descendant. Mid and Leaf are DOM descendants of Root's <li> (nested
+    // <ul role="group"> subtrees), and each still carries the rest default.
+    for (const item of [root, mid, leaf]) {
+      expectClassSet(item, {
+        includes: [
+          '[--_focus-outline:none]',
+          'focus-visible:[--_focus-outline:var(--focus-outline-width)_var(--focus-outline-style)_var(--focus-outline-color)]',
+        ],
+      });
+    }
   });
 
   // ===========================================================================

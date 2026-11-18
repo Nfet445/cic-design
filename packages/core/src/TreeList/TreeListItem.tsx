@@ -458,7 +458,7 @@ export function TreeListItem({
       data-tree-id={id}
       data-tree-level={nestedLevel + 1}
       data-tree-disabled={isDisabled || undefined}
-      {...mergeProps(
+      className={tw(
         focusOutlinePublishVarsClassName,
         treeListItemClassName.wrapper,
       )}>
