@@ -47,7 +47,6 @@ import React, {
 } from 'react';
 import {useCommittedRefInto} from '../hooks/useCommittedRef';
 import {readAccessibleName} from '../utils/accessibleName';
-import * as stylex from '@stylexjs/stylex';
 import {usePopoverInternal} from '../Popover/usePopover';
 import {holdEntranceInput} from '../Layer/holdEntranceInput';
 import {
@@ -106,6 +105,7 @@ import {layerAnimations} from '../Layer/layerAnimations.stylex';
 import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
 import {spacingVarNames} from '../theme/tokenVars';
 import {isRenderable, mergeProps, RTL_MIRROR_CLASS} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {
   dropdownMenuInlineSizeVar,
@@ -710,7 +710,7 @@ function DropdownMenuBottomSheet({
           {...rest}
           {...mergeProps(
             themeProps('dropdown-menu', {presentation: 'bottom-sheet'}),
-            stylex.props(xstyle),
+            xstyleProps(xstyle),
             tw(
               dropdownMenuSheetClassName.content,
               menuBottomSheetClassName.content,
@@ -1737,7 +1737,7 @@ function DropdownMenuPopover({
             {...menuPress.menuProps}
             {...mergeProps(
               themeProps('dropdown-menu', {presentation: 'popover'}),
-              stylex.props(xstyle),
+              xstyleProps(xstyle),
               tw(
                 dropdownMenuPopoverClassName,
                 // Between a header and a footer the menu is a Tab stop, so
