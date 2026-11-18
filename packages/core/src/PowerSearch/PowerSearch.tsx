@@ -61,7 +61,7 @@ import {
 } from '../hooks/useAdaptivePresentation';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {useIsHydrating} from '../hooks/useIsHydrating';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {useSize} from '../SizeContext/SizeContext';
 import {isFocusDetached} from '../utils/isFocusDetached';
 import {isRenderable} from '../utils/isRenderable';
@@ -1576,7 +1576,7 @@ export function PowerSearch({
       {popover.render(popoverContent, {
         placement: 'below',
         alignment: 'start',
-        offset: spacingVars['--spacing-1'],
+        offset: spacingVarNames['--spacing-1'],
         className: powerSearchPopoverLayerClassName,
       })}
     </>
