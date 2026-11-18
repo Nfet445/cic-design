@@ -62,7 +62,6 @@
 import {useCallback, useRef, useState, type ReactNode} from 'react';
 import {useIsHydrating} from '../hooks/useIsHydrating';
 import {useSettledOpen} from '../hooks/useSettledOpen';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import type {DialogPurpose} from '../Dialog';
 import {useFocusTrap} from '../hooks/useFocusTrap';
@@ -89,7 +88,6 @@ import {
   drawerRootClassName,
   drawerWidthVar,
 } from './drawerClasses';
-import {drawerContentSafeAreaStyles} from './drawerContentSafeArea.stylex';
 import {useDrawerDialogPresence} from './useDrawerDialogPresence';
 
 type PointerHandler = (event: React.PointerEvent<HTMLDialogElement>) => void;
@@ -455,23 +453,18 @@ export function Drawer({
             <div
               ref={outletRef}
               tabIndex={-1}
-              {...mergeProps(
-                stylex.props(drawerContentSafeAreaStyles.contentSafeArea),
-                {
-                  className: tw(
-                    drawerContentClassName,
-                    container(
-                      usesThemePadding
-                        ? {useThemeDefault: 'drawer'}
-                        : {
-                            paddingInnerX: paddingToken,
-                            paddingInnerY: paddingToken,
-                            paddingOuterX: paddingToken,
-                            paddingOuterY: paddingToken,
-                          },
-                    ),
-                  ),
-                },
+              className={tw(
+                drawerContentClassName,
+                container(
+                  usesThemePadding
+                    ? {useThemeDefault: 'drawer'}
+                    : {
+                        paddingInnerX: paddingToken,
+                        paddingInnerY: paddingToken,
+                        paddingOuterX: paddingToken,
+                        paddingOuterY: paddingToken,
+                      },
+                ),
               )}>
               {children}
             </div>
