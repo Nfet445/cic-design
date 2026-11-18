@@ -202,3 +202,17 @@ them worse and must not fix them; a change in that count is a finding.
   `:not(#\#)`, which outranks any plain utility inside the same layer. So an exception module
   (`Comment`/`Schedule`/`transferList` overrides in `packages/lab`) can stay StyleX and still
   win — write down the exact utility it beats, not "because it is unlayered".
+
+## Gates that must exist, not just pass
+
+- A check nobody runs is not a gate. Before a wave closes, name the command that
+  fails when the invariant breaks, and the job that runs it:
+  `node packages/<pkg>/scripts/build-css-tailwind.mjs` plus the package's
+  `*TailwindStylesheet.source-build.test.mjs` (the sheet), `@astryx/no-invisible-class`
+  (class text the scanner cannot read), `@astryx/no-raw-private-attribute`
+  (a private attribute outside its owner), `pnpm check:migration-map` (this map
+  against the ticket headers), and `node scripts/pre-commit-checks.mjs`
+  (typecheck plus the tests beside the staged files).
+- `.github/workflows/ci.yml` runs on a pull request whose **base** is `main`,
+  `release/**` or `poc/**`. A draft pull request runs nothing until it is marked
+  ready, so flip it to ready before asking for a review.
