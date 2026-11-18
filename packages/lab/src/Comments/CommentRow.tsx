@@ -35,7 +35,7 @@ import {Text} from '@astryxdesign/core/Text';
 import {Timestamp} from '@astryxdesign/core/Timestamp';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {spacingVarNames} from '@astryxdesign/core/theme';
 import {
   CommentActions,
   ReactionSummary,
@@ -97,7 +97,7 @@ import type {
 export type ThreadDivider = 'top' | 'bottom';
 
 /** The 28px avatar column (StyleX resolves only same-file constants). */
-const AVATAR_SIZE = `calc(${spacingVars['--spacing-6']} + ${spacingVars['--spacing-1']})`;
+const AVATAR_SIZE = `calc(${spacingVarNames['--spacing-6']} + ${spacingVarNames['--spacing-1']})`;
 const TYPING_INDICATOR_STYLE: CSSProperties &
   Record<'--astryx-chat-typing-indicator-dots-column-width', string> = {
   '--astryx-chat-typing-indicator-dots-column-width': AVATAR_SIZE,

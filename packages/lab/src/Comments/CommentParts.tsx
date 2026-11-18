@@ -47,7 +47,7 @@ import {Timestamp} from '@astryxdesign/core/Timestamp';
 import {Tooltip} from '@astryxdesign/core/Tooltip';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
 import {useTranslator} from '@astryxdesign/core/i18n';
-import {colorVars, spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {colorVarNames, spacingVarNames} from '@astryxdesign/core/theme';
 import {tw} from '../tw';
 import {
   commentPartsAgentLogoClassName,
@@ -89,7 +89,7 @@ import {LoadingMessage} from '../LoadingMessage';
 import {useStatusAnnouncement} from '../useStatusAnnouncement';
 
 /** The 28px avatar column every comment row, reply, and event aligns to. */
-export const AVATAR_SIZE = `calc(${spacingVars['--spacing-6']} + ${spacingVars['--spacing-1']})`;
+export const AVATAR_SIZE = `calc(${spacingVarNames['--spacing-6']} + ${spacingVarNames['--spacing-1']})`;
 /**
  * A resolved thread's words step down to the secondary text color by
  * remapping the primary text token on their own elements (never on the
@@ -100,7 +100,7 @@ export const AVATAR_SIZE = `calc(${spacingVars['--spacing-6']} + ${spacingVars['
  */
 export const RESOLVED_TEXT_STYLE: CSSProperties &
   Record<`--${string}`, string> = {
-  '--color-text-primary': colorVars['--color-text-secondary'],
+  '--color-text-primary': colorVarNames['--color-text-secondary'],
 };
 
 /** A failed action as an error Banner with its one recovery action. */
@@ -708,47 +708,47 @@ function LoadingCommentRow({
           <HStack gap={1} align="center" width="100%">
             <Skeleton
               width={index === 0 ? '38%' : '30%'}
-              height={spacingVars['--spacing-4']}
+              height={spacingVarNames['--spacing-4']}
               radius={1}
               index={index * 7 + 1}
             />
             <Skeleton
               width="18%"
-              height={spacingVars['--spacing-3']}
+              height={spacingVarNames['--spacing-3']}
               radius={1}
               index={index * 7 + 2}
             />
           </HStack>
           <Skeleton
             width="96%"
-            height={spacingVars['--spacing-4']}
+            height={spacingVarNames['--spacing-4']}
             radius={1}
             index={index * 7 + 3}
           />
           <Skeleton
             width={index === 0 ? '82%' : '68%'}
-            height={spacingVars['--spacing-4']}
+            height={spacingVarNames['--spacing-4']}
             radius={1}
             index={index * 7 + 4}
           />
           {index === 0 && (
             <Skeleton
               width="54%"
-              height={spacingVars['--spacing-4']}
+              height={spacingVarNames['--spacing-4']}
               radius={1}
               index={index * 7 + 5}
             />
           )}
           <HStack gap={1} align="center">
             <Skeleton
-              width={`calc(${spacingVars['--spacing-8']} + ${spacingVars['--spacing-4']})`}
-              height={spacingVars['--spacing-6']}
+              width={`calc(${spacingVarNames['--spacing-8']} + ${spacingVarNames['--spacing-4']})`}
+              height={spacingVarNames['--spacing-6']}
               radius={2}
               index={index * 7 + 5}
             />
             <Skeleton
-              width={spacingVars['--spacing-8']}
-              height={spacingVars['--spacing-6']}
+              width={spacingVarNames['--spacing-8']}
+              height={spacingVarNames['--spacing-6']}
               radius={2}
               index={index * 7 + 6}
             />
@@ -800,7 +800,7 @@ export function CommentComposerLoadingSkeleton({
 }: {
   actionCount: number;
 }) {
-  const actionSize = spacingVars['--spacing-8'];
+  const actionSize = spacingVarNames['--spacing-8'];
   return (
     <Card
       variant="default"
@@ -812,7 +812,7 @@ export function CommentComposerLoadingSkeleton({
       <VStack gap={2} width="100%">
         <Skeleton
           width="42%"
-          height={spacingVars['--spacing-4']}
+          height={spacingVarNames['--spacing-4']}
           radius={1}
           index={22}
         />

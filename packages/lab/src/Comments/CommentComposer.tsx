@@ -47,7 +47,7 @@ import {HStack, StackItem, VStack} from '@astryxdesign/core/Layout';
 import {Popover} from '@astryxdesign/core/Popover';
 import {Text} from '@astryxdesign/core/Text';
 import {createStaticSource} from '@astryxdesign/core/Typeahead';
-import {radiusVars, spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {radiusVarNames, spacingVarNames} from '@astryxdesign/core/theme';
 import {mergeProps, themeProps} from '@astryxdesign/core/utils';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {EmojiPicker} from '../EmojiPicker';
@@ -75,12 +75,12 @@ import type {
 // its concentric inner radius both follow: comment composers use the
 // container radius instead of the rounder chat radius.
 const COMPOSER_RADIUS_STYLE: CSSProperties & Record<`--${string}`, string> = {
-  '--_chat-composer-radius': radiusVars['--radius-container'],
+  '--_chat-composer-radius': radiusVarNames['--radius-container'],
 };
 
 /* The picker's width is the Popover's, which the Popover clamps to the room
    beside its trigger; the picker fills whatever it gets. */
-const PICKER_WIDTH = `calc(${spacingVars['--spacing-8']} * 11)`;
+const PICKER_WIDTH = `calc(${spacingVarNames['--spacing-8']} * 11)`;
 
 /* Clicks on these keep their own meaning inside the composer; a click anywhere
    else in it focuses the input. */

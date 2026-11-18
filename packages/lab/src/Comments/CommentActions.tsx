@@ -29,7 +29,7 @@ import {Popover} from '@astryxdesign/core/Popover';
 import {Text} from '@astryxdesign/core/Text';
 import {ToggleButton} from '@astryxdesign/core/ToggleButton';
 import {Tooltip} from '@astryxdesign/core/Tooltip';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {spacingVarNames} from '@astryxdesign/core/theme';
 import {useLocale, useTranslator} from '@astryxdesign/core/i18n';
 import {
   commentActionsListClassName,
@@ -40,7 +40,7 @@ import {CommentIcon} from './icons';
 import {commentAnchorId, type AnyComment} from './utils';
 import type {CommentReaction, CommentReactionOption} from './types';
 
-const MORE_MENU_MIN_WIDTH = `calc(${spacingVars['--spacing-8']} * 5)`;
+const MORE_MENU_MIN_WIDTH = `calc(${spacingVarNames['--spacing-8']} * 5)`;
 
 export type CommentActionId = 'resolve' | 'reopen' | 'react' | 'reply' | 'link';
 

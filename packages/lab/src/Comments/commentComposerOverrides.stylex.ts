@@ -13,12 +13,12 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {radiusVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {radiusVarNames} from '@astryxdesign/core/theme';
 
 /**
  * Concentric with the composer: its container radius less its compact padding
  * is the inner radius.
  */
 export const commentComposerQuoteCardStyles = stylex.create({
-  base: {borderRadius: radiusVars['--radius-inner']},
+  base: {borderRadius: 'var(--radius-inner)'},
 });

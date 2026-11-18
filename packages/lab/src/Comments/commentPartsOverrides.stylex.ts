@@ -15,22 +15,22 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {colorVars, durationVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {colorVarNames, durationVarNames} from '@astryxdesign/core/theme';
 import type {CommentHighlightColor} from './types';
 
 /* A highlighted passage's quote rule, in the border token of the host's
    highlight color. */
 export const commentHighlightRuleStyles = stylex.create({
-  blue: {borderInlineStartColor: colorVars['--color-border-blue']},
-  cyan: {borderInlineStartColor: colorVars['--color-border-cyan']},
-  gray: {borderInlineStartColor: colorVars['--color-border-gray']},
-  green: {borderInlineStartColor: colorVars['--color-border-green']},
-  orange: {borderInlineStartColor: colorVars['--color-border-orange']},
-  pink: {borderInlineStartColor: colorVars['--color-border-pink']},
-  purple: {borderInlineStartColor: colorVars['--color-border-purple']},
-  red: {borderInlineStartColor: colorVars['--color-border-red']},
-  teal: {borderInlineStartColor: colorVars['--color-border-teal']},
-  yellow: {borderInlineStartColor: colorVars['--color-border-yellow']},
+  blue: {borderInlineStartColor: 'var(--color-border-blue)'},
+  cyan: {borderInlineStartColor: 'var(--color-border-cyan)'},
+  gray: {borderInlineStartColor: 'var(--color-border-gray)'},
+  green: {borderInlineStartColor: 'var(--color-border-green)'},
+  orange: {borderInlineStartColor: 'var(--color-border-orange)'},
+  pink: {borderInlineStartColor: 'var(--color-border-pink)'},
+  purple: {borderInlineStartColor: 'var(--color-border-purple)'},
+  red: {borderInlineStartColor: 'var(--color-border-red)'},
+  teal: {borderInlineStartColor: 'var(--color-border-teal)'},
+  yellow: {borderInlineStartColor: 'var(--color-border-yellow)'},
 });
 
 // Slides a gradient twice the label's width so its light band crosses the
@@ -46,15 +46,14 @@ export const commentPartsProgressLabelStyles = stylex.create({
     // drops below secondary-text contrast. Where the clip is unsupported, under
     // reduced motion, and in forced colors, the label is plain secondary text.
     color: {
-      default: colorVars['--color-text-secondary'],
+      default: 'var(--color-text-secondary)',
       '@supports (background-clip: text)': 'transparent',
-      '@media (prefers-reduced-motion: reduce)':
-        colorVars['--color-text-secondary'],
+      '@media (prefers-reduced-motion: reduce)': 'var(--color-text-secondary)',
       '@media (forced-colors: active)': 'CanvasText',
     },
     backgroundImage: {
       default: 'none',
-      '@supports (background-clip: text)': `linear-gradient(90deg, ${colorVars['--color-text-secondary']} 40%, ${colorVars['--color-text-primary']} 50%, ${colorVars['--color-text-secondary']} 60%)`,
+      '@supports (background-clip: text)': `linear-gradient(90deg, var(--color-text-secondary) 40%, var(--color-text-primary) 50%, var(--color-text-secondary) 60%)`,
       '@media (prefers-reduced-motion: reduce)': 'none',
       '@media (forced-colors: active)': 'none',
     },
@@ -66,7 +65,7 @@ export const commentPartsProgressLabelStyles = stylex.create({
       '@media (prefers-reduced-motion: reduce)': 'none',
       '@media (forced-colors: active)': 'none',
     },
-    animationDuration: `calc(${durationVars['--duration-slow-max']} * 2)`,
+    animationDuration: `calc(var(--duration-slow-max) * 2)`,
     animationTimingFunction: 'linear',
     animationIterationCount: 'infinite',
   },
