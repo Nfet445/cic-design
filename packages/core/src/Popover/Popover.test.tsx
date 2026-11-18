@@ -37,6 +37,8 @@ import React, {useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 import {Popover} from './Popover';
 import {usePopover} from './usePopover';
+import {paddingClassName} from '../Layout/paddingClasses';
+import type {SpacingStep} from '../utils/types';
 import type {UsePopoverReturn} from './usePopover';
 import {Dialog} from '../Dialog';
 import {SegmentedControl, SegmentedControlItem} from '../SegmentedControl';
@@ -1645,12 +1647,21 @@ describe('Popover', () => {
   });
 
   describe('surface padding', () => {
-    // StyleX's dev runtime names the style object a class came from
-    // ("paddingStyles__paddingStyles.3", after its module), which is the
-    // padding rung the surface was handed.
-    function paddingRungOf(surface: Element | null): string | null {
-      const match = surface?.className.match(/__paddingStyles\.([\d.]+)/);
-      return match ? match[1] : null;
+    // One class decides the whole padding, so the rung whose class the surface
+    // carries is the rung it was handed.
+    const PADDING_STEPS: SpacingStep[] = [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10];
+    function paddingRungOf(surface: Element | null): SpacingStep | null {
+      if (surface == null) {
+        return null;
+      }
+      const classes = surface.classList;
+      return (
+        PADDING_STEPS.find(step =>
+          paddingClassName(step)
+            .split(' ')
+            .every(token => classes.contains(token)),
+        ) ?? null
+      );
     }
 
     it('paints the spacing-3 rung by default, unchanged', () => {
@@ -1660,7 +1671,7 @@ describe('Popover', () => {
         </Popover>,
       );
       const surface = document.querySelector('.astryx-popover');
-      expect(paddingRungOf(surface)).toBe('3');
+      expect(paddingRungOf(surface)).toBe(3);
       expect(surface?.className).not.toContain('contentPadding');
     });
 
@@ -1678,7 +1689,7 @@ describe('Popover', () => {
       // The rung lands on the painted surface itself, not a wrapper inside
       // it, so the content reaches the surface edge.
       expect(surface).toContainElement(screen.getByTestId('content'));
-      expect(paddingRungOf(surface)).toBe('0');
+      expect(paddingRungOf(surface)).toBe(0);
     });
 
     it('paints the requested rung', () => {
@@ -1688,7 +1699,7 @@ describe('Popover', () => {
         </Popover>,
       );
       const surface = document.querySelector('.astryx-popover');
-      expect(paddingRungOf(surface)).toBe('4');
+      expect(paddingRungOf(surface)).toBe(4);
     });
 
     it('lets a direct usePopover consumer opt into a rung, and paints none by default', () => {
@@ -1715,9 +1726,7 @@ describe('Popover', () => {
       unmount();
       render(<Direct padding={2} />);
       fireEvent.click(screen.getByRole('button', {name: 'Open'}));
-      expect(paddingRungOf(document.querySelector('.astryx-popover'))).toBe(
-        '2',
-      );
+      expect(paddingRungOf(document.querySelector('.astryx-popover'))).toBe(2);
     });
   });
 

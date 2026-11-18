@@ -25,8 +25,8 @@ import {LayoutDividerContext} from './LayoutDividerContext';
 import {
   layoutAutoClassName,
   layoutFillClassName,
-  layoutFullBleedClassName,
   layoutInnerClassName,
+  layoutOwnOuterResetClassName,
   layoutMiddleClassName,
   layoutMiddleContentWidthClassName,
   layoutMiddleQueryClassName,
@@ -43,10 +43,7 @@ import {isRenderable} from '../utils/isRenderable';
 import type {BaseProps} from '../BaseProps';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
-import {
-  layoutPaddingOuterXVarStyles,
-  layoutPaddingOuterYVarStyles,
-} from './padding.stylex';
+import {layoutPaddingClassName} from './paddingClasses';
 
 /**
  * Height behavior for the layout.
@@ -313,14 +310,15 @@ export function Layout({
               className: tw(
                 layoutInnerClassName,
                 isFill ? layoutFillClassName : layoutAutoClassName,
-                padding === 0 && layoutFullBleedClassName,
+                padding == null && layoutOwnOuterResetClassName,
+                padding != null &&
+                  layoutPaddingClassName({
+                    paddingOuterX: padding,
+                    paddingOuterY: padding,
+                  }),
               ),
             },
-            stylex.props(
-              padding != null && layoutPaddingOuterXVarStyles[padding],
-              padding != null && layoutPaddingOuterYVarStyles[padding],
-            ),
-            sizingStyle,
+            {style: sizingStyle},
           )}>
           <AreaProvider area="header">{header}</AreaProvider>
           <div

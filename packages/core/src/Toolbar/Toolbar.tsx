@@ -23,14 +23,12 @@ import type {BaseProps} from '../BaseProps';
 import type {SectionVariant} from '../Section/Section';
 import type {SpacingStep} from '../utils/types';
 import type {ElementSize} from '../SizeContext/SizeContext';
-import * as stylex from '@stylexjs/stylex';
 import {spacingVars} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
 import {Section} from '../Section/Section';
 import {oneTabStopAmong, useInternalListFocus} from '../hooks/useListFocus';
 import {useKeyboardHint} from '../hooks/useKeyboardHint';
 import {SizeProvider} from '../SizeContext/SizeContext';
-import {edgeCompSlot} from '../Layout/edgeCompensation.stylex';
 import {themeProps} from '../utils/themeProps';
 import {observeResize} from '../utils/sharedResizeObserver';
 import {useAttachment} from '../hooks/useAttachment';
@@ -39,6 +37,7 @@ import {
   toolbarCenterSlotClassName,
   toolbarEndSlotClassName,
   toolbarGapClassName,
+  toolbarLaneCompensationClassName,
   toolbarLaneInsetVar,
   toolbarLoneEndSlotClassName,
   toolbarLoneStartSlotClassName,
@@ -278,10 +277,10 @@ export function Toolbar({
   const laneInsetStyle: ToolbarInsetStyle = {
     [toolbarLaneInsetVar]: laneInset,
   };
-  const laneCompensationProps = mergeProps(
-    stylex.props(edgeCompSlot.inset(laneInset)),
-    {style: laneInsetStyle},
-  );
+  const laneCompensationProps = {
+    className: toolbarLaneCompensationClassName,
+    style: laneInsetStyle,
+  };
 
   return (
     <SizeProvider value={size}>

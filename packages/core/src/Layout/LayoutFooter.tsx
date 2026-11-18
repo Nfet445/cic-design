@@ -30,12 +30,7 @@ import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
-import {
-  paddingStyles,
-  containerPaddingInlineVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingBlockEndVarStyles,
-} from './padding.stylex';
+import {containerPaddingByEdgeClassName} from './paddingClasses';
 
 export interface LayoutFooterProps extends BaseProps<HTMLDivElement> {
   ref?: React.Ref<HTMLDivElement>;
@@ -141,14 +136,15 @@ export function LayoutFooter({
       {...props}
       data-divider={resolvedHasDivider || undefined}>
       <div
-        {...mergeProps(
-          {className: layoutFooterInnerClassName},
-          stylex.props(
-            padding != null && paddingStyles[padding],
-            padding != null && containerPaddingInlineVarStyles[padding],
-            padding != null && containerPaddingBlockStartVarStyles[padding],
-            padding != null && containerPaddingBlockEndVarStyles[padding],
-          ),
+        className={tw(
+          layoutFooterInnerClassName,
+          padding != null &&
+            containerPaddingByEdgeClassName({
+              paddingBlockEnd: padding,
+              paddingBlockStart: padding,
+              paddingInlineEnd: padding,
+              paddingInlineStart: padding,
+            }),
         )}>
         {children}
       </div>

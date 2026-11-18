@@ -48,7 +48,6 @@ import type {
 import type {SearchableItem, SearchSource} from '../Typeahead/types';
 import {COMPACT_TOUCH_PRESENTATION_QUERY} from '../hooks/useAdaptivePresentation';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
-import * as stylex from '@stylexjs/stylex';
 import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {LIST_REACHES_CONTAINER_PADDING} from '../List/listClasses';
 import {listRowEdgeOf} from '../privateAttributes/listRow.stylex';
@@ -564,13 +563,12 @@ function expectBleedRowsOnBodyInset(list: HTMLElement): void {
     closestWithClasses(list, powerSearchSheetScrollContentClassName) ??
     closestWithClasses(list, powerSearchSheetBodyClassName);
   expect(body).not.toBeNull();
-  const computed = getComputedStyle(body!);
-  expect(computed.getPropertyValue('--container-padding-inline-start')).toBe(
-    'var(--spacing-4)',
-  );
-  expect(computed.getPropertyValue('--container-padding-inline-end')).toBe(
-    'var(--spacing-4)',
-  );
+  expectClassSet(body as HTMLElement, {
+    includes: [
+      '[--container-padding-inline-start:var(--spacing-4)]',
+      '[--container-padding-inline-end:var(--spacing-4)]',
+    ],
+  });
 }
 
 // The sheet flow is loaded with React.lazy, so the first flow renders a tick

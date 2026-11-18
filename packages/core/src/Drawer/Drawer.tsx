@@ -80,13 +80,7 @@ import {composeEventHandlers, mergeProps, themeProps} from '../utils';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
 import {tw} from '../utils/tw';
 import {container, overlayPaddingReset} from '../Layout';
-import {
-  containerPaddingBlockEndVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingInlineVarStyles,
-  paddingStyles,
-  spacingStepToToken,
-} from '../Layout/padding.stylex';
+import {spacingStepToToken} from '../Layout/padding.stylex';
 import type {SpacingStep, SpacingToken} from '../Layout';
 import {
   drawerContentClassName,
@@ -472,18 +466,6 @@ export function Drawer({
                           paddingOuterY: paddingToken,
                         },
                   ),
-                  !usesThemePadding &&
-                    effectivePadding !== 4 &&
-                    paddingStyles[effectivePadding],
-                  !usesThemePadding &&
-                    effectivePadding !== 4 &&
-                    containerPaddingInlineVarStyles[effectivePadding],
-                  !usesThemePadding &&
-                    effectivePadding !== 4 &&
-                    containerPaddingBlockStartVarStyles[effectivePadding],
-                  !usesThemePadding &&
-                    effectivePadding !== 4 &&
-                    containerPaddingBlockEndVarStyles[effectivePadding],
                   drawerContentSafeAreaStyles.contentSafeArea,
                 ),
                 {className: drawerContentClassName},
