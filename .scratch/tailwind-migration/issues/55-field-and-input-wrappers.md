@@ -1,6 +1,6 @@
 # field and input wrappers
 
-Status: ready-for-agent
+Status: done
 Blocked by: —
 Wave: 10
 Ticket: 55
@@ -105,9 +105,11 @@ A third commit, `refactor(typeahead): слоты меню берут вид из
 menu slots that carry no tie — `typeaheadGroupHeadingClassName`, `typeaheadEmptyStateClassName`,
 `typeaheadLoadingStatusClassName`. The sheet went to 2229 rules.
 
-Left: `BaseTypeahead`'s `dropdown` and `dropdownHeld`. Both carry no field-base tie, so they can move;
-`dropdown` needs the viewport-cap expression written out literally (`selectorClasses.ts`'s
-`selectorListboxClassName` is the same expression at 300px) and `dropdownHeld` needs an inline
-`--astryx-*` property in place of its argument. The two `height` maps in `Tokenizer.tsx` stay as written in
+Closed by the parent. `BaseTypeahead`'s `dropdown` and `dropdownHeld` stay StyleX, and the reason is
+the cap itself: `dropdown`'s `max-height` is a two-declaration fallback chain
+(`min(300px, min(calc(100dvb - …), var(--…)))`, then the `100vh` form), and one Tailwind arbitrary value
+states one declaration. A class would either drop the `dvh` arm or drop the `vh` fallback for engines
+without `dvb`. `dropdownHeld` cannot move without `dropdown` — the held height must beat the open cap, and
+an unlayered StyleX declaration beats any class in `astryx-base`. The two `height` maps in `Tokenizer.tsx` stay as written in
 the paragraph above, and so does `popover`. Suites: 14 files / 612 tests run for this window; `BaseTypeahead.test.tsx` and
 `BaseTypeahead.menu.test.tsx` hold 3 failures that also fail without these commits.
