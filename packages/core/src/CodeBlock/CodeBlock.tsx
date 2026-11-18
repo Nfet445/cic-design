@@ -56,7 +56,6 @@ import {
   codeBlockSizeClassName,
   codeBlockViewportClassName,
 } from './codeBlockClasses';
-import {codeBlockViewportFocusRingStyles} from './codeBlockViewportFocusRing.stylex';
 import {useClipboardCopy} from '../hooks/useClipboard';
 import {useScrollableArea} from '../hooks/useScrollableArea';
 import {Icon} from '../Icon';
@@ -82,7 +81,6 @@ import {ensureHighlightStyles} from './highlightStyles';
 import {applyHighlightRangesChunked} from './highlightRanges';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {SyntaxTheme, type SyntaxThemeDefinition} from '../theme/syntax';
 import {
   registerEnglishFallback,
@@ -91,6 +89,14 @@ import {
 import english from '../i18n/generated-english/CodeBlock/CodeBlock.generated';
 
 registerEnglishFallback(english);
+
+type InsetRingStyle = CSSProperties & {'--focus-outline-offset'?: string};
+
+// The viewport clips its own scrolling content, so its ring has to sit inside
+// its edge. The shared ring class reads the offset from this variable.
+const VIEWPORT_INSET_RING_STYLE: InsetRingStyle = {
+  '--focus-outline-offset': 'calc(-1 * var(--focus-outline-width))',
+};
 
 // ---------------------------------------------------------------------------
 // Line rendering
@@ -928,11 +934,9 @@ export function CodeBlock({
         // restyles through the focus-outline tokens.
         className: tw(
           codeBlockViewportClassName,
-          focusOutlineProps.focusVisible(
-            codeBlockViewportFocusRingStyles.viewportFocusRingInset,
-          ).className,
+          focusOutlineFocusVisibleClassName,
         ),
-        style: scrollStyle,
+        style: {...scrollStyle, ...VIEWPORT_INSET_RING_STYLE},
       })}>
       <div
         {...getContentProps<HTMLDivElement>({
