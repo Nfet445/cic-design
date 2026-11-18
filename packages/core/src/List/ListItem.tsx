@@ -414,9 +414,6 @@ export function ListItem({
         [
           hasDividers && isTouchTarget && rowPressLayerStyles.overDividers,
           isTouchTarget && touchHitAreaStyles.layer,
-          // A focused handle rings itself; the row's focus-within ring stays off
-          // for it (two rings, and the list clips the row's sides).
-          reorderHandle && reorder?.session.rowStyle,
           xstyle,
         ] as AstryxXStyle
       }
@@ -432,6 +429,11 @@ export function ListItem({
           }),
           travellingRowClassName,
           isRaisedSwipeRow && travellingRaisedSwipeRowClassName,
+          // A focused handle rings itself; the row's focus-within ring stays off
+          // for it (two rings, and the list clips the row's sides). The arm is
+          // its own class, which outranks the shared `:has(:focus-visible)`
+          // ring by specificity (privateAttributes/ownRingClasses.ts).
+          reorderHandle && reorder?.session.rowStyle,
           className,
         ),
         style,
