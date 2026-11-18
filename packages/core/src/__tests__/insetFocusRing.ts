@@ -2,7 +2,7 @@
 
 /**
  * @file insetFocusRing.ts
- * @input Uses StyleX, focusOutlineStyles, focusVars
+ * @input Uses StyleX, focusOutlineStyles, focusVarNames
  * @output Test helpers asserting an element composes the shared focus ring,
  *   either as is or inset by its own width (for a tab stop that sits flush
  *   against a clipping ancestor)
@@ -16,13 +16,13 @@
 import * as stylex from '@stylexjs/stylex';
 import {expect} from 'vitest';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {focusVars} from '../theme/tokens.stylex';
+import {focusVarNames} from '../theme/tokenVars';
 
 const inset = stylex.create({
   ring: {
     outlineOffset: {
       default: null,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
+      ':focus-visible': `calc(-1 * var(--focus-outline-width))`,
     },
   },
 });

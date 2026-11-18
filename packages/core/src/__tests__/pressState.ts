@@ -26,7 +26,7 @@
  * SYNC: When modified, update this header.
  */
 
-import {durationDefaults} from '../theme/tokens.stylex';
+import {durationDefaults} from '../theme/tokenVars';
 import {PRESS_FADE_MS} from '../utils/pressGesture';
 
 const PRESSED_TOKEN = '--color-overlay-pressed';
