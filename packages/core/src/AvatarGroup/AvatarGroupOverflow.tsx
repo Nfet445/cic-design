@@ -25,7 +25,7 @@ import {avatarGroupOverflowClassName} from './avatarGroupOverflowClasses';
 import {avatarShapeClassName} from '../Avatar/avatarClasses';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
@@ -127,14 +127,12 @@ export function AvatarGroupOverflow({
   const content = children ?? `+${safeCount}`;
 
   if (onClick) {
-    const focusProps = focusOutlineProps.focusVisible();
     return (
       <button
         ref={ref as React.Ref<HTMLButtonElement>}
         type="button"
         onClick={onClick}
         {...rest}
-        {...focusProps}
         aria-label={label}
         data-avatar-item=""
         {...pressable}
@@ -151,7 +149,7 @@ export function AvatarGroupOverflow({
             avatarGroupOverflowClassName.button,
             avatarGroupOverflowClassName.overlap,
             avatarShapeClassName[shape],
-            focusProps.className,
+            focusOutlineFocusVisibleClassName,
             className,
           ),
           {...overflowBoxStyle(numericSize, overlap), ...style},
