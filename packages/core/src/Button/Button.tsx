@@ -59,7 +59,7 @@ import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {
   controlPressHeldClassName,
@@ -511,7 +511,7 @@ export function Button({
 
   // Shared StyleX props for both button and link rendering. `xstyle` stays last
   // so a consumer style still lands after the component's own atoms.
-  const sharedStylexProps = focusOutlineProps.focusVisible(
+  const sharedStylexProps = stylex.props(
     interactionOverlayStyles.backgroundImage,
     // The press the controller writes, on a layer under the label whose
     // release runs on the compositor.
@@ -537,6 +537,7 @@ export function Button({
       className: tw(
         layoutClassName,
         controlPressHeldClassName,
+        focusOutlineFocusVisibleClassName,
         // Inside a group the addon runs the row's height and squares the
         // corners it shares with a neighbour.
         inputGroup != null &&
