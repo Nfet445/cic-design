@@ -3,14 +3,18 @@
 /**
  * @file scheduleOverrides.stylex.ts
  * @input Nothing: every rule is fixed
- * @output The time grid's keyboard focus ring and the event popover's height cap
- * @position Style exception; `shared.tsx` passes them through `xstyle`
+ * @output The time grid's keyboard focus ring, the month cell's inward ring
+ *   offset, and the event popover's height cap
+ * @position Style exception; the views pass them through `xstyle` and
+ *   `mergeProps`
  *
  * The ring shows while the viewport beside it holds keyboard focus, so it needs
- * a sibling marker (`schedule.stylex.ts`) that a class cannot express. The cap
- * needs `stylex.firstThatWorks` to prefer the dynamic block size. Both rules
- * must also outrank layered utilities, and one lives on a scrollable-area prop
- * that only takes StyleX.
+ * a previous-sibling condition on a style marker (`schedule.stylex.ts`) that no
+ * class variant expresses. The month cell's rule must beat the shared ring's
+ * `focus-visible:[outline-offset:var(--focus-outline-offset)]` inside
+ * `@layer astryx-base`, so it stays unlayered StyleX and only pulls the offset
+ * inward. The cap needs `stylex.firstThatWorks` to prefer the dynamic block
+ * size. The ring also lives on a scrollable-area prop that only takes StyleX.
  */
 
 import * as stylex from '@stylexjs/stylex';
@@ -58,8 +62,10 @@ export const scheduleEventPopoverBodyStyles = stylex.create({
 });
 
 // A month cell draws its ring inside its own borders, so the grid lines stay
-// visible around the focused day. The ring itself comes from the shared focus
-// style; this rule only pulls it inward.
+// visible around the focused day. The ring itself is
+// `focusOutlineFocusVisibleClassName`; this unlayered rule only pulls the
+// offset inward, because a layered utility cannot outrank the ring's own
+// `focus-visible` offset.
 export const scheduleMonthCellFocusStyles = stylex.create({
   base: {
     outlineOffset: {

@@ -16,7 +16,7 @@
 import {useRef, type ReactNode} from 'react';
 import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {
-  focusOutlineStyles,
+  focusOutlineFocusVisibleClassName,
   mergeProps,
   plainDateAddDays,
   plainDateAddMonths,
@@ -368,9 +368,9 @@ function ScheduleMonthlyView({
                           : undefined
                       }
                       {...mergeProps(
-                        focusOutlineStyles.focusVisible,
                         scheduleMonthCellFocusStyles.base,
                         tw(
+                          focusOutlineFocusVisibleClassName,
                           scheduleMonthCellClassName,
                           index % 7 === 6 &&
                             scheduleMonthCellLastColumnClassName,
@@ -470,15 +470,17 @@ function ScheduleMonthlyView({
                             },
                           )}
                           {...mergeProps(
-                            focusOutlineStyles.focusVisible,
                             tw(
+                              focusOutlineFocusVisibleClassName,
                               scheduleEventButtonResetClassName,
                               scheduleMonthMoreButtonClassName,
                               scheduleMonthMoreButtonPositionClassName,
                             ),
-                            monthMoreButtonPositionVars(
-                              MONTH_VISIBLE_LEVELS - 1,
-                            ),
+                            {
+                              style: monthMoreButtonPositionVars(
+                                MONTH_VISIBLE_LEVELS - 1,
+                              ),
+                            },
                           )}>
                           {/* Isolated, so the count reads "+3 more" in either
                               direction. */}
@@ -574,13 +576,11 @@ function MonthChip({
       aria-label={name}
       data-schedule-month-chip=""
       {...popover.getTriggerProps(popoverKey)}
-      {...mergeProps(
-        focusOutlineStyles.focusVisible,
-        tw(
-          scheduleEventButtonResetClassName,
-          chipClassName,
-          scheduleMonthChipFocusClassName,
-        ),
+      className={tw(
+        focusOutlineFocusVisibleClassName,
+        scheduleEventButtonResetClassName,
+        chipClassName,
+        scheduleMonthChipFocusClassName,
       )}>
       {pill}
     </button>
@@ -636,12 +636,10 @@ function MonthDayEvents({
                     locale,
                   )}
                   onClick={() => onOpenEvent(event)}
-                  {...mergeProps(
-                    focusOutlineStyles.focusVisible,
-                    tw(
-                      scheduleEventButtonResetClassName,
-                      scheduleMonthDayEventButtonClassName,
-                    ),
+                  className={tw(
+                    focusOutlineFocusVisibleClassName,
+                    scheduleEventButtonResetClassName,
+                    scheduleMonthDayEventButtonClassName,
                   )}>
                   {row}
                 </button>

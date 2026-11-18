@@ -28,7 +28,7 @@ import {layerAnimations} from '@astryxdesign/core/Layer';
 import {usePopover} from '@astryxdesign/core/Popover';
 import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {
-  focusOutlineStyles,
+  focusOutlineFocusVisibleClassName,
   mergeProps,
   plainDateAddDays,
   plainDateFromInstant,
@@ -514,15 +514,13 @@ export function TimeGridView({
                     onClick={domEvent =>
                       toggleBlock(segment.event, dayISO, domEvent.currentTarget)
                     }
-                    {...mergeProps(
-                      focusOutlineStyles.focusVisible,
-                      tw(
-                        scheduleEventButtonResetClassName,
-                        placementClassName,
-                        scheduleEventButtonFocusClassName,
-                      ),
-                      placementVars,
-                    )}>
+                    className={tw(
+                      focusOutlineFocusVisibleClassName,
+                      scheduleEventButtonResetClassName,
+                      placementClassName,
+                      scheduleEventButtonFocusClassName,
+                    )}
+                    style={placementVars}>
                     {pill}
                   </button>
                 );
@@ -681,15 +679,13 @@ export function TimeGridView({
                           onClick={domEvent =>
                             toggleBlock(event, dayISO, domEvent.currentTarget)
                           }
-                          {...mergeProps(
-                            focusOutlineStyles.focusVisible,
-                            tw(
-                              scheduleEventButtonResetClassName,
-                              blockClassName,
-                              scheduleEventButtonFocusClassName,
-                            ),
-                            blockVars,
-                          )}>
+                          className={tw(
+                            focusOutlineFocusVisibleClassName,
+                            scheduleEventButtonResetClassName,
+                            blockClassName,
+                            scheduleEventButtonFocusClassName,
+                          )}
+                          style={blockVars}>
                           {blockContent}
                         </button>
                       );
