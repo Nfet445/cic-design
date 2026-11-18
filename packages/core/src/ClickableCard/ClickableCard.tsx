@@ -45,7 +45,7 @@ import {useClickableContainer} from '../hooks/useClickableContainer';
 import type {BaseProps} from '../BaseProps';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineWithinClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {tw} from '../utils/tw';
@@ -274,7 +274,6 @@ export function ClickableCard({
       elevation={elevation}
       {...mergeProps(
         themeProps('clickable-card', {variant}),
-        focusOutlineProps.focusWithin(),
         tw(
           clickableCardInteractiveClassName,
           hasBorder
@@ -282,6 +281,7 @@ export function ClickableCard({
             : clickableCardBorderlessClassName,
           !isDisabled && clickableCardOverlayClassName,
           isDisabled && clickableCardDisabledClassName,
+          focusOutlineWithinClassName,
           classNameProp,
         ),
         style,
