@@ -35,7 +35,6 @@ import React, {
   type MouseEvent,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 import {BreadcrumbContext, type BreadcrumbsVariant} from './Breadcrumbs';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
@@ -176,7 +175,7 @@ function BreadcrumbSeparator({separator}: {separator: ReactNode}) {
 const menuStyles = stylex.create({
   popover: {
     minWidth: '160px',
-    marginBlock: spacingVars['--spacing-1'],
+    marginBlock: 'var(--spacing-1)',
   },
 });
 
