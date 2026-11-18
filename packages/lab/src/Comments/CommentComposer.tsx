@@ -51,7 +51,7 @@ import {mergeProps, themeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {EmojiPicker} from '../EmojiPicker';
 import {agentToken} from './CommentMarkdown';
-import {commentComposerQuoteCardStyles} from './commentComposerOverrides.stylex';
+import {commentComposerQuoteCardClassName} from './commentComposerClasses';
 import {
   ErrorBanner,
   MetadataActionLink,
@@ -425,7 +425,7 @@ export function CommentComposerBase({
                   elevation="none"
                   padding={2}
                   width="100%"
-                  xstyle={commentComposerQuoteCardStyles.base}
+                  className={commentComposerQuoteCardClassName}
                   data-composer-anchor="quote">
                   <HStack gap={1} align="start" width="100%">
                     <StackItem size="fill">

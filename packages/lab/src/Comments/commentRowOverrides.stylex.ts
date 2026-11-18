@@ -2,35 +2,20 @@
 
 /**
  * @file commentRowOverrides.stylex.ts
- * @input Accepts nothing: every rule is fixed
- * @output StyleX rules that paint a selected thread's fill and focus ring
+ * @input Accepts nothing: the rule is fixed
+ * @output The outline a selected thread keeps in forced colors
  * @position Style exception; the component passes it through `xstyle`
  *
- * A selected thread keeps `Card`'s default variant, so this fill must outrank
- * that variant's `bg-[var(--color-background-card)]`. Both stylesheets sit in
- * `astryx-base`, where a class of ours would be decided by the later sheet;
- * StyleX's `:not(#\#)` selector wins at either order, so the rule stays here.
+ * Forced colors drops the selected fill, so the thread keeps a visible outline
+ * there. It must beat `commentRowFocusRingClassName` on the same surface: that
+ * class sits in `astryx-base`, and this unlayered rule outranks the layer, so
+ * under forced colors the system outline replaces the theme ring whatever the
+ * class set says.
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {
-  borderVarNames,
-  colorVarNames,
-  focusVarNames,
-} from '@astryxdesign/core/theme';
 
 export const commentRowSurfaceStyles = stylex.create({
-  /** The hidden toggle that names the thread has focus: the surface takes the system focus ring. */
-  focused: {
-    outlineStyle: 'var(--focus-outline-style)',
-    outlineWidth: 'var(--focus-outline-width)',
-    outlineColor: 'var(--focus-outline-color)',
-    outlineOffset: 'var(--focus-outline-offset)',
-  },
-  /** Only Card's default variant draws a border, so a selected Card keeps that variant and takes the muted fill. */
-  selectedFill: {
-    backgroundColor: 'var(--color-background-muted)',
-  },
   /** Forced colors replace the muted fill with the system background, so a selected thread keeps a visible outline there. */
   selectedForcedColors: {
     outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
