@@ -17,14 +17,16 @@
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 import type {StyleXStyles} from '../theme/types';
 import type {TableContextActions} from './types';
 import {
   hasTableContextActions,
   wrapInTableContextMenu,
 } from './tableContextMenu';
-import {tableCellClassName} from './tableCellClasses';
+import {
+  tableCellClassName,
+  tableCellTriggerClassName,
+} from './tableCellClasses';
 import {useTableContext} from './useTableCellStyles';
 import {mergeProps} from '../utils';
 import {glidingDividerStyles} from './glidingDivider';
@@ -55,32 +57,6 @@ export interface TableCellProps extends BaseProps<HTMLTableCellElement> {
    */
   contextMenuActions?: TableContextActions;
 }
-
-// The context menu trigger stays on StyleX until ContextMenu itself carries
-// class names: `triggerXstyle` only accepts a StyleX style. The wrapper fills
-// the cell — a `<td>` child at `height: 100%` stretches to the row height — and
-// carries the density padding moved off the `<td>`, so a right-click anywhere
-// in the cell, its padding ring included, opens the menu.
-const contextTriggerStyles = stylex.create({
-  fill: {
-    display: 'block',
-    boxSizing: 'border-box',
-    blockSize: '100%',
-    inlineSize: '100%',
-  },
-  compact: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  balanced: {
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-  },
-  spacious: {
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-  },
-});
 
 /**
  * TableCell — a `<td>` wrapper for children/streaming mode.
@@ -129,15 +105,13 @@ export function TableCell({
 
   // The cell owns the context-menu wrapper so it controls how the menu
   // interacts with its padding / content. No-op when no actions.
-  const triggerXstyle = hasContextMenu
-    ? ctx
-      ? [contextTriggerStyles.fill, contextTriggerStyles[ctx.density]]
-      : contextTriggerStyles.fill
+  const triggerClassName = hasContextMenu
+    ? tableCellTriggerClassName(ctx?.density)
     : undefined;
   const content = wrapInTableContextMenu(
     children,
     contextMenuActions,
-    triggerXstyle,
+    triggerClassName,
   );
 
   return (

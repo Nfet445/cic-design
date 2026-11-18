@@ -734,8 +734,14 @@ import {
   tokenizerStartIconWithTokensClassName,
   tokenizerTokenClassName,
 } from '../Tokenizer/tokenizerClasses';
-import {tableCellClassName} from '../Table/tableCellClasses';
-import {tableHeaderCellClassName} from '../Table/tableHeaderCellClasses';
+import {
+  tableCellClassName,
+  tableCellTriggerClassName,
+} from '../Table/tableCellClasses';
+import {
+  tableHeaderCellClassName,
+  tableHeaderCellTriggerClassName,
+} from '../Table/tableHeaderCellClasses';
 import {tableRowClassName} from '../Table/tableRowClasses';
 import {
   FILTER_INLINE_SLOT_CLASS,
@@ -1998,8 +2004,10 @@ function familyClassNames() {
   }
 
   for (const density of ['compact', 'balanced', 'spacious']) {
+    add(tableCellTriggerClassName(density));
     for (const hasColumnDivider of [false, true]) {
       for (const hasContextMenu of [false, true]) {
+        add(tableHeaderCellTriggerClassName);
         add(
           tableHeaderCellClassName({
             density,
