@@ -702,6 +702,7 @@ import {
   selectorSearchRowInsetClassName,
   selectorSectionHeadingClassName,
   selectorTriggerButtonClassName,
+  selectorTriggerClassName,
 } from '../Selector/selectorClasses';
 import {
   MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
@@ -2369,6 +2370,17 @@ function familyClassNames() {
   add(SELECTOR_BOTTOM_SHEET_HEADING_CLASS);
   for (const size of ['sm', 'md', 'lg']) {
     add(SELECTOR_TRIGGER_SIZE_CLASS[size]);
+  }
+  // The trigger's box and the chrome of its two borderless variants, in every
+  // state their arms split on.
+  for (const variant of ['input', 'secondary', 'ghost']) {
+    for (const hasValue of [false, true]) {
+      for (const isInert of [false, true]) {
+        for (const inGroup of [false, true]) {
+          add(selectorTriggerClassName({variant, hasValue, isInert, inGroup}));
+        }
+      }
+    }
   }
   // The option panel, its listbox in both scroll modes, the input trigger's
   // inset, and the empty, heading and divider slots.
