@@ -16,13 +16,6 @@ import {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 import type {HTMLAttributes, ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
-import {
-  colorVars,
-  durationVars,
-  easeVars,
-  radiusVars,
-  spacingVars,
-} from '../theme/tokens.stylex';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
@@ -95,10 +88,10 @@ const styles = stylex.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colorVars['--color-border'],
+    backgroundColor: 'var(--color-border)',
     transitionProperty: 'background-color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--ease-standard)',
   },
   // Overlay mode — absolutely positioned inside the parent panel
   // instead of being a sibling in flex flow. Used when the handle
@@ -151,10 +144,10 @@ const styles = stylex.create({
     height: 0,
   },
   handleHover: {
-    backgroundColor: colorVars['--color-border'],
+    backgroundColor: 'var(--color-border)',
   },
   handleActive: {
-    backgroundColor: colorVars['--color-border-emphasized'],
+    backgroundColor: 'var(--color-border-emphasized)',
   },
   disabled: {
     cursor: 'default',
@@ -168,7 +161,7 @@ const styles = stylex.create({
     userSelect: 'none',
   },
   hitAreaHorizontal: {
-    width: spacingVars['--spacing-4'],
+    width: 'var(--spacing-4)',
     top: 0,
     bottom: 0,
     cursor: {
@@ -177,7 +170,7 @@ const styles = stylex.create({
     },
   },
   hitAreaVertical: {
-    height: spacingVars['--spacing-4'],
+    height: 'var(--spacing-4)',
     insetInlineStart: 0,
     insetInlineEnd: 0,
     cursor: {
@@ -194,10 +187,10 @@ const styles = stylex.create({
     transform: 'translateY(-50%)',
   },
   hitAreaWithinHandleX: {
-    width: `min(${spacingVars['--spacing-4']}, 100%)`,
+    width: `min(var(--spacing-4), 100%)`,
   },
   hitAreaWithinHandleY: {
-    height: `min(${spacingVars['--spacing-4']}, 100%)`,
+    height: `min(var(--spacing-4), 100%)`,
   },
 
   // Pill base — themes target .astryx-resize-handle-pill for size/shape.
@@ -206,11 +199,11 @@ const styles = stylex.create({
     zIndex: 2,
     touchAction: 'none',
     userSelect: 'none',
-    borderRadius: radiusVars['--radius-full'],
-    backgroundColor: colorVars['--color-border'],
+    borderRadius: 'var(--radius-full)',
+    backgroundColor: 'var(--color-border)',
     transitionProperty: 'opacity, background-color, transform',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--ease-standard)',
     top: '50%',
   },
   pillGrabHorizontal: {
@@ -227,10 +220,10 @@ const styles = stylex.create({
   },
   pillHorizontal: {
     width: 3,
-    height: spacingVars['--spacing-8'],
+    height: 'var(--spacing-8)',
   },
   pillVertical: {
-    width: spacingVars['--spacing-8'],
+    width: 'var(--spacing-8)',
     height: 3,
   },
   // A hidden pill paints nothing, so it takes no pointer either.
@@ -239,12 +232,12 @@ const styles = stylex.create({
   pillHover: {
     opacity: 1,
     pointerEvents: 'auto',
-    backgroundColor: colorVars['--color-border'],
+    backgroundColor: 'var(--color-border)',
   },
   pillActive: {
     opacity: 1,
     pointerEvents: 'auto',
-    backgroundColor: colorVars['--color-border-emphasized'],
+    backgroundColor: 'var(--color-border-emphasized)',
   },
   // A pill shown on hover can sit outside the Grab zone. This invisible
   // extension spans the gap toward the Handle, so the pointer keeps the hover
@@ -258,10 +251,10 @@ const styles = stylex.create({
       insetBlock: 0,
       insetInlineStart: {
         default: 0,
-        ':is([dir="rtl"] *)': `calc(-1 * ${spacingVars['--spacing-1']} - 1px)`,
+        ':is([dir="rtl"] *)': `calc(-1 * var(--spacing-1) - 1px)`,
       },
       insetInlineEnd: {
-        default: `calc(-1 * ${spacingVars['--spacing-1']} - 1px)`,
+        default: `calc(-1 * var(--spacing-1) - 1px)`,
         ':is([dir="rtl"] *)': 0,
       },
     },
@@ -272,12 +265,12 @@ const styles = stylex.create({
       position: 'absolute',
       insetBlock: 0,
       insetInlineStart: {
-        default: `calc(-1 * ${spacingVars['--spacing-1']} - 1px)`,
+        default: `calc(-1 * var(--spacing-1) - 1px)`,
         ':is([dir="rtl"] *)': 0,
       },
       insetInlineEnd: {
         default: 0,
-        ':is([dir="rtl"] *)': `calc(-1 * ${spacingVars['--spacing-1']} - 1px)`,
+        ':is([dir="rtl"] *)': `calc(-1 * var(--spacing-1) - 1px)`,
       },
     },
   },
@@ -287,7 +280,7 @@ const styles = stylex.create({
       position: 'absolute',
       insetInline: 0,
       insetBlockStart: 0,
-      insetBlockEnd: `calc(-1 * ${spacingVars['--spacing-1']} - 1px)`,
+      insetBlockEnd: `calc(-1 * var(--spacing-1) - 1px)`,
     },
   },
   pillBridgeUp: {
@@ -295,7 +288,7 @@ const styles = stylex.create({
       content: '""',
       position: 'absolute',
       insetInline: 0,
-      insetBlockStart: `calc(-1 * ${spacingVars['--spacing-1']} - 1px)`,
+      insetBlockStart: `calc(-1 * var(--spacing-1) - 1px)`,
       insetBlockEnd: 0,
     },
   },
@@ -307,21 +300,21 @@ const dynamicStyles = stylex.create({
   // An inline Handle's zone is centred on its line, so half of it reaches into
   // the pane.
   hitAreaLengthX: (pane: number) => ({
-    width: `min(${spacingVars['--spacing-4']}, ${pane}px)`,
+    width: `min(var(--spacing-4), ${pane}px)`,
   }),
   hitAreaLengthY: (pane: number) => ({
-    height: `min(${spacingVars['--spacing-4']}, ${pane}px)`,
+    height: `min(var(--spacing-4), ${pane}px)`,
   }),
   pillOffsetX: (dir: -1 | 1) => ({
     insetInlineStart: 0,
-    transform: `translate(calc(${dir} * (100% + ${spacingVars['--spacing-1']})), -50%)`,
+    transform: `translate(calc(${dir} * (100% + var(--spacing-1))), -50%)`,
   }),
   // Vertical offset: no rotation — use explicit landscape dimensions.
   // Rotation + offset creates confusing coordinate math since translate
   // operates in pre-rotation local space.
   pillOffsetY: (dir: -1 | 1) => ({
     top: 0,
-    transform: `translate(-50%, calc(${dir} * (100% + ${spacingVars['--spacing-1']})))`,
+    transform: `translate(-50%, calc(${dir} * (100% + var(--spacing-1))))`,
   }),
 });
 
