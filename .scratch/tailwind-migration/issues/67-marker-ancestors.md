@@ -1,6 +1,6 @@
 # 67 — Replace the four remaining marker ancestors with data attributes
 
-Status: ready-for-agent
+Status: ready-for-human
 Wave: 9
 Blocked by: none
 
@@ -65,3 +65,30 @@ what the overlay and focus-owner work already does.
 - Classes registered in the package sheet test; the ceiling moves only with a
   measured number.
 - A note in this ticket names any state that could NOT move, and why.
+
+## Result
+
+Switch and Table row expansion in Core, and Schedule and TabBar in Lab, use
+scoped Tailwind selectors for the former marker states. The four style maps and
+three marker modules were removed. None had a package subpath or a namespace or
+sync-exports entry.
+
+The Core and Lab builds compact generated CSS formatting to address the gzip
+size increase seen on the first implementation. The existing gzip baselines
+and limits still apply.
+
+The expansion column insets and expanded-row divider suppression retain small
+marker-free StyleX rules. They must compose after preceding plugins' StyleX
+values, which layered utilities cannot override. Matching utilities keep the
+rules effective when StyleX and Tailwind both run inside the base layer.
+
+Focused component and stylesheet tests passed. The final sheets measure
+46,561 B gzip for Core (48,680 B limit) and 14,168 B for Lab (14,391 B limit).
+Chromium checks covered Switch keyboard focus and toggling, Table expansion,
+Schedule focus rings, and TabBar focus and selection. Storybook needed a local
+response workaround for an existing invalid FieldStatus CSS declaration and
+an unrelated Lab barrel export; these workarounds did not change source files.
+The full suite was not run. The build package's Node tests did not start because
+Core's prerequisite TypeScript build failed in `getLocaleDirection.ts` on
+`Intl.Locale` text-info types. Windows High Contrast remains a manual check and
+must be recorded before this ticket is done.

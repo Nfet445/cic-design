@@ -3,9 +3,11 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {render, screen, fireEvent, act} from '@testing-library/react';
 import {useState} from 'react';
+import * as stylex from '@stylexjs/stylex';
 import {Table} from '../../Table';
-import type {TableColumn} from '../../types';
+import type {TableColumn, TablePlugin} from '../../types';
 import {useTableRowExpansion} from './useTableRowExpansion';
+import {rowExpansionOverride} from './rowExpansionOverride.stylex';
 import {
   ROW_EXPANSION_CLICKABLE_ROW_CLASS,
   ROW_EXPANSION_GLYPH_STATE_CLASS,
@@ -76,6 +78,7 @@ function Harness({
   dividers,
   isStriped,
   getRowLabel,
+  precedingPlugin,
 }: {
   initialExpanded?: Set<string>;
   isItemExpandable?: (item: Row) => boolean;
@@ -87,6 +90,7 @@ function Harness({
   dividers?: 'rows' | 'columns' | 'grid' | 'none';
   isStriped?: boolean;
   getRowLabel?: (item: Row) => string;
+  precedingPlugin?: TablePlugin<Row>;
 }) {
   const [expandedKeys, setExpandedKeys] = useState(initialExpanded);
   const expansion = useTableRowExpansion<Row>({
@@ -116,7 +120,7 @@ function Harness({
       density={density}
       dividers={dividers}
       isStriped={isStriped}
-      plugins={{expansion}}
+      plugins={precedingPlugin ? {precedingPlugin, expansion} : {expansion}}
     />
   );
 }
@@ -412,15 +416,47 @@ describe('useTableRowExpansion (detail panel)', () => {
     // itself; the browser spec measures that), and the header cell drops both.
     render(<Harness initialExpanded={new Set(['a'])} />);
     const button = screen.getAllByRole('button', {name: /collapse row/i})[0];
-    expect(
-      getComputedStyle(button.closest('td') as HTMLTableCellElement)
-        .paddingInlineStart,
-    ).toMatch(/^0(px)?$/);
-    // The header cell holds only a hidden label; its insets alone would
-    // outgrow the 40px column at a large root font size.
-    const header = getComputedStyle(screen.getAllByRole('columnheader')[0]);
-    expect(header.paddingInlineStart).toMatch(/^0(px)?$/);
-    expect(header.paddingInlineEnd).toMatch(/^0(px)?$/);
+    expect(button.closest('td')).toHaveClass('[&&&]:ps-0');
+    expect(screen.getAllByRole('columnheader')[0]).toHaveClass(
+      '[&&&]:ps-0',
+      '[&&&]:pe-0',
+    );
+  });
+
+  it('suppresses preceding plugin insets on the expansion column', () => {
+    const custom = stylex.create({
+      insets: {paddingInlineStart: 9, paddingInlineEnd: 9},
+    });
+    const precedingPlugin: TablePlugin<Row> = {
+      transformHeaderCell: props => ({
+        ...props,
+        xstyle: [...props.xstyle, custom.insets],
+      }),
+      transformBodyCell: props => ({
+        ...props,
+        xstyle: [...props.xstyle, custom.insets],
+      }),
+    };
+    render(
+      <Harness
+        initialExpanded={new Set(['a'])}
+        precedingPlugin={precedingPlugin}
+      />,
+    );
+    const firstHeader = screen.getAllByRole('columnheader')[0];
+    const firstBodyCell = screen
+      .getAllByRole('button', {name: /collapse row/i})[0]
+      .closest('td')!;
+    const resolvedHeader = stylex.props(
+      custom.insets,
+      rowExpansionOverride.chevronHeaderCell,
+    ).className!;
+    const resolvedBody = stylex.props(
+      custom.insets,
+      rowExpansionOverride.chevronCell,
+    ).className!;
+    expect(firstHeader).toHaveClass(resolvedHeader);
+    expect(firstBodyCell).toHaveClass(resolvedBody);
   });
 
   describe('row divider placement', () => {
@@ -436,25 +472,57 @@ describe('useTableRowExpansion (detail panel)', () => {
       // into the next row — the wrong way round on both counts.
       render(<Harness initialExpanded={new Set(['a'])} />);
       for (const cell of cellsOf('Ada')) {
-        expect(cell).toHaveStyle({borderBottomWidth: '0'});
+        expect(cell).toHaveClass(
+          stylex.props(rowExpansionOverride.expandedCell).className!,
+          '[&&]:border-b-0',
+          '[&&]:[--_table-row-divider-width:0px]',
+        );
       }
       // The token width, unless the row hands down its own.
-      expect(getComputedStyle(panelCell()).borderBottomWidth).toMatch(
-        /var\(--_table-panel-divider-width,\s*var\(--border-width\)\)/,
+      expect(panelCell()).toHaveClass(
+        '[border-bottom-width:var(--_table-panel-divider-width,var(--border-width))]',
+        '[[data-expansion-panel]:last-child_>_&]:border-b-0',
       );
+    });
+
+    it('suppresses a preceding plugin’s StyleX divider on expanded rows', () => {
+      const custom = stylex.create({divider: {borderBottomWidth: 3}});
+      const precedingPlugin: TablePlugin<Row> = {
+        transformBodyCell: props => ({
+          ...props,
+          xstyle: [...props.xstyle, custom.divider],
+        }),
+      };
+      render(
+        <Harness
+          initialExpanded={new Set(['a'])}
+          precedingPlugin={precedingPlugin}
+        />,
+      );
+      const dividerClass = stylex.props(custom.divider).className!;
+      for (const cell of cellsOf('Ada')) {
+        expect(cell).not.toHaveClass(dividerClass);
+      }
+      for (const cell of cellsOf('Bo')) {
+        expect(cell).toHaveClass(dividerClass);
+      }
     });
 
     it('leaves collapsed rows keeping their own divider', () => {
       render(<Harness initialExpanded={new Set(['a'])} />);
       for (const cell of cellsOf('Bo')) {
-        expect(cell).not.toHaveStyle({borderBottomWidth: '0'});
+        expect(cell).not.toHaveClass(
+          stylex.props(rowExpansionOverride.expandedCell).className!,
+        );
+        expect(cell).not.toHaveClass('[&&]:border-b-0');
+        expect(cell).not.toHaveClass('[&&]:[--_table-row-divider-width:0px]');
       }
     });
 
     it('draws no panel divider on a table without row dividers', () => {
       render(<Harness initialExpanded={new Set(['a'])} dividers="none" />);
-      expect(getComputedStyle(panelCell()).borderBottomWidth).not.toMatch(
-        /--border-width/,
+      expect(panelCell()).not.toHaveClass(
+        '[border-bottom-width:var(--_table-panel-divider-width,var(--border-width))]',
       );
     });
 
@@ -541,8 +609,9 @@ describe('useTableRowExpansion (detail panel)', () => {
     it('draws the panel divider under grid dividers too', () => {
       render(<Harness initialExpanded={new Set(['a'])} dividers="grid" />);
       // The token width, unless the row hands down its own.
-      expect(getComputedStyle(panelCell()).borderBottomWidth).toMatch(
-        /var\(--_table-panel-divider-width,\s*var\(--border-width\)\)/,
+      expect(panelCell()).toHaveClass(
+        '[border-bottom-width:var(--_table-panel-divider-width,var(--border-width))]',
+        '[[data-expansion-panel]:last-child_>_&]:border-b-0',
       );
     });
   });

@@ -27,8 +27,6 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {tableRowMarker} from '../../table.stylex';
 import {panelDividerFor} from '../../rowDivider';
 import {useTheme, useThemeName} from '../../../theme/useTheme';
 import {Icon} from '../../../Icon';
@@ -38,7 +36,7 @@ import {tw} from '../../../utils/tw';
 import {VisuallyHidden} from '../../../VisuallyHidden';
 import {resolveContextActions} from '../../tableContextMenu';
 import {useTableContext} from '../../useTableCellStyles';
-import {mergeProps, RTL_MIRROR_CLASS} from '../../../utils';
+import {RTL_MIRROR_CLASS} from '../../../utils';
 import {
   ROW_EXPANSION_CHEVRON_BUTTON_CLASS,
   ROW_EXPANSION_CLICKABLE_ROW_CLASS,
@@ -50,8 +48,12 @@ import {
   ROW_EXPANSION_PANEL_MUTED_CLASS,
   rowExpansionChevronOffsetClassName,
   rowExpansionPanelIndentClassName,
+  rowExpansionPanelDividerClassName,
+  rowExpansionExpandedCellClassName,
+  rowExpansionChevronCellClassName,
+  rowExpansionChevronHeaderClassName,
 } from './rowExpansionClasses';
-import {rowExpansionOverrideStyles} from './rowExpansionOverrides.stylex';
+import {rowExpansionOverride} from './rowExpansionOverride.stylex';
 import {
   hasInteractiveAncestor,
   hasTextSelection,
@@ -422,19 +424,13 @@ function ExpansionPanelCell({
     <td
       ref={cellRef}
       colSpan={colSpan}
-      {...mergeProps(
-        tw(
-          ROW_EXPANSION_PANEL_CLASS,
-          rowExpansionPanelIndentClassName(ctx?.density ?? 'balanced'),
-          isMuted && ROW_EXPANSION_PANEL_MUTED_CLASS,
-        ),
-        mergeProps(
-          tw(
-            glidingDividerCellClassName,
-            hasRowDividers && glidingDividerPanelCellClassName,
-          ),
-          stylex.props(hasRowDividers && rowExpansionOverrideStyles.panelCell),
-        ),
+      className={tw(
+        ROW_EXPANSION_PANEL_CLASS,
+        rowExpansionPanelIndentClassName(ctx?.density ?? 'balanced'),
+        isMuted && ROW_EXPANSION_PANEL_MUTED_CLASS,
+        glidingDividerCellClassName,
+        hasRowDividers && glidingDividerPanelCellClassName,
+        hasRowDividers && rowExpansionPanelDividerClassName,
       )}>
       {children}
     </td>
@@ -800,10 +796,14 @@ export function useTableRowExpansion<T extends Record<string, unknown>>(
         return column.key === EXPANSION_COLUMN_KEY
           ? {
               ...props,
-              xstyle: [
-                ...props.xstyle,
-                rowExpansionOverrideStyles.chevronHeaderCell,
-              ],
+              xstyle: [...props.xstyle, rowExpansionOverride.chevronHeaderCell],
+              htmlProps: {
+                ...props.htmlProps,
+                className: tw(
+                  props.htmlProps.className,
+                  rowExpansionChevronHeaderClassName,
+                ),
+              },
             }
           : props;
       },
@@ -827,14 +827,20 @@ export function useTableRowExpansion<T extends Record<string, unknown>>(
           ...props,
           xstyle: [
             ...props.xstyle,
-            // The chevron centers itself in its column (chevronCellStyles).
             ...(column.key === EXPANSION_COLUMN_KEY
-              ? [rowExpansionOverrideStyles.chevronCell]
+              ? [rowExpansionOverride.chevronCell]
               : []),
-            // Hand the row divider to the panel below, so the line closes the
-            // row-plus-panel pair instead of splitting it.
-            ...(isExpanded ? [rowExpansionOverrideStyles.expandedRowCell] : []),
+            ...(isExpanded ? [rowExpansionOverride.expandedCell] : []),
           ],
+          htmlProps: {
+            ...props.htmlProps,
+            className: tw(
+              props.htmlProps.className,
+              column.key === EXPANSION_COLUMN_KEY &&
+                rowExpansionChevronCellClassName,
+              isExpanded && rowExpansionExpandedCellClassName,
+            ),
+          },
           contextMenuActions: () => [
             ...resolveContextActions(props.contextMenuActions),
             {
@@ -982,12 +988,7 @@ export function useTableRowExpansion<T extends Record<string, unknown>>(
             // attribute is what keeps an open panel from inverting the zebra of
             // every row beneath it. Load-bearing, not diagnostic.
             data-expansion-panel=""
-            className={glidingDividerRowClassName}
-            {...stylex.props(
-              // Carries the marker so the panel cell's divider can ask whether
-              // this row is the table's last, the same way TableCell does.
-              tableRowMarker,
-            )}>
+            className={glidingDividerRowClassName}>
             <ExpansionPanelCell
               colSpan={columnCountRef.current}
               cellsRef={panelCellsRef}

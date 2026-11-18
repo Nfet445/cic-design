@@ -95,8 +95,8 @@ import {
   scheduleWeekHeaderClassName,
   scheduleWeekdayHeadingClassName,
   scheduleWeekdayLabelClassName,
+  scheduleEventPopoverBodyClassName,
 } from './scheduleClasses';
-import {scheduleEventPopoverBodyStyles} from './scheduleOverrides.stylex';
 import type {
   CalendarEvent,
   CalendarInstantEvent,
@@ -298,7 +298,7 @@ export function SchedulePopoverBody({
   return (
     <div
       {...getViewportProps<HTMLDivElement>({
-        xstyle: scheduleEventPopoverBodyStyles.base,
+        className: scheduleEventPopoverBodyClassName,
       })}>
       <div {...getContentProps<HTMLDivElement>()}>{children}</div>
     </div>

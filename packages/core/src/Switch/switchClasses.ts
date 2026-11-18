@@ -9,11 +9,6 @@
  *   sizing custom property
  * @position Internal to Switch; the Tailwind build scans it for class names
  *
- * What reads the `switchScope` marker or the `switchFocusInput` marker (the
- * hover tint, the press layers, the focus ring) and the input's box, whose
- * `transform` extends the shared centering class, stay in
- * switchHoverPress.stylex.ts. Everything without a marker is a class here.
- *
  * SYNC: When modified, update
  * - /packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
  */
@@ -143,18 +138,20 @@ export function switchWrapperClassName({
 
 /** The track's box and inset, per size. */
 export function switchTrackBoxClassName({size}: {size: 'sm' | 'md'}): string {
-  return TRACK_BOX[size];
+  return tw(TRACK_BOX[size], '[&::before]:z-[1]');
 }
 
 /**
  * The native input: it covers the track, so a click anywhere on the track
- * toggles, and it is invisible. Its box and the hit area it grows to under a
- * finger stay in switchHoverPress.stylex.ts, where its `transform` composes
- * with the shared centering class.
+ * toggles, and it is invisible. The measured hit insets grow its box under a finger.
  */
 export function switchInputClassName({isBusy}: {isBusy: boolean}): string {
   return tw(
-    'absolute top-1/2 z-[1] m-0 p-0 opacity-0',
+    'absolute top-1/2 left-1/2 z-[1] m-0 p-0 opacity-0 w-full h-full',
+    '[transform:translate(-50%,-50%)]',
+    'pointer-coarse:w-[calc(100%+var(--astryx-hit-inset-left,0px)+var(--astryx-hit-inset-right,0px))]',
+    'pointer-coarse:h-[calc(100%+var(--astryx-hit-inset-top,0px)+var(--astryx-hit-inset-bottom,0px))]',
+    'pointer-coarse:[transform:translate(calc(-50%_+_(var(--astryx-hit-inset-right,0px)-var(--astryx-hit-inset-left,0px))/2),calc(-50%_+_(var(--astryx-hit-inset-bottom,0px)-var(--astryx-hit-inset-top,0px))/2))]',
     // aria-disabled, not disabled: a disabled switch stays focusable.
     'cursor-pointer aria-disabled:cursor-default',
     isBusy && 'pointer-events-none',
@@ -260,3 +257,28 @@ export function switchLabelWrapperClassName({
 
 /** The status message under the field. */
 export const switchStatusClassName = 'mt-2';
+
+// The row owns the press through a drag; its track and thumb release on the compositor.
+/* eslint-disable @astryx/no-raw-private-attribute -- Switch owns its scope here. The utility scanner requires literal selectors. */
+export const switchScopeProps = {'data-astryx-switch-scope': ''};
+
+// The shared unlayered strength release yields to the compositor layers under a finger.
+export const switchPressOwnerClassName = tw(
+  'data-[astryx-press=fading]:motion-reduce:[animation-name:none]!',
+  'data-[astryx-press=fading]:pointer-coarse:[animation-name:none]!',
+);
+
+export const switchFocusRingClassName = tw(
+  '[outline-style:none]',
+  '[[role=switch]:focus-visible_+_&]:[outline:var(--focus-outline-width)_var(--focus-outline-style)_var(--focus-outline-color)]',
+  '[[role=switch]:focus-visible_+_&]:[outline-offset:var(--focus-outline-offset)]',
+);
+
+export const switchTrackHoverClassName = {
+  on: '[@media(hover:hover)_and_(forced-colors:none)]:[[data-astryx-switch-scope]:hover_&]:bg-[color:color-mix(in_srgb,var(--color-accent),var(--color-tint-hover)_15%)]',
+  off: '[@media(hover:hover)_and_(forced-colors:none)]:[[data-astryx-switch-scope]:hover_&]:bg-[color:color-mix(in_srgb,var(--color-background-gray),var(--color-tint-hover)_5%)]',
+};
+
+/* eslint-enable @astryx/no-raw-private-attribute */
+
+export const switchPressLayerClassName = 'astryx-switch-press-layer';

@@ -21,7 +21,6 @@ import {
   type ReactNode,
   type UIEvent,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {Locale} from '@astryxdesign/core/i18n';
 import type {CalendarSystem} from '@astryxdesign/core/internal/calendar-system';
 import {layerAnimations} from '@astryxdesign/core/Layer';
@@ -29,7 +28,6 @@ import {usePopover} from '@astryxdesign/core/Popover';
 import {spacingVarNames} from '@astryxdesign/core/theme';
 import {
   focusOutlineFocusVisibleClassName,
-  mergeProps,
   plainDateAddDays,
   plainDateFromInstant,
   plainDateIsAfter,
@@ -65,6 +63,7 @@ import {
   scheduleTimeGridHeaderCellLastClassName,
   scheduleTimeGridHeaderHeadingClassName,
   scheduleTimeGridHeaderHeadingContentClassName,
+  scheduleTimeGridFocusRingClassName,
   scheduleTimeGridViewportClassName,
   scheduleTimeLabelClassName,
   scheduleTimeLabelsClassName,
@@ -73,8 +72,6 @@ import {
   scheduleVisuallyHiddenClassName,
 } from './scheduleClasses';
 import {eventOccursOnDate, isAllDaySpan, isDayEvent} from './dateMath';
-import {timeGridViewportScope} from './schedule.stylex';
-import {scheduleTimeGridFocusRingStyles} from './scheduleOverrides.stylex';
 import {
   EventPill,
   SchedulePopoverBody,
@@ -337,10 +334,7 @@ export function TimeGridView({
   const viewportProps = getViewportProps<HTMLDivElement>({
     ref: viewportRef,
     onScroll: rememberScroll,
-    ...mergeProps(
-      scheduleTimeGridViewportClassName,
-      stylex.props(timeGridViewportScope),
-    ),
+    className: scheduleTimeGridViewportClassName,
   });
   const contentProps = getContentProps<HTMLDivElement>({
     className: scheduleTimeGridContentClassName,
@@ -704,10 +698,7 @@ export function TimeGridView({
             })}
           </div>
         </div>
-        <div
-          aria-hidden
-          {...stylex.props(scheduleTimeGridFocusRingStyles.base)}
-        />
+        <div aria-hidden className={scheduleTimeGridFocusRingClassName} />
       </div>
       {hasPopover &&
         popover.render(
