@@ -66,6 +66,7 @@ import {
   COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS,
   complexSelectorHeightClassName,
   complexSelectorPopoverClassName,
+  complexSelectorTriggerClassName,
 } from './complexSelectorClasses';
 import {tw} from '../utils/tw';
 import {usePressFeedback} from '../hooks/usePressFeedback';
@@ -85,120 +86,6 @@ registerEnglishFallback(english);
 // The popup content's own block-size cap; the viewport cap is the layer
 // runtime's.
 const CONTENT_BLOCK_CAP = '480px';
-
-/**
- * The trigger's own list is open. A press does not scale the box then, so the
- * list anchors to the box at rest.
- */
-const LAYER_OPEN: string = ':has([aria-expanded="true"])';
-
-// The trigger container shares its element with
-// `fieldInputWrapperClassName()` from `../Field/fieldClasses`. The variants
-// still differ from the plain field box: a ghost trigger has no fill or
-// border, a secondary one keeps the neutral fill, and the code-point ring is a
-// keyboard only ring. The popup's minimum width is
-// `complexSelectorPopoverClassName`; every child element uses
-// `complexSelectorClasses.ts`.
-const styles = stylex.create({
-  triggerContainer: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 'var(--spacing-2)',
-    width: '100%',
-    paddingBlock: 'var(--spacing-2)',
-    paddingInline: 'var(--spacing-3)',
-    fontFamily: 'var(--font-family-body)',
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: 'var(--text-label-size)',
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)':
-          'max(1rem, var(--text-label-size))',
-      },
-    },
-    lineHeight: 'var(--text-label-leading)',
-    color: 'var(--color-text-primary)',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  placeholder: {
-    color: 'var(--color-text-secondary)',
-  },
-  triggerGhost: {
-    width: 'auto',
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': 'none',
-        },
-      ':focus-within': 'none',
-    },
-    fontWeight: 'var(--font-weight-medium)',
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the list opens.
-      [LAYER_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transform: {
-      default: 'scale(1)',
-      // A mouse press; under a coarse pointer the touch press model writes
-      // `data-astryx-press` instead (see interactionOverlay.stylex.ts).
-      [`:active:not(${LAYER_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-      },
-      [`[data-astryx-press="on"]:not(${LAYER_OPEN})`]: 'scale(0.98)',
-    },
-  },
-  // Keep the input-family width contract while reusing ghost's borderless paint
-  // and the neutral resting fill used by secondary buttons.
-  triggerSecondary: {
-    borderWidth: 0,
-    backgroundColor: 'var(--color-neutral)',
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': 'none',
-        },
-      ':focus-within': 'none',
-    },
-    fontWeight: 'var(--font-weight-medium)',
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the list opens.
-      [LAYER_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transform: {
-      default: 'scale(1)',
-      [`:active:not(${LAYER_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-      },
-      [`[data-astryx-press="on"]:not(${LAYER_OPEN})`]: 'scale(0.98)',
-    },
-  },
-  triggerGhostDisabled: {
-    backgroundImage: 'none',
-    transform: {
-      default: 'none',
-      ':active': 'none',
-      '[data-astryx-press="on"]': 'none',
-    },
-  },
-  disabled: {
-    cursor: 'default',
-  },
-});
 
 export type ComplexSelectorVariant = 'input' | 'secondary' | 'ghost';
 
@@ -880,15 +767,14 @@ export function ComplexSelector<Value>({
             status: status?.type ?? null,
           }),
           stylex.props(
-            styles.triggerContainer,
-            variant === 'secondary' && styles.triggerSecondary,
-            variant === 'ghost' && styles.triggerGhost,
             variant !== 'input' && interactionOverlayStyles.pressedAlpha,
-            variant !== 'input' && isDisabled && styles.triggerGhostDisabled,
-            isDisabled && styles.disabled,
-            triggerLabel == null && styles.placeholder,
           ),
           tw(
+            complexSelectorTriggerClassName({
+              variant,
+              hasValue: triggerLabel != null,
+              isInert: variant !== 'input' && isDisabled,
+            }),
             fieldInputWrapperClassName(),
             isDisabled && fieldInputWrapperDisabledClassName,
             complexSelectorHeightClassName({size}),

@@ -446,6 +446,7 @@ import {
   COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
   COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS,
   complexSelectorHeightClassName,
+  complexSelectorTriggerClassName,
   complexSelectorPopoverClassName,
 } from '../ComplexSelector/complexSelectorClasses';
 import {
@@ -3606,6 +3607,15 @@ function familyClassNames() {
   add(COMPLEX_SELECTOR_CONTENT_CLASS);
   for (const size of ['sm', 'md', 'lg']) {
     add(complexSelectorHeightClassName({size}));
+  }
+  // The trigger's box and the chrome of its two borderless variants, in every
+  // state their arms split on.
+  for (const variant of ['input', 'secondary', 'ghost']) {
+    for (const hasValue of [false, true]) {
+      for (const isInert of [false, true]) {
+        add(complexSelectorTriggerClassName({variant, hasValue, isInert}));
+      }
+    }
   }
   // NumberInput: the entry in every size and state, the unit, the stepper
   // column and both buttons.
