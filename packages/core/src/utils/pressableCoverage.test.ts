@@ -45,6 +45,7 @@ const MODEL_FILES = new Set([
   'utils/interactionOverlayClasses.ts',
   'privateAttributes/press.stylex.ts',
   'privateAttributes/press.ts',
+  'privateAttributes/pressClasses.ts',
   'utils/pressFeedback.ts',
   'utils/pressGesture.ts',
 ]);
@@ -77,7 +78,7 @@ const source = new Map(
 // a bare attribute selector or inside `:is(…)`. The press attribute's owner
 // module writes some arms for a component, which composes them ready-made.
 const PRESS_ARM =
-  /':active|'(?::is\()?\[data-astryx-press=|interactionOverlayStyles\.|indicatorPressPaintStyles\.|rowPressPaintStyles\.|menuPressLitRowClassName/;
+  /':active|'(?::is\()?\[data-astryx-press=|interactionOverlayStyles\.|indicatorPressPaintStyles\.|rowPressPaintStyles\.|menuPressLitRowClassName|rowPressPaintRadioRowClassName/;
 const ANCESTOR_ARM =
   /stylex\.when\.ancestor\(\s*'(?::active|\[data-astryx-press=[^)]*)',\s*(\w+)\s*,?\s*\)/g;
 
@@ -113,7 +114,10 @@ function isMarked(file: string): boolean {
     delegatesToItem(text) ||
     // A menu row paints its press through the lit class; `useMenuPress` is the
     // controller for that family and writes the attribute the class reads.
-    text.includes('menuPressLitRowClassName')
+    text.includes('menuPressLitRowClassName') ||
+    // A RadioList row paints its press through a class the press controller
+    // owns; composing it is the marker.
+    text.includes('rowPressPaintRadioRowClassName')
   );
 }
 
