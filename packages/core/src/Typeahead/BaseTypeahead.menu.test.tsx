@@ -493,6 +493,12 @@ describe('BaseTypeahead menu', () => {
       render(<FilterField isSaveDeferred={isSaveDeferred} />);
       const input = screen.getByRole('combobox');
       await user.click(input);
+      // The rows mount before the layer reports the list open, and jsdom has no
+      // UA rule hiding a closed popover, so an option in the tree does not mean
+      // the list is open. Enter on the still-closed list only opens it.
+      await waitFor(() =>
+        expect(input.getAttribute('aria-expanded')).toBe('true'),
+      );
       await screen.findByRole('option', {name: 'Apple', hidden: true});
       await user.keyboard('{Enter}');
       const dialog = await screen.findByRole('dialog', {
