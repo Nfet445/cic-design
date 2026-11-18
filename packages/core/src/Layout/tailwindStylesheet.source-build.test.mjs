@@ -35,6 +35,10 @@ import {
   APP_SHELL_AREA_TRANSPARENT_CLASS,
   APP_SHELL_AREA_WASH_CLASS,
   APP_SHELL_SKIP_LINK_CLASS,
+  APP_SHELL_MAIN_FOCUS_TARGET_CLASS,
+  APP_SHELL_MAIN_ELEVATED_CORNER_CLASS,
+  APP_SHELL_MAIN_SAFE_AREA_END_CLASS,
+  APP_SHELL_PANEL_AUTO_FILL_CLASS,
 } from '../AppShell/appShellClasses';
 import {
   breadcrumbMenuClassName,
@@ -668,6 +672,10 @@ import {
   overlayScrimTintClassName,
 } from '../Overlay/overlayClasses';
 import {visuallyHiddenClassName} from '../VisuallyHidden/visuallyHiddenClasses';
+import {
+  touchHitAreaLayerBelowChildrenClassName,
+  touchHitAreaLayerClassName,
+} from '../internal/touchHitAreaClasses';
 import {
   swipeEntryClassName,
   swipeEntryCoveredClassName,
@@ -1602,6 +1610,10 @@ function familyClassNames() {
   // (controlled open and closed, always shown, hover and focus) per position.
   // VisuallyHidden: the clip block every accessible label reuses.
   add(visuallyHiddenClassName);
+  // The band every press target widens its hit area with, above or below the
+  // element's own children.
+  add(touchHitAreaLayerClassName);
+  add(touchHitAreaLayerBelowChildrenClassName);
   add(overlayContainerClassName);
   add(overlayScrimBaseClassName);
   for (const position of ['fill', 'bottom', 'top']) {
@@ -2990,6 +3002,10 @@ function familyClassNames() {
   add(sideNavClassName.resizableContainer);
   add(sideNavClassName.resizableHandle);
   add(APP_SHELL_SKIP_LINK_CLASS);
+  add(APP_SHELL_MAIN_FOCUS_TARGET_CLASS);
+  add(APP_SHELL_MAIN_ELEVATED_CORNER_CLASS);
+  add(APP_SHELL_MAIN_SAFE_AREA_END_CLASS);
+  add(APP_SHELL_PANEL_AUTO_FILL_CLASS);
   // The nav area's and the content area's fills, and the elevated content's
   // transparent arm.
   add(APP_SHELL_AREA_WASH_CLASS);

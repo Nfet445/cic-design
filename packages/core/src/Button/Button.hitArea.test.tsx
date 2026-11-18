@@ -15,7 +15,7 @@ import {describe, it, expect, vi} from 'vitest';
 import {act, render, screen} from '@testing-library/react';
 import type * as HitAreaModule from '../utils/hitArea';
 import type {HitInsets} from '../utils/hitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {ButtonGroup} from '../ButtonGroup/ButtonGroup';
 import {PressGroupBandContext} from '../hooks/pressGroupContext';
 import {Button} from './Button';
@@ -37,9 +37,7 @@ vi.mock('../utils/hitArea', async importOriginal => ({
   },
 }));
 
-const bandClasses = (stylex.props(touchHitAreaStyles.layer).className ?? '')
-  .split(/\s+/)
-  .filter(Boolean);
+const bandClasses = touchHitAreaLayerClassName.split(/\s+/).filter(Boolean);
 
 function isWatched(element: Element): boolean {
   return hitAreaWatches.some(entry => entry.element === element);

@@ -206,7 +206,8 @@ const LAB_ONLY_NAMES = [
   'animatorFor',
   'reducedMotionFade',
   'useTouchHitArea',
-  'touchHitAreaStyles',
+  'touchHitAreaLayerClassName',
+  'touchHitAreaLayerBelowChildrenClassName',
   'measureLogicalScrollAxis',
   'timing',
 ];

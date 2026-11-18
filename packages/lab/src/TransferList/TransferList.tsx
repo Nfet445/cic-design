@@ -66,13 +66,11 @@ import {
   transferListPanelHeaderClassName,
   transferListPanelsClassName,
   transferListRootClassName,
+  transferListDisabledRowPointerClassName,
+  transferListRemoveOnDisabledRowClassName,
   transferListSearchClassName,
 } from './transferListClasses';
-import {
-  transferListDisabledRowPointerStyles,
-  transferListHeaderActionStyles,
-  transferListRemoveOnDisabledRowStyles,
-} from './transferListOverrides.stylex';
+import {transferListHeaderActionStyles} from './transferListOverrides.stylex';
 import {tw} from '../tw';
 
 // A Lucide glyph the shared icon registry does not carry (there is no `add`
@@ -561,7 +559,7 @@ export function TransferList<T extends string = string>({
             : undefined
         }
         xstyle={
-          isDisabled ? transferListRemoveOnDisabledRowStyles.base : undefined
+          isDisabled ? transferListRemoveOnDisabledRowClassName : undefined
         }
       />
     );
@@ -609,10 +607,10 @@ export function TransferList<T extends string = string>({
           // A disabled list keeps each handle as a focusable disabled
           // control. Core List ends its reorder mode and sends a drag home.
           isDisabled={isDisabled}
-          className={transferListItemClassName}
-          xstyle={
-            isDisabled ? transferListDisabledRowPointerStyles.base : undefined
-          }
+          className={tw(
+            transferListItemClassName,
+            isDisabled && transferListDisabledRowPointerClassName,
+          )}
           data-transfer-list-row={option.value}
           data-transfer-list-index={String(value.indexOf(option.value))}
           {...theme}

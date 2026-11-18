@@ -55,7 +55,7 @@ import {mergeProps} from '../utils/mergeProps';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useTouchHitArea} from '../utils/touchHitArea';
 import {ButtonHitAreaContext} from './buttonHitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {themeProps} from '../utils/themeProps';
@@ -550,9 +550,7 @@ export function Button({
   );
 
   const iconSize = iconSizeByButtonSize[size];
-  const hitAreaClassName = hasHitArea
-    ? stylex.props(touchHitAreaStyles.layer).className
-    : undefined;
+  const hitAreaClassName = hasHitArea ? touchHitAreaLayerClassName : undefined;
 
   const buttonContent = (
     <>

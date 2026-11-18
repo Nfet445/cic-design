@@ -71,11 +71,11 @@ import {
   commentRowMetadataBesideActionsClassName,
   commentRowMetadataClassName,
   commentRowSelectedFillClassName,
+  commentRowSelectedForcedColorsClassName,
   commentRowSurfaceClassName,
   commentRowThreadRowsClassName,
   commentRowTypingIndicatorClassName,
 } from './commentRowClasses';
-import {commentRowSurfaceStyles} from './commentRowOverrides.stylex';
 import {
   commentPartsNoWrapClassName,
   commentPartsRailRowClassName,
@@ -170,10 +170,8 @@ function ThreadSurface({
   const sharedClassName = tw(
     isSelectable && commentRowSurfaceClassName,
     isSelectable && isFocused && commentRowFocusRingClassName,
+    isFilled && commentRowSelectedForcedColorsClassName,
   );
-  const sharedXstyle = [
-    isFilled && commentRowSurfaceStyles.selectedForcedColors,
-  ];
 
   if (surface === 'section') {
     return (
@@ -183,7 +181,6 @@ function ThreadSurface({
         dividers={[...dividers]}
         padding={3}
         width="100%"
-        xstyle={sharedXstyle}
         className={tw(
           commentPartsSectionDividerOverlapClassName,
           sharedClassName,
@@ -207,7 +204,6 @@ function ThreadSurface({
       elevation="none"
       padding={3}
       width="100%"
-      xstyle={sharedXstyle}
       className={tw(
         commentPartsSectionDividerOverlapClassName,
         sharedClassName,

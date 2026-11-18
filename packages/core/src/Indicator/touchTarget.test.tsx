@@ -12,7 +12,6 @@
  *   Indicator/__tests__/TouchTargets.interaction.browser.spec.ts
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {fireEvent, render, screen} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {CheckboxInput} from '../CheckboxInput/CheckboxInput';
@@ -23,7 +22,7 @@ import {RadioListItem} from '../RadioList/RadioListItem';
 import {HIT_INSET_PROPERTIES, resetHitAreaForTests} from '../utils/hitArea';
 import {checkboxInputRowClassName} from '../CheckboxInput/checkboxInputClasses';
 import {classesOf} from '../__tests__/classNameAssertions';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 
 interface Declared {
   media: string | null;
@@ -93,9 +92,7 @@ function paddingBlockOf(el: Element, media: string | null): string[] {
 
 /** Whether `el` carries every class of the shared hit band. */
 function hasHitLayer(el: Element): boolean {
-  const layer = (stylex.props(touchHitAreaStyles.layer).className ?? '')
-    .split(/\s+/)
-    .filter(Boolean);
+  const layer = touchHitAreaLayerClassName.split(/\s+/).filter(Boolean);
   if (layer.length === 0) {
     throw new Error('the hit band has no classes');
   }

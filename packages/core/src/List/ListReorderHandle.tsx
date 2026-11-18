@@ -41,10 +41,8 @@ import {
 } from 'react';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {useMergedRefs} from '../hooks/useMergedRefs';
-import * as stylex from '@stylexjs/stylex';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
-import {mergeProps} from '../utils/mergeProps';
 import {
   ownRingProps,
   ownRingRowClassName,
@@ -52,7 +50,7 @@ import {
 import {listReorderHandleProps} from '../privateAttributes/listReorder.stylex';
 import {reorderingHandleCursorClassName} from '../privateAttributes/reordering.stylex';
 import {useTouchHitArea} from '../utils/touchHitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -243,13 +241,11 @@ export function ListReorderHandle({
           event.stopPropagation();
         }
       }}
-      {...mergeProps(
-        stylex.props(touchHitAreaStyles.layer),
-        tw(
-          listReorderHandleClassName({rowAlign}),
-          reorderingHandleCursorClassName,
-          focusOutlineFocusVisibleClassName,
-        ),
+      className={tw(
+        listReorderHandleClassName({rowAlign}),
+        reorderingHandleCursorClassName,
+        focusOutlineFocusVisibleClassName,
+        touchHitAreaLayerClassName,
       )}
     />
   );

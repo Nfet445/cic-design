@@ -8,7 +8,7 @@
  *   through an invisible band, stops halfway to a neighbor, and changes no
  *   box (spec:AST-094 FR42)
  * @position Browser layer of SegmentedControlItem's hit band and of a held
- *   drag past it. The band itself is internal/touchHitArea.stylex.ts
+ *   drag past it. The band itself is internal/touchHitAreaClasses.ts
  */
 
 import {expect, test, type Page} from '@astryxdesign/a11y-spec/playwright';
