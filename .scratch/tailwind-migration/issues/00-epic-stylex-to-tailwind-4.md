@@ -127,6 +127,7 @@ buttons) that landed before the tickets were written.
 - [ ] `62-xstyle-adapter` (prop threaded; type narrowing open)
 - [ ] `63-major-changeset`
 - [ ] `64-maps-after-xstyle`
+- [ ] `65-focus-return-regression`
       — table seams, motion and safe-area modules, the one-map leaves
 - [ ] `36-remove-stylex` — `@stylexjs` leaves the repository
 
