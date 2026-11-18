@@ -35,6 +35,7 @@ import type {OutlineItem} from './types';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
   outlineDividerClassName,
@@ -321,9 +322,13 @@ export function Outline({
                     active: isActive ? 'active' : null,
                     level: item.level,
                   }),
-                  stylex.props(interactionOverlayStyles.backgroundColor),
+                  stylex.props(
+                    // The strength and the release; the colour is a class below.
+                    interactionOverlayStyles.pressedAlpha,
+                  ),
                   tw(
                     outlineLinkClassName(density, item.level, isActive),
+                    interactionOverlayBackgroundColorClassName,
                     focusOutlineFocusVisibleClassName,
                   ),
                 )}>
