@@ -202,7 +202,7 @@ const styles = stylex.create({
       default: 'pointer',
       ':is(:disabled,[aria-disabled="true"])': 'default',
     },
-    // The wrapper (inputWrapperStyles.base) renders the focus ring via
+    // The wrapper (the shared field box class) renders the focus ring via
     // :focus-within when this button is focused, matching TextInput/NumberInput.
     // The button must not draw its own :focus-visible outline or the two stack
     // into a doubled ring over the trigger.

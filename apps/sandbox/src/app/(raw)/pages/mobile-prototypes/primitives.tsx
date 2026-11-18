@@ -25,13 +25,14 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
+import {mergeProps} from '@astryxdesign/core/utils';
 import {Text, Heading} from '@astryxdesign/core/Text';
 import {Item} from '@astryxdesign/core/Item';
 import {IconButton} from '@astryxdesign/core/IconButton';
 import {Button} from '@astryxdesign/core/Button';
 import {Divider} from '@astryxdesign/core/Divider';
 import {VStack} from '@astryxdesign/core/Stack';
-import {Field, inputWrapperStyles} from '@astryxdesign/core/Field';
+import {Field, fieldInputWrapperClassName} from '@astryxdesign/core/Field';
 const proto = stylex.create({
   fullBtn: {width: '100%'},
   // Pull the command list out by the Item's spacious inline padding (12px) so
@@ -1112,7 +1113,10 @@ export function TapField({
         id={id}
         type="button"
         onClick={onClick}
-        {...stylex.props(inputWrapperStyles.base, proto.tapControl)}>
+        {...mergeProps(
+          stylex.props(proto.tapControl),
+          fieldInputWrapperClassName(),
+        )}>
         {icon && (
           <span
             style={{

@@ -166,10 +166,11 @@ function isCreateValue(value: string): boolean {
  */
 const LAYER_OPEN: string = ':has([aria-expanded="true"])';
 
-// The trigger container shares its element with `inputWrapperStyles.base`,
-// whose unlayered `padding`, `gap`, `backgroundColor` and `boxShadow` outrank
-// every utility in `astryx-base`: its chrome, the ghost and secondary fills,
-// the read-only and disabled press resets stay here. `popover` stays because
+// The trigger container shares its element with the shared field box class,
+// and it sets the same padding, background and shadow properties; two classes
+// in `astryx-base` are ordered by the sheet, not by `tw`: its chrome, the
+// ghost and secondary fills, the read-only and disabled press resets stay
+// here. `popover` stays because
 // `usePopover` takes StyleX styles only. Every child element uses
 // `multiSelectorClasses.ts`.
 const styles = stylex.create({
