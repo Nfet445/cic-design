@@ -31,6 +31,7 @@ import {Icon} from '../Icon';
 import {Tooltip} from '../Tooltip';
 import {navItemStyles} from '../NavItem/navItemStyles.stylex';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {useSideNavCollapse} from './SideNavCollapseContext';
@@ -329,9 +330,9 @@ export function SideNavHeading({
               {...contentProps}>
               <button
                 type="button"
-                {...mergeProps(
-                  focusOutlineProps.focusVisible(),
+                className={tw(
                   sideNavHeadingClassName.popoverHeading,
+                  focusOutlineFocusVisibleClassName,
                 )}
                 // A close affordance, not the trigger: dismiss only.
                 onClick={closeMenu}>
