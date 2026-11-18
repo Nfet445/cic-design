@@ -365,6 +365,8 @@ function renderSplitLayers(
     classNamePrefixes: readonly string[];
   },
 ): string {
+  // shortcut: the StyleX pass runs while a package keeps `stylex.create`;
+  // ticket 64 lands the last of those and ticket 36 deletes this pass.
   if (!rulesById || rulesById.size === 0) return '';
 
   const libraryRules: unknown[] = [];
