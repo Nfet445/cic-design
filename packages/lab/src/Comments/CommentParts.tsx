@@ -277,19 +277,19 @@ export function QuotedPassage({
   /** The highlight's color, or nothing for a neutral rule. */
   highlightColor?: CommentHighlightColor;
 }) {
+  const quoteRule: CSSProperties &
+    Partial<Record<'--_comment-quote-rule', string>> = {
+    '--_comment-quote-rule':
+      highlightColor != null
+        ? colorVarNames[`--color-border-${highlightColor}`]
+        : undefined,
+  };
   return (
     <Blockquote
       className={
         highlightColor != null ? commentPartsQuoteRuleClassName : undefined
       }
-      style={
-        highlightColor != null
-          ? {
-              '--_comment-quote-rule':
-                colorVarNames[`--color-border-${highlightColor}`],
-            }
-          : undefined
-      }
+      style={highlightColor != null ? quoteRule : undefined}
       data-quote-rule={highlightColor != null ? 'highlight' : 'neutral'}
       data-highlight-color={highlightColor}>
       <Text

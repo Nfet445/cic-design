@@ -1296,7 +1296,7 @@ function ColorPicker({
               '--astryx-plane-x': `${hsv.s}%`,
               '--astryx-plane-y': `${100 - hsv.v}%`,
               '--astryx-plane-fill': hsvToHex(hsv),
-            } satisfies StyleVars
+            } as StyleVars
           }
         />
       </div>
@@ -2091,7 +2091,7 @@ export default function CanvasEditor() {
                                       {
                                         width: FRAME.width,
                                         '--astryx-artboard-scale': scale,
-                                      } satisfies StyleVars
+                                      } as StyleVars
                                     }>
                                     <img
                                       src={PHOTO_LAYER_SRC}

@@ -241,6 +241,7 @@ function visitDynamicReferences(node, onLiteral) {
  *   that export each declaration as a value, and as a value or a type
  * @property {Map<string, string>} byFile source file -> the subpath that
  *   exports exactly that file
+ * @property {Map<string, string>} fileOf subpath -> the source file it names
  * @property {Record<string, unknown>|undefined} exportsField
  */
 
@@ -357,7 +358,7 @@ function publicSurfaceOf(packageDir, srcRoot, originsOf) {
   const byOrigin = {value: new Map(), type: new Map()};
   /** @type {PublicSurface['byFile']} */
   const byFile = new Map();
-  /** The module each subpath names, so a subpath's own kind is knowable. */
+  /** @type {PublicSurface['fileOf']} */
   const fileOf = new Map();
   for (const [subpath, sourceFile] of exportedSourceFiles(
     pkg,

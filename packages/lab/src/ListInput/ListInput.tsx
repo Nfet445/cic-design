@@ -917,7 +917,7 @@ export function ListInput<T>({
               {...mergeProps(
                 {className: listInputListClassName},
                 // The session's line marks where a dragged record would land.
-                stylex.props(reorderScope?.session.listStyle),
+                {className: reorderScope?.session.listClassName},
               )}>
               {value.length === 0 ? (
                 <li
@@ -953,9 +953,11 @@ export function ListInput<T>({
                       aria-setsize={value.length}
                       {...mergeProps(
                         {className: listInputItemClassName},
-                        stylex.props(
-                          hasHandle && reorderScope?.session.rowStyle,
-                        ),
+                        {
+                          className: hasHandle
+                            ? reorderScope?.session.rowStyle
+                            : undefined,
+                        },
                       )}>
                       <div
                         ref={node => {

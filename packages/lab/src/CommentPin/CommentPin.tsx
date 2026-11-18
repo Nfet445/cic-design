@@ -40,6 +40,7 @@ import {
   interactionOverlayStyles,
   mergeProps,
   themeProps,
+  xstyleProps,
 } from '@astryxdesign/core/utils';
 import {
   commentPinAvatarRailClassName,
@@ -337,37 +338,39 @@ export function CommentPin({
         rest.onKeyDown?.(e);
       }}
       {...mergeProps(
-        themeProps('comment-pin', {
-          size: resolvedSize,
-          grouped: isGrouped ? 'grouped' : null,
-          unread: hasUnread ? 'unread' : null,
-          selected: isSelected ? 'selected' : null,
-          dimmed: isDimmed ? 'dimmed' : null,
-          resolved: isResolved ? 'resolved' : null,
-          disabled: isDisabled ? 'disabled' : null,
-        }),
-        stylex.props(
-          // The strength and the release; the paint is a class below.
-          interactionOverlayStyles.pressedAlpha,
-          xstyle,
+        mergeProps(
+          themeProps('comment-pin', {
+            size: resolvedSize,
+            grouped: isGrouped ? 'grouped' : null,
+            unread: hasUnread ? 'unread' : null,
+            selected: isSelected ? 'selected' : null,
+            dimmed: isDimmed ? 'dimmed' : null,
+            resolved: isResolved ? 'resolved' : null,
+            disabled: isDisabled ? 'disabled' : null,
+          }),
+          stylex.props(
+            // The strength and the release; the paint is a class below.
+            interactionOverlayStyles.pressedAlpha,
+          ),
+          tw(
+            commentPinRootClassName,
+            commentPinSizeClassNames[resolvedSize],
+            (isGrouped || hasUnread) && commentPinWithCountClassName,
+            isSelected
+              ? commentPinSelectedClassName
+              : isDisabled
+                ? commentPinDisabledUnselectedClassName
+                : commentPinClassName,
+            isDisabled
+              ? commentPinDisabledOpacityClassName
+              : isDimmed && !isSelected && commentPinDimmedOpacityClassName,
+            focusOutlineFocusVisibleClassName,
+            interactionOverlayBackgroundImageClassName,
+            className,
+          ),
+          style,
         ),
-        tw(
-          commentPinRootClassName,
-          commentPinSizeClassNames[resolvedSize],
-          (isGrouped || hasUnread) && commentPinWithCountClassName,
-          isSelected
-            ? commentPinSelectedClassName
-            : isDisabled
-              ? commentPinDisabledUnselectedClassName
-              : commentPinClassName,
-          isDisabled
-            ? commentPinDisabledOpacityClassName
-            : isDimmed && !isSelected && commentPinDimmedOpacityClassName,
-          focusOutlineFocusVisibleClassName,
-          interactionOverlayBackgroundImageClassName,
-          className,
-        ),
-        style,
+        xstyleProps(xstyle),
       )}>
       <span
         aria-hidden="true"

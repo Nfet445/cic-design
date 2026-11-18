@@ -607,13 +607,14 @@ export function TransferList<T extends string = string>({
           // A disabled list keeps each handle as a focusable disabled
           // control. Core List ends its reorder mode and sends a drag home.
           isDisabled={isDisabled}
+          {...theme}
           className={tw(
+            theme.className,
             transferListItemClassName,
             isDisabled && transferListDisabledRowPointerClassName,
           )}
           data-transfer-list-row={option.value}
           data-transfer-list-index={String(value.indexOf(option.value))}
-          {...theme}
         />
       );
     }
@@ -624,8 +625,8 @@ export function TransferList<T extends string = string>({
         density="compact"
         label={renderOption?.(option) ?? option.label}
         endContent={optionActions(option, side, index)}
-        className={transferListItemClassName}
         {...theme}
+        className={tw(theme.className, transferListItemClassName)}
       />
     );
   };

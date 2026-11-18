@@ -87,7 +87,6 @@ export {
 export {
   TransferList,
   TransferListSelector,
-  transferListVars,
   type TransferListOption,
   type TransferListProps,
   type TransferListSelectorCommitBehavior,

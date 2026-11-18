@@ -35,7 +35,6 @@ import {
   type ReactNode,
   type Ref,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {sharedEditorTheme} from './editorThemeClasses';
 import {tw} from './tw';
 import {
@@ -67,6 +66,7 @@ import {
   isRenderable,
   mergeProps,
   themeProps,
+  xstyleProps,
   type SizeValue,
 } from '@astryxdesign/core/utils';
 import {useSize} from '@astryxdesign/core/SizeContext';
@@ -568,10 +568,10 @@ export const RichTextEditor = function RichTextEditor({
             status: status?.type ?? null,
           }),
           mergeProps(
-            stylex.props(
+            xstyleProps(
               // Only disabled is dimmed, matching TextArea: a read-only editor
               // keeps full-opacity text and stays keyboard-reachable.
-              status && !isDisabled && !isReadOnly && xstyle,
+              status && !isDisabled && !isReadOnly ? xstyle : undefined,
             ),
             {
               className: tw(

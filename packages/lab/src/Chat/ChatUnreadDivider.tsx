@@ -19,7 +19,7 @@
  */
 
 import type {BaseProps} from '@astryxdesign/core';
-import {mergeProps} from '@astryxdesign/core/utils';
+import {mergeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {themeProps} from '@astryxdesign/core/utils';
 import {tw} from '../tw';
 import {
@@ -71,7 +71,12 @@ export function ChatUnreadDivider({
       data-testid={testId}
       {...mergeProps(
         themeProps('chat-unread-divider'),
-        {className: tw(chatUnreadDividerRootClassName, xstyle)},
+        {
+          className: tw(
+            chatUnreadDividerRootClassName,
+            xstyleProps(xstyle).className,
+          ),
+        },
         className,
         styleProp,
       )}>
