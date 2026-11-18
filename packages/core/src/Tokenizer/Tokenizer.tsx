@@ -117,6 +117,7 @@ import {
   tokenizerSheetTriggerClassName,
   tokenizerSheetFieldDisabledClassName,
   tokenizerSheetTriggerPlaceholderClassName,
+  tokenizerSheetTokenDisabledClassName,
   tokenizerSheetTriggerPlaceholderDisabledClassName,
   tokenizerSheetTriggerWithTokensClassName,
   tokenizerStartIconWithTokensClassName,
@@ -452,9 +453,8 @@ const INPUT_TEXT_INSET = `calc(var(--spacing-2) - var(--spacing-1) + 1px)`;
 const INPUT_CARET_ROOM = '2px';
 
 // The input's own states stay here. They reach the input through
-// `BaseTypeahead`'s `inputXStyle`, which takes StyleX values only; the input
-// faces the same tie against `typeaheadInputClassName`'s own `flex` and `min-w`
-// utilities, where the sheet's order — not the state — would decide.
+// `BaseTypeahead`'s `inputXStyle`, which takes StyleX values only, so no class
+// can carry them until that seam takes an `AstryxXStyle`.
 const styles = stylex.create({
   inputAtMax: {
     width: 0,
@@ -513,12 +513,6 @@ const styles = stylex.create({
     flex: '1 1 40px',
     width: 0,
     paddingInlineStart: `calc(var(--spacing-2) - var(--spacing-1) + 1px)`,
-  },
-  sheetTokenDisabled: {
-    color: {
-      default: 'var(--color-text-primary)',
-      '@media (forced-colors: active)': 'GrayText',
-    },
   },
 });
 
@@ -2094,7 +2088,9 @@ export function Tokenizer<T extends SearchableItem>({
                 label={item.label}
                 size={size}
                 isDisabled={isDisabled}
-                xstyle={isDisabled ? styles.sheetTokenDisabled : undefined}
+                xstyle={
+                  isDisabled ? tokenizerSheetTokenDisabledClassName : undefined
+                }
               />
             ),
           )}

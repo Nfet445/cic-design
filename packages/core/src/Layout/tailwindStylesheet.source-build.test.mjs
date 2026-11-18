@@ -794,6 +794,7 @@ import {
   tokenizerSheetRowLabelClassName,
   tokenizerSheetRowsClassName,
   tokenizerSheetSearchRowClassName,
+  tokenizerSheetTokenDisabledClassName,
   tokenizerSheetTriggerClassName,
   tokenizerSheetTriggerPlaceholderClassName,
   tokenizerSheetTriggerPlaceholderDisabledClassName,
@@ -3915,6 +3916,7 @@ function familyClassNames() {
   // collapsed summary, the expanded layer, and the bottom sheet's field,
   // trigger and placeholder in both disabled states.
   add(tokenizerTokenClassName);
+  add(tokenizerSheetTokenDisabledClassName);
   for (const size of ['sm', 'md', 'lg']) {
     add(tokenizerFieldSizeClassName[size]);
   }
