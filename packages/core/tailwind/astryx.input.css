@@ -63,8 +63,22 @@
  * declarations, so a component style or a caller's className on the same
  * element still wins. Keep both classes in step with `layerTextResetClasses.ts`
  * and `layerStructureResetClasses.ts`.
+ *
+ * The box reset is the third: the UA gives `[popover]` a margin, and a
+ * consumer's reset may give the root padding, a border or a canvas background.
+ * Zeroing each one here lets the component's surface set it without
+ * cancelling a declaration first. Lives in `layerResetClasses.ts`.
  */
 @layer reset {
+  .astryx-layer-reset {
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    border-style: none;
+    overflow: visible;
+    background-color: transparent;
+  }
+
   .astryx-layer-text-reset {
     font-family: var(--font-family-body);
     font-size: var(--text-body-size);
