@@ -17,6 +17,8 @@
  */
 
 import {useRef, type ReactNode} from 'react';
+import * as stylex from '@stylexjs/stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import type {BaseProps} from '../BaseProps';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
@@ -25,7 +27,6 @@ import {navItemStyles, type NavItemSize} from '../NavItem/navItemStyles.stylex';
 import {mergeProps} from '../utils';
 import {useCloseMobileDrawerOnActivate} from '../AppShell/useCloseMobileDrawerOnActivate';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
@@ -249,7 +250,7 @@ export function TopNavItem({
             mode: 'drawer',
             selected: isSelected ? 'selected' : null,
           }),
-          focusOutlineProps.focusVisible(
+          stylex.props(
             navItemStyles.item,
             interactionOverlayStyles.backgroundColor,
             navItemStyles[size],
@@ -257,7 +258,7 @@ export function TopNavItem({
             isDisabled && navItemStyles.disabled,
             xstyle,
           ),
-          className,
+          tw(className, focusOutlineFocusVisibleClassName),
           style,
         )}
         {...callerProps}
@@ -291,7 +292,7 @@ export function TopNavItem({
         themeProps('top-nav-item', {
           selected: isSelected ? 'selected' : null,
         }),
-        focusOutlineProps.focusVisible(
+        stylex.props(
           interactionOverlayStyles.backgroundColor,
           isDisabled && navItemStyles.disabled,
           xstyle,
@@ -301,6 +302,7 @@ export function TopNavItem({
           isSelected && topNavItemSelectedClassName(),
           isIconOnly && topNavItemIconOnlyClassName(),
           className,
+          focusOutlineFocusVisibleClassName,
         ),
         style,
       )}
