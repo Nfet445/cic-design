@@ -62,6 +62,7 @@ import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {isRenderable, mergeProps} from '../utils';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
 import {
   COMPLEX_SELECTOR_CONTENT_CLASS,
   COMPLEX_SELECTOR_STATUS_TIP_CLASS,
@@ -896,7 +897,7 @@ export function ComplexSelector<Value>({
             focusOutlineStyles.focusWithinCombobox,
             variant === 'secondary' && styles.triggerSecondary,
             variant === 'ghost' && styles.triggerGhost,
-            variant !== 'input' && interactionOverlayStyles.backgroundImage,
+            variant !== 'input' && interactionOverlayStyles.pressedAlpha,
             variant !== 'input' && isDisabled && styles.triggerGhostDisabled,
             isDisabled && styles.disabled,
             triggerLabel == null && styles.placeholder,
@@ -907,6 +908,9 @@ export function ComplexSelector<Value>({
             isDisabled && fieldInputWrapperDisabledClassName,
             complexSelectorHeightClassName({size}),
             controlClassName,
+            // The hover and press paint; its strength and release stay the
+            // StyleX arm above.
+            variant !== 'input' && interactionOverlayBackgroundImageClassName,
           ),
           controlStyle,
         )}>
