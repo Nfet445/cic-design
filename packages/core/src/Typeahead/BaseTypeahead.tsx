@@ -58,7 +58,7 @@ import {TypeaheadItem} from './TypeaheadItem';
 import {Icon} from '../Icon';
 import {Spinner} from '../Spinner';
 import {SpinnerOwnerContext} from '../Spinner/SpinnerOwnerContext';
-import {colorVars, spacingVars, typeScaleVars} from '../theme/tokens.stylex';
+import {spacingVars} from '../theme/tokens.stylex';
 import {
   characterCount,
   composeEventHandlers,
@@ -73,8 +73,11 @@ import {themeProps} from '../utils/themeProps';
 import {
   TYPEAHEAD_DEFAULT_ITEM_CLASS,
   TYPEAHEAD_ROW_CONTENT_CLASS,
+  typeaheadEmptyStateClassName,
+  typeaheadGroupHeadingClassName,
   typeaheadInputClassName,
   typeaheadInputDisabledClassName,
+  typeaheadLoadingStatusClassName,
   typeaheadRowClassName,
 } from './typeaheadClasses';
 import {tw} from '../utils/tw';
@@ -392,32 +395,6 @@ const styles = stylex.create({
   popoverCustomWidth: (width: string) => ({
     width,
   }),
-  groupHeading: {
-    paddingInline: spacingVars['--spacing-2'],
-    paddingBlockStart: spacingVars['--spacing-2'],
-    paddingBlockEnd: spacingVars['--spacing-1'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    userSelect: 'none',
-  },
-  emptyState: {
-    padding: spacingVars['--spacing-3'],
-    textAlign: 'center',
-    fontSize: typeScaleVars['--text-supporting-size'],
-    color: colorVars['--color-text-secondary'],
-  },
-  // The indicator a direct caller gets. In flow, where it has always been, so
-  // it reserves its own width and the input's text never runs under it.
-  // Typeahead and Tokenizer take the indicator over and paint it in their own
-  // inline-end lane instead; this is what renders for everyone else.
-  loadingStatus: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    padding: spacingVars['--spacing-1'],
-  },
 });
 
 // =============================================================================
@@ -2212,7 +2189,7 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
           aria-disabled="true"
           {...mergeProps(
             themeProps('typeahead-empty-state'),
-            stylex.props(styles.emptyState),
+            typeaheadEmptyStateClassName,
           )}>
           {emptySearchText}
         </div>
@@ -2279,7 +2256,9 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
                 key={`group-${group.heading}`}
                 role="group"
                 aria-label={group.heading}>
-                <div aria-hidden="true" {...stylex.props(styles.groupHeading)}>
+                <div
+                  aria-hidden="true"
+                  className={typeaheadGroupHeadingClassName}>
                   {group.heading}
                 </div>
                 {options}
@@ -2388,7 +2367,7 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
         )}
       />
       {isLoading && busyLane == null && (
-        <span {...stylex.props(styles.loadingStatus)}>
+        <span className={typeaheadLoadingStatusClassName}>
           {/* Named, never live: the typeahead announces its search. */}
           <SpinnerOwnerContext value={true}>
             <Spinner

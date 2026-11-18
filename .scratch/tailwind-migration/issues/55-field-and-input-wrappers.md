@@ -76,3 +76,38 @@ teaches the class instead of the retired style).
 
 Left: `Field/inputDisabledFocus.ts` (1), `InputGroup/groupStyles.ts` (1), and the field-wrapper maps that
 survive in components outside this ticket's list.
+
+## Comments — window 3
+
+Landed three commits: `refactor(input-group): добавить кнопку группы из класса, а не из StyleX`,
+`refactor(typeahead): высота поля приходит из класса, а не из StyleX`, and
+`refactor(typeahead): слоты меню берут вид из класса, а не из StyleX`.
+
+The first moves the group button addon's row geometry out of `InputGroup/groupStyles.ts`, which is now only
+`inputGroupItemProps`; `InputGroup/inputGroupClasses.ts` holds `inputGroupButtonAddonClassName`. Its corner
+and `focus-visible` rules select on the group's own child, so the class text carries
+`data-astryx-input-group-item` inside an `eslint-disable @astryx/no-raw-private-attribute` block that names
+this module. `Button.test.tsx` reads the class set instead of the map source.
+
+The second turns the two `min-height` size maps into classes (`tokenizerFieldSizeClassName`,
+`typeaheadWrapperSizeClassName`). The two `height` maps (`truncatedSizeStyles`,
+`layerPlaceholderSizeStyles`) stay StyleX: they cancel `styles.wrapper`'s own unlayered `height: auto`, and a
+class in `astryx-base` cannot beat that declaration.
+
+The rest of the window's list is a documented survivor, not a gap. `Selector/selectorClasses.ts`,
+`MultiSelector/MultiSelector.tsx`, `Tokenizer/tokenizerClasses.ts` and `TokenizerBottomSheet.tsx` each carry
+a written reason in place: those boxes share one element with the shared field box class and set the same
+`padding`, `gap`, `backgroundColor` and `boxShadow` properties, so two classes would be ordered by the
+sheet, not by `tw`. BaseTypeahead's `popover` and `popoverCustomWidth` stay because `usePopover` takes
+StyleX styles only.
+
+A third commit, `refactor(typeahead): слоты меню берут вид из класса, а не из StyleX`, takes the three
+menu slots that carry no tie — `typeaheadGroupHeadingClassName`, `typeaheadEmptyStateClassName`,
+`typeaheadLoadingStatusClassName`. The sheet went to 2229 rules.
+
+Left: `BaseTypeahead`'s `dropdown` and `dropdownHeld`. Both carry no field-base tie, so they can move;
+`dropdown` needs the viewport-cap expression written out literally (`selectorClasses.ts`'s
+`selectorListboxClassName` is the same expression at 300px) and `dropdownHeld` needs an inline
+`--astryx-*` property in place of its argument. The two `height` maps in `Tokenizer.tsx` stay as written in
+the paragraph above, and so does `popover`. Suites: 14 files / 612 tests run for this window; `BaseTypeahead.test.tsx` and
+`BaseTypeahead.menu.test.tsx` hold 3 failures that also fail without these commits.

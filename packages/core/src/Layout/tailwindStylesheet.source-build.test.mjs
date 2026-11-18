@@ -428,8 +428,10 @@ import {infoTipTriggerClassName} from '../InfoTip/infoTipClasses';
 import {navIconClassName} from '../NavIcon/navIconClasses';
 import {formLayoutDirectionClassName} from '../FormLayout/formLayoutClasses';
 import {
+  inputGroupButtonAddonClassName,
   inputGroupClassName,
   inputGroupDisabledClassName,
+  inputGroupMemberClassName,
   inputGroupSizeClassName,
   inputGroupTextClassName,
 } from '../InputGroup/inputGroupClasses';
@@ -699,10 +701,14 @@ import {
   TYPEAHEAD_ITEM_LABEL_CLASS,
   TYPEAHEAD_ROW_CONTENT_CLASS,
   typeaheadContentLaneClassName,
+  typeaheadEmptyStateClassName,
   typeaheadEndLaneClassName,
+  typeaheadGroupHeadingClassName,
   typeaheadInputClassName,
   typeaheadInputDisabledClassName,
+  typeaheadLoadingStatusClassName,
   typeaheadRowClassName,
+  typeaheadWrapperSizeClassName,
 } from '../Typeahead/typeaheadClasses';
 import {
   tokenizerEndLaneClassName,
@@ -739,6 +745,7 @@ import {
   tokenizerSheetTriggerPlaceholderClassName,
   tokenizerSheetTriggerPlaceholderDisabledClassName,
   tokenizerSheetTriggerWithTokensClassName,
+  tokenizerFieldSizeClassName,
   tokenizerStartIconWithTokensClassName,
   tokenizerTokenClassName,
 } from '../Tokenizer/tokenizerClasses';
@@ -2386,7 +2393,13 @@ function familyClassNames() {
   add(typeaheadInputClassName);
   add(typeaheadInputDisabledClassName);
   add(typeaheadEndLaneClassName);
+  add(typeaheadGroupHeadingClassName);
+  add(typeaheadEmptyStateClassName);
+  add(typeaheadLoadingStatusClassName);
   add(typeaheadContentLaneClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(typeaheadWrapperSizeClassName[size]);
+  }
 
   // The theme wrapper styles the provider itself, so the modules that style
   // themselves share this sheet and its cover.
@@ -3463,6 +3476,8 @@ function familyClassNames() {
     add(inputGroupSizeClassName[size]);
   }
   add(inputGroupTextClassName);
+  add(inputGroupMemberClassName);
+  add(inputGroupButtonAddonClassName);
   // ComplexSelector: the trigger button, its text, status and chevron slots,
   // the popup content box and one height per size.
   add(COMPLEX_SELECTOR_TRIGGER_CLASS);
@@ -3725,12 +3740,15 @@ function familyClassNames() {
   add(markdownBlockIndentClassName);
   add(markdownMarkerGutterClassName);
 
-  // Tokenizer's own boxes: the token pill and the wrapper a `renderToken`
-  // pill renders into, the start icon beside tokens, the end lane in both
+  // Tokenizer's own boxes: the field's size floor, the token pill and the
+  // wrapper a `renderToken` pill renders into, the start icon beside tokens, the end lane in both
   // placements at every size, the grouped track with each edge fade, the
   // collapsed summary, the expanded layer, and the bottom sheet's field,
   // trigger and placeholder in both disabled states.
   add(tokenizerTokenClassName);
+  for (const size of ['sm', 'md', 'lg']) {
+    add(tokenizerFieldSizeClassName[size]);
+  }
   add(tokenizerStartIconWithTokensClassName);
   add(tokenizerEndLaneClassName);
   for (const size of ['sm', 'md', 'lg']) {
@@ -3949,8 +3967,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // moved out of StyleX as well: each component's theme chain and each
     // spacing token a padding prop accepts now prints its own class, and the
     // Layout outer insets it publishes took the sheet to 2215, and the merged
-    // field, number-input and typeahead classes took it to 2224. The ceiling
-    // keeps its headroom above that.
+    // field, number-input and typeahead classes took it to 2224. Ticket 55's
+    // group addon states — the marker-scoped height, four corner resets and
+    // the keyboard rank — and the Selector, Typeahead and Tokenizer wrapper
+    // rows took it to 2228, and its menu slots to 2229, and the focus ring's
+    // seven class arms took it to 2230. The ceiling keeps its headroom above
+    // that.
     expect(stylesheet.rules.size).toBeLessThan(2260);
   });
 
