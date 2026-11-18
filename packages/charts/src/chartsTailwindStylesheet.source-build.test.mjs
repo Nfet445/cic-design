@@ -15,7 +15,10 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {buildTailwindStylesheet} from '../../build/src/tailwind-stylesheet.mjs';
-import {describeTailwindStylesheet} from '../../core/src/__tests__/classNameAssertions';
+import {
+  describeTailwindStylesheet,
+  STYLEX_GZIP_BUDGETS,
+} from '../../core/src/__tests__/classNameAssertions';
 import {
   chartAreaClassName,
   chartContainerClassName,
@@ -84,6 +87,5 @@ describeTailwindStylesheet({
   name: 'dist/charts-tailwind.css',
   css: sheet,
   classNames: chartClassNames(),
-  stylexGzipBaseline: 1200,
-  stylexBaselineCommit: 'f35022021',
+  budget: STYLEX_GZIP_BUDGETS.charts,
 });

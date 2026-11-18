@@ -15,6 +15,7 @@
 import {buildAstryxTailwindCss} from '../../scripts/build-css-tailwind.mjs';
 import {
   describeTailwindStylesheet,
+  STYLEX_GZIP_BUDGETS,
   stylesheetOf,
 } from '../__tests__/classNameAssertions';
 import {
@@ -411,6 +412,11 @@ import {
 } from '../CheckboxInput/checkboxInputClasses';
 import {
   switchClassName,
+  switchInputClassName,
+  switchFocusRingClassName,
+  switchTrackHoverClassName,
+  switchPressLayerClassName,
+  switchPressOwnerClassName,
   switchContainerClassName,
   switchLabelWrapperClassName,
   switchStatusClassName,
@@ -934,6 +940,10 @@ import {
   ROW_EXPANSION_PANEL_MUTED_CLASS,
   rowExpansionChevronOffsetClassName,
   rowExpansionPanelIndentClassName,
+  rowExpansionChevronCellClassName,
+  rowExpansionChevronHeaderClassName,
+  rowExpansionExpandedCellClassName,
+  rowExpansionPanelDividerClassName,
 } from '../Table/plugins/rowExpansion/rowExpansionClasses';
 import {
   SORT_INDICATOR_CLASS,
@@ -1447,14 +1457,6 @@ import {
 
 const sheet = await buildAstryxTailwindCss();
 const stylesheet = stylesheetOf(sheet);
-
-/**
- * Gzip size of `packages/core/dist/astryx.css` — 286 069 B raw — as built at
- * `f35022021`: 42 331 B at zlib level 9. The gate allows 1.15× this, so the
- * sheet may not pass 48 680 B gzipped.
- */
-const STYLEX_GZIP_BASELINE = 42_331;
-const STYLEX_BASELINE_COMMIT = 'f35022021';
 
 /**
  * Every class string the family can produce, read from the maps the
@@ -3809,6 +3811,12 @@ function familyClassNames() {
       add(switchThumbBoxClassName({size, isOn}));
     }
   }
+  add(switchInputClassName({isBusy: true}));
+  add(switchFocusRingClassName);
+  add(switchTrackHoverClassName.on);
+  add(switchTrackHoverClassName.off);
+  add(switchPressLayerClassName);
+  add(switchPressOwnerClassName);
   add(switchStatusClassName);
   // Slider: the row in both mark-label states, both orientations of every
   // part, the fill in single and range mode, a thumb in its held, disabled and
@@ -4086,6 +4094,10 @@ function familyClassNames() {
   add(ROW_EXPANSION_GLYPH_CLASS);
   add(ROW_EXPANSION_GLYPH_STATE_CLASS.expanded);
   add(ROW_EXPANSION_GLYPH_STATE_CLASS.collapsed);
+  add(rowExpansionChevronCellClassName);
+  add(rowExpansionChevronHeaderClassName);
+  add(rowExpansionExpandedCellClassName);
+  add(rowExpansionPanelDividerClassName);
   add(ROW_EXPANSION_PANEL_CLASS);
   add(ROW_EXPANSION_PANEL_MUTED_CLASS);
   add(ROW_EXPANSION_CLICKABLE_ROW_CLASS);
@@ -4101,8 +4113,7 @@ describeTailwindStylesheet({
   name: 'dist/astryx-tailwind.css',
   css: sheet,
   classNames: familyClassNames(),
-  stylexGzipBaseline: STYLEX_GZIP_BASELINE,
-  stylexBaselineCommit: STYLEX_BASELINE_COMMIT,
+  budget: STYLEX_GZIP_BUDGETS.core,
 });
 
 describe('dist/astryx-tailwind.css declarations', () => {
@@ -4510,7 +4521,7 @@ describe('dist/astryx-tailwind.css declarations', () => {
     expect(stylesheet.ruleFor('[color-scheme:light_dark]')).toBe(
       'color-scheme:lightdark;',
     );
-    expect(stylesheet.css).toContain('color-scheme: light dark;');
+    expect(stylesheet.css).toMatch(/color-scheme:\s*light dark;/);
     expect(stylesheet.ruleFor('[color-scheme:light]')).toBe(
       'color-scheme:light;',
     );

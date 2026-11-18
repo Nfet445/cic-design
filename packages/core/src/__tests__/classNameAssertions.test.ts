@@ -14,9 +14,12 @@ import {
   classesOf,
   expectClassSet,
   expectVariable,
+  GZIP_BUDGET_FACTOR,
   gzipBytes,
   layerProblems,
   missingClassRules,
+  sheetGzipBudget,
+  STYLEX_GZIP_BUDGETS,
   stylesheetOf,
   stylexGzipLimit,
 } from './classNameAssertions';
@@ -166,5 +169,36 @@ describe('layerProblems', () => {
         valid.replace('@layer astryx-base {', '@media layer(astryx-base) {'),
       ),
     ).not.toEqual([]);
+  });
+});
+
+describe('STYLEX_GZIP_BUDGETS', () => {
+  it('measures every baseline on a named commit', () => {
+    for (const [name, budget] of Object.entries(STYLEX_GZIP_BUDGETS)) {
+      expect(budget.commit, name).toMatch(/^[0-9a-f]{7,40}$/);
+      expect(budget.stylexGzipBaseline, name).toBeGreaterThan(0);
+    }
+  });
+
+  it('states why a package needs its own allowance', () => {
+    for (const [name, budget] of Object.entries(STYLEX_GZIP_BUDGETS)) {
+      if (budget.gzipBudget == null) {
+        continue;
+      }
+      expect(budget.reason, name).toBeTruthy();
+      expect(budget.gzipBudget, name).toBeGreaterThan(
+        stylexGzipLimit(budget.stylexGzipBaseline),
+      );
+    }
+  });
+
+  it('applies the shared factor when a package has no allowance', () => {
+    expect(GZIP_BUDGET_FACTOR).toBe(1.15);
+    expect(sheetGzipBudget('core')).toBe(
+      stylexGzipLimit(STYLEX_GZIP_BUDGETS.core.stylexGzipBaseline),
+    );
+    expect(sheetGzipBudget('charts')).toBe(
+      STYLEX_GZIP_BUDGETS.charts.gzipBudget,
+    );
   });
 });

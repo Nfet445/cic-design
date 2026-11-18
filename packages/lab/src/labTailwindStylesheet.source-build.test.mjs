@@ -15,7 +15,10 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {buildTailwindStylesheet} from '../../build/src/tailwind-stylesheet.mjs';
-import {describeTailwindStylesheet} from '../../core/src/__tests__/classNameAssertions';
+import {
+  describeTailwindStylesheet,
+  STYLEX_GZIP_BUDGETS,
+} from '../../core/src/__tests__/classNameAssertions';
 import * as chatEmojiPickerClasses from './Chat/chatEmojiPickerClasses';
 import * as chatReactionBarClasses from './Chat/chatReactionBarClasses';
 import * as chatReasoningClasses from './ChatReasoning/chatReasoningClasses';
@@ -59,6 +62,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const sheet = await buildTailwindStylesheet({
   root: ROOT,
+  compact: true,
   input: path.resolve(ROOT, 'tailwind/lab.input.css'),
   banner: 'Astryx Lab Pre-compiled Tailwind CSS — experimental components',
 });
@@ -143,6 +147,5 @@ describeTailwindStylesheet({
   name: 'dist/lab-tailwind.css',
   css: sheet,
   classNames: labClassNames(),
-  stylexGzipBaseline: 12514,
-  stylexBaselineCommit: 'f35022021',
+  budget: STYLEX_GZIP_BUDGETS.lab,
 });

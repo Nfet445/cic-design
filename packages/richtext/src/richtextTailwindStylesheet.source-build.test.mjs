@@ -15,7 +15,10 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {buildTailwindStylesheet} from '../../build/src/tailwind-stylesheet.mjs';
-import {describeTailwindStylesheet} from '../../core/src/__tests__/classNameAssertions';
+import {
+  describeTailwindStylesheet,
+  STYLEX_GZIP_BUDGETS,
+} from '../../core/src/__tests__/classNameAssertions';
 import {CODE_SYNTAX_CLASS} from './internal/CodeSyntaxPlugin';
 import {sharedEditorTheme} from './editorThemeClasses';
 import * as editorClasses from './richTextEditorClasses';
@@ -88,6 +91,5 @@ describeTailwindStylesheet({
   name: 'dist/richtext-tailwind.css',
   css: sheet,
   classNames: richtextClassNames(),
-  stylexGzipBaseline: 3600,
-  stylexBaselineCommit: 'f35022021',
+  budget: STYLEX_GZIP_BUDGETS.richtext,
 });
