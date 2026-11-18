@@ -49,9 +49,6 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {Token} from '../Token';
 import {useTooltip} from '../Tooltip';
@@ -60,7 +57,8 @@ import {VisuallyHidden} from '../VisuallyHidden';
 import {Spinner} from '../Spinner';
 import {SpinnerOwnerContext} from '../Spinner/SpinnerOwnerContext';
 import {spacingVars, sizeVars} from '../theme/tokens.stylex';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
 import {getInputARIA, isImeKeyEvent, mergeProps} from '../utils';
@@ -698,15 +696,12 @@ export function Typeahead<T extends SearchableItem>({
           stylex.props(
             styles.wrapper,
             sizeStyle,
-            status && inputStatusBorderStyles[status.type],
-            status && !isDisabled && inputStatusHoverShadowStyles[status.type],
-            status && inputStatusFocusWithinStyles[status.type],
             isDisabled && inputDisabledFocusStyles.nestedRing,
-            inputGroup && groupStyles.inGroup,
             controlXstyle,
           ),
           tw(
-            fieldInputWrapperClassName(),
+            inputGroup && inputGroupMemberClassName,
+            fieldInputWrapperClassName({status: status?.type}),
             isDisabled && fieldInputWrapperDisabledClassName,
             controlClassName,
           ),

@@ -34,15 +34,13 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {Icon} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useSize} from '../SizeContext/SizeContext';
 import {Spinner} from '../Spinner';
 import {
@@ -898,16 +896,11 @@ function PointerDateField({
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
           isEffectivelyDisabled && inputDisabledFocusStyles.inputFocusRing,
-          fieldStatus && inputStatusBorderStyles[fieldStatus.type],
-          fieldStatus &&
-            !isEffectivelyDisabled &&
-            inputStatusHoverShadowStyles[fieldStatus.type],
-          fieldStatus && inputStatusFocusWithinStyles[fieldStatus.type],
-          inputGroup && groupStyles.inGroup,
-          controlXstyle,
+          fieldStatus && !isEffectivelyDisabled && controlXstyle,
         ),
         tw(
-          fieldInputWrapperClassName(),
+          inputGroup && inputGroupMemberClassName,
+          fieldInputWrapperClassName({status: fieldStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           dateInputSizeClassName({size}),
           controlClassName,

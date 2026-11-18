@@ -42,9 +42,6 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {Icon} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -1664,14 +1661,9 @@ function PointerDateTimeField({
             }),
             stylex.props(
               isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-              fieldStatus && inputStatusBorderStyles[fieldStatus.type],
-              fieldStatus &&
-                !isEffectivelyDisabled &&
-                inputStatusHoverShadowStyles[fieldStatus.type],
-              fieldStatus && inputStatusFocusWithinStyles[fieldStatus.type],
             ),
             tw(
-              fieldInputWrapperClassName(),
+              fieldInputWrapperClassName({status: fieldStatus?.type}),
               isEffectivelyDisabled && fieldInputWrapperDisabledClassName,
               dateTimeInputSizeClassName({size}),
               dateTimeInputSegmentClassName,
@@ -1830,14 +1822,9 @@ function PointerDateTimeField({
             }),
             stylex.props(
               isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-              timeStatus && inputStatusBorderStyles[timeStatus.type],
-              timeStatus &&
-                !isEffectivelyDisabled &&
-                inputStatusHoverShadowStyles[timeStatus.type],
-              timeStatus && inputStatusFocusWithinStyles[timeStatus.type],
             ),
             tw(
-              fieldInputWrapperClassName(),
+              fieldInputWrapperClassName({status: timeStatus?.type}),
               isEffectivelyDisabled && fieldInputWrapperDisabledClassName,
               dateTimeInputSizeClassName({size}),
               dateTimeInputSegmentClassName,

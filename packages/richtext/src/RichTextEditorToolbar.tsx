@@ -75,7 +75,11 @@ import {Divider} from '@astryxdesign/core/Divider';
 import {HStack} from '@astryxdesign/core/Layout';
 import {getExtendedIcon} from '@astryxdesign/core/Icon';
 import {useThemeName} from '@astryxdesign/core/theme';
-import {isRenderable, mergeProps, rtlStyles} from '@astryxdesign/core/utils';
+import {
+  RTL_MIRROR_CLASS,
+  isRenderable,
+  mergeProps,
+} from '@astryxdesign/core/utils';
 import {
   toolbarActionsClassName,
   toolbarCompactClassName,
@@ -427,10 +431,7 @@ function DirectionalGlyph({children}: {children: ReactNode}) {
   return (
     <span
       aria-hidden="true"
-      {...mergeProps(
-        {className: toolbarGlyphDirectionalClassName},
-        stylex.props(rtlStyles.mirror),
-      )}>
+      className={`${toolbarGlyphDirectionalClassName} ${RTL_MIRROR_CLASS}`}>
       {children}
     </span>
   );

@@ -263,6 +263,36 @@ describe('TextInput', () => {
   });
 
   describe('status prop', () => {
+    // The status border replaces the neutral one on the same element; a second
+    // class could not win, so both live in one map in `../Field/fieldClasses`.
+    it.each(['error', 'warning', 'success'] as const)(
+      'paints the %s border through the shared box class',
+      type => {
+        render(
+          <TextInput
+            label="Email"
+            value=""
+            onChange={() => {}}
+            status={{type}}
+          />,
+        );
+        const wrapper = screen.getByRole('textbox')
+          .parentElement as HTMLElement;
+        expectClassSet(wrapper, {
+          includes: [
+            `border-[color:var(--color-border-${type})]`,
+            'forced-colors:focus-within:border-[color:Highlight]',
+          ],
+          // A status field keeps its status colour while focused: the accent
+          // border belongs to the neutral box alone.
+          excludes: [
+            'border-[color:var(--color-border-emphasized)]',
+            'focus-within:border-[color:var(--color-accent)]',
+          ],
+        });
+      },
+    );
+
     it('renders with error status icon', () => {
       const {container} = render(
         <TextInput

@@ -71,9 +71,6 @@ import {
   InputClearButton,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {useInputStatusIcon, useMergedRefs} from '../hooks';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
@@ -85,7 +82,8 @@ import {useLocale} from '../i18n';
 import {useInputGroup} from '../InputGroup';
 import {useFieldInputStyling} from '../Field/fieldParts';
 import {joinAriaIDs} from '../utils/inputAria';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useSize} from '../SizeContext';
 import {Spinner} from '../Spinner';
 import {useTooltip} from '../Tooltip';
@@ -936,16 +934,11 @@ export function TouchDateField({
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
           isEffectivelyDisabled && inputDisabledFocusStyles.inputFocusRing,
-          status && inputStatusBorderStyles[status.type],
-          status &&
-            !isEffectivelyDisabled &&
-            inputStatusHoverShadowStyles[status.type],
-          status && inputStatusFocusWithinStyles[status.type],
-          inputGroup && groupStyles.inGroup,
-          controlXstyle,
+          status && !isEffectivelyDisabled && controlXstyle,
         ),
         tw(
-          fieldInputWrapperClassName(),
+          inputGroup && inputGroupMemberClassName,
+          fieldInputWrapperClassName({status: status?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           dateInputSizeClassName({size}),
           touchDateFieldWrapperClassName,

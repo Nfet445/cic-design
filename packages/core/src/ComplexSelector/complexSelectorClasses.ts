@@ -8,10 +8,11 @@
  * @position Style primitives; scanned by the Tailwind build. The component
  *   composes them with `tw` and keeps its container chrome on StyleX
  *
- * The trigger container is the same element as `inputWrapperStyles.base`,
- * whose unlayered `padding`, `gap`, `backgroundColor` and `boxShadow` outrank
- * every class in `astryx-base`; its chrome, the variant fills and the
- * disabled press reset stay StyleX in `ComplexSelector.tsx`. The popup's
+ * The trigger container is the same element as the shared field box class,
+ * and it sets the same padding, background and shadow properties; two classes
+ * in `astryx-base` are ordered by the sheet, not by `tw`, so its chrome, the
+ * variant fills and the disabled press reset stay StyleX in
+ * `ComplexSelector.tsx`. The popup's
  * `min-width: anchor-size(width)` stays there too, because `usePopover`
  * accepts only StyleX styles. Every class here styles a child element.
  *

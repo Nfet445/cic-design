@@ -158,7 +158,11 @@ function isTransparent(parent, child) {
     return (
       isCallbackArg &&
       parent.callee?.type === 'MemberExpression' &&
-      SPLICING_METHODS.has(lastSegment(nameOf(parent.callee.property) ?? parent.callee.property?.name))
+      SPLICING_METHODS.has(
+        lastSegment(
+          nameOf(parent.callee.property) ?? parent.callee.property?.name,
+        ),
+      )
     );
   }
   // `rows.map(...)` inside `rows.map(...).filter(...)` — we came up the object

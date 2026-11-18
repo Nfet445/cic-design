@@ -8,10 +8,11 @@
  *   stepper column and the two stepper buttons
  * @position Internal to NumberInput; the Tailwind build scans it for class names
  *
- * The wrapper is not here: it is the same element as the shared field base
- * (`inputWrapperStyles.base`, still StyleX), whose unlayered padding and
- * z-index outrank every utility in `astryx-base`. Its rule and the stepper
- * column's padding cancellation are the only style left in the component file.
+ * The wrapper is not here: it is the same element as the shared field box
+ * class, and its own padding and z-index rules stay StyleX in
+ * `NumberInput.tsx`, where an unlayered declaration outranks a class. Its rule
+ * and the stepper column's padding cancellation are the only style left in the
+ * component file.
  *
  * SYNC: When modified, update
  * - /packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs

@@ -10,9 +10,10 @@
  *
  * The panel's cap, heading, divider and empty slot are the same declarations
  * `Selector` states, so they come from `selectorClasses`. The trigger's chrome
- * stays on StyleX in `MultiSelector.tsx`: it shares one element with
- * `inputWrapperStyles.base`, whose unlayered `padding`, `gap`,
- * `backgroundColor` and `boxShadow` would win over these layered classes.
+ * stays on StyleX in `MultiSelector.tsx`: it shares one element with the
+ * shared field box class and sets the same `padding`, `gap`, `backgroundColor`
+ * and `boxShadow` properties, which two classes in `astryx-base` would order
+ * by the sheet rather than by `tw`.
  */
 
 import {tw} from '../utils/tw';

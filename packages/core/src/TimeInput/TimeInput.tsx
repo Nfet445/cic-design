@@ -41,9 +41,6 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {Icon} from '../Icon';
 import {Spinner} from '../Spinner';
@@ -74,7 +71,8 @@ import {useInputStatusIcon} from '../hooks/useInputStatusIcon';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useTooltip} from '../Tooltip';
 import {themeProps} from '../utils/themeProps';
 import {useLocale} from '../i18n';
@@ -780,16 +778,11 @@ function TimeField({
         }),
         stylex.props(
           isDisabled && inputDisabledFocusStyles.withinRing,
-          fieldStatus && inputStatusBorderStyles[fieldStatus.type],
-          fieldStatus &&
-            !isDisabled &&
-            inputStatusHoverShadowStyles[fieldStatus.type],
-          fieldStatus && inputStatusFocusWithinStyles[fieldStatus.type],
-          inputGroup && groupStyles.inGroup,
-          controlXstyle,
+          fieldStatus && !isDisabled && controlXstyle,
         ),
         tw(
-          fieldInputWrapperClassName(),
+          inputGroup && inputGroupMemberClassName,
+          fieldInputWrapperClassName({status: fieldStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           timeInputSizeClassName({size}),
           controlClassName,

@@ -1,5 +1,5 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
-// @pr-a11y scope ^(packages/core/src/Field/inputStyles\.stylex\.ts|packages/core/src/Field/__tests__/FieldForcedColorsFocus|apps/storybook/stories/(TextInput|Selector)\.stories)
+// @pr-a11y scope ^(packages/core/src/Field/(inputStyles\.stylex|fieldClasses)\.ts|packages/core/src/Field/__tests__/FieldForcedColorsFocus|apps/storybook/stories/(TextInput|Selector)\.stories)
 
 /**
  * @file FieldForcedColorsFocus.a11y.chromium.spec.ts

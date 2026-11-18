@@ -3129,7 +3129,7 @@ describe('DateInput — scroll CSS (definition-level)', () => {
     // Both read the one size class, so they cannot drift apart.
     for (const file of ['TouchDateField.tsx', 'NativeDateField.tsx']) {
       expect(read(file)).toMatch(
-        /tw\(\s*fieldInputWrapperClassName\(\),\s*isDisabled && [A-Za-z]+,\s*dateInputSizeClassName\(\{size\}\)[\s\S]{0,120}?controlClassName/,
+        /tw\(\s*(?:inputGroup && inputGroupMemberClassName,\s*)?fieldInputWrapperClassName\([^)]*\),\s*isDisabled && [A-Za-z]+,\s*dateInputSizeClassName\(\{size\}\)[\s\S]{0,120}?controlClassName/,
       );
     }
   });

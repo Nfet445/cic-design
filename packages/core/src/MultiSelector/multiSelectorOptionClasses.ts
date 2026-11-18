@@ -157,7 +157,7 @@ export function multiSelectorOptionRowClassName({
 /**
  * The trigger's height per size. Inside a group the group's row is the height,
  * so the component leaves this class off there for every variant that takes
- * `groupStyles.inGroup`.
+ * `inputGroupMemberClassName`.
  */
 export const MULTI_SELECTOR_TRIGGER_SIZE_CLASS: Record<
   MultiSelectorRowSize,

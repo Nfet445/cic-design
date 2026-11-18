@@ -197,7 +197,8 @@ function styleObjectText(valueText) {
  */
 export function extractStylexStyleProperties(text) {
   const byBinding = new Map();
-  const declaration = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*stylex\s*\.\s*create\s*\(/g;
+  const declaration =
+    /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*stylex\s*\.\s*create\s*\(/g;
   let match;
 
   while ((match = declaration.exec(text)) !== null) {
@@ -207,7 +208,9 @@ export function extractStylexStyleProperties(text) {
     if (braceEnd === -1) continue;
 
     const byKey = new Map();
-    for (const [key, value] of topLevelEntries(text.slice(braceStart, braceEnd))) {
+    for (const [key, value] of topLevelEntries(
+      text.slice(braceStart, braceEnd),
+    )) {
       const objectText = styleObjectText(value);
       byKey.set(key, objectText == null ? [] : propertiesOf(objectText));
     }
@@ -221,8 +224,8 @@ function resolveModulePath(fromFile, source) {
   const base = resolve(dirname(fromFile), source);
   for (const candidate of [
     base,
-    ...EXTENSIONS.map((extension) => base + extension),
-    ...EXTENSIONS.map((extension) => resolve(base, `index${extension}`)),
+    ...EXTENSIONS.map(extension => base + extension),
+    ...EXTENSIONS.map(extension => resolve(base, `index${extension}`)),
   ]) {
     if (existsSync(candidate) && statSync(candidate).isFile()) {
       return candidate;
@@ -253,7 +256,7 @@ function findReExportSource(text, exportedName) {
   let match;
   while ((match = reExport.exec(text)) !== null) {
     for (const clause of match[1].split(',')) {
-      const [original, alias] = clause.split(/\s+as\s+/).map((s) => s.trim());
+      const [original, alias] = clause.split(/\s+as\s+/).map(s => s.trim());
       const exposed = alias ?? original;
       if (exposed === exportedName) {
         return {source: match[2], name: original};

@@ -57,7 +57,7 @@ import {
   selectorOptionRowClassName,
 } from './selectorOptionClasses';
 import {expectClassSet} from '../__tests__/classNameAssertions';
-import {groupStyles} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {COMPACT_TOUCH_PRESENTATION_QUERY} from '../hooks/useAdaptivePresentation';
 
 /**
@@ -2798,9 +2798,7 @@ describe('Selector', () => {
     it.each(['input', 'secondary'] as const)(
       'gives a grouped %s trigger the connected group geometry in every position',
       variant => {
-        const groupClasses = stylex
-          .props(groupStyles.inGroup)
-          .className!.split(' ');
+        const groupClasses = inputGroupMemberClassName.split(' ');
         const selector = (label: string) => (
           <Selector
             label={label}
@@ -2843,9 +2841,7 @@ describe('Selector', () => {
     );
 
     it('keeps a standalone secondary trigger out of the group geometry', () => {
-      const groupClasses = stylex
-        .props(groupStyles.inGroup)
-        .className!.split(' ');
+      const groupClasses = inputGroupMemberClassName.split(' ');
       render(
         <Selector label="Channel" variant="secondary" options={OPTIONS} />,
       );

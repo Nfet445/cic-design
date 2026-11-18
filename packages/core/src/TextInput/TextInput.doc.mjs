@@ -9,7 +9,17 @@ export const docs = {
   },
   displayName: 'Text Input',
   category: 'Form Controls',
-  keywords: ["textinput","textfield","input","search","clearable","prefix","suffix","adornment","validation"],
+  keywords: [
+    'textinput',
+    'textfield',
+    'input',
+    'search',
+    'clearable',
+    'prefix',
+    'suffix',
+    'adornment',
+    'validation',
+  ],
   props: [
     {
       name: 'type',
@@ -212,12 +222,14 @@ export const docs = {
     {
       name: 'containerClassName',
       type: 'string',
-      description: 'Class name for the field container. Same targeting as `containerXstyle`.',
+      description:
+        'Class name for the field container. Same targeting as `containerXstyle`.',
     },
     {
       name: 'containerStyle',
       type: 'CSSProperties',
-      description: 'Inline styles for the field container. Same targeting as `containerXstyle`.',
+      description:
+        'Inline styles for the field container. Same targeting as `containerXstyle`.',
     },
     {
       name: 'controlXstyle',
@@ -238,31 +250,106 @@ export const docs = {
   ],
   theming: {
     targets: [
-      {className: 'astryx-text-input', visualProps: ['size', 'status'], states: ['disabled', 'readonly']},
+      {
+        className: 'astryx-text-input',
+        visualProps: ['size', 'status'],
+        states: ['disabled', 'readonly'],
+      },
     ],
   },
   usage: {
     description:
       'TextInput collects short-form text like names, emails, or search queries. Use it for single-line values where the expected input is brief. Pair it with validation status to guide users through required or formatted fields.',
     bestPractices: [
-      {guidance: true, description: 'Always provide a visible label so users know what the field is for. Only hide the label when surrounding context makes it obvious, like a search bar with a magnifying-glass icon.'},
-      {guidance: true, description: 'Use validation status with a message to explain what went wrong: "Email must include @" is better than just turning the border red.'},
-      {guidance: true, description: 'Size the input to match the expected content length so users can gauge how much to type: small for zip codes, medium for names, large for URLs.'},
-      {guidance: true, description: 'Add a clear button for search and filter inputs so users can quickly reset without selecting all text.'},
-      {guidance: true, description: 'Tell a touch keyboard what the field holds: `type="email"`, `"tel"` or `"url"` for those values, `inputMode="numeric"` for digits that are not a number (a one-time code), `enterKeyHint` for what Return does (Search, Send, Next), and `autoComplete` so AutoFill can fill it.'},
-      {guidance: false, description: "Don't use placeholder text as a replacement for a label; placeholders disappear on focus and are not reliably read by screen readers."},
-      {guidance: false, description: "Don't use TextInput for multi-line content like comments or descriptions; use TextArea instead."},
-      {guidance: false, description: "Don't mark every field as required; only flag mandatory fields so users are not overwhelmed by validation errors."},
-      {guidance: false, description: "Don't wrap a disabled TextInput in Tooltip to explain why it's disabled. Use the disabledMessage prop, which attaches the reason to the field itself."},
+      {
+        guidance: true,
+        description:
+          'Always provide a visible label so users know what the field is for. Only hide the label when surrounding context makes it obvious, like a search bar with a magnifying-glass icon.',
+      },
+      {
+        guidance: true,
+        description:
+          'Use validation status with a message to explain what went wrong: "Email must include @" is better than just turning the border red.',
+      },
+      {
+        guidance: true,
+        description:
+          'Size the input to match the expected content length so users can gauge how much to type: small for zip codes, medium for names, large for URLs.',
+      },
+      {
+        guidance: true,
+        description:
+          'Add a clear button for search and filter inputs so users can quickly reset without selecting all text.',
+      },
+      {
+        guidance: true,
+        description:
+          'Tell a touch keyboard what the field holds: `type="email"`, `"tel"` or `"url"` for those values, `inputMode="numeric"` for digits that are not a number (a one-time code), `enterKeyHint` for what Return does (Search, Send, Next), and `autoComplete` so AutoFill can fill it.',
+      },
+      {
+        guidance: false,
+        description:
+          "Don't use placeholder text as a replacement for a label; placeholders disappear on focus and are not reliably read by screen readers.",
+      },
+      {
+        guidance: false,
+        description:
+          "Don't use TextInput for multi-line content like comments or descriptions; use TextArea instead.",
+      },
+      {
+        guidance: false,
+        description:
+          "Don't mark every field as required; only flag mandatory fields so users are not overwhelmed by validation errors.",
+      },
+      {
+        guidance: false,
+        description:
+          "Don't wrap a disabled TextInput in Tooltip to explain why it's disabled. Use the disabledMessage prop, which attaches the reason to the field itself.",
+      },
     ],
     anatomy: [
-      {name: 'Label', required: true, description: 'Text that identifies the field. Always rendered for accessibility even when visually hidden.'},
-      {name: 'Description', required: false, description: 'Helper text between the label and the input that provides additional context or formatting hints.'},
-      {name: 'Start icon', required: false, description: 'A leading icon inside the input that hints at the expected content, like a magnifying glass for search.'},
-      {name: 'Placeholder', required: false, description: 'Hint text shown when the input is empty. Disappears on focus.'},
-      {name: 'Clear button', required: false, description: 'A trailing × button that resets the value and returns focus to the input.'},
-      {name: 'Spinner', required: false, description: 'Loading indicator that appears during async actions like server-side validation.'},
-      {name: 'Status icon', required: false, description: 'A trailing icon (error, warning, or success) that communicates validation state.'},
+      {
+        name: 'Label',
+        required: true,
+        description:
+          'Text that identifies the field. Always rendered for accessibility even when visually hidden.',
+      },
+      {
+        name: 'Description',
+        required: false,
+        description:
+          'Helper text between the label and the input that provides additional context or formatting hints.',
+      },
+      {
+        name: 'Start icon',
+        required: false,
+        description:
+          'A leading icon inside the input that hints at the expected content, like a magnifying glass for search.',
+      },
+      {
+        name: 'Placeholder',
+        required: false,
+        description:
+          'Hint text shown when the input is empty. Disappears on focus.',
+      },
+      {
+        name: 'Clear button',
+        required: false,
+        description:
+          'A trailing × button that resets the value and returns focus to the input.',
+      },
+      {
+        name: 'Spinner',
+        required: false,
+        description:
+          'Loading indicator that appears during async actions like server-side validation.',
+      },
+      {
+        name: 'Status icon',
+        required: false,
+        description:
+          'A trailing icon (error, warning, or success) that communicates validation state.',
+      },
     ],
   },
 };
@@ -282,8 +369,7 @@ export const docsZh = {
     {
       name: 'label',
       type: 'string',
-      description:
-        '输入框的标签文本：始终渲染以确保无障碍性。',
+      description: '输入框的标签文本：始终渲染以确保无障碍性。',
       required: true,
     },
     {
@@ -312,8 +398,7 @@ export const docsZh = {
     {
       name: 'isLabelHidden',
       type: 'boolean',
-      description:
-        '视觉上隐藏标签，同时保持屏幕阅读器的无障碍性。',
+      description: '视觉上隐藏标签，同时保持屏幕阅读器的无障碍性。',
       default: 'false',
     },
     {
@@ -324,8 +409,7 @@ export const docsZh = {
     {
       name: 'isOptional',
       type: 'boolean',
-      description:
-        '在标签旁显示"可选"指示器。与 isRequired 互斥。',
+      description: '在标签旁显示"可选"指示器。与 isRequired 互斥。',
       default: 'false',
     },
     {
@@ -338,8 +422,7 @@ export const docsZh = {
     {
       name: 'isDisabled',
       type: 'boolean',
-      description:
-        '禁用输入框，阻止交互并使元素变暗。',
+      description: '禁用输入框，阻止交互并使元素变暗。',
       default: 'false',
     },
     {
@@ -358,8 +441,7 @@ export const docsZh = {
     {
       name: 'isLoading',
       type: 'boolean',
-      description:
-        '使输入框进入加载状态，显示旋转器并设置 aria-busy。',
+      description: '使输入框进入加载状态，显示旋转器并设置 aria-busy。',
       default: 'false',
     },
     {
@@ -370,8 +452,7 @@ export const docsZh = {
     {
       name: 'labelTooltip',
       type: 'string',
-      description:
-        '在标签末尾的信息图标中显示的工具提示文本。',
+      description: '在标签末尾的信息图标中显示的工具提示文本。',
     },
     {
       name: 'startIcon',
@@ -395,7 +476,8 @@ export const docsZh = {
     {
       name: 'hasClear',
       type: 'boolean',
-      description: '输入有值时显示清除 (×) 按鈕。点击后清空值并将焦点返回输入框。',
+      description:
+        '输入有值时显示清除 (×) 按鈕。点击后清空值并将焦点返回输入框。',
       default: 'false',
     },
     {
@@ -407,8 +489,7 @@ export const docsZh = {
     {
       name: 'htmlName',
       type: 'string',
-      description:
-        '输入框的 HTML name 属性，用于表单提交。',
+      description: '输入框的 HTML name 属性，用于表单提交。',
     },
     {
       name: 'autoComplete',
@@ -481,79 +562,230 @@ export const docsZh = {
   ],
   theming: {
     targets: [
-      {className: 'astryx-text-input', visualProps: ['size', 'status'], states: ['disabled', 'readonly']},
+      {
+        className: 'astryx-text-input',
+        visualProps: ['size', 'status'],
+        states: ['disabled', 'readonly'],
+      },
     ],
   },
   usage: {
     description:
       'TextInput collects short-form text like names, emails, or search queries. Use it for single-line values where the expected input is brief. Pair it with validation status to guide users through required or formatted fields.',
     bestPractices: [
-      {guidance: true, description: 'Always provide a visible label so users know what the field is for. Only hide the label when surrounding context makes it obvious, like a search bar with a magnifying-glass icon.'},
-      {guidance: true, description: 'Use validation status with a message to explain what went wrong: "Email must include @" is better than just turning the border red.'},
-      {guidance: true, description: 'Size the input to match the expected content length so users can gauge how much to type: small for zip codes, medium for names, large for URLs.'},
-      {guidance: true, description: 'Add a clear button for search and filter inputs so users can quickly reset without selecting all text.'},
-      {guidance: true, description: 'Tell a touch keyboard what the field holds: `type="email"`, `"tel"` or `"url"` for those values, `inputMode="numeric"` for digits that are not a number (a one-time code), `enterKeyHint` for what Return does (Search, Send, Next), and `autoComplete` so AutoFill can fill it.'},
-      {guidance: false, description: "Don't use placeholder text as a replacement for a label; placeholders disappear on focus and are not reliably read by screen readers."},
-      {guidance: false, description: "Don't use TextInput for multi-line content like comments or descriptions; use TextArea instead."},
-      {guidance: false, description: "Don't mark every field as required; only flag mandatory fields so users are not overwhelmed by validation errors."},
-      {guidance: false, description: "Don't wrap a disabled TextInput in Tooltip to explain why it's disabled. Use the disabledMessage prop, which attaches the reason to the field itself."},
+      {
+        guidance: true,
+        description:
+          'Always provide a visible label so users know what the field is for. Only hide the label when surrounding context makes it obvious, like a search bar with a magnifying-glass icon.',
+      },
+      {
+        guidance: true,
+        description:
+          'Use validation status with a message to explain what went wrong: "Email must include @" is better than just turning the border red.',
+      },
+      {
+        guidance: true,
+        description:
+          'Size the input to match the expected content length so users can gauge how much to type: small for zip codes, medium for names, large for URLs.',
+      },
+      {
+        guidance: true,
+        description:
+          'Add a clear button for search and filter inputs so users can quickly reset without selecting all text.',
+      },
+      {
+        guidance: true,
+        description:
+          'Tell a touch keyboard what the field holds: `type="email"`, `"tel"` or `"url"` for those values, `inputMode="numeric"` for digits that are not a number (a one-time code), `enterKeyHint` for what Return does (Search, Send, Next), and `autoComplete` so AutoFill can fill it.',
+      },
+      {
+        guidance: false,
+        description:
+          "Don't use placeholder text as a replacement for a label; placeholders disappear on focus and are not reliably read by screen readers.",
+      },
+      {
+        guidance: false,
+        description:
+          "Don't use TextInput for multi-line content like comments or descriptions; use TextArea instead.",
+      },
+      {
+        guidance: false,
+        description:
+          "Don't mark every field as required; only flag mandatory fields so users are not overwhelmed by validation errors.",
+      },
+      {
+        guidance: false,
+        description:
+          "Don't wrap a disabled TextInput in Tooltip to explain why it's disabled. Use the disabledMessage prop, which attaches the reason to the field itself.",
+      },
     ],
     anatomy: [
-      {name: 'Label', required: true, description: 'Text that identifies the field. Always rendered for accessibility even when visually hidden.'},
-      {name: 'Description', required: false, description: 'Helper text between the label and the input that provides additional context or formatting hints.'},
-      {name: 'Start icon', required: false, description: 'A leading icon inside the input that hints at the expected content, like a magnifying glass for search.'},
-      {name: 'Placeholder', required: false, description: 'Hint text shown when the input is empty. Disappears on focus.'},
-      {name: 'Clear button', required: false, description: 'A trailing × button that resets the value and returns focus to the input.'},
-      {name: 'Spinner', required: false, description: 'Loading indicator that appears during async actions like server-side validation.'},
-      {name: 'Status icon', required: false, description: 'A trailing icon (error, warning, or success) that communicates validation state.'},
+      {
+        name: 'Label',
+        required: true,
+        description:
+          'Text that identifies the field. Always rendered for accessibility even when visually hidden.',
+      },
+      {
+        name: 'Description',
+        required: false,
+        description:
+          'Helper text between the label and the input that provides additional context or formatting hints.',
+      },
+      {
+        name: 'Start icon',
+        required: false,
+        description:
+          'A leading icon inside the input that hints at the expected content, like a magnifying glass for search.',
+      },
+      {
+        name: 'Placeholder',
+        required: false,
+        description:
+          'Hint text shown when the input is empty. Disappears on focus.',
+      },
+      {
+        name: 'Clear button',
+        required: false,
+        description:
+          'A trailing × button that resets the value and returns focus to the input.',
+      },
+      {
+        name: 'Spinner',
+        required: false,
+        description:
+          'Loading indicator that appears during async actions like server-side validation.',
+      },
+      {
+        name: 'Status icon',
+        required: false,
+        description:
+          'A trailing icon (error, warning, or success) that communicates validation state.',
+      },
     ],
   },
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsDense = {
-  description: 'Text input for collecting user text w/ label, description, validation status, optional/required indicators.',
+  description:
+    'Text input for collecting user text w/ label, description, validation status, optional/required indicators.',
   usage: {
     description:
       'TextInput collects short-form text like names, emails, or search queries. Use it for single-line values where the expected input is brief. Pair it with validation status to guide users through required or formatted fields.',
     bestPractices: [
-      {guidance: true, description: 'Always provide a visible label so users know what the field is for. Only hide the label when surrounding context makes it obvious, like a search bar with a magnifying-glass icon.'},
-      {guidance: true, description: 'Use validation status with a message to explain what went wrong: "Email must include @" is better than just turning the border red.'},
-      {guidance: true, description: 'Size the input to match the expected content length so users can gauge how much to type: small for zip codes, medium for names, large for URLs.'},
-      {guidance: true, description: 'Add a clear button for search and filter inputs so users can quickly reset without selecting all text.'},
-      {guidance: true, description: 'Tell a touch keyboard what the field holds: `type="email"`, `"tel"` or `"url"` for those values, `inputMode="numeric"` for digits that are not a number (a one-time code), `enterKeyHint` for what Return does (Search, Send, Next), and `autoComplete` so AutoFill can fill it.'},
-      {guidance: false, description: "Don't use placeholder text as a replacement for a label; placeholders disappear on focus and are not reliably read by screen readers."},
-      {guidance: false, description: "Don't use TextInput for multi-line content like comments or descriptions; use TextArea instead."},
-      {guidance: false, description: "Don't mark every field as required; only flag mandatory fields so users are not overwhelmed by validation errors."},
-      {guidance: false, description: "Don't wrap a disabled TextInput in Tooltip to explain why it's disabled. Use the disabledMessage prop, which attaches the reason to the field itself."},
+      {
+        guidance: true,
+        description:
+          'Always provide a visible label so users know what the field is for. Only hide the label when surrounding context makes it obvious, like a search bar with a magnifying-glass icon.',
+      },
+      {
+        guidance: true,
+        description:
+          'Use validation status with a message to explain what went wrong: "Email must include @" is better than just turning the border red.',
+      },
+      {
+        guidance: true,
+        description:
+          'Size the input to match the expected content length so users can gauge how much to type: small for zip codes, medium for names, large for URLs.',
+      },
+      {
+        guidance: true,
+        description:
+          'Add a clear button for search and filter inputs so users can quickly reset without selecting all text.',
+      },
+      {
+        guidance: true,
+        description:
+          'Tell a touch keyboard what the field holds: `type="email"`, `"tel"` or `"url"` for those values, `inputMode="numeric"` for digits that are not a number (a one-time code), `enterKeyHint` for what Return does (Search, Send, Next), and `autoComplete` so AutoFill can fill it.',
+      },
+      {
+        guidance: false,
+        description:
+          "Don't use placeholder text as a replacement for a label; placeholders disappear on focus and are not reliably read by screen readers.",
+      },
+      {
+        guidance: false,
+        description:
+          "Don't use TextInput for multi-line content like comments or descriptions; use TextArea instead.",
+      },
+      {
+        guidance: false,
+        description:
+          "Don't mark every field as required; only flag mandatory fields so users are not overwhelmed by validation errors.",
+      },
+      {
+        guidance: false,
+        description:
+          "Don't wrap a disabled TextInput in Tooltip to explain why it's disabled. Use the disabledMessage prop, which attaches the reason to the field itself.",
+      },
     ],
     anatomy: [
-      {name: 'Label', required: true, description: 'Text that identifies the field. Always rendered for accessibility even when visually hidden.'},
-      {name: 'Description', required: false, description: 'Helper text between the label and the input that provides additional context or formatting hints.'},
-      {name: 'Start icon', required: false, description: 'A leading icon inside the input that hints at the expected content, like a magnifying glass for search.'},
-      {name: 'Placeholder', required: false, description: 'Hint text shown when the input is empty. Disappears on focus.'},
-      {name: 'Clear button', required: false, description: 'A trailing × button that resets the value and returns focus to the input.'},
-      {name: 'Spinner', required: false, description: 'Loading indicator that appears during async actions like server-side validation.'},
-      {name: 'Status icon', required: false, description: 'A trailing icon (error, warning, or success) that communicates validation state.'},
+      {
+        name: 'Label',
+        required: true,
+        description:
+          'Text that identifies the field. Always rendered for accessibility even when visually hidden.',
+      },
+      {
+        name: 'Description',
+        required: false,
+        description:
+          'Helper text between the label and the input that provides additional context or formatting hints.',
+      },
+      {
+        name: 'Start icon',
+        required: false,
+        description:
+          'A leading icon inside the input that hints at the expected content, like a magnifying glass for search.',
+      },
+      {
+        name: 'Placeholder',
+        required: false,
+        description:
+          'Hint text shown when the input is empty. Disappears on focus.',
+      },
+      {
+        name: 'Clear button',
+        required: false,
+        description:
+          'A trailing × button that resets the value and returns focus to the input.',
+      },
+      {
+        name: 'Spinner',
+        required: false,
+        description:
+          'Loading indicator that appears during async actions like server-side validation.',
+      },
+      {
+        name: 'Status icon',
+        required: false,
+        description:
+          'A trailing icon (error, warning, or success) that communicates validation state.',
+      },
     ],
   },
   propDescriptions: {
-    containerXstyle: 'StyleX styles for the field container; no effect in InputGroup or horizontal-labels FormLayout. No root xstyle/className/style.',
+    containerXstyle:
+      'StyleX styles for the field container; no effect in InputGroup or horizontal-labels FormLayout. No root xstyle/className/style.',
     containerClassName: 'Class name for the field container.',
     containerStyle: 'Inline styles for the field container.',
-    controlXstyle: 'StyleX styles for the visual control box (border, background, icons); not the native input.',
+    controlXstyle:
+      'StyleX styles for the visual control box (border, background, icons); not the native input.',
     controlClassName: 'Class name for the visual control box.',
     controlStyle: 'Inline styles for the visual control box.',
     type: 'HTML input type.',
     label: 'Label text for input; always rendered for a11y.',
     value: 'Current input value.',
     onChange: 'Fired on input value change.',
-    changeAction: 'Async action after onChange (if not prevented). Triggers optimistic update+spinner while pending.',
+    changeAction:
+      'Async action after onChange (if not prevented). Triggers optimistic update+spinner while pending.',
     size: 'Size variant of input.',
     isLabelHidden: 'Visually hides label; keeps screen reader access.',
     description: 'Description text between label+input.',
     isOptional: 'Shows "Optional" indicator. Mutually exclusive w/ isRequired.',
-    isRequired: 'Shows "Required" indicator+sets aria-required. Mutually exclusive w/ isOptional.',
+    isRequired:
+      'Shows "Required" indicator+sets aria-required. Mutually exclusive w/ isOptional.',
     isDisabled: 'Disables input, prevents interaction, dims element.',
     isReadOnly:
       'Read-only: value visible + still submits, but not editable. Unlike isDisabled: not dimmed.',
@@ -563,11 +795,14 @@ export const docsDense = {
     placeholder: 'Placeholder when input empty.',
     labelTooltip: 'Tooltip in info icon at label end.',
     startIcon: 'SVG icon at input start (e.g. heroicons or lucide).',
-    status: 'Validation status; colored border+icon. Message floats below. Error sets aria-invalid.',
-    statusVariant: 'How status message is placed: attached overlaps below input; detached floats below w/ spacing; tooltip hides the box and shows it on the status icon.',
+    status:
+      'Validation status; colored border+icon. Message floats below. Error sets aria-invalid.',
+    statusVariant:
+      'How status message is placed: attached overlaps below input; detached floats below w/ spacing; tooltip hides the box and shows it on the status icon.',
     hasClear: 'Shows clear button when input has value. Clears value on click.',
     hasAutoFocus: 'Auto-focus input on mount.',
     htmlName: 'HTML name attr for form submissions.',
-    autoComplete: 'Native autocomplete attr, forwarded unchanged. Does not affect the controlled value.',
+    autoComplete:
+      'Native autocomplete attr, forwarded unchanged. Does not affect the controlled value.',
   },
 };

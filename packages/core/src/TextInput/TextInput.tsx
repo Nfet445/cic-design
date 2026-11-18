@@ -39,11 +39,6 @@ import {
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
 } from '../Field/fieldClasses';
-import {
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
-} from '../Field/inputStyles.stylex';
 import type {InputStatus} from '../Field/types';
 import {renderIconSlot, type IconType} from '../Icon/Icon';
 import {isRenderable} from '../utils/isRenderable';
@@ -59,7 +54,8 @@ import {
 } from '../Field/textEntryTraits';
 import {joinAriaIDs} from '../utils/inputAria';
 
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 
 // Re-export shared types for convenience
 
@@ -460,14 +456,11 @@ export function TextInput({
         }),
         stylex.props(
           isDisabled && inputDisabledFocusStyles.ring,
-          status && inputStatusBorderStyles[status.type],
-          status && !isDisabled && inputStatusHoverShadowStyles[status.type],
-          status && inputStatusFocusWithinStyles[status.type],
-          inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
         tw(
-          fieldInputWrapperClassName(),
+          inputGroup && inputGroupMemberClassName,
+          fieldInputWrapperClassName({status: status?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           textInputHeightClassName({size}),
           controlClassName,

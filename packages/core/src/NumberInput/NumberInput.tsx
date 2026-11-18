@@ -53,9 +53,6 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -122,7 +119,8 @@ const styles = stylex.create({
 
 export type NumberInputSize = 'sm' | 'md' | 'lg';
 
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 
 // Re-export shared types for convenience
 
@@ -1288,16 +1286,11 @@ export function NumberInput({
           styles.wrapper,
           hasNumberSteppers && styles.wrapperWithNumberSteppers,
           isDisabled && inputDisabledFocusStyles.ring,
-          fieldStatus && inputStatusBorderStyles[fieldStatus.type],
-          fieldStatus &&
-            !isDisabled &&
-            inputStatusHoverShadowStyles[fieldStatus.type],
-          fieldStatus && inputStatusFocusWithinStyles[fieldStatus.type],
-          inputGroup && groupStyles.inGroup,
-          controlXstyle,
+          fieldStatus && !isDisabled && controlXstyle,
         ),
         tw(
-          fieldInputWrapperClassName(),
+          inputGroup && inputGroupMemberClassName,
+          fieldInputWrapperClassName({status: fieldStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           numberInputHeightClassName({size}),
           controlClassName,

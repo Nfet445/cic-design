@@ -53,3 +53,26 @@ Left: `Field/inputStyles.stylex.ts` still builds 5 maps (`inputWrapperStyles`, `
 `Typeahead`, `BaseTypeahead`, `Tokenizer` (4). Those status maps key on `:hover`, `:focus-within` and
 `:focus` together with a theme variable per status, so each needs the variant-per-state treatment and a
 test that reads classes rather than declarations.
+
+## Comments — window 2
+
+Landed three commits: `fix(core): рамка статуса поля приходит из класса, а не из StyleX`,
+`refactor(core): карта inputWrapperStyles удалена, прототипы берут класс поля`,
+`refactor(core): группа InputGroup берёт геометрию строки из класса`, then one more for the five status
+maps: `refactor(field): отдать состояние поля классам и убрать карты обёртки` (50 files). The five maps in
+`Field/inputStyles.stylex.ts` are gone; `fieldClasses.ts` holds `fieldInputWrapperClassName`,
+`fieldInputWrapperDisabledClassName` (`cursor-default opacity-50 shadow-none`) and one class per status and
+state, and every input family plus `packages/richtext/src/RichTextEditor.tsx` reads them (the RichText
+hover-shadow argument went away, so its wrapper is now pure class text plus `xstyle`). Two tests moved off
+`getComputedStyle`: `packages/richtext/src/RichTextEditor.test.tsx` asserts the wrapper's `opacity-50`
+class, and `packages/core/src/AppShell/AppShell.test.tsx` asserts the wrapper's `relative` class.
+Suites: 147 files / 4412 tests in the branch, 152 files / 4555 on the integration branch.
+
+A trunk regression surfaced while validating: ticket 41 deleted `utils/rtlStyles.ts`, but
+`packages/richtext/src/RichTextEditorToolbar.tsx`, two Storybook stories and a sandbox page still imported
+`rtlStyles`. Fixed on the integration branch in `fix(richtext): брать зеркало из класса вместо удалённого
+rtlStyles` (they use `RTL_MIRROR_CLASS` through `className`, and the CLI's `i18n-rtl-and-testing.doc.mjs`
+teaches the class instead of the retired style).
+
+Left: `Field/inputDisabledFocus.ts` (1), `InputGroup/groupStyles.ts` (1), and the field-wrapper maps that
+survive in components outside this ticket's list.

@@ -39,8 +39,6 @@ import {
   Field,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
 } from '../Field';
 import {useKeepLayerOpenProps} from '../Layer/useLayer';
 import {InternalInputClearButton} from '../Field/InputClearButton';
@@ -129,7 +127,8 @@ import {
   MULTI_SELECTOR_ROW_LABEL_CLASS,
   multiSelectorOptionRowClassName,
 } from './multiSelectorOptionClasses';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -167,10 +166,11 @@ function isCreateValue(value: string): boolean {
  */
 const LAYER_OPEN: string = ':has([aria-expanded="true"])';
 
-// The trigger container shares its element with `inputWrapperStyles.base`,
-// whose unlayered `padding`, `gap`, `backgroundColor` and `boxShadow` outrank
-// every utility in `astryx-base`: its chrome, the ghost and secondary fills,
-// the read-only and disabled press resets stay here. `popover` stays because
+// The trigger container shares its element with the shared field box class,
+// and it sets the same padding, background and shadow properties; two classes
+// in `astryx-base` are ordered by the sheet, not by `tw`: its chrome, the
+// ghost and secondary fills, the read-only and disabled press resets stay
+// here. `popover` stays because
 // `usePopover` takes StyleX styles only. Every child element uses
 // `multiSelectorClasses.ts`.
 const styles = stylex.create({
@@ -2416,21 +2416,19 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             optimisticValue.length === 0 && styles.triggerPlaceholder,
             variant === 'input' &&
               status &&
-              inputStatusBorderStyles[status.type],
-            variant === 'input' &&
-              status &&
               !isDisabled &&
-              inputStatusHoverShadowStyles[status.type],
-            // Grouped secondary triggers keep their neutral fill but take the
-            // group's row height, connected edge radii, and focus stacking.
-            variant !== 'ghost' && inputGroup && groupStyles.inGroup,
-            controlXstyle,
+              // Grouped secondary triggers keep their neutral fill but take the
+              // group's row height, connected edge radii, and focus stacking.
+              controlXstyle,
           ),
           tw(
-            fieldInputWrapperClassName(),
+            variant !== 'ghost' && inputGroup && inputGroupMemberClassName,
+            fieldInputWrapperClassName({
+              status: variant === 'input' ? status?.type : undefined,
+            }),
             isDisabled && fieldInputWrapperDisabledClassName,
             controlClassName,
-            // The group's row is the height wherever `groupStyles.inGroup`
+            // The group's row is the height wherever `inputGroupMemberClassName`
             // applies, as it was when both were StyleX declarations in one
             // sheet.
             !(inputGroup && variant !== 'ghost') &&

@@ -44,8 +44,6 @@ import {
   Field,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
 } from '../Field';
 import {Divider} from '../Divider';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
@@ -112,7 +110,8 @@ import {
 } from '../privateAttributes/focusOwner.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -203,7 +202,7 @@ const styles = stylex.create({
       default: 'pointer',
       ':is(:disabled,[aria-disabled="true"])': 'default',
     },
-    // The wrapper (inputWrapperStyles.base) renders the focus ring via
+    // The wrapper (the shared field box class) renders the focus ring via
     // :focus-within when this button is focused, matching TextInput/NumberInput.
     // The button must not draw its own :focus-visible outline or the two stack
     // into a doubled ring over the trigger.
@@ -221,7 +220,8 @@ const styles = stylex.create({
     textAlign: 'start',
   },
   // Inside an InputGroup the group's own height is the row, and the trigger
-  // takes it: `height: 100%` from `groupStyles.inGroup` can only govern if the
+  // takes it: `height: 100%` from `inputGroupMemberClassName` can only govern
+  // if the
   // trigger stops asserting a floor of its own — otherwise a control sized
   // above its group (`<InputGroup size="md"><Selector size="lg">`) grows the
   // row it was supposed to sit in. The padding goes with it: the row is
@@ -2127,19 +2127,18 @@ export function Selector<T extends SelectorOptionType>(
             !selectedItem && styles.triggerPlaceholder,
             variant === 'input' &&
               status &&
-              inputStatusBorderStyles[status.type],
-            variant === 'input' &&
-              status &&
               !isDisabled &&
-              inputStatusHoverShadowStyles[status.type],
-            // Grouped secondary triggers keep their neutral fill but take the
-            // group's row height, connected edge radii, and focus stacking.
-            variant !== 'ghost' && inputGroup && groupStyles.inGroup,
-            inputGroup && styles.triggerInGroup,
+              // Grouped secondary triggers keep their neutral fill but take the
+              // group's row height, connected edge radii, and focus stacking.
+              inputGroup &&
+              styles.triggerInGroup,
             controlXstyle,
           ),
           tw(
-            fieldInputWrapperClassName(),
+            variant !== 'ghost' && inputGroup && inputGroupMemberClassName,
+            fieldInputWrapperClassName({
+              status: variant === 'input' ? status?.type : undefined,
+            }),
             isDisabled && fieldInputWrapperDisabledClassName,
             controlClassName,
             // A grouped trigger takes the group's row height; its own size
