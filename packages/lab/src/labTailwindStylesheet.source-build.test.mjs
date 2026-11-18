@@ -28,6 +28,7 @@ import * as scrollEdgeEffectClasses from './internal/scrollEdgeEffectClasses';
 import * as svgIconClasses from './SVGIcon/svgIconClasses';
 import * as commentPinClasses from './CommentPin/commentPinClasses';
 import * as commentActionsClasses from './Comments/commentActionsClasses';
+import * as commentComposerClasses from './Comments/commentComposerClasses';
 import * as commentMarkdownClasses from './Comments/commentMarkdownClasses';
 import * as commentPartsClasses from './Comments/commentPartsClasses';
 import * as commentRowClasses from './Comments/commentRowClasses';
@@ -82,6 +83,7 @@ function labClassNames() {
     circularProgressClasses,
     codeEditorClasses,
     commentActionsClasses,
+    commentComposerClasses,
     commentMarkdownClasses,
     commentPartsClasses,
     commentPinClasses,
