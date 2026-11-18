@@ -497,7 +497,15 @@ import {
   rtlCenterInlineBlockOffsetClassName,
   rtlCenterInlineClassName,
 } from '../utils/rtlClasses';
-import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {
+  focusOutlineFocusVisibleClassName,
+  focusOutlinePublishVarsClassName,
+  focusOutlineSuppressedClassName,
+  focusOutlineWithinClassName,
+  focusOutlineWithinComboboxClassName,
+  focusOutlineWithinFirstChildClassName,
+  focusOutlineWithinOrPublishedClassName,
+} from '../utils/focusOutlineClasses';
 import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
 import {inputStatusIconButtonClassName} from '../hooks/inputStatusIconClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
@@ -1500,6 +1508,13 @@ function familyClassNames() {
   );
   add(scrollableAreaContentClassName);
   add(scrollableAreaContentWithInlineOverflowClassName);
+  add(focusOutlineFocusVisibleClassName);
+  add(focusOutlineWithinClassName);
+  add(focusOutlineWithinFirstChildClassName);
+  add(focusOutlineWithinComboboxClassName);
+  add(focusOutlineSuppressedClassName);
+  add(focusOutlinePublishVarsClassName);
+  add(focusOutlineWithinOrPublishedClassName);
   // Overlay: the container, the scrim's box, its tint, and every reveal arm
   // (controlled open and closed, always shown, hover and focus) per position.
   // VisuallyHidden: the clip block every accessible label reuses.
@@ -3936,7 +3951,7 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // Layout outer insets it publishes took the sheet to 2215, and the merged
     // field, number-input and typeahead classes took it to 2224. The ceiling
     // keeps its headroom above that.
-    expect(stylesheet.rules.size).toBeLessThan(2230);
+    expect(stylesheet.rules.size).toBeLessThan(2260);
   });
 
   it('prints a RadioList row’s coarse press arm after its mouse arm', () => {

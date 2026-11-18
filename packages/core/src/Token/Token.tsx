@@ -27,6 +27,7 @@ import {TokenLink} from './TokenLink';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   focusOwnerProps,
   focusOwnerRingClassName,
@@ -200,8 +201,10 @@ export function Token({
       // Focusable while disabled (spec:AST-085 FR1), but inert (FR2).
       aria-disabled={isDisabled || undefined}
       {...(isDisabled ? disabledInteractionProps() : null)}
-      {...focusOutlineProps.focusVisible()}
-      className={tokenRemoveButtonClassName}>
+      className={tw(
+        tokenRemoveButtonClassName,
+        focusOutlineFocusVisibleClassName,
+      )}>
       <Icon icon="close" size="xsm" color="inherit" />
     </button>
   );
