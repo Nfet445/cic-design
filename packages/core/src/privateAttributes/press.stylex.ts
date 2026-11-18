@@ -24,12 +24,6 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {
-  borderVars,
-  colorVars,
-  durationVars,
-  easeVars,
-} from '../theme/tokens.stylex';
 import {reducedMotionFadeConsts} from '../motion/reducedMotion.stylex';
 import {pressVars} from '../utils/interactionOverlay.stylex';
 
@@ -56,8 +50,8 @@ const PRESSED_ANY =
 
 const PRESS_ALPHA = pressVars['--astryx-press-alpha'];
 
-const hoverImage = `linear-gradient(${colorVars['--color-overlay-hover']}, ${colorVars['--color-overlay-hover']})`;
-const pressedImage = `linear-gradient(${colorVars['--color-overlay-pressed']}, ${colorVars['--color-overlay-pressed']})`;
+const hoverImage = `linear-gradient(var(--color-overlay-hover), var(--color-overlay-hover))`;
+const pressedImage = `linear-gradient(var(--color-overlay-pressed), var(--color-overlay-pressed))`;
 /** The overlay's paint, read back off the element (its gradient layer). */
 const pressedOverlayImage = 'var(--_press-paint-image)';
 
@@ -74,9 +68,9 @@ const pressRelease = stylex.keyframes({
  * A press layer's clock as CSS: the strength release's clock, the theme's
  * exit duration, so the layer and the strength land together.
  */
-const CELL_RELEASE = durationVars['--duration-exit'];
+const CELL_RELEASE = 'var(--duration-exit)';
 /** The same clock under Reduce Motion, no longer than the Reduce Motion fade. */
-const CELL_RELEASE_REDUCED = `min(${durationVars['--duration-exit']}, ${reducedMotionFadeConsts.duration})`;
+const CELL_RELEASE_REDUCED = `min(var(--duration-exit), ${reducedMotionFadeConsts.duration})`;
 const REDUCED_MOTION = '@media (prefers-reduced-motion: reduce)';
 
 /** Opacity 1 → 0: the row layer leaves; its fading arm runs it. */
@@ -86,10 +80,10 @@ const cellRelease = stylex.keyframes({
 });
 
 /** The release's curve: the theme's exit easing, as the strength's. */
-const RELEASE_EASE = easeVars['--ease-exit'];
+const RELEASE_EASE = 'var(--ease-exit)';
 
 /** A List divider's width (ListItem's bottom border). */
-const DIVIDER_WIDTH = borderVars['--border-width'];
+const DIVIDER_WIDTH = 'var(--border-width)';
 /** How far a highlighted row's tint reaches past its edge: one divider. */
 const PAST_DIVIDER = `calc(-1 * ${DIVIDER_WIDTH})`;
 /**
@@ -191,7 +185,7 @@ export const rowPressLayerStyles = stylex.create({
         default: null,
         [COARSE]: {
           default: null,
-          [PRESSED_ANY]: colorVars['--color-overlay-pressed'],
+          [PRESSED_ANY]: 'var(--color-overlay-pressed)',
         },
       },
       // On at once while the press is believed; nothing transitions it.
@@ -246,13 +240,13 @@ export const rowPressLayerStyles = stylex.create({
         ':not(:first-child)': {
           default: null,
           ':active': {
-            default: tintAbove(colorVars['--color-overlay-pressed']),
+            default: tintAbove('var(--color-overlay-pressed)'),
             [COARSE]: TRAVELLING_SURFACE,
           },
           [HOVER_HOVER]: {
             default: null,
-            ':hover': tintAbove(colorVars['--color-overlay-hover']),
-            ':active': tintAbove(colorVars['--color-overlay-pressed']),
+            ':hover': tintAbove('var(--color-overlay-hover)'),
+            ':active': tintAbove('var(--color-overlay-pressed)'),
           },
           // A press the controller paints. Under a coarse pointer, the press
           // layer covers the divider above. Elsewhere the strip takes the
