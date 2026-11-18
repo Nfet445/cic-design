@@ -19,7 +19,7 @@
 
 import {useEffect, useOptimistic, useRef, useState, useTransition} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {sizeVars, spacingVars} from '../theme/tokens.stylex';
+import {sizeVarNames, spacingVarNames} from '../theme/tokenVars';
 import {Button} from '../Button';
 import {isModifiedClick} from '../DropdownMenu/menuItemRoles';
 import {Icon} from '../Icon';
@@ -731,8 +731,8 @@ export function Pagination({
         const isInputDisabled = isDisabled || computedTotalPages == null;
 
         const pageBoxWidth = isSm
-          ? sizeVars['--size-element-sm']
-          : sizeVars['--size-element-md'];
+          ? sizeVarNames['--size-element-sm']
+          : sizeVarNames['--size-element-md'];
         const inputNode = (
           <NumberInput
             label={goToPageLabel}
@@ -750,7 +750,7 @@ export function Pagination({
             onEntryErrorChange={error => setIsPageEntryRejected(error != null)}
             width={
               isPageEntryRejected
-                ? `calc(${pageBoxWidth} + ${spacingVars['--spacing-10']})`
+                ? `calc(${pageBoxWidth} + ${spacingVarNames['--spacing-10']})`
                 : pageBoxWidth
             }
             isDisabled={isInputDisabled}
