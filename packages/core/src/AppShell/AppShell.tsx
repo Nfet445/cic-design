@@ -33,7 +33,6 @@ import {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {colorVars, radiusVars} from '../theme/tokens.stylex';
 import {Layout} from '../Layout/Layout';
 import {LayoutHeader} from '../Layout/LayoutHeader';
 import {LayoutPanel} from '../Layout/LayoutPanel';
@@ -348,24 +347,24 @@ const styles = stylex.create({
   mainElevatedCorner: {
     borderStartStartRadius: {
       default: null,
-      ':focus-visible': radiusVars['--radius-page'],
+      ':focus-visible': 'var(--radius-page)',
     },
   },
   contentBgSurface: {
-    backgroundColor: colorVars['--color-background-surface'],
+    backgroundColor: 'var(--color-background-surface)',
   },
   contentBgWash: {
-    backgroundColor: colorVars['--color-background-body'],
+    backgroundColor: 'var(--color-background-body)',
   },
   contentBgTransparent: {
     backgroundColor: 'transparent',
     isolation: 'isolate',
   },
   navAreaWash: {
-    backgroundColor: colorVars['--color-background-body'],
+    backgroundColor: 'var(--color-background-body)',
   },
   navAreaSurface: {
-    backgroundColor: colorVars['--color-background-surface'],
+    backgroundColor: 'var(--color-background-surface)',
   },
   // Main adds the bottom inset to the padding that LayoutContent publishes for
   // `contentPadding`. The published value excludes the inset, so a bleed child
