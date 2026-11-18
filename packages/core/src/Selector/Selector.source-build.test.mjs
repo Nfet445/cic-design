@@ -3,7 +3,8 @@
 /**
  * @file Selector.source-build.test.mjs
  * @input Uses Babel, an arrow-lowering plugin, the StyleX compiler, and Selector source
- * @output Verifies raw Selector source survives a consumer's Babel pipeline
+ * @output Verifies raw Selector source survives a consumer's Babel pipeline and
+ *   that its styles are class text rather than StyleX rules
  * @position Regression test for Selector source-build compatibility
  */
 
@@ -71,13 +72,9 @@ describe('Selector source-build compatibility (#5464)', () => {
       ],
     });
 
-    const rules = result?.metadata?.stylex ?? [];
-    const declarations = rules
-      .map(([, rule]) => rule.ltr.match(/^\.[^{]+\{(.+)\}$/)?.[1])
-      .filter(declaration => declaration?.startsWith('padding-block:calc'));
-
-    expect(rules.length).toBeGreaterThan(0);
-    expect(declarations).toEqual([]);
+    // The module's styles are class text now: a rule here would mean a
+    // computed style crept back into the source a consumer has to compile.
+    expect(result?.metadata?.stylex ?? []).toEqual([]);
   });
 
   it('states the trigger size paddings as class text', async () => {

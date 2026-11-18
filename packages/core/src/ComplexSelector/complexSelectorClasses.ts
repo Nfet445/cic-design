@@ -3,16 +3,19 @@
 /**
  * @file complexSelectorClasses.ts
  * @input The selector size, and the popup content's own block-size cap
- * @output The class strings for the trigger button, its text and status slots,
- *   the chevron's rotation, and the popup content box
+ * @output The class strings for the trigger's box and variant chrome, the
+ *   trigger button, its text and status slots, the chevron's rotation, and the
+ *   popup content box
  * @position Style primitives; scanned by the Tailwind build. The component
- *   composes them with `tw` and keeps its container chrome on StyleX
+ *   composes them with `tw`
  *
- * The trigger container is the same element as the shared field box class,
- * and it sets the same padding, background and shadow properties; two classes
- * in `astryx-base` are ordered by the sheet, not by `tw`, so its chrome, the
- * variant fills and the disabled press reset stay StyleX in
- * `ComplexSelector.tsx`. Every class here styles a child element.
+ * The trigger container is the same element as the shared field box class, and
+ * the field box sets `padding-block`, `padding-inline`, `border-width`,
+ * `background-color`, `box-shadow` and `transition-property` from classes in
+ * the same layer. A utility here that disagreed with one of those would be
+ * decided by the sheet's order, not by `tw`, so the trigger's chips that must
+ * win name the trigger's stable target class (`.astryx-complex-selector`) and
+ * outrank the field box by specificity instead.
  *
  * SYNC: When modified, update
  * - /packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
@@ -39,6 +42,85 @@ export function complexSelectorHeightClassName({
   size: ComplexSelectorSize;
 }): string {
   return HEIGHT_CLASS[size];
+}
+
+/**
+ * The trigger's box: the visible control, and the field box's own element.
+ *
+ * `isInert` is a disabled non-input trigger, which keeps its chrome but neither
+ * scales nor paints a press.
+ */
+export function complexSelectorTriggerClassName({
+  variant,
+  hasValue,
+  isInert,
+}: {
+  variant: 'input' | 'secondary' | 'ghost';
+  hasValue: boolean;
+  isInert: boolean;
+}): string {
+  return tw(
+    'justify-between',
+    variant === 'ghost' ? 'w-auto' : 'w-full',
+    '[&.astryx-complex-selector]:py-[var(--spacing-2)]',
+    '[&.astryx-complex-selector]:px-[var(--spacing-3)]',
+    '[font-family:var(--font-family-body)]',
+    '[font-size:var(--text-label-size)]',
+    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
+    // control sits under 16px, and only iOS WebKit implements
+    // -webkit-touch-callout to key the coarse-pointer floor to it.
+    'pointer-coarse:[@supports(-webkit-touch-callout:none)]:[&.astryx-complex-selector]:[font-size:max(1rem,var(--text-label-size))]',
+    '[line-height:var(--text-label-leading)]',
+    hasValue
+      ? 'text-[color:var(--color-text-primary)]'
+      : 'text-[color:var(--color-text-secondary)]',
+    isInert ? 'cursor-default' : 'cursor-pointer',
+    variant !== 'input' &&
+      complexSelectorTriggerChromeClassName({variant, isInert}),
+  );
+}
+
+/**
+ * The chrome a borderless trigger wears over the field box: no border, its own
+ * fill, the medium weight, its transition list, and the press scale.
+ *
+ * The paint-off arms state the state each of the shared overlay's arms matches,
+ * because a plain `background-image: none` would tie with them in the same
+ * layer and the sheet would decide.
+ */
+function complexSelectorTriggerChromeClassName({
+  variant,
+  isInert,
+}: {
+  variant: 'secondary' | 'ghost';
+  isInert: boolean;
+}): string {
+  return tw(
+    '[&.astryx-complex-selector]:border-0',
+    variant === 'ghost'
+      ? '[&.astryx-complex-selector]:bg-transparent'
+      : '[&.astryx-complex-selector]:bg-[var(--color-neutral)]',
+    '[&.astryx-complex-selector:focus-within]:shadow-none',
+    '[font-weight:var(--font-weight-medium)]',
+    '[&.astryx-complex-selector]:[transition-property:background-image,background-color,color,opacity,transform]',
+    // The press scale goes at once as the list opens.
+    '[&.astryx-complex-selector:has([aria-expanded=true])]:[transition-property:background-image,background-color,color,opacity]',
+    isInert
+      ? tw(
+          '[transform:none]',
+          '[&.astryx-complex-selector:hover]:[background-image:none]',
+          '[&.astryx-complex-selector:active]:[background-image:none]',
+          '[&.astryx-complex-selector[data-astryx-press=on]]:[background-image:none]',
+          '[&.astryx-complex-selector[data-astryx-press=fading]]:[background-image:none]',
+        )
+      : tw(
+          '[transform:scale(1)]',
+          // A mouse press; under a coarse pointer the touch press model writes
+          // `data-astryx-press` instead (see interactionOverlay.stylex.ts).
+          '[&:active:not(:has([aria-expanded=true]))]:pointer-fine:[transform:scale(0.98)]',
+          '[&[data-astryx-press=on]:not(:has([aria-expanded=true]))]:[transform:scale(0.98)]',
+        ),
+  );
 }
 
 /**

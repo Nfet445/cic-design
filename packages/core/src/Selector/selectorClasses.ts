@@ -4,15 +4,19 @@
  * @file selectorClasses.ts
  * @input The panel shape a selector presents its options in, and whether the
  *   list scrolls
- * @output The class strings for the option panel, its listbox, the search row's
- *   gutter, and the empty and heading slots
+ * @output The class strings for the trigger's box and its variant chrome, the
+ *   option panel, its listbox, the search row's gutter, and the empty and
+ *   heading slots
  * @position Style primitives; scanned by the Tailwind build. `Selector` and
  *   `MultiSelector` compose these with `tw`
  *
- * The trigger's own chrome stays on StyleX in `Selector.tsx`: it shares one
- * element with the shared field box class and sets the same `padding`, `gap`,
- * `backgroundColor` and `boxShadow` properties, which two classes in
- * `astryx-base` would order by the sheet rather than by `tw`.
+ * The trigger's box is the shared field box's own element, and the field box
+ * sets `padding-block`, `padding-inline`, `border-width`, `background-color`,
+ * `box-shadow` and `transition-property` from classes in the same layer. A
+ * utility here that disagreed with one of those would be decided by the
+ * sheet's order, not by `tw`, so the trigger's chips that must win name the
+ * trigger's stable target class (`.astryx-selector`) and outrank the field box
+ * by specificity instead.
  */
 
 import {tw} from '../utils/tw';
@@ -171,6 +175,90 @@ export const SELECTOR_TRIGGER_VALUE_CLASS = tw(
  * through the group's border.
  */
 export const SELECTOR_TRIGGER_BUTTON_IN_GROUP_CLASS = 'self-stretch';
+
+/**
+ * The trigger's box: the visible control, and the field box's own element.
+ *
+ * `isInert` is a read-only or disabled non-input trigger, which keeps its
+ * chrome but neither scales nor paints a press. `inGroup` cancels the box's own
+ * block padding and line box, because the group's row is the height there.
+ */
+export function selectorTriggerClassName({
+  variant,
+  hasValue,
+  isInert,
+  inGroup,
+}: {
+  variant: 'input' | 'secondary' | 'ghost';
+  hasValue: boolean;
+  isInert: boolean;
+  inGroup: boolean;
+}): string {
+  return tw(
+    'justify-between',
+    variant === 'ghost' ? 'w-auto' : 'w-full',
+    inGroup
+      ? '[&.astryx-selector]:py-0'
+      : '[&.astryx-selector]:py-[var(--spacing-2)]',
+    '[&.astryx-selector]:px-[var(--spacing-3)]',
+    '[font-family:var(--font-family-body)]',
+    '[font-size:var(--text-label-size)]',
+    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
+    // control sits under 16px, and only iOS WebKit implements
+    // -webkit-touch-callout to key the coarse-pointer floor to it.
+    'pointer-coarse:[@supports(-webkit-touch-callout:none)]:[&.astryx-selector]:[font-size:max(1rem,var(--text-label-size))]',
+    hasValue
+      ? 'text-[color:var(--color-text-primary)]'
+      : 'text-[color:var(--color-text-secondary)]',
+    isInert ? 'cursor-default' : 'cursor-pointer',
+    inGroup && 'min-h-0',
+    inGroup && '[line-height:max(var(--spacing-5),20px,1rem)]',
+    variant !== 'input' && selectorTriggerChromeClassName({variant, isInert}),
+  );
+}
+
+/**
+ * The chrome a borderless trigger wears over the field box: no border, its own
+ * fill, the medium weight, its transition list, and the press scale.
+ *
+ * The paint-off arms state the state each of the shared overlay's arms matches,
+ * because a plain `background-image: none` would tie with them in the same
+ * layer and the sheet would decide.
+ */
+function selectorTriggerChromeClassName({
+  variant,
+  isInert,
+}: {
+  variant: 'secondary' | 'ghost';
+  isInert: boolean;
+}): string {
+  return tw(
+    '[&.astryx-selector]:border-0',
+    variant === 'ghost'
+      ? '[&.astryx-selector]:bg-transparent'
+      : '[&.astryx-selector]:bg-[var(--color-neutral)]',
+    '[&.astryx-selector:focus-within]:shadow-none',
+    '[font-weight:var(--font-weight-medium)]',
+    '[&.astryx-selector]:[transition-property:background-image,background-color,color,opacity,transform]',
+    // The press scale goes at once as the list opens.
+    '[&.astryx-selector:has([aria-expanded=true])]:[transition-property:background-image,background-color,color,opacity]',
+    isInert
+      ? tw(
+          '[transform:none]',
+          '[&.astryx-selector:hover]:[background-image:none]',
+          '[&.astryx-selector:active]:[background-image:none]',
+          '[&.astryx-selector[data-astryx-press=on]]:[background-image:none]',
+          '[&.astryx-selector[data-astryx-press=fading]]:[background-image:none]',
+        )
+      : tw(
+          '[transform:scale(1)]',
+          // A mouse press; under a coarse pointer the touch press model writes
+          // `data-astryx-press` instead (see interactionOverlay.stylex.ts).
+          '[&:active:not(:has([aria-expanded=true]))]:pointer-fine:[transform:scale(0.98)]',
+          '[&[data-astryx-press=on]:not(:has([aria-expanded=true]))]:[transform:scale(0.98)]',
+        ),
+  );
+}
 
 export const SELECTOR_TRIGGER_VALUE_IN_GROUP_CLASS = '[max-height:100%]';
 

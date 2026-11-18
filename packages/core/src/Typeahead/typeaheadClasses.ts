@@ -4,7 +4,7 @@
  * @file typeaheadClasses.ts
  * @input Uses the theme's spacing, radius, typography, type-scale, colour and
  *   border variables, and the row's size and runtime state
- * @output The utility class strings for the field's size floor, a typeahead
+ * @output The utility class strings for the field's box and size floor, a typeahead
  *   result row, its content slot
  *   and the default `TypeaheadItem` label, description and icon carry, plus
  *   the field's text entry, its disabled cursor and the two lanes around it
@@ -43,6 +43,31 @@ const ROW_PADDING_CLASS: Record<TypeaheadRowSize, string> = {
     '[padding-inline:var(--spacing-2)]',
   ),
 };
+
+/**
+ * The field's own box: the element the shared field box class also styles.
+ *
+ * It holds one token and the input in one row, so it states `gap` and
+ * `padding-block` against the field box's own values, and a text caret even
+ * while the field is disabled, as the map it replaces did. Utilities in
+ * `astryx-base` that disagree are decided by the sheet's order, so these name
+ * the field's stable target class (`.astryx-typeahead`) and win by
+ * specificity instead.
+ *
+ * There is no `flex-wrap`: the field box does not wrap and neither does
+ * `TextInput`, and this field only ever holds one token, so there is no second
+ * row to wrap to. It also cannot wrap and keep its end controls in flow: flex
+ * moves an item to a new line rather than shrinking it, so a long value put the
+ * clear button and spinner on a row of their own (a 280px field grew to 46px
+ * tall). Unwrapped, the token ellipsizes instead.
+ */
+export const TYPEAHEAD_WRAPPER_CLASS = tw(
+  '[&.astryx-typeahead]:gap-[var(--spacing-1)]',
+  // Standard padding minus the border width, so the box does not jump when a
+  // token (28px) is added inside it.
+  '[&.astryx-typeahead]:py-[calc(var(--spacing-1)-1px)]',
+  '[&.astryx-typeahead]:cursor-text',
+);
 
 /** The field's size floor, the same one the shared input box takes. */
 export const typeaheadWrapperSizeClassName: Record<TypeaheadRowSize, string> = {
