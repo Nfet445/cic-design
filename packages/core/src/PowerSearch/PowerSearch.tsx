@@ -29,7 +29,6 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {
   Tokenizer,
@@ -67,6 +66,7 @@ import {isFocusDetached} from '../utils/isFocusDetached';
 import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   powerSearchPopoverLayerClassName,
   powerSearchResultCountClassName,
@@ -1430,7 +1430,7 @@ export function PowerSearch({
                   powerSearchSheetTriggerWrapperWithTokensClassName,
                 powerSearchSheetTriggerSizeClassName(size),
               ),
-              stylex.props(status && !isDisabled && xstyle),
+              xstyleProps(status && !isDisabled ? xstyle : undefined),
               tw(
                 fieldInputWrapperClassName({status: status?.type}),
                 isDisabled && fieldInputWrapperDisabledClassName,
