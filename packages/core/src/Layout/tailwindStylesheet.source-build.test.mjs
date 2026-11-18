@@ -752,6 +752,7 @@ import {
   tokenizerSheetTriggerPlaceholderDisabledClassName,
   tokenizerSheetTriggerWithTokensClassName,
   tokenizerFieldSizeClassName,
+  tokenizerFixedHeightClassName,
   tokenizerStartIconWithTokensClassName,
   tokenizerTokenClassName,
 } from '../Tokenizer/tokenizerClasses';
@@ -3781,6 +3782,10 @@ function familyClassNames() {
   add(tokenizerTokenClassName);
   for (const size of ['sm', 'md', 'lg']) {
     add(tokenizerFieldSizeClassName[size]);
+  }
+  // The exact height a truncated row and the expanded layer's placeholder pin.
+  for (const size of ['sm', 'md', 'lg']) {
+    add(tokenizerFixedHeightClassName[size]);
   }
   add(tokenizerStartIconWithTokensClassName);
   add(tokenizerEndLaneClassName);

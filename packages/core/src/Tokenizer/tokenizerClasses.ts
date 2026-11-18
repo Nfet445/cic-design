@@ -27,6 +27,17 @@ export const tokenizerFieldSizeClassName: Record<'sm' | 'md' | 'lg', string> = {
   lg: 'min-h-[var(--size-element-lg)]',
 };
 
+/**
+ * The exact height a truncated row and the expanded layer's placeholder pin.
+ * Truncation drops the size floor, so this height is the only one in play.
+ */
+export const tokenizerFixedHeightClassName: Record<'sm' | 'md' | 'lg', string> =
+  {
+    sm: 'h-[var(--size-element-sm)]',
+    md: 'h-[var(--size-element-md)]',
+    lg: 'h-[var(--size-element-lg)]',
+  };
+
 /** A token in the row, and the wrapper a `renderToken` pill renders into. */
 export const tokenizerTokenClassName = tw(
   'flex shrink-0 max-w-full relative z-[1]',
