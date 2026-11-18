@@ -78,40 +78,42 @@ D. Delete `utils/focusOutline.stylex.ts` and `utils/interactionOverlay.stylex.ts
 fold or document every `*Overrides.stylex.ts`, then answer ticket 36 in
 `## Comments`: which rules stay and why, or that nothing stays.
 
-## Stage D — the press overlay
+## Comments — stage C, date family
 
-The ring half is class-shaped and is moving window by window. The overlay half is not, yet, and it is the
-second half of this ticket. Measured at the time of writing: 47 non-test call sites name
-`interactionOverlayStyles.` or `interactionOverlayProps.`.
+Converted `focusOutlineStyles.focusVisible` to
+`focusOutlineFocusVisibleClassName` (pattern 1 or 2, no StyleX arm left in the
+element) in nine call sites across two modules. The spread call sites became a
+plain `className={tw(mapClass, focusOutlineFocusVisibleClassName)}`: the ring's
+former `stylex.props` arm carried no style, so `mergeProps` added nothing once
+both sides were classes.
 
-`packages/core/src/utils/interactionOverlayClasses.ts` publishes
-`interactionOverlayBackgroundImageClassName`, but it is a shortcut, not a replacement: it paints the hover
-and pressed gradients and the two `data-astryx-press` arms, and it carries neither the strength variable
-nor the release animation. A component that swaps its StyleX arm for that class keeps its paint and silently
-loses the fade.
+- `packages/core/src/DateInput/DateInput.tsx` — the calendar toggle. The
+  comment that said the toggle keeps its ring on StyleX is gone, and
+  `dateInputClasses.ts` `dateInputToggleClassName` now says the caller joins the
+  ring class.
+- `packages/core/src/DateInput/MonthScroller.tsx` — the day buttons.
+- `packages/core/src/DateInput/PickerWheel.tsx`, `Wheel.tsx` — the touch
+  columns' listbox.
+- `packages/core/src/DateInput/NativeDateField.tsx`, `TouchDateField.tsx` — the
+  calendar toggles.
+- `packages/core/src/DateTimeInput/DateTimeInput.tsx`,
+  `TouchDateTimeField.tsx` — the calendar and clock toggles, and the touch
+  month/year header button.
+- `packages/core/src/DateTimeInput/NativeDateSegment.tsx`,
+  `NativeTimeSegment.tsx` — the native segment toggles.
 
-The full arm has to state, in Class-text form:
+Markup snapshots for `Wheel` and `PickerWheel` were repinned: the StyleX debug
+name became the literal ring classes in the same position. No test reads a ring
+from `getComputedStyle`. Nothing new was registered in the sheet test — the
+class arms are the shared, already-registered ones, and
+`build-css-tailwind.mjs` reported 178 cache hits and 0 misses on the
+DateTimeInput half.
 
-1. `--astryx-press-alpha` strength arms — `1` under `[data-astryx-press=on]`, and the `fading` arm runs the
-   release; the registered `@property` (a `<number>` from 0 to 1) stays where it is declared today, and it
-   must keep living in one place because the controller writes the same property.
-2. `--_press-paint` and `--_press-paint-image` — the `color-mix` expression over the pressed token and the
-   strength, carried on the element the controller writes to, plus the `var()` readers for a descendant or
-   a `::after` that paints instead.
-3. The release animation — `animation-name`, `animation-duration` (with its reduce-motion arm),
-   `animation-timing-function` and `animation-fill-mode: both`, keyed on `[data-astryx-press=fading]`. The
-   keyframes move to `packages/core/tailwind/astryx.input.css` as `@keyframes astryxPressRelease`, like
-   every other migrated animation.
-4. The mouse arms exactly as the StyleX map states them: hover and `:active` under `@media (hover: hover)`,
-   `:active` alone otherwise, `background-color` arms yielding to the image while the controller paints, and
-   the coarse-pointer reset that stops `:active` from painting on a finger.
+Left for stage D:
 
-The specificity problem the ring solved with `:has()` appears here too: the hover arm and the pressed arm
-set the same property, so each arm needs its own rank rather than an order. The file's own comment already
-explains why the StyleX version keeps the enabled guard outside the media branch, and the class version
-must reproduce that reason, not the letter.
-
-Once the arm exists, the call sites convert the same three ways the ring did: a bare spread becomes a
-`tw()` join, a ring-plus-overlay `stylex.props` becomes `mergeProps(themeProps(…), stylex.props(rest), tw(classes, overlayClass), style)`,
-and a descriptor-looking ❝`{...interactionOverlayProps.backgroundImage}` ❞ inside a `stylex.props` moves
-the class to the element. `xstyle` stays last and unlayered.
+- `packages/core/src/DateInput/TouchDateField.tsx:707` — the touch
+  month/year header button passes `interactionOverlayStyles.backgroundColor`
+  into the ring's `stylex.props(…)`, which is pattern 3 (extra StyleX styles
+  handed INTO the ring). It needs `interactionOverlayProps` to take and return
+  classes first, so it waits for the stage D decision on
+  `utils/interactionOverlay.stylex.ts`.
