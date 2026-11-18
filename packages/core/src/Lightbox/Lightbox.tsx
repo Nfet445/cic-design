@@ -54,7 +54,7 @@ import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
@@ -368,6 +368,18 @@ function wouldPlacePushBlock(
  * />
  * ```
  */
+
+/*
+ * The photo box clips its content, so its keyboard ring has to sit inside its
+ * own edge. A per-instance value rather than a second utility: the shared ring
+ * class reads `--focus-outline-offset`, so one class covers every inset.
+ */
+type InsetRingStyle = CSSProperties & {'--focus-outline-offset'?: string};
+
+const ZOOM_INSET_RING_STYLE: InsetRingStyle = {
+  '--focus-outline-offset': 'calc(-1 * var(--focus-outline-width))',
+};
+
 export function Lightbox({
   isOpen,
   onOpenChange,
@@ -1758,10 +1770,13 @@ export function Lightbox({
                                 lightboxPageMediaZoomTargetClassName,
                               isZoomTarget &&
                                 i === index &&
-                                focusOutlineProps.focusVisible(
-                                  lightboxOverrideStyles.zoomButtonFocusInset,
-                                ).className,
-                            )}>
+                                focusOutlineFocusVisibleClassName,
+                            )}
+                            style={
+                              isZoomTarget && i === index
+                                ? ZOOM_INSET_RING_STYLE
+                                : undefined
+                            }>
                             {renderMedia(mediaArray[i], i === index)}
                           </div>
                           {hasCaptionBand && (
