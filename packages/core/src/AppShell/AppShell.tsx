@@ -34,7 +34,6 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Layout} from '../Layout/Layout';
 import {LayoutHeader} from '../Layout/LayoutHeader';
 import {LayoutPanel} from '../Layout/LayoutPanel';
@@ -82,6 +81,10 @@ import {
   APP_SHELL_SKIP_LINK_CLASS,
   appShellHeightClassName,
   appShellVariantClassName,
+  APP_SHELL_MAIN_FOCUS_TARGET_CLASS,
+  APP_SHELL_MAIN_ELEVATED_CORNER_CLASS,
+  APP_SHELL_MAIN_SAFE_AREA_END_CLASS,
+  APP_SHELL_PANEL_AUTO_FILL_CLASS,
 } from './appShellClasses';
 import {tw} from '../utils/tw';
 import {xstyleProps} from '../utils/xstyle';
@@ -339,41 +342,6 @@ type InsetRingStyle = CSSProperties & {'--focus-outline-offset'?: string};
 const MAIN_SCROLL_INSET_RING_STYLE: InsetRingStyle = {
   '--focus-outline-offset': 'calc(-1 * var(--focus-outline-width))',
 };
-
-const styles = stylex.create({
-  // Programmatic focus target for the skip link. While main fits, it is only
-  // focusable via tabIndex={-1} (never tabbable), so a focus ring around the
-  // entire content area would be noise rather than guidance — suppress it.
-  mainFocusTarget: {
-    outline: {
-      default: null,
-      ':focus': 'none',
-    },
-  },
-  // While main's focus ring shows, main follows the elevated surface's
-  // rounded top-start corner, so the ring keeps the surface's shape instead of
-  // drawing a square corner. Otherwise main keeps its corner and clips nothing.
-  mainElevatedCorner: {
-    borderStartStartRadius: {
-      default: null,
-      ':focus-visible': 'var(--radius-page)',
-    },
-  },
-  // Main adds the bottom inset to the padding that LayoutContent publishes for
-  // `contentPadding`. The published value excludes the inset, so a bleed child
-  // subtracts only `contentPadding`. Main is border-box, so a child that fills
-  // it ends above the inset.
-  mainSafeAreaEnd: {
-    paddingBlockEnd:
-      'calc(var(--container-padding-block-end, 0px) + env(safe-area-inset-bottom, 0px))',
-  },
-  // Panel fill for auto mode — panel fills the sticky container vertically
-  // and scrolls independently since the page (not the panel) owns the scroll
-  panelAutoFill: {
-    flex: 1,
-    overflow: 'auto',
-  },
-});
 
 // =============================================================================
 // Component
@@ -967,7 +935,7 @@ export function AppShell({
       xstyle={[
         navAreaClassName,
         isAuto && stickyBgClassName,
-        isAuto && styles.panelAutoFill,
+        isAuto && APP_SHELL_PANEL_AUTO_FILL_CLASS,
       ]}>
       <SideNavShellContext value={sideNavShell}>{sideNav}</SideNavShellContext>
     </LayoutPanel>
@@ -1088,9 +1056,9 @@ export function AppShell({
         contentAreaClassName,
         drawsMainFocusRing &&
           shouldElevateWithCorner &&
-          styles.mainElevatedCorner,
-        !drawsMainFocusRing && styles.mainFocusTarget,
-        styles.mainSafeAreaEnd,
+          APP_SHELL_MAIN_ELEVATED_CORNER_CLASS,
+        !drawsMainFocusRing && APP_SHELL_MAIN_FOCUS_TARGET_CLASS,
+        APP_SHELL_MAIN_SAFE_AREA_END_CLASS,
       ]}
       className={
         drawsMainFocusRing ? focusOutlineFocusVisibleClassName : undefined

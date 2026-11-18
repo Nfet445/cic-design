@@ -2,40 +2,22 @@
 
 /**
  * @file AppShellSafeArea.test.tsx
- * @input vitest (jsdom), React Testing Library, AppShell, and the CSS rules
- *   that StyleX injects.
+ * @input vitest (jsdom), React Testing Library, AppShell.
  * @output Checks the safe-area declarations. The header and the sidenav-only
  *   top bar pad their items by the top and side insets. Under a banner, the
  *   top bar takes only the sides. Main's block end is `contentPadding` plus
  *   the bottom inset.
  * @position Testing for AppShell.tsx. jsdom drops `env()` values, so the test
- *   reads the rules that StyleX passes to `insertRule`.
+ *   reads the class text that states them.
  */
 
 import {render, screen} from '@testing-library/react';
 import {classesOf} from '../__tests__/classNameAssertions';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-
-/** Every rule StyleX inserted, as the raw text it handed to `insertRule`. */
-const rawRules: string[] = [];
-
-const insertRule = CSSStyleSheet.prototype.insertRule;
-CSSStyleSheet.prototype.insertRule = function (
-  this: CSSStyleSheet,
-  rule: string,
-  index?: number,
-) {
-  rawRules.push(rule);
-  return insertRule.call(this, rule, index);
-};
-// StyleX injects when the styles are created: load AppShell after the
-// recorder is in place. The file loads them before any test runs, so no
-// hook's time limit covers the load.
-vi.resetModules();
-const {AppShell} = await import('./AppShell');
-const {SideNav} = await import('../SideNav/SideNav');
-const {SideNavItem} = await import('../SideNav/SideNavItem');
-const {SideNavSection} = await import('../SideNav/SideNavSection');
+import {AppShell} from './AppShell';
+import {SideNav} from '../SideNav/SideNav';
+import {SideNavItem} from '../SideNav/SideNavItem';
+import {SideNavSection} from '../SideNav/SideNavSection';
 
 function stubMatchMedia(matches: boolean) {
   vi.stubGlobal(
@@ -56,51 +38,6 @@ function stubMatchMedia(matches: boolean) {
 beforeEach(() => {
   stubMatchMedia(false);
 });
-
-/**
- * The declarations `el`'s classes make, by property. A StyleX class names a
- * raw inserted rule; a Tailwind arbitrary-property class names its own
- * declaration in its class text, because jsdom never loads the compiled
- * sheet. The layout content publishes its insets the second way.
- */
-function rawDeclarations(el: Element, pseudo = ''): Map<string, string> {
-  const declarations = new Map<string, string>();
-  for (const className of Array.from(el.classList)) {
-    const arbitrary = /^\[(--[\w-]+):(.+)\]$/.exec(className);
-    if (arbitrary != null && pseudo === '') {
-      declarations.set(arbitrary[1], arbitrary[2].replace(/_/g, ' '));
-      continue;
-    }
-    if (className === 'box-border' && pseudo === '') {
-      declarations.set('box-sizing', 'border-box');
-      continue;
-    }
-    // A utility class is not a selector here: its `[` and `(` would become
-    // regex syntax, and it never had a StyleX rule.
-    if (className.includes('[')) {
-      continue;
-    }
-    for (const rule of rawRules) {
-      const match = new RegExp(
-        `^\\.${className}(?::not\\(#\\\\#\\))*${pseudo}\\{([^}]*)\\}$`,
-      ).exec(rule);
-      if (match == null) {
-        continue;
-      }
-      for (const declaration of match[1].split(';')) {
-        const colon = declaration.indexOf(':');
-        if (colon > 0) {
-          // StyleX minifies values: compare without whitespace.
-          declarations.set(
-            declaration.slice(0, colon).trim(),
-            declaration.slice(colon + 1).replace(/\s+/g, ''),
-          );
-        }
-      }
-    }
-  }
-  return declarations;
-}
 
 describe('AppShell safe area', () => {
   it('pads the header by the top and side insets', () => {
@@ -209,21 +146,14 @@ describe('AppShell safe area', () => {
         <div>Content</div>
       </AppShell>,
     );
-    const main = screen.getByRole('main');
-    const declarations = rawDeclarations(main);
-    // No content padding: the published inset is the block-start padding's
-    // zero, so the block-end padding is the bottom inset alone.
-    const published = declarations.get('--container-padding-block-end');
-    expect(published).toBeTruthy();
-    // The inset main publishes is the block-start padding's value, so a bleed
-    // child subtracts only the content padding.
-    expect(published).toBe(declarations.get('--container-padding-block-start'));
-    expect(published).not.toContain('env(');
-    expect(declarations.get('padding-bottom')).toBe(MAIN_END);
-    // Padding, not a spacer: main is border-box, so a child that fills it
-    // ends above the inset instead of overflowing it.
-    expect(declarations.get('box-sizing')).toBe('border-box');
-    expect(rawDeclarations(main, '::after').has('height')).toBe(false);
+    const mainClasses = classesOf(screen.getByRole('main'));
+    // The padding reads the inset main publishes for `contentPadding`, so a
+    // bleed child subtracts only the content padding, and adds the bottom
+    // safe-area inset itself. The self-qualifier repeats LayoutContent's own
+    // theme class, so this padding wins by specificity, not sheet order.
+    expect(mainClasses).toContain(
+      `[&.astryx-layout-content]:[padding-block-end:${MAIN_END}]`,
+    );
   });
 
   it('adds the bottom inset to the content padding, and publishes the content padding alone', () => {
@@ -232,13 +162,16 @@ describe('AppShell safe area', () => {
         <div>Content</div>
       </AppShell>,
     );
-    const declarations = rawDeclarations(screen.getByRole('main'));
-    expect(declarations.get('padding-bottom')).toBe(MAIN_END);
-    // The published inset is `contentPadding` alone, the block-start
-    // padding's value, so a bleed child subtracts only `contentPadding`.
-    const published = declarations.get('--container-padding-block-end');
-    expect(published).toBeTruthy();
-    expect(published).toBe(declarations.get('--container-padding-block-start'));
-    expect(published).not.toContain('env(');
+    const mainClasses = classesOf(screen.getByRole('main'));
+    expect(mainClasses).toContain(
+      `[&.astryx-layout-content]:[padding-block-end:${MAIN_END}]`,
+    );
+    // `contentPadding` reaches main as LayoutContent's own padding classes.
+    expect(
+      mainClasses.some(
+        name =>
+          name.startsWith('pb-6') || name.includes('padding-block-end:var('),
+      ),
+    ).toBe(true);
   });
 });

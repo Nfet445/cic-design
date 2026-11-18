@@ -54,6 +54,34 @@ export const commentPartsUnreadBadgeClassName = tw(
 export const commentPartsQuoteTextClassName = 'italic';
 
 /**
+ * A highlighted passage's quote rule. The repeated class name doubles the
+ * class's specificity, so it beats Blockquote's own
+ * `border-s-[color:var(--color-border-emphasized)]` whatever order the two
+ * rules print in. The passage writes the highlight's border token into the
+ * variable.
+ */
+export const commentPartsQuoteRuleClassName =
+  '[&.astryx-blockquote]:[border-inline-start-color:var(--_comment-quote-rule,var(--color-border-emphasized))]';
+
+/**
+ * A running comment's label: its text is painted by a gradient clipped to the
+ * glyphs, so it never drops below secondary-text contrast. The clip arms need
+ * `astryx-text` a second time to outrank `Text`'s own secondary color, and the
+ * forced-colors arms name it twice more so they outrank the clip arms: there
+ * the label is plain system text, with no gradient and no motion.
+ */
+export const commentPartsProgressLabelClassName = tw(
+  '[background-size:250%_100%]',
+  'bg-clip-text',
+  'supports-[background-clip:text]:motion-safe:[&.astryx-text]:[color:transparent]',
+  'supports-[background-clip:text]:motion-safe:[&.astryx-text]:[background-image:linear-gradient(90deg,var(--color-text-secondary)_40%,var(--color-text-primary)_50%,var(--color-text-secondary)_60%)]',
+  'supports-[background-clip:text]:motion-safe:[&.astryx-text]:animate-[astryxCommentProgressShimmer_calc(var(--duration-slow-max)_*_2)_linear_infinite]',
+  'forced-colors:[&.astryx-text.astryx-text]:[color:CanvasText]',
+  'forced-colors:[&.astryx-text.astryx-text]:[background-image:none]',
+  'forced-colors:[&.astryx-text.astryx-text]:[animation-name:none]',
+);
+
+/**
  * Doubles the comment column's gap around the quote so it reads as its own
  * block between the author line and the body.
  */

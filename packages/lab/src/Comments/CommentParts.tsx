@@ -60,6 +60,8 @@ import {
   commentPartsFullWidthClassName,
   commentPartsLoadingComposerClassName,
   commentPartsNoWrapClassName,
+  commentPartsProgressLabelClassName,
+  commentPartsQuoteRuleClassName,
   commentPartsQuoteTextClassName,
   commentPartsRailCollapsedClassName,
   commentPartsRailClassName,
@@ -71,10 +73,6 @@ import {
   commentPartsThreadQuoteClassName,
   commentPartsUnreadBadgeClassName,
 } from './commentPartsClasses';
-import {
-  commentHighlightRuleStyle,
-  commentPartsProgressLabelStyles,
-} from './commentPartsOverrides.stylex';
 import {CommentIcon} from './icons';
 import {eventAnchorId, type AnyComment} from './utils';
 import type {
@@ -281,9 +279,15 @@ export function QuotedPassage({
 }) {
   return (
     <Blockquote
-      xstyle={
+      className={
+        highlightColor != null ? commentPartsQuoteRuleClassName : undefined
+      }
+      style={
         highlightColor != null
-          ? commentHighlightRuleStyle(highlightColor)
+          ? {
+              '--_comment-quote-rule':
+                colorVarNames[`--color-border-${highlightColor}`],
+            }
           : undefined
       }
       data-quote-rule={highlightColor != null ? 'highlight' : 'neutral'}
@@ -356,7 +360,7 @@ export function CommentProgressStatus({progress}: {progress: CommentProgress}) {
         ref={labelRef}
         type="body"
         color="secondary"
-        xstyle={commentPartsProgressLabelStyles.base}>
+        className={commentPartsProgressLabelClassName}>
         {progress.label}
       </Text>
       {progress.link != null && (

@@ -89,6 +89,23 @@ export const transferListGroupHeadingClassName = tw(
 
 export const transferListItemClassName = 'min-w-0 px-3';
 
+/**
+ * A disabled row still takes the pointer, so its disabled controls show their
+ * tooltips on hover. Naming `astryx-item` a second time doubles the class's
+ * specificity, so the pointer beats the row's own `pointer-events-none`
+ * whatever order the two rules print in.
+ */
+export const transferListDisabledRowPointerClassName =
+  '[&.astryx-item]:pointer-events-auto';
+
+/**
+ * A disabled row already dims its end content, Remove included. Remove's own
+ * disabled dim would make it fainter than the list's other controls, so the
+ * repeated `astryx-button` outranks the button's own `opacity-50`.
+ */
+export const transferListRemoveOnDisabledRowClassName =
+  '[&.astryx-button]:opacity-100';
+
 export const transferListEmptyClassName = tw(
   'flex items-center justify-center p-4 text-center',
   '[min-height:var(--transfer-list-panel-min-block-size,12rem)]',
