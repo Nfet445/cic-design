@@ -21,6 +21,7 @@ import * as stylex from '@stylexjs/stylex';
 import {spacingVars} from '../theme/tokens.stylex';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
 import {rowPressLayerStyles} from '../privateAttributes/press.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
@@ -481,7 +482,7 @@ export function TreeListItem({
             }),
             isInteractive || (hasChildren && onClick == null)
               ? focusOutlineProps.focusWithinOrPublished(
-                  interactionOverlayStyles.backgroundImage,
+                  interactionOverlayStyles.pressedAlpha,
                   // The touch press on a compositor layer (after the
                   // overlay, whose own touch paint it turns off).
                   rowPressLayerStyles.cell,
@@ -498,6 +499,10 @@ export function TreeListItem({
                 treeListItemClassName.interactive,
               isDisabled && treeListItemClassName.disabled,
               isSelected && treeListItemClassName.selected,
+              // The hover and press paint; its strength and release stay the
+              // StyleX arm above.
+              (isInteractive || (hasChildren && onClick == null)) &&
+                interactionOverlayBackgroundImageClassName,
               // Consumer row props are merged last so useContainerReveal can
               // publish both its classes and inline custom properties. Seed
               // the private indent first, then preserve the standard inline
