@@ -15,7 +15,6 @@
 
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import type {SpacingStep} from '../utils/types';
 import type {SizeValue} from '../utils/types';
 import {
@@ -27,6 +26,7 @@ import {
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 /** The inline track custom properties the track classes read. */
 type TrackStyle = React.CSSProperties &
@@ -329,7 +329,7 @@ export function Grid({
             style: trackStyle,
           },
         ),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         {...style, ...inlineStyle},
       )}>

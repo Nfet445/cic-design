@@ -19,7 +19,6 @@
 import type {AriaRole, ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import {use} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {LayoutDividerContext} from './LayoutDividerContext';
 import {
   layoutHeaderDividerClassName,
@@ -31,6 +30,7 @@ import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {containerPaddingByEdgeClassName} from './paddingClasses';
 
 export interface LayoutHeaderProps extends BaseProps<HTMLDivElement> {
@@ -140,7 +140,7 @@ export function LayoutHeader({
             resolvedHasDivider && layoutHeaderDividerClassName,
           ),
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         {...style, ...sizingStyle},
       )}

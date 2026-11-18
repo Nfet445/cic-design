@@ -18,7 +18,6 @@
 import type {AriaRole, ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import {use} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {layoutContentClassName} from './layoutClasses';
 import {LayoutSlotsContext} from './LayoutSlotsContext';
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -27,6 +26,7 @@ import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
 import type {SpacingStep} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {containerPaddingByEdgeClassName} from './paddingClasses';
 
 export interface LayoutContentProps extends BaseProps<HTMLDivElement> {
@@ -145,7 +145,7 @@ export function LayoutContent({
               }),
           ),
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}

@@ -16,7 +16,6 @@
 
 import {createElement, type ElementType, type ReactNode, type Ref} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {
   type StackItemCrossAlignSelf,
   type StackItemSize,
@@ -25,6 +24,7 @@ import {
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {StackItemScrollRegion} from '../hooks/StackItemScrollRegion';
 
 export interface StackItemProps extends BaseProps<HTMLElement> {
@@ -106,7 +106,7 @@ export function StackItem({
       mergeProps(themeProps('stack-item', {size}), {
         className: layoutClassName,
       }),
-      stylex.props(xstyle),
+      xstyleProps(xstyle),
       className,
       style,
     ),

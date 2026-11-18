@@ -18,7 +18,6 @@
  */
 
 import {type ReactNode, useMemo} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {LayoutAreaContext, type LayoutArea} from './LayoutAreaContext';
 import {LayoutSlotsContext, type LayoutSlots} from './LayoutSlotsContext';
 import {LayoutDividerContext} from './LayoutDividerContext';
@@ -43,6 +42,7 @@ import {isRenderable} from '../utils/isRenderable';
 import type {BaseProps} from '../BaseProps';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {layoutPaddingClassName} from './paddingClasses';
 
 /**
@@ -300,7 +300,7 @@ export function Layout({
               isFill ? layoutFillClassName : layoutAutoClassName,
             ),
           }),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           className,
           style,
         )}>
