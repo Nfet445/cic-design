@@ -702,3 +702,21 @@ size classes reach the root; prettier and eslint clean on every touched file.
 Deviations, unchanged: no changeset (`@astryxdesign/lab` is private and
 `check-changesets` rejects it) and `git commit --no-verify` because
 `pnpm check:repo` fails on `.changeset/powersearch-tailwind-classes.md`.
+
+### After the merge: `TransferListSelector` did convert
+
+`9fb98980b` merged `poc/tailwind-layout-primitives`, which had already converted
+the popup box above: `transferListSelectorContentClassName` holds
+`[width:var(--_transfer-list-selector-width)]`, its max-width, the
+`calc(100vh_-_32px)` cap, `p-0 overflow-hidden rounded-[inherit]`, and the
+selector writes only the width into the variable. That branch accepted the
+later-stylesheet order between `astryx.css` and `lab.css` for those utilities,
+so the "must outrank" text this window wrote into `TransferListSelector.tsx` was
+resolved away by the merge and the file no longer holds a style map. The other
+exceptions stand, because their reasons are a marker condition, a
+`firstThatWorks` cap, or a rule inside a forced-colors block — not sheet order.
+
+Measurements after the merge: `lab-tailwind.css` 101 813 B raw, 13 838 B gzip
+against the 14 391 B gate, so 553 B of headroom; `pnpm exec vitest run
+packages/lab/src` passes (102 files, 1359 tests) and the sheet test still finds
+a rule for every class in every lab map, including the new selector content map.
