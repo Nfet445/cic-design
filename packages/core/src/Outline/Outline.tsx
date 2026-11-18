@@ -33,7 +33,7 @@ import type {BaseProps} from '../BaseProps';
 import {useScrollSpy} from './useScrollSpy';
 import type {OutlineItem} from './types';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
@@ -321,10 +321,11 @@ export function Outline({
                     active: isActive ? 'active' : null,
                     level: item.level,
                   }),
-                  focusOutlineProps.focusVisible(
-                    interactionOverlayStyles.backgroundColor,
+                  stylex.props(interactionOverlayStyles.backgroundColor),
+                  tw(
+                    outlineLinkClassName(density, item.level, isActive),
+                    focusOutlineFocusVisibleClassName,
                   ),
-                  outlineLinkClassName(density, item.level, isActive),
                 )}>
                 <span className={outlineLabelClassName}>{item.label}</span>
               </LinkComponent>
