@@ -29,11 +29,10 @@ import {
   type FocusEvent,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {TextAreaSize} from './textAreaClasses';
-import {wrapperStyles} from './textAreaWrapper.stylex';
 import {
   textAreaClassName,
+  textAreaWrapperClassName,
   textAreaCounterClassName,
   textAreaEndSlotClassName,
   textAreaSizeClassName,
@@ -518,8 +517,8 @@ export function TextArea({
             disabled: isDisabled ? 'disabled' : null,
             readonly: isReadOnly ? 'readonly' : null,
           }),
-          stylex.props(wrapperStyles.root),
           tw(
+            textAreaWrapperClassName,
             fieldInputWrapperClassName({status: status?.type}),
             isDisabled && fieldInputWrapperDisabledClassName,
             isDisabled && fieldInputWrapperFocusScopeClassName.direct,

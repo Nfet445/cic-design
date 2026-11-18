@@ -4,12 +4,14 @@
  * @file textAreaClasses.ts
  * @input Uses the theme's typography, type-scale and spacing variables, and the
  *   inline padding the wrapper publishes as `--_textarea-inline-padding`
- * @output The utility class strings TextArea's control, its size arm and its
- *   overlays carry
+ * @output The utility class strings TextArea's wrapper, its control, its size
+ *   arm and its overlays carry
  * @position Internal to TextArea; the Tailwind build scans it for class names
  *
- * The wrapper keeps its own StyleX arm: it zeroes the shared input wrapper's
- * padding, and an unlayered StyleX declaration always beats a class.
+ * The wrapper zeroes the padding the shared field box sets in `astryx-base`.
+ * Two single-class rules in that layer cannot outrank each other by order, so
+ * the zeroing repeats the element's own `astryx-text-area` class and wins on
+ * the extra compound.
  *
  * SYNC: When modified, update:
  * - /packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
@@ -18,6 +20,22 @@
 import {tw} from '../utils/tw';
 
 export type TextAreaSize = 'sm' | 'md' | 'lg';
+
+/**
+ * The bare positioning context the icons, status and counter anchor to. The
+ * `<textarea>` spans the whole box and carries its own internal padding, so the
+ * native resize grip stays in the true corner and the scrollbar represents the
+ * full input area.
+ */
+export const textAreaWrapperClassName = tw(
+  'z-1',
+  '[&.astryx-text-area]:block',
+  '[&.astryx-text-area]:py-0',
+  '[&.astryx-text-area]:px-0',
+  // Defined on the wrapper so the counter, a sibling overlay, inherits the same
+  // inset and stays aligned with the text edge.
+  '[--_textarea-inline-padding:var(--spacing-2)]',
+);
 
 const SIZE_CLASS: Record<TextAreaSize, string> = {
   sm: '',

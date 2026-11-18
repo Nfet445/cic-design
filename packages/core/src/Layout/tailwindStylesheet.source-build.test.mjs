@@ -336,6 +336,7 @@ import {
   textAreaEndSlotClassName,
   textAreaSizeClassName,
   textAreaStartIconClassName,
+  textAreaWrapperClassName,
 } from '../TextArea/textAreaClasses';
 import {
   textInputClassName,
@@ -2350,6 +2351,7 @@ function familyClassNames() {
     }
   }
   add(fileInputHiddenInputClassName);
+  add(textAreaWrapperClassName);
   add(textAreaStartIconClassName);
   add(textAreaEndSlotClassName);
   for (const isOverLimit of [false, true]) {
