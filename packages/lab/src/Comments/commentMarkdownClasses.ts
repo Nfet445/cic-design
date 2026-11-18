@@ -9,7 +9,7 @@
 
 import {tw} from '../tw';
 
-/** The image's focus ring comes from `focusOutlineProps.focusVisible()`. */
+/** The image's focus ring is `focusOutlineFocusVisibleClassName`, beside this class. */
 export const commentMarkdownImageClassName = tw(
   'block max-w-full h-auto',
   'my-2',

@@ -18,9 +18,10 @@ import {
   type ChatComposerToken,
 } from '@astryxdesign/core/Chat';
 import {Lightbox, type LightboxMedia} from '@astryxdesign/core/Lightbox';
+import {tw} from '../tw';
 import {Markdown, type MarkdownInlinePlugin} from '@astryxdesign/core/Markdown';
 import type {MarkdownPluginEntry} from '@astryxdesign/core/Markdown/plugins';
-import {focusOutlineProps, mergeProps} from '@astryxdesign/core/utils';
+import {focusOutlineFocusVisibleClassName} from '@astryxdesign/core/utils';
 import {commentMarkdownImageClassName} from './commentMarkdownClasses';
 import type {CommentAgentCommand} from './types';
 
@@ -94,8 +95,8 @@ function CommentImage({src, alt}: {src: string; alt: string}) {
       tabIndex={0}
       aria-haspopup="dialog"
       data-comment-image="lightbox"
-      {...mergeProps(
-        focusOutlineProps.focusVisible(),
+      className={tw(
+        focusOutlineFocusVisibleClassName,
         commentMarkdownImageClassName,
       )}
       onClick={event => {
