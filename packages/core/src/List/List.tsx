@@ -37,7 +37,6 @@ import {
   type ReactNode,
 } from 'react';
 import type {Reorderable} from '../reorderable/createReorderable';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {
   ListContext,
@@ -46,6 +45,7 @@ import {
   type ListMarkerStyle,
 } from './ListContext';
 import {mergeProps} from '../utils/mergeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {
   listClassName,
@@ -344,7 +344,7 @@ export function List({
         : null)}
       {...mergeProps(
         themeProps('list', {density, listStyle}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         // The session's insertion line: its `::after` stays hidden until the
         // reorder machinery marks the list.
         tw(

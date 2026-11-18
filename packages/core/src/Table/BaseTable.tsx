@@ -85,6 +85,7 @@ import {
 import {TableHeader} from './TableHeader';
 import {TableBody} from './TableBody';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {internByIdentity} from './internByIdentity';
 import {
@@ -1014,11 +1015,18 @@ function BaseTableInner<T extends Record<string, unknown>>({
         {...tableRenderProps.htmlProps}
         {...mergeProps(
           themeProps('table'),
-          stylex.props(...tableRenderProps.xstyle, xstyle),
-          [tableClassNameValue, tableRenderProps.htmlProps.className, className]
-            .filter(Boolean)
-            .join(' ') || undefined,
-          tableStyle,
+          stylex.props(...tableRenderProps.xstyle),
+          tw(
+            xstyleProps(xstyle).className,
+            [
+              tableClassNameValue,
+              tableRenderProps.htmlProps.className,
+              className,
+            ]
+              .filter(Boolean)
+              .join(' ') || undefined,
+          ),
+          {...xstyleProps(xstyle).style, ...tableStyle},
         )}
         {...rest}
         {...(columnFocusProps && {
