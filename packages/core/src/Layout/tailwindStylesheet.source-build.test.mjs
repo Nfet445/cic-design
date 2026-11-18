@@ -696,6 +696,7 @@ import {
   selectorListboxInputInsetClassName,
   selectorListboxTouchClassName,
   selectorListboxTouchScrollClassName,
+  selectorPopoverClassName,
   selectorSearchPanelClassName,
   selectorSearchRowInsetClassName,
   selectorSectionHeadingClassName,
@@ -2379,6 +2380,7 @@ function familyClassNames() {
   // the grouped arms of each, and the status glyph's button and chevron.
   add(selectorTriggerButtonClassName({isReadOnly: false}));
   add(selectorTriggerButtonClassName({isReadOnly: true}));
+  add(selectorPopoverClassName);
   add(SELECTOR_TRIGGER_LABEL_CLASS);
   add(SELECTOR_TRIGGER_VALUE_CLASS);
   add(SELECTOR_TRIGGER_BUTTON_IN_GROUP_CLASS);

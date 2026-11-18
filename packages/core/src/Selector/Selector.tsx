@@ -72,6 +72,7 @@ import {
   selectorListboxInputInsetClassName,
   selectorListboxTouchClassName,
   selectorListboxTouchScrollClassName,
+  selectorPopoverClassName,
   selectorSearchPanelClassName,
   selectorSearchRowInsetClassName,
   selectorSectionHeadingClassName,
@@ -155,10 +156,10 @@ const LAYER_OPEN: string = ':has([aria-expanded="true"])';
  * with `fieldInputWrapperClassName()`, whose background, border and shadow a
  * class in `astryx-base` would only tie with — the sheet, not `tw`, would
  * decide — and `triggerInGroup` cancels a `padding-block` this map writes
- * unlayered, which no class can reach. `popover` stays because the layer's
- * `xstyle` takes StyleX styles only. Every rule that draws inside the box comes
- * from `selectorClasses.ts`, `selectorOptionClasses.ts` or
- * `selectorPresentation.stylex.ts`.
+ * unlayered, which no class can reach. Every rule that draws inside the box
+ * comes from `selectorClasses.ts`, `selectorOptionClasses.ts` or
+ * `selectorPresentation.stylex.ts`; the popup's minimum width is
+ * `selectorPopoverClassName`.
  */
 const styles = stylex.create({
   // Trigger container — the enhanced click target wrapping the combobox button and clear button as siblings
@@ -291,11 +292,6 @@ const styles = stylex.create({
       ':active': 'none',
       '[data-astryx-press="on"]': 'none',
     },
-  },
-
-  // Popover container (for anchor positioning)
-  popover: {
-    minWidth: 'anchor-size(width)',
   },
 });
 
@@ -1939,7 +1935,7 @@ export function Selector<T extends SelectorOptionType>(
       // there the measured negative margin owns the block geometry and
       // the menu is meant to sit on the trigger, not clear it.
       offset: shouldOverlaySelectedItem ? undefined : 'var(--spacing-1)',
-      xstyle: styles.popover,
+      className: selectorPopoverClassName,
       style: popoverOffsetStyle,
     });
   }

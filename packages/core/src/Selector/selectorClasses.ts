@@ -209,3 +209,9 @@ export const SELECTOR_STATUS_BUTTON_CLASS = tw(
   'aria-disabled:cursor-default',
   'rounded-[var(--radius-element)]',
 );
+
+/**
+ * The popup is never narrower than the trigger it anchors to. It arrives as the
+ * render call's `className`, the slot a layer merges unlayered.
+ */
+export const selectorPopoverClassName = '[min-width:anchor-size(width)]';
