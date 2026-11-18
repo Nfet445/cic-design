@@ -25,7 +25,10 @@ import type {ReactNode} from 'react';
 import {useState} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
-import {focusOutlineProps, mergeProps} from '@astryxdesign/core/utils';
+import {
+  focusOutlineFocusVisibleClassName,
+  mergeProps,
+} from '@astryxdesign/core/utils';
 import {themeProps} from '@astryxdesign/core/utils';
 import {Popover} from '@astryxdesign/core/Popover';
 import {TextInput} from '@astryxdesign/core/TextInput';
@@ -216,8 +219,8 @@ export function ChatEmojiPicker({
                   data-emoji={option.emoji}
                   aria-label={`React with ${option.name}`}
                   onClick={() => handleSelect(option.emoji)}
-                  {...mergeProps(
-                    focusOutlineProps.focusVisible(),
+                  className={tw(
+                    focusOutlineFocusVisibleClassName,
                     chatEmojiPickerCellClassName,
                   )}>
                   <span aria-hidden="true">{option.emoji}</span>
