@@ -343,6 +343,11 @@ const PRIVATE_SYSTEM_VARS = new Set([
   '--astryx-bottom-sheet-keyboard-inset',
 ]);
 
+// The shared focus ring publishes this offset; a component that needs the ring
+// inside its own box sets it per instance (`calc(-1 * var(--focus-outline-width))`)
+// without owning the name, so every component may inline it.
+const SHARED_RING_VARS = ['--focus-outline-offset'];
+
 const CROSS_COMPONENT_VARS: Record<string, string[]> = {
   Carousel: ['--_button-radius'],
   Thumbnail: ['--_button-radius'],
@@ -543,7 +548,10 @@ describe('component CSS vars are documented and themeable', () => {
   const components = discoverComponents();
 
   for (const {dir, sourceVars, docVars, docDerived} of components) {
-    const crossVars = new Set(CROSS_COMPONENT_VARS[dir] || []);
+    const crossVars = new Set([
+      ...(CROSS_COMPONENT_VARS[dir] || []),
+      ...SHARED_RING_VARS,
+    ]);
 
     it(`${dir}: all source vars are in doc file`, () => {
       const undocumented = sourceVars.filter(
