@@ -26,12 +26,6 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  durationVars,
-  easeVars,
-  focusVars,
-} from '../theme/tokens.stylex';
 import {reducedMotionFadeConsts} from '../motion/reducedMotion.stylex';
 import {switchFocusInput, switchScope} from './switch.markers.stylex';
 
@@ -48,9 +42,9 @@ const PRESS_FADING_SELECTOR = '[data-astryx-press="fading"]';
  * SYNC: utils/interactionOverlay.stylex.ts PRESS_RELEASE_DURATION,
  * PRESS_RELEASE_DURATION_REDUCED and RELEASE_EASE.
  */
-const PRESS_RELEASE_DURATION = durationVars['--duration-exit'];
-const PRESS_RELEASE_DURATION_REDUCED = `min(${durationVars['--duration-exit']}, ${reducedMotionFadeConsts.duration})`;
-const PRESS_RELEASE_EASE = easeVars['--ease-exit'];
+const PRESS_RELEASE_DURATION = 'var(--duration-exit)';
+const PRESS_RELEASE_DURATION_REDUCED = `min(var(--duration-exit), ${reducedMotionFadeConsts.duration})`;
+const PRESS_RELEASE_EASE = 'var(--ease-exit)';
 
 // The measured hit insets (utils/hitArea), 0 until measured.
 const HIT_TOP = 'var(--astryx-hit-inset-top, 0px)';
@@ -58,7 +52,7 @@ const HIT_RIGHT = 'var(--astryx-hit-inset-right, 0px)';
 const HIT_BOTTOM = 'var(--astryx-hit-inset-bottom, 0px)';
 const HIT_LEFT = 'var(--astryx-hit-inset-left, 0px)';
 
-const pressedImage = `linear-gradient(${colorVars['--color-overlay-pressed']}, ${colorVars['--color-overlay-pressed']})`;
+const pressedImage = `linear-gradient(var(--color-overlay-pressed), var(--color-overlay-pressed))`;
 
 export const switchHoverPressStyles = stylex.create({
   // The invisible input covers the track. Under a coarse pointer it is the
@@ -93,12 +87,12 @@ export const switchHoverPressStyles = stylex.create({
     outline: {
       default: 'none',
       [stylex.when.siblingBefore(':focus-visible', switchFocusInput)]:
-        `${focusVars['--focus-outline-width']} ${focusVars['--focus-outline-style']} ${focusVars['--focus-outline-color']}`,
+        `var(--focus-outline-width) var(--focus-outline-style) var(--focus-outline-color)`,
     },
     outlineOffset: {
       default: null,
       [stylex.when.siblingBefore(':focus-visible', switchFocusInput)]:
-        focusVars['--focus-outline-offset'],
+        'var(--focus-outline-offset)',
     },
   },
   // The ancestor-hover tint is a non-system color-mix, and its rule outranks
@@ -111,7 +105,7 @@ export const switchHoverPressStyles = stylex.create({
     backgroundColor: {
       default: null,
       [stylex.when.ancestor(':hover', switchScope)]: {
-        '@media (hover: hover) and (forced-colors: none)': `color-mix(in srgb, ${colorVars['--color-background-gray']}, ${colorVars['--color-tint-hover']} 5%)`,
+        '@media (hover: hover) and (forced-colors: none)': `color-mix(in srgb, var(--color-background-gray), var(--color-tint-hover) 5%)`,
       },
     },
   },
@@ -119,7 +113,7 @@ export const switchHoverPressStyles = stylex.create({
     backgroundColor: {
       default: null,
       [stylex.when.ancestor(':hover', switchScope)]: {
-        '@media (hover: hover) and (forced-colors: none)': `color-mix(in srgb, ${colorVars['--color-accent']}, ${colorVars['--color-tint-hover']} 15%)`,
+        '@media (hover: hover) and (forced-colors: none)': `color-mix(in srgb, var(--color-accent), var(--color-tint-hover) 15%)`,
       },
     },
   },
@@ -165,7 +159,7 @@ export const switchHoverPressStyles = stylex.create({
       pointerEvents: 'none',
       backgroundColor: {
         default: null,
-        '@media (forced-colors: none)': colorVars['--color-overlay-pressed'],
+        '@media (forced-colors: none)': 'var(--color-overlay-pressed)',
       },
       opacity: {
         default: null,
@@ -243,7 +237,7 @@ export const switchHoverPressStyles = stylex.create({
       pointerEvents: 'none',
       backgroundColor: {
         default: null,
-        '@media (forced-colors: none)': colorVars['--color-overlay-pressed'],
+        '@media (forced-colors: none)': 'var(--color-overlay-pressed)',
       },
       opacity: {
         default: null,
