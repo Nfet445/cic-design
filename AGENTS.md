@@ -67,7 +67,7 @@ Single-context: one `GLOSSARY.md` and `docs/adr/` at the root. See
   pixels and evidence in one atomic appearance-only PR. External contributors
   follow the normal contribution flow and are never asked to author specs;
   maintainers own missing authority.
-- Before adding a new `data-*` attribute to a component, treat it as public API: themes generate selectors on data attributes. Add one only when a current record names it and says why ([`architecture:public-component-api`](docs/architecture/public-component-api.md) DEC-2). For a dynamic per-instance style, first use a StyleX dynamic style (`stylex.create({x: (v) => ({...})})`), which sets a private CSS variable; never add a data attribute just to feed CSS. For any other internal-only concern, use a private `data-astryx-*` attribute under INV23, or no attribute.
+- Before adding a new `data-*` attribute to a component, treat it as public API: themes generate selectors on data attributes. Add one only when a current record names it and says why ([`architecture:public-component-api`](docs/architecture/public-component-api.md) DEC-2). For a dynamic per-instance style, pass a class plus an inline `--astryx-<component>-<prop>` property (the pipeline's per-instance value); never add a data attribute just to feed CSS. For any other internal-only concern, use a private `data-astryx-*` attribute under INV23, or no attribute.
 - Layers: anchored layers follow their anchor through CSS anchor positioning only; script never moves a layer to follow its anchor ([`architecture:layer-runtime`](docs/architecture/layer-runtime.md) INV21). A press scales only the trigger's own visual; a layer renders outside it and anchors to the untransformed box (INV22).
 - Cross-component work: read the relevant contract under `docs/families/`,
   applicable design spec under `docs/design/`, and current architecture under
@@ -193,6 +193,8 @@ Documentation lives in two places:
 
 ## Quick Reference
 
+- **Runtime**: use the Node version in `.nvmrc` before tests and typechecking;
+  `CONTRIBUTING.md` explains how to select it.
 - **Package manager**: pnpm 11, pinned by the `packageManager` field (see
   CONTRIBUTING.md for install options — Corepack is one of several, and Node
   25+ no longer bundles it)
@@ -206,42 +208,24 @@ Documentation lives in two places:
 - **`@example` code fences must use plain ` ``` `, not ` ```tsx `.**
   Storybook's autodocs parser doesn't handle language-tagged fences in JSDoc correctly — the code block won't render as a proper code block. Always use untagged fences in `@example` blocks.
 
-<!-- STYLEX-CAPS:START -->
+<!-- TAILWIND-CAPS:START -->
 
-[StyleX v0.19.1 CSS Support]|Use CSS-native solutions. Don't build JS workarounds for supported features.
-|AT-RULES: @media, @supports, @container (+named), @starting-style, @scope — YES
-|AT-RULES: @layer, @property (explicit) — NO (compiles but invalid CSS output)
-|PSEUDO-CLS: :hover, :focus, :focus-visible, :focus-within, :active, :disabled — YES
-|PSEUDO-CLS: :first-child, :last-child, :nth-child(), :where(), :is(), :has(), :not() — YES
-|PSEUDO-CLS: :placeholder-shown, :checked, :empty, :modal, :user-valid, :user-invalid — YES
-|PSEUDO-EL: ::before, ::after, ::placeholder, ::selection, ::backdrop, ::marker, ::view-transition-_ — YES
-|COMPOUND: ::backdrop+condition, RTL :is([dir="rtl"] _), nested @media+pseudo — YES
-|VALUES: var(), calc(), clamp(), light-dark(), color-mix(), container-type/name — YES
-|ANIM: transition (shorthand+individual), transitionBehavior:allow-discrete, animation longhands, stylex.keyframes — YES
-|ANIM: animation shorthand — NO (use animationName/duration/timingFunction/etc.)
-|WHEN: stylex.when.ancestor(':hover'/':focus-within'/':active'/':disabled') — YES
-|WHEN: stylex.when.descendant(':hover'), siblingBefore(':checked'), siblingAfter(':checked'), anySibling(':hover') — YES
-|WHEN: stylex.when.ancestor('[data-attr]') — YES
-|NESTING: CSS nesting with & — NO (use stylex.when.ancestor/descendant/sibling for parent-child state)
-|API: stylex.firstThatWorks() for CSS fallbacks (e.g. display: grid with flex fallback) — YES
-|API: stylex.positionTry() for anchor positioning @position-try — YES
-|API: stylex.types.color/length/etc for typed CSS variables in defineVars — YES
-|API: stylex.defineConsts() for compile-time constants — YES
-|DYNAMIC: Functions in stylex.create for runtime values — YES
-|VARS: stylex.defineVars, stylex.createTheme (require .stylex.ts files) — YES
-|LAYOUT: grid, flex+gap, aspect-ratio, overscrollBehavior, scrollbar-gutter/width — YES
-|PATTERN: dialog entry animation -> @starting-style (not useState+rAF)
-|PATTERN: parent hover child style -> stylex.when.ancestor(':hover', marker) (not CSS nesting). Use stylex.defineMarker() in a .stylex.ts file for scoped markers. Ancestor element MUST have marker.marker in its stylex.props() call. NEVER use stylex.defaultMarker() for form controls (CheckboxInput, RadioList, Switch) — it leaks hover/focus-within from outer containers like Popovers. Always use a component-scoped defineMarker() instead.
-|PATTERN: hover on touch -> @media (hover: hover) guard
-|PATTERN: zebra striping -> :nth-child(even) (not index%2 JS)
-|PATTERN: container responsive -> @container (not ResizeObserver)
-|PATTERN: CSS fallback values -> stylex.firstThatWorks() (not manual fallback)
-|PATTERN: dynamic/runtime values -> stylex.create({ s: (val) => ({ prop: val }) }) (not inline styles)
-|PATTERN: conditional styles -> stylex.props(condition && styles.x) (not className toggling)
-|PATTERN: link elements -> useLinkComponent() (not hardcoded <a>). Consumers swap via LinkProvider for framework routers (Next.js, React Router)
-|VERIFY: node internal/stylex-capabilities/scan.mjs
+**Astryx styling pipeline.** Read `docs/specs/AST-119-tailwind-utility-styling/spec.md` before styling work.
 
-<!-- STYLEX-CAPS:END -->
+- **Source**: one precompiled sheet per package, built from `packages/<pkg>/tailwind/*.input.css`; `@source` scans only `src/**/*Classes.ts`.
+- **Classes**: literal class text in `*Classes.ts` maps, joined with `tw()` at the call site. A template literal, a helper, or class text outside a `*Classes.ts` file never reaches the sheet; `@astryx/no-invisible-class` fails on it.
+- **Values**: a per-instance value is a class plus an inline `--astryx-<component>-<prop>` property, typed `React.CSSProperties & Partial<Record<…>>`. Never an inline declaration a class can express.
+- **Arbitrary values**: a declaration is `[property:value]`. A `var()` with a comma fallback must use that form (`[overflow-x:var(--x,clip)]`, not `overflow-x-[var(--x,clip)]`). A `calc()` in an arbitrary value loses the underscores of every `var(--_x)` it reads.
+- **Layers**: utilities print inside `@layer astryx-base` (order `reset, astryx-base, astryx-theme`). Consumer `xstyle` and `style` are unlayered and always win (DEC-8); a consumer `@layer utilities` rule outranks `astryx-base` whatever the specificity.
+- **State**: a state utility needs its own specificity — repeat the attribute or class (`[&[data-astryx-x][data-astryx-x]:hover]:…`, `[&.astryx-button]:…`), never rely on sheet order.
+- **Escape**: a rule that must outrank a consumer utility stays in a `.stylex.ts` module and names the rule it beats (DEC-9). Nothing else holds StyleX.
+- **Tokens**: read `var(--spacing-*)`, `var(--color-*)`, `var(--radius-*)`, `var(--duration-*)`. The library declares no token and adds no Tailwind palette colour (`@astryx/no-raw-color`).
+- **Keyframes**: `@keyframes astryxX` in `packages/<pkg>/tailwind/<pkg>.input.css`, referenced with `animation-name` and an explicit duration.
+- **Props**: `className` merges through `tw()`; `mergeProps` takes at most four arguments and its third is a class string or a style object; `xstyle` goes last.
+- **Tests**: assert class sets (`classesOf`, `expectClassSet`, `expectVariable`), never `getComputedStyle` for a Tailwind declaration; declarations are asserted once against the built sheet.
+- **Verify**: `node packages/<pkg>/scripts/build-css-tailwind.mjs`, then the package's `*TailwindStylesheet.source-build.test.mjs`.
+
+<!-- TAILWIND-CAPS:END -->
 
 <!-- ASTRYX-CLI:START -->
 
