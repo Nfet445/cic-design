@@ -3,7 +3,8 @@
 /**
  * @file svgIconClasses.ts
  * @input Accepts nothing: the weight bands and the layer ranges are fixed
- * @output Utility class strings for the SVG icon's probe and its weight layers
+ * @output Utility class strings for the icon's variation and size variables, its
+ *   probe and its weight layers
  * @position Style primitives; the Tailwind build scans it for class names
  *
  * Reading the weight: the icon's probe element is `1ch` wide in the probe font,
@@ -17,6 +18,7 @@
  * through the instance boundary but inherited properties do.
  */
 
+import type {SVGIconSize, SVGIconVariation} from './SVGIcon';
 import {tw} from '../tw';
 
 /**
@@ -59,16 +61,39 @@ export const iconVars = {
 /**
  * The `--icon-*` defaults, on the icon's own box: the values `tokens.stylex.ts`
  * used to declare at `:root` are now read by the elements inside this box
- * only. `variations` bounds the layer properties, so only the shared drawing
- * properties need a default here.
+ * only. The variation and size classes set the layer properties and the
+ * square's size, so this record holds the shared drawing properties alone and
+ * no property is set twice.
  */
 const iconDefaultsClassName =
-  '[--icon-size:24px] [--icon-stroke-width:1.5] [--icon-stroke-linecap:round] [--icon-stroke-linejoin:round] [--icon-gap:0.75] [--icon-gap-linejoin:round] [--icon-inline-offset:0px] [--icon-block-offset:0px]';
+  '[--icon-stroke-linecap:round] [--icon-stroke-linejoin:round] [--icon-gap:0.75] [--icon-gap-linejoin:round] [--icon-inline-offset:0px] [--icon-block-offset:0px]';
 
 /**
- * The icon box. `opticalSize` in `variations.stylex.ts` sets the square's size
- * on the same element.
+ * The layer values per variation. The `<g>` elements inside the icon read them
+ * with `var()` in an inline style, so inheritance from this class is enough.
+ * A variation sets every layer property it needs, so one variation never
+ * inherits a value from another.
  */
+export const iconVariationClassNames = {
+  linear:
+    '[--icon-layer-primary-fill:none] [--icon-layer-primary-stroke:currentColor] [--icon-layer-primary-opacity:1] [--icon-layer-primary-stroke-role-fill:none] [--icon-layer-primary-stroke-role-stroke:currentColor] [--icon-layer-primary-stroke-role-opacity:1] [--icon-layer-secondary-fill:none] [--icon-layer-secondary-stroke:currentColor] [--icon-layer-secondary-opacity:1] [--icon-layer-secondary-stroke-role-fill:none] [--icon-layer-secondary-stroke-role-stroke:currentColor] [--icon-layer-secondary-stroke-role-opacity:1]',
+  bold: '[--icon-layer-primary-fill:currentColor] [--icon-layer-primary-stroke:none] [--icon-layer-primary-opacity:1] [--icon-layer-primary-stroke-role-fill:none] [--icon-layer-primary-stroke-role-stroke:currentColor] [--icon-layer-primary-stroke-role-opacity:1] [--icon-layer-primary-stroke-role-width:2] [--icon-layer-secondary-fill:currentColor] [--icon-layer-secondary-stroke:none] [--icon-layer-secondary-opacity:1] [--icon-layer-secondary-stroke-role-fill:none] [--icon-layer-secondary-stroke-role-stroke:currentColor] [--icon-layer-secondary-stroke-role-opacity:1] [--icon-layer-secondary-stroke-role-width:2.5]',
+  twotone:
+    '[--icon-layer-primary-fill:none] [--icon-layer-primary-stroke:currentColor] [--icon-layer-primary-opacity:1] [--icon-layer-primary-stroke-role-fill:none] [--icon-layer-primary-stroke-role-stroke:currentColor] [--icon-layer-primary-stroke-role-opacity:0.4] [--icon-layer-secondary-fill:none] [--icon-layer-secondary-stroke:currentColor] [--icon-layer-secondary-opacity:0.4] [--icon-layer-secondary-stroke-role-fill:none] [--icon-layer-secondary-stroke-role-stroke:currentColor] [--icon-layer-secondary-stroke-role-opacity:0.4]',
+  bulk: '[--icon-layer-primary-fill:currentColor] [--icon-layer-primary-stroke:none] [--icon-layer-primary-opacity:1] [--icon-layer-primary-stroke-role-fill:none] [--icon-layer-primary-stroke-role-stroke:currentColor] [--icon-layer-primary-stroke-role-opacity:0.4] [--icon-layer-secondary-fill:currentColor] [--icon-layer-secondary-stroke:none] [--icon-layer-secondary-opacity:0.4] [--icon-layer-secondary-stroke-role-fill:none] [--icon-layer-secondary-stroke-role-stroke:currentColor] [--icon-layer-secondary-stroke-role-opacity:0.4]',
+  broken:
+    '[--icon-layer-primary-fill:none] [--icon-layer-primary-stroke:currentColor] [--icon-layer-primary-opacity:1] [--icon-layer-primary-stroke-role-fill:none] [--icon-layer-primary-stroke-role-stroke:currentColor] [--icon-layer-primary-stroke-role-opacity:1] [--icon-layer-secondary-fill:none] [--icon-layer-secondary-stroke:currentColor] [--icon-layer-secondary-opacity:0] [--icon-layer-secondary-stroke-role-fill:none] [--icon-layer-secondary-stroke-role-stroke:currentColor] [--icon-layer-secondary-stroke-role-opacity:0]',
+} as const satisfies Record<SVGIconVariation, string>;
+
+/** Optical size compensation — thicker strokes at smaller sizes. */
+export const iconSizeClassNames = {
+  xsm: '[--icon-stroke-width:2] [--icon-size:12px]',
+  sm: '[--icon-stroke-width:1.75] [--icon-size:16px]',
+  md: '[--icon-stroke-width:1.5] [--icon-size:20px]',
+  lg: '[--icon-stroke-width:1.5] [--icon-size:24px]',
+} as const satisfies Record<SVGIconSize, string>;
+
+/** The icon box, which one of the size classes above squares. */
 export const svgIconRootClassName = tw(
   'inline-flex shrink-0 w-[var(--icon-size)] h-[var(--icon-size)] ps-[var(--icon-inline-offset)] pt-[var(--icon-block-offset)]',
   iconDefaultsClassName,
@@ -76,7 +101,8 @@ export const svgIconRootClassName = tw(
 
 /**
  * The weight-responsive box additionally centres the probe's baseline and
- * clips the `1ch` probe, which can be wider than the box.
+ * clips the `1ch` probe, which can be wider than the box. A size class squares
+ * this box too.
  */
 export const weightedSvgIconRootClassName = tw(
   'inline-flex shrink-0 w-[var(--icon-size)] h-[var(--icon-size)] align-middle [font-family:AstryxWeightProbe] [font-synthesis:none] overflow-clip',

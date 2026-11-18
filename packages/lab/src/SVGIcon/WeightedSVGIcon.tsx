@@ -23,16 +23,15 @@
  */
 
 import type {CSSProperties, SVGProps} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps, themeProps} from '@astryxdesign/core/utils';
 import {
   iconColorClassNames,
+  iconSizeClassNames,
   weightedIconSpriteClassName,
   weightedSvgIconRootClassName,
   weightedSvgIconSvgClassName,
 } from './svgIconClasses';
 import {iconA11yProps} from './iconA11y';
-import {opticalSize} from './variations.stylex';
 import {
   weightProbeClassName,
   weightProbeSvgClassName,
@@ -165,8 +164,11 @@ export function WeightedSVGIcon({
       ref={installWeightProbe}
       {...mergeProps(
         themeProps('weighted-svg-icon', {size, color}),
-        stylex.props(opticalSize[size]),
-        tw(weightedSvgIconRootClassName, iconColorClassNames[color]),
+        tw(
+          iconSizeClassNames[size],
+          weightedSvgIconRootClassName,
+          iconColorClassNames[color],
+        ),
       )}>
       <span className={weightProbeClassName}>
         <svg

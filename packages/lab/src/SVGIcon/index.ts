@@ -20,8 +20,11 @@ export type {
   IconShapeRole,
 } from './SVGIcon';
 
-export {variations, opticalSize} from './variations.stylex';
-export {iconVars} from './svgIconClasses';
+export {
+  iconSizeClassNames,
+  iconVars,
+  iconVariationClassNames,
+} from './svgIconClasses';
 
 export {
   xIcon,
