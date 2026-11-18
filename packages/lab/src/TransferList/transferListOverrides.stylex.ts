@@ -6,11 +6,14 @@
  * @output The text-link treatment of a panel header's action Button
  * @position Style exception; the component passes it through `xstyle`
  *
- * The rival is still StyleX: a Button paints its hover and pressed background
- * image from `interactionOverlayStyles` (core `utils/interactionOverlay.stylex.ts`),
- * which is unlayered and carries id specificity, so no class in `astryx-base`
- * can state `background-image: none` over it. Every other declaration here
- * would convert; the image arms hold the rule here until that module moves.
+ * The rival is still StyleX: Button composes `interactionOverlayStyles` and its
+ * press layer through `stylex.props` (core `Button/Button.tsx`), which is
+ * unlayered and carries id specificity, so no class in `astryx-base` can state
+ * `background-image: none` over it. Core already publishes the class arm,
+ * `interactionOverlayBackgroundImageClassName` (core
+ * `utils/interactionOverlayClasses.ts`), so the wait is Button's own adoption of
+ * it, not that module. Every other declaration here would convert; the image
+ * arms hold the rule here until Button composes that class.
  */
 
 import * as stylex from '@stylexjs/stylex';
