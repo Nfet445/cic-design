@@ -117,6 +117,7 @@ import {useSize} from '../SizeContext/SizeContext';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
   MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
@@ -2400,7 +2401,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             styles.triggerContainer,
             variant === 'secondary' && styles.triggerSecondary,
             variant === 'ghost' && styles.triggerGhost,
-            variant !== 'input' && interactionOverlayStyles.backgroundImage,
+            variant !== 'input' && interactionOverlayStyles.pressedAlpha,
             variant !== 'input' && focusOutlineStyles.focusWithin,
             surface.isTriggerFocusRingSuppressed &&
               selectorPresentationStyles.pointerRestoredFocus,
@@ -2428,6 +2429,9 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
               !surface.isTriggerFocusRingSuppressed &&
               fieldInputWrapperFocusScopeClassName.direct,
             controlClassName,
+            // The hover and press paint; its strength and release stay the
+            // StyleX arm above.
+            variant !== 'input' && interactionOverlayBackgroundImageClassName,
             // The group's row is the height wherever `inputGroupMemberClassName`
             // applies, as it was when both were StyleX declarations in one
             // sheet.
