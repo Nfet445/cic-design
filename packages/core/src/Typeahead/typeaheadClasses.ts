@@ -232,3 +232,13 @@ export const TYPEAHEAD_TOKEN_OVERLAY_CLASS = tw(
   '[margin-inline-start:0]',
   '[margin-inline-end:auto]',
 );
+
+/**
+ * The input while its value arrives as a token: the token is painted over the
+ * same space and owns the pointer, and the input keeps its own width so the
+ * field measures as it does with no value at all.
+ */
+export const TYPEAHEAD_INPUT_HIDDEN_CLASS = tw(
+  'opacity-0',
+  'pointer-events-none',
+);

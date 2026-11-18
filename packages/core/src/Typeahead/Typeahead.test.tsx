@@ -3338,9 +3338,9 @@ describe('end controls stay in flow', () => {
         onChange={() => {}}
       />,
     );
-    expect(getComputedStyle(screen.getByRole('combobox')).pointerEvents).toBe(
-      'none',
-    );
+    expectClassSet(screen.getByRole('combobox'), {
+      includes: ['opacity-0', 'pointer-events-none'],
+    });
   });
 });
 

@@ -64,6 +64,7 @@ import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext
 import {getInputARIA, isImeKeyEvent, mergeProps} from '../utils';
 import {joinAriaIDs} from '../utils/inputAria';
 import {
+  TYPEAHEAD_INPUT_HIDDEN_CLASS,
   TYPEAHEAD_TOKEN_OVERLAY_CLASS,
   typeaheadContentLaneClassName,
   typeaheadEndLaneClassName,
@@ -243,8 +244,8 @@ export interface TypeaheadProps<T extends SearchableItem> extends Omit<
 /**
  * The wrapper stays here: it shares its element with the shared field box class
  * and sets the same `padding-block` and `gap`, which a class in `astryx-base`
- * would only tie with — the sheet, not `tw`, would decide. `inputHidden` stays
- * because BaseTypeahead takes it as `inputXStyle`, a StyleX-only argument.
+ * would only tie with — the sheet, not `tw`, would decide. The hidden input is
+ * `TYPEAHEAD_INPUT_HIDDEN_CLASS`.
  */
 const styles = stylex.create({
   wrapper: {
@@ -263,31 +264,6 @@ const styles = stylex.create({
       default: 'text',
       ':is(:disabled,[aria-disabled="true"])': 'default',
     },
-  },
-  // The busy indicator and the clear button, at the field's inline end.
-  //
-  // In flow, as a flex child — an in-flow box takes up room, so the input
-  // cannot run underneath it and nothing has to be measured. That is
-  // TextInput's arrangement for the same two controls.
-  //
-  // The `auto` margin keeps them in the corner in the states where the
-  // content lane is not the only flexible item in the row (a start icon, a
-  // grouped row): `auto` gives free space to the margin rather than to a
-  // sibling, so it needs no sibling to exist.
-  // While a token shows, the input keeps its place in the row and its own
-  // intrinsic width — it is only made invisible and inert. That width is what
-  // sizes the field, exactly as it does for TextInput, so a Typeahead is as
-  // wide with a value as without one. Collapsing it to nothing instead left
-  // the field measuring the token: in any shrink-to-fit parent it snapped to
-  // the value's length (measured 199px to 57px, #5560), and block-level
-  // parents hid it because they fill their container whatever their content
-  // is, which is why no story caught it.
-  inputHidden: {
-    opacity: 0,
-    // The token is painted over this space and owns the pointer; the input
-    // must not swallow clicks meant for it, or for the wrapper's own
-    // click-to-edit.
-    pointerEvents: 'none',
   },
 });
 
@@ -765,7 +741,9 @@ export function Typeahead<T extends SearchableItem>({
                   debounceMs={debounceMs}
                   anchorRef={wrapperRef}
                   onKeyDown={handleKeyDown}
-                  inputXStyle={showToken ? styles.inputHidden : undefined}
+                  className={
+                    showToken ? TYPEAHEAD_INPUT_HIDDEN_CLASS : undefined
+                  }
                   // While the token is shown the input is invisible and inert behind
                   // it — take it out of the Tab order so keyboard users don't hit a
                   // stop they cannot see (WCAG 2.4.3 / 2.4.7). It stays
