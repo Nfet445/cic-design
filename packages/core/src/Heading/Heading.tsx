@@ -20,7 +20,6 @@
  */
 
 import {useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {
   TextColor,
   TextDisplay,
@@ -39,6 +38,7 @@ import {
   useTruncationTooltipInterest,
 } from '../Text/TruncationTooltip';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
+import {xstyleProps} from '../utils/xstyle';
 import {resolveStyleColor} from '../Text/Text';
 import type {LayerPlacement} from '../Layer';
 import {mergeProps} from '../utils/mergeProps';
@@ -297,7 +297,7 @@ export function Heading({
               }),
             },
           ),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           className,
           {...style, ...inlineStyle},
         )}

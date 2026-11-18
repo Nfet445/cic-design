@@ -9,9 +9,9 @@
  */
 
 import {isRenderable} from '../utils/isRenderable';
+import {xstyleProps} from '../utils/xstyle';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
-import * as stylex from '@stylexjs/stylex';
 import {
   checkboxBoxClassName,
   checkboxCheckmarkClassName,
@@ -78,7 +78,7 @@ export function CheckboxIndicator({
             }),
           },
         ),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}>

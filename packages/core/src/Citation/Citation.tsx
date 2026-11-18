@@ -18,8 +18,8 @@
 
 import type React from 'react';
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   citationClassName,
   citationIconClassName,
@@ -125,7 +125,7 @@ export function Citation({
         {...linkProps}
         {...mergeProps(
           themeProps('citation', {variant}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             citationClassName({
               variant,
@@ -151,7 +151,7 @@ export function Citation({
       {...linkProps}
       {...mergeProps(
         themeProps('citation', {variant}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           citationClassName({
             variant,

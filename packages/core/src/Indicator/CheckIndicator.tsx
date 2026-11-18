@@ -30,10 +30,10 @@
  *     target already reach it.
  */
 
-import * as stylex from '@stylexjs/stylex';
 import type {SVGProps} from 'react';
 import {Icon} from '../Icon/Icon';
 import {isRenderable} from '../utils/isRenderable';
+import {xstyleProps} from '../utils/xstyle';
 import {mergeProps} from '../utils/mergeProps';
 import {checkSlotClassName} from './indicatorClasses';
 import type {IndicatorProps} from './types';
@@ -104,7 +104,7 @@ export function CheckIndicator({
           // The slot stands where the glyph would, so swapping a Spinner in for
           // the mark does not move the row.
           {className: checkSlotClassName({isDisabled})},
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           className,
           style,
         )}>

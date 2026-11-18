@@ -36,6 +36,7 @@ import {useLinkComponent} from './useLinkComponent';
 import type {LinkComponentType} from './types';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   linkClassName,
   linkColorClassName,
@@ -379,7 +380,7 @@ export function Link({
         tabIndex={0}
         {...mergeProps(
           themeProps('link', {color}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(rootClassName, className, focusOutlineFocusVisibleClassName),
           style,
         )}

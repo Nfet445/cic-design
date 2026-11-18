@@ -8,8 +8,8 @@
  *           markers, and any selection slot themed to use a radio
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {isRenderable} from '../utils/isRenderable';
+import {xstyleProps} from '../utils/xstyle';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
 import {radioCircleClassName, radioDotClassName} from './indicatorClasses';
@@ -68,7 +68,7 @@ export function RadioIndicator({
             className: radioCircleClassName({isChecked, isDisabled, size}),
           },
         ),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}>

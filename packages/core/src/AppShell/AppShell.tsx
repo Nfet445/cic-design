@@ -79,6 +79,7 @@ import {
   appShellVariantClassName,
 } from './appShellClasses';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {AppShellMobileContext} from './AppShellMobileContext';
 import {AppShellNestingContext, useAppShellMainId} from './useAppShellMainId';
 import type {AppShellMobileContextValue} from './AppShellMobileContext';
@@ -1181,7 +1182,7 @@ export function AppShell({
         data-testid={dataTestId}
         {...mergeProps(
           themeProps('app-shell', {variant}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             // A layout root (FR18): nothing an ancestor Layout, Card or
             // Section publishes reaches the shell (component:Layout FR8).

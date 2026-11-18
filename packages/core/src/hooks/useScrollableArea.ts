@@ -27,7 +27,6 @@ import {
   type RefAttributes,
   type RefCallback,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {attachScrollKeyboardDelegation} from './scrollKeyboardDelegation';
 import {
@@ -36,6 +35,7 @@ import {
 } from '../ScrollableArea/scrollableAreaClasses';
 import {useIsomorphicLayoutEffect} from './useIsomorphicLayoutEffect';
 import {mergeProps} from '../utils/mergeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {mergeRefs} from '../utils/mergeRefs';
 import {observeResize} from '../utils/sharedResizeObserver';
 import {
@@ -706,7 +706,7 @@ export function useScrollableArea({
       };
       const styledProps = mergeProps(
         callerProps,
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         scrollableAreaOverflowClassName,
       ) as ScrollableElementProps<E>;
       // Focus state is stale while an axis scrolls, so until an axis change is
@@ -781,7 +781,7 @@ export function useScrollableArea({
       const {xstyle, ...domProps} = props;
       const styledProps = mergeProps(
         domProps,
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
       ) as ScrollableElementProps<E>;
       const result: ScrollableElementProps<E> = {
         ...styledProps,
