@@ -53,6 +53,7 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
 } from '../Field';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -63,7 +64,6 @@ import {withholdCallerHandlers} from '../utils/disabledInteraction';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {lockSelection, locksSelectionFor} from '../utils/selectionLock';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useSize} from '../SizeContext/SizeContext';
 import {useInputContainer} from '../hooks/useInputContainer';
 import {useInputStatusIcon} from '../hooks/useInputStatusIcon';
@@ -1285,13 +1285,13 @@ export function NumberInput({
         stylex.props(
           styles.wrapper,
           hasNumberSteppers && styles.wrapperWithNumberSteppers,
-          isDisabled && inputDisabledFocusStyles.ring,
           fieldStatus && !isDisabled && controlXstyle,
         ),
         tw(
           inputGroup && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: fieldStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
+          isDisabled && fieldInputWrapperFocusScopeClassName.direct,
           numberInputHeightClassName({size}),
           controlClassName,
         ),

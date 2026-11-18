@@ -38,6 +38,7 @@ import {InputClearButton} from '../Field/InputClearButton';
 import {
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
 } from '../Field/fieldClasses';
 import type {InputStatus} from '../Field/types';
 import {renderIconSlot, type IconType} from '../Icon/Icon';
@@ -75,7 +76,6 @@ import {
   type FieldInputBaseProps,
   useFieldInputStyling,
 } from '../Field/fieldParts';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
 
@@ -454,14 +454,12 @@ export function TextInput({
           disabled: isDisabled ? 'disabled' : null,
           readonly: isReadOnly ? 'readonly' : null,
         }),
-        stylex.props(
-          isDisabled && inputDisabledFocusStyles.ring,
-          controlXstyle,
-        ),
+        stylex.props(controlXstyle),
         tw(
           inputGroup && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: status?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
+          isDisabled && fieldInputWrapperFocusScopeClassName.direct,
           textInputHeightClassName({size}),
           controlClassName,
         ),

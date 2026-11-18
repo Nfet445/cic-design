@@ -25,7 +25,6 @@ import {
   useTransition,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useEntryErrorBehavior} from '../Field/useEntryErrorBehavior';
 import type {EntryErrorBehavior} from '../FormLayout/FormLayoutContext';
 import {
@@ -895,7 +894,6 @@ function PointerDateField({
           // Disabled paint belongs to the disabled state only; a busy field
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
-          isEffectivelyDisabled && inputDisabledFocusStyles.inputFocusRing,
           fieldStatus && !isEffectivelyDisabled && controlXstyle,
         ),
         tw(

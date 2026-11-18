@@ -13,8 +13,6 @@ import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {act, useState} from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import {TestIcon} from '../__tests__/TestIcon';
 import {InternationalizationProvider} from '../i18n';
 import {registerIcons, resetIcons} from '../Icon';
@@ -24,21 +22,10 @@ import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {classesOf} from '../__tests__/classNameAssertions';
+import {fieldInputWrapperFocusScopeClassName} from '../Field/fieldClasses';
 
-// jsdom cannot match `:focus-visible`: compare the ring's StyleX class hash.
-const RING = stylex
-  .props(
-    stylex.create({
-      ring: {
-        boxShadow: {
-          default: null,
-          ':has(> [aria-disabled="true"]:focus-visible)': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-        },
-      },
-    }).ring,
-  )
-  .className!.split(' ')
-  .pop()!;
+// jsdom cannot match `:focus-visible`, so the ring is the class that keys on it.
+const RING = fieldInputWrapperFocusScopeClassName.direct;
 
 // FieldStatus announces status messages through the persistent useAnnounce
 // singletons; remove them between tests so role/aria-live queries in this

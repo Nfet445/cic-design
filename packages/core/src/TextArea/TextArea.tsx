@@ -43,6 +43,7 @@ import {
   Field,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
 } from '../Field';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {isRenderable} from '../utils/isRenderable';
@@ -56,7 +57,6 @@ import {
   type FieldInputBaseProps,
   useFieldInputStyling,
 } from '../Field/fieldParts';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import type {SizeValue} from '../utils/types';
 import {useInputContainer} from '../hooks/useInputContainer';
 import {useInputStatusIcon} from '../hooks/useInputStatusIcon';
@@ -517,14 +517,11 @@ export function TextArea({
             disabled: isDisabled ? 'disabled' : null,
             readonly: isReadOnly ? 'readonly' : null,
           }),
-          stylex.props(
-            wrapperStyles.root,
-            isDisabled && inputDisabledFocusStyles.ring,
-            controlXstyle,
-          ),
+          stylex.props(wrapperStyles.root, controlXstyle),
           tw(
             fieldInputWrapperClassName({status: status?.type}),
             isDisabled && fieldInputWrapperDisabledClassName,
+            isDisabled && fieldInputWrapperFocusScopeClassName.direct,
             controlClassName,
           ),
           controlStyle,

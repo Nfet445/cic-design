@@ -281,6 +281,7 @@ import {
   fieldHorizontalLabelsClassName,
   fieldInputStatusWrapperClassName,
   fieldInputWrapperClassName,
+  fieldInputWrapperFocusScopeClassName,
   fieldStatusBorderClassName,
 } from '../Field/fieldClasses';
 import {
@@ -2015,6 +2016,7 @@ function familyClassNames() {
     fieldAttachedStatusLayerClassName,
     fieldInputWrapperClassName(),
     ...Object.values(fieldStatusBorderClassName),
+    ...Object.values(fieldInputWrapperFocusScopeClassName),
     fieldScreenReaderOnlyClassName,
     fieldLabelStatusClassName,
     inputClearButtonClassName,

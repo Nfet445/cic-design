@@ -30,9 +30,7 @@ import {
 } from '@testing-library/react';
 import {expectClassSet} from '../__tests__/classNameAssertions';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
-import {colorVars} from '../theme/tokens.stylex';
 import {
   createRef,
   Profiler,
@@ -47,6 +45,7 @@ import {
 import {FormLayout} from '../FormLayout/FormLayout';
 import {Dialog} from '../Dialog/Dialog';
 import {Typeahead} from './Typeahead';
+import {fieldInputWrapperFocusScopeClassName} from '../Field/fieldClasses';
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {BaseTypeahead} from './BaseTypeahead';
@@ -98,22 +97,6 @@ afterAll(() => {
 afterEach(() => {
   __resetLiveRegionsForTest();
 });
-
-// Test data
-// The disabled focus ring a nested input's wrapper carries, by its StyleX class.
-const NESTED_RING = stylex
-  .props(
-    stylex.create({
-      ring: {
-        boxShadow: {
-          default: null,
-          ':has(input[aria-disabled="true"]:focus-visible)': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-        },
-      },
-    }).ring,
-  )
-  .className!.split(' ')
-  .pop()!;
 
 const fruits: SearchableItem[] = [
   {id: '1', label: 'Apple'},
@@ -2985,9 +2968,13 @@ describe('Typeahead disabledMessage', () => {
     expect(input).toHaveValue('');
     expect(input).toHaveAttribute('aria-expanded', 'false');
     expect(onChange).not.toHaveBeenCalled();
-    // jsdom cannot match :focus-visible: the field's wrapper carries the
-    // disabled focus ring's class (spec:AST-085 FR6).
-    expect(input.closest(`.${NESTED_RING}`)).not.toBeNull();
+    // jsdom cannot match :focus-visible, and it cannot parse an arbitrary
+    // variant as a selector, so the disabled wrapper (the only `opacity-50`
+    // above the input) is found first: it carries the ring's classes
+    // (spec:AST-085 FR6).
+    expectClassSet(input.closest('.opacity-50')!, {
+      includes: fieldInputWrapperFocusScopeClassName.nested.split(' '),
+    });
   });
 
   it('drops a search answer that arrives after the field became disabled', async () => {

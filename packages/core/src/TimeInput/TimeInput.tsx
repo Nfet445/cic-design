@@ -32,7 +32,6 @@ import {
   type FocusEvent,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useEntryErrorBehavior} from '../Field/useEntryErrorBehavior';
 import type {EntryErrorBehavior} from '../FormLayout/FormLayoutContext';
 import {
@@ -776,10 +775,7 @@ function TimeField({
           status: fieldStatus?.type ?? null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(
-          isDisabled && inputDisabledFocusStyles.withinRing,
-          fieldStatus && !isDisabled && controlXstyle,
-        ),
+        stylex.props(fieldStatus && !isDisabled && controlXstyle),
         tw(
           inputGroup && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: fieldStatus?.type}),

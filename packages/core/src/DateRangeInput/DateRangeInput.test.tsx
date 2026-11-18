@@ -23,14 +23,18 @@ function generateThemeTestCSS(theme: Parameters<typeof generateThemeCSS>[0]) {
 // every role+name query compute ~85 accessible names through jsdom's
 // slow getComputedStyle (~450ms per query). See fastRoleQueries.ts.
 import {getButton, queryButton} from '../__tests__/fastRoleQueries';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {DateRangeInput} from './DateRangeInput';
 import type {DateRange, DateRangeInputProps} from './DateRangeInput';
 import {Icon} from '../Icon';
 import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {InternationalizationProvider} from '../i18n';
+
+const FIELD_FOCUS_RING_CLASSES = [
+  'focus-within:border-[color:var(--color-accent)]',
+  'focus-within:shadow-[inset_0_0_0_2px_var(--color-accent-muted)]',
+];
 
 describe('DateRangeInput', () => {
   it('renders with label', () => {
@@ -163,27 +167,7 @@ describe('DateRangeInput', () => {
     expect(trigger).toHaveFocus();
   });
 
-  it('restores the focus ring on a focused disabled field (AST-085 FR6)', () => {
-    // The same declarations as the field's ring style compile to the same
-    // atomic classes.
-    const ringClasses = stylex
-      .props(
-        stylex.create({
-          ring: {
-            borderColor: {
-              default: colorVars['--color-border-emphasized'],
-              ':focus-within': colorVars['--color-accent'],
-            },
-            boxShadow: {
-              default: 'none',
-              ':focus-within': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-            },
-          },
-        }).ring,
-      )
-      .className!.split(' ')
-      // Keep the atomic classes, not the dev-only debug name.
-      .filter(name => !name.includes('__'));
+  it('restores the focus ring on a focused disabled field (spec:AST-085 FR6)', () => {
     render(
       <DateRangeInput
         label="Range"
@@ -192,13 +176,11 @@ describe('DateRangeInput', () => {
         onChange={() => {}}
       />,
     );
-    // The shared disabled style alone drops these :focus-within declarations.
     const wrapper = getButton(/Range/).parentElement!;
-    for (const name of ringClasses) {
-      expect(wrapper).toHaveClass(name);
-    }
+    // The box paints the ring for any focus inside it; the disabled state adds
+    // no class that turns it off.
+    expectClassSet(wrapper, {includes: FIELD_FOCUS_RING_CLASSES});
   });
-
   it('is not disabled by default', () => {
     render(<DateRangeInput label="Range" value={null} onChange={() => {}} />);
     const trigger = getButton(/Range/);
