@@ -17,13 +17,12 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {focusVars} from '../theme/tokens.stylex';
 
 const styles = stylex.create({
   viewportFocusRingInset: {
     outlineOffset: {
       default: null,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
+      ':focus-visible': `calc(-1 * var(--focus-outline-width))`,
     },
   },
 });
