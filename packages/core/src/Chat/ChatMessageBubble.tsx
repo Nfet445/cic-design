@@ -30,9 +30,9 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {useChatMessageContext} from './ChatContext';
 import {isRenderable, mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import type {SizeValue} from '../utils/types';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
@@ -198,7 +198,7 @@ export function ChatMessageBubble({
               chatMessageBubbleGroupClassName[isUser ? 'user' : 'assistant'][
                 group
               ],
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
           ),
           className,
           {...sizingStyle, ...styleProp},

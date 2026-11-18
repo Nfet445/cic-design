@@ -17,11 +17,11 @@
  */
 
 import React from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Icon} from '../Icon';
 import {Button} from '../Button';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {themeProps} from '../utils/themeProps';
 import {
   chatLayoutScrollButtonButtonClassName,
@@ -88,7 +88,7 @@ export function ChatLayoutScrollButton({
       ref={ref}
       {...mergeProps(
         chatLayoutScrollButtonWrapperClassName,
-        xstyle == null ? undefined : stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}

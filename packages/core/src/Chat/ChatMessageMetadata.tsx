@@ -14,11 +14,11 @@
  */
 
 import React, {type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {useChatMessageContext} from './ChatContext';
 import {Icon} from '../Icon';
 import type {IconName} from '../Icon/globalIconRegistry';
 import {isRenderable, mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
@@ -111,7 +111,7 @@ export function ChatMessageMetadata({
           sender === 'user'
             ? chatMessageMetadataUserClassName
             : chatMessageMetadataAssistantClassName,
-          xstyle && stylex.props(xstyle).className,
+          xstyleProps(xstyle).className,
         ),
         className,
         style,

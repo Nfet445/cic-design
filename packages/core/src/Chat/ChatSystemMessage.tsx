@@ -20,8 +20,8 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {isRenderable} from '../utils/isRenderable';
 import {Divider} from '../Divider';
 import type {BaseProps} from '../BaseProps';
@@ -98,10 +98,7 @@ export function ChatSystemMessage({
         ref={ref}
         {...mergeProps(
           themeProps('chat-system-message', {variant}),
-          tw(
-            chatSystemMessageDividerClassName,
-            xstyle && stylex.props(xstyle).className,
-          ),
+          tw(chatSystemMessageDividerClassName, xstyleProps(xstyle).className),
           className,
           styleProp,
         )}
@@ -116,10 +113,7 @@ export function ChatSystemMessage({
       ref={ref}
       {...mergeProps(
         themeProps('chat-system-message', {variant}),
-        tw(
-          chatSystemMessageClassName,
-          xstyle && stylex.props(xstyle).className,
-        ),
+        tw(chatSystemMessageClassName, xstyleProps(xstyle).className),
         className,
         styleProp,
       )}

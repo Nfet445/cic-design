@@ -34,8 +34,8 @@ import React, {
   type FocusEvent,
 } from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {
   chatComposerBodyClassName,
@@ -359,7 +359,7 @@ export function ChatComposer(props: ChatComposerProps) {
           className={tw(
             chatComposerBodyClassName(density),
             chatComposerElevationClassName(elevation),
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
             hasKeyboardEditorFocus && focusOutlineWithinClassName,
           )}>
           {(headerActions || headerContext) && (

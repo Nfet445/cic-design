@@ -19,13 +19,13 @@
  */
 
 import React, {type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Button} from '../Button';
 import {useIcon} from '../Icon';
 import {useChatComposerContext} from './ChatContext';
 
 import type {BaseProps} from '../BaseProps';
 import {composeEventHandlers, mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {chatSendButtonClassName} from './chatClasses';
 import {themeProps} from '../utils/themeProps';
@@ -119,7 +119,7 @@ export function ChatSendButton(props: ChatSendButtonProps): ReactNode {
       {...rest}
       {...mergeProps(
         themeProps('chat-send-button'),
-        tw(chatSendButtonClassName, xstyle && stylex.props(xstyle).className),
+        tw(chatSendButtonClassName, xstyleProps(xstyle).className),
         className,
         style,
       )}

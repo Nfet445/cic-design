@@ -20,7 +20,6 @@
  */
 
 import React, {type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Badge} from '../Badge';
 import {
   chatTokenizedTextClassName,
@@ -28,6 +27,7 @@ import {
 } from './chatClasses';
 import type {ChatComposerToken} from './ChatComposerInput';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
@@ -99,10 +99,7 @@ export function ChatTokenizedText({
         ref={ref}
         {...mergeProps(
           themeProps('chat-tokenized-text'),
-          tw(
-            chatTokenizedTextClassName,
-            xstyle && stylex.props(xstyle).className,
-          ),
+          tw(chatTokenizedTextClassName, xstyleProps(xstyle).className),
           className,
           style,
         )}
@@ -118,10 +115,7 @@ export function ChatTokenizedText({
       ref={ref}
       {...mergeProps(
         themeProps('chat-tokenized-text'),
-        tw(
-          chatTokenizedTextClassName,
-          xstyle && stylex.props(xstyle).className,
-        ),
+        tw(chatTokenizedTextClassName, xstyleProps(xstyle).className),
         className,
         style,
       )}
