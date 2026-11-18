@@ -85,6 +85,7 @@ import {
 } from '../Layout/padding.stylex';
 import type {SpacingStep} from '../utils/types';
 import {mergeProps} from '../utils/mergeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
 import {createDevWarnings} from '../utils/devWarning';
 import {DialogContext} from './DialogContext';
@@ -704,7 +705,7 @@ export function Dialog({
         {...inlineSafeProps}
         {...mergeProps(
           themeProps('dialog', {variant}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             overlayPaddingReset.reset,
             dialogInlineClassName({isFullscreen}),
@@ -733,7 +734,7 @@ export function Dialog({
       {...safeProps}
       {...mergeProps(
         themeProps('dialog', {variant}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           overlayPaddingReset.reset,
           rootClassName,

@@ -26,7 +26,6 @@ import React, {
   type RefCallback,
 } from 'react';
 import {useCommittedRef, useCommittedRefInto} from '../hooks/useCommittedRef';
-import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '@stylexjs/stylex';
 import {createPortal} from 'react-dom';
 import {LayerContentBoundary} from './layerScopedContext';
@@ -96,6 +95,7 @@ import {observeMutations} from '../utils/sharedMutationObserver';
 import {containsAlongFlatTree, parentAcrossShadow} from '../utils/flatTree';
 import {isDialogShown, isShadowRoot, isShownAsPopover} from '../utils/nodeType';
 import {subscribeInput} from '../utils/inputStream';
+import {xstyleProps} from '../utils/xstyle';
 
 /**
  * Props for a control that sits on the trigger but must not dismiss the layer.
@@ -2435,7 +2435,7 @@ function useLayerImplementation(
             ]
           : null;
 
-      const xstyleResult = stylex.props(xstyle);
+      const xstyleResult = xstyleProps(xstyle);
       const combinedClassName = tw(
         overlayPaddingReset.reset,
         layerResetClassName,
@@ -2529,7 +2529,7 @@ function useLayerImplementation(
         left: x,
       };
 
-      const xstyleResult = stylex.props(xstyle);
+      const xstyleResult = xstyleProps(xstyle);
       const combinedClassName = tw(
         layerResetClassName,
         layerTextResetClassName,

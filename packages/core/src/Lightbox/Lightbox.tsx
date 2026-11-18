@@ -51,6 +51,7 @@ import {useTouchHitArea} from '../utils/touchHitArea';
 import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 import {usePressTracker} from '../gestures/usePressTracker';
 import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
@@ -1631,7 +1632,7 @@ export function Lightbox({
       }
       {...mergeProps(
         themeProps('lightbox'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           overlayPaddingReset.reset,
           lightboxDialogClassName,
