@@ -198,3 +198,40 @@ carries or to one new rule per property), the `SelectableCard`, `RadioList` and
 `Thumbnail` suites are green, and `pnpm exec tsc --noEmit -p tsconfig.json` reports
 only the four pre-existing `src/i18n/getLocaleDirection.ts` errors this window does
 not own.
+
+### group A, lab window 36j
+
+The three lab modules this window owns, read against the cascade and the lab
+sheet gate (`packages/lab/src/labTailwindStylesheet.source-build.test.mjs`,
+14391 B gzip against the 12514 B StyleX baseline).
+
+Converted and deleted:
+
+- `Comments/commentRowOverrides.stylex.ts` — the forced-colors outline of a
+  selected thread. `commentRowSelectedForcedColorsClassName` repeats
+  `[data-thread-surface]` twice, so it beats `commentRowFocusRingClassName`
+  whether or not the ring is present.
+- `Comments/commentPartsOverrides.stylex.ts` — the highlight quote rule became
+  one class reading `--_comment-quote-rule`, which the passage writes inline
+  from `colorVarNames`, instead of ten per-color rules; the Progress label's
+  clip arms name `astryx-text` twice against `Text`'s own colour class, and the
+  forced-colors arms name it three times to drop the clip, gradient and motion.
+  `@keyframes astryxCommentProgressShimmer` moved to
+  `packages/lab/tailwind/lab.input.css`, with the duration in the
+  `animate-[…]` class.
+
+Partly converted, module kept:
+
+- `TransferList/transferListOverrides.stylex.ts` — the disabled row's pointer
+  (`[&.astryx-item]:pointer-events-auto`) and the Remove button's fill
+  (`[&.astryx-button]:opacity-100`) are classes now. The header action's
+  text-link treatment stays StyleX: a ghost `Button` paints its hover and
+  pressed background image from `interactionOverlayStyles.backgroundImage`
+  (`packages/core/src/utils/interactionOverlay.stylex.ts`), which is unlayered
+  and carries id specificity, so no `astryx-base` class can state
+  `background-image: none` over it. The module's header names that rival.
+
+Measured: the lab sheet builds at 103.7 kB raw and passes the gate, `Comments`,
+`TransferList` and the sheet suite are green (9 files, 151 tests), and the
+sheet stayed under the ceiling only after the Progress animation folded into one
+`animate-[…]` shorthand — three separate longhand classes put it 9 B over.
