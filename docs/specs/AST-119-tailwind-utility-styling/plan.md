@@ -172,18 +172,24 @@ check of the family's states.
 
 ## Status
 
-- Current phase: `4` — the family waves. Waves 1 and 2 landed on `main` in
+- Current phase: `6` — StyleX leaves. Waves 1 and 2 landed on `main` in
   pull request #1; waves 3 through 8 are integrating on the migration trunk
   behind pull request #2, one merge commit per ticket.
-- Done: 27 of the 49 tickets, plus the two waves that landed before the
-  tickets were written. The sheet the trunk builds is 147 kB raw, 20 kB
-  gzipped, 1 050 rule blocks, and every package's sheet test holds its gzip
-  gate.
-- Remaining: date and time inputs, the rest of the side nav, dialogs and
-  sheets, menus, search surfaces, display and feedback, form controls and the
-  family leftovers, chat, overflow and gesture surfaces, the table plugins,
-  the shared modules whose consumers still own the property, and the consumer
-  surfaces — CLI docs and templates, Storybook, vibe-tests, swizzle.
+- Done: 58 of the 63 tickets. Every family wave landed on the migration trunk
+  except the removal stages: the sheet the trunk builds is 373.7 kB raw,
+  42.5 kB gzipped and 2 300 rule blocks, and every package's sheet test holds
+  its gate.
+- Remaining: the five removal tickets. `59` moved the token names off the
+  StyleX runtime; `60` deletes the last maps with the component-owned token
+  modules under them; `61` retires the StyleX half of `packages/build` and
+  `scripts/build-css.mjs`; `62` points `xstyle` at the Tailwind adapter that
+  keeps its value unlayered; `63` writes the `breaking` changeset and the
+  consumer notes.
+- What stays on StyleX, each with a measured reason recorded in its ticket: the
+  `ProgressBar` fill (four conditions at once, and Tailwind fixes the variant
+  order), the two safe-area compositions, the three motion modules, the
+  thumbnail override pair, the `Table` markers, and every seam that takes a
+  StyleX-only argument until ticket `62` replaces it.
 - The work is scheduled: 49 tickets over waves 0 and 3–9, each with its files,
   its `Blocked by:` line and its verification, in
   [`.scratch/tailwind-migration/`](../../../.scratch/tailwind-migration/map.md).
