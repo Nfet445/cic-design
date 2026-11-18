@@ -76,6 +76,7 @@ import {
   multiSelectorListWrapperClassName,
   multiSelectorOptionsClassName,
   multiSelectorTriggerClassName,
+  multiSelectorTriggerContainerClassName,
 } from './multiSelectorClasses';
 import {
   selectorDividerClassName,
@@ -158,133 +159,6 @@ const CREATE_VALUE_PREFIX = '__astryx_multi_selector_create__';
 function isCreateValue(value: string): boolean {
   return value.startsWith(CREATE_VALUE_PREFIX);
 }
-
-/**
- * The trigger's own list is open. A press does not scale the box then, so the
- * list anchors to the box at rest.
- */
-const LAYER_OPEN: string = ':has([aria-expanded="true"])';
-
-// The trigger container shares its element with the shared field box class,
-// and it sets the same padding, background and shadow properties; two classes
-// in `astryx-base` are ordered by the sheet, not by `tw`: its chrome, the
-// ghost and secondary fills, the read-only and disabled press resets stay
-// here. The popup's minimum width is `selectorPopoverClassName`, and every
-// child element uses `multiSelectorClasses.ts`.
-const styles = stylex.create({
-  // Trigger container — the enhanced click target wrapping the combobox button and clear button as siblings
-  triggerContainer: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 'var(--spacing-2)',
-    width: '100%',
-    paddingBlock: 'var(--spacing-2)',
-    paddingInline: 'var(--spacing-3)',
-    fontFamily: 'var(--font-family-body)',
-    fontSize: 'var(--text-label-size)',
-    lineHeight: 'var(--text-label-leading)',
-    color: 'var(--color-text-primary)',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  triggerPlaceholder: {
-    color: 'var(--color-text-secondary)',
-  },
-  triggerGhost: {
-    width: 'auto',
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': 'none',
-        },
-      ':focus-within': 'none',
-    },
-    fontWeight: 'var(--font-weight-medium)',
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the list opens.
-      [LAYER_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transform: {
-      default: 'scale(1)',
-      // A mouse press; under a coarse pointer the touch press model writes
-      // `data-astryx-press` instead (see interactionOverlay.stylex.ts).
-      [`:active:not(${LAYER_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-      },
-      [`[data-astryx-press="on"]:not(${LAYER_OPEN})`]: 'scale(0.98)',
-    },
-  },
-  // Keep the input-family width contract while reusing ghost's borderless paint
-  // and the neutral resting fill used by secondary buttons.
-  triggerSecondary: {
-    borderWidth: 0,
-    backgroundColor: 'var(--color-neutral)',
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': 'none',
-        },
-      ':focus-within': 'none',
-    },
-    fontWeight: 'var(--font-weight-medium)',
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the list opens.
-      [LAYER_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transform: {
-      default: 'scale(1)',
-      [`:active:not(${LAYER_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-      },
-      [`[data-astryx-press="on"]:not(${LAYER_OPEN})`]: 'scale(0.98)',
-    },
-  },
-  triggerGhostDisabled: {
-    backgroundImage: 'none',
-    transform: {
-      default: 'none',
-      ':active': 'none',
-      '[data-astryx-press="on"]': 'none',
-    },
-  },
-  triggerReadOnly: {
-    cursor: 'default',
-  },
-  triggerGhostReadOnly: {
-    backgroundImage: 'none',
-    transform: {
-      default: 'none',
-      ':active': 'none',
-      '[data-astryx-press="on"]': 'none',
-    },
-  },
-
-  // A panel with a search field, capped as a whole.,
-
-  // Dropdown container,,
-
-  // Section heading. Plain secondary text, no rules — the same treatment
-  // DropdownMenu and CommandPaletteGroup already use for a group heading in a
-  // panel list. A labeled Divider (line–text–line) reads as a separator, and
-  // next to the search row's own divider it stacked two rules a few pixels
-  // apart.,
-
-  // Divider,
-
-  // Empty state,
-});
 
 const RENDER_TRIGGER_PARTS_MESSAGE =
   '`container*` and `control*` styling props have no effect with `renderTrigger`: ' +
@@ -2390,20 +2264,16 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             readonly: isEffectivelyReadOnly ? 'readonly' : null,
           }),
           stylex.props(
-            styles.triggerContainer,
-            variant === 'secondary' && styles.triggerSecondary,
-            variant === 'ghost' && styles.triggerGhost,
             variant !== 'input' && interactionOverlayStyles.pressedAlpha,
             surface.isTriggerFocusRingSuppressed &&
               selectorPresentationStyles.pointerRestoredFocus,
-            isEffectivelyReadOnly && styles.triggerReadOnly,
-            variant !== 'input' && isDisabled && styles.triggerGhostDisabled,
-            variant !== 'input' &&
-              isEffectivelyReadOnly &&
-              styles.triggerGhostReadOnly,
-            optimisticValue.length === 0 && styles.triggerPlaceholder,
           ),
           tw(
+            multiSelectorTriggerContainerClassName({
+              variant,
+              hasValue: optimisticValue.length > 0,
+              isInert: isDisabled || isEffectivelyReadOnly,
+            }),
             variant !== 'ghost' && inputGroup && inputGroupMemberClassName,
             fieldInputWrapperClassName({
               status: variant === 'input' ? status?.type : undefined,

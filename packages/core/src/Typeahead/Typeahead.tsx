@@ -29,7 +29,6 @@ import React, {
   type RefObject,
 } from 'react';
 import {flushSync} from 'react-dom';
-import * as stylex from '@stylexjs/stylex';
 import {BaseTypeaheadFocusContext} from './BaseTypeaheadFocusContext';
 import {
   BusyIndicatorLaneProvider,
@@ -65,6 +64,7 @@ import {getInputARIA, isImeKeyEvent, mergeProps} from '../utils';
 import {joinAriaIDs} from '../utils/inputAria';
 import {
   TYPEAHEAD_INPUT_HIDDEN_CLASS,
+  TYPEAHEAD_WRAPPER_CLASS,
   TYPEAHEAD_TOKEN_OVERLAY_CLASS,
   typeaheadContentLaneClassName,
   typeaheadEndLaneClassName,
@@ -237,36 +237,6 @@ export interface TypeaheadProps<T extends SearchableItem> extends Omit<
   /** Imperative handle to open and close the menu. */
   handleRef?: React.Ref<BaseTypeaheadHandle>;
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-/**
- * The wrapper stays here: it shares its element with the shared field box class
- * and sets the same `padding-block` and `gap`, which a class in `astryx-base`
- * would only tie with — the sheet, not `tw`, would decide. The hidden input is
- * `TYPEAHEAD_INPUT_HIDDEN_CLASS`.
- */
-const styles = stylex.create({
-  wrapper: {
-    position: 'relative',
-    // No `flexWrap`. The shared field base does not wrap and neither does
-    // TextInput; this field only ever holds one token, so there is no second
-    // row to wrap to. It also cannot wrap and keep its end controls in flow:
-    // flex moves an item to a new line rather than shrinking it, so a long
-    // value put the clear button and spinner on a row of their own (a 280px
-    // field grew to 46px tall). Unwrapped, the token ellipsizes instead.
-    gap: 'var(--spacing-1)',
-    // Standard padding minus border width to prevent height jump
-    // when a token (28px) is added inside the input
-    paddingBlock: `calc(var(--spacing-1) - 1px)`,
-    cursor: {
-      default: 'text',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-});
 
 // =============================================================================
 // Component
@@ -649,8 +619,8 @@ export function Typeahead<T extends SearchableItem>({
         {...(inputGroup ? inputGroupItemProps : undefined)}
         {...mergeProps(
           themeProps('typeahead', {size, status: status?.type}),
-          stylex.props(styles.wrapper),
           tw(
+            TYPEAHEAD_WRAPPER_CLASS,
             sizeClassName,
             inputGroup && inputGroupMemberClassName,
             fieldInputWrapperClassName({status: status?.type}),

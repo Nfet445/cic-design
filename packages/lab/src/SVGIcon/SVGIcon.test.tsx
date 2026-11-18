@@ -4,7 +4,12 @@ import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {SVGIcon, type SVGIconDef} from './SVGIcon';
 import {iconVars} from './svgIconClasses';
-import {iconColorClassNames, svgIconRootClassName} from './svgIconClasses';
+import {
+  iconColorClassNames,
+  iconSizeClassNames,
+  iconVariationClassNames,
+  svgIconRootClassName,
+} from './svgIconClasses';
 import {bellIcon, calendarIcon, homeIcon, xIcon} from './icons';
 
 /** Top-level shape groups, excluding the <defs> mask block. */
@@ -161,6 +166,15 @@ describe('SVGIcon', () => {
     const svg = container.querySelector('svg');
     expect(svg).toHaveClass(...svgIconRootClassName.split(' '));
     expect(svg).toHaveClass(...iconColorClassNames.accent.split(' '));
+  });
+
+  it('carries the variation and size classes that set its variables', () => {
+    const {container} = render(
+      <SVGIcon icon={xIcon} variation="twotone" size="sm" />,
+    );
+    const svg = container.querySelector('svg');
+    expect(svg).toHaveClass(...iconVariationClassNames.twotone.split(' '));
+    expect(svg).toHaveClass(...iconSizeClassNames.sm.split(' '));
   });
 
   it('honors a custom viewBox and passes extra svg props through', () => {

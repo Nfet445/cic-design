@@ -77,6 +77,7 @@ import {
   selectorSearchRowInsetClassName,
   selectorSectionHeadingClassName,
   selectorTriggerButtonClassName,
+  selectorTriggerClassName,
 } from './selectorClasses';
 import type {SelectorOptionType, SelectorOptionData} from './types';
 import {isOptionData, isDivider, isSection, normalizeOption} from './utils';
@@ -145,156 +146,6 @@ const MOST_ROWS_THAT_FIT = 12;
 
 // Private runtime state. No app or theme sets it.
 const OVERLAY_MARGIN_PROPERTY = '--_selector-overlay-margin';
-
-/**
- * The trigger's own list is open. A press does not scale the box then, so the
- * list anchors to the box at rest.
- */
-const LAYER_OPEN: string = ':has([aria-expanded="true"])';
-
-/**
- * The control box and its variant chrome stay here: the box shares its element
- * with `fieldInputWrapperClassName()`, whose background, border and shadow a
- * class in `astryx-base` would only tie with — the sheet, not `tw`, would
- * decide — and `triggerInGroup` cancels a `padding-block` this map writes
- * unlayered, which no class can reach. Every rule that draws inside the box
- * comes from `selectorClasses.ts`, `selectorOptionClasses.ts` or
- * `selectorPresentation.stylex.ts`; the popup's minimum width is
- * `selectorPopoverClassName`.
- */
-const styles = stylex.create({
-  // Trigger container — the enhanced click target wrapping the combobox button and clear button as siblings
-  triggerContainer: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 'var(--spacing-2)',
-    width: '100%',
-    paddingBlock: 'var(--spacing-2)',
-    paddingInline: 'var(--spacing-3)',
-    fontFamily: 'var(--font-family-body)',
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: 'var(--text-label-size)',
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)':
-          'max(1rem, var(--text-label-size))',
-      },
-    },
-    // The line box is set per size in SELECTOR_TRIGGER_SIZE_CLASS, where it can
-    // be capped to what that size token holds.
-    color: 'var(--color-text-primary)',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  triggerPlaceholder: {
-    color: 'var(--color-text-secondary)',
-  },
-  // Inside an InputGroup the group's own height is the row, and the trigger
-  // takes it: `height: 100%` from `inputGroupMemberClassName` can only govern
-  // if the
-  // trigger stops asserting a floor of its own — otherwise a control sized
-  // above its group (`<InputGroup size="md"><Selector size="lg">`) grows the
-  // row it was supposed to sit in. The padding goes with it: the row is
-  // already the size token, and the value box is centred in it. The line box
-  // likewise stops reading the control's own size token (the size class caps
-  // it there), so grouped triggers keep one line box whatever their `size`.
-  triggerInGroup: {
-    minHeight: 0,
-    paddingBlock: 0,
-    lineHeight: `max(var(--spacing-5), 20px, 1rem)`,
-  },
-  // Ghost has no borders, so its spacing row never overshoots the token; it
-  // keeps the uncapped line box from before the size cap.
-  triggerGhost: {
-    width: 'auto',
-    borderWidth: 0,
-    lineHeight: `max(var(--spacing-5), 20px, 1rem)`,
-    backgroundColor: 'transparent',
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': 'none',
-        },
-      ':focus-within': 'none',
-    },
-    fontWeight: 'var(--font-weight-medium)',
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the list opens.
-      [LAYER_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transform: {
-      default: 'scale(1)',
-      // A mouse press; under a coarse pointer the touch press model writes
-      // `data-astryx-press` instead (see interactionOverlay.stylex.ts).
-      [`:active:not(${LAYER_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-      },
-      [`[data-astryx-press="on"]:not(${LAYER_OPEN})`]: 'scale(0.98)',
-    },
-  },
-  // Secondary is ghost's chrome with the resting fill of a secondary
-  // button (`--color-neutral`): no border, no shadow, content width, so a
-  // selector in a nav reads as the sibling of the secondary buttons and
-  // segmented controls beside it instead of as a form field. The hover and
-  // pressed answers still come from the shared interaction overlay, layered
-  // over the fill via backgroundImage.
-  triggerSecondary: {
-    width: 'auto',
-    borderWidth: 0,
-    lineHeight: `max(var(--spacing-5), 20px, 1rem)`,
-    backgroundColor: 'var(--color-neutral)',
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': 'none',
-        },
-      ':focus-within': 'none',
-    },
-    fontWeight: 'var(--font-weight-medium)',
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the list opens.
-      [LAYER_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transform: {
-      default: 'scale(1)',
-      [`:active:not(${LAYER_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-      },
-      [`[data-astryx-press="on"]:not(${LAYER_OPEN})`]: 'scale(0.98)',
-    },
-  },
-  triggerGhostDisabled: {
-    backgroundImage: 'none',
-    transform: {
-      default: 'none',
-      ':active': 'none',
-      '[data-astryx-press="on"]': 'none',
-    },
-  },
-  triggerReadOnly: {
-    cursor: 'default',
-  },
-  triggerGhostReadOnly: {
-    backgroundImage: 'none',
-    transform: {
-      default: 'none',
-      ':active': 'none',
-      '[data-astryx-press="on"]': 'none',
-    },
-  },
-});
 
 const STATUS_ICON_MAP: Record<SelectorStatusType, IconName> = {
   warning: 'warning',
@@ -1795,10 +1646,10 @@ export function Selector<T extends SelectorOptionType>(
 
   // Two lines cannot fit inside an InputGroup: the group pins the row height,
   // and the trigger clamps its value box to one line so nothing bleeds through
-  // its border (styles.triggerValueInGroup). The clamp holds for any node; the
-  // context is what lets the rows the system draws itself reflow into that one
-  // line — label and description side by side — instead of being cut off at
-  // it. Outside a group the caller's own row decides, and the trigger's
+  // its border (SELECTOR_TRIGGER_VALUE_IN_GROUP_CLASS). The clamp holds for any
+  // node; the context is what lets the rows the system draws itself reflow into
+  // that one line — label and description side by side — instead of being cut
+  // off at it. Outside a group the caller's own row decides, and the trigger's
   // padding sizes it to whatever that draws.
   const rowLayout = inputGroup ? 'inline' : 'stacked';
 
@@ -2011,27 +1862,21 @@ export function Selector<T extends SelectorOptionType>(
             readonly: isEffectivelyReadOnly ? 'readonly' : null,
           }),
           stylex.props(
-            styles.triggerContainer,
-            variant === 'ghost' && styles.triggerGhost,
-            variant === 'secondary' && styles.triggerSecondary,
             variant !== 'input' && interactionOverlayStyles.pressedAlpha,
             surface.isTriggerFocusRingSuppressed &&
               selectorPresentationStyles.pointerRestoredFocus,
-            isEffectivelyReadOnly && styles.triggerReadOnly,
-            variant !== 'input' && isDisabled && styles.triggerGhostDisabled,
-            variant !== 'input' &&
-              isEffectivelyReadOnly &&
-              styles.triggerGhostReadOnly,
-            !selectedItem && styles.triggerPlaceholder,
-            variant === 'input' &&
-              status &&
-              !isDisabled &&
-              // Grouped secondary triggers keep their neutral fill but take the
-              // group's row height, connected edge radii, and focus stacking.
-              inputGroup &&
-              styles.triggerInGroup,
           ),
           tw(
+            selectorTriggerClassName({
+              variant,
+              hasValue: !!selectedItem,
+              isInert:
+                variant !== 'input' && (isDisabled || isEffectivelyReadOnly),
+              // Grouped secondary triggers keep their neutral fill but take the
+              // group's row height, connected edge radii, and focus stacking.
+              inGroup:
+                variant === 'input' && !!status && !isDisabled && !!inputGroup,
+            }),
             variant !== 'ghost' && inputGroup && inputGroupMemberClassName,
             fieldInputWrapperClassName({
               status: variant === 'input' ? status?.type : undefined,

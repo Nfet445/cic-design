@@ -20,15 +20,15 @@
  */
 
 import {type CSSProperties, type SVGProps, useId} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '@astryxdesign/core/utils';
 import {
   iconColorClassNames,
+  iconSizeClassNames,
+  iconVariationClassNames,
   iconVars,
   svgIconRootClassName,
 } from './svgIconClasses';
 import {iconA11yProps} from './iconA11y';
-import {variations, opticalSize} from './variations.stylex';
 import {tw} from '../tw';
 import {themeProps} from '@astryxdesign/core/utils';
 
@@ -343,8 +343,12 @@ export function SVGIcon({
       {...a11yProps}
       {...mergeProps(
         themeProps('svg-icon', {variation, size, color}),
-        stylex.props(variations[variation], opticalSize[size]),
-        tw(svgIconRootClassName, iconColorClassNames[color]),
+        tw(
+          iconVariationClassNames[variation],
+          iconSizeClassNames[size],
+          svgIconRootClassName,
+          iconColorClassNames[color],
+        ),
       )}
       style={overrideStyle}
       {...props}>

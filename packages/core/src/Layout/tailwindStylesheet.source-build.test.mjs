@@ -452,6 +452,7 @@ import {
   COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
   COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS,
   complexSelectorHeightClassName,
+  complexSelectorTriggerClassName,
   complexSelectorPopoverClassName,
 } from '../ComplexSelector/complexSelectorClasses';
 import {
@@ -710,6 +711,7 @@ import {
   selectorSearchRowInsetClassName,
   selectorSectionHeadingClassName,
   selectorTriggerButtonClassName,
+  selectorTriggerClassName,
 } from '../Selector/selectorClasses';
 import {
   MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
@@ -733,12 +735,14 @@ import {
   multiSelectorListWrapperClassName,
   multiSelectorOptionsClassName,
   multiSelectorTriggerClassName,
+  multiSelectorTriggerContainerClassName,
 } from '../MultiSelector/multiSelectorClasses';
 import {
   TYPEAHEAD_INPUT_HIDDEN_CLASS,
   TYPEAHEAD_MENU_WIDTH_CLASS,
   TYPEAHEAD_INPUT_HIDDEN_CLASS,
   TYPEAHEAD_TOKEN_OVERLAY_CLASS,
+  TYPEAHEAD_WRAPPER_CLASS,
   TYPEAHEAD_DEFAULT_ITEM_CLASS,
   TYPEAHEAD_ITEM_CONTENT_CLASS,
   TYPEAHEAD_ITEM_DESCRIPTION_CLASS,
@@ -2378,6 +2382,17 @@ function familyClassNames() {
   for (const size of ['sm', 'md', 'lg']) {
     add(SELECTOR_TRIGGER_SIZE_CLASS[size]);
   }
+  // The trigger's box and the chrome of its two borderless variants, in every
+  // state their arms split on.
+  for (const variant of ['input', 'secondary', 'ghost']) {
+    for (const hasValue of [false, true]) {
+      for (const isInert of [false, true]) {
+        for (const inGroup of [false, true]) {
+          add(selectorTriggerClassName({variant, hasValue, isInert, inGroup}));
+        }
+      }
+    }
+  }
   // The option panel, its listbox in both scroll modes, the input trigger's
   // inset, and the empty, heading and divider slots.
   add(selectorSearchPanelClassName);
@@ -2441,6 +2456,17 @@ function familyClassNames() {
   for (const isReadOnly of [false, true]) {
     add(multiSelectorTriggerClassName({isReadOnly}));
   }
+  // The trigger's box and the chrome of its two borderless variants, in every
+  // state their arms split on.
+  for (const variant of ['input', 'secondary', 'ghost']) {
+    for (const hasValue of [false, true]) {
+      for (const isInert of [false, true]) {
+        add(
+          multiSelectorTriggerContainerClassName({variant, hasValue, isInert}),
+        );
+      }
+    }
+  }
   add(MULTI_SELECTOR_TRIGGER_CONTENT_CLASS);
   add(MULTI_SELECTOR_TRIGGER_TEXT_CLASS);
   add(MULTI_SELECTOR_TRIGGER_BADGES_CLASS);
@@ -2474,6 +2500,7 @@ function familyClassNames() {
   add(typeaheadPopoverClassName);
   add(TYPEAHEAD_MENU_WIDTH_CLASS);
   add(TYPEAHEAD_TOKEN_OVERLAY_CLASS);
+  add(TYPEAHEAD_WRAPPER_CLASS);
   add(TYPEAHEAD_INPUT_HIDDEN_CLASS);
   add(TYPEAHEAD_DEFAULT_ITEM_CLASS);
   add(TYPEAHEAD_ITEM_FRAME_CLASS);
@@ -3608,6 +3635,15 @@ function familyClassNames() {
   add(COMPLEX_SELECTOR_CONTENT_CLASS);
   for (const size of ['sm', 'md', 'lg']) {
     add(complexSelectorHeightClassName({size}));
+  }
+  // The trigger's box and the chrome of its two borderless variants, in every
+  // state their arms split on.
+  for (const variant of ['input', 'secondary', 'ghost']) {
+    for (const hasValue of [false, true]) {
+      for (const isInert of [false, true]) {
+        add(complexSelectorTriggerClassName({variant, hasValue, isInert}));
+      }
+    }
   }
   // NumberInput: the entry in every size and state, the unit, the stepper
   // column and both buttons.

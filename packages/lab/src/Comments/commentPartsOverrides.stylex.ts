@@ -9,9 +9,10 @@
  *
  * Both rules carry four conditions on one property and need a stated order
  * between them: a highlight's rule color has to win over `Blockquote`'s own
- * rule color, and the shimmer's transparency has to hold only where the glyph
- * clip is supported, never under reduced motion or in forced colors. Layer
- * utilities would be ordered by the built sheet, not by the class attribute.
+ * `border-s-[color:var(--color-border-emphasized)]`, and the shimmer's
+ * transparency has to hold only where the glyph clip is supported, never under
+ * reduced motion or in forced colors. A class of ours would be ordered by the
+ * later sheet, not by the class attribute.
  */
 
 import * as stylex from '@stylexjs/stylex';

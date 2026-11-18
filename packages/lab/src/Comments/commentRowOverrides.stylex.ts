@@ -6,9 +6,10 @@
  * @output StyleX rules that paint a selected thread's fill and focus ring
  * @position Style exception; the component passes it through `xstyle`
  *
- * The thread's surface paints its own fill through a theme rule, so a utility
- * class cannot be trusted to win over it: these rules stay unlayered and take
- * the surface through `xstyle`.
+ * A selected thread keeps `Card`'s default variant, so this fill must outrank
+ * that variant's `bg-[var(--color-background-card)]`. Both stylesheets sit in
+ * `astryx-base`, where a class of ours would be decided by the later sheet;
+ * StyleX's `:not(#\#)` selector wins at either order, so the rule stays here.
  */
 
 import * as stylex from '@stylexjs/stylex';

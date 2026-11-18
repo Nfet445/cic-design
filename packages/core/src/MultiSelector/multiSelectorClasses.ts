@@ -3,17 +3,21 @@
 /**
  * @file multiSelectorClasses.ts
  * @input The panel MultiSelector presents its options in
- * @output The two class strings its panel adds to the ones it shares with
- *   `Selector`: the padded list wrapper and the listbox itself
+ * @output The trigger's box and variant chrome, the trigger button, and the two
+ *   class strings its panel adds to the ones it shares with `Selector`: the
+ *   padded list wrapper and the listbox itself
  * @position Style primitives; scanned by the Tailwind build. The component
  *   composes these with `tw`
  *
  * The panel's cap, heading, divider and empty slot are the same declarations
- * `Selector` states, so they come from `selectorClasses`. The trigger's chrome
- * stays on StyleX in `MultiSelector.tsx`: it shares one element with the
- * shared field box class and sets the same `padding`, `gap`, `backgroundColor`
- * and `boxShadow` properties, which two classes in `astryx-base` would order
- * by the sheet rather than by `tw`.
+ * `Selector` states, so they come from `selectorClasses`. The trigger's box
+ * shares one element with the shared field box class, and the field box sets
+ * `padding-block`, `padding-inline`, `border-width`, `background-color`,
+ * `box-shadow` and `transition-property` from classes in the same layer. A
+ * utility here that disagreed with one of those would be decided by the
+ * sheet's order, not by `tw`, so the chips that must win name the trigger's
+ * stable target class (`.astryx-multi-selector`) and outrank the field box by
+ * specificity instead.
  */
 
 import {tw} from '../utils/tw';
@@ -34,6 +38,82 @@ export const multiSelectorListWrapperClassName = tw(
 
 /** The grid or listbox inside that wrapper: a focus ring draws its own edge. */
 export const multiSelectorOptionsClassName = 'outline-none';
+
+/**
+ * The trigger's box: the visible control, and the field box's own element.
+ *
+ * `isInert` is a disabled or read-only trigger, which keeps its chrome in the
+ * input variant and, in the two borderless ones, neither scales nor paints a
+ * press.
+ */
+export function multiSelectorTriggerContainerClassName({
+  variant,
+  hasValue,
+  isInert,
+}: {
+  variant: 'input' | 'secondary' | 'ghost';
+  hasValue: boolean;
+  isInert: boolean;
+}): string {
+  return tw(
+    'justify-between',
+    variant === 'ghost' ? 'w-auto' : 'w-full',
+    '[&.astryx-multi-selector]:py-[var(--spacing-2)]',
+    '[&.astryx-multi-selector]:px-[var(--spacing-3)]',
+    '[font-family:var(--font-family-body)]',
+    '[font-size:var(--text-label-size)]',
+    '[line-height:var(--text-label-leading)]',
+    hasValue
+      ? 'text-[color:var(--color-text-primary)]'
+      : 'text-[color:var(--color-text-secondary)]',
+    isInert ? 'cursor-default' : 'cursor-pointer',
+    variant !== 'input' &&
+      multiSelectorTriggerChromeClassName({variant, isInert}),
+  );
+}
+
+/**
+ * The chrome a borderless trigger wears over the field box: no border, its own
+ * fill, the medium weight, its transition list, and the press scale.
+ *
+ * The paint-off arms state the state each of the shared overlay's arms matches,
+ * because a plain `background-image: none` would tie with them in the same
+ * layer and the sheet would decide.
+ */
+function multiSelectorTriggerChromeClassName({
+  variant,
+  isInert,
+}: {
+  variant: 'secondary' | 'ghost';
+  isInert: boolean;
+}): string {
+  return tw(
+    '[&.astryx-multi-selector]:border-0',
+    variant === 'ghost'
+      ? '[&.astryx-multi-selector]:bg-transparent'
+      : '[&.astryx-multi-selector]:bg-[var(--color-neutral)]',
+    '[&.astryx-multi-selector:focus-within]:shadow-none',
+    '[font-weight:var(--font-weight-medium)]',
+    '[&.astryx-multi-selector]:[transition-property:background-image,background-color,color,opacity,transform]',
+    // The press scale goes at once as the list opens.
+    '[&.astryx-multi-selector:has([aria-expanded=true])]:[transition-property:background-image,background-color,color,opacity]',
+    isInert
+      ? tw(
+          '[transform:none]',
+          '[&.astryx-multi-selector:hover]:[background-image:none]',
+          '[&.astryx-multi-selector:active]:[background-image:none]',
+          '[&.astryx-multi-selector[data-astryx-press=on]]:[background-image:none]',
+          '[&.astryx-multi-selector[data-astryx-press=fading]]:[background-image:none]',
+        )
+      : tw(
+          '[transform:scale(1)]',
+          // A mouse press; under a coarse pointer the touch press model writes
+          // `data-astryx-press` instead (see interactionOverlay.stylex.ts).
+          '[&:active:not(:has([aria-expanded=true]))]:pointer-fine:[transform:scale(0.98)]',
+          '[&[data-astryx-press=on]:not(:has([aria-expanded=true]))]:[transform:scale(0.98)]',
+        ),
+  );
+}
 
 /**
  * The trigger button: it fills the container and draws nothing of its own, so
