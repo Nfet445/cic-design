@@ -68,16 +68,6 @@ import {
   selectorSearchRowInsetClassName,
   selectorSectionHeadingClassName,
 } from './selectorClasses';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  typographyVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import type {SelectorOptionType, SelectorOptionData} from './types';
 import {isOptionData, isDivider, isSection, normalizeOption} from './utils';
 import {getSelectableOptionEntries} from './selectableOptionEntries';
@@ -158,23 +148,23 @@ const styles = stylex.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
+    gap: 'var(--spacing-2)',
     width: '100%',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    fontFamily: typographyVars['--font-family-body'],
+    paddingBlock: 'var(--spacing-2)',
+    paddingInline: 'var(--spacing-3)',
+    fontFamily: 'var(--font-family-body)',
     // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
     // control sits under 16px, and only iOS WebKit implements
     // -webkit-touch-callout to key the coarse-pointer floor to it.
     fontSize: {
-      default: typeScaleVars['--text-label-size'],
+      default: 'var(--text-label-size)',
       '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-label-size']})`,
+        '@supports (-webkit-touch-callout: none)': 'max(1rem, var(--text-label-size))',
       },
     },
     // The line box is set per size in SELECTOR_TRIGGER_SIZE_CLASS, where it can
     // be capped to what that size token holds.
-    color: colorVars['--color-text-primary'],
+    color: 'var(--color-text-primary)',
     cursor: {
       default: 'pointer',
       ':is(:disabled,[aria-disabled="true"])': 'default',
@@ -185,7 +175,7 @@ const styles = stylex.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
+    gap: 'var(--spacing-2)',
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: 0,
@@ -210,7 +200,7 @@ const styles = stylex.create({
     outline: 'none',
   },
   triggerPlaceholder: {
-    color: colorVars['--color-text-secondary'],
+    color: 'var(--color-text-secondary)',
   },
   triggerLabel: {
     flexGrow: 1,
@@ -232,7 +222,7 @@ const styles = stylex.create({
   triggerInGroup: {
     minHeight: 0,
     paddingBlock: 0,
-    lineHeight: `max(${spacingVars['--spacing-5']}, 20px, 1rem)`,
+    lineHeight: `max(var(--spacing-5), 20px, 1rem)`,
   },
   // Wrapper for `renderValue` output. Takes the free width and clips
   // horizontally so a long value ellipsizes rather than widening the trigger;
@@ -275,8 +265,8 @@ const styles = stylex.create({
   // picks these up and needs no transition opt-out.
   triggerIconRotation: {
     transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
+    transitionDuration: 'var(--duration-fast)',
+    transitionTimingFunction: 'var(--ease-standard)',
     transformOrigin: 'center',
   },
   triggerIconOpen: {
@@ -287,7 +277,7 @@ const styles = stylex.create({
   triggerGhost: {
     width: 'auto',
     borderWidth: 0,
-    lineHeight: `max(${spacingVars['--spacing-5']}, 20px, 1rem)`,
+    lineHeight: `max(var(--spacing-5), 20px, 1rem)`,
     backgroundColor: 'transparent',
     boxShadow: {
       default: 'none',
@@ -297,7 +287,7 @@ const styles = stylex.create({
         },
       ':focus-within': 'none',
     },
-    fontWeight: fontWeightVars['--font-weight-medium'],
+    fontWeight: 'var(--font-weight-medium)',
     transitionProperty: {
       default: 'background-image, background-color, color, opacity, transform',
       // The press scale goes at once as the list opens.
@@ -323,8 +313,8 @@ const styles = stylex.create({
   triggerSecondary: {
     width: 'auto',
     borderWidth: 0,
-    lineHeight: `max(${spacingVars['--spacing-5']}, 20px, 1rem)`,
-    backgroundColor: colorVars['--color-neutral'],
+    lineHeight: `max(var(--spacing-5), 20px, 1rem)`,
+    backgroundColor: 'var(--color-neutral)',
     boxShadow: {
       default: 'none',
       ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
@@ -333,7 +323,7 @@ const styles = stylex.create({
         },
       ':focus-within': 'none',
     },
-    fontWeight: fontWeightVars['--font-weight-medium'],
+    fontWeight: 'var(--font-weight-medium)',
     transitionProperty: {
       default: 'background-image, background-color, color, opacity, transform',
       // The press scale goes at once as the list opens.
@@ -383,7 +373,7 @@ const styles = stylex.create({
       default: 'pointer',
       ':is(:disabled,[aria-disabled="true"])': 'default',
     },
-    borderRadius: radiusVars['--radius-element'],
+    borderRadius: 'var(--radius-element)',
   },
 
   // Popover container (for anchor positioning)
@@ -2031,9 +2021,7 @@ export function Selector<T extends SelectorOptionType>(
       // The system's standard menu clearance, except in overlay mode:
       // there the measured negative margin owns the block geometry and
       // the menu is meant to sit on the trigger, not clear it.
-      offset: shouldOverlaySelectedItem
-        ? undefined
-        : spacingVars['--spacing-1'],
+      offset: shouldOverlaySelectedItem ? undefined : 'var(--spacing-1)',
       xstyle: styles.popover,
       style: popoverOffsetStyle,
     });

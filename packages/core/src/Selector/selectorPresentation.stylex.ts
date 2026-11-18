@@ -10,11 +10,10 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 
 export const selectorPresentationStyles = stylex.create({
   pointerRestoredFocus: {
-    borderColor: colorVars['--color-border-emphasized'],
+    borderColor: 'var(--color-border-emphasized)',
     boxShadow: 'none',
     outlineWidth: '0',
     outlineStyle: 'none',
