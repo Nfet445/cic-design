@@ -1,6 +1,6 @@
 # token names without the StyleX shim
 
-Status: ready-for-agent
+Status: done
 Blocked by: —
 Wave: 9
 Ticket: 59
@@ -34,3 +34,20 @@ Replace the import at every call site with a name source that needs no runtime: 
 
 - A name source stays a compile-time constant: a runtime value is invisible to the Tailwind scanner and to `packages/core/src/theme/tokens.defaults.test.ts`.
 - `packages/core/src/theme/derivedVarRegistry.test.ts` walks sources for `--astryx-*` names; a new literal in a component moves a name into that component's doc file or into `CROSS_COMPONENT_VARS`.
+
+## Comments — matter closed, eight files moved to 60
+
+The window converted 80+ files: `packages/core/src/theme/tokenVars.ts` now publishes a names record per
+group (`spacingVarNames`, `colorVarNames`, … derived from the `*Defaults` groups so a name cannot drift),
+and the call sites index those records instead of `tokens.stylex`.
+
+Eight files still read a token name through a StyleX module, and every one of them needs a
+**component-owned** `defineVars` module deleted first, which is stage 60's work:
+
+- `packages/core/src/DateInput/tokens.stylex.ts` (read by `DateInput/dateInputClasses.ts`)
+- `packages/lab/src/SVGIcon/tokens.stylex.ts` (read by `SVGIcon/svgIconClasses.ts`)
+- `packages/lab/src/TransferList/tokens.stylex.ts`
+- `packages/core/src/TimeInput/touchTimeFieldClasses.ts` (reads `focusVars`)
+- `packages/core/src/theme/dynamicType.ts` (reads the typography group)
+- plus the three survivors `utils/focusOutline.stylex.ts`, `privateAttributes/ownRing.stylex.ts` and
+  `theme/tokens.stylex.ts` itself, which stage 61 retires once no call site remains.

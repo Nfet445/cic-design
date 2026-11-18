@@ -22,7 +22,10 @@ Replace the seam first, then the map: a `--_*` variable published by script, an 
 - `packages/core/src/Selector/Selector.tsx`, `SelectorOption.tsx`, `MultiSelector/MultiSelector.tsx`, `ComplexSelector/ComplexSelector.tsx`
 - `packages/core/src/Breadcrumbs/BreadcrumbItem.tsx`, `hooks/anchoredHint.tsx`, `DropdownMenu/DropdownMenuSubMenu.tsx`
 - `packages/lab/src/TransferList/TransferListSelector.tsx`
-- the `*.stylex.ts` modules those files leave behind, with their `packages/*/package.json` export entries
+- the component-owned token modules `packages/core/src/DateInput/tokens.stylex.ts`,
+  `packages/lab/src/SVGIcon/tokens.stylex.ts` and `packages/lab/src/TransferList/tokens.stylex.ts`, whose
+  names move into the core token records first (they are what keeps `dateInputClasses.ts`,
+  `svgIconClasses.ts` and `TimeInput/touchTimeFieldClasses.ts` on StyleX), with their `packages/*/package.json` export entries
 
 ## Done when
 

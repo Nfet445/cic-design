@@ -121,7 +121,7 @@ buttons) that landed before the tickets were written.
 
 ### Wave 9 — removing StyleX
 
-- [ ] `59-token-names`
+- [x] `59-token-names`
 - [ ] `60-last-stylex-maps`
 - [ ] `61-retire-stylex-build`
 - [ ] `62-xstyle-adapter`
