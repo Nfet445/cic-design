@@ -38,7 +38,7 @@ import {
 } from './hoverCardClasses';
 import {registerLayerSurface} from '../Layer/layerSurfacePress';
 import {useKeyedLayerDismissal} from '../Layer/useLayerDismissal';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
 
@@ -650,7 +650,7 @@ export function useHoverCard(options: HoverCardOptions = {}): HoverCardReturn {
       const renderProps = {
         placement: renderPlacement,
         alignment: props?.alignment ?? alignment,
-        offset: spacingVars['--spacing-1'],
+        offset: spacingVarNames['--spacing-1'],
         // A named dialog when a label is provided; otherwise a group. A group
         // may validly be unnamed, an unnamed dialog may not — and hover cards
         // are non-modal, so group is honest semantics without a name.
