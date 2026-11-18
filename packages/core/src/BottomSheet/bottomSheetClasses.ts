@@ -3,9 +3,10 @@
 /**
  * @file bottomSheetClasses.ts
  * @input The sheet host's presentation state: open, whether it positions its
- *   own panel, whether it has a scrim, the settled entry and the exit
- * @output Utility class strings for the sheet's `<dialog>`, its backdrop and
- *   the switcher's positioner wrapper
+ *   own panel, whether it has a scrim, the settled entry, the exit, and the
+ *   sheet's depth in a stack
+ * @output Utility class strings for the sheet's `<dialog>`, its backdrop, the
+ *   switcher's positioner wrapper, and a stacked sheet's recede
  * @position BottomSheet style primitives; scanned by the Tailwind build
  *
  * `display` has two arms and only one may apply, so the function prints one at
@@ -18,6 +19,50 @@
  */
 
 import {tw} from '../utils/tw';
+
+/** @internal Verified by BottomSheetStacking.test.tsx; not re-exported from the package entry point. */
+export const bottomSheetStackRecedeContract = {
+  depth1: 'translateY(calc(-1 * var(--spacing-2))) scale(0.96)',
+  depth2: 'translateY(calc(-2 * var(--spacing-2))) scale(0.92)',
+} as const;
+
+// A covered sheet recedes behind the top one; the return transition stays while
+// another sheet is presented so the sheet animates home too.
+const STACK_MOTION = tw(
+  '[transform-origin:50%_0]',
+  '[transition-property:transform]',
+  '[transition-duration:var(--duration-medium)]',
+  '[transition-timing-function:var(--ease-standard)]',
+  'motion-reduce:[transition-duration:0.01s]',
+);
+
+// The nearest covered sheet lifts one step and shrinks once about its top edge,
+// the next shrinks a second step, and deeper sheets share that second step.
+const STACK_RECEDED_ONE_STEP =
+  '[transform:translateY(calc(-1_*_var(--spacing-2)))_scale(0.96)]';
+const STACK_RECEDED_TWO_STEPS =
+  '[transform:translateY(calc(-2_*_var(--spacing-2)))_scale(0.92)]';
+
+/**
+ * The class set of a sheet's positioner while it stands in a stack.
+ *
+ * The dialog is the panel's positioner, so a recede moves the panel and its
+ * grabber as one. The panel's own travel is an inline transform on the panel
+ * inside, so the two compose instead of competing.
+ */
+export function bottomSheetStackPositionerClassName({
+  isStacked,
+  depth,
+}: {
+  isStacked: boolean;
+  depth: number;
+}): string {
+  return tw(
+    isStacked && STACK_MOTION,
+    depth === 1 && STACK_RECEDED_ONE_STEP,
+    depth >= 2 && STACK_RECEDED_TWO_STEPS,
+  );
+}
 
 /**
  * The reduced-motion duration of the backdrop transition. It reads the pin the

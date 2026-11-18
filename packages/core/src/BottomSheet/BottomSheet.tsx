@@ -64,7 +64,6 @@ import {
 import {useCommittedRef} from '../hooks/useCommittedRef';
 import {useIsHydrating} from '../hooks/useIsHydrating';
 import {useSettledOpen} from '../hooks/useSettledOpen';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import type {DialogPurpose} from '../Dialog';
 import type {SpacingStep} from '../utils/types';
@@ -126,21 +125,13 @@ import {
 export type {BottomSheetHeight, BottomSheetSnapPoint} from './BottomSheetPanel';
 import type {BottomSheetHeight, BottomSheetSnapPoint} from './BottomSheetPanel';
 import {BottomSheetEscapeContext} from './bottomSheetEscape';
-import {bottomSheetStackMotionStyles} from './bottomSheetStackMotion.stylex';
 import {
   bottomSheetDialogClassName,
   bottomSheetPositionerClassName,
+  bottomSheetStackPositionerClassName,
 } from './bottomSheetClasses';
 import {layerClickBoundary} from '../Layer/layerClickBoundary';
-
-/** Positioner styles for a sheet's place in the stack; the switcher items share them. */
-function stackPositionerStyles(view: BottomSheetStackView) {
-  return [
-    view.isStacked && bottomSheetStackMotionStyles.motion,
-    view.depth === 1 && bottomSheetStackMotionStyles.receded1,
-    view.depth >= 2 && bottomSheetStackMotionStyles.receded2,
-  ] as const;
-}
+import {tw} from '../utils/tw';
 
 /** The `data-sheet-stack` value for a host: only set while sheets stack. */
 function stackStateAttribute(
@@ -768,22 +759,22 @@ function StandaloneBottomSheet({
 
   return (
     <dialog
-      {...mergeProps(
-        stylex.props(
-          // The dialog is the panel's positioner, so the stack's recede
-          // transforms the dialog: panel, grabber and all shrink and lift as
-          // one. The backdrop is not a descendant and stays put.
-          ...stackPositionerStyles(stackView),
+      {...mergeProps({
+        // The dialog is the panel's positioner, so the stack's recede
+        // transforms the dialog: panel, grabber and all shrink and lift as
+        // one. The backdrop is not a descendant and stays put.
+        className: tw(
+          bottomSheetStackPositionerClassName(stackView),
+          bottomSheetDialogClassName({
+            isPresented: shouldPresent,
+            isPanelHost: shouldPresent,
+            hasScrim,
+            isNonModalTop: false,
+            isEntrySettled,
+            isExiting,
+          }),
         ),
-        bottomSheetDialogClassName({
-          isPresented: shouldPresent,
-          isPanelHost: shouldPresent,
-          hasScrim,
-          isNonModalTop: false,
-          isEntrySettled,
-          isExiting,
-        }),
-      )}
+      })}
       ref={dialogComposedRef}
       // A non-modal sheet is hosted in the top layer as a manual popover
       // (no light dismiss, no backdrop), so sheets order by presentation
@@ -1159,10 +1150,12 @@ function SwitcherBottomSheetItem({
         onClick: onDialogClick,
       })}>
       <div
-        {...mergeProps(
-          stylex.props(...(hasScrim ? stackPositionerStyles(stackView) : [])),
-          bottomSheetPositionerClassName({isPresented, isTop: isTopSheet}),
-        )}
+        {...mergeProps({
+          className: tw(
+            hasScrim && bottomSheetStackPositionerClassName(stackView),
+            bottomSheetPositionerClassName({isPresented, isTop: isTopSheet}),
+          ),
+        })}
         hidden={!isPresented}
         aria-hidden={isBlocked ? 'true' : undefined}
         inert={isBlocked ? true : undefined}>

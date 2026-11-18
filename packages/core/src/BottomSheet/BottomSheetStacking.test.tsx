@@ -34,7 +34,10 @@ import {subscribeModalOutlets} from '../Layer/modalOutlet';
 import * as BottomSheetModule from './index';
 import {BottomSheet} from './BottomSheet';
 import {BottomSheetSwitcher} from './BottomSheetSwitcher';
-import {bottomSheetStackRecedeContract} from './bottomSheetStackMotion.stylex';
+import {
+  bottomSheetStackPositionerClassName,
+  bottomSheetStackRecedeContract,
+} from './bottomSheetClasses';
 import {
   BOTTOM_SHEET_STACK_STATE_FOR_TESTS,
   getBottomSheetStackForTests,
@@ -936,13 +939,31 @@ describe('R4 covered sheets', () => {
     expect(getDialog('D')).not.toHaveAttribute('data-sheet-stack-depth');
   });
 
-  it('recede wins over the positioner travel: the exception carries both steps', () => {
+  it('recede class carries both steps and the motion arm', () => {
     expect(bottomSheetStackRecedeContract.depth1).toBe(
       'translateY(calc(-1 * var(--spacing-2))) scale(0.96)',
     );
     expect(bottomSheetStackRecedeContract.depth2).toBe(
       'translateY(calc(-2 * var(--spacing-2))) scale(0.92)',
     );
+    // The class holds a rule only when it spells the value; the build turns
+    // each underscore back into a space.
+    const depthOne = bottomSheetStackPositionerClassName({
+      isStacked: true,
+      depth: 1,
+    }).replaceAll('_', ' ');
+    const depthTwo = bottomSheetStackPositionerClassName({
+      isStacked: true,
+      depth: 2,
+    }).replaceAll('_', ' ');
+    expect(depthOne).toContain(bottomSheetStackRecedeContract.depth1);
+    expect(depthTwo).toContain(bottomSheetStackRecedeContract.depth2);
+    expect(depthOne).toContain('[transform-origin:50% 0]');
+    expect(depthOne).toContain('[transition-property:transform]');
+    expect(depthOne).toContain('motion-reduce:[transition-duration:0.01s]');
+    expect(
+      bottomSheetStackPositionerClassName({isStacked: false, depth: 0}),
+    ).toBe('');
   });
 
   it('only sheets count: a Dialog over a sheet does not make it recede', () => {
