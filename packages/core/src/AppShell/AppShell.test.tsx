@@ -41,6 +41,7 @@ import {TextInput} from '../TextInput';
 import {useAppShellMobile} from './AppShellMobileContext';
 import {Theme, defineTheme} from '../theme';
 import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
+import {APP_SHELL_AREA_SURFACE_CLASS} from './appShellClasses';
 
 // jsdom doesn't implement showModal/close on <dialog>, so we mock them
 beforeAll(() => {
@@ -929,18 +930,18 @@ describe('AppShell', () => {
       </AppShell>,
     );
 
-    expect(
-      getComputedStyle(screen.getByRole('banner')).backgroundColor,
-    ).not.toBe('rgba(0, 0, 0, 0)');
+    expectClassSet(screen.getByRole('banner'), {
+      includes: [APP_SHELL_AREA_SURFACE_CLASS],
+    });
 
     rerender(
       <AppShell height="fill" variant="section" topNav={<div>Nav</div>}>
         <div>Content</div>
       </AppShell>,
     );
-    expect(getComputedStyle(screen.getByRole('banner')).backgroundColor).toBe(
-      'rgba(0, 0, 0, 0)',
-    );
+    expectClassSet(screen.getByRole('banner'), {
+      excludes: [APP_SHELL_AREA_SURFACE_CLASS],
+    });
   });
 
   it('does not apply sticky wrapper in fill mode', () => {

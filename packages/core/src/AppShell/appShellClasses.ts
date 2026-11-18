@@ -10,10 +10,12 @@
  * @position Style primitives; scanned by the Tailwind build. The component
  *   composes them with `tw`
  *
- * Every class here lands on a plain element the shell owns. The area fills
- * (`navAreaWash`, `contentBgSurface`, …) and the main focus-target keys stay
- * StyleX in `AppShell.tsx`: they travel through `LayoutPanel`'s and
- * `LayoutContent`'s `xstyle` prop, which takes StyleX styles only.
+ * Every class here lands on a plain element the shell owns or on a region
+ * through `LayoutPanel`'s and `LayoutContent`'s `xstyle` prop. The main
+ * focus-target keys stay StyleX in `AppShell.tsx`: they paint a property the
+ * Layout's own class paints on the same element, and two utilities for one
+ * property in `astryx-base` are decided by the sheet's order rather than by
+ * the call's.
  *
  * SYNC: When modified, update
  * - /packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
@@ -55,6 +57,20 @@ export function appShellHeightClassName({
 }): string {
   return HEIGHT_CLASS[height];
 }
+
+/**
+ * The fill a nav area takes from the shell's variant. Each is one utility, so
+ * no other Astryx rule paints the same property on the region.
+ */
+export const APP_SHELL_AREA_WASH_CLASS = VARIANT_CLASS.wash;
+export const APP_SHELL_AREA_SURFACE_CLASS = VARIANT_CLASS.surface;
+
+/**
+ * The content over the elevated backdrop paints no fill of its own, so the
+ * elevated frame's backdrop shows through; `isolate` keeps its own stacking
+ * context.
+ */
+export const APP_SHELL_AREA_TRANSPARENT_CLASS = 'bg-transparent isolate';
 
 /** The shell root: a column that never scrolls the page itself. */
 export const APP_SHELL_ROOT_CLASS = tw(

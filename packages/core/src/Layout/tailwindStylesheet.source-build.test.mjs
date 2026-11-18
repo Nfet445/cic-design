@@ -30,7 +30,12 @@ import {
 import {avatarShapeClassName} from '../Avatar/avatarClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import * as lightboxClasses from '../Lightbox/lightboxClasses';
-import {APP_SHELL_SKIP_LINK_CLASS} from '../AppShell/appShellClasses';
+import {
+  APP_SHELL_AREA_SURFACE_CLASS,
+  APP_SHELL_AREA_TRANSPARENT_CLASS,
+  APP_SHELL_AREA_WASH_CLASS,
+  APP_SHELL_SKIP_LINK_CLASS,
+} from '../AppShell/appShellClasses';
 import {
   breadcrumbMenuClassName,
   breadcrumbsListClassName,
@@ -2951,6 +2956,11 @@ function familyClassNames() {
   add(sideNavClassName.resizableContainer);
   add(sideNavClassName.resizableHandle);
   add(APP_SHELL_SKIP_LINK_CLASS);
+  // The nav area's and the content area's fills, and the elevated content's
+  // transparent arm.
+  add(APP_SHELL_AREA_WASH_CLASS);
+  add(APP_SHELL_AREA_SURFACE_CLASS);
+  add(APP_SHELL_AREA_TRANSPARENT_CLASS);
   add(sideNavClassName.topbar);
   add(sideNavClassName.topbarIcons);
   for (const value of Object.values(sideNavItemClassName)) {
