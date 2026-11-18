@@ -57,3 +57,38 @@ The remaining four are older than the layer conversion and were merely masked in
 
 - `pnpm exec vitest run packages/core/src/DropdownMenu/DropdownMenu.test.tsx`
 - `pnpm exec vitest run packages/core/src`
+
+## Comments — window 65
+
+Started from `/tmp/win-wt65.md` on `ticket/65-work`.
+
+**The four cases were one race, not a lost ref.** The open path arms `shouldFocusOnOpenRef` and moves focus
+into the menu from a `requestAnimationFrame` (`DropdownMenu.tsx`, the effect above the entrance hold). Nothing
+cancelled that frame when the menu closed. When the close won the frame — a pointer pick that lands inside the
+same 16 ms, or a close whose own timing an earlier test in the file shifted — `handleLayerHide` handed focus
+back to the trigger and the stale frame then pulled it into the closed `role="menu"` element, which is the
+`<div tabindex="-1" role="menu">` the failure printed. `openFocusFrameRef` holds the frame now and
+`handleLayerHide` cancels it (and clears `focusLastOnOpenRef`, which the frame would have consumed) before it
+decides anything else, so an ArrowUp open that is cancelled cannot leak its last-row focus into the next open.
+The trigger ref, the Popover close path and `utils/focusReturn.ts` were already correct.
+
+**The Popover gutter tests were stale, not broken.** Five cases in `Popover.test.tsx` still read
+`useLayer__styles.viewportFit` / `gutterInline*` and `toHaveStyle({boxSizing})`, which ticket 60b replaced with
+class maps; they are now `expectClassSet` over `Layer/layerClasses.ts` (and `layerViewportFitClassName.split(' ')`
+for the multi-class fit, as `useLayer.test.tsx` does). The side-placement case also had the old expectation: a
+`placement="end"` layer keeps the far-edge gutter of **both** axes (`[margin-inline-end:var(--_layer-gutter-inline)]`
+from the placement, `[margin-block-end:var(--_layer-gutter-block)]` from the alignment), which
+`useLayer.test.tsx`'s viewport-inset table already pins for `end`/`start`.
+
+Left alone: `focusOutlineStyles.suppressed` in the trigger's `xstyle`. That suppression stays StyleX on
+purpose — a `box-border`-style utility sits in `@layer astryx-base` and cannot outrank the Button's unlayered
+ring — so the assertion reads the class the trigger really carries, not a leftover debug name.
+
+Measured: `DropdownMenu.test.tsx` 243/243; the owned directories (`DropdownMenu`, `Popover`, `Layer`, `hooks`,
+`utils`) 3675 passed with only the 14 ICU/Temporal failures left. Whole `packages/core/src`: 17 failures, all
+older than this window (`postinstall`, `ComplexSelector` and two `Selector` clearance cases fail on a clean
+`ticket/65-work` too), 23768 passed.
+
+Commits: `13291f9ec` (the fix), `54af64522` (the Popover assertions), plus this note.
+
+Left: nothing in the four cases. The `Selector`/`ComplexSelector` clearance failures are theirs to fix.
