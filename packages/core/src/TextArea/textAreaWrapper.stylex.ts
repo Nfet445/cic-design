@@ -15,7 +15,6 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 
 export const wrapperStyles = stylex.create({
   // The <textarea> spans the full container and carries its own internal
@@ -30,6 +29,6 @@ export const wrapperStyles = stylex.create({
     // Internal inline padding for the textarea's text. Defined on the wrapper
     // so the counter (a sibling overlay) inherits the same value and stays
     // aligned with the text edge.
-    '--_textarea-inline-padding': spacingVars['--spacing-2'],
+    '--_textarea-inline-padding': 'var(--spacing-2)',
   },
 });
