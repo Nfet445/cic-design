@@ -159,3 +159,47 @@ disclosure, and overlays/chrome with the lab.
 element's inline style (`ZOOM_INSET_RING_STYLE`, `MAIN_SCROLL_INSET_RING_STYLE`,
 `VIEWPORT_INSET_RING_STYLE`). A third window carries the action and disclosure
 group, and a fourth carries the interaction overlay.
+
+### Stage D, what the overlay arm learned (window 56g)
+
+A converted overlay site keeps exactly `interactionOverlayStyles.pressedAlpha` in its StyleX
+argument: that entry publishes `--astryx-press-alpha`, the release animation and the
+`--_press-paint-image` variable the new class reads, and it writes no `background-image` or
+`background-color`, so it cannot outrank the class. Sites whose whole reason for the map was the
+strength or the release (`Thumbnail`, `ClickableCard`, `CheckboxInput`, `CheckboxListItem`,
+`SelectableCard`) plus `AvatarGroupOverflow`'s `backgroundImageOnNeutral` stay as they are.
+
+The overlay class family lives in `packages/core/src/utils/interactionOverlayClasses.ts`
+(`interactionOverlayBackgroundImageClassName`, `interactionOverlayBackgroundColorClassName`,
+`interactionOverlayPressedBackgroundColorClassName`).
+
+### Stage D, window I: chrome, actions, and the lab pin
+
+Every overlay arm in the window's seventeen files now reads a class. One commit per file, in the
+brief's order: `TopNavItem`, `TopNavMenu`, `TopNavMegaMenu`, `TopNavMegaMenuItem` (both render
+branches each), `SideNavItem` (collapsed, expanded, the actions row and the toggle),
+`SideNavHeading` (collapsed link and menu trigger), `Token` (three sites), `Outline` (item link),
+`Link` (anchor and button forms), `Collapsible` (trigger row), `SegmentedControlItem` (the segments
+a press can change), `Calendar` (day button), `Stepper/Step` (four buttons: the circle, the row, and
+both densities' blocks), `lab/CommentPin`. Each site keeps exactly
+`interactionOverlayStyles.pressedAlpha` and puts the paint class in its `tw()` call;
+`Step` also moves its four `focusOutlineStyles.focusVisible` arms to
+`focusOutlineFocusVisibleClassName`.
+
+Two files in the list had nothing to convert: `TabList/Tab` already carried
+`!isDisabled && interactionOverlayStyles.pressedAlpha` with `focusOutlineFocusVisibleClassName`, and
+`CommandPalette/CommandPaletteItem` already carried the background class beside `pressedAlpha`.
+
+`Button/Button.tsx` stays a survivor. The ticket states no reason of its own; the reason lives in
+code — `buttonTrackedOverlayClassName()` (`packages/core/src/Button/buttonClasses.ts`) returns
+`'[&:active:not([data-astryx-press=on])]:[background-size:0_0]'`, a class that can hide the overlay
+image only by its size, because an unlayered StyleX declaration outranks a class. Converting the
+button means editing that module — outside this window's list — and then the trick can become
+`[background-image:none]`, since both arms are classes in one layer and the `:not()` arm is the more
+specific of the two. A person should decide that as one small change with its own commit.
+
+Three suites asserted the press with `hasPressedArm` (a rule in the stylesheet). They now read the
+class instead, through `expectClassSet`: `Collapsible.test.tsx`, `Link.test.tsx`,
+`SegmentedControl.test.tsx`. The rest of the touched suites needed no change;
+`TokenizerBottomSheet.test.tsx` reports one failure under a full multi-directory run that passes
+when run alone (an `FR20` settle timing flake, unrelated to the overlay).

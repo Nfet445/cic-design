@@ -71,6 +71,17 @@ written into the ticket.
   assembled by interpolation reaches the DOM with no rule behind it, and the
   stylesheet test is what catches it.
 
+- An arbitrary value that calls `calc()` loses the underscores of any variable it reads: Tailwind
+  normalises the expression and prints `var(-- table-row-glide-offset,0px)`, which is invalid CSS and
+  silently does nothing. The same name survives in a plain property form
+  (`[bottom:var(--_table-row-glide-offset,0px)]`) and in a utility form
+  (`-mb-[var(--_table-row-divider-width,0px)]` emits
+  `margin-bottom: calc(var(--…) * -1)`). When a rule needs the negated value, publish the negation as
+  its own property from script (`--_table-row-glide-bottom`) instead of writing `calc(-1 * var(…))`.
+- Text in a `.ts`/`.tsx` module that is not named `*Classes.ts` never reaches the sheet: the build's
+  `@source` glob is `../src/**/*Classes.ts`. A class map placed beside its logic compiles to nothing,
+  and the sheet test catches it as a missing rule.
+
 ## Traps that cost a window each
 
 - An inset focus ring is a value, not a second utility. The shared ring reads

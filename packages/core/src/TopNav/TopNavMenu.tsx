@@ -51,6 +51,7 @@ import {isSafeUrl} from '../utils/safeUrl';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {spacingVars} from '../theme/tokens.stylex';
 import {isRenderable} from '../utils/isRenderable';
@@ -328,12 +329,14 @@ export function TopNavMenu({
           {...mergeProps(
             stylex.props(
               navItemStyles.item,
-              interactionOverlayStyles.backgroundColor,
+              // The strength and the release; the colour is a class below.
+              interactionOverlayStyles.pressedAlpha,
               xstyle,
             ),
             tw(
               topNavMenuDrawerHeaderClassName(),
               className,
+              interactionOverlayBackgroundColorClassName,
               focusOutlineFocusVisibleClassName,
             ),
             style,
@@ -370,10 +373,12 @@ export function TopNavMenu({
                   {...mergeProps(
                     stylex.props(
                       navItemStyles.item,
-                      interactionOverlayStyles.backgroundColor,
+                      // The strength and the release; the colour is a class below.
+                      interactionOverlayStyles.pressedAlpha,
                     ),
                     tw(
                       topNavMenuDrawerItemClassName(),
+                      interactionOverlayBackgroundColorClassName,
                       focusOutlineFocusVisibleClassName,
                     ),
                   )}>

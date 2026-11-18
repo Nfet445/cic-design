@@ -32,6 +32,7 @@ import {Tooltip} from '../Tooltip';
 import {navItemStyles} from '../NavItem/navItemStyles.stylex';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {useSideNavCollapse} from './SideNavCollapseContext';
 import {useLinkComponent} from '../Link/useLinkComponent';
@@ -286,12 +287,14 @@ export function SideNavHeading({
             themeProps('side-nav-heading'),
             stylex.props(
               navItemStyles.item,
-              interactionOverlayStyles.backgroundColor,
+              // The strength and the release; the colour is a class below.
+              interactionOverlayStyles.pressedAlpha,
               xstyle,
             ),
             tw(
               sideNavHeadingClassName.collapsedRoot,
               className,
+              interactionOverlayBackgroundColorClassName,
               focusOutlineFocusVisibleClassName,
             ),
             style,
@@ -314,13 +317,15 @@ export function SideNavHeading({
               themeProps('side-nav-heading'),
               stylex.props(
                 navItemStyles.item,
-                interactionOverlayStyles.backgroundColor,
+                // The strength and the release; the colour is a class below.
+                interactionOverlayStyles.pressedAlpha,
                 xstyle,
               ),
               tw(
                 sideNavHeadingClassName.collapsedRoot,
                 sideNavHeadingClassName.menuTrigger,
                 className,
+                interactionOverlayBackgroundColorClassName,
                 focusOutlineFocusVisibleClassName,
               ),
               style,

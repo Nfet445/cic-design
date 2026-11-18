@@ -32,6 +32,7 @@ import {
   focusOwnerRingClassName,
 } from '../privateAttributes/focusOwner.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
 import {tw} from '../utils/tw';
 import {
   tokenClassName,
@@ -296,7 +297,8 @@ export function Token({
               size,
               disabled: isDisabled ? 'disabled' : null,
             }),
-            stylex.props(interactionOverlayStyles.backgroundImage, xstyle),
+            // The strength and the release; the paint is a class below.
+            stylex.props(interactionOverlayStyles.pressedAlpha, xstyle),
             tw(
               tokenClassName({
                 size,
@@ -305,6 +307,7 @@ export function Token({
                 isDisabled,
               }),
               className,
+              interactionOverlayBackgroundImageClassName,
               focusOutlineFocusVisibleClassName,
             ),
             style,
@@ -358,7 +361,8 @@ export function Token({
           }),
           // Rings for the token's own button or link only; the remove button
           // rings itself.
-          stylex.props(interactionOverlayStyles.backgroundImage, xstyle),
+          // The strength and the release; the paint is a class below.
+          stylex.props(interactionOverlayStyles.pressedAlpha, xstyle),
           tw(
             tokenClassName({
               size,
@@ -367,6 +371,7 @@ export function Token({
               isDisabled,
             }),
             focusOwnerRingClassName,
+            interactionOverlayBackgroundImageClassName,
             className,
           ),
           style,
@@ -413,7 +418,8 @@ export function Token({
           }),
           // Rings for the token's own button or link only; the remove button
           // rings itself.
-          stylex.props(interactionOverlayStyles.backgroundImage, xstyle),
+          // The strength and the release; the paint is a class below.
+          stylex.props(interactionOverlayStyles.pressedAlpha, xstyle),
           tw(
             tokenClassName({
               size,
@@ -422,6 +428,7 @@ export function Token({
               isDisabled,
             }),
             focusOwnerRingClassName,
+            interactionOverlayBackgroundImageClassName,
             className,
           ),
           style,

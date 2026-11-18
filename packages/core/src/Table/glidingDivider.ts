@@ -240,6 +240,13 @@ export async function markGlidingRows(
         '--_table-row-glide-offset',
         `${offsets.get(row) ?? 0}px`,
       );
+      // The line hangs *below* the row's padding box; the negation is written
+      // here because a `calc()` inside an arbitrary Tailwind value loses the
+      // underscores of the variable it reads.
+      row.style.setProperty(
+        '--_table-row-glide-bottom',
+        `${-(offsets.get(row) ?? 0)}px`,
+      );
       // The table's last row can glide a pixel farther than the rows above
       // it (its border collapses differently), so mid-glide it overlaps the
       // row above. Each moving row is its own layer; the last one stays
@@ -293,6 +300,7 @@ export async function markGlidingRows(
       }
     }
     row.style.removeProperty('--_table-row-glide-offset');
+    row.style.removeProperty('--_table-row-glide-bottom');
     for (const cell of row.children) {
       cell.removeAttribute(CELL_ATTRIBUTE);
       if (cell instanceof HTMLElement && inlineColorOf.has(cell)) {

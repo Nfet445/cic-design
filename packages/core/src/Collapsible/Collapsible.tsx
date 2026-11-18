@@ -66,6 +66,7 @@ import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayPressedBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {tw} from '../utils/tw';
 import {
@@ -430,15 +431,17 @@ export function Collapsible({
             disabled: isDisabled ? 'disabled' : null,
           }),
           stylex.props(
-            // The system's pressed overlay on the disclosure row. The trigger
-            // has no hover surface of its own, so this is the one background
-            // it paints, and only while it is pressed.
-            !isDisabled && interactionOverlayStyles.pressedBackgroundColor,
+            // The strength and the release; the press paint is a class below.
+            !isDisabled && interactionOverlayStyles.pressedAlpha,
           ),
           tw(
             collapsibleTriggerClassName,
             density != null && collapsibleTriggerDensityClassName[density],
             isDisabled && collapsibleTriggerDisabledClassName,
+            // The system's pressed overlay on the disclosure row. The trigger
+            // has no hover surface of its own, so this is the one background
+            // it paints, and only while it is pressed.
+            !isDisabled && interactionOverlayPressedBackgroundColorClassName,
             focusOutlineFocusVisibleClassName,
           ),
         )}>

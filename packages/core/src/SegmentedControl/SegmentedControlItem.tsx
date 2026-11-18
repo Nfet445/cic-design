@@ -34,6 +34,7 @@ import {themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import * as stylex from '@stylexjs/stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {isRenderable} from '../utils/isRenderable';
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -153,11 +154,10 @@ export function SegmentedControlItem({
           disabled: isItemDisabled ? 'disabled' : null,
         }),
         stylex.props(
-          // The shared hover and pressed overlay, on the segments a press can
-          // change: the selected segment keeps its raised surface as it is.
+          // The strength and the release; the colour is a class below.
           !isSelected &&
             !isItemDisabled &&
-            interactionOverlayStyles.backgroundColor,
+            interactionOverlayStyles.pressedAlpha,
           hasHitArea && touchHitAreaStyles.layer,
           xstyle,
         ),
@@ -170,6 +170,11 @@ export function SegmentedControlItem({
             isLabelHidden,
             isTouchPresentation: ctx.isTouchPresentation === true,
           }),
+          // The shared hover and pressed overlay, on the segments a press can
+          // change: the selected segment keeps its raised surface as it is.
+          !isSelected &&
+            !isItemDisabled &&
+            interactionOverlayBackgroundColorClassName,
           focusOutlineFocusVisibleClassName,
           className,
         ),

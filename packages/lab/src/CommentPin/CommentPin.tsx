@@ -36,6 +36,7 @@ import {useTooltip} from '@astryxdesign/core/Tooltip';
 import * as stylex from '@stylexjs/stylex';
 import {
   focusOutlineFocusVisibleClassName,
+  interactionOverlayBackgroundImageClassName,
   interactionOverlayStyles,
   mergeProps,
   themeProps,
@@ -345,7 +346,11 @@ export function CommentPin({
           resolved: isResolved ? 'resolved' : null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(interactionOverlayStyles.backgroundImage, xstyle),
+        stylex.props(
+          // The strength and the release; the paint is a class below.
+          interactionOverlayStyles.pressedAlpha,
+          xstyle,
+        ),
         tw(
           commentPinRootClassName,
           commentPinSizeClassNames[resolvedSize],
@@ -359,6 +364,7 @@ export function CommentPin({
             ? commentPinDisabledOpacityClassName
             : isDimmed && !isSelected && commentPinDimmedOpacityClassName,
           focusOutlineFocusVisibleClassName,
+          interactionOverlayBackgroundImageClassName,
           className,
         ),
         style,

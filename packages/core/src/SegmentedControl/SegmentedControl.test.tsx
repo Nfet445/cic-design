@@ -23,7 +23,7 @@ import {
   waitFor,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {hasPressedArm} from '../__tests__/pressState';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {SegmentedControl} from './SegmentedControl';
 import {SegmentedControlItem} from './SegmentedControlItem';
@@ -1213,11 +1213,13 @@ describe('pressed state', () => {
     );
     // The unselected segment is the one a press can change; it carries the
     // system's hover and pressed overlay.
-    expect(hasPressedArm(screen.getByRole('radio', {name: 'List'}))).toBe(true);
+    expectClassSet(screen.getByRole('radio', {name: 'List'}), {
+      includes: interactionOverlayBackgroundColorClassName.split(' '),
+    });
     // The selected segment keeps its raised surface as it is.
-    expect(hasPressedArm(screen.getByRole('radio', {name: 'Grid'}))).toBe(
-      false,
-    );
+    expectClassSet(screen.getByRole('radio', {name: 'Grid'}), {
+      excludes: interactionOverlayBackgroundColorClassName.split(' '),
+    });
   });
 
   it('does not press a disabled segment', () => {
@@ -1227,9 +1229,9 @@ describe('pressed state', () => {
         <SegmentedControlItem value="list" label="List" isDisabled />
       </SegmentedControl>,
     );
-    expect(hasPressedArm(screen.getByRole('radio', {name: 'List'}))).toBe(
-      false,
-    );
+    expectClassSet(screen.getByRole('radio', {name: 'List'}), {
+      excludes: interactionOverlayBackgroundColorClassName.split(' '),
+    });
   });
 });
 
@@ -1327,7 +1329,9 @@ describe('selection motion', () => {
       for (const name of ['List', 'Icon']) {
         const segment = screen.getByRole('radio', {name});
         expect(segment).toHaveAttribute('data-astryx-pressable');
-        expect(hasPressedArm(segment)).toBe(true);
+        expectClassSet(segment, {
+          includes: interactionOverlayBackgroundColorClassName.split(' '),
+        });
       }
       // The selected segment never paints a press.
       expect(screen.getByRole('radio', {name: 'Grid'})).not.toHaveAttribute(

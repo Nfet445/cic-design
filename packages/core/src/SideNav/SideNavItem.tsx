@@ -60,6 +60,7 @@ import {
   focusOutlineWithinFirstChildClassName,
 } from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
   useSideNavCollapse,
@@ -527,7 +528,8 @@ export function SideNavItem({
         }),
         stylex.props(
           navItemStyles.item,
-          interactionOverlayStyles.backgroundColor,
+          // The strength and the release; the colour is a class below.
+          interactionOverlayStyles.pressedAlpha,
           navItemStyles[size],
           leftoverStyles.collapsedItem,
           size === 'sm' && leftoverStyles.collapsedSm,
@@ -539,6 +541,7 @@ export function SideNavItem({
         tw(
           sideNavItemClassName.collapsedItem,
           rest.className,
+          interactionOverlayBackgroundColorClassName,
           focusOutlineFocusVisibleClassName,
         ),
       ),
@@ -669,7 +672,8 @@ export function SideNavItem({
 
   const itemStyleArgs = [
     navItemStyles.item,
-    interactionOverlayStyles.backgroundColor,
+    // The strength and the release; the colour is a class below.
+    interactionOverlayStyles.pressedAlpha,
     navItemStyles[size],
     isSelected && navItemStyles.selected,
     isDisabled && navItemStyles.disabled,
@@ -693,14 +697,22 @@ export function SideNavItem({
   //   never match, and matching any descendant instead would light the whole
   //   row around the chevron's or an action's own ring.
   const rowProps = {
-    ...mergeProps(itemThemeProps, stylex.props(...itemStyleArgs)),
+    ...mergeProps(
+      itemThemeProps,
+      stylex.props(...itemStyleArgs),
+      interactionOverlayBackgroundColorClassName,
+    ),
     ...pressable,
   };
   const focusableRowProps = {
     ...mergeProps(
       itemThemeProps,
       stylex.props(...itemStyleArgs, rowIndent),
-      tw(callerStyle.className, focusOutlineFocusVisibleClassName),
+      tw(
+        callerStyle.className,
+        interactionOverlayBackgroundColorClassName,
+        focusOutlineFocusVisibleClassName,
+      ),
       callerStyle.style,
     ),
     ...pressable,
@@ -709,7 +721,10 @@ export function SideNavItem({
     ...mergeProps(
       itemThemeProps,
       stylex.props(...itemStyleArgs),
-      focusOutlineWithinFirstChildClassName,
+      tw(
+        interactionOverlayBackgroundColorClassName,
+        focusOutlineWithinFirstChildClassName,
+      ),
     ),
     ...pressable,
   };
@@ -776,9 +791,13 @@ export function SideNavItem({
             aria-controls={`${id}-children`}
             {...mergeProps(
               pressable,
-              stylex.props(interactionOverlayStyles.backgroundColor),
+              stylex.props(
+                // The strength and the release; the colour is a class below.
+                interactionOverlayStyles.pressedAlpha,
+              ),
               tw(
                 sideNavItemClassName.toggle,
+                interactionOverlayBackgroundColorClassName,
                 focusOutlineFocusVisibleClassName,
               ),
             )}>

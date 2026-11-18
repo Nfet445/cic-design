@@ -43,12 +43,8 @@ import {createPortal} from 'react-dom';
 import * as stylex from '@stylexjs/stylex';
 
 import {colorVars, durationVars, spacingVars} from '../theme/tokens.stylex';
-import {
-  focusOutlineStyles,
-  mergeProps,
-  isRenderable,
-  themeProps,
-} from '../utils';
+import {mergeProps, isRenderable, themeProps} from '../utils';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
 import {
   buttonResetClassName,
@@ -1054,16 +1050,14 @@ export function Step({
               aria-disabled={isDisabled || undefined}
               {...pressable}
               {...mergeProps(
-                stylex.props(
-                  interactionOverlayStyles.pressedAlpha,
-                  focusOutlineStyles.focusVisible,
-                ),
+                stylex.props(interactionOverlayStyles.pressedAlpha),
                 tw(
                   otInteractiveClassName,
                   otRowWrapClassName,
                   // The hover and press colour; its strength and release stay
                   // the StyleX arm above.
                   interactionOverlayBackgroundColorClassName,
+                  focusOutlineFocusVisibleClassName,
                 ),
               )}>
               {inner}
@@ -1147,10 +1141,7 @@ export function Step({
             aria-disabled={isDisabled || undefined}
             {...pressable}
             {...mergeProps(
-              stylex.props(
-                interactionOverlayStyles.pressedAlpha,
-                focusOutlineStyles.focusVisible,
-              ),
+              stylex.props(interactionOverlayStyles.pressedAlpha),
               tw(
                 otInteractiveClassName,
                 otColWrapClassName,
@@ -1158,6 +1149,7 @@ export function Step({
                 // The hover and press colour; its strength and release stay the
                 // StyleX arm above.
                 interactionOverlayBackgroundColorClassName,
+                focusOutlineFocusVisibleClassName,
               ),
             )}>
             {innerH}
@@ -1214,10 +1206,7 @@ export function Step({
               aria-disabled={isDisabled || undefined}
               {...pressable}
               {...mergeProps(
-                stylex.props(
-                  interactionOverlayStyles.pressedAlpha,
-                  focusOutlineStyles.focusVisible,
-                ),
+                stylex.props(interactionOverlayStyles.pressedAlpha),
                 tw(
                   buttonResetClassName,
                   densityBlockClassName,
@@ -1225,6 +1214,7 @@ export function Step({
                   // The hover and press colour; its strength and release stay
                   // the StyleX arm above.
                   interactionOverlayBackgroundColorClassName,
+                  focusOutlineFocusVisibleClassName,
                 ),
                 densityStyle(densitySpace, separatedDensityInline),
               )}>
@@ -1287,10 +1277,7 @@ export function Step({
           }
           aria-disabled={isDisabled || undefined}
           {...mergeProps(
-            stylex.props(
-              interactionOverlayStyles.pressedAlpha,
-              focusOutlineStyles.focusVisible,
-            ),
+            stylex.props(interactionOverlayStyles.pressedAlpha),
             tw(
               buttonResetClassName,
               densityBlockClassName,
@@ -1298,6 +1285,7 @@ export function Step({
               // The hover and press colour; its strength and release stay the
               // StyleX arm above.
               interactionOverlayBackgroundColorClassName,
+              focusOutlineFocusVisibleClassName,
             ),
             densityStyle(densitySpace, separatedDensityInline),
           )}>

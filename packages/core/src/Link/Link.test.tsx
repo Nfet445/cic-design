@@ -13,7 +13,7 @@ import {describe, it, expect, vi} from 'vitest';
 import {fireEvent, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {expectClassSet} from '../__tests__/classNameAssertions';
-import {hasPressedArm} from '../__tests__/pressState';
+import {interactionOverlayPressedBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import type {ReactNode} from 'react';
 import {InteractiveRoleContext} from '../InteractiveRoleContext/InteractiveRoleContext';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
@@ -470,14 +470,16 @@ describe('Link', () => {
 describe('pressed state', () => {
   it('paints the pressed overlay behind a link while it is pressed', () => {
     render(<Link href="/docs">Docs</Link>);
-    expect(hasPressedArm(screen.getByRole('link', {name: 'Docs'}))).toBe(true);
+    expectClassSet(screen.getByRole('link', {name: 'Docs'}), {
+      includes: interactionOverlayPressedBackgroundColorClassName.split(' '),
+    });
   });
 
   it('paints it on the button form too', () => {
     render(<Link onClick={() => {}}>Open</Link>);
-    expect(hasPressedArm(screen.getByRole('button', {name: 'Open'}))).toBe(
-      true,
-    );
+    expectClassSet(screen.getByRole('button', {name: 'Open'}), {
+      includes: interactionOverlayPressedBackgroundColorClassName.split(' '),
+    });
   });
 
   it('does not press a disabled link', () => {
@@ -486,7 +488,9 @@ describe('pressed state', () => {
         Docs
       </Link>,
     );
-    expect(hasPressedArm(screen.getByText('Docs').closest('a')!)).toBe(false);
+    expectClassSet(screen.getByText('Docs').closest('a')!, {
+      excludes: interactionOverlayPressedBackgroundColorClassName.split(' '),
+    });
   });
 });
 

@@ -100,6 +100,7 @@ import {
 import {mergeProps, composeEventHandlers} from '../utils';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {useToday} from '../hooks/useToday';
 import {getInitialFocusDate} from './getInitialFocusDate';
@@ -1503,8 +1504,12 @@ function DayCell({
             //   'today-in-range' → today, not single-selected, inside a range
             marker: markerState,
           }),
-          stylex.props(interactionOverlayStyles.backgroundImage),
+          stylex.props(
+            // The strength and the release; the paint is a class below.
+            interactionOverlayStyles.pressedAlpha,
+          ),
           tw(
+            interactionOverlayBackgroundImageClassName,
             dayButtonClassName({
               isOutside,
               isTodayRing: showsTodayRing,
