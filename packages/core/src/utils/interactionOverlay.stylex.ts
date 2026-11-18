@@ -19,6 +19,14 @@
  * CheckboxInput, RadioListItem, ClickableCard, SelectableCard, Thumbnail),
  * Button (a tracked action sizes its `:active` image to zero) and
  * scripts/build-css.test.mjs.
+ *
+ * WHY THE REMAINDER STAYS STYX: the paint arms are classes
+ * (utils/interactionOverlayClasses.ts), and `pressedAlpha` stays here because it
+ * sets `animation-name` and `animation-duration` under
+ * `[data-astryx-press="fading"]` — the same properties under the same condition
+ * as `rowPressLayerStyles.cell` in privateAttributes/press.stylex.ts, and the
+ * row composes both in one `stylex.props` call. That rule stops being StyleX
+ * before this one can.
  * @deprecated Internal seam: it is not a public API and it disappears
  *   when StyleX leaves the package.
  *
