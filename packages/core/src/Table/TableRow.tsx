@@ -20,10 +20,11 @@ import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '../theme/types';
 import {tableRowMarker} from './table.stylex';
-import {glidingDividerStyles} from './glidingDivider';
+import {glidingDividerRowClassName} from './glidingDivider';
 import {tableRowClassName} from './tableRowClasses';
 import {TableContext} from './TableContext';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
 
 /** Props for TableRow — thin `<tr>` wrapper */
@@ -115,20 +116,23 @@ export function TableRow({
       })
     : undefined;
 
-  // A glide moves the row, and its divider with it; the style follows the
-  // attribute the glide sets, so it stays a StyleX value.
-  const rowXstyle: StyleXStyles[] = [];
-  if (ctx.dividers === 'rows' || ctx.dividers === 'grid') {
-    rowXstyle.push(glidingDividerStyles.row);
-  }
+  // A glide moves the row, and its divider with it; the class follows the
+  // attribute the glide sets.
+  const carriesGlide =
+    (ctx?.dividers === 'rows' || ctx?.dividers === 'grid') ?? false;
 
   return (
     <tr
       ref={ref}
       {...props}
       {...mergeProps(
-        mergeProps(themeProps('table-row'), {className: rowClassName}),
-        stylex.props(tableRowMarker, ...rowXstyle, xstyle),
+        mergeProps(themeProps('table-row'), {
+          className: tw(
+            rowClassName,
+            carriesGlide && glidingDividerRowClassName,
+          ),
+        }),
+        stylex.props(tableRowMarker, xstyle),
         incomingClassName,
         incomingStyle,
       )}>

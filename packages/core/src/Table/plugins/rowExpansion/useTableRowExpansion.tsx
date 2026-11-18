@@ -76,7 +76,9 @@ import {
 import {
   dividerOffset,
   GLIDING_ATTRIBUTE,
-  glidingDividerStyles,
+  glidingDividerCellClassName,
+  glidingDividerPanelCellClassName,
+  glidingDividerRowClassName,
   markGlidingRows,
   rowEdge,
   type BottomEdge,
@@ -426,10 +428,12 @@ function ExpansionPanelCell({
           rowExpansionPanelIndentClassName(ctx?.density ?? 'balanced'),
           isMuted && ROW_EXPANSION_PANEL_MUTED_CLASS,
         ),
-        stylex.props(
-          hasRowDividers && rowExpansionOverrideStyles.panelCell,
-          glidingDividerStyles.cell,
-          hasRowDividers && glidingDividerStyles.panelCell,
+        mergeProps(
+          tw(
+            glidingDividerCellClassName,
+            hasRowDividers && glidingDividerPanelCellClassName,
+          ),
+          stylex.props(hasRowDividers && rowExpansionOverrideStyles.panelCell),
         ),
       )}>
       {children}
@@ -978,11 +982,11 @@ export function useTableRowExpansion<T extends Record<string, unknown>>(
             // attribute is what keeps an open panel from inverting the zebra of
             // every row beneath it. Load-bearing, not diagnostic.
             data-expansion-panel=""
+            className={glidingDividerRowClassName}
             {...stylex.props(
               // Carries the marker so the panel cell's divider can ask whether
               // this row is the table's last, the same way TableCell does.
               tableRowMarker,
-              glidingDividerStyles.row,
             )}>
             <ExpansionPanelCell
               colSpan={columnCountRef.current}

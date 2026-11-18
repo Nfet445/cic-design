@@ -21,8 +21,17 @@
  *   plugins/stickyColumns.
  */
 
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
+import {
+  glidingDividerCellClassName,
+  glidingDividerPanelCellClassName,
+  glidingDividerRowClassName,
+} from './tableGlideClasses';
+
+export {
+  glidingDividerCellClassName,
+  glidingDividerPanelCellClassName,
+  glidingDividerRowClassName,
+};
 import {collapsedBottom, type BottomEdge} from './rowDivider';
 
 export type {BottomEdge} from './rowDivider';
@@ -53,71 +62,6 @@ export const PINNED_ATTRIBUTE = 'data-astryx-table-pinned';
 export const GLIDE_DIVIDER_WIDTH = '--_table-row-glide-width';
 export const GLIDE_DIVIDER_STYLE = '--_table-row-glide-style';
 export const GLIDE_DIVIDER_COLOR = '--_table-row-glide-color';
-
-export const glidingDividerStyles = stylex.create({
-  /**
-   * On every cell with a row divider: it goes transparent while the row
-   * moves, and the row's line cell draws the divider across the row's bottom
-   * edge, where the collapsed border sits. The line is positioned against the
-   * row (the cell is not positioned), so the cell's own overflow does not clip
-   * it, and it is a box inside a cell, not a box in the row, so the table's
-   * column widths do not change.
-   */
-  cell: {
-    borderBottomColor: {
-      default: colorVars['--color-border'],
-      [CELL_GLIDING]: 'transparent',
-    },
-    // Every declaration only on the line cell: a pinned cell's own ::after
-    // (its scroll shadow) stays untouched.
-    '::after': {
-      content: {default: null, [CELL_LINE]: '""'},
-      position: {default: null, [CELL_LINE]: 'absolute'},
-      insetInline: {default: null, [CELL_LINE]: 0},
-      // Where the collapsed edge rests below the row's padding box (a wide
-      // border, or the row's own): measured when the row is marked.
-      bottom: {
-        default: null,
-        [CELL_LINE]: 'calc(-1 * var(--_table-row-glide-offset, 0px))',
-      },
-      height: {default: null, [CELL_LINE]: 0},
-      borderBottomWidth: {
-        default: null,
-        [CELL_LINE]: `var(${GLIDE_DIVIDER_WIDTH}, 0px)`,
-      },
-      borderBottomStyle: {
-        default: null,
-        [CELL_LINE]: `var(${GLIDE_DIVIDER_STYLE}, solid)`,
-      },
-      borderBottomColor: {
-        default: null,
-        [CELL_LINE]: `var(${GLIDE_DIVIDER_COLOR}, ${colorVars['--color-border']})`,
-      },
-      pointerEvents: {default: null, [CELL_LINE]: 'none'},
-    },
-  },
-  /**
-   * After `cell` on a detail panel's cell: its divider color is the one its
-   * row hands down (plugins/rowExpansion).
-   */
-  panelCell: {
-    borderBottomColor: {
-      default: `var(--_table-panel-divider-color, ${colorVars['--color-border']})`,
-      [CELL_GLIDING]: 'transparent',
-    },
-  },
-  /**
-   * On every row: while it moves it is the line's containing block. Its
-   * motion (a `translate`) makes it one; `position: relative` keeps it so
-   * for a panel playing in, which does not move.
-   */
-  row: {
-    position: {
-      default: null,
-      [GLIDING]: 'relative',
-    },
-  },
-});
 
 /** The batch that marked a row last: only that batch unmarks it. */
 const markedBy = new WeakMap<Element, symbol>();

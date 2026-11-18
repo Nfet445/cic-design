@@ -29,7 +29,7 @@ import {
 } from './tableCellClasses';
 import {useTableContext} from './useTableCellStyles';
 import {mergeProps} from '../utils';
-import {glidingDividerStyles} from './glidingDivider';
+import {glidingDividerCellClassName} from './glidingDivider';
 import {themeProps} from '../utils/themeProps';
 
 /** Props for TableCell — thin `<td>` wrapper */
@@ -122,9 +122,9 @@ export function TableCell({
         mergeProps(themeProps('table-cell', {density: ctx?.density}), {
           className: cellClassName,
         }),
-        // A glide moves the row's divider with the row; the style follows the
-        // attribute the glide sets, so it stays a StyleX value for now.
-        stylex.props(glidingDividerStyles.cell, xstyle),
+        // A glide moves the row's divider with the row; the class follows the
+        // attribute the glide sets.
+        mergeProps(glidingDividerCellClassName, stylex.props(xstyle)),
         incomingClassName,
         incomingStyle,
       )}>
