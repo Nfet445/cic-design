@@ -28,6 +28,7 @@ import {useDialogContext} from '../Dialog/DialogContext';
 import {themeProps} from '../utils/themeProps';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -155,6 +156,7 @@ export function CommandPaletteItem({
     }
   }, [value, onSelect, ctx]);
 
+  const xstyleSlots = xstyleProps(xstyle);
   return (
     <div
       ref={useMergedRefs(ref, itemRef)}
@@ -175,10 +177,7 @@ export function CommandPaletteItem({
           selected: isSelected ? 'selected' : null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(
-          !isDisabled && interactionOverlayStyles.pressedAlpha,
-          xstyle,
-        ),
+        stylex.props(!isDisabled && interactionOverlayStyles.pressedAlpha),
         tw(
           commandPaletteItemClassName,
           isHighlighted && commandPaletteItemHighlightedClassName,
@@ -187,9 +186,10 @@ export function CommandPaletteItem({
           // The hover and press colour; its strength and release stay the
           // StyleX arm above.
           !isDisabled && interactionOverlayBackgroundColorClassName,
+          xstyleSlots.className,
           className,
         ),
-        style,
+        {...xstyleSlots.style, ...style},
       )}>
       {children}
     </div>

@@ -13,11 +13,11 @@
 'use client';
 
 import React, {type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {commandPaletteEmptyClassName} from './commandPaletteEmptyClasses';
 
 export interface CommandPaletteEmptyProps extends BaseProps<HTMLDivElement> {
@@ -58,7 +58,7 @@ export function CommandPaletteEmpty({
       ref={ref}
       {...mergeProps(
         themeProps('command-palette-empty'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(commandPaletteEmptyClassName, className),
         style,
       )}

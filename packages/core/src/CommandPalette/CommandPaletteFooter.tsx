@@ -13,7 +13,6 @@
 'use client';
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
@@ -23,6 +22,7 @@ import {
 } from './commandPaletteFooterClasses';
 import {Kbd} from '../Kbd';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -80,7 +80,7 @@ export function CommandPaletteFooter({
       ref={ref}
       {...mergeProps(
         themeProps('command-palette-footer'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(commandPaletteFooterClassName, className),
         style,
       )}

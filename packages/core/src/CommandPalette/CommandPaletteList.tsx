@@ -14,13 +14,13 @@
 'use client';
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {useCommandPaletteContext} from './CommandPaletteContext';
 import {commandPaletteListClassName} from './commandPaletteListClasses';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -94,7 +94,7 @@ export function CommandPaletteList({
       aria-label={hasListbox ? label : undefined}
       {...mergeProps(
         themeProps('command-palette-list'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(commandPaletteListClassName, className),
         style,
       )}>

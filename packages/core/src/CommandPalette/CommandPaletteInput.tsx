@@ -21,7 +21,6 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Icon} from '../Icon';
 import {Spinner} from '../Spinner';
 import {isImeKeyEvent, isRenderable, mergeProps} from '../utils';
@@ -43,6 +42,7 @@ import {
   focusOutlineSuppressedClassName,
 } from '../utils/focusOutlineClasses';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
+import {xstyleProps} from '../utils/xstyle';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
@@ -252,7 +252,7 @@ export function CommandPaletteInput({
     <div
       {...mergeProps(
         themeProps('command-palette-input'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(commandPaletteInputWrapperClassName, className),
         style,
       )}>

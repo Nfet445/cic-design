@@ -13,11 +13,11 @@
 'use client';
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {
   commandPaletteGroupClassName,
   commandPaletteGroupHeadingClassName,
@@ -66,7 +66,7 @@ export function CommandPaletteGroup({
       aria-label={heading}
       {...mergeProps(
         themeProps('command-palette-group'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(commandPaletteGroupClassName, className),
         style,
       )}
