@@ -5,16 +5,17 @@
  * @input Every text field: TextInput, TextArea, NumberInput, the date and time
  *   fields in each presentation, Tokenizer, Typeahead, PowerSearch,
  *   PanelSearchInput with its input box, and ChatComposer
- * @output Proof that each field's focus look has no fade under a coarse
- *   pointer, and keeps its fast fade under a fine pointer
- * @position Unit test for the text field timing in inputStyles.stylex.ts
+ * @output Proof that each field's box carries the timing classes that keep the
+ *   focus look from fading under a coarse pointer or reduced motion, and its
+ *   fast fade under a fine pointer
+ * @position Unit test for the timing classes the field box publishes in
+ *   `../fieldClasses` and `../../Chat/chatClasses`
  */
 
 import {cleanup, render} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import * as stylex from '@stylexjs/stylex';
 import type {ReactElement} from 'react';
-import {inputWrapperStyles} from '../inputStyles.stylex';
+import {classesOf} from '../../__tests__/classNameAssertions';
 import {PanelSearchInput} from '../PanelSearchInput';
 import {TextInput} from '../../TextInput/TextInput';
 import {TextArea} from '../../TextArea/TextArea';
@@ -47,65 +48,21 @@ afterEach(() => {
 
 const source: SearchSource = {search: async () => [], bootstrap: () => []};
 
-/** A `transition-duration` the page declares for an element, by condition. */
-interface Duration {
-  readonly condition: string;
-  readonly value: string;
-}
+/**
+ * The transition each field box declares. The box, not its buttons, is where
+ * the focus look fades.
+ */
+const BOX_TRANSITION_CLASSES = [
+  'transition-[border-color,box-shadow]',
+  'transition-[box-shadow,border-color]',
+];
 
-/** Every `transition-duration` declared for the element's own classes. */
-function durationsOf(element: Element): Duration[] {
-  const classes = Array.from(element.classList, name => `.${name}`);
-  const out: Duration[] = [];
-  const visit = (rules: CSSRuleList, condition: string) => {
-    for (const rule of Array.from(rules)) {
-      if (rule instanceof CSSStyleRule) {
-        const value = rule.style.getPropertyValue('transition-duration');
-        if (value && classes.some(cls => rule.selectorText.startsWith(cls))) {
-          out.push({condition, value: value.trim()});
-        }
-        continue;
-      }
-      const nested = (rule as CSSGroupingRule).cssRules;
-      if (nested != null) {
-        const own = (rule as CSSConditionRule).conditionText ?? '';
-        visit(nested, [condition, own].filter(Boolean).join(' and '));
-      }
-    }
-  };
-  for (const sheet of Array.from(document.styleSheets)) {
-    visit(sheet.cssRules, '');
-  }
-  return out;
-}
-
-/** The distinct focus durations a field's wrapper declares, per condition. */
-function timingOf(element: Element) {
-  const durations = durationsOf(element);
-  const distinct = (list: Duration[]) =>
-    [...new Set(list.map(d => d.value))].join(', ');
-  return {
-    fine: distinct(durations.filter(d => d.condition === '')),
-    coarse: distinct(
-      durations.filter(d => d.condition.includes('pointer: coarse')),
-    ),
-    reducedMotion: distinct(
-      durations.filter(d => d.condition.includes('prefers-reduced-motion')),
-    ),
-  };
-}
-
-const TEXT_FIELD_CLASSES = (
-  stylex.props(inputWrapperStyles.textField).className ?? ''
-).split(/\s+/);
-
-/** The elements that carry the text field timing, in render order. */
-function textFieldWrappers(container: HTMLElement): HTMLElement[] {
-  return Array.from(container.querySelectorAll<HTMLElement>('*')).filter(
-    element =>
-      TEXT_FIELD_CLASSES.every(name => element.classList.contains(name)),
-  );
-}
+/** The timing every field box shares: fast fade, no fade when it should be instant. */
+const FIELD_TIMING_CLASSES = [
+  'duration-[var(--duration-fast)]',
+  'motion-reduce:duration-0',
+  'pointer-coarse:duration-0',
+];
 
 const FIELDS: ReadonlyArray<readonly [string, () => ReactElement]> = [
   ['TextInput', () => <TextInput label="Name" value="" onChange={() => {}} />],
@@ -226,17 +183,20 @@ const FIELDS: ReadonlyArray<readonly [string, () => ReactElement]> = [
 
 describe('text field focus timing', () => {
   it.each(FIELDS)(
-    '%s shows its focus look at once under a coarse pointer or reduced motion, and fades it under a fine pointer',
+    '%s carries the shared field timing classes',
     (_name, renderField) => {
       const {container} = render(renderField());
-      const wrappers = textFieldWrappers(container);
-      expect(wrappers.length).toBeGreaterThan(0);
-      for (const wrapper of wrappers) {
-        const timing = timingOf(wrapper);
-        expect(timing.coarse).toBe('0s');
-        expect(timing.reducedMotion).toBe('0s');
-        expect(timing.fine).not.toBe('');
-        expect(timing.fine).not.toBe('0s');
+      const boxes = Array.from(
+        container.querySelectorAll<HTMLElement>('*'),
+      ).filter(element => {
+        const classes = classesOf(element);
+        return BOX_TRANSITION_CLASSES.some(name => classes.includes(name));
+      });
+      expect(boxes.length).toBeGreaterThan(0);
+      for (const box of boxes) {
+        for (const className of FIELD_TIMING_CLASSES) {
+          expect(classesOf(box)).toContain(className);
+        }
       }
     },
   );

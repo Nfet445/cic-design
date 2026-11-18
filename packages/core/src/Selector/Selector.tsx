@@ -42,9 +42,10 @@ import type {IndicatorComponent, IndicatorMap} from '../Indicator/types';
 import type {IconName} from '../Icon';
 import {
   Field,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
-  inputWrapperStyles,
 } from '../Field';
 import {Divider} from '../Divider';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
@@ -2108,14 +2109,12 @@ export function Selector<T extends SelectorOptionType>(
             readonly: isEffectivelyReadOnly ? 'readonly' : null,
           }),
           stylex.props(
-            inputWrapperStyles.base,
             styles.triggerContainer,
             variant === 'ghost' && styles.triggerGhost,
             variant === 'secondary' && styles.triggerSecondary,
             variant !== 'input' && interactionOverlayStyles.backgroundImage,
             surface.isTriggerFocusRingSuppressed &&
               selectorPresentationStyles.pointerRestoredFocus,
-            isDisabled && inputWrapperStyles.disabled,
             variant === 'input' &&
               isDisabled &&
               !surface.isTriggerFocusRingSuppressed &&
@@ -2140,6 +2139,8 @@ export function Selector<T extends SelectorOptionType>(
             controlXstyle,
           ),
           tw(
+            fieldInputWrapperClassName(),
+            isDisabled && fieldInputWrapperDisabledClassName,
             controlClassName,
             // A grouped trigger takes the group's row height; its own size
             // stops asserting one, as `triggerInGroup` did when both were

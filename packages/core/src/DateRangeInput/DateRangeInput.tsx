@@ -45,7 +45,8 @@ import {
   Field,
   InputClearButton,
   type InputStatus,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
   inputStatusFocusWithinStyles,
@@ -634,9 +635,6 @@ export function DateRangeInput({
             disabled: isDisabled ? 'disabled' : null,
           }),
           stylex.props(
-            inputWrapperStyles.base,
-            inputWrapperStyles.textField,
-            isEffectivelyDisabled && inputWrapperStyles.disabled,
             isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
             status && inputStatusBorderStyles[status.type],
             status &&
@@ -645,7 +643,12 @@ export function DateRangeInput({
             status && inputStatusFocusWithinStyles[status.type],
             controlXstyle,
           ),
-          tw(dateRangeInputSizeClassName({size}), controlClassName),
+          tw(
+            fieldInputWrapperClassName(),
+            isEffectivelyDisabled && fieldInputWrapperDisabledClassName,
+            dateRangeInputSizeClassName({size}),
+            controlClassName,
+          ),
           controlStyle,
         )}>
         <button

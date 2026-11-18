@@ -364,7 +364,6 @@ export function ChatComposer(props: ChatComposerProps) {
               xstyle && stylex.props(xstyle).className,
             ),
             stylex.props(
-              inputWrapperStyles.textField,
               hasKeyboardEditorFocus && focusOutlineStyles.focusWithin,
             ),
           )}>

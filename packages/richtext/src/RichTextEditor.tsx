@@ -55,7 +55,8 @@ import {
 } from './richTextEditorClasses';
 import {
   Field,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
   inputStatusFocusWithinStyles,
@@ -571,11 +572,8 @@ export const RichTextEditor = function RichTextEditor({
           }),
           mergeProps(
             stylex.props(
-              inputWrapperStyles.base,
-              inputWrapperStyles.textField,
               // Only disabled is dimmed, matching TextArea: a read-only editor
               // keeps full-opacity text and stays keyboard-reachable.
-              isDisabled && inputWrapperStyles.disabled,
               status && inputStatusBorderStyles[status.type],
               status &&
                 !isDisabled &&
@@ -586,6 +584,8 @@ export const RichTextEditor = function RichTextEditor({
             ),
             {
               className: tw(
+                fieldInputWrapperClassName(),
+                isDisabled && fieldInputWrapperDisabledClassName,
                 richTextEditorWrapperClassName,
                 isDisabled && richTextEditorDisabledClassName,
               ),

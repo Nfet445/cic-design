@@ -43,14 +43,14 @@ import {
 import {Token} from '../Token/Token';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {__resetDevWarnings} from '../utils/devWarning';
-import {colorVars, sizeVars, spacingVars} from '../theme/tokens.stylex';
+import {colorVars} from '../theme/tokens.stylex';
 import {expectClassSet} from '../__tests__/classNameAssertions';
 import {
   tokenizerSheetFieldDisabledClassName,
   tokenizerSheetTriggerPlaceholderClassName,
   tokenizerSheetTriggerPlaceholderDisabledClassName,
 } from './tokenizerClasses';
-import {inputWrapperStyles} from '../Field/inputStyles.stylex';
+import {fieldInputWrapperClassName} from '../Field/fieldClasses';
 import type {SearchSource, SearchableItem} from '../Typeahead/types';
 
 import {COMPACT_TOUCH_PRESENTATION_QUERY as COMPACT_TOUCH_QUERY} from '../hooks/useAdaptivePresentation';
@@ -3254,29 +3254,18 @@ describe('Tokenizer sheet draft, Save and dismissal (FR18, FR23, FR24, FR26, FR2
   it('draws the search field as the shared input box at the lg input height above the 44px rows — the input border with its forced-colors branch, accent on focus, element radius, surface — unlike the borderless panel field the dropdowns share (FR18)', () => {
     const atoms = (className: string | undefined) =>
       (className ?? '').split(' ').filter(name => !name.includes('__'));
-    // The same shared box the inline field composes, then the sheet's own
-    // height and padding on top (later wins per property, as in the sheet).
-    const own = stylex.create({
-      field: {
-        minHeight: sizeVars['--size-element-lg'],
-        paddingBlock: spacingVars['--spacing-1'],
-      },
-      touch: {minHeight: 44},
-    });
+    const touchHeight = stylex.create({touch: {minHeight: 44}});
     render(<Harness />);
     fireEvent.click(openTrigger());
     const input = screen.getByLabelText('Search Tags');
     const field = input.parentElement!;
-    for (const name of atoms(
-      stylex.props(
-        inputWrapperStyles.base,
-        inputWrapperStyles.textField,
-        own.field,
-      ).className,
-    )) {
+    // The same shared box the inline field composes, then the sheet's own
+    // control classes on top.
+    for (const name of atoms(fieldInputWrapperClassName())) {
       expect(field).toHaveClass(name);
     }
-    for (const name of atoms(stylex.props(own.touch).className)) {
+    expect(field).toHaveClass('w-full');
+    for (const name of atoms(stylex.props(touchHeight.touch).className)) {
       expect(field).not.toHaveClass(name);
     }
   });

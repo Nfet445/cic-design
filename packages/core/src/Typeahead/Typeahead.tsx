@@ -47,7 +47,8 @@ import {
   Field,
   InputClearButton,
   type InputStatus,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
   inputStatusFocusWithinStyles,
@@ -77,6 +78,7 @@ import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import type {SizeValue} from '../utils/types';
 import type {SearchableItem, SearchSource} from './types';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
@@ -694,19 +696,20 @@ export function Typeahead<T extends SearchableItem>({
         {...mergeProps(
           themeProps('typeahead', {size, status: status?.type}),
           stylex.props(
-            inputWrapperStyles.base,
-            inputWrapperStyles.textField,
             styles.wrapper,
             sizeStyle,
             status && inputStatusBorderStyles[status.type],
             status && !isDisabled && inputStatusHoverShadowStyles[status.type],
             status && inputStatusFocusWithinStyles[status.type],
-            isDisabled && inputWrapperStyles.disabled,
             isDisabled && inputDisabledFocusStyles.nestedRing,
             inputGroup && groupStyles.inGroup,
             controlXstyle,
           ),
-          controlClassName,
+          tw(
+            fieldInputWrapperClassName(),
+            isDisabled && fieldInputWrapperDisabledClassName,
+            controlClassName,
+          ),
           controlStyle,
         )}>
         {startIcon &&

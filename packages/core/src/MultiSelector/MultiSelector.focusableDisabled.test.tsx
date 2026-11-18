@@ -122,7 +122,8 @@ describe('MultiSelector disabled (spec:AST-085)', () => {
       render(<Harness isDisabled variant={variant} />);
       const wrapper = trigger().parentElement!;
       expect(wrapper.classList.contains(RING)).toBe(ring);
-      expect(getComputedStyle(wrapper).cursor).toBe('default');
+      // The disabled cursor is a class, and jsdom resolves no Tailwind sheet.
+      expect(wrapper.classList.contains('cursor-default')).toBe(true);
     },
   );
 });

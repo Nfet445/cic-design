@@ -32,7 +32,8 @@ import {
   Field,
   InputClearButton,
   type InputStatus,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
   inputStatusFocusWithinStyles,
@@ -893,12 +894,9 @@ function PointerDateField({
           disabled: isDisabled ? 'disabled' : null,
         }),
         stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
           // Disabled paint belongs to the disabled state only; a busy field
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
-          isDisabled && inputWrapperStyles.disabled,
           isEffectivelyDisabled && inputDisabledFocusStyles.inputFocusRing,
           fieldStatus && inputStatusBorderStyles[fieldStatus.type],
           fieldStatus &&
@@ -908,7 +906,12 @@ function PointerDateField({
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
-        tw(dateInputSizeClassName({size}), controlClassName),
+        tw(
+          fieldInputWrapperClassName(),
+          isDisabled && fieldInputWrapperDisabledClassName,
+          dateInputSizeClassName({size}),
+          controlClassName,
+        ),
         controlStyle,
       )}>
       {inputGroup && <VisuallyHidden id={inputLabelID}>{label}</VisuallyHidden>}

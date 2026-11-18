@@ -39,7 +39,8 @@ import {
   Field,
   InputClearButton,
   type InputStatus,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
   inputStatusFocusWithinStyles,
@@ -778,10 +779,6 @@ function TimeField({
           disabled: isDisabled ? 'disabled' : null,
         }),
         stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
-
-          isDisabled && inputWrapperStyles.disabled,
           isDisabled && inputDisabledFocusStyles.withinRing,
           fieldStatus && inputStatusBorderStyles[fieldStatus.type],
           fieldStatus &&
@@ -791,7 +788,12 @@ function TimeField({
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
-        tw(timeInputSizeClassName({size}), controlClassName),
+        tw(
+          fieldInputWrapperClassName(),
+          isDisabled && fieldInputWrapperDisabledClassName,
+          timeInputSizeClassName({size}),
+          controlClassName,
+        ),
         controlStyle,
       )}>
       {inputGroup && <VisuallyHidden id={inputLabelID}>{label}</VisuallyHidden>}

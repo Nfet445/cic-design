@@ -33,7 +33,8 @@ import {Button} from '../Button';
 import {
   Field,
   InputClearButton,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
   inputStatusFocusWithinStyles,
@@ -323,10 +324,6 @@ export function TouchTimeField({
           disabled: isDisabled ? 'disabled' : null,
         }),
         stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
-
-          isDisabled && inputWrapperStyles.disabled,
           isDisabled && inputDisabledFocusStyles.withinRing,
           status && inputStatusBorderStyles[status.type],
           status && !isDisabled && inputStatusHoverShadowStyles[status.type],
@@ -334,7 +331,12 @@ export function TouchTimeField({
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
-        tw(touchTimeFieldSizeClassName({size}), controlClassName),
+        tw(
+          fieldInputWrapperClassName(),
+          isDisabled && fieldInputWrapperDisabledClassName,
+          touchTimeFieldSizeClassName({size}),
+          controlClassName,
+        ),
         controlStyle,
       )}>
       <button

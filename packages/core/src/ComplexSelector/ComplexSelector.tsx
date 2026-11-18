@@ -38,7 +38,11 @@ import {mergeRefs} from '../utils/mergeRefs';
 import {isFocusLost} from '../utils/focusReturn';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
-import {Field, inputWrapperStyles} from '../Field';
+import {Field} from '../Field';
+import {
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
+} from '../Field/fieldClasses';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {Spinner} from '../Spinner';
 import {useTooltip} from '../Tooltip/useTooltip';
@@ -92,10 +96,11 @@ const CONTENT_BLOCK_CAP = '480px';
  */
 const LAYER_OPEN: string = ':has([aria-expanded="true"])';
 
-// The trigger container shares its element with `inputWrapperStyles.base`,
-// whose unlayered `padding`, `gap`, `backgroundColor` and `boxShadow` outrank
-// every utility in `astryx-base`: its chrome, the ghost and secondary fills and
-// the disabled press reset stay here. `popover` stays because `usePopover`
+// The trigger container shares its element with
+// `fieldInputWrapperClassName()` from `../Field/fieldClasses`. The variants
+// still differ from the plain field box: a ghost trigger has no fill or
+// border, a secondary one keeps the neutral fill, and the code-point ring is a
+// keyboard only ring. `popover` stays because `usePopover`
 // takes StyleX styles only. Every child element uses
 // `complexSelectorClasses.ts`.
 const styles = stylex.create({
@@ -881,7 +886,6 @@ export function ComplexSelector<Value>({
             status: status?.type ?? null,
           }),
           stylex.props(
-            inputWrapperStyles.base,
             styles.triggerContainer,
             // The ring belongs to the wrapper (the focusable `<button>` sits
             // inside it), but it must still be a KEYBOARD ring: `:focus-within`
@@ -893,13 +897,17 @@ export function ComplexSelector<Value>({
             variant === 'secondary' && styles.triggerSecondary,
             variant === 'ghost' && styles.triggerGhost,
             variant !== 'input' && interactionOverlayStyles.backgroundImage,
-            isDisabled && inputWrapperStyles.disabled,
             variant !== 'input' && isDisabled && styles.triggerGhostDisabled,
             isDisabled && styles.disabled,
             triggerLabel == null && styles.placeholder,
             controlXstyle,
           ),
-          tw(complexSelectorHeightClassName({size}), controlClassName),
+          tw(
+            fieldInputWrapperClassName(),
+            isDisabled && fieldInputWrapperDisabledClassName,
+            complexSelectorHeightClassName({size}),
+            controlClassName,
+          ),
           controlStyle,
         )}>
         {isRenderable(startIconSlot) && startIconSlot}

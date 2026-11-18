@@ -49,10 +49,13 @@ import type {IconName} from '../Icon/globalIconRegistry';
 import type {InputStatus} from '../Field';
 import {Field} from '../Field/Field';
 import {
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
+} from '../Field/fieldClasses';
+import {
   inputStatusBorderStyles,
   inputStatusFocusWithinStyles,
   inputStatusHoverShadowStyles,
-  inputWrapperStyles,
 } from '../Field/inputStyles.stylex';
 import {usePopover} from '../Popover/usePopover';
 import {useTooltip} from '../Tooltip/useTooltip';
@@ -1433,15 +1436,16 @@ export function PowerSearch({
                 powerSearchSheetTriggerSizeClassName(size),
               ),
               stylex.props(
-                inputWrapperStyles.base,
-                inputWrapperStyles.textField,
-                isDisabled && inputWrapperStyles.disabled,
                 status && inputStatusBorderStyles[status.type],
                 status &&
                   !isDisabled &&
                   inputStatusHoverShadowStyles[status.type],
                 status && inputStatusFocusWithinStyles[status.type],
                 xstyle,
+              ),
+              tw(
+                fieldInputWrapperClassName(),
+                isDisabled && fieldInputWrapperDisabledClassName,
               ),
             )}>
             {/* The trigger's name is the label plus everything visible here:

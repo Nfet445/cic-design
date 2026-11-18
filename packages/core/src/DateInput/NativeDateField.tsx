@@ -54,10 +54,11 @@ import {useNativeDateRejection} from './useTypedDate';
 import {
   Field,
   InputClearButton,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusFocusWithinStyles,
   inputStatusHoverShadowStyles,
-  inputWrapperStyles,
 } from '../Field';
 import {useInputStatusIcon, useMergedRefs} from '../hooks';
 import {useMediaQuery} from '../hooks/useMediaQuery';
@@ -476,12 +477,9 @@ export function NativeDateField({
           disabled: isDisabled ? 'disabled' : null,
         }),
         stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
           // Disabled paint belongs to the disabled state only; a busy field
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
-          isDisabled && inputWrapperStyles.disabled,
           isEffectivelyDisabled && inputDisabledFocusStyles.inputFocusRing,
           fieldStatus && inputStatusBorderStyles[fieldStatus.type],
           fieldStatus &&
@@ -492,6 +490,8 @@ export function NativeDateField({
           controlXstyle,
         ),
         tw(
+          fieldInputWrapperClassName(),
+          isDisabled && fieldInputWrapperDisabledClassName,
           dateInputSizeClassName({size}),
           nativeDateFieldWrapperClassName,
           controlClassName,

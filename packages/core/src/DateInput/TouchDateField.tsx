@@ -69,7 +69,8 @@ import type {DateInputProps} from './DateInput';
 import {
   Field,
   InputClearButton,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
   inputStatusFocusWithinStyles,
@@ -931,12 +932,9 @@ export function TouchDateField({
           disabled: isDisabled ? 'disabled' : null,
         }),
         stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
           // Disabled paint belongs to the disabled state only; a busy field
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
-          isDisabled && inputWrapperStyles.disabled,
           isEffectivelyDisabled && inputDisabledFocusStyles.inputFocusRing,
           status && inputStatusBorderStyles[status.type],
           status &&
@@ -947,6 +945,8 @@ export function TouchDateField({
           controlXstyle,
         ),
         tw(
+          fieldInputWrapperClassName(),
+          isDisabled && fieldInputWrapperDisabledClassName,
           dateInputSizeClassName({size}),
           touchDateFieldWrapperClassName,
           controlClassName,
