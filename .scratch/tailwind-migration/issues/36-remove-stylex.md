@@ -198,3 +198,40 @@ carries or to one new rule per property), the `SelectableCard`, `RadioList` and
 `Thumbnail` suites are green, and `pnpm exec tsc --noEmit -p tsconfig.json` reports
 only the four pre-existing `src/i18n/getLocaleDirection.ts` errors this window does
 not own.
+
+## Comments — window 36L, the NavItem row and SideNavItem
+
+`NavItem/navItemStyles.stylex.ts` is gone. Every consumer of the shared nav row took
+`navItemClassName()`, `navItemSizeClassName(size)`, `navItemSelectedClassName()` and
+`navItemDisabledClassName()` in the same window: `SideNav/SideNavItem.tsx`,
+`SideNav/SideNavHeading.tsx`, and the four TopNav drawer call sites in `TopNavItem.tsx`,
+`TopNavMenu.tsx`, `TopNavMegaMenu.tsx` and `TopNavMegaMenuItem.tsx`. The deletion commit is the
+one that removed the last import, and it also removes the `./NavItem/navItemStyles.stylex`
+subpath from `packages/core/package.json` and both map entries plus the type in
+`packages/core/src/__tests__/publicStyleXNamespaces.test.ts`.
+
+**Breaking for the changeset.** The removed subpath was public. Ticket 63's `[breaking]`
+changeset has to name `@astryxdesign/core/NavItem/navItemStyles.stylex` as removed; anyone
+importing it directly now imports `@astryxdesign/core` classes or nothing. The appearance did
+not change: the class map repeats every declaration the StyleX module painted, including the
+`Highlight` / `HighlightText` forced-colors arms, the `[data-astryx-press=on|fading]`
+`background-image: none` arms, and the hover fill.
+
+`SideNavItem`'s `leftoverStyles` and `indentStyles` are gone too, so the blocker this ticket
+recorded for that file is closed. The seam is the same class map the rest of the row uses:
+
+- The selected and size arms repeat the element's own `class` attribute (`[&[class]]:…`,
+  0,2,0 against the base row's 0,1,0), so a size arm beats the base `min-height` whatever order
+  the sheet gives `min-h-[var(--size-element-*)]`. The nesting indent repeats it twice
+  (`[&[class][class]]`) because it also has to beat the size arm's `padding-inline`.
+- The collapsed rail square states its whole box per size and does not compose the size arm, so
+  one class string carries no internal tie.
+- Depth is unbounded, so it travels in an inline `--astryx-side-nav-indent` count the class reads
+  (`calc(var(--spacing-2) + var(--astryx-side-nav-indent) * var(--spacing-6))`). No class name is
+  interpolated, and `SideNav.test.tsx` asserts the count plus the class the row picked.
+
+Measured: `node packages/core/scripts/build-css-tailwind.mjs` writes 400.8 kB; the sheet holds
+2326 rules against the unchanged 2380 ceiling; `NavItem`, `SideNav`, `TopNav`, the sheet test and
+`publicStyleXNamespaces` are green (703 tests); `pnpm exec tsc --noEmit -p tsconfig.json` reports
+only the pre-existing `src/i18n/getLocaleDirection.ts` errors; `eslint src/NavItem src/SideNav`
+reports no errors.
