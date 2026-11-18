@@ -35,6 +35,10 @@ import {
   APP_SHELL_AREA_TRANSPARENT_CLASS,
   APP_SHELL_AREA_WASH_CLASS,
   APP_SHELL_SKIP_LINK_CLASS,
+  APP_SHELL_MAIN_FOCUS_TARGET_CLASS,
+  APP_SHELL_MAIN_ELEVATED_CORNER_CLASS,
+  APP_SHELL_MAIN_SAFE_AREA_END_CLASS,
+  APP_SHELL_PANEL_AUTO_FILL_CLASS,
 } from '../AppShell/appShellClasses';
 import {
   breadcrumbMenuClassName,
@@ -2990,6 +2994,10 @@ function familyClassNames() {
   add(sideNavClassName.resizableContainer);
   add(sideNavClassName.resizableHandle);
   add(APP_SHELL_SKIP_LINK_CLASS);
+  add(APP_SHELL_MAIN_FOCUS_TARGET_CLASS);
+  add(APP_SHELL_MAIN_ELEVATED_CORNER_CLASS);
+  add(APP_SHELL_MAIN_SAFE_AREA_END_CLASS);
+  add(APP_SHELL_PANEL_AUTO_FILL_CLASS);
   // The nav area's and the content area's fills, and the elevated content's
   // transparent arm.
   add(APP_SHELL_AREA_WASH_CLASS);

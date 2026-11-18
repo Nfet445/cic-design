@@ -196,3 +196,24 @@ export const APP_SHELL_SKIP_LINK_CLASS = tw(
   'focus:[top:var(--spacing-2)]',
   'focus:[inset-inline-start:var(--spacing-2)]',
 );
+
+// Main is a keyboard stop only while it scrolls overflowing content. A ring
+// around the whole content area would be noise rather than guidance, so a
+// click focus is suppressed while the ring's own `:focus-visible` still shows.
+export const APP_SHELL_MAIN_FOCUS_TARGET_CLASS = '[&:focus]:outline-none';
+
+// While main's ring shows, main follows the elevated surface's rounded top-start
+// corner, so the ring keeps the surface's shape instead of drawing a square one.
+export const APP_SHELL_MAIN_ELEVATED_CORNER_CLASS =
+  '[&:focus-visible]:[border-start-start-radius:var(--radius-page)]';
+
+// Main adds the bottom inset to the padding LayoutContent publishes. The
+// published value excludes the inset, so a bleed child subtracts only
+// `contentPadding`. The self-qualifier repeats LayoutContent's own theme class
+// so this padding wins over the published one by specificity, not sheet order.
+export const APP_SHELL_MAIN_SAFE_AREA_END_CLASS =
+  '[&.astryx-layout-content]:[padding-block-end:calc(var(--container-padding-block-end,0px)+env(safe-area-inset-bottom,0px))]';
+
+// Auto mode: the panel fills the sticky container vertically and scrolls on its
+// own, since the page (not the panel) owns the scroll.
+export const APP_SHELL_PANEL_AUTO_FILL_CLASS = 'flex-1 overflow-auto';
