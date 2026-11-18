@@ -3058,7 +3058,7 @@ export default function TableFilterTemplate() {
       size="sm"
       value={quoteDraft}
       onChange={commitQuote}
-      contentXstyle={styles.quotePopover}
+      contentClassName={styles.quotePopover}
       controlXstyle={hasQuoteFilter ? styles.filterFill : undefined}>
       {(range, onChange, close) => (
         <VStack gap={4}>

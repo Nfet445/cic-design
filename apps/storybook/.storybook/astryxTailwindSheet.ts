@@ -51,13 +51,12 @@ export function astryxTailwindSheet(): Plugin {
       return compile();
     },
 
-    handleHotUpdate({file}) {
+    hotUpdate({file}) {
       if (CLASS_MAP_PATTERN.test(file)) {
         const stale = sheet;
         sheet = undefined;
         stale?.catch(() => {});
-        const module =
-          this.environment.moduleGraph.getModuleById?.(RESOLVED_ID);
+        const module = this.environment.moduleGraph.getModuleById(RESOLVED_ID);
         if (module) {
           this.environment.moduleGraph.invalidateModule(module);
         }

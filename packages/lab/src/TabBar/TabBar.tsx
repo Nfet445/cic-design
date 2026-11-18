@@ -510,7 +510,7 @@ export function TabBar({
                 {
                   '--astryx-tab-bar-column-start': start,
                   '--astryx-tab-bar-column-width': width,
-                },
+                } as TabBarVars,
               )}>
               <span
                 className={tw(
@@ -544,10 +544,12 @@ export function TabBar({
               !lens.isCopyShown && tabBarLensUnderClassName,
               tabBarLensRestClassName,
             )}
-            style={{
-              ...boxVars(capsuleInset, capsuleInset, itemSize, ITEM_HEIGHT),
-              '--astryx-tab-bar-lens-offset': lensOffset(restIndex, count),
-            }}>
+            style={
+              {
+                ...boxVars(capsuleInset, capsuleInset, itemSize, ITEM_HEIGHT),
+                '--astryx-tab-bar-lens-offset': lensOffset(restIndex, count),
+              } as TabBarVars
+            }>
             <div
               ref={lens.body}
               data-tab-bar-lens-body=""

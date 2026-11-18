@@ -404,7 +404,9 @@ describe('RichTextEditor', () => {
 
   it('applies minHeight only to the editable content surface', () => {
     const {container, rerender} = render(<RichTextEditor label="Notes" />);
-    const wrapper = container.querySelector('.astryx-rich-text-editor');
+    const wrapper = container.querySelector<HTMLElement>(
+      '.astryx-rich-text-editor',
+    );
 
     const minHeightVariable = '--astryx-richtext-body-min-height';
     expect(

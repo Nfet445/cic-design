@@ -70,20 +70,22 @@ export function CircleCheckIndicator({
       ref={ref}
       aria-hidden="true"
       {...mergeProps(
-        themeProps('circle-check-indicator', {
-          size,
-          checked: isChecked
-            ? 'checked'
-            : isIndeterminate
-              ? 'indeterminate'
-              : null,
-          disabled: isDisabled ? 'disabled' : null,
-        }),
-        // The press attribute goes with the classes: the host reads it to
-        // leave its rounded-square press layer off over a circle.
-        !isDisabled && circleCheckPressProps,
+        mergeProps(
+          themeProps('circle-check-indicator', {
+            size,
+            checked: isChecked
+              ? 'checked'
+              : isIndeterminate
+                ? 'indeterminate'
+                : null,
+            disabled: isDisabled ? 'disabled' : null,
+          }),
+          // The press attribute goes with the classes: the host reads it to
+          // leave its rounded-square press layer off over a circle.
+          !isDisabled ? circleCheckPressProps : undefined,
+          circleClassName({size, isFilled, isDisabled}),
+        ),
         xstyleProps(xstyle),
-        circleClassName({size, isFilled, isDisabled}),
         className,
         style,
       )}>

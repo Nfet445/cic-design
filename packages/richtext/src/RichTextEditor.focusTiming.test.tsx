@@ -12,7 +12,7 @@
 
 import {cleanup, render} from '@testing-library/react';
 import {afterEach, describe, expect, it} from 'vitest';
-import {expectClassSet} from '@astryxdesign/core/__tests__/classNameAssertions';
+import {expectClassSet} from '../../core/src/__tests__/classNameAssertions';
 import {RichTextEditor} from './RichTextEditor';
 
 afterEach(() => {

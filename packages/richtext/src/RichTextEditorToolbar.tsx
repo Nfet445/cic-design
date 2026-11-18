@@ -563,7 +563,6 @@ export function RichTextEditorToolbar({
     promptForUrl,
   });
   const {toggle: toggleLink} = link;
-  const {className: classNameFromProps} = rest;
 
   const $syncToolbar = useCallback(() => {
     const selection = $getSelection();
