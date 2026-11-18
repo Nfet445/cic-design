@@ -29,7 +29,7 @@ import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   chatComposerDrawerClassName,
   chatComposerDrawerContentClassName,
@@ -172,9 +172,9 @@ export function ChatComposerDrawer({
       {...htmlProps}>
       {canCollapse && (
         <div
-          {...mergeProps(
+          className={tw(
             chatComposerDrawerToggleRowClassName,
-            focusOutlineProps.focusVisible(stylex.defaultMarker()),
+            focusOutlineFocusVisibleClassName,
           )}
           role="button"
           tabIndex={0}
