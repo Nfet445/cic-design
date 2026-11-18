@@ -114,27 +114,35 @@ export const fieldAttachedStatusLayerClassName = tw('relative', '[z-index:-1]');
  * A status keeps its colour while the field has focus, so it carries no accent
  * arm. Forced colors drop the author colour for one system color, and only
  * Highlight keeps a focused field visible there.
+ *
+ * The status also owns its hover ring, so the border and the ring that reads it
+ * come from one class. The box keeps the neutral ring; a status box must not
+ * carry both.
  */
 export const fieldStatusBorderClassName: Record<InputStatusType, string> = {
   warning: tw(
     'border-[color:var(--color-border-warning)]',
     'forced-colors:focus-within:border-[color:Highlight]',
+    'pointer-fine:not-disabled:not-aria-disabled:not-focus-within:hover:shadow-[var(--shadow-inset-warning)]',
   ),
   error: tw(
     'border-[color:var(--color-border-error)]',
     'forced-colors:focus-within:border-[color:Highlight]',
+    'pointer-fine:not-disabled:not-aria-disabled:not-focus-within:hover:shadow-[var(--shadow-inset-error)]',
   ),
   success: tw(
     'border-[color:var(--color-border-success)]',
     'forced-colors:focus-within:border-[color:Highlight]',
+    'pointer-fine:not-disabled:not-aria-disabled:not-focus-within:hover:shadow-[var(--shadow-inset-success)]',
   ),
 };
 
-/** The box's own border, chosen when it carries no status. */
+/** The box's own border and hover ring, chosen when it carries no status. */
 const FIELD_INPUT_BORDER_CLASS = tw(
   'border-[color:var(--color-border-emphasized)]',
   'focus-within:border-[color:var(--color-accent)]',
   'forced-colors:focus-within:border-[color:Highlight]',
+  'pointer-fine:not-disabled:not-focus-within:hover:shadow-[inset_0_0_0_2px_color-mix(in_srgb,var(--color-border-emphasized)_30%,transparent)]',
 );
 
 const FIELD_INPUT_BOX_CLASS = tw(
@@ -159,7 +167,6 @@ const FIELD_INPUT_BOX_CLASS = tw(
   'motion-reduce:duration-0',
   'pointer-coarse:duration-0',
   'shadow-none',
-  'pointer-fine:not-disabled:not-focus-within:hover:shadow-[inset_0_0_0_2px_color-mix(in_srgb,var(--color-border-emphasized)_30%,transparent)]',
   'focus-within:shadow-[inset_0_0_0_2px_var(--color-accent-muted)]',
   'outline-none',
 );

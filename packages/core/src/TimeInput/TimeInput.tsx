@@ -41,7 +41,6 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusHoverShadowStyles,
 } from '../Field';
 import {Icon} from '../Icon';
 import {Spinner} from '../Spinner';
@@ -779,10 +778,7 @@ function TimeField({
         }),
         stylex.props(
           isDisabled && inputDisabledFocusStyles.withinRing,
-          fieldStatus &&
-            !isDisabled &&
-            inputStatusHoverShadowStyles[fieldStatus.type],
-          controlXstyle,
+          fieldStatus && !isDisabled && controlXstyle,
         ),
         tw(
           inputGroup && inputGroupMemberClassName,

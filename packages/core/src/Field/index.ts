@@ -43,7 +43,6 @@ export {
 } from './fieldClasses';
 
 // Shared input styles
-export {inputStatusHoverShadowStyles} from './inputStyles.stylex';
 
 // Shared input components
 export {InputClearButton} from './InputClearButton';

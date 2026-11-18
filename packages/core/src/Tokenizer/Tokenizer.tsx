@@ -89,7 +89,6 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusHoverShadowStyles,
 } from '../Field';
 import {Token} from '../Token';
 import {Spinner} from '../Spinner';
@@ -1790,10 +1789,7 @@ export function Tokenizer<T extends SearchableItem>({
           isTruncated ? truncatedSizeStyles[size] : sizeStyle,
           isTruncated && styles.truncatedWrapper,
           isDisabled && inputDisabledFocusStyles.nestedRing,
-          localStatus &&
-            !isDisabled &&
-            inputStatusHoverShadowStyles[localStatus.type],
-          isInGroupRow && styles.inGroupWrapper,
+          localStatus && !isDisabled && isInGroupRow && styles.inGroupWrapper,
           controlXstyle,
         ),
         tw(
@@ -2051,10 +2047,7 @@ export function Tokenizer<T extends SearchableItem>({
               // and search field carry the touch-sized targets.
               sizeStyles[size],
               value.length > 0 && styles.wrapperWithTokens,
-              status &&
-                !isDisabled &&
-                inputStatusHoverShadowStyles[status.type],
-              controlXstyle,
+              status && !isDisabled && controlXstyle,
             ),
             tw(
               fieldInputWrapperClassName({status: status?.type}),
@@ -2235,9 +2228,8 @@ export function Tokenizer<T extends SearchableItem>({
               isTruncated && styles.truncatedWrapper,
               localStatus &&
                 !isDisabled &&
-                inputStatusHoverShadowStyles[localStatus.type],
-              // The placeholder is the element in the group's flex row.
-              controlXstyle,
+                // The placeholder is the element in the group's flex row.
+                controlXstyle,
             ),
             tw(
               inputGroup && inputGroupMemberClassName,

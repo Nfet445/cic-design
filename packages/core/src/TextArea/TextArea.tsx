@@ -43,7 +43,6 @@ import {
   Field,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusHoverShadowStyles,
 } from '../Field';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {isRenderable} from '../utils/isRenderable';
@@ -521,7 +520,6 @@ export function TextArea({
           stylex.props(
             wrapperStyles.root,
             isDisabled && inputDisabledFocusStyles.ring,
-            status && !isDisabled && inputStatusHoverShadowStyles[status.type],
             controlXstyle,
           ),
           tw(

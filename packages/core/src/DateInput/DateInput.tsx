@@ -34,7 +34,6 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusHoverShadowStyles,
 } from '../Field';
 import {Icon} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -897,10 +896,7 @@ function PointerDateField({
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
           isEffectivelyDisabled && inputDisabledFocusStyles.inputFocusRing,
-          fieldStatus &&
-            !isEffectivelyDisabled &&
-            inputStatusHoverShadowStyles[fieldStatus.type],
-          controlXstyle,
+          fieldStatus && !isEffectivelyDisabled && controlXstyle,
         ),
         tw(
           inputGroup && inputGroupMemberClassName,

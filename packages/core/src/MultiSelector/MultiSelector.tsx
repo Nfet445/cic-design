@@ -39,7 +39,6 @@ import {
   Field,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusHoverShadowStyles,
 } from '../Field';
 import {useKeepLayerOpenProps} from '../Layer/useLayer';
 import {InternalInputClearButton} from '../Field/InputClearButton';
@@ -2418,10 +2417,9 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             variant === 'input' &&
               status &&
               !isDisabled &&
-              inputStatusHoverShadowStyles[status.type],
-            // Grouped secondary triggers keep their neutral fill but take the
-            // group's row height, connected edge radii, and focus stacking.
-            controlXstyle,
+              // Grouped secondary triggers keep their neutral fill but take the
+              // group's row height, connected edge radii, and focus stacking.
+              controlXstyle,
           ),
           tw(
             variant !== 'ghost' && inputGroup && inputGroupMemberClassName,

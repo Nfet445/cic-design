@@ -43,7 +43,6 @@ import {
   InputClearButton,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusHoverShadowStyles,
 } from '../Field';
 import {useInputStatusIcon, useMergedRefs} from '../hooks';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
@@ -1118,9 +1117,6 @@ export function TouchDateTimeField({
             }),
             stylex.props(
               isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-              status &&
-                !isEffectivelyDisabled &&
-                inputStatusHoverShadowStyles[status.type],
             ),
             tw(
               fieldInputWrapperClassName({status: status?.type}),
@@ -1212,9 +1208,6 @@ export function TouchDateTimeField({
             }),
             stylex.props(
               isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-              status &&
-                !isEffectivelyDisabled &&
-                inputStatusHoverShadowStyles[status.type],
             ),
             tw(
               fieldInputWrapperClassName({status: status?.type}),

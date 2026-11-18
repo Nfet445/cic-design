@@ -170,7 +170,7 @@ const rule = {
       styleOnlyWrapper:
         '<{{wrapper}}> exists only to style <{{component}}>. Astryx components ' +
         'extend BaseProps, so pass the styles to <{{component}}> via xstyle and ' +
-        'drop the wrapper — an extra DOM node changes the parent\'s flex/grid ' +
+        "drop the wrapper — an extra DOM node changes the parent's flex/grid " +
         'child relationship and can break alignment.',
       moveToXstyle: 'Move the styles onto <{{component}}> via xstyle',
     },
@@ -212,14 +212,14 @@ const rule = {
     const options = context.options[0] ?? {};
     const allowFiles = options.allowFiles ?? [];
     const filename = context.filename ?? context.getFilename();
-    if (allowFiles.some((pattern) => filename.includes(pattern))) {
+    if (allowFiles.some(pattern => filename.includes(pattern))) {
       return {};
     }
 
     const wrapperElements = new Set(options.wrapperElements ?? ['div', 'span']);
     const componentSources = (
       options.componentSources ?? ['^@astryxdesign/', '^@xds/', '^\\.\\.?/']
-    ).map((pattern) => new RegExp(pattern));
+    ).map(pattern => new RegExp(pattern));
     const allowComponents = new Set(
       options.allowComponents ?? DEFAULT_ALLOW_COMPONENTS,
     );
@@ -319,14 +319,14 @@ const rule = {
     }
 
     function hasStructuralStyles(styleExpressions) {
-      return styleExpressions.some((expression) => {
+      return styleExpressions.some(expression => {
         const properties = resolveStyleProperties(expression);
         // Unresolvable styles (imported objects) are treated as non-structural:
         // the wrapper still looks purely decorative from here.
         if (properties == null) {
           return false;
         }
-        return properties.some((name) => STRUCTURAL_PROPERTIES.has(name));
+        return properties.some(name => STRUCTURAL_PROPERTIES.has(name));
       });
     }
 
@@ -348,7 +348,7 @@ const rule = {
             importedBindings.set(local, {source, name: 'default'});
           }
         }
-        if (!componentSources.some((pattern) => pattern.test(source))) {
+        if (!componentSources.some(pattern => pattern.test(source))) {
           return;
         }
         for (const specifier of node.specifiers) {
@@ -394,9 +394,9 @@ const rule = {
           byKey.set(
             key,
             body.properties
-              .filter((property) => property.type === 'Property')
-              .map((property) => property.key?.name ?? property.key?.value)
-              .filter((name) => name != null),
+              .filter(property => property.type === 'Property')
+              .map(property => property.key?.name ?? property.key?.value)
+              .filter(name => name != null),
           );
         }
         stylexCreateProperties.set(node.id.name, byKey);
@@ -451,7 +451,7 @@ const rule = {
           }
 
           const children = node.children.filter(
-            (child) => !isIgnorableChild(child),
+            child => !isIgnorableChild(child),
           );
           if (children.length !== 1) {
             return;
@@ -483,13 +483,13 @@ const rule = {
             opening.attributes.length === 1 &&
             opening.attributes[0].type === 'JSXSpreadAttribute';
           const childHasXstyle = child.openingElement.attributes.some(
-            (attribute) =>
+            attribute =>
               attribute.type === 'JSXSpreadAttribute' ||
               attribute.name?.name === 'xstyle',
           );
           if (onlyStylexSpread && !childHasXstyle && styleExpressions.length) {
             const styleText = styleExpressions
-              .map((expression) => sourceCode.getText(expression))
+              .map(expression => sourceCode.getText(expression))
               .join(', ');
             const xstyleValue =
               styleExpressions.length === 1

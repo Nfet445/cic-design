@@ -44,7 +44,6 @@ import {
   Field,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusHoverShadowStyles,
 } from '../Field';
 import {Divider} from '../Divider';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
@@ -2129,10 +2128,10 @@ export function Selector<T extends SelectorOptionType>(
             variant === 'input' &&
               status &&
               !isDisabled &&
-              inputStatusHoverShadowStyles[status.type],
-            // Grouped secondary triggers keep their neutral fill but take the
-            // group's row height, connected edge radii, and focus stacking.
-            inputGroup && styles.triggerInGroup,
+              // Grouped secondary triggers keep their neutral fill but take the
+              // group's row height, connected edge radii, and focus stacking.
+              inputGroup &&
+              styles.triggerInGroup,
             controlXstyle,
           ),
           tw(

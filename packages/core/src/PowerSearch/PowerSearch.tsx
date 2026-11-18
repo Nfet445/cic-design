@@ -52,7 +52,6 @@ import {
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
 } from '../Field/fieldClasses';
-import {inputStatusHoverShadowStyles} from '../Field/inputStyles.stylex';
 import {usePopover} from '../Popover/usePopover';
 import {useTooltip} from '../Tooltip/useTooltip';
 import {useAnnounce} from '../hooks/useAnnounce';
@@ -1431,12 +1430,7 @@ export function PowerSearch({
                   powerSearchSheetTriggerWrapperWithTokensClassName,
                 powerSearchSheetTriggerSizeClassName(size),
               ),
-              stylex.props(
-                status &&
-                  !isDisabled &&
-                  inputStatusHoverShadowStyles[status.type],
-                xstyle,
-              ),
+              stylex.props(status && !isDisabled && xstyle),
               tw(
                 fieldInputWrapperClassName({status: status?.type}),
                 isDisabled && fieldInputWrapperDisabledClassName,

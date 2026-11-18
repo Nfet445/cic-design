@@ -42,7 +42,6 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusHoverShadowStyles,
 } from '../Field';
 import {Icon} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -1662,9 +1661,6 @@ function PointerDateTimeField({
             }),
             stylex.props(
               isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-              fieldStatus &&
-                !isEffectivelyDisabled &&
-                inputStatusHoverShadowStyles[fieldStatus.type],
             ),
             tw(
               fieldInputWrapperClassName({status: fieldStatus?.type}),
@@ -1826,9 +1822,6 @@ function PointerDateTimeField({
             }),
             stylex.props(
               isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-              timeStatus &&
-                !isEffectivelyDisabled &&
-                inputStatusHoverShadowStyles[timeStatus.type],
             ),
             tw(
               fieldInputWrapperClassName({status: timeStatus?.type}),

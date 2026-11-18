@@ -72,16 +72,16 @@ const rule = {
           attr =>
             attr.type === 'JSXAttribute' &&
             attr.name?.name === 'href' &&
-            (
-              // String literal: href="#section"
-              (attr.value?.type === 'Literal' &&
-                typeof attr.value.value === 'string' &&
-                attr.value.value.startsWith('#')) ||
+            // String literal: href="#section"
+            ((attr.value?.type === 'Literal' &&
+              typeof attr.value.value === 'string' &&
+              attr.value.value.startsWith('#')) ||
               // Expression: href={`#${id}`}
               (attr.value?.type === 'JSXExpressionContainer' &&
                 attr.value.expression?.type === 'TemplateLiteral' &&
-                attr.value.expression.quasis?.[0]?.value?.raw?.startsWith('#'))
-            ),
+                attr.value.expression.quasis?.[0]?.value?.raw?.startsWith(
+                  '#',
+                ))),
         );
         if (hrefAttr) {
           return;

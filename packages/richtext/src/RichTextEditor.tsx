@@ -57,7 +57,6 @@ import {
   Field,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusHoverShadowStyles,
   type FieldStatusVariant,
 } from '@astryxdesign/core/Field';
 import type {BaseProps} from '@astryxdesign/core';
@@ -572,11 +571,7 @@ export const RichTextEditor = function RichTextEditor({
             stylex.props(
               // Only disabled is dimmed, matching TextArea: a read-only editor
               // keeps full-opacity text and stays keyboard-reachable.
-              status &&
-                !isDisabled &&
-                !isReadOnly &&
-                inputStatusHoverShadowStyles[status.type],
-              xstyle,
+              status && !isDisabled && !isReadOnly && xstyle,
             ),
             {
               className: tw(
