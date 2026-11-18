@@ -257,6 +257,31 @@ compositor path, and adds no global registration. The scale factor stays a
 variable so a coarse pointer and a reduced-motion preference neutralise it
 without a second selector.
 
+### DEC-8 — `astryx.css` keeps shipping as the token and reset sheet
+
+The stylesheet keeps its name and its slot after the last component migrates.
+It carries the reset, the layer order and the generated token defaults, and
+`astryx-tailwind.css` carries the utilities. A consumer imports the reset and
+the token sheet once and the utility sheet beside it, which is the same two
+imports the migration ships today; renaming the first one would break every
+existing `@astryxdesign/core/astryx.css` import for no gain.
+
+### DEC-9 — A rule that must outrank a consumer utility stays out of the layer
+
+`@layer astryx-base` sits below the consumer's `utilities` layer by design,
+because a consumer's class must be able to restate any component paint. A
+handful of component rules exist only to win over a class the caller passes in
+— a group's ring restating a member's `border-0`, a press overlay restating a
+row's `ms-*`. Those cannot be utilities: no repetition of a selector inside a
+lower layer outranks a higher layer. They stay in a `.stylex.ts` module, whose
+output is unlayered and carries `:not(#\#)`, and that module is the whole
+reason StyleX remains a dependency for those components.
+
+The escape set is measured, not guessed: the `## Comments` of
+`.scratch/tailwind-migration/issues/36-remove-stylex.md` lists it with the rival each one names. Adding a member needs the same evidence — a named consumer utility it
+must beat. A rule whose rival is another class of `astryx-base` is NOT a member;
+it converts by repeating its own qualifier.
+
 ## Open questions
 
 - **OQ1 — Does `astryx.css` keep shipping after every package migrates?**

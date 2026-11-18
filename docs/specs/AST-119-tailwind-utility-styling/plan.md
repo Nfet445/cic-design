@@ -155,6 +155,32 @@ check of the family's states.
       package (ticket 36).
 - [ ] `astryx.css` retires or stays per OQ1, and every import of it in the
       repository changes (ticket 36).
+- [ ] Every remaining `.stylex.ts` module is a DEC-9 escape: it names the
+      consumer utility it must beat, and nothing else holds StyleX.
+
+#### The escape set (DEC-9)
+
+These modules stay `.stylex.ts` because the rule each one carries must outrank a
+class the caller passes in, and a lower layer cannot outrank a higher one. Each
+line names its rival; a module whose rival is another `astryx-base` class is not
+on this list — it converts by repeating its own qualifier.
+
+- `packages/core/src/Avatar/avatarGroupRing.stylex.ts` — the caller's `border-0`,
+  `border-*` or `ms-*` utility on a group member.
+- `packages/core/src/Switch/switchHoverPress.stylex.ts`,
+  `packages/core/src/Table/plugins/rowExpansion/rowExpansionOverrides.stylex.ts`,
+  `packages/lab/src/Schedule/scheduleOverrides.stylex.ts`,
+  `packages/lab/src/TabBar/tabBar.stylex.ts` — each reads a
+  `stylex.defineMarker()` through `stylex.when.ancestor`, and a marker has no
+  class form.
+- `packages/core/src/BottomSheet/bottomSheetPanelMotion.stylex.ts` — its
+  `transition-property`, `-duration` and `-delay` are read back through
+  `getComputedStyle` to decide when a sheet has settled.
+- `packages/core/src/ProgressBar/progressBarFill.stylex.ts` — four conditions at
+  once, where Tailwind fixes the variant order and `forced-colors` cannot be
+  raised above `pointer: coarse`.
+- `packages/core/src/Icon/IconSize.stylex.ts` — a deprecated compatibility
+  export only; it disappears with the major that removes the subpath.
 
 ## Verification
 
