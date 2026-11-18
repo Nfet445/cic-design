@@ -1125,6 +1125,7 @@ import {
 } from '../Code/codeClasses';
 import {
   cardBorderClassName,
+  cardBorderPaddingClassName,
   cardClassName,
   cardCornersClassName,
   cardElevationClassName,
@@ -3016,6 +3017,7 @@ function familyClassNames() {
   add(cardClassName);
   add(cardCornersClassName);
   add(cardBorderClassName);
+  add(cardBorderPaddingClassName);
   add(cardOverflowClassName({hasFixedHeight: false}));
   add(cardOverflowClassName({hasFixedHeight: true}));
   add(cardSizingClassName({height: 1, maxWidth: 1, minHeight: 1, width: 1}));

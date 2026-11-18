@@ -57,7 +57,6 @@ import {
   clickableCardOverlayClassName,
   clickableCardSrOnlyClassName,
 } from './clickableCardClasses';
-import {clickableCardBorderStyles} from './clickableCardBorder.stylex';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {disabledInteractionProps} from '../utils/disabledInteraction';
@@ -258,8 +257,7 @@ export function ClickableCard({
   const LinkRoot = isDisabled ? 'a' : LinkComponent;
 
   // Only the `default` variant has a visible border, so only it gets the
-  // bordered class and the padding inset that keeps every variant's content
-  // geometry identical.
+  // bordered class. Card insets its own padding for that variant.
   const hasBorder = variant === 'default';
 
   return (
@@ -287,7 +285,6 @@ export function ClickableCard({
         style,
       )}
       xstyle={[
-        hasBorder && clickableCardBorderStyles.padding,
         // The touch press's strength and release, on the element the
         // controller writes to; the `::after` above paints off it.
         !isDisabled && interactionOverlayStyles.pressedAlpha,

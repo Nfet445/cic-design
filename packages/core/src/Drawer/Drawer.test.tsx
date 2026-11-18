@@ -1308,12 +1308,12 @@ describe('Drawer', () => {
   });
 
   describe('container padding', () => {
-    // StyleX lowers the block edges to their physical properties. block-end is
-    // asserted separately: its applied edge composes the safe-area inset.
+    // block-end is asserted separately: its applied edge composes the
+    // safe-area inset.
     const EDGES = ['inline-start', 'inline-end', 'block-start'] as const;
-    // StyleX strips the space after the var() fallback comma.
+    // Underscores spell the spaces Tailwind's arbitrary value cannot carry.
     const SAFE_AREA_BLOCK_END =
-      'calc(var(--container-padding-block-end,0px) + env(safe-area-inset-bottom,0px))';
+      '[.astryx-drawer_&]:[padding-block-end:calc(var(--container-padding-block-end,_0px)_+_env(safe-area-inset-bottom,_0px))]';
     const DRAWER = 'var(--astryx-drawer-padding,var(--spacing-4))';
     // The chain each edge publishes when no padding prop names a step.
     const THEME_CHAIN: Record<string, string> = {
@@ -1369,9 +1369,7 @@ describe('Drawer', () => {
       }
       // block-end publishes the same chain, while the APPLIED edge adds the
       // home-indicator safe area on top of the container inset.
-      expect(getComputedStyle(content).getPropertyValue('padding-bottom')).toBe(
-        SAFE_AREA_BLOCK_END,
-      );
+      expect(classesOf(content)).toContain(SAFE_AREA_BLOCK_END);
       // The Layout insets read the same chain, so a Layout inside the drawer
       // lines its regions up on the drawer's inset, as in Dialog.
       for (const [name, chain] of [
@@ -1399,9 +1397,7 @@ describe('Drawer', () => {
           // subtracts exactly the inset it sits in.
           expect(classesOf(content), edge).toContain(appliedClass(edge));
         }
-        expect(
-          getComputedStyle(content).getPropertyValue('padding-bottom'),
-        ).toBe(SAFE_AREA_BLOCK_END);
+        expect(classesOf(content)).toContain(SAFE_AREA_BLOCK_END);
         for (const name of ['outer-x', 'outer-y', 'inner-x', 'inner-y']) {
           expect(classesOf(content), name).toContain(
             `[--layout-padding-${name}:${expected}]`,

@@ -153,9 +153,13 @@ export function drawerRootClassName({
 
 // The scrolling area paints the surface itself, covering the panel's whole
 // inner box: a theme that packs an inset ring into --shadow-high would
-// otherwise show it only in the gap below where opaque content ends. Its
-// container padding is a class in this same layer, so the safe-area rule in
-// drawerContentSafeArea.stylex.ts adds the home indicator on top of it.
+// otherwise show it only in the gap below where opaque content ends.
+//
+// The block-end arm adds the home indicator's safe area on top of the container
+// padding. Its ancestor arm doubles the selector, so it outranks the padding
+// `container()` sets on the same element in this same layer. The published
+// --container-padding-block-end keeps the safe area OUT, so a bleed child
+// subtracts only the container inset and the safe area survives below it.
 const CONTENT = tw(
   'grow',
   'min-h-0',
@@ -166,6 +170,7 @@ const CONTENT = tw(
   'touch-pan-y',
   'outline-none',
   'bg-[var(--color-background-surface)]',
+  '[.astryx-drawer_&]:[padding-block-end:calc(var(--container-padding-block-end,_0px)_+_env(safe-area-inset-bottom,_0px))]',
 );
 
 /** The class set of the scrolling content area. */
