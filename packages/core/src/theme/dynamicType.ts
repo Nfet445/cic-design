@@ -3,7 +3,7 @@
 /**
  * @file dynamicType.ts
  * @input The UIKit point sizes per text style (uikitTypography.ts), the raw
- *   font-size tokens (tokens.stylex.ts)
+ *   font-size tokens (tokenVars.ts)
  * @output The reader's text size categories, the category a measured Body
  *   size names, each raw font-size step's UIKit curve and scale, the rule that
  *   gives a category its scales, the scaled raw font-size declarations every
