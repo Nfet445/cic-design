@@ -48,20 +48,7 @@ type XstyleNamespaces = {
   paddingStyles: typeof padding.paddingStyles;
   navItemStyles: typeof navItemStyles.navItemStyles;
   selectorPresentationStyles: typeof selectorPresentation.selectorPresentationStyles;
-  capsizeStyles: typeof text.capsizeStyles;
-  colorStyles: typeof text.colorStyles;
-  decorationStyles: typeof text.decorationStyles;
-  defaultWeightByTypeStyles: typeof text.defaultWeightByTypeStyles;
-  justifyStyles: typeof text.justifyStyles;
-  sizeByLevelStyles: typeof text.sizeByLevelStyles;
-  sizeByTypeStyles: typeof text.sizeByTypeStyles;
-  sizeStyles: typeof text.sizeStyles;
-  tabularNumbersStyle: typeof text.tabularNumbersStyle;
-  textWrapStyles: typeof text.textWrapStyles;
-  truncationStyles: typeof text.truncationStyles;
   truncationTooltipStyles: typeof text.truncationTooltipStyles;
-  weightStyles: typeof text.weightStyles;
-  wordBreakStyles: typeof text.wordBreakStyles;
   focusOutlineStyles: typeof focusOutline.focusOutlineStyles;
   interactionOverlayStyles: typeof interactionOverlay.interactionOverlayStyles;
 };
@@ -83,7 +70,6 @@ type PropsOnlyNamespaces = {
   layoutPaddingOuterYVarStyles: typeof padding.layoutPaddingOuterYVarStyles;
   overlayPaddingReset: typeof padding.overlayPaddingReset;
   sectionPaddingPropagationStyles: typeof padding.sectionPaddingPropagationStyles;
-  displayStyles: typeof text.displayStyles;
   touchHitAreaStyles: typeof touchHitArea.touchHitAreaStyles;
   focusOutlineStylesPublishedVars: Pick<
     typeof focusOutline.focusOutlineStyles,
@@ -169,23 +155,7 @@ const styleNamespacesBySubpath = {
   './Selector/selectorPresentation.stylex': ['selectorPresentationStyles'],
   './Stack/stack.stylex': [],
   './Stack/stackItem.stylex': [],
-  './Text/text.stylex': [
-    'capsizeStyles',
-    'colorStyles',
-    'decorationStyles',
-    'defaultWeightByTypeStyles',
-    'displayStyles',
-    'justifyStyles',
-    'sizeByLevelStyles',
-    'sizeByTypeStyles',
-    'sizeStyles',
-    'tabularNumbersStyle',
-    'textWrapStyles',
-    'truncationStyles',
-    'truncationTooltipStyles',
-    'weightStyles',
-    'wordBreakStyles',
-  ],
+  './Text/text.stylex': ['truncationTooltipStyles'],
   './internal/touchHitArea.stylex': ['touchHitAreaStyles'],
   './theme/dataTokens.stylex': [],
   './theme/tokens.stylex': [],

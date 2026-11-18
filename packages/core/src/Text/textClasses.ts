@@ -3,8 +3,8 @@
 /**
  * @file textClasses.ts
  * @input Uses token variables from the theme, the text type scale
- * @output The utility class strings Text's root element and truncation tooltip
- *   carry, plus the custom property a multi-line clamp reads
+ * @output The utility class strings a Text or Heading root element and the
+ *   truncation tooltip carry, plus the custom property a multi-line clamp reads
  * @position Internal to Text; the Tailwind build scans it for class names
  *
  * SYNC: When modified, update:
@@ -61,6 +61,38 @@ const TYPE_LINE_HEIGHT_CLASS: Record<BuiltinTextType, string> = {
   'display-2': '[line-height:var(--text-display-2-leading)]',
   'display-3': '[line-height:var(--text-display-3-leading)]',
   inherit: '[line-height:inherit]',
+};
+
+// A heading without a display type takes its whole type from its level, so the
+// level splits into the same three axes as a type: a level weight would
+// otherwise fight an explicit `weight` in the sheet order.
+type HeadingClassLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
+const LEVEL_FONT_SIZE_CLASS: Record<HeadingClassLevel, string> = {
+  1: 'text-[length:var(--text-heading-1-size)]',
+  2: 'text-[length:var(--text-heading-2-size)]',
+  3: 'text-[length:var(--text-heading-3-size)]',
+  4: 'text-[length:var(--text-heading-4-size)]',
+  5: 'text-[length:var(--text-heading-5-size)]',
+  6: 'text-[length:var(--text-heading-6-size)]',
+};
+
+const LEVEL_LINE_HEIGHT_CLASS: Record<HeadingClassLevel, string> = {
+  1: '[line-height:var(--text-heading-1-leading)]',
+  2: '[line-height:var(--text-heading-2-leading)]',
+  3: '[line-height:var(--text-heading-3-leading)]',
+  4: '[line-height:var(--text-heading-4-leading)]',
+  5: '[line-height:var(--text-heading-5-leading)]',
+  6: '[line-height:var(--text-heading-6-leading)]',
+};
+
+const LEVEL_WEIGHT_CLASS: Record<HeadingClassLevel, string> = {
+  1: '[font-weight:var(--text-heading-1-weight)]',
+  2: '[font-weight:var(--text-heading-2-weight)]',
+  3: '[font-weight:var(--text-heading-3-weight)]',
+  4: '[font-weight:var(--text-heading-4-weight)]',
+  5: '[font-weight:var(--text-heading-5-weight)]',
+  6: '[font-weight:var(--text-heading-6-weight)]',
 };
 
 const DEFAULT_WEIGHT_CLASS: Record<BuiltinTextType, string> = {
@@ -181,6 +213,34 @@ export function isBuiltinTextColor(color: string): color is BuiltinTextColor {
   return color in COLOR_CLASS;
 }
 
+/** Display, truncation and word break, the axes Text and Heading share. */
+function truncationClassName({
+  display,
+  maxLines,
+  wordBreak,
+  hasCapsize,
+}: {
+  display: TextDisplay;
+  maxLines: number;
+  wordBreak: WordBreak;
+  hasCapsize: boolean;
+}): string {
+  return tw(
+    // Truncation replaces the display classes: a clipped text is never inline,
+    // and its overflow wrap comes from word break. A capsize text keeps the
+    // clamp but drops the box, as it always has.
+    maxLines === 1
+      ? TRUNCATION_SINGLE_LINE_CLASS
+      : maxLines > 1
+        ? tw(
+            TRUNCATION_CLAMP_CLASS,
+            hasCapsize ? 'block' : TRUNCATION_CLAMP_BOX_CLASS,
+          )
+        : DISPLAY_CLASS[display],
+    maxLines > 0 && WORD_BREAK_CLASS[wordBreak],
+  );
+}
+
 export interface TextClassNameOptions {
   /** Type with custom (theme-defined) types already resolved to `body`. */
   type: BuiltinTextType;
@@ -218,22 +278,58 @@ export function textClassName({
     size ? SIZE_CLASS[size] : TYPE_FONT_SIZE_CLASS[type],
     TYPE_LINE_HEIGHT_CLASS[type],
     weight ? WEIGHT_CLASS[weight] : DEFAULT_WEIGHT_CLASS[type],
-    // Truncation replaces the display classes: a clipped text is never inline,
-    // and its overflow wrap comes from word break. A capsize text keeps the
-    // clamp but drops the box, as it always has.
-    maxLines === 1
-      ? TRUNCATION_SINGLE_LINE_CLASS
-      : maxLines > 1
-        ? tw(
-            TRUNCATION_CLAMP_CLASS,
-            hasCapsize ? 'block' : TRUNCATION_CLAMP_BOX_CLASS,
-          )
-        : DISPLAY_CLASS[display],
-    maxLines > 0 && WORD_BREAK_CLASS[wordBreak],
+    truncationClassName({display, maxLines, wordBreak, hasCapsize}),
     textWrap && TEXT_WRAP_CLASS[textWrap],
     justify !== 'start' && JUSTIFY_CLASS[justify],
     hasCapsize && CAPSIZE_CLASS,
     hasStrikethrough && STRIKETHROUGH_CLASS,
     hasTabularNumbers && TABULAR_NUMBERS_CLASS,
+  );
+}
+
+export interface HeadingClassNameOptions {
+  level: HeadingClassLevel;
+  /** Display type; when set it replaces the level's type scale. */
+  type?: 'display-1' | 'display-2' | 'display-3';
+  /** Color with custom colors already resolved to `primary`. */
+  color: BuiltinTextColor;
+  display: TextDisplay;
+  justify: TextJustify;
+  maxLines: number;
+  wordBreak: WordBreak;
+  weight?: TextWeight;
+  textWrap?: TextWrap;
+  hasCapsize?: boolean;
+  hasStrikethrough?: boolean;
+}
+
+/** Builds the class set of one Heading element from its resolved props. */
+export function headingClassName({
+  level,
+  type,
+  color,
+  display,
+  justify,
+  maxLines,
+  wordBreak,
+  weight,
+  textWrap,
+  hasCapsize = false,
+  hasStrikethrough = false,
+}: HeadingClassNameOptions): string {
+  return tw(
+    COLOR_CLASS[color],
+    type ? TYPE_FONT_SIZE_CLASS[type] : LEVEL_FONT_SIZE_CLASS[level],
+    type ? TYPE_LINE_HEIGHT_CLASS[type] : LEVEL_LINE_HEIGHT_CLASS[level],
+    weight
+      ? WEIGHT_CLASS[weight]
+      : type
+        ? DEFAULT_WEIGHT_CLASS[type]
+        : LEVEL_WEIGHT_CLASS[level],
+    truncationClassName({display, maxLines, wordBreak, hasCapsize}),
+    textWrap && TEXT_WRAP_CLASS[textWrap],
+    justify !== 'start' && JUSTIFY_CLASS[justify],
+    hasCapsize && CAPSIZE_CLASS,
+    hasStrikethrough && STRIKETHROUGH_CLASS,
   );
 }
