@@ -143,6 +143,19 @@ export const tableCellLastRowClassName = tw(
   '[tr[data-table-final-row=true]>&]:[border-bottom-width:0]',
 );
 
+/**
+ * The context menu's trigger wrapper. It fills the cell — a `<td>` child at
+ * full height stretches to the row height — and carries the density padding
+ * moved off the `<td>`, so a right-click anywhere in the cell, its padding
+ * ring included, opens the menu.
+ */
+export function tableCellTriggerClassName(density?: TableDensity): string {
+  return tw(
+    'block box-border h-full w-full',
+    density && DENSITY_PADDING_CLASS[density],
+  );
+}
+
 export interface TableCellClassNameOptions {
   density: TableDensity;
   /** The table divides its columns, so every cell but the last draws a divider. */

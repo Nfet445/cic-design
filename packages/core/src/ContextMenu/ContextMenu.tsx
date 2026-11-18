@@ -170,6 +170,11 @@ interface ContextMenuBaseProps extends BaseProps {
    * be right-clickable (as the Table does for full-cell context menus).
    */
   triggerXstyle?: StyleXStyles | StyleXStyles[];
+  /**
+   * Class names applied to the trigger wrapper element, after
+   * `triggerXstyle`, so a caller can style the trigger with utilities.
+   */
+  triggerClassName?: string;
   /** The trigger area — right-click on this to open the menu. */
   children: ReactNode;
   /** Custom menu width. @default '160px' */
@@ -252,6 +257,7 @@ export function ContextMenu({
   style,
   xstyle,
   triggerXstyle,
+  triggerClassName,
   onContextMenu: onContextMenuProp,
   onTouchStart: onTouchStartProp,
   onTouchMove: onTouchMoveProp,
@@ -829,6 +835,7 @@ export function ContextMenu({
                 : [triggerXstyle]
               : []),
           ),
+          triggerClassName,
         )}>
         {children}
         <span
