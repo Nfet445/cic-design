@@ -14,7 +14,6 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {container} from '../Layout/containerClasses';
 import {containerCornerClassName} from '../Layout/containerCornersClasses';
 import type {SpacingToken} from '../Layout/containerClasses';
@@ -26,6 +25,7 @@ import {themeProps} from '../utils/themeProps';
 import type {CardVariantMap} from './index';
 import {
   cardBorderClassName,
+  cardBorderPaddingClassName,
   cardClassName,
   cardCornersClassName,
   cardElevationClassName,
@@ -34,7 +34,6 @@ import {
   cardSizingClassName,
   cardVariantClassName,
 } from './cardClasses';
-import {cardBorderStyles} from './cardBorder.stylex';
 import {tw} from '../utils/tw';
 import {xstyleProps} from '../utils/xstyle';
 
@@ -232,15 +231,12 @@ export function Card({
                   },
             ),
             variant === 'default' && cardBorderClassName,
+            // The border-inset padding reads the --container-padding-* vars
+            // the container class above publishes.
+            variant === 'default' && cardBorderPaddingClassName,
           ),
           style: sizingVars,
         }),
-        stylex.props(
-          // The border-inset padding reads the --container-padding-* vars the
-          // container class above publishes. It stays a StyleX rule so it
-          // outranks them.
-          variant === 'default' && cardBorderStyles.padding,
-        ),
         tw(className, xstyleProps(xstyle).className),
         {...xstyleProps(xstyle).style, ...style},
       )}

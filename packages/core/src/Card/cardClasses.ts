@@ -15,9 +15,8 @@
  * property, so a consumer class can still override them; an inline `width`
  * would beat every class a consumer passes.
  *
- * The border-inset padding stays in `cardBorder.stylex.ts`: `container()`
- * applies `padding` from a class in `astryx-base`, and only an unlayered rule
- * outranks that layer.
+ * The border-inset padding doubles the card's own target class, so it outranks
+ * the padding `container()` sets on the same element.
  */
 
 import {tw} from '../utils/tw';
@@ -93,6 +92,19 @@ export const cardElevationClassName: Record<Elevation, string> = {
 export const cardBorderClassName = tw(
   'border-[length:var(--border-width)] border-solid',
   'border-[color:var(--color-border)]',
+);
+
+/**
+ * The border drawn inside the padding: its width is subtracted from each side,
+ * so the total inset (border + padding) equals the padding token. The target
+ * class is doubled to outrank the padding `container()` sets on the same
+ * element at the same layer.
+ */
+export const cardBorderPaddingClassName = tw(
+  '[&.astryx-card]:[padding-inline-start:calc(var(--container-padding-inline-start)_-_var(--border-width))]',
+  '[&.astryx-card]:[padding-inline-end:calc(var(--container-padding-inline-end)_-_var(--border-width))]',
+  '[&.astryx-card]:[padding-block-start:calc(var(--container-padding-block-start)_-_var(--border-width))]',
+  '[&.astryx-card]:[padding-block-end:calc(var(--container-padding-block-end)_-_var(--border-width))]',
 );
 
 /**
