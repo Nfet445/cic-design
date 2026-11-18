@@ -59,6 +59,7 @@ import {useTouchHitArea} from '../utils/touchHitArea';
 import {pressBoxProps} from '../privateAttributes/pressBox.stylex';
 import {indicatorPressPaintHandDownClassName} from '../privateAttributes/press.stylex';
 import {registerBoxHold} from '../utils/boxHold';
+import {xstyleProps} from '../utils/xstyle';
 import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
 import {
   registerEnglishFallback,
@@ -390,7 +391,7 @@ export function CheckboxInput({
     <div
       {...mergeProps(
         themeProps('checkbox-input', {size}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(checkboxInputClassName({width}), className),
         {...checkboxInputSizeStyle(width), ...style},
       )}>
