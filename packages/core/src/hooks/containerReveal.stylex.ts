@@ -15,6 +15,15 @@
  * cascade, with one static style block for any number of containers.
  *
  * SYNC: When the block shape changes, update useContainerReveal.ts.
+ *
+ * WHY THE BLOCKS STAY STYX: the hook hands two blocks to one `stylex.props`
+ * call per element (useContainerReveal.ts: `styles.container` with the delay and
+ * the forced state, `reveal`/`conceal` with the forced visibility). The later
+ * block replaces the earlier one per property AND per condition, which is how
+ * `stateInactive`/`stateActive` outrank `container`'s own `:hover` arm and
+ * `contentShown`/`contentHidden` outrank `reveal`'s `opacity`. Two classes of
+ * equal specificity would leave that decision to the sheet's order, so the
+ * blocks stay here until the hook can carry its own doubled selectors.
  */
 
 import * as stylex from '@stylexjs/stylex';
