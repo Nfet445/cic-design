@@ -109,6 +109,7 @@ import {
   focusOwnerRingClassName,
 } from '../privateAttributes/focusOwner.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {inputGroupItemProps} from '../InputGroup/groupStyles';
 import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
@@ -2112,7 +2113,7 @@ export function Selector<T extends SelectorOptionType>(
             styles.triggerContainer,
             variant === 'ghost' && styles.triggerGhost,
             variant === 'secondary' && styles.triggerSecondary,
-            variant !== 'input' && interactionOverlayStyles.backgroundImage,
+            variant !== 'input' && interactionOverlayStyles.pressedAlpha,
             surface.isTriggerFocusRingSuppressed &&
               selectorPresentationStyles.pointerRestoredFocus,
             isEffectivelyReadOnly && styles.triggerReadOnly,
@@ -2141,6 +2142,9 @@ export function Selector<T extends SelectorOptionType>(
               !surface.isTriggerFocusRingSuppressed &&
               fieldInputWrapperFocusScopeClassName.direct,
             controlClassName,
+            // The hover and press paint; its strength and release stay the
+            // StyleX arm above.
+            variant !== 'input' && interactionOverlayBackgroundImageClassName,
             // A grouped trigger takes the group's row height; its own size
             // stops asserting one, as `triggerInGroup` did when both were
             // StyleX declarations in one sheet.
