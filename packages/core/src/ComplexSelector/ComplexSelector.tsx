@@ -65,6 +65,7 @@ import {
   COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
   COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS,
   complexSelectorHeightClassName,
+  complexSelectorPopoverClassName,
 } from './complexSelectorClasses';
 import {tw} from '../utils/tw';
 import {usePressFeedback} from '../hooks/usePressFeedback';
@@ -94,8 +95,8 @@ const LAYER_OPEN: string = ':has([aria-expanded="true"])';
 // `fieldInputWrapperClassName()` from `../Field/fieldClasses`. The variants
 // still differ from the plain field box: a ghost trigger has no fill or
 // border, a secondary one keeps the neutral fill, and the code-point ring is a
-// keyboard only ring. `popover` stays because `usePopover`
-// takes StyleX styles only. Every child element uses
+// keyboard only ring. The popup's minimum width is
+// `complexSelectorPopoverClassName`; every child element uses
 // `complexSelectorClasses.ts`.
 const styles = stylex.create({
   triggerContainer: {
@@ -192,9 +193,6 @@ const styles = stylex.create({
       ':active': 'none',
       '[data-astryx-press="on"]': 'none',
     },
-  },
-  popover: {
-    minWidth: 'anchor-size(width)',
   },
   disabled: {
     cursor: 'default',
@@ -800,7 +798,7 @@ export function ComplexSelector<Value>({
     placement,
     alignment,
     offset: 'var(--spacing-1)',
-    xstyle: styles.popover,
+    className: complexSelectorPopoverClassName,
   });
 
   if (renderTrigger != null) {

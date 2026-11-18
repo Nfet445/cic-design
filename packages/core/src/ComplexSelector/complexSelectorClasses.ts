@@ -12,9 +12,7 @@
  * and it sets the same padding, background and shadow properties; two classes
  * in `astryx-base` are ordered by the sheet, not by `tw`, so its chrome, the
  * variant fills and the disabled press reset stay StyleX in
- * `ComplexSelector.tsx`. The popup's
- * `min-width: anchor-size(width)` stays there too, because `usePopover`
- * accepts only StyleX styles. Every class here styles a child element.
+ * `ComplexSelector.tsx`. Every class here styles a child element.
  *
  * SYNC: When modified, update
  * - /packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
@@ -133,3 +131,9 @@ export const COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS = tw(
  */
 export const COMPLEX_SELECTOR_TRIGGER_ICON_OPEN_CLASS =
   '[transform:rotate(180deg)]';
+
+/**
+ * The popup is never narrower than the trigger it anchors to. It arrives as the
+ * render call's `className`, the slot a layer merges unlayered.
+ */
+export const complexSelectorPopoverClassName = '[min-width:anchor-size(width)]';

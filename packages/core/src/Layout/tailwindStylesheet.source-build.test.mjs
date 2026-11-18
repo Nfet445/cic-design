@@ -446,6 +446,7 @@ import {
   COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
   COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS,
   complexSelectorHeightClassName,
+  complexSelectorPopoverClassName,
 } from '../ComplexSelector/complexSelectorClasses';
 import {
   NUMBER_INPUT_DECREMENT_CLASS,
@@ -3576,6 +3577,7 @@ function familyClassNames() {
   add(COMPLEX_SELECTOR_TRIGGER_CLASS);
   add(COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS);
   add(COMPLEX_SELECTOR_STATUS_TIP_CLASS);
+  add(complexSelectorPopoverClassName);
   add(COMPLEX_SELECTOR_TRIGGER_ICON_CLASS);
   add(COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS);
   add(COMPLEX_SELECTOR_TRIGGER_ICON_OPEN_CLASS);
