@@ -73,6 +73,10 @@ written into the ticket.
 
 ## Traps that cost a window each
 
+- An inset focus ring is a value, not a second utility. The shared ring reads
+  `var(--focus-outline-offset)`, so set that variable on the element instead of
+  adding a second `outline-offset` class that would tie at (0,2,0) and settle by
+  sheet order.
 - A utility whose value is a `var()` with a fallback writes no rule; use the
   property form. `overflow-x-[var(--x,clip)]` produced zero rules across four
   builds, one of them cache-free, while `[overflow-x:var(--x,clip)]` emitted
