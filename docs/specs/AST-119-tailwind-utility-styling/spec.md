@@ -277,8 +277,8 @@ lower layer outranks a higher layer. They stay in a `.stylex.ts` module, whose
 output is unlayered and carries `:not(#\#)`, and that module is the whole
 reason StyleX remains a dependency for those components.
 
-The escape set is measured, not guessed: `docs/specs/AST-119-tailwind-utility-styling/plan.md`
-lists it. Adding a member needs the same evidence — a named consumer utility it
+The escape set is measured, not guessed: the `## Comments` of
+`.scratch/tailwind-migration/issues/36-remove-stylex.md` lists it with the rival each one names. Adding a member needs the same evidence — a named consumer utility it
 must beat. A rule whose rival is another class of `astryx-base` is NOT a member;
 it converts by repeating its own qualifier.
 

@@ -155,6 +155,8 @@ check of the family's states.
       package (ticket 36).
 - [ ] `astryx.css` retires or stays per OQ1, and every import of it in the
       repository changes (ticket 36).
+- [ ] Every remaining `.stylex.ts` module is a DEC-9 escape: it names the
+      consumer utility it must beat, and nothing else holds StyleX.
 
 #### The escape set (DEC-9)
 
