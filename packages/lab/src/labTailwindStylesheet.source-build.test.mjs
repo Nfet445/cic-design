@@ -59,6 +59,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const sheet = await buildTailwindStylesheet({
   root: ROOT,
+  compact: true,
   input: path.resolve(ROOT, 'tailwind/lab.input.css'),
   banner: 'Astryx Lab Pre-compiled Tailwind CSS — experimental components',
 });

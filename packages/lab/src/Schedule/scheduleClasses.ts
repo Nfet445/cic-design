@@ -83,6 +83,7 @@ export const scheduleMonthCellGridClassName = tw(
 export const scheduleMonthGridRowClassName = 'contents';
 
 export const scheduleMonthCellClassName = tw(
+  '[&&:focus-visible]:[outline-offset:calc(-1*var(--focus-outline-width))]',
   'relative flex flex-col gap-1 min-w-0 p-0 bg-card',
   cellBorder,
 );
@@ -211,7 +212,10 @@ export const scheduleTimeGridFrameClassName = tw(
 
 // The viewport paints no focus outline of its own: the frame clips outside its
 // border box, and an inset outline is painted under the viewport's pinned
-// header and gutter. The ring is an overlay instead (scheduleOverrides).
+// header and gutter. The adjacent overlay paints the ring above these parts.
+export const scheduleTimeGridFocusRingClassName = 'astryx-schedule-focus-ring';
+export const scheduleEventPopoverBodyClassName = 'astryx-schedule-popover-size';
+
 export const scheduleTimeGridViewportClassName = tw(
   'grow shrink basis-0 min-h-0 min-w-0',
   '[scrollbar-gutter:stable] isolate outline-none',

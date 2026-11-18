@@ -28,7 +28,6 @@ import {
   type FocusEvent,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {FieldLabel} from '../Field/FieldLabel';
 import {FieldStatus} from '../FieldStatus/FieldStatus';
 import type {IconType} from '../Icon';
@@ -36,9 +35,7 @@ import type {InputStatus} from '../Field/types';
 import {Spinner} from '../Spinner';
 import {useTooltip} from '../Tooltip';
 import {mergeProps} from '../utils';
-import {switchFocusInput, switchScope} from './switch.markers.stylex';
 import type {BaseProps} from '../BaseProps';
-import {rtlCenterInlineClassName} from '../utils/rtlClasses';
 import type {SizeValue} from '../utils/types';
 import {tw} from '../utils/tw';
 import {
@@ -47,6 +44,11 @@ import {
   switchInputClassName,
   switchLabelWrapperClassName,
   switchSizeStyle,
+  switchScopeProps,
+  switchPressOwnerClassName,
+  switchPressLayerClassName,
+  switchFocusRingClassName,
+  switchTrackHoverClassName,
   switchStatusClassName,
   switchThumbBoxClassName,
   switchThumbClassName,
@@ -54,7 +56,6 @@ import {
   switchTrackClassName,
   switchWrapperClassName,
 } from './switchClasses';
-import {switchHoverPressStyles} from './switchHoverPress.stylex';
 import {themeProps} from '../utils/themeProps';
 import {useAnnounce} from '../hooks/useAnnounce';
 
@@ -67,6 +68,7 @@ import {
 import english from '../i18n/generated-english/Switch/Switch.generated';
 
 registerEnglishFallback(english);
+import * as stylex from '@stylexjs/stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {pressHoldsDragProps} from '../privateAttributes/pressHoldsDrag.stylex';
 import {useSwitchTouch, type SwitchTouchParts} from './useSwitchTouch';
@@ -352,14 +354,10 @@ export function Switch({
         disabled: isDisabled ? 'disabled' : null,
         size,
       }),
-      stylex.props(
-        switchHoverPressStyles.focusRing,
-        on
-          ? switchHoverPressStyles.trackOnHover
-          : switchHoverPressStyles.trackOffHover,
-        switchHoverPressStyles.trackPress,
-      ),
       tw(
+        switchFocusRingClassName,
+        switchTrackHoverClassName[on ? 'on' : 'off'],
+        switchPressLayerClassName,
         switchTrackBoxClassName({size}),
         switchTrackClassName({size, isOn: on, isDisabled}),
       ),
@@ -431,13 +429,7 @@ export function Switch({
           status?.type === 'error' ? true : isRequired ? false : undefined
         }
         aria-busy={isBusy || undefined}
-        {...mergeProps(
-          // The box and the hit area inside it own the transform
-          // (switchHoverPress.stylex.ts), so only the inline anchor and the
-          // inline half of the centering come from the shared class.
-          tw(switchInputClassName({isBusy}), rtlCenterInlineClassName),
-          stylex.props(switchHoverPressStyles.inputBox, switchFocusInput),
-        )}
+        className={switchInputClassName({isBusy})}
       />
       <div ref={trackRef} aria-hidden="true" {...trackPropsFor(isOn)}>
         <div
@@ -447,8 +439,8 @@ export function Switch({
               checked: isOn ? 'checked' : null,
               size,
             }),
-            stylex.props(switchHoverPressStyles.thumbPress),
             tw(
+              switchPressLayerClassName,
               switchThumbBoxClassName({size, isOn}),
               switchThumbClassName({isOn}),
             ),
@@ -509,20 +501,15 @@ export function Switch({
         }}
         {...(isDisabled ? undefined : pressable)}
         {...pressHoldsDragProps(!isDisabled)}
-        {...mergeProps(
-          tw(
-            switchContainerClassName({
-              isLabelHidden,
-              isSpread: labelSpacing === 'spread',
-            }),
-          ),
-          stylex.props(
-            !isDisabled && switchScope,
-            // The touch press's strength and release live on the row the
-            // controller writes to; the track and thumb inherit and paint it.
-            !isDisabled && interactionOverlayStyles.pressedAlpha,
-            !isDisabled && switchHoverPressStyles.pressStrength,
-          ),
+        {...(!isDisabled && switchScopeProps)}
+        className={tw(
+          switchContainerClassName({
+            isLabelHidden,
+            isSpread: labelSpacing === 'spread',
+          }),
+          !isDisabled &&
+            stylex.props(interactionOverlayStyles.pressedAlpha).className,
+          !isDisabled && switchPressOwnerClassName,
         )}>
         {' '}
         {/* Keyed, so a labelPosition change moves the nodes instead of

@@ -411,6 +411,11 @@ import {
 } from '../CheckboxInput/checkboxInputClasses';
 import {
   switchClassName,
+  switchInputClassName,
+  switchFocusRingClassName,
+  switchTrackHoverClassName,
+  switchPressLayerClassName,
+  switchPressOwnerClassName,
   switchContainerClassName,
   switchLabelWrapperClassName,
   switchStatusClassName,
@@ -934,6 +939,10 @@ import {
   ROW_EXPANSION_PANEL_MUTED_CLASS,
   rowExpansionChevronOffsetClassName,
   rowExpansionPanelIndentClassName,
+  rowExpansionChevronCellClassName,
+  rowExpansionChevronHeaderClassName,
+  rowExpansionExpandedCellClassName,
+  rowExpansionPanelDividerClassName,
 } from '../Table/plugins/rowExpansion/rowExpansionClasses';
 import {
   SORT_INDICATOR_CLASS,
@@ -3809,6 +3818,12 @@ function familyClassNames() {
       add(switchThumbBoxClassName({size, isOn}));
     }
   }
+  add(switchInputClassName({isBusy: true}));
+  add(switchFocusRingClassName);
+  add(switchTrackHoverClassName.on);
+  add(switchTrackHoverClassName.off);
+  add(switchPressLayerClassName);
+  add(switchPressOwnerClassName);
   add(switchStatusClassName);
   // Slider: the row in both mark-label states, both orientations of every
   // part, the fill in single and range mode, a thumb in its held, disabled and
@@ -4086,6 +4101,10 @@ function familyClassNames() {
   add(ROW_EXPANSION_GLYPH_CLASS);
   add(ROW_EXPANSION_GLYPH_STATE_CLASS.expanded);
   add(ROW_EXPANSION_GLYPH_STATE_CLASS.collapsed);
+  add(rowExpansionChevronCellClassName);
+  add(rowExpansionChevronHeaderClassName);
+  add(rowExpansionExpandedCellClassName);
+  add(rowExpansionPanelDividerClassName);
   add(ROW_EXPANSION_PANEL_CLASS);
   add(ROW_EXPANSION_PANEL_MUTED_CLASS);
   add(ROW_EXPANSION_CLICKABLE_ROW_CLASS);
@@ -4510,7 +4529,7 @@ describe('dist/astryx-tailwind.css declarations', () => {
     expect(stylesheet.ruleFor('[color-scheme:light_dark]')).toBe(
       'color-scheme:lightdark;',
     );
-    expect(stylesheet.css).toContain('color-scheme: light dark;');
+    expect(stylesheet.css).toMatch(/color-scheme:\s*light dark;/);
     expect(stylesheet.ruleFor('[color-scheme:light]')).toBe(
       'color-scheme:light;',
     );

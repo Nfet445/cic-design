@@ -1,6 +1,6 @@
 # 67 — Replace the four remaining marker ancestors with data attributes
 
-Status: ready-for-agent
+Status: done
 Wave: 9
 Blocked by: none
 
@@ -65,3 +65,19 @@ what the overlay and focus-owner work already does.
 - Classes registered in the package sheet test; the ceiling moves only with a
   measured number.
 - A note in this ticket names any state that could NOT move, and why.
+
+## Result
+
+Switch and Table row expansion in Core, and Schedule and TabBar in Lab, use
+scoped Tailwind selectors for the former marker states. The four style maps and
+three marker modules were removed. None had a package subpath or a namespace or
+sync-exports entry.
+
+The Core and Lab builds compact generated CSS formatting to address the gzip
+size increase seen on the first implementation. The existing gzip baselines
+and limits still apply.
+
+Focused tests passed on an intermediate implementation (121 Core, 55 Lab).
+The intermediate Core and Lab sheets exceeded their gzip limits. Final gzip,
+the full test suite, and browser checks, including Windows High Contrast, were
+omitted at the author's request.

@@ -9,10 +9,6 @@
  *   its copy and the badges carry
  * @position Style primitives; the Tailwind build scans it for class names
  *
- * Two declarations stay in tabBar.stylex.ts because they read a StyleX marker
- * (`tabBarItemMarker`): the item's outline style and the press layer. The
- * marker is the scoped ancestor the rules test, and no class can hold one.
- *
  * A tab's look is one of three complete colour classes. Two classes setting
  * `color` would be ordered by the sheet, not by the class attribute.
  */
@@ -56,9 +52,10 @@ export const tabBarColumnClassName = tw(
   'w-[var(--astryx-tab-bar-column-width)]',
 );
 
-/** The outline's width, colour and offset; its style rides the marker. */
+/** Keyboard focus on the button paints the ring around its item box. */
 export const tabBarItemBoxClassName = tw(
   'absolute block rounded-full',
+  'astryx-tab-feedback',
   '[outline-width:var(--focus-outline-width)]',
   '[outline-color:var(--focus-outline-color)]',
   '[outline-offset:var(--focus-outline-offset)]',

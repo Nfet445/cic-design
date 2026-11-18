@@ -90,7 +90,6 @@ import {
   scheduleWeekdayHeadingClassName,
   scheduleWeekdayLabelClassName,
 } from './scheduleClasses';
-import {scheduleMonthCellFocusStyles} from './scheduleOverrides.stylex';
 import type {Locale} from '@astryxdesign/core/i18n';
 import type {CalendarSystem} from '@astryxdesign/core/internal/calendar-system';
 import type {
@@ -367,17 +366,13 @@ function ScheduleMonthlyView({
                           ? 'date'
                           : undefined
                       }
-                      {...mergeProps(
-                        scheduleMonthCellFocusStyles.base,
-                        tw(
-                          focusOutlineFocusVisibleClassName,
-                          scheduleMonthCellClassName,
-                          index % 7 === 6 &&
-                            scheduleMonthCellLastColumnClassName,
-                          index >= days.length - 7 &&
-                            scheduleMonthCellLastRowClassName,
-                          isOutsideMonth && scheduleMonthCellOutsideClassName,
-                        ),
+                      className={tw(
+                        focusOutlineFocusVisibleClassName,
+                        scheduleMonthCellClassName,
+                        index % 7 === 6 && scheduleMonthCellLastColumnClassName,
+                        index >= days.length - 7 &&
+                          scheduleMonthCellLastRowClassName,
+                        isOutsideMonth && scheduleMonthCellOutsideClassName,
                       )}>
                       <div
                         className={tw(
