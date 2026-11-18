@@ -54,6 +54,7 @@ import {useTopNavRenderMode} from './TopNavRenderContext';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -411,12 +412,14 @@ function DrawerMegaMenu({
           themeProps('top-nav-mega-menu', {mode: 'drawer'}),
           stylex.props(
             navItemStyles.item,
-            interactionOverlayStyles.backgroundColor,
+            // The strength and the release; the colour is a class below.
+            interactionOverlayStyles.pressedAlpha,
             xstyle,
           ),
           tw(
             topNavMegaMenuDrawerHeaderClassName(),
             className,
+            interactionOverlayBackgroundColorClassName,
             focusOutlineFocusVisibleClassName,
           ),
           style,
