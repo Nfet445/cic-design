@@ -73,8 +73,8 @@ export const transferListPanelHeaderClassName = tw(
 
 export const transferListPanelBodyClassName = tw(
   'p-0',
-  'min-h-[var(--transfer-list-panel-min-block-size)]',
-  'max-h-[var(--transfer-list-panel-max-block-size)]',
+  '[min-height:var(--transfer-list-panel-min-block-size,12rem)]',
+  '[max-height:var(--transfer-list-panel-max-block-size,20rem)]',
   'overflow-y-auto overscroll-contain [scrollbar-gutter:stable]',
   '[@container_(max-width:40rem)]:min-h-0',
   '[@container_(max-width:40rem)]:max-h-none',
@@ -91,7 +91,7 @@ export const transferListItemClassName = 'min-w-0 px-3';
 
 export const transferListEmptyClassName = tw(
   'flex items-center justify-center p-4 text-center',
-  'min-h-[var(--transfer-list-panel-min-block-size)]',
+  '[min-height:var(--transfer-list-panel-min-block-size,12rem)]',
   '[@container_(max-width:40rem)]:min-h-0',
 );
 

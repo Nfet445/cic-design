@@ -2,8 +2,8 @@
 
 /**
  * @file index.ts
- * @input TransferListSelector, TransferList, and local layout variables
- * @output Public selector, composition primitive, prop types, and layout variables
+ * @input TransferListSelector and TransferList
+ * @output Public selector, composition primitive and prop types
  * @position Package boundary for the Lab TransferList selector experiment
  */
 
@@ -17,4 +17,3 @@ export {
   type TransferListSelectorCommitBehavior,
   type TransferListSelectorProps,
 } from './TransferListSelector';
-export {transferListVars} from './tokens.stylex';
