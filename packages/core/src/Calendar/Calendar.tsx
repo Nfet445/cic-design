@@ -132,6 +132,7 @@ import type {
 } from '../utils/dateTypes';
 import {normalizeDayOfWeek} from '../utils/dateTypes';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {useLocale} from '../i18n';
 import {useCalendarSystem} from '../i18n/useCalendarSystem';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -780,7 +781,7 @@ export function Calendar({ref, ...props}: CalendarProps) {
       onBlur={composeEventHandlers(rest.onBlur, handleRootBlur)}
       {...mergeProps(
         themeProps('calendar', {mode}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(calendarClassName, className),
         style,
       )}
