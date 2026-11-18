@@ -30,7 +30,12 @@ import {
 import {avatarShapeClassName} from '../Avatar/avatarClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import * as lightboxClasses from '../Lightbox/lightboxClasses';
-import {APP_SHELL_SKIP_LINK_CLASS} from '../AppShell/appShellClasses';
+import {
+  APP_SHELL_AREA_SURFACE_CLASS,
+  APP_SHELL_AREA_TRANSPARENT_CLASS,
+  APP_SHELL_AREA_WASH_CLASS,
+  APP_SHELL_SKIP_LINK_CLASS,
+} from '../AppShell/appShellClasses';
 import {
   breadcrumbMenuClassName,
   breadcrumbsListClassName,
@@ -493,8 +498,10 @@ import {
   fieldStatusDetachedIconClassName,
 } from '../FieldStatus/fieldStatusClasses';
 import {
+  anchoredHintClassName,
   anchoredHintKeysClassName,
   anchoredHintLabelClassName,
+  anchoredHintPassiveClassName,
 } from '../hooks/anchoredHintClasses';
 import {entryAnimationClassName} from '../hooks/entryAnimationClasses';
 import {
@@ -2949,6 +2956,11 @@ function familyClassNames() {
   add(sideNavClassName.resizableContainer);
   add(sideNavClassName.resizableHandle);
   add(APP_SHELL_SKIP_LINK_CLASS);
+  // The nav area's and the content area's fills, and the elevated content's
+  // transparent arm.
+  add(APP_SHELL_AREA_WASH_CLASS);
+  add(APP_SHELL_AREA_SURFACE_CLASS);
+  add(APP_SHELL_AREA_TRANSPARENT_CLASS);
   add(sideNavClassName.topbar);
   add(sideNavClassName.topbarIcons);
   for (const value of Object.values(sideNavItemClassName)) {
@@ -3629,7 +3641,10 @@ function familyClassNames() {
   add(rtlCenterInlineClassName);
   add(rtlCenterInlineBlockOffsetClassName.half);
   add(rtlCenterInlineBlockOffsetClassName.full);
-  // The anchored keyboard hint's key row and its label.
+  // The anchored keyboard hint: its surface, the passive arm, its key row and
+  // its label.
+  add(anchoredHintClassName);
+  add(anchoredHintPassiveClassName);
   add(anchoredHintKeysClassName);
   add(anchoredHintLabelClassName);
   add(scrollableAreaOverflowClassName);

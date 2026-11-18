@@ -6,7 +6,9 @@ import React from 'react';
 
 /**
  * @file AppShell.tsx
- * @input Uses React, Theme-resolved breakpoints, Layout, navigation slots, and StyleX
+ * @input Uses React, Theme-resolved breakpoints, Layout, navigation slots, the
+ *   class map in appShellClasses.ts, and StyleX for the four main keys it
+ *   cannot move
  * @output Exports AppShell component and AppShellProps with SSR-safe mobile layout
  * @position Page shell for an application — the top-level wrapper for any app.
  *   Composes Layout internally to provide header, sideNav, and main content areas.
@@ -63,6 +65,9 @@ import {
 import {TopNavRenderContext} from '../TopNav/TopNavRenderContext';
 import {TopNavMobileContentContext} from '../TopNav/TopNavMobileContentContext';
 import {
+  APP_SHELL_AREA_SURFACE_CLASS,
+  APP_SHELL_AREA_TRANSPARENT_CLASS,
+  APP_SHELL_AREA_WASH_CLASS,
   APP_SHELL_AUTO_MOBILE_TOP_BAR_CLASS,
   APP_SHELL_BANNER_CLASS,
   APP_SHELL_CONTENT_WRAPPER_CLASS,
@@ -319,11 +324,14 @@ export interface AppShellProps extends BaseProps<HTMLDivElement> {
 // Styles
 // =============================================================================
 
-// What stays off the class map: the area fills and the main focus-target keys
-// travel through `LayoutPanel`'s and `LayoutContent`'s `xstyle` prop, which
-// takes StyleX styles only; `mainSafeAreaEnd` and `panelAutoFill` ride the same
-// props. The skip link keeps its whole box here, and takes the shared ring as
-// a class like any other element.
+// What stays off the class map: the main focus-target keys, `mainSafeAreaEnd`
+// and `panelAutoFill` paint a property (`outline`, padding, `overflow`, `flex`)
+// that `LayoutContent`'s or `LayoutPanel`'s own class paints on the same
+// element. Two declarations for one property in `astryx-base` are decided by
+// the sheet's order, not by the xstyle slot, so the arm that must win reads the
+// container padding variable and keeps StyleX's last-wins composition. The
+// skip link keeps its whole box here, and takes the shared ring as a class like
+// any other element.
 type InsetRingStyle = CSSProperties & {'--focus-outline-offset'?: string};
 
 // Main scrolls its overflowing content and is a keyboard stop there; its ring
@@ -350,22 +358,6 @@ const styles = stylex.create({
       default: null,
       ':focus-visible': 'var(--radius-page)',
     },
-  },
-  contentBgSurface: {
-    backgroundColor: 'var(--color-background-surface)',
-  },
-  contentBgWash: {
-    backgroundColor: 'var(--color-background-body)',
-  },
-  contentBgTransparent: {
-    backgroundColor: 'transparent',
-    isolation: 'isolate',
-  },
-  navAreaWash: {
-    backgroundColor: 'var(--color-background-body)',
-  },
-  navAreaSurface: {
-    backgroundColor: 'var(--color-background-surface)',
   },
   // Main adds the bottom inset to the padding that LayoutContent publishes for
   // `contentPadding`. The published value excludes the inset, so a bleed child
@@ -652,30 +644,32 @@ export function AppShell({
     !mobileNavDisabled && hasNavContent && mobileNavReactNode == null;
   const navHasDividers = variant === 'section';
   const isElevated = variant === 'elevated';
-  const navAreaStyle =
+  const navAreaClassName =
     variant === 'wash' || variant === 'elevated'
-      ? styles.navAreaWash
+      ? APP_SHELL_AREA_WASH_CLASS
       : variant === 'surface'
-        ? styles.navAreaSurface
+        ? APP_SHELL_AREA_SURFACE_CLASS
         : undefined;
   // Section normally inherits the shell's surface background. Its auto-height
   // header needs to paint that surface itself while content scrolls beneath it.
-  const headerAreaStyle =
-    navAreaStyle ??
-    (isAuto && variant === 'section' ? styles.navAreaSurface : undefined);
-  const contentAreaStyle =
+  const headerAreaClassName =
+    navAreaClassName ??
+    (isAuto && variant === 'section'
+      ? APP_SHELL_AREA_SURFACE_CLASS
+      : undefined);
+  const contentAreaClassName =
     variant === 'wash'
-      ? styles.contentBgWash
+      ? APP_SHELL_AREA_WASH_CLASS
       : variant === 'elevated' && hasTopNav && hasSideNav && !isBelowBreakpoint
-        ? styles.contentBgTransparent
+        ? APP_SHELL_AREA_TRANSPARENT_CLASS
         : variant === 'surface' || variant === 'elevated'
-          ? styles.contentBgSurface
+          ? APP_SHELL_AREA_SURFACE_CLASS
           : undefined;
 
   // Background for sticky elements in auto mode — must be opaque so content
   // doesn't show through when scrolling underneath. Uses the nav area bg if
   // set, otherwise falls back to the shell variant bg (always surface for section).
-  const stickyBgStyle = navAreaStyle ?? styles.navAreaSurface;
+  const stickyBgClassName = navAreaClassName ?? APP_SHELL_AREA_SURFACE_CLASS;
 
   // =========================================================================
   // Header height measurement for sticky sideNav offset (auto mode)
@@ -780,8 +774,7 @@ export function AppShell({
     hasTopNav || hasBanner ? (
       <LayoutHeader padding={0} hasDivider={navHasDividers && hasTopNav}>
         {hasBanner && (
-          <div
-            {...mergeProps(APP_SHELL_BANNER_CLASS, stylex.props(navAreaStyle))}>
+          <div {...mergeProps(APP_SHELL_BANNER_CLASS, navAreaClassName)}>
             {banner}
           </div>
         )}
@@ -797,7 +790,7 @@ export function AppShell({
       role="banner"
       {...mergeProps(
         themeProps('app-shell-header', {variant}),
-        stylex.props(headerAreaStyle),
+        headerAreaClassName,
         tw(
           isAuto && APP_SHELL_HEADER_STICKY_CLASS,
           APP_SHELL_HEADER_SAFE_AREA_TOP_CLASS,
@@ -972,8 +965,8 @@ export function AppShell({
       isScrollable={isFill}
       {...themeProps('app-shell-sidenav', {variant})}
       xstyle={[
-        navAreaStyle,
-        isAuto && stickyBgStyle,
+        navAreaClassName,
+        isAuto && stickyBgClassName,
         isAuto && styles.panelAutoFill,
       ]}>
       <SideNavShellContext value={sideNavShell}>{sideNav}</SideNavShellContext>
@@ -1092,7 +1085,7 @@ export function AppShell({
       isScrollable={isFill}
       onBlur={handleMainBlur}
       xstyle={[
-        contentAreaStyle,
+        contentAreaClassName,
         drawsMainFocusRing &&
           shouldElevateWithCorner &&
           styles.mainElevatedCorner,
@@ -1148,7 +1141,7 @@ export function AppShell({
         role={headerContent == null ? 'banner' : undefined}
         {...mergeProps(
           themeProps('app-shell-header', {variant}),
-          stylex.props(headerAreaStyle),
+          headerAreaClassName,
           tw(
             isAuto && APP_SHELL_HEADER_STICKY_CLASS,
             APP_SHELL_HEADER_SAFE_AREA_SIDES_CLASS,
@@ -1162,7 +1155,7 @@ export function AppShell({
         )}>
         <LayoutHeader padding={0} hasDivider={navHasDividers}>
           <div
-            {...mergeProps(APP_SHELL_AUTO_MOBILE_TOP_BAR_CLASS, stylex.props())}
+            {...mergeProps(APP_SHELL_AUTO_MOBILE_TOP_BAR_CLASS)}
             role="navigation"
             aria-label={t('@astryx.appShell.mobileNavigation')}>
             <SideNavRenderContext value="topbar">

@@ -17,8 +17,14 @@
  * - /packages/lab/src/TransferList/index.ts
  */
 
-import {useCallback, useEffect, useRef, useState, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import {Button} from '@astryxdesign/core/Button';
 import {
   ComplexSelector,
@@ -33,6 +39,7 @@ import {
 } from '@astryxdesign/core/internal/reorder';
 import {TransferList, type TransferListProps} from './TransferList';
 import {
+  transferListSelectorContentClassName,
   transferListSelectorFieldsetBusyClassName,
   transferListSelectorFieldsetClassName,
   transferListSelectorFooterClassName,
@@ -41,26 +48,6 @@ import {
 import {tw} from '../tw';
 
 const DEFAULT_SELECTOR_WIDTH = 'min(41rem, calc(100vw - 32px))';
-
-/**
- * A dynamic StyleX style, not a class: the popup's own box must outrank the
- * content utilities `ComplexSelector` sets (`p-[var(--spacing-3)]`,
- * `overflow-auto`, its 480px max-height chain), and the two sheets share
- * `astryx-base`, where a class of ours would be decided by the later one.
- * `contentXstyle` is the seam that reaches that box.
- */
-const styles = stylex.create({
-  // Width tracks the `width` prop, so the field and its popup are one
-  // measurement rather than two that can disagree.
-  content: (width: string) => ({
-    width,
-    maxWidth: width,
-    maxHeight: 'calc(100vh - 32px)',
-    padding: 0,
-    overflow: 'hidden',
-    borderRadius: 'inherit',
-  }),
-});
 
 type TransferListSelectorShellProp =
   | 'label'
@@ -239,6 +226,11 @@ export function TransferListSelector<T extends string = string>({
     typeof width === 'number'
       ? `${width}px`
       : (width ?? DEFAULT_SELECTOR_WIDTH);
+  // The popup's box reads its width from this variable, which the class map
+  // beside the selector declares.
+  const contentStyle = {
+    '--_transfer-list-selector-width': resolvedWidth,
+  } as CSSProperties;
 
   return (
     <ComplexSelector
@@ -255,7 +247,8 @@ export function TransferListSelector<T extends string = string>({
       isDisabled={isDisabled}
       isLoading={isLoading}
       width={resolvedWidth}
-      contentXstyle={styles.content(resolvedWidth)}>
+      contentClassName={transferListSelectorContentClassName}
+      contentStyle={contentStyle}>
       {(appliedValue, commit, close, state) => {
         const isStaged = commitBehavior === 'staged';
         const transferListValue = isStaged ? draftValue : appliedValue;
