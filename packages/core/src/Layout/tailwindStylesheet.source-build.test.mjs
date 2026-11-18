@@ -3951,10 +3951,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // per-side padding took it to 2104, and the container's own padding then
     // moved out of StyleX as well: each component's theme chain and each
     // spacing token a padding prop accepts now prints its own class, and the
-    // Layout outer insets it publishes took the sheet to 2215. Ticket 55's
+    // Layout outer insets it publishes took the sheet to 2215, and the merged
+    // field, number-input and typeahead classes took it to 2224. Ticket 55's
     // group addon states — the marker-scoped height, four corner resets and
     // the keyboard rank — and the Selector, Typeahead and Tokenizer wrapper
-    // rows took it to 2228. The ceiling keeps its headroom above that.
+    // rows took it to 2228, and its menu slots to 2229. The ceiling keeps its
+    // headroom above that.
     expect(stylesheet.rules.size).toBeLessThan(2260);
   });
 

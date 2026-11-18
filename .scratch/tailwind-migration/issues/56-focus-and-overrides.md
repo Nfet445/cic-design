@@ -45,3 +45,35 @@ that reason.
 
 - This is the ticket that decides whether ticket 36 can remove the runtime; write the answer in
   `## Comments` even if it is "these five rules stay and here is why".
+
+## Plan (measured 2026-11-18, after `f3c0039d3`)
+
+A class CAN express the ring: a Tailwind variant prints `.class:focus-visible`
+(specificity 0,2,0) and `[&:has(:focus-visible)]:` prints 0,3,0, so the ring
+beats a rest-state utility inside `@layer astryx-base` on specificity rather
+than on sheet order. What kept the seam on StyleX was the unlayered
+declarations of components that still held maps; once those are gone, nothing
+is left to outrank.
+
+Measured call sites, excluding tests: `focusOutlineProps.` and
+`focusOutlineStyles.` appear in 93 files (`focusVisible(` 72, `focusWithin(` 3,
+`suppressed(` 2, `focusWithinFirstChild(`, `focusWithinOrPublished(`
+`publishFocusVisibleVars(` 1 each); `interactionOverlayProps.` and
+`interactionOverlayStyles.` appear 60 times. By directory the largest are
+`DateInput` 6, `DropdownMenu` 5, `Chat` 5, `TopNav` 4, `DateTimeInput` 4,
+`TabList` 3, `SideNav` 3, plus `lab/Schedule` 2 and `lab/Comments` 2.
+
+### Stages (parent does stage A and B, then one window per group)
+
+A. New `packages/core/src/utils/focusOutlineClasses.ts` with literal classes for
+every variant and a class-based `focusOutlineProps` whose functions accept
+class strings and return `{className}`; `FOCUS_OUTLINE` and
+`FOCUS_OUTLINE_PARTS` move there unchanged.
+B. Prove the shape on three call sites of different kinds (a plain button, a
+`stylex.props(...)` spread, and one that passes `xstyle`), verify in the
+built sheet that the variant rules exist and print after the rest state.
+C. One window per group: `core/DateInput`+`DateTimeInput`, `core/DropdownMenu`+
+`Chat`+`TopNav`+`TabList`+`SideNav`, the rest of core, then `lab`.
+D. Delete `utils/focusOutline.stylex.ts` and `utils/interactionOverlay.stylex.ts`,
+fold or document every `*Overrides.stylex.ts`, then answer ticket 36 in
+`## Comments`: which rules stay and why, or that nothing stays.

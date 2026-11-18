@@ -2,25 +2,22 @@
 
 /**
  * @file text.stylex.ts
- * @input Uses StyleX; the class builders in `textClasses.ts`
- * @output The class builders Text and Heading read, and the one StyleX rule
- *   the lab LineClamp still reads
+ * @input The class builders in `textClasses.ts` and the one StyleX rule in
+ *   `truncationTooltip.stylex.ts`
+ * @output The names this public subpath always published, now re-exported
  * @position Public subpath `@astryxdesign/core/Text/text.stylex`, kept so
  *   existing imports resolve.
  *
  * The type scale, color, weight, display, truncation, wrap, capsize, justify
  * and decoration styles are class strings now: pass them to `className`, not to
- * `stylex.props`. `truncationTooltipStyles` stays a StyleX rule because
- * `packages/lab` LineClamp reads it through `stylex.props`; it becomes a class
- * with that component.
+ * `stylex.props`. `truncationTooltipStyles` is the one StyleX value left, for
+ * `packages/lab` LineClamp, which passes it to `stylex.props`.
  *
  * @deprecated Import from `@astryxdesign/core/Text` instead.
  *
  * SYNC: When modified, update:
  * - /packages/core/src/Text/Text.doc.mjs
  */
-
-import * as stylex from '@stylexjs/stylex';
 
 export {
   headingClassName,
@@ -30,11 +27,4 @@ export {
   type HeadingClassNameOptions,
   type TextClassNameOptions,
 } from './textClasses';
-
-/** The width and word break of a truncation tooltip's content. */
-export const truncationTooltipStyles = stylex.create({
-  content: {
-    maxWidth: 300,
-    wordBreak: 'break-word',
-  },
-});
+export {truncationTooltipStyles} from './truncationTooltip.stylex';
