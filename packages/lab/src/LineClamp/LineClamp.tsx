@@ -24,7 +24,6 @@ import {
   type FocusEvent,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 
 import type {BaseProps} from '@astryxdesign/core';
 import {useTruncation} from '@astryxdesign/core/Text';
@@ -34,8 +33,9 @@ import {
   composeEventHandlers,
   focusOutlineFocusVisibleClassName,
   mergeProps,
-  themeProps,
   observeResize,
+  themeProps,
+  xstyleProps,
 } from '@astryxdesign/core/utils';
 import {useMergedRefs} from '@astryxdesign/core/hooks';
 import {lineClampClassName} from './lineClampClasses';
@@ -512,7 +512,7 @@ export function LineClamp({
         ref={mergedRef}
         {...mergeProps(
           themeProps('line-clamp'),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(focusOutlineFocusVisibleClassName, lineClampClassName, className),
           {...style, WebkitLineClamp: maxLines},
         )}

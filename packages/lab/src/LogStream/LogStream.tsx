@@ -32,10 +32,9 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 
 import type {BaseProps} from '@astryxdesign/core';
-import {mergeProps, themeProps} from '@astryxdesign/core/utils';
+import {mergeProps, themeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {tw} from '../tw';
 import {
   logStreamClassName,
@@ -371,7 +370,7 @@ export function LogStream({
       {...rest}
       {...mergeProps(
         themeProps('log-stream', {variant}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           isTerminal ? logStreamTerminalClassName : logStreamClassName,
           className,

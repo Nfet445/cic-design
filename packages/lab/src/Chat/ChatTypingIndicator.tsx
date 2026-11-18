@@ -23,9 +23,8 @@
  */
 
 import {useEffect, useMemo, useRef} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
-import {mergeProps, mergeRefs} from '@astryxdesign/core/utils';
+import {mergeProps, mergeRefs, xstyleProps} from '@astryxdesign/core/utils';
 import {useAnnounce} from '@astryxdesign/core/hooks';
 import {themeProps} from '@astryxdesign/core/utils';
 import {useLocale, useTranslator} from '@astryxdesign/core/i18n';
@@ -160,7 +159,7 @@ export function ChatTypingIndicator({
       data-testid={testId}
       {...mergeProps(
         themeProps('chat-typing-indicator'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(chatTypingIndicatorRootClassName, className),
         styleProp,
       )}>

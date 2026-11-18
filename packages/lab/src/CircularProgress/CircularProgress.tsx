@@ -20,14 +20,13 @@
  */
 
 import {useId, useLayoutEffect, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 
 import {
   SPINNER_ARC_FRACTION,
   spinnerRotorTurnClassName,
   syncRotationPhase,
 } from '@astryxdesign/core/internal/spinner-rotor';
-import {mergeProps} from '@astryxdesign/core/utils';
+import {mergeProps, xstyleProps} from '@astryxdesign/core/utils';
 import type {BaseProps} from '@astryxdesign/core';
 import {themeProps} from '@astryxdesign/core/utils';
 import {
@@ -477,7 +476,7 @@ export function CircularProgress({
       ref={ref}
       {...mergeProps(
         themeProps('circular-progress', {variant, size}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           circularProgressRootClassName,
           showLabel && circularProgressRootWithLabelClassName,

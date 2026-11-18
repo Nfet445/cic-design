@@ -31,6 +31,7 @@ import {
   composeEventHandlers,
   mergeProps,
   mergeRefs,
+  xstyleProps,
 } from '@astryxdesign/core/utils';
 import {tw} from '../tw';
 import {
@@ -328,7 +329,7 @@ function PageControlRow({
       {...htmlProps}
       ref={mergedRef}
       {...mergeProps(
-        stylex.props(isTouch && touchHitAreaStyles.layer, xstyle),
+        stylex.props(isTouch && touchHitAreaStyles.layer),
         tw(
           pageControlRootClassName,
           !isTouch && pageControlCroppedClassName,
@@ -336,9 +337,11 @@ function PageControlRow({
             (isInteracting
               ? pageControlPlatterShownClassName
               : pageControlPlatterHiddenClassName),
+          xstyleProps(xstyle).className,
           className,
         ),
         {
+          ...xstyleProps(xstyle).style,
           ...style,
           width: layout.width,
           height: PC.height,

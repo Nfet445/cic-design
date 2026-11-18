@@ -23,11 +23,11 @@
 
 import type {ReactNode} from 'react';
 import {useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {
   focusOutlineFocusVisibleClassName,
   mergeProps,
+  xstyleProps,
 } from '@astryxdesign/core/utils';
 import {themeProps} from '@astryxdesign/core/utils';
 import {Popover} from '@astryxdesign/core/Popover';
@@ -188,7 +188,7 @@ export function ChatEmojiPicker({
           ref={ref}
           {...mergeProps(
             themeProps('chat-emoji-picker'),
-            stylex.props(xstyle),
+            xstyleProps(xstyle),
             tw(chatEmojiPickerPanelClassName, className),
             styleProp,
           )}>
