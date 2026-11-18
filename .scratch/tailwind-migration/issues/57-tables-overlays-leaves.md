@@ -89,3 +89,41 @@ These stay on StyleX, each for a measured reason:
   whose `animation-name` and `@starting-style` frames the layer cannot pair with a utility.
 - `packages/core/src/Thumbnail/thumbnailRemoveButtonOverrides.stylex.ts` — two rules for one property
   on one element; inside `astryx-base` the sheet order would decide.
+
+## Comments — window J
+
+`227251c8c refactor(table): стили ячейки закреплённой колонки переходят в
+классы Tailwind` moves `useTableStickyColumns.tsx` off StyleX: its two maps
+(cell + shadow) are now literal text in
+`packages/core/src/Table/plugins/stickyColumns/stickyColumnClasses.ts`. The hook
+keeps only the inline `position: sticky` and the logical offset, so the
+composition-order fix recorded at `transformHeaderCell` still holds.
+
+No StyleX survivor. The one arm that argued for one was the RTL flip of the
+scroll shadow (`:is([dir="rtl"] *)` on `transform` and `background-image`). The
+`rtl:` variant compiles to `&:where(:dir(rtl), [dir="rtl"], [dir="rtl"] *)`, adds
+no specificity, and is emitted after the plain utilities (base at
+`dist/astryx-tailwind.css` 6828/6834, `rtl:` arms at 7823/7839), so it wins by
+order — the flip keeps working with no map. The divider's `[data-astryx-cell-
+gliding]` and `[data-astryx-table-pinned=carry]` arms likewise compile, and the
+`before:` variant supplies `content: var(--tw-content)` on every arm.
+
+Trap found, worth adding to the README: a `_` inside `var()` survives in a
+property-form arbitrary value (`[border-bottom-width:var(--_table-row-…)]`), but
+Tailwind normalizes `calc()` and turns the underscore into a space there —
+`calc(-1*var(--_table-row-divider-width,0px))` printed `var(-- table-row-…)`, an
+invalid declaration. The negative-margin utility form instead emits it intact:
+`-mb-[var(--_table-row-…)]` → `margin-bottom: calc(var(--_table-row-…) * -1)`.
+`packages/core/src/Table/tableGlideClasses.ts` still carries the broken
+`calc(-1*var(--_table-row-glide-offset,0px))` spelling at two rules
+(`[[data-astryx-cell-gliding=line]]:after:[bottom:calc(…)]`); it is outside this
+window and unfixed.
+
+The private attributes in that class text are a literal, so the module carries
+one `eslint-disable @astryx/no-raw-private-attribute` naming
+`Table/glidingDivider.ts`, which writes both names today and owns their meaning;
+there is no `privateAttributes/` owner for them yet.
+
+`useTableStickyColumns.test.tsx` gains one test that asserts the class text
+reaches the header, body, z-index and shadow classes, and the sheet test
+registers all five names.
