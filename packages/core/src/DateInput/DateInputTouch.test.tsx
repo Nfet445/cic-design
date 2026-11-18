@@ -87,7 +87,7 @@ import {
   rowsIn,
   DEFAULT_MONTH_REACH,
 } from './monthGeometry';
-import {WEEKS_PER_PANE, dateInputTouchGeometry} from './tokens.stylex';
+import {WEEKS_PER_PANE, dateInputTouchGeometry} from './dateInputGeometry';
 import {WHEEL_ROW_HEIGHT} from './wheelOptions';
 import {SWIPE_DISTANCE} from './useOwnScrollGesture';
 import {DRAG_SLOP} from './usePointerDragScroll';
@@ -3008,11 +3008,11 @@ describe('DateInput — scroll CSS (definition-level)', () => {
   });
 
   it('sizes the wheel row tighter than a day cell, with larger text', () => {
-    const tokens = read('tokens.stylex.ts');
+    const geometry = read('dateInputGeometry.ts');
     // Scroll-first rows: closer together than day cells and closer to the
     // text they hold, the way a platform picker packs them. The row's class
     // reads the token as a literal, so the two are checked together.
-    expect(tokens).toContain("wheelItemSize: '28px'");
+    expect(geometry).toContain("wheelItemSize: '28px'");
     expect(scrollWheelItemClassName).toContain('[block-size:28px]');
     expect(scrollWheelItemClassName).toContain(
       'text-[length:var(--text-large-size)]',
@@ -3078,24 +3078,13 @@ describe('DateInput — scroll CSS (definition-level)', () => {
     expect(scrollWheelItemFadeClassName).toContain('[animation-timeline:view');
   });
 
-  it('keeps the published tokens module to its released names', async () => {
-    // @astryxdesign/core/DateInput/tokens.stylex is a public subpath: the touch
-    // wheel's geometry lives in an unexported module beside it.
-    const tokens = await import('./tokens.stylex');
-    expect(Object.keys(tokens).sort()).toEqual([
-      'WEEKS_PER_PANE',
-      'dateInputTouchGeometry',
-      'dateInputTouchSizes',
-    ]);
-  });
-
   it('sizes the touch wheels as today’s column, with the large text of the theme', () => {
     // The wheel's row pitch is today's token, in numbers (`wheelItemSize`),
     // and its column is today's pane of six day rows.
-    const tokens = read('tokens.stylex.ts');
-    expect(tokens).toContain(`wheelItemSize: '${WHEEL_ROW_HEIGHT}px'`);
-    expect(tokens).toContain("daySize: '44px'");
-    expect(tokens).toContain('export const WEEKS_PER_PANE = 6;');
+    const geometry = read('dateInputGeometry.ts');
+    expect(geometry).toContain(`wheelItemSize: '${WHEEL_ROW_HEIGHT}px'`);
+    expect(geometry).toContain("daySize: '44px'");
+    expect(geometry).toContain('export const WEEKS_PER_PANE = 6;');
     // Read off the classes the column and the row apply, which is where the
     // pitch and the text size now live.
     expect(pickerWheelColumnClassName).toContain(

@@ -85,11 +85,6 @@
       "types": "./dist/theme/syntax/index.d.ts",
       "default": "./dist/theme/syntax/index.js"
     },
-    "./DateInput/tokens.stylex": {
-      "source": "./src/DateInput/tokens.stylex.ts",
-      "types": "./dist/DateInput/tokens.stylex.d.ts",
-      "default": "./dist/DateInput/tokens.stylex.js"
-    },
     "./Icon/IconSize.stylex": {
       "source": "./src/Icon/IconSize.stylex.ts",
       "types": "./dist/Icon/IconSize.stylex.d.ts",

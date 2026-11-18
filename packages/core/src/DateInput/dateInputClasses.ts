@@ -13,7 +13,7 @@
  */
 
 import type {CSSProperties} from 'react';
-import {dateInputTouchGeometry, dateInputTouchSizes} from './tokens.stylex';
+import {dateInputTouchGeometry, dateInputTouchSizes} from './dateInputGeometry';
 import {tw} from '../utils/tw';
 
 /**

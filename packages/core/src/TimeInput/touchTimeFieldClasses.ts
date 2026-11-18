@@ -14,7 +14,7 @@
  */
 
 import type {CSSProperties} from 'react';
-import {dateInputTouchGeometry} from '../DateInput/tokens.stylex';
+import {dateInputTouchGeometry} from '../DateInput/dateInputGeometry';
 import {tw} from '../utils/tw';
 
 export type TouchTimeFieldSize = 'sm' | 'md' | 'lg';

@@ -16,7 +16,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type * as stylex from '@stylexjs/stylex';
 import {describe, expect, expectTypeOf, it} from 'vitest';
-import * as dateInputTokens from '@astryxdesign/core/DateInput/tokens.stylex';
 import * as iconSize from '@astryxdesign/core/Icon/IconSize.stylex';
 import * as layerAnimations from '@astryxdesign/core/Layer/layerAnimations.stylex';
 import * as layerTextReset from '@astryxdesign/core/Layer/layerTextReset.stylex';
@@ -109,7 +108,6 @@ type NoKeys<Namespaces> = {[Name in keyof Namespaces]: never};
  * a marker or style builders.
  */
 const styleNamespacesBySubpath = {
-  './DateInput/tokens.stylex': [],
   './Icon/IconSize.stylex': ['iconSizeStyles'],
   './Layer/layerAnimations.stylex': [],
   './Layer/layerTextReset.stylex': [],
@@ -132,7 +130,6 @@ const styleNamespacesBySubpath = {
 const modulesBySubpath: Readonly<
   Record<keyof typeof styleNamespacesBySubpath, object>
 > = {
-  './DateInput/tokens.stylex': dateInputTokens,
   './Icon/IconSize.stylex': iconSize,
   './Layer/layerAnimations.stylex': layerAnimations,
   './Layer/layerTextReset.stylex': layerTextReset,
