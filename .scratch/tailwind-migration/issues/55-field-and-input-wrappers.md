@@ -79,8 +79,9 @@ survive in components outside this ticket's list.
 
 ## Comments — window 3
 
-Landed two commits: `refactor(input-group): добавить кнопку группы из класса, а не из StyleX` and
-`refactor(typeahead): высота поля приходит из класса, а не из StyleX`.
+Landed three commits: `refactor(input-group): добавить кнопку группы из класса, а не из StyleX`,
+`refactor(typeahead): высота поля приходит из класса, а не из StyleX`, and
+`refactor(typeahead): слоты меню берут вид из класса, а не из StyleX`.
 
 The first moves the group button addon's row geometry out of `InputGroup/groupStyles.ts`, which is now only
 `inputGroupItemProps`; `InputGroup/inputGroupClasses.ts` holds `inputGroupButtonAddonClassName`. Its corner
@@ -100,8 +101,13 @@ a written reason in place: those boxes share one element with the shared field b
 sheet, not by `tw`. BaseTypeahead's `popover` and `popoverCustomWidth` stay because `usePopover` takes
 StyleX styles only.
 
-Left: `BaseTypeahead`'s `dropdown`, `dropdownHeld`, `groupHeading`, `emptyState` and `loadingStatus` are
-plain classes with no field-base tie, so they can move; `dropdown` needs the gutter expression written out
-literally (`selectorClasses.ts` is the pattern) and `dropdownHeld` needs an inline `--astryx-*` property in
-place of its argument. Suites: 14 files / 612 tests run for this window; `BaseTypeahead.test.tsx` and
+A third commit, `refactor(typeahead): слоты меню берут вид из класса, а не из StyleX`, takes the three
+menu slots that carry no tie — `typeaheadGroupHeadingClassName`, `typeaheadEmptyStateClassName`,
+`typeaheadLoadingStatusClassName`. The sheet went to 2229 rules.
+
+Left: `BaseTypeahead`'s `dropdown` and `dropdownHeld`. Both carry no field-base tie, so they can move;
+`dropdown` needs the viewport-cap expression written out literally (`selectorClasses.ts`'s
+`selectorListboxClassName` is the same expression at 300px) and `dropdownHeld` needs an inline
+`--astryx-*` property in place of its argument. The two `height` maps in `Tokenizer.tsx` stay as written in
+the paragraph above, and so does `popover`. Suites: 14 files / 612 tests run for this window; `BaseTypeahead.test.tsx` and
 `BaseTypeahead.menu.test.tsx` hold 3 failures that also fail without these commits.

@@ -693,9 +693,12 @@ import {
   TYPEAHEAD_ITEM_LABEL_CLASS,
   TYPEAHEAD_ROW_CONTENT_CLASS,
   typeaheadContentLaneClassName,
+  typeaheadEmptyStateClassName,
   typeaheadEndLaneClassName,
+  typeaheadGroupHeadingClassName,
   typeaheadInputClassName,
   typeaheadInputDisabledClassName,
+  typeaheadLoadingStatusClassName,
   typeaheadRowClassName,
   typeaheadWrapperSizeClassName,
 } from '../Typeahead/typeaheadClasses';
@@ -2375,6 +2378,9 @@ function familyClassNames() {
   add(typeaheadInputClassName);
   add(typeaheadInputDisabledClassName);
   add(typeaheadEndLaneClassName);
+  add(typeaheadGroupHeadingClassName);
+  add(typeaheadEmptyStateClassName);
+  add(typeaheadLoadingStatusClassName);
   add(typeaheadContentLaneClassName);
   for (const size of ['sm', 'md', 'lg']) {
     add(typeaheadWrapperSizeClassName[size]);

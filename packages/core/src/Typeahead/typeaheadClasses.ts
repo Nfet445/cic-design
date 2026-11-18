@@ -51,6 +51,34 @@ export const typeaheadWrapperSizeClassName: Record<TypeaheadRowSize, string> = {
   lg: 'min-h-[var(--size-element-lg)]',
 };
 
+/** A group's heading above its rows: no target of its own, so no row paint. */
+export const typeaheadGroupHeadingClassName = tw(
+  'px-[var(--spacing-2)]',
+  'pt-[var(--spacing-2)]',
+  'pb-[var(--spacing-1)]',
+  '[font-size:var(--text-supporting-size)]',
+  '[line-height:var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+  'select-none',
+);
+
+/** The row the menu shows when a search found nothing. */
+export const typeaheadEmptyStateClassName = tw(
+  'p-3',
+  'text-center',
+  '[font-size:var(--text-supporting-size)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** The spinner a direct caller gets, in flow beside its field. */
+export const typeaheadLoadingStatusClassName = tw(
+  'inline-flex',
+  'shrink-0',
+  'items-center',
+  'justify-center',
+  'p-[var(--spacing-1)]',
+);
+
 /** The fill a highlighted row draws over the base row's transparent one. */
 export const TYPEAHEAD_ROW_HIGHLIGHT_CLASS =
   '[--_typeahead-row-bg:var(--color-overlay-hover)]';
