@@ -728,6 +728,7 @@ import {
 } from '../MultiSelector/multiSelectorClasses';
 import {
   TYPEAHEAD_INPUT_HIDDEN_CLASS,
+  TYPEAHEAD_MENU_WIDTH_CLASS,
   TYPEAHEAD_INPUT_HIDDEN_CLASS,
   TYPEAHEAD_TOKEN_OVERLAY_CLASS,
   TYPEAHEAD_DEFAULT_ITEM_CLASS,
@@ -737,6 +738,7 @@ import {
   TYPEAHEAD_ITEM_FRAME_CLASS,
   TYPEAHEAD_ITEM_LABEL_CLASS,
   TYPEAHEAD_ROW_CONTENT_CLASS,
+  typeaheadDropdownClassName,
   typeaheadContentLaneClassName,
   typeaheadEmptyStateClassName,
   typeaheadEndLaneClassName,
@@ -744,6 +746,7 @@ import {
   typeaheadInputClassName,
   typeaheadInputDisabledClassName,
   typeaheadLoadingStatusClassName,
+  typeaheadPopoverClassName,
   typeaheadRowClassName,
   typeaheadWrapperSizeClassName,
 } from '../Typeahead/typeaheadClasses';
@@ -2459,6 +2462,9 @@ function familyClassNames() {
   }
   add(TYPEAHEAD_ROW_CONTENT_CLASS);
   add(TYPEAHEAD_INPUT_HIDDEN_CLASS);
+  add(typeaheadDropdownClassName);
+  add(typeaheadPopoverClassName);
+  add(TYPEAHEAD_MENU_WIDTH_CLASS);
   add(TYPEAHEAD_TOKEN_OVERLAY_CLASS);
   add(TYPEAHEAD_INPUT_HIDDEN_CLASS);
   add(TYPEAHEAD_DEFAULT_ITEM_CLASS);

@@ -30,6 +30,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
   type RefObject,
 } from 'react';
@@ -72,12 +73,15 @@ import type {SearchContext, SearchableItem, SearchSource} from './types';
 import {themeProps} from '../utils/themeProps';
 import {
   TYPEAHEAD_DEFAULT_ITEM_CLASS,
+  TYPEAHEAD_MENU_WIDTH_CLASS,
   TYPEAHEAD_ROW_CONTENT_CLASS,
+  typeaheadDropdownClassName,
   typeaheadEmptyStateClassName,
   typeaheadGroupHeadingClassName,
   typeaheadInputClassName,
   typeaheadInputDisabledClassName,
   typeaheadLoadingStatusClassName,
+  typeaheadPopoverClassName,
   typeaheadRowClassName,
 } from './typeaheadClasses';
 import {tw} from '../utils/tw';
@@ -363,53 +367,27 @@ export interface BaseTypeaheadProps<T extends SearchableItem> extends Omit<
 // Styles
 // =============================================================================
 
-/**
- * Both caps stay here. Each states its fallback as two declarations for one
- * property through `stylex.firstThatWorks`, in a fixed order — a `<length>` this
- * browser may not parse first, then the `vh`/`vw` one it does — and one
- * Tailwind arbitrary value cannot express that pair. `dropdownHeld` writes the
- * same property as `dropdown`, and `popover`/`popoverCustomWidth` go to a
- * layer's `xstyle`, which takes StyleX styles only.
- */
-const styles = stylex.create({
-  dropdown: {
-    boxSizing: 'border-box',
-    // Matches DROPDOWN_MAX_HEIGHT, which the room-below cap uses. It is no
-    // taller than its layer's block-size cap either, which folds in the
-    // software keyboard: the list ends above the keyboard with the layer.
-    maxHeight: stylex.firstThatWorks(
-      `min(300px, ${layerViewportInset.maxBlockSize})`,
-      `min(300px, ${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-    overflowY: 'auto',
-    padding: 'var(--spacing-1)',
-  },
-  // Once a later list for the same query arrives, the popup holds its height
-  // above the field, or the room below it (spec:AST-092 FR6).
-  dropdownHeld: (height: number) => ({
-    maxHeight: `${height}px`,
-  }),
-  // The menu prefers the input's width and renders an explicit menuWidth at
-  // its size, both clamped to the layer runtime's viewport cap rather than to
-  // the room beside the input (spec:AST-059 FR2, FR7).
-  popover: {
-    boxSizing: 'border-box',
-    minWidth: stylex.firstThatWorks(
-      `min(anchor-size(width), ${layerViewportInset.maxInlineSize})`,
-      `min(anchor-size(width), ${layerViewportInset.maxInlineSizeFallback})`,
-      'anchor-size(width)',
-    ),
-  },
-  popoverCustomWidth: (width: string) => ({
-    width,
-  }),
-});
-
 // =============================================================================
 // Helpers
 // =============================================================================
 
-/** The result popup's maximum height in CSS pixels (`styles.dropdown`). */
+/** A held popup height, read by `typeaheadDropdownClassName`. */
+type HeldBlockSizeStyle = CSSProperties &
+  Record<'--astryx-typeahead-held-block-size', string>;
+
+const heldBlockSizeStyle = (height: number): HeldBlockSizeStyle => ({
+  '--astryx-typeahead-held-block-size': `${height}px`,
+});
+
+/** A per-instance `menuWidth`, read by `TYPEAHEAD_MENU_WIDTH_CLASS`. */
+type MenuWidthStyle = CSSProperties &
+  Record<'--astryx-typeahead-menu-width', string>;
+
+const menuWidthStyle = (width: string): MenuWidthStyle => ({
+  '--astryx-typeahead-menu-width': width,
+});
+
+/** The result popup's maximum height in CSS pixels. */
 const DROPDOWN_MAX_HEIGHT = 300;
 
 /**
@@ -2185,10 +2163,9 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
       aria-label={t('@astryx.typeahead.searchResults')}
       {...mergeProps(
         themeProps('typeahead-dropdown'),
-        stylex.props(
-          styles.dropdown,
-          heldHeight != null && styles.dropdownHeld(heldHeight),
-        ),
+        typeaheadDropdownClassName,
+        undefined,
+        heldHeight != null ? heldBlockSizeStyle(heldHeight) : undefined,
       )}>
       {results.length === 0 && hasSearched && !isSearchPending ? (
         <div
@@ -2398,16 +2375,19 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
           placement: 'below',
           alignment: 'start',
           offset: 'var(--spacing-1)',
-          xstyle: [
-            styles.popover,
-            menuWidth != null &&
-              styles.popoverCustomWidth(
-                clampInlineSize(
-                  menuWidth,
-                  layerViewportInset.maxInlineSizeFallback,
-                ),
-              ),
-          ],
+          className: tw(
+            typeaheadPopoverClassName,
+            menuWidth != null && TYPEAHEAD_MENU_WIDTH_CLASS,
+          ),
+          style:
+            menuWidth != null
+              ? menuWidthStyle(
+                  clampInlineSize(
+                    menuWidth,
+                    layerViewportInset.maxInlineSizeFallback,
+                  ),
+                )
+              : undefined,
         },
       )}
     </>

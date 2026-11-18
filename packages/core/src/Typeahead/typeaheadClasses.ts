@@ -242,3 +242,38 @@ export const TYPEAHEAD_INPUT_HIDDEN_CLASS = tw(
   'opacity-0',
   'pointer-events-none',
 );
+
+/**
+ * The result popup's box: no taller than its layer's block-size cap, which
+ * folds in the software keyboard, so the list ends above the keyboard with the
+ * layer. A later list for the same query holds the height this one reached
+ * (`spec:AST-092` FR6): the component publishes that height as the private
+ * `--astryx-typeahead-held-block-size`, and both arms below read it first. The
+ * `@supports` arm serves an engine without the dynamic-viewport units, the same
+ * pair `multiSelectorListWrapperClassName` states.
+ */
+export const typeaheadDropdownClassName = tw(
+  'box-border',
+  'overflow-y-auto',
+  'p-[var(--spacing-1)]',
+  '[max-block-size:var(--astryx-typeahead-held-block-size,min(300px,calc(100dvb_-_max(var(--spacing-4),env(safe-area-inset-top,0px))_-_var(--astryx-layer-inset-block-start,0px)_-_max(var(--spacing-4),env(safe-area-inset-bottom,0px))_-_var(--astryx-layer-inset-block-end,0px)),var(--_layer-keyboard-max-block-size,100dvb)))]',
+  '[@supports_not_(block-size:100dvb)]:[max-block-size:var(--astryx-typeahead-held-block-size,min(300px,calc(100vh_-_var(--spacing-4)_-_var(--astryx-layer-inset-block-start,0px)_-_var(--spacing-4)_-_var(--astryx-layer-inset-block-end,0px)),var(--_layer-keyboard-max-block-size,100vh)))]',
+);
+
+/**
+ * The menu's box: at least as wide as the input it anchors to, and never wider
+ * than the room its layer leaves (`spec:AST-059` FR2, FR7). The `@supports` arm
+ * serves an engine without the `vi` unit.
+ */
+export const typeaheadPopoverClassName = tw(
+  'box-border',
+  '[min-width:min(anchor-size(width),calc(100vi_-_max(var(--spacing-4),env(safe-area-inset-left,0px))_-_var(--astryx-layer-inset-inline-start,0px)_-_max(var(--spacing-4),env(safe-area-inset-right,0px))_-_var(--astryx-layer-inset-inline-end,0px)))]',
+  '[@supports_not_(inline-size:100vi)]:[min-width:min(anchor-size(width),calc(100vw_-_var(--spacing-4)_-_var(--spacing-4)_-_var(--astryx-layer-inset-inline-start,0px)_-_var(--astryx-layer-inset-inline-end,0px)))]',
+);
+
+/**
+ * The explicit `menuWidth`, a per-instance width: the component publishes it as
+ * the private `--astryx-typeahead-menu-width` beside this class.
+ */
+export const TYPEAHEAD_MENU_WIDTH_CLASS =
+  '[width:var(--astryx-typeahead-menu-width)]';
