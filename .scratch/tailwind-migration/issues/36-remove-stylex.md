@@ -170,3 +170,31 @@ Measured: `packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` pa
 rule). `Table`, `SideNav`, `Chat` and `DropdownMenu` suites are green, and
 `pnpm exec tsc --noEmit -p tsconfig.json` reports only the four pre-existing
 `src/i18n/getLocaleDirection.ts` errors this window does not own.
+
+### group A: what a class can carry, and what it cannot
+
+Fourteen modules were re-read against the cascade. Three converted; the rest stay
+StyleX because the rule they beat is not a class in `@layer astryx-base`.
+
+Converted, each with a class in the component's `*Classes.ts` that names the
+element's own class a second time (`.astryx-<component>`) so it wins by
+specificity instead of sheet order: `SelectableCard/selectableCardSelection`
+(`astryx-selectable-card`, the selected border colour), `RadioList/radioListItemRow`
+(`astryx-radio-list-item`, the bare row's zeroed padding/radius/fill), and
+`Thumbnail/thumbnailRemoveButtonOverrides` (`astryx-button`, the remove button's
+corner, size and scrim).
+
+What still holds a module, and why:
+
+- `Avatar/avatarGroupRing.stylex.ts` — the rule it beats is the caller's `border-0`,
+  `border-*` or `ms-*` utility from `className`. That utility sits in the consumer's
+  `@layer utilities`, which outranks `astryx-base` whatever the specificity, so a class
+  that repeats `astryx-avatar` loses where the unlayered rule wins. The step is also a
+  declaration AvatarGroup reads back per member.
+
+Measured: `packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` passes
+with the 2320 ceiling unchanged (each new class compiles to rules the sheet already
+carries or to one new rule per property), the `SelectableCard`, `RadioList` and
+`Thumbnail` suites are green, and `pnpm exec tsc --noEmit -p tsconfig.json` reports
+only the four pre-existing `src/i18n/getLocaleDirection.ts` errors this window does
+not own.
