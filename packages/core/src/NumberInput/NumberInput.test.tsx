@@ -3078,8 +3078,10 @@ describe('NumberInput stepper padding coupling', () => {
     'var(--astryx-number-input-padding-block-start, var(--astryx-number-input-padding, var(--spacing-1)))';
   const BLOCK_END =
     'var(--astryx-number-input-padding-block-end, var(--astryx-number-input-padding, var(--spacing-1)))';
+  const INLINE_START =
+    'var(--astryx-number-input-padding-inline-start, var(--astryx-number-input-padding-inline, var(--astryx-number-input-padding, var(--spacing-2))))';
 
-  // jsdom re-serializes a var() chain without the spaces after its commas.
+  // A class name carries the chain without the spaces jsdom would drop.
   const noSpace = (value: string) => value.replace(/\s+/g, '');
 
   it('reads its padding from the public number-input padding tokens', () => {
@@ -3092,13 +3094,22 @@ describe('NumberInput stepper padding coupling', () => {
       />,
     );
     const root = container.querySelector('.astryx-number-input') as HTMLElement;
-    // Read as physical properties: StyleX compiles the block-axis logical
-    // properties to `padding-top`/`padding-bottom` (identical in every
-    // horizontal writing mode). Per side, not through the shared field base's
-    // `paddingBlock` shorthand, so each edge can be cancelled on its own.
-    const wrapper = getComputedStyle(root);
-    expect(noSpace(wrapper.paddingTop)).toBe(noSpace(BLOCK_START));
-    expect(noSpace(wrapper.paddingBottom)).toBe(noSpace(BLOCK_END));
+    // The wrapper's padding is a class, so the class text is what jsdom can
+    // read: per side, not through the shared field base's `paddingBlock`
+    // shorthand, so each edge can be cancelled on its own.
+    const wrapperClasses = new Set(classesOf(root));
+    expect(wrapperClasses).toContain(
+      `[padding-block-start:${noSpace(BLOCK_START)}]`,
+    );
+    expect(wrapperClasses).toContain(
+      `[padding-block-end:${noSpace(BLOCK_END)}]`,
+    );
+    expect(wrapperClasses).toContain(
+      `[padding-inline-start:${noSpace(INLINE_START)}]`,
+    );
+    // The column spans the inline end edge, so that edge stays free where the
+    // column shows.
+    expect(wrapperClasses).toContain('[padding-inline-end:0]');
 
     // The column cancels the wrapper's block padding by reading the same
     // tokens — not a hardcoded default — so it stays flush when a theme

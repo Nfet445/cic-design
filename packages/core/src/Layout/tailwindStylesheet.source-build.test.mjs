@@ -451,6 +451,7 @@ import {
   numberInputEntryClassName,
   numberInputHeightClassName,
   numberInputStepperButtonClassName,
+  numberInputWrapperClassName,
 } from '../NumberInput/numberInputClasses';
 import {
   panelSearchInputFieldClassName,
@@ -3433,6 +3434,9 @@ function familyClassNames() {
       add(numberInputStepperButtonClassName({isDisabled}));
     }
   }
+  for (const hasNumberSteppers of [false, true]) {
+    add(numberInputWrapperClassName({hasNumberSteppers}));
+  }
   add(NUMBER_INPUT_UNITS_CLASS);
   add(NUMBER_INPUT_STEPPER_COLUMN_CLASS);
   add(NUMBER_INPUT_DECREMENT_CLASS);
@@ -3888,8 +3892,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // row's own press paint added its mouse and coarse arms. Ticket 54 then
     // moved the heading level scale to class text — its eighteen size, leading
     // and weight rules — and the stack's own flex utilities out of StyleX, and
-    // this branch measured 2094. The ceiling keeps its headroom above that.
-    expect(stylesheet.rules.size).toBeLessThan(2100);
+    // this branch measured 2094. Ticket 55's field focus scope and NumberInput's
+    // per-side padding took it to 2104. The ceiling keeps its headroom above
+    // that.
+    expect(stylesheet.rules.size).toBeLessThan(2120);
   });
 
   it('prints a RadioList row’s coarse press arm after its mouse arm', () => {

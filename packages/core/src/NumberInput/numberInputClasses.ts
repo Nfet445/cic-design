@@ -4,15 +4,13 @@
  * @file numberInputClasses.ts
  * @input Uses the theme's typography, type-scale, element-size and public
  *   `number-input` padding variables, plus the control's size and state
- * @output Tailwind utility class names for NumberInput's entry, its unit, the
- *   stepper column and the two stepper buttons
+ * @output Tailwind utility class names for NumberInput's wrapper, its entry,
+ *   its unit, the stepper column and the two stepper buttons
  * @position Internal to NumberInput; the Tailwind build scans it for class names
  *
- * The wrapper is not here: it is the same element as the shared field box
- * class, and its own padding and z-index rules stay StyleX in
- * `NumberInput.tsx`, where an unlayered declaration outranks a class. Its rule
- * and the stepper column's padding cancellation are the only style left in the
- * component file.
+ * The wrapper's own padding is here too: it is the same element as the shared
+ * field box class, and a side class beats that box's `px`/`py` utilities by
+ * sheet order.
  *
  * SYNC: When modified, update
  * - /packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
@@ -20,6 +18,34 @@
 
 import type {NumberInputSize} from './NumberInput';
 import {tw} from '../utils/tw';
+
+/**
+ * The field box's own padding, per side. A theme respaces the field through the
+ * public `--astryx-number-input-padding*` chain, whose last fallback is the
+ * shared field default; per side, because the stepper column cancels the block
+ * edges one by one.
+ *
+ * The column spans the field's full height over the inline end edge, so the box
+ * leaves that edge free where the column shows, and takes the padding back
+ * under a coarse pointer, where the column is hidden.
+ */
+export function numberInputWrapperClassName({
+  hasNumberSteppers,
+}: {
+  hasNumberSteppers: boolean;
+}): string {
+  return tw(
+    '[padding-block-start:var(--astryx-number-input-padding-block-start,var(--astryx-number-input-padding,var(--spacing-1)))]',
+    '[padding-block-end:var(--astryx-number-input-padding-block-end,var(--astryx-number-input-padding,var(--spacing-1)))]',
+    '[padding-inline-start:var(--astryx-number-input-padding-inline-start,var(--astryx-number-input-padding-inline,var(--astryx-number-input-padding,var(--spacing-2))))]',
+    hasNumberSteppers
+      ? tw(
+          '[padding-inline-end:0]',
+          'pointer-coarse:[padding-inline-end:var(--astryx-number-input-padding-inline-end,var(--astryx-number-input-padding-inline,var(--astryx-number-input-padding,var(--spacing-2))))]',
+        )
+      : '[padding-inline-end:var(--astryx-number-input-padding-inline-end,var(--astryx-number-input-padding-inline,var(--astryx-number-input-padding,var(--spacing-2))))]',
+  );
+}
 
 const HEIGHT_CLASS: Record<NumberInputSize, string> = {
   sm: '[height:var(--size-element-sm)]',
