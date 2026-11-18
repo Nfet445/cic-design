@@ -91,7 +91,7 @@ export function fileInputBoxClassName({
     '[transition-timing-function:var(--ease-standard)]',
     isDropzone ? DROPZONE_HOVER_RING : COMPACT_HOVER_RING,
     'cursor-pointer',
-    `${DISABLED_SELECTOR}:cursor-default`,
+    '[&:is(:disabled,[aria-disabled=true])]:cursor-default',
     isDisabled && 'opacity-50',
     isBusy && 'cursor-default shadow-none',
     'outline-none',

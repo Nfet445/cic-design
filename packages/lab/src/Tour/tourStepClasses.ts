@@ -23,10 +23,12 @@ const tourStepOverlayClassName =
   'fixed inset-0 w-full h-full m-0 p-0 border-0 border-none bg-transparent overflow-visible';
 
 /** The same box, catching presses for a dimmed step. */
-export const tourStepOverlayInteractiveClassName = `${tourStepOverlayClassName} pointer-events-auto`;
+export const tourStepOverlayInteractiveClassName =
+  'fixed inset-0 w-full h-full m-0 p-0 border-0 border-none bg-transparent overflow-visible pointer-events-auto';
 
 /** Click-through overlay root for a step without a backdrop. */
-export const tourStepOverlayPassiveClassName = `${tourStepOverlayClassName} pointer-events-none`;
+export const tourStepOverlayPassiveClassName =
+  'fixed inset-0 w-full h-full m-0 p-0 border-0 border-none bg-transparent overflow-visible pointer-events-none';
 
 /**
  * The highlight box, sized to the target and non-interactive so presses reach

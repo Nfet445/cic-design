@@ -117,8 +117,8 @@ export function resizeHandleHitAreaClassName({
       : 'h-[min(var(--spacing-4),100%)]'
     : hasPaneLength
       ? isHorizontal
-        ? `w-[min(var(--spacing-4),var(${RESIZE_HANDLE_PANE_LENGTH_VAR}))]`
-        : `h-[min(var(--spacing-4),var(${RESIZE_HANDLE_PANE_LENGTH_VAR}))]`
+        ? 'w-[min(var(--spacing-4),var(--astryx-resize-handle-pane-length))]'
+        : 'h-[min(var(--spacing-4),var(--astryx-resize-handle-pane-length))]'
       : isHorizontal
         ? 'w-[var(--spacing-4)]'
         : 'h-[var(--spacing-4)]';
@@ -177,8 +177,12 @@ export function resizeHandlePillClassName({
     side === 'center'
       ? 'top-1/2'
       : isHorizontal
-        ? `start-0 [transform:translate(calc(${side === 'start' ? -1 : 1}*(100%+var(--spacing-1))),-50%)]`
-        : `top-0 [transform:translate(-50%,calc(${side === 'start' ? -1 : 1}*(100%+var(--spacing-1))))]`;
+        ? side === 'start'
+          ? 'start-0 [transform:translate(calc(-1*(100%+var(--spacing-1))),-50%)]'
+          : 'start-0 [transform:translate(calc(1*(100%+var(--spacing-1))),-50%)]'
+        : side === 'start'
+          ? 'top-0 [transform:translate(-50%,calc(-1*(100%+var(--spacing-1))))]'
+          : 'top-0 [transform:translate(-50%,calc(1*(100%+var(--spacing-1))))]';
 
   return tw(
     'absolute z-2 touch-none select-none rounded-[var(--radius-full)]',

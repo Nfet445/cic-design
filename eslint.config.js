@@ -525,6 +525,34 @@ export default defineConfig(
       '@astryx/no-raw-color': 'warn',
     },
   },
+  // Class text the Tailwind scanner cannot read — an interpolated class, or
+  // class text in a file the `@source` glob never opens — compiles to nothing
+  // and leaves the component applying a class no rule declares. Nothing else
+  // notices: it is not a type error, no test fails, and the browser shows the
+  // unstyled element. Error in both tiers because the failure is silent and
+  // the fix is mechanical (write the class out, or move it to the map).
+  {
+    files: [
+      'packages/core/src/**/*.{ts,tsx}',
+      'packages/lab/src/**/*.{ts,tsx}',
+      'packages/charts/src/**/*.{ts,tsx}',
+      'packages/richtext/src/**/*.{ts,tsx}',
+    ],
+    ignores: [
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.testing.ts',
+      '**/__tests__/**',
+      '**/*.stylex.ts',
+      '**/*.stories.tsx',
+    ],
+    plugins: {
+      '@astryx': astryxEslintPlugin,
+    },
+    rules: {
+      '@astryx/no-invisible-class': reactSeverity,
+    },
+  },
   // The i18n runtime itself defines the message strings the rest of the
   // package resolves against; a "hardcoded string" check against it would be
   // circular. Turn off @astryx/no-hardcoded-i18n-string just for this dir.

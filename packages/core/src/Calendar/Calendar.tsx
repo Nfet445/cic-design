@@ -62,13 +62,13 @@ import {
   monthGridWeekRowClassName,
 } from './calendarClasses';
 import {tw} from '../utils/tw';
+import {RTL_MIRROR_CLASS} from '../utils/rtlClasses';
 
 /**
  * The RTL mirror the nav chevrons need: a `scaleX(-1)` inside `dir="rtl"`.
  * It sits on its own wrapper span because Icon's string mode replaces a
  * caller's className.
  */
-const RTL_MIRROR = 'rtl:[transform:scaleX(-1)]';
 import {
   type PlainDate,
   plainDateFromISO,
@@ -799,7 +799,7 @@ export function Calendar({ref, ...props}: CalendarProps) {
             // Wrapper span (not Icon props): Icon's string mode clobbers
             // caller classNames, so the RTL mirror must live on its own
             // element.
-            <span className={tw(calendarNavIconClassName, RTL_MIRROR)}>
+            <span className={tw(calendarNavIconClassName, RTL_MIRROR_CLASS)}>
               <Icon icon="chevronLeft" size="sm" color="inherit" />
             </span>
           }
@@ -820,7 +820,7 @@ export function Calendar({ref, ...props}: CalendarProps) {
           label={t('@astryx.calendar.nextMonth')}
           variant="ghost"
           icon={
-            <span className={tw(calendarNavIconClassName, RTL_MIRROR)}>
+            <span className={tw(calendarNavIconClassName, RTL_MIRROR_CLASS)}>
               <Icon icon="chevronRight" size="sm" color="inherit" />
             </span>
           }
