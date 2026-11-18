@@ -159,3 +159,16 @@ disclosure, and overlays/chrome with the lab.
 element's inline style (`ZOOM_INSET_RING_STYLE`, `MAIN_SCROLL_INSET_RING_STYLE`,
 `VIEWPORT_INSET_RING_STYLE`). A third window carries the action and disclosure
 group, and a fourth carries the interaction overlay.
+
+### Stage D, what the overlay arm learned (window 56g)
+
+A converted overlay site keeps exactly `interactionOverlayStyles.pressedAlpha` in its StyleX
+argument: that entry publishes `--astryx-press-alpha`, the release animation and the
+`--_press-paint-image` variable the new class reads, and it writes no `background-image` or
+`background-color`, so it cannot outrank the class. Sites whose whole reason for the map was the
+strength or the release (`Thumbnail`, `ClickableCard`, `CheckboxInput`, `CheckboxListItem`,
+`SelectableCard`) plus `AvatarGroupOverflow`'s `backgroundImageOnNeutral` stay as they are.
+
+The overlay class family lives in `packages/core/src/utils/interactionOverlayClasses.ts`
+(`interactionOverlayBackgroundImageClassName`, `interactionOverlayBackgroundColorClassName`,
+`interactionOverlayPressedBackgroundColorClassName`).
