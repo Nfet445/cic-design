@@ -105,7 +105,8 @@ function isExemptFile(filename) {
  * `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa` — bounded on both sides so `#ff` and
  * `#1234567` are not colours, and neither is the tail of a longer word.
  */
-const HEX = /(?<![\w#])#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})(?![\w#])/;
+const HEX =
+  /(?<![\w#])#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})(?![\w#])/;
 
 /**
  * Every CSS colour notation that takes arguments. `color()` and the lab/lch
@@ -113,7 +114,8 @@ const HEX = /(?<![\w#])#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})(?![\w
  * different spelling, and leaving them out makes the rule a lint against one
  * syntax rather than against the defect.
  */
-const COLOR_FUNCTION = /(?<![\w-])(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/gi;
+const COLOR_FUNCTION =
+  /(?<![\w-])(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/gi;
 
 /**
  * The index just past the parenthesis opened at `from - 1`, or -1 if it never
@@ -209,7 +211,9 @@ function isAlphaOnlyValue(node) {
   let current = node;
   for (let parent = current.parent; parent; parent = current.parent) {
     if (parent.type === 'Property' && parent.value === current) {
-      const key = parent.computed ? undefined : parent.key?.name ?? parent.key?.value;
+      const key = parent.computed
+        ? undefined
+        : (parent.key?.name ?? parent.key?.value);
       if (ALPHA_ONLY_PROPERTIES.has(key) && !isStyleRuleName(parent)) {
         return true;
       }
@@ -218,7 +222,8 @@ function isAlphaOnlyValue(node) {
     }
     const nests =
       parent.type === 'ObjectExpression' ||
-      (parent.type === 'ArrayExpression' && parent.elements.includes(current)) ||
+      (parent.type === 'ArrayExpression' &&
+        parent.elements.includes(current)) ||
       (parent.type === 'ConditionalExpression' &&
         (parent.consequent === current || parent.alternate === current)) ||
       (parent.type === 'LogicalExpression' && parent.right === current);
@@ -247,7 +252,7 @@ const rule = {
       rawColor:
         'Raw colour in component source. A theme can retint any token this ' +
         'component reads, but it cannot reach inside a literal — so this is ' +
-        'the colour every theme gets, including a consumer\'s own. Read a ' +
+        "the colour every theme gets, including a consumer's own. Read a " +
         "token instead (`colorVars['--color-…']`, `shadowVars['--shadow-…']`), " +
         'or derive one with `color-mix()` on token vars. If no token fits, the ' +
         'value belongs in the theme layer, not here.',
@@ -270,7 +275,9 @@ const rule = {
         }
       },
       TemplateLiteral(node) {
-        const text = node.quasis.map(quasi => quasi.value.raw).join(PLACEHOLDER);
+        const text = node.quasis
+          .map(quasi => quasi.value.raw)
+          .join(PLACEHOLDER);
         if (hasRawColor(text) && !isAlphaOnlyValue(node)) {
           context.report({node, messageId: 'rawColor'});
         }

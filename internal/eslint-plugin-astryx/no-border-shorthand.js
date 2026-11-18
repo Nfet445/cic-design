@@ -19,10 +19,26 @@ const SHORTHAND_MAP = {
   borderLeft: ['borderLeftWidth', 'borderLeftStyle', 'borderLeftColor'],
   borderBlock: ['borderBlockWidth', 'borderBlockStyle', 'borderBlockColor'],
   borderInline: ['borderInlineWidth', 'borderInlineStyle', 'borderInlineColor'],
-  borderBlockStart: ['borderBlockStartWidth', 'borderBlockStartStyle', 'borderBlockStartColor'],
-  borderBlockEnd: ['borderBlockEndWidth', 'borderBlockEndStyle', 'borderBlockEndColor'],
-  borderInlineStart: ['borderInlineStartWidth', 'borderInlineStartStyle', 'borderInlineStartColor'],
-  borderInlineEnd: ['borderInlineEndWidth', 'borderInlineEndStyle', 'borderInlineEndColor'],
+  borderBlockStart: [
+    'borderBlockStartWidth',
+    'borderBlockStartStyle',
+    'borderBlockStartColor',
+  ],
+  borderBlockEnd: [
+    'borderBlockEndWidth',
+    'borderBlockEndStyle',
+    'borderBlockEndColor',
+  ],
+  borderInlineStart: [
+    'borderInlineStartWidth',
+    'borderInlineStartStyle',
+    'borderInlineStartColor',
+  ],
+  borderInlineEnd: [
+    'borderInlineEndWidth',
+    'borderInlineEndStyle',
+    'borderInlineEndColor',
+  ],
 };
 
 /** Values that are acceptable as shorthand (full resets). */
@@ -64,7 +80,7 @@ const rule = {
     },
     messages: {
       noBorderShorthand:
-        'Don\'t use `{{prop}}` shorthand in stylex.create(). ' +
+        "Don't use `{{prop}}` shorthand in stylex.create(). " +
         'Split into {{replacements}} instead.',
     },
     schema: [],

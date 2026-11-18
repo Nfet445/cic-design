@@ -64,11 +64,7 @@ function addTokens(names, value) {
 /** Every class this package's maps can emit, one token each. */
 function richtextClassNames() {
   const names = new Set();
-  for (const map of [
-    editorClasses,
-    toolbarClasses,
-    codeBlockHeaderClasses,
-  ]) {
+  for (const map of [editorClasses, toolbarClasses, codeBlockHeaderClasses]) {
     for (const [name, value] of Object.entries(map)) {
       // The body-size map is keyed by size; its values are the classes.
       if (name.endsWith('ClassName')) {

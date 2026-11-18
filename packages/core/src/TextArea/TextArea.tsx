@@ -43,9 +43,6 @@ import {
   Field,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {isRenderable} from '../utils/isRenderable';
@@ -523,13 +520,10 @@ export function TextArea({
           stylex.props(
             wrapperStyles.root,
             isDisabled && inputDisabledFocusStyles.ring,
-            status && inputStatusBorderStyles[status.type],
-            status && !isDisabled && inputStatusHoverShadowStyles[status.type],
-            status && inputStatusFocusWithinStyles[status.type],
             controlXstyle,
           ),
           tw(
-            fieldInputWrapperClassName(),
+            fieldInputWrapperClassName({status: status?.type}),
             isDisabled && fieldInputWrapperDisabledClassName,
             controlClassName,
           ),

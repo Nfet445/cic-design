@@ -67,7 +67,7 @@ describe('fieldInputWrapperClassName, an input box a caller paints', () => {
       ...STATUSES,
     ]);
     for (const status of STATUSES) {
-      expect(field.fieldStatusBorderClassName[status]).toBe(
+      expect(field.fieldStatusBorderClassName[status]).toContain(
         `border-[color:var(--color-border-${status})]`,
       );
     }

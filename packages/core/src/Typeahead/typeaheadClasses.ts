@@ -142,9 +142,10 @@ export const TYPEAHEAD_ITEM_DISABLED_CLASS = 'opacity-50';
 
 /**
  * The field's text entry: no box of its own, the field draws it. The field's
- * own box stays on StyleX — it shares one element with
- * `inputWrapperStyles.base`, whose unlayered `padding`, `gap`,
- * `backgroundColor` and `boxShadow` would win over a layered class.
+ * own box stays on StyleX — it shares one element with the shared field box
+ * class and sets the same `padding`, `gap`, `backgroundColor` and `boxShadow`
+ * properties, which two classes in `astryx-base` would order by the sheet
+ * rather than by `tw`.
  */
 export const typeaheadInputClassName = tw(
   'block flex-1 min-w-[60px]',

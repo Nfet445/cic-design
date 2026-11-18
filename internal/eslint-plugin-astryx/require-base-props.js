@@ -36,20 +36,14 @@ function hasBasePropsInHeritage(node) {
         const firstParam = typeParams[0];
         if (firstParam.type === 'TSTypeReference') {
           const innerName = firstParam.typeName?.name;
-          if (
-            innerName === 'BaseProps' ||
-            innerName?.endsWith('Props')
-          ) {
+          if (innerName === 'BaseProps' || innerName?.endsWith('Props')) {
             return true;
           }
         }
       }
     }
 
-    if (
-      expr.type === 'Identifier' &&
-      expr.name.endsWith('Props')
-    ) {
+    if (expr.type === 'Identifier' && expr.name.endsWith('Props')) {
       return true;
     }
   }
@@ -77,8 +71,7 @@ const rule = {
           allowNames: {
             type: 'array',
             items: {type: 'string'},
-            description:
-              'Interface names that are exempt from this rule.',
+            description: 'Interface names that are exempt from this rule.',
           },
         },
         additionalProperties: false,

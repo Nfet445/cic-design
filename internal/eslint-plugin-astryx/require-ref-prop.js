@@ -38,17 +38,11 @@ function inheritsRef(node) {
       return true;
     }
 
-    if (
-      expr.type === 'Identifier' &&
-      expr.name === 'Omit'
-    ) {
+    if (expr.type === 'Identifier' && expr.name === 'Omit') {
       const typeParams = heritage.typeArguments?.params;
       if (typeParams && typeParams.length >= 2) {
         const innerName = typeParams[0]?.typeName?.name;
-        if (
-          innerName?.endsWith('Props') &&
-          innerName !== 'BaseProps'
-        ) {
+        if (innerName?.endsWith('Props') && innerName !== 'BaseProps') {
           if (!isRefOmitted(typeParams[1])) {
             return true;
           }
@@ -66,7 +60,7 @@ function isRefOmitted(typeNode) {
   }
   if (typeNode.type === 'TSUnionType') {
     return typeNode.types.some(
-      (t) => t.type === 'TSLiteralType' && t.literal?.value === 'ref',
+      t => t.type === 'TSLiteralType' && t.literal?.value === 'ref',
     );
   }
   return false;
@@ -92,8 +86,7 @@ const rule = {
           allowNames: {
             type: 'array',
             items: {type: 'string'},
-            description:
-              'Interface names that are exempt from this rule.',
+            description: 'Interface names that are exempt from this rule.',
           },
         },
         additionalProperties: false,

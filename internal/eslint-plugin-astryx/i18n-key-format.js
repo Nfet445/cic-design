@@ -167,8 +167,8 @@ const rule = {
           node.key.type === 'Identifier'
             ? node.key.name
             : node.key.type === 'Literal'
-            ? node.key.value
-            : null;
+              ? node.key.value
+              : null;
         if (name !== 'i18nKey') return;
         if (
           node.value.type !== 'Literal' ||

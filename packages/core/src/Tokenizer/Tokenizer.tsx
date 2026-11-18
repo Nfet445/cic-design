@@ -89,9 +89,6 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {Token} from '../Token';
 import {Spinner} from '../Spinner';
@@ -126,7 +123,7 @@ import {useLayer} from '../Layer/useLayer';
 import {useTooltip} from '../Tooltip';
 import {useAnnounce} from '../hooks/useAnnounce';
 import {colorVars, spacingVars, sizeVars} from '../theme/tokens.stylex';
-import {groupStyles} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
 import type {
@@ -455,12 +452,12 @@ const INPUT_CARET_ROOM = '2px';
 
 const styles = stylex.create({
   // The field's box and the input's own states stay here. The wrapper is the
-  // same element as `fieldInputWrapperClassName()`, and `groupStyles.inGroup`
-  // before it: their unlayered `padding`, `gap`, `flex-wrap` and `height` win
-  // over any class in the `astryx-base` layer, so the row's insets and its
-  // truncation arms must be declared here too. The input states face the same
-  // tie against `typeaheadInputClassName`'s own `flex` and `min-w` utilities,
-  // where the sheet's order — not the state — would decide.
+  // same element as `fieldInputWrapperClassName()` and `inputGroupMemberClassName`:
+  // these unlayered `padding`, `gap`, `flex-wrap` and `height` win over any
+  // class in the `astryx-base` layer, so the row's insets and its truncation
+  // arms are declared here too. The input states face the same tie against
+  // `typeaheadInputClassName`'s own `flex` and `min-w` utilities, where the
+  // sheet's order — not the state — would decide.
   wrapper: {
     position: 'relative',
     flexWrap: 'wrap',
@@ -1792,17 +1789,12 @@ export function Tokenizer<T extends SearchableItem>({
           isTruncated ? truncatedSizeStyles[size] : sizeStyle,
           isTruncated && styles.truncatedWrapper,
           isDisabled && inputDisabledFocusStyles.nestedRing,
-          localStatus && inputStatusBorderStyles[localStatus.type],
-          localStatus &&
-            !isDisabled &&
-            inputStatusHoverShadowStyles[localStatus.type],
-          localStatus && inputStatusFocusWithinStyles[localStatus.type],
-          isInGroupRow && groupStyles.inGroup,
-          isInGroupRow && styles.inGroupWrapper,
+          localStatus && !isDisabled && isInGroupRow && styles.inGroupWrapper,
           controlXstyle,
         ),
         tw(
-          fieldInputWrapperClassName(),
+          isInGroupRow && inputGroupMemberClassName,
+          fieldInputWrapperClassName({status: localStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           controlClassName,
         ),
@@ -2055,15 +2047,10 @@ export function Tokenizer<T extends SearchableItem>({
               // and search field carry the touch-sized targets.
               sizeStyles[size],
               value.length > 0 && styles.wrapperWithTokens,
-              status && inputStatusBorderStyles[status.type],
-              status &&
-                !isDisabled &&
-                inputStatusHoverShadowStyles[status.type],
-              status && inputStatusFocusWithinStyles[status.type],
-              controlXstyle,
+              status && !isDisabled && controlXstyle,
             ),
             tw(
-              fieldInputWrapperClassName(),
+              fieldInputWrapperClassName({status: status?.type}),
               isDisabled && fieldInputWrapperDisabledClassName,
               tokenizerSheetFieldClassName(isDisabled),
               isDisabled && tokenizerSheetFieldDisabledClassName,
@@ -2239,17 +2226,14 @@ export function Tokenizer<T extends SearchableItem>({
               value.length > 0 && styles.wrapperWithTokens,
               placeholderSizeStyle,
               isTruncated && styles.truncatedWrapper,
-              localStatus && inputStatusBorderStyles[localStatus.type],
               localStatus &&
                 !isDisabled &&
-                inputStatusHoverShadowStyles[localStatus.type],
-              localStatus && inputStatusFocusWithinStyles[localStatus.type],
-              // The placeholder is the element in the group's flex row.
-              inputGroup && groupStyles.inGroup,
-              controlXstyle,
+                // The placeholder is the element in the group's flex row.
+                controlXstyle,
             ),
             tw(
-              fieldInputWrapperClassName(),
+              inputGroup && inputGroupMemberClassName,
+              fieldInputWrapperClassName({status: localStatus?.type}),
               isDisabled && fieldInputWrapperDisabledClassName,
               controlClassName,
             ),

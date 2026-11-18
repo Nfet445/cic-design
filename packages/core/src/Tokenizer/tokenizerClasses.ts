@@ -10,8 +10,9 @@
  * @position Style primitives; scanned by the Tailwind build
  *
  * The field's own box stays on StyleX (`Tokenizer.tsx`): its wrapper is the
- * same element as `inputWrapperStyles.base`, whose unlayered `padding`, `gap`
- * and `backgroundColor` win over these layered classes, and the input shares
+ * same element as the shared field box class and sets the same `padding`,
+ * `gap` and `backgroundColor` properties, which two classes in `astryx-base`
+ * would order by the sheet rather than by `tw`. The input shares
  * `typeaheadInputClassName`'s own `flex` and `min-w` utilities inside the
  * layer, where the sheet's order — not the state — would decide.
  */

@@ -35,7 +35,6 @@ import React, {
 } from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import {inputWrapperStyles} from '../Field/inputStyles.stylex';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {

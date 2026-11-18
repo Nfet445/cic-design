@@ -110,12 +110,40 @@ export const fieldAttachedStatusLayerClassName = tw('relative', '[z-index:-1]');
  * The status border colours, published for a consumer that paints its own box.
  * Apply one of these instead of the wrapper's own `border-color`, never beside
  * it: two classes setting one property are decided by the sheet order.
+ *
+ * A status keeps its colour while the field has focus, so it carries no accent
+ * arm. Forced colors drop the author colour for one system color, and only
+ * Highlight keeps a focused field visible there.
+ *
+ * The status also owns its hover ring, so the border and the ring that reads it
+ * come from one class. The box keeps the neutral ring; a status box must not
+ * carry both.
  */
 export const fieldStatusBorderClassName: Record<InputStatusType, string> = {
-  warning: 'border-[color:var(--color-border-warning)]',
-  error: 'border-[color:var(--color-border-error)]',
-  success: 'border-[color:var(--color-border-success)]',
+  warning: tw(
+    'border-[color:var(--color-border-warning)]',
+    'forced-colors:focus-within:border-[color:Highlight]',
+    'pointer-fine:not-disabled:not-aria-disabled:not-focus-within:hover:shadow-[var(--shadow-inset-warning)]',
+  ),
+  error: tw(
+    'border-[color:var(--color-border-error)]',
+    'forced-colors:focus-within:border-[color:Highlight]',
+    'pointer-fine:not-disabled:not-aria-disabled:not-focus-within:hover:shadow-[var(--shadow-inset-error)]',
+  ),
+  success: tw(
+    'border-[color:var(--color-border-success)]',
+    'forced-colors:focus-within:border-[color:Highlight]',
+    'pointer-fine:not-disabled:not-aria-disabled:not-focus-within:hover:shadow-[var(--shadow-inset-success)]',
+  ),
 };
+
+/** The box's own border and hover ring, chosen when it carries no status. */
+const FIELD_INPUT_BORDER_CLASS = tw(
+  'border-[color:var(--color-border-emphasized)]',
+  'focus-within:border-[color:var(--color-accent)]',
+  'forced-colors:focus-within:border-[color:Highlight]',
+  'pointer-fine:not-disabled:not-focus-within:hover:shadow-[inset_0_0_0_2px_color-mix(in_srgb,var(--color-border-emphasized)_30%,transparent)]',
+);
 
 const FIELD_INPUT_BOX_CLASS = tw(
   'box-border',
@@ -128,8 +156,6 @@ const FIELD_INPUT_BOX_CLASS = tw(
   'px-[var(--spacing-2)]',
   'border-[length:var(--border-width)]',
   'border-solid',
-  'focus-within:border-[color:var(--color-accent)]',
-  'forced-colors:focus-within:border-[color:Highlight]',
   '[--_field-radius:var(--radius-element)]',
   'rounded-[var(--_field-radius)]',
   'bg-[var(--color-background-surface)]',
@@ -141,7 +167,6 @@ const FIELD_INPUT_BOX_CLASS = tw(
   'motion-reduce:duration-0',
   'pointer-coarse:duration-0',
   'shadow-none',
-  'pointer-fine:not-disabled:not-focus-within:hover:shadow-[inset_0_0_0_2px_color-mix(in_srgb,var(--color-border-emphasized)_30%,transparent)]',
   'focus-within:shadow-[inset_0_0_0_2px_var(--color-accent-muted)]',
   'outline-none',
 );
@@ -150,19 +175,17 @@ const FIELD_INPUT_BOX_CLASS = tw(
  * The box an input sits in: the border, the surface, the hover ring and the
  * focus ring.
  *
- * `status` replaces the resting border colour; it is the only class that
- * changes it, so a status border and the resting one never compete. Padding,
- * alignment and growth stay the caller's, as they are for every input
- * component that composes the box.
+ * `status` replaces the resting border colour and its focus look; the chosen
+ * class is the only one that changes the border, so two border classes never
+ * compete. Padding, alignment and growth stay the caller's, as they are for
+ * every input component that composes the box.
  */
 export function fieldInputWrapperClassName({
   status,
 }: {status?: InputStatusType} = {}): string {
   return tw(
     FIELD_INPUT_BOX_CLASS,
-    status
-      ? fieldStatusBorderClassName[status]
-      : 'border-[color:var(--color-border-emphasized)]',
+    status ? fieldStatusBorderClassName[status] : FIELD_INPUT_BORDER_CLASS,
   );
 }
 

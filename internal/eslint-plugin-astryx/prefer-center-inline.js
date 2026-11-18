@@ -37,7 +37,9 @@ const rule = {
         if (!isInsideStylexCreate(node)) return;
         const property = node.key?.name ?? node.key?.value;
         if (!INLINE_INSETS.has(property)) return;
-        if (!logicalCenteringStatuses(node).some((status) => status.compensated)) {
+        if (
+          !logicalCenteringStatuses(node).some(status => status.compensated)
+        ) {
           return;
         }
         context.report({node: node.key, messageId: 'preferCenterInline'});

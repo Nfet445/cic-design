@@ -43,9 +43,6 @@ import {
   InputClearButton,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {useInputStatusIcon, useMergedRefs} from '../hooks';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
@@ -1120,14 +1117,9 @@ export function TouchDateTimeField({
             }),
             stylex.props(
               isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-              status && inputStatusBorderStyles[status.type],
-              status &&
-                !isEffectivelyDisabled &&
-                inputStatusHoverShadowStyles[status.type],
-              status && inputStatusFocusWithinStyles[status.type],
             ),
             tw(
-              fieldInputWrapperClassName(),
+              fieldInputWrapperClassName({status: status?.type}),
               isEffectivelyDisabled && fieldInputWrapperDisabledClassName,
               dateTimeInputSizeClassName({size}),
               dateTimeInputSegmentClassName,
@@ -1216,14 +1208,9 @@ export function TouchDateTimeField({
             }),
             stylex.props(
               isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-              status && inputStatusBorderStyles[status.type],
-              status &&
-                !isEffectivelyDisabled &&
-                inputStatusHoverShadowStyles[status.type],
-              status && inputStatusFocusWithinStyles[status.type],
             ),
             tw(
-              fieldInputWrapperClassName(),
+              fieldInputWrapperClassName({status: status?.type}),
               isEffectivelyDisabled && fieldInputWrapperDisabledClassName,
               dateTimeInputSizeClassName({size}),
               dateTimeInputSegmentClassName,

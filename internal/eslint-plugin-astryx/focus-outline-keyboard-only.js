@@ -31,7 +31,7 @@
  * Suppressing an outline on a broader selector (`outline: {':focus': 'none'}`,
  * as AppShell does for the skip link's programmatic target) is legitimate and
  * is not flagged. A field's `:focus-within` border and inset box-shadow (see
- * `Field/inputStyles.stylex.ts`) are a different treatment with a different
+ * `Field/fieldClasses.ts`) are a different treatment with a different
  * rule — the field says "you are typing here" — so this rule deliberately does
  * not police `borderColor` or `boxShadow`.
  */
@@ -118,7 +118,7 @@ const rule = {
     messages: {
       pointerFocusOutline:
         "Focus outline keyed off '{{key}}', which also matches a mouse click. " +
-        'Use \':focus-visible\' (or \':has(:focus-visible)\' when the ring is on a wrapper) — ' +
+        "Use ':focus-visible' (or ':has(:focus-visible)' when the ring is on a wrapper) — " +
         'better still, the shared focusOutlineStyles from utils/focusOutline.stylex.',
     },
     schema: [],
@@ -133,10 +133,16 @@ const rule = {
 
         // Shape 1 — outline property, focus condition inside:
         //   outline: {default: 'none', ':focus': '…'}
-        if (OUTLINE_PROPERTIES.has(key) && node.value?.type === 'ObjectExpression') {
+        if (
+          OUTLINE_PROPERTIES.has(key) &&
+          node.value?.type === 'ObjectExpression'
+        ) {
           for (const condition of node.value.properties) {
             const conditionKey = keyOf(condition);
-            if (isPointerFocusKey(conditionKey) && drawsARing(condition.value)) {
+            if (
+              isPointerFocusKey(conditionKey) &&
+              drawsARing(condition.value)
+            ) {
               context.report({
                 node: condition,
                 messageId: 'pointerFocusOutline',

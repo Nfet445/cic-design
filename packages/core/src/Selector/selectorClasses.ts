@@ -10,8 +10,9 @@
  *   `MultiSelector` compose these with `tw`
  *
  * The trigger's own chrome stays on StyleX in `Selector.tsx`: it shares one
- * element with `inputWrapperStyles.base`, whose unlayered `padding`, `gap`,
- * `backgroundColor` and `boxShadow` would win over these layered classes.
+ * element with the shared field box class and sets the same `padding`, `gap`,
+ * `backgroundColor` and `boxShadow` properties, which two classes in
+ * `astryx-base` would order by the sheet rather than by `tw`.
  */
 
 import {tw} from '../utils/tw';
