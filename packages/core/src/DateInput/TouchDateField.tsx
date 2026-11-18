@@ -108,6 +108,7 @@ import {
 import {formatCalendarDateText} from '../utils/calendarDateParser';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {normalizeDayOfWeek} from '../utils/dateTypes';
 import {getWeekdayHeaders} from '../Calendar/getWeekdayHeaderNames';
@@ -703,10 +704,15 @@ export function TouchDateField({
           {...pressable}
           {...mergeProps(
             stylex.props(
-              interactionOverlayStyles.backgroundColor,
+              interactionOverlayStyles.pressedAlpha,
               focusOutlineStyles.focusVisible,
             ),
-            touchDateTitleClassName,
+            // The hover and press colour; its strength and release stay the
+            // StyleX arm above.
+            tw(
+              touchDateTitleClassName,
+              interactionOverlayBackgroundColorClassName,
+            ),
           )}>
           <span className={touchDateTitleTextClassName}>{monthYearLabel}</span>
           <Icon
