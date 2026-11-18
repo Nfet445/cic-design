@@ -58,7 +58,6 @@ import {TypeaheadItem} from './TypeaheadItem';
 import {Icon} from '../Icon';
 import {Spinner} from '../Spinner';
 import {SpinnerOwnerContext} from '../Spinner/SpinnerOwnerContext';
-import {spacingVars} from '../theme/tokens.stylex';
 import {
   characterCount,
   composeEventHandlers,
@@ -374,7 +373,7 @@ const styles = stylex.create({
       `min(300px, ${layerViewportInset.maxBlockSizeFallback})`,
     ),
     overflowY: 'auto',
-    padding: spacingVars['--spacing-1'],
+    padding: 'var(--spacing-1)',
   },
   // Once a later list for the same query arrives, the popup holds its height
   // above the field, or the room below it (spec:AST-092 FR6).
@@ -2387,7 +2386,7 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
         {
           placement: 'below',
           alignment: 'start',
-          offset: spacingVars['--spacing-1'],
+          offset: 'var(--spacing-1)',
           xstyle: [
             styles.popover,
             menuWidth != null &&

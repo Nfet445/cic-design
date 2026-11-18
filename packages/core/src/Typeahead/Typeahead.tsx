@@ -57,7 +57,6 @@ import {renderIconSlot, type IconType} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {Spinner} from '../Spinner';
 import {SpinnerOwnerContext} from '../Spinner/SpinnerOwnerContext';
-import {spacingVars} from '../theme/tokens.stylex';
 import {inputGroupItemProps} from '../InputGroup/groupStyles';
 import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
@@ -249,10 +248,10 @@ const styles = stylex.create({
     // flex moves an item to a new line rather than shrinking it, so a long
     // value put the clear button and spinner on a row of their own (a 280px
     // field grew to 46px tall). Unwrapped, the token ellipsizes instead.
-    gap: spacingVars['--spacing-1'],
+    gap: 'var(--spacing-1)',
     // Standard padding minus border width to prevent height jump
     // when a token (28px) is added inside the input
-    paddingBlock: `calc(${spacingVars['--spacing-1']} - 1px)`,
+    paddingBlock: `calc(var(--spacing-1) - 1px)`,
     cursor: {
       default: 'text',
       ':is(:disabled,[aria-disabled="true"])': 'default',
@@ -298,7 +297,7 @@ const styles = stylex.create({
   tokenOverlay: {
     position: 'absolute' as const,
     insetBlockStart: 0,
-    insetInlineStart: `calc(-1 * (${spacingVars['--spacing-1']} - 1px))`,
+    insetInlineStart: `calc(-1 * (var(--spacing-1) - 1px))`,
     insetInlineEnd: 0,
     width: 'fit-content',
     marginBlock: 0,
