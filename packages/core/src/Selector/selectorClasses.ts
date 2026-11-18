@@ -110,3 +110,102 @@ export const selectorSectionHeadingClassName = tw(
 );
 
 export const selectorDividerClassName = tw('my-[var(--spacing-1)]');
+
+/**
+ * The trigger's inner button: it draws nothing of its own, so the container's
+ * box is the whole visible control. Its cursor is one class or the other rather
+ * than a base plus an override, because two utilities of one property are
+ * ordered by the sheet, not by their order in `tw`.
+ */
+export function selectorTriggerButtonClassName({
+  isReadOnly,
+}: {
+  isReadOnly: boolean;
+}): string {
+  return tw(
+    'flex',
+    'items-center',
+    'justify-between',
+    'gap-[var(--spacing-2)]',
+    'grow',
+    'shrink',
+    'basis-0',
+    'min-w-0',
+    'p-0',
+    'm-0',
+    '[border-width:0]',
+    '[border-style:none]',
+    'bg-transparent',
+    '[font-family:inherit]',
+    '[font-size:inherit]',
+    '[line-height:inherit]',
+    '[color:inherit]',
+    isReadOnly ? 'cursor-default' : 'cursor-pointer',
+    'disabled:cursor-default',
+    'aria-disabled:cursor-default',
+    'outline-none',
+  );
+}
+
+/** The single-line value, ellipsized rather than widening the trigger. */
+export const SELECTOR_TRIGGER_LABEL_CLASS = tw(
+  'grow',
+  'min-w-0',
+  'overflow-hidden',
+  'text-ellipsis',
+  'whitespace-nowrap',
+  'text-start',
+);
+
+/** The `renderValue` box: it takes the free width and clips sideways. */
+export const SELECTOR_TRIGGER_VALUE_CLASS = tw(
+  'grow',
+  'min-w-0',
+  'overflow-hidden',
+  'text-start',
+);
+
+/**
+ * Inside an InputGroup the group's row is the height, so the button stretches
+ * to it and the value box is cut off at the row's edge instead of bleeding
+ * through the group's border.
+ */
+export const SELECTOR_TRIGGER_BUTTON_IN_GROUP_CLASS = 'self-stretch';
+
+export const SELECTOR_TRIGGER_VALUE_IN_GROUP_CLASS = '[max-height:100%]';
+
+/** Icon's `sm` box already sets the size and colour; only the flex item is ours. */
+export const SELECTOR_TRIGGER_ICON_CLASS = 'shrink-0';
+
+/**
+ * The chevron turns on the glyph itself, so the `selector-indicator-icon` theme
+ * target and the open/closed transform sit on one element.
+ */
+export const SELECTOR_TRIGGER_ICON_ROTATION_CLASS = tw(
+  'transition-[transform]',
+  'duration-[var(--duration-fast)]',
+  'ease-[var(--ease-standard)]',
+  'origin-center',
+);
+
+export const SELECTOR_TRIGGER_ICON_OPEN_CLASS = '[transform:rotate(180deg)]';
+
+/**
+ * The status glyph's button: the glyph inside it is the target, so the button
+ * adds no padding or border and inherits the trigger's colour.
+ */
+export const SELECTOR_STATUS_BUTTON_CLASS = tw(
+  'flex',
+  'items-center',
+  'justify-center',
+  'p-0',
+  'm-0',
+  '[border-width:0]',
+  '[border-style:none]',
+  'bg-transparent',
+  '[color:inherit]',
+  'cursor-pointer',
+  'disabled:cursor-default',
+  'aria-disabled:cursor-default',
+  'rounded-[var(--radius-element)]',
+);

@@ -57,6 +57,14 @@ import {useAnnounceRenderedText} from '../hooks/useAnnounceRenderedText';
 import {tw} from '../utils/tw';
 import {SELECTOR_TRIGGER_SIZE_CLASS} from './selectorOptionClasses';
 import {
+  SELECTOR_STATUS_BUTTON_CLASS,
+  SELECTOR_TRIGGER_BUTTON_IN_GROUP_CLASS,
+  SELECTOR_TRIGGER_ICON_CLASS,
+  SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+  SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+  SELECTOR_TRIGGER_LABEL_CLASS,
+  SELECTOR_TRIGGER_VALUE_CLASS,
+  SELECTOR_TRIGGER_VALUE_IN_GROUP_CLASS,
   selectorDividerClassName,
   selectorEmptyStateClassName,
   selectorListboxClassName,
@@ -67,6 +75,7 @@ import {
   selectorSearchPanelClassName,
   selectorSearchRowInsetClassName,
   selectorSectionHeadingClassName,
+  selectorTriggerButtonClassName,
 } from './selectorClasses';
 import type {SelectorOptionType, SelectorOptionData} from './types';
 import {isOptionData, isDivider, isSection, normalizeOption} from './utils';
@@ -171,45 +180,8 @@ const styles = stylex.create({
       ':is(:disabled,[aria-disabled="true"])': 'default',
     },
   },
-  // Trigger button — the actual combobox button, visually integrated with the container
-  trigger: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 'var(--spacing-2)',
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minWidth: 0,
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-    color: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    // The wrapper (the shared field box class) renders the focus ring via
-    // :focus-within when this button is focused, matching TextInput/NumberInput.
-    // The button must not draw its own :focus-visible outline or the two stack
-    // into a doubled ring over the trigger.
-    outline: 'none',
-  },
   triggerPlaceholder: {
     color: 'var(--color-text-secondary)',
-  },
-  triggerLabel: {
-    flexGrow: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    textAlign: 'start',
   },
   // Inside an InputGroup the group's own height is the row, and the trigger
   // takes it: `height: 100%` from `inputGroupMemberClassName` can only govern
@@ -224,54 +196,6 @@ const styles = stylex.create({
     minHeight: 0,
     paddingBlock: 0,
     lineHeight: `max(var(--spacing-5), 20px, 1rem)`,
-  },
-  // Wrapper for `renderValue` output. Takes the free width and clips
-  // horizontally so a long value ellipsizes rather than widening the trigger;
-  // vertically the content sizes the control, which the size styles below
-  // handle.
-  triggerValue: {
-    flexGrow: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textAlign: 'start',
-  },
-  // Inside an InputGroup the row height is the group's, so the trigger clamps
-  // its own value box to that row rather than asking the value to fit it: any
-  // node is cut off at the row's edge instead of bleeding through the border
-  // over whatever sits above and below the group. The rows the system draws
-  // itself never reach the cut — the row-layout context folds them onto one
-  // line first (SelectorRowLayoutContext).
-  //
-  // The clamp is a percentage, not the size token, because a group can be a
-  // different size than the control inside it; the row is whatever the group
-  // made it. That needs a definite height to resolve against, which is what
-  // stretching the button provides.
-  triggerButtonInGroup: {
-    alignSelf: 'stretch',
-  },
-  triggerValueInGroup: {
-    maxHeight: '100%',
-  },
-  // Only what Icon does not already provide: `size="sm"` gives the 16px box
-  // and `color` the token, but the glyph still must not shrink inside the flex
-  // trigger.
-  triggerIcon: {
-    flexShrink: 0,
-  },
-  // Rotation lives on the chevron glyph itself (passed through `xstyle`), not
-  // on the layout wrapper above, so the icon's `selector-indicator-icon` theme
-  // target and the open/closed transform sit on one element — a theme can
-  // restyle the mark and its rotation through a single selector. The wrapper
-  // keeps only layout. The status branch renders a different icon, so it never
-  // picks these up and needs no transition opt-out.
-  triggerIconRotation: {
-    transitionProperty: 'transform',
-    transitionDuration: 'var(--duration-fast)',
-    transitionTimingFunction: 'var(--ease-standard)',
-    transformOrigin: 'center',
-  },
-  triggerIconOpen: {
-    transform: 'rotate(180deg)',
   },
   // Ghost has no borders, so its spacing row never overshoots the token; it
   // keeps the uncapped line box from before the size cap.
@@ -357,24 +281,6 @@ const styles = stylex.create({
       ':active': 'none',
       '[data-astryx-press="on"]': 'none',
     },
-  },
-
-  // Clear button
-  statusButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: 'var(--radius-element)',
   },
 
   // Popover container (for anchor positioning)
@@ -1897,9 +1803,9 @@ export function Selector<T extends SelectorOptionType>(
       <SelectorRowLayoutContext value={rowLayout}>
         <span
           id={valueTextId}
-          {...stylex.props(
-            styles.triggerValue,
-            inputGroup && styles.triggerValueInGroup,
+          className={tw(
+            SELECTOR_TRIGGER_VALUE_CLASS,
+            inputGroup && SELECTOR_TRIGGER_VALUE_IN_GROUP_CLASS,
           )}>
           {renderValue(selectedItem)}
         </span>
@@ -1909,7 +1815,7 @@ export function Selector<T extends SelectorOptionType>(
         {!startIcon &&
           selectedItem?.icon != null &&
           renderIconSlot(selectedItem.icon, {size: 'sm', color: 'secondary'})}
-        <span id={valueTextId} {...stylex.props(styles.triggerLabel)}>
+        <span id={valueTextId} className={SELECTOR_TRIGGER_LABEL_CLASS}>
           {selectedItem?.label ?? placeholder}
         </span>
       </>
@@ -2069,10 +1975,9 @@ export function Selector<T extends SelectorOptionType>(
       surface.onTriggerFocus(event);
     },
     tabIndex: 0,
-    ...stylex.props(
-      styles.trigger,
-      isEffectivelyReadOnly && styles.triggerReadOnly,
-      inputGroup && styles.triggerButtonInGroup,
+    className: tw(
+      selectorTriggerButtonClassName({isReadOnly: isEffectivelyReadOnly}),
+      inputGroup && SELECTOR_TRIGGER_BUTTON_IN_GROUP_CLASS,
     ),
   };
 
@@ -2224,14 +2129,14 @@ export function Selector<T extends SelectorOptionType>(
               {...keepOpenProps}
               onClick={e => e.stopPropagation()}
               {...mergeProps(
-                stylex.props(styles.statusButton),
+                {className: SELECTOR_STATUS_BUTTON_CLASS},
                 tw(focusOutlineFocusVisibleClassName),
               )}>
               <Icon
                 icon={STATUS_ICON_MAP[status.type]}
                 size="sm"
                 color={STATUS_ICON_COLOR_MAP[status.type]}
-                xstyle={styles.triggerIcon}
+                className={SELECTOR_TRIGGER_ICON_CLASS}
               />
             </button>
           ) : (
@@ -2239,7 +2144,7 @@ export function Selector<T extends SelectorOptionType>(
               icon={STATUS_ICON_MAP[status.type]}
               size="sm"
               color={STATUS_ICON_COLOR_MAP[status.type]}
-              xstyle={styles.triggerIcon}
+              className={SELECTOR_TRIGGER_ICON_CLASS}
             />
           )
         ) : !isEffectivelyReadOnly ? (
@@ -2247,22 +2152,24 @@ export function Selector<T extends SelectorOptionType>(
             icon="chevronDown"
             size="sm"
             color="secondary"
-            // The rotation rides on the glyph, alongside the box and color
-            // the wrapper used to provide, so one element carries the mark,
-            // its open/closed transform, and the theme target.
-            xstyle={[
-              styles.triggerIcon,
-              styles.triggerIconRotation,
-              surface.isOpen && styles.triggerIconOpen,
-            ]}
-            // Stable theme target on the chevron glyph itself, so a theme can
-            // restyle just this icon (color, size, hover) — and its
-            // open/closed state — via `defineTheme`. Same-element rules in
-            // @layer astryx-theme win over the icon's own base color/size,
-            // which a button-level target could not reach.
-            {...themeProps('selector-indicator-icon', {
-              state: surface.isOpen ? 'expanded' : 'collapsed',
-            })}
+            {...mergeProps(
+              // The rotation rides on the glyph, alongside the box and color
+              // the wrapper used to provide, so one element carries the mark,
+              // its open/closed transform, and the theme target.
+              tw(
+                SELECTOR_TRIGGER_ICON_CLASS,
+                SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+                surface.isOpen && SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+              ),
+              // Stable theme target on the chevron glyph itself, so a theme can
+              // restyle just this icon (color, size, hover) — and its
+              // open/closed state — via `defineTheme`. Same-element rules in
+              // @layer astryx-theme win over the icon's own base color/size,
+              // which a button-level target could not reach.
+              themeProps('selector-indicator-icon', {
+                state: surface.isOpen ? 'expanded' : 'collapsed',
+              }),
+            )}
           />
         ) : null}
       </div>

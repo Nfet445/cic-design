@@ -665,6 +665,14 @@ import {
   selectorOptionRowClassName,
 } from '../Selector/selectorOptionClasses';
 import {
+  SELECTOR_STATUS_BUTTON_CLASS,
+  SELECTOR_TRIGGER_BUTTON_IN_GROUP_CLASS,
+  SELECTOR_TRIGGER_ICON_CLASS,
+  SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+  SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+  SELECTOR_TRIGGER_LABEL_CLASS,
+  SELECTOR_TRIGGER_VALUE_CLASS,
+  SELECTOR_TRIGGER_VALUE_IN_GROUP_CLASS,
   selectorDividerClassName,
   selectorEmptyStateClassName,
   selectorListboxClassName,
@@ -675,6 +683,7 @@ import {
   selectorSearchPanelClassName,
   selectorSearchRowInsetClassName,
   selectorSectionHeadingClassName,
+  selectorTriggerButtonClassName,
 } from '../Selector/selectorClasses';
 import {
   MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
@@ -2349,6 +2358,18 @@ function familyClassNames() {
   add(selectorEmptyStateClassName);
   add(selectorSectionHeadingClassName);
   add(selectorDividerClassName);
+  // The trigger's inner button in both cursor arms, its label and value boxes,
+  // the grouped arms of each, and the status glyph's button and chevron.
+  add(selectorTriggerButtonClassName({isReadOnly: false}));
+  add(selectorTriggerButtonClassName({isReadOnly: true}));
+  add(SELECTOR_TRIGGER_LABEL_CLASS);
+  add(SELECTOR_TRIGGER_VALUE_CLASS);
+  add(SELECTOR_TRIGGER_BUTTON_IN_GROUP_CLASS);
+  add(SELECTOR_TRIGGER_VALUE_IN_GROUP_CLASS);
+  add(SELECTOR_TRIGGER_ICON_CLASS);
+  add(SELECTOR_TRIGGER_ICON_ROTATION_CLASS);
+  add(SELECTOR_TRIGGER_ICON_OPEN_CLASS);
+  add(SELECTOR_STATUS_BUTTON_CLASS);
   // The nav heading popover: its column, both row states at every size, and
   // the minimum width each size states as its own fallback.
   add(navHeadingMenuClassName);
