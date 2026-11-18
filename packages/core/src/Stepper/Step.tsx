@@ -42,7 +42,11 @@ import {useId, useLayoutEffect, type ReactNode} from 'react';
 import {createPortal} from 'react-dom';
 import * as stylex from '@stylexjs/stylex';
 
-import {colorVars, durationVars, spacingVars} from '../theme/tokens.stylex';
+import {
+  colorVarNames,
+  durationVarNames,
+  spacingVarNames,
+} from '../theme/tokenVars';
 import {mergeProps, isRenderable, themeProps} from '../utils';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
@@ -261,7 +265,7 @@ function CheckCircleIcon() {
       <circle cx="8" cy="8" r="8" fill="currentColor" />
       <path
         d="M4.75 8.25 7 10.5l4.25-4.5"
-        stroke={colorVars['--color-background-surface']}
+        stroke={colorVarNames['--color-background-surface']}
         strokeWidth="1.75"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -315,7 +319,7 @@ function CurrentIcon() {
  * a theme can still set the property directly on the `stepper` target. The
  * use-site fallback supplies the same default to an unframed vertical Stepper.
  */
-const CONNECTOR_GAP = `max(0px, min(var(--step-connector-gap, 0px), ${spacingVars['--spacing-2']}))`;
+const CONNECTOR_GAP = `max(0px, min(var(--step-connector-gap, 0px), ${spacingVarNames['--spacing-2']}))`;
 
 // --- Connector fill motion ---
 //
@@ -339,7 +343,7 @@ const CONNECTOR_GAP = `max(0px, min(var(--step-connector-gap, 0px), ${spacingVar
 // the medium band — a fill crossing a whole segment is a spatial change, not a
 // micro-interaction, so per `astryx docs motion` it sits above the fast band
 // reserved for high-frequency states like hover.
-const FILL_SPAN_TIME = durationVars['--duration-medium'];
+const FILL_SPAN_TIME = durationVarNames['--duration-medium'];
 
 // Share of one node-to-node span owned by the segment *arriving* at the far
 // node; the segment leaving the near node takes the rest. On-track spans are
@@ -467,15 +471,15 @@ export function Step({
   // drifting apart.
   const separatedDensityInline =
     density === 'spacious'
-      ? spacingVars['--spacing-3']
-      : spacingVars['--spacing-2'];
+      ? spacingVarNames['--spacing-3']
+      : spacingVarNames['--spacing-2'];
   // Block padding of a step, and the space the on-track rail bridges.
   const densitySpace =
     density === 'compact'
-      ? spacingVars['--spacing-1']
+      ? spacingVarNames['--spacing-1']
       : density === 'spacious'
-        ? spacingVars['--spacing-3']
-        : spacingVars['--spacing-2'];
+        ? spacingVarNames['--spacing-3']
+        : spacingVarNames['--spacing-2'];
 
   // Resolve indicator prop — may be a preset string or a custom ReactNode.
   const isCustomIndicator =
