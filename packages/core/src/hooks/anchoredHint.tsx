@@ -21,13 +21,6 @@
 
 import type {ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  radiusVars,
-  shadowVars,
-  spacingVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import type {ContextLayerReturn} from '../Layer/useLayer';
 
 const styles = stylex.create({
@@ -40,18 +33,18 @@ const styles = stylex.create({
     borderStyle: 'none',
 
     // Surface
-    backgroundColor: colorVars['--color-background-popover'],
-    borderRadius: radiusVars['--radius-element'],
-    boxShadow: shadowVars['--shadow-low'],
-    paddingBlockStart: spacingVars['--spacing-1'],
-    paddingBlockEnd: spacingVars['--spacing-1'],
-    paddingInlineStart: spacingVars['--spacing-2'],
-    paddingInlineEnd: spacingVars['--spacing-2'],
+    backgroundColor: 'var(--color-background-popover)',
+    borderRadius: 'var(--radius-element)',
+    boxShadow: 'var(--shadow-low)',
+    paddingBlockStart: 'var(--spacing-1)',
+    paddingBlockEnd: 'var(--spacing-1)',
+    paddingInlineStart: 'var(--spacing-2)',
+    paddingInlineEnd: 'var(--spacing-2)',
 
     // Typography
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
+    fontSize: 'var(--text-supporting-size)',
+    lineHeight: 'var(--text-supporting-leading)',
+    color: 'var(--color-text-secondary)',
     whiteSpace: 'nowrap',
 
     // Animation
@@ -85,7 +78,7 @@ export function renderAnchoredHint(
     alignment: 'start',
     xstyle: [styles.hint, !isInteractive && styles.passive],
     style: {
-      marginBlockStart: spacingVars['--spacing-2'],
+      marginBlockStart: 'var(--spacing-2)',
     },
   });
 }
