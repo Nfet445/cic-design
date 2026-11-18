@@ -51,7 +51,8 @@ import {
   Field,
   InputClearButton,
   type InputStatus,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
   inputStatusFocusWithinStyles,
@@ -1284,11 +1285,8 @@ export function NumberInput({
           readonly: isReadOnly ? 'readonly' : null,
         }),
         stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
           styles.wrapper,
           hasNumberSteppers && styles.wrapperWithNumberSteppers,
-          isDisabled && inputWrapperStyles.disabled,
           isDisabled && inputDisabledFocusStyles.ring,
           fieldStatus && inputStatusBorderStyles[fieldStatus.type],
           fieldStatus &&
@@ -1298,7 +1296,12 @@ export function NumberInput({
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
-        tw(numberInputHeightClassName({size}), controlClassName),
+        tw(
+          fieldInputWrapperClassName(),
+          isDisabled && fieldInputWrapperDisabledClassName,
+          numberInputHeightClassName({size}),
+          controlClassName,
+        ),
         controlStyle,
       )}>
       {startIcon && renderIconSlot(startIcon, {size: 'sm', color: 'secondary'})}

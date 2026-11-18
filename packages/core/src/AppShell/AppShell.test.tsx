@@ -894,9 +894,8 @@ describe('AppShell', () => {
     expect(inputWrapper).toBeTruthy();
     // The header stays at its normal local stacking level — no escalation.
     expectClassSet(header, {includes: ['sticky', 'z-[1]']});
-    // The wrapper's `position: relative` still comes from the unlayered
-    // `Field/inputStyles.stylex.ts`, so a computed read stays here.
-    expect(getComputedStyle(inputWrapper).position).toBe('relative');
+    // The wrapper's `position: relative` is a class in the field base module.
+    expect(classesOf(inputWrapper)).toContain('relative');
     // Field's local layers cannot escape into page-level stacking: the root's
     // `isolate` class is the isolation boundary around the input wrapper's
     // z-index.

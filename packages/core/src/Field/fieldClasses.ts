@@ -6,7 +6,8 @@
  *   input status type
  * @output The utility class strings Field's root, its horizontal label cell and
  *   its input/status wrapper carry, the custom property Field's width class
- *   reads, and the input box a consumer paints for itself
+ *   reads, and the input box every input component paints, with its disabled
+ *   state
  * @position Internal to Field, except `fieldInputWrapperClassName` and
  *   `fieldStatusBorderClassName`, which `@astryxdesign/core/Field` publishes
  *   for a consumer that draws an input box of its own; the Tailwind build scans
@@ -146,8 +147,8 @@ const FIELD_INPUT_BOX_CLASS = tw(
 );
 
 /**
- * The box an input sits in, as `inputWrapperStyles.base` and `.textField` draw
- * it: the border, the surface, the hover ring and the focus ring.
+ * The box an input sits in: the border, the surface, the hover ring and the
+ * focus ring.
  *
  * `status` replaces the resting border colour; it is the only class that
  * changes it, so a status border and the resting one never compete. Padding,
@@ -164,3 +165,11 @@ export function fieldInputWrapperClassName({
       : 'border-[color:var(--color-border-emphasized)]',
   );
 }
+
+/**
+ * The box in its disabled state. The base hover ring still wins on specificity,
+ * as its unlayered rule did wherever a wrapper marks itself `aria-disabled`, so
+ * a disabled control reacts to a pointer exactly as it did before.
+ */
+export const fieldInputWrapperDisabledClassName =
+  'cursor-default opacity-50 shadow-none';

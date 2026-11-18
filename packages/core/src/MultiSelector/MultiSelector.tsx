@@ -37,9 +37,10 @@ import {Icon, renderIconSlot, type IconType} from '../Icon';
 import type {IconName} from '../Icon';
 import {
   Field,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
-  inputWrapperStyles,
 } from '../Field';
 import {useKeepLayerOpenProps} from '../Layer/useLayer';
 import {InternalInputClearButton} from '../Field/InputClearButton';
@@ -2396,7 +2397,6 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             readonly: isEffectivelyReadOnly ? 'readonly' : null,
           }),
           stylex.props(
-            inputWrapperStyles.base,
             styles.triggerContainer,
             variant === 'secondary' && styles.triggerSecondary,
             variant === 'ghost' && styles.triggerGhost,
@@ -2404,7 +2404,6 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             variant !== 'input' && focusOutlineStyles.focusWithin,
             surface.isTriggerFocusRingSuppressed &&
               selectorPresentationStyles.pointerRestoredFocus,
-            isDisabled && inputWrapperStyles.disabled,
             variant === 'input' &&
               isDisabled &&
               !surface.isTriggerFocusRingSuppressed &&
@@ -2428,6 +2427,8 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             controlXstyle,
           ),
           tw(
+            fieldInputWrapperClassName(),
+            isDisabled && fieldInputWrapperDisabledClassName,
             controlClassName,
             // The group's row is the height wherever `groupStyles.inGroup`
             // applies, as it was when both were StyleX declarations in one

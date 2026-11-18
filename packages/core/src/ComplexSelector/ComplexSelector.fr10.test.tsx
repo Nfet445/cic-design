@@ -99,6 +99,27 @@ describe('ComplexSelector FR10 targets', () => {
     );
   });
 
+  it('puts content* on the popup content box, not on the trigger or the field', () => {
+    render(
+      <ComplexSelector
+        label="Fruit"
+        value={VALUE}
+        onChange={() => {}}
+        contentClassName="fr10-content"
+        contentStyle={{width: '321px'}}>
+        {content}
+      </ComplexSelector>,
+    );
+    const trigger = screen.getByRole('combobox', {name: 'Fruit'});
+    const contentBox = document.getElementById(
+      trigger.getAttribute('aria-controls')!,
+    ) as HTMLElement;
+    expect(contentBox).toHaveClass('fr10-content');
+    expect(contentBox.style.width).toBe('321px');
+    expect(contentBox).toContainElement(screen.getByText('Pick a fruit'));
+    expect(trigger).not.toHaveClass('fr10-content');
+  });
+
   it('lets a caller onClick on the trigger cancel opening, as before', () => {
     const targets: EventTarget[] = [];
     const {container} = render(

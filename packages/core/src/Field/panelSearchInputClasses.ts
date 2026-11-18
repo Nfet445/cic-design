@@ -23,8 +23,8 @@ export const panelSearchInputWrapperClassName = tw(
 );
 
 /**
- * The field proper: the same box an option row draws. Focus rings this, not
- * the full-width row.
+ * The borderless field of a dropdown's search row: the box an option row
+ * draws, without a border or a fill. Focus rings this, not the full-width row.
  */
 export const panelSearchInputFieldClassName = tw(
   'box-border flex w-full items-center gap-2',
@@ -33,6 +33,13 @@ export const panelSearchInputFieldClassName = tw(
   'transition-[box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
   'motion-reduce:duration-0',
 );
+
+/**
+ * The same row with the shared field box. The box owns the inset, the gap, the
+ * curve and the transition, so the row adds its width alone: a second padding
+ * or gap here would compete with the box's, and the sheet order would decide.
+ */
+export const panelSearchInputBoxedFieldClassName = 'w-full';
 
 /**
  * The focus ring, applied only while focus was taken by keyboard. The

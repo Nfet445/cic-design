@@ -38,6 +38,7 @@ export type {AutoCapitalize, EnterKeyHint, InputMode} from './textEntryTraits';
 // class; `fieldStatusBorderClassName` alone is for a box that paints its own.
 export {
   fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   fieldStatusBorderClassName,
 } from './fieldClasses';
 

@@ -685,7 +685,8 @@ export function chatComposerBodyClassName(density: ChatDensity): string {
     'relative z-[2] flex flex-col',
     'rounded-[var(--_chat-composer-radius)] bg-[var(--color-background-popover)]',
     'cursor-text [&:is(:disabled,[aria-disabled="true"])]:cursor-default',
-    'transition-[box-shadow,border-color] ease-[var(--ease-standard)]',
+    'transition-[box-shadow,border-color] duration-[var(--duration-fast)] ease-[var(--ease-standard)]',
+    'motion-reduce:duration-0 pointer-coarse:duration-0',
     density === 'compact'
       ? 'gap-1 [--_chat-composer-padding:var(--spacing-2)]'
       : 'gap-2',
@@ -698,7 +699,7 @@ export function chatComposerBodyClassName(density: ChatDensity): string {
  * subtracted from every side (like Card), so total inset matches the elevated
  * case and content geometry is unchanged. One class per presentation, so no
  * two padding utilities compete. The flat border, its hover ring and its
- * focus ring mirror TextInput's shared `inputWrapperStyles.base` treatment.
+ * focus ring mirror TextInput's field box (`../Field/fieldClasses`) treatment.
  * The WCAG focus indicator is the shared ring, gated to keyboard focus.
  */
 export function chatComposerElevationClassName(

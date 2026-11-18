@@ -50,8 +50,12 @@ import {useMergedRefs} from '../hooks/useMergedRefs';
 import {tw} from '../utils/tw';
 import type {BaseProps} from '../BaseProps';
 import {textEntryTraitAttributes} from './textEntryTraits';
-import {inputWrapperStyles} from './inputStyles.stylex';
 import {
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
+} from './fieldClasses';
+import {
+  panelSearchInputBoxedFieldClassName,
   panelSearchInputFieldClassName,
   panelSearchInputIconClassName,
   panelSearchInputInputClassName,
@@ -201,13 +205,12 @@ export function PanelSearchInput({
       <div
         data-keyboard-focus={isKeyboardFocus ? 'true' : undefined}
         {...mergeProps(
-          stylex.props(
-            hasInputBox && inputWrapperStyles.base,
-            hasInputBox && inputWrapperStyles.textField,
-            fieldXstyle,
-          ),
+          stylex.props(fieldXstyle),
           tw(
-            panelSearchInputFieldClassName,
+            hasInputBox && fieldInputWrapperClassName(),
+            hasInputBox
+              ? panelSearchInputBoxedFieldClassName
+              : panelSearchInputFieldClassName,
             isKeyboardFocus && panelSearchInputKeyboardFocusClassName,
           ),
         )}>

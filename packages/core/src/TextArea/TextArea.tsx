@@ -41,7 +41,8 @@ import {
 } from './textAreaClasses';
 import {
   Field,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
   inputStatusFocusWithinStyles,
@@ -520,17 +521,18 @@ export function TextArea({
             readonly: isReadOnly ? 'readonly' : null,
           }),
           stylex.props(
-            inputWrapperStyles.base,
-            inputWrapperStyles.textField,
             wrapperStyles.root,
-            isDisabled && inputWrapperStyles.disabled,
             isDisabled && inputDisabledFocusStyles.ring,
             status && inputStatusBorderStyles[status.type],
             status && !isDisabled && inputStatusHoverShadowStyles[status.type],
             status && inputStatusFocusWithinStyles[status.type],
             controlXstyle,
           ),
-          controlClassName,
+          tw(
+            fieldInputWrapperClassName(),
+            isDisabled && fieldInputWrapperDisabledClassName,
+            controlClassName,
+          ),
           controlStyle,
         )}>
         {hasStartIcon && (

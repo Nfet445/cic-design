@@ -87,7 +87,8 @@ import {
   Field,
   InputClearButton,
   type InputStatus,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
   inputStatusFocusWithinStyles,
@@ -454,7 +455,7 @@ const INPUT_CARET_ROOM = '2px';
 
 const styles = stylex.create({
   // The field's box and the input's own states stay here. The wrapper is the
-  // same element as `inputWrapperStyles.base`, and `groupStyles.inGroup`
+  // same element as `fieldInputWrapperClassName()`, and `groupStyles.inGroup`
   // before it: their unlayered `padding`, `gap`, `flex-wrap` and `height` win
   // over any class in the `astryx-base` layer, so the row's insets and its
   // truncation arms must be declared here too. The input states face the same
@@ -1786,13 +1787,10 @@ export function Tokenizer<T extends SearchableItem>({
           disabled: isDisabled ? 'disabled' : null,
         }),
         stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
           styles.wrapper,
           value.length > 0 && styles.wrapperWithTokens,
           isTruncated ? truncatedSizeStyles[size] : sizeStyle,
           isTruncated && styles.truncatedWrapper,
-          isDisabled && inputWrapperStyles.disabled,
           isDisabled && inputDisabledFocusStyles.nestedRing,
           localStatus && inputStatusBorderStyles[localStatus.type],
           localStatus &&
@@ -1803,7 +1801,11 @@ export function Tokenizer<T extends SearchableItem>({
           isInGroupRow && styles.inGroupWrapper,
           controlXstyle,
         ),
-        controlClassName,
+        tw(
+          fieldInputWrapperClassName(),
+          isDisabled && fieldInputWrapperDisabledClassName,
+          controlClassName,
+        ),
         controlStyle,
       )}>
       {inputGroup && <VisuallyHidden id={inputLabelId}>{label}</VisuallyHidden>}
@@ -2047,15 +2049,12 @@ export function Tokenizer<T extends SearchableItem>({
               disabled: isDisabled ? 'disabled' : null,
             }),
             stylex.props(
-              inputWrapperStyles.base,
-              inputWrapperStyles.textField,
               styles.wrapper,
               // The field keeps the inline field's height for its size step,
               // as Selector's bottom-sheet trigger does; the sheet's own rows
               // and search field carry the touch-sized targets.
               sizeStyles[size],
               value.length > 0 && styles.wrapperWithTokens,
-              isDisabled && inputWrapperStyles.disabled,
               status && inputStatusBorderStyles[status.type],
               status &&
                 !isDisabled &&
@@ -2064,6 +2063,8 @@ export function Tokenizer<T extends SearchableItem>({
               controlXstyle,
             ),
             tw(
+              fieldInputWrapperClassName(),
+              isDisabled && fieldInputWrapperDisabledClassName,
               tokenizerSheetFieldClassName(isDisabled),
               isDisabled && tokenizerSheetFieldDisabledClassName,
               controlClassName,
@@ -2234,13 +2235,10 @@ export function Tokenizer<T extends SearchableItem>({
               disabled: isDisabled ? 'disabled' : null,
             }),
             stylex.props(
-              inputWrapperStyles.base,
-              inputWrapperStyles.textField,
               styles.wrapper,
               value.length > 0 && styles.wrapperWithTokens,
               placeholderSizeStyle,
               isTruncated && styles.truncatedWrapper,
-              isDisabled && inputWrapperStyles.disabled,
               localStatus && inputStatusBorderStyles[localStatus.type],
               localStatus &&
                 !isDisabled &&
@@ -2250,7 +2248,11 @@ export function Tokenizer<T extends SearchableItem>({
               inputGroup && groupStyles.inGroup,
               controlXstyle,
             ),
-            controlClassName,
+            tw(
+              fieldInputWrapperClassName(),
+              isDisabled && fieldInputWrapperDisabledClassName,
+              controlClassName,
+            ),
             controlStyle,
           )}>
           {isTruncated && (

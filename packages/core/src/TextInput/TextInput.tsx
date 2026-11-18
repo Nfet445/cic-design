@@ -36,7 +36,10 @@ export type {TextInputSize} from './textInputClasses';
 import {Field} from '../Field/Field';
 import {InputClearButton} from '../Field/InputClearButton';
 import {
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
+} from '../Field/fieldClasses';
+import {
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
   inputStatusFocusWithinStyles,
@@ -456,9 +459,6 @@ export function TextInput({
           readonly: isReadOnly ? 'readonly' : null,
         }),
         stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
-          isDisabled && inputWrapperStyles.disabled,
           isDisabled && inputDisabledFocusStyles.ring,
           status && inputStatusBorderStyles[status.type],
           status && !isDisabled && inputStatusHoverShadowStyles[status.type],
@@ -466,7 +466,12 @@ export function TextInput({
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
-        tw(textInputHeightClassName({size}), controlClassName),
+        tw(
+          fieldInputWrapperClassName(),
+          isDisabled && fieldInputWrapperDisabledClassName,
+          textInputHeightClassName({size}),
+          controlClassName,
+        ),
         controlStyle,
       )}>
       {/* The shared presence check decides the slot

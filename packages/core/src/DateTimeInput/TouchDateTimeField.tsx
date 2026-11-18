@@ -41,7 +41,8 @@ import {useCalendarConstraints, type ISODateString} from '../Calendar';
 import {
   Field,
   InputClearButton,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
   inputStatusFocusWithinStyles,
@@ -1118,9 +1119,6 @@ export function TouchDateTimeField({
               status: status?.type ?? null,
             }),
             stylex.props(
-              inputWrapperStyles.base,
-              inputWrapperStyles.textField,
-              isEffectivelyDisabled && inputWrapperStyles.disabled,
               isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
               status && inputStatusBorderStyles[status.type],
               status &&
@@ -1129,6 +1127,8 @@ export function TouchDateTimeField({
               status && inputStatusFocusWithinStyles[status.type],
             ),
             tw(
+              fieldInputWrapperClassName(),
+              isEffectivelyDisabled && fieldInputWrapperDisabledClassName,
               dateTimeInputSizeClassName({size}),
               dateTimeInputSegmentClassName,
             ),
@@ -1215,9 +1215,6 @@ export function TouchDateTimeField({
               status: status?.type ?? null,
             }),
             stylex.props(
-              inputWrapperStyles.base,
-              inputWrapperStyles.textField,
-              isEffectivelyDisabled && inputWrapperStyles.disabled,
               isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
               status && inputStatusBorderStyles[status.type],
               status &&
@@ -1226,6 +1223,8 @@ export function TouchDateTimeField({
               status && inputStatusFocusWithinStyles[status.type],
             ),
             tw(
+              fieldInputWrapperClassName(),
+              isEffectivelyDisabled && fieldInputWrapperDisabledClassName,
               dateTimeInputSizeClassName({size}),
               dateTimeInputSegmentClassName,
             ),

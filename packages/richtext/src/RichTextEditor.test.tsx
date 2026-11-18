@@ -354,11 +354,11 @@ describe('RichTextEditor', () => {
     expect(wrapper).toHaveClass('custom-editor');
     expect(wrapper).toHaveAttribute('data-size', 'md');
     expect(wrapper).toHaveStyle({width: '42rem'});
-    expect(
-      [...(wrapper?.classList ?? [])].some(className =>
-        className.startsWith('x'),
-      ),
-    ).toBe(true);
+    // The shared field box, as TextArea wears it: border, fill and the fade.
+    expect(wrapper).toHaveClass('transition-[border-color,box-shadow]');
+    expect(wrapper).toHaveClass(
+      'border-[color:var(--color-border-emphasized)]',
+    );
   });
 
   it('renders a labelled editable textbox', () => {
@@ -491,7 +491,7 @@ describe('RichTextEditor', () => {
     const {container} = render(<RichTextEditor label="Notes" isDisabled />);
     const wrapper = container.querySelector('.astryx-rich-text-editor');
     expect(wrapper).not.toBeNull();
-    expect(getComputedStyle(wrapper as Element).opacity).toBe('0.5');
+    expect(wrapper).toHaveClass('opacity-50', 'cursor-default', 'shadow-none');
   });
 
   it('marks the textbox invalid on error status', () => {
