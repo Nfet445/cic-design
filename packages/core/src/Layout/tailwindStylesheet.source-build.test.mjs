@@ -493,8 +493,10 @@ import {
   fieldStatusDetachedIconClassName,
 } from '../FieldStatus/fieldStatusClasses';
 import {
+  anchoredHintClassName,
   anchoredHintKeysClassName,
   anchoredHintLabelClassName,
+  anchoredHintPassiveClassName,
 } from '../hooks/anchoredHintClasses';
 import {entryAnimationClassName} from '../hooks/entryAnimationClasses';
 import {
@@ -3629,7 +3631,10 @@ function familyClassNames() {
   add(rtlCenterInlineClassName);
   add(rtlCenterInlineBlockOffsetClassName.half);
   add(rtlCenterInlineBlockOffsetClassName.full);
-  // The anchored keyboard hint's key row and its label.
+  // The anchored keyboard hint: its surface, the passive arm, its key row and
+  // its label.
+  add(anchoredHintClassName);
+  add(anchoredHintPassiveClassName);
   add(anchoredHintKeysClassName);
   add(anchoredHintLabelClassName);
   add(scrollableAreaOverflowClassName);

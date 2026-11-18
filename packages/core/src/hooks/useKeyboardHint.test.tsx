@@ -17,6 +17,7 @@ import {createPortal} from 'react-dom';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {useKeyboardHint, type KeyboardHintOrientation} from './useKeyboardHint';
 import {InternationalizationProvider} from '../i18n';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 function TestHint({orientation}: {orientation?: KeyboardHintOrientation}) {
   const {hintElement} = useKeyboardHint({orientation});
@@ -73,8 +74,11 @@ describe('useKeyboardHint', () => {
     const {container} = render(<TestHint />);
     const hint = container.querySelector('[popover="manual"]') as HTMLElement;
 
-    // The surface of the anchored hint Core's keyboard hints share.
-    expect(hint.className).toContain('anchoredHint__styles.hint');
+    // The surface of the anchored hint Core's keyboard hints share, whose
+    // padding the `reset` sublayer does not reach.
+    expectClassSet(hint, {
+      includes: ['py-[var(--spacing-1)]', 'px-[var(--spacing-2)]', 'm-0'],
+    });
   });
 
   it('renders the "to navigate" label from the i18n catalog', () => {
