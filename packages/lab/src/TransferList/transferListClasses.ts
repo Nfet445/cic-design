@@ -100,6 +100,17 @@ export const transferListSelectorSurfaceClassName = tw(
   'max-h-[inherit]',
 );
 
+/**
+ * The selector's popup box. The width tracks the `width` prop through a
+ * private variable the selector writes inline, so the field and its popup are
+ * one measurement rather than two that can disagree.
+ */
+export const transferListSelectorContentClassName = tw(
+  '[width:var(--_transfer-list-selector-width)]',
+  '[max-width:var(--_transfer-list-selector-width)]',
+  'max-h-[calc(100vh_-_32px)] p-0 overflow-hidden rounded-[inherit]',
+);
+
 export const transferListSelectorFieldsetClassName = tw(
   'grow shrink basis-auto min-w-0 min-h-0 m-0 p-0 border-0',
   'overflow-y-auto overscroll-contain',
