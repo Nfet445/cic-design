@@ -33,13 +33,7 @@ import {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  fontWeightVars,
-  radiusVars,
-  spacingVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+import {colorVars, radiusVars} from '../theme/tokens.stylex';
 import {Layout} from '../Layout/Layout';
 import {LayoutHeader} from '../Layout/LayoutHeader';
 import {LayoutPanel} from '../Layout/LayoutPanel';
@@ -81,6 +75,7 @@ import {
   APP_SHELL_HEADER_STICKY_CLASS,
   APP_SHELL_ROOT_CLASS,
   APP_SHELL_SIDE_NAV_STICKY_CLASS,
+  APP_SHELL_SKIP_LINK_CLASS,
   appShellHeightClassName,
   appShellVariantClassName,
 } from './appShellClasses';
@@ -338,61 +333,6 @@ const MAIN_SCROLL_INSET_RING_STYLE: InsetRingStyle = {
 };
 
 const styles = stylex.create({
-  skipLink: {
-    // Visually hidden by default, visible on focus (keyboard navigation)
-    position: {
-      default: 'absolute',
-      ':focus': 'fixed',
-    },
-    width: {
-      default: '1px',
-      ':focus': 'auto',
-    },
-    height: {
-      default: '1px',
-      ':focus': 'auto',
-    },
-    paddingBlock: {
-      default: 0,
-      ':focus': spacingVars['--spacing-2'],
-    },
-    paddingInline: {
-      default: 0,
-      ':focus': spacingVars['--spacing-4'],
-    },
-    margin: {
-      default: '-1px',
-      ':focus': 0,
-    },
-    overflow: {
-      default: 'hidden',
-      ':focus': 'visible',
-    },
-    clipPath: {
-      default: 'inset(50%)',
-      ':focus': 'none',
-    },
-    whiteSpace: {
-      default: 'nowrap',
-      ':focus': 'normal',
-    },
-    borderWidth: 0,
-    // Focus styles
-    top: {
-      default: 0,
-      ':focus': spacingVars['--spacing-2'],
-    },
-    insetInlineStart: {
-      default: 0,
-      ':focus': spacingVars['--spacing-2'],
-    },
-    backgroundColor: colorVars['--color-background-surface'],
-    color: colorVars['--color-text-accent'],
-    zIndex: 9999,
-    textDecoration: 'none',
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    fontSize: typeScaleVars['--text-body-size'],
-  },
   // Programmatic focus target for the skip link. While main fits, it is only
   // focusable via tabIndex={-1} (never tabbable), so a focus ring around the
   // entire content area would be noise rather than guidance — suppress it.
@@ -1264,7 +1204,7 @@ export function AppShell({
                 href={`#${mainContentId}`}
                 onClick={handleSkipLinkClick}
                 {...mergeProps(
-                  stylex.props(styles.skipLink),
+                  APP_SHELL_SKIP_LINK_CLASS,
                   focusOutlineFocusVisibleClassName,
                 )}
                 data-testid="skip-to-content">

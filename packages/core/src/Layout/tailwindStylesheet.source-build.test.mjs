@@ -30,6 +30,7 @@ import {
 import {avatarShapeClassName} from '../Avatar/avatarClasses';
 import {buttonGroupClassName} from '../ButtonGroup/buttonGroupClasses';
 import * as lightboxClasses from '../Lightbox/lightboxClasses';
+import {APP_SHELL_SKIP_LINK_CLASS} from '../AppShell/appShellClasses';
 import {
   breadcrumbMenuClassName,
   breadcrumbsListClassName,
@@ -752,6 +753,7 @@ import {
   tokenizerSheetTriggerPlaceholderDisabledClassName,
   tokenizerSheetTriggerWithTokensClassName,
   tokenizerFieldSizeClassName,
+  tokenizerFixedHeightClassName,
   tokenizerStartIconWithTokensClassName,
   tokenizerTokenClassName,
 } from '../Tokenizer/tokenizerClasses';
@@ -2876,6 +2878,8 @@ function familyClassNames() {
   add(sideNavClassName.drawerFooter);
   add(sideNavClassName.drawerFooterIcons);
   add(sideNavClassName.resizableContainer);
+  add(sideNavClassName.resizableHandle);
+  add(APP_SHELL_SKIP_LINK_CLASS);
   add(sideNavClassName.topbar);
   add(sideNavClassName.topbarIcons);
   for (const value of Object.values(sideNavItemClassName)) {
@@ -3781,6 +3785,10 @@ function familyClassNames() {
   add(tokenizerTokenClassName);
   for (const size of ['sm', 'md', 'lg']) {
     add(tokenizerFieldSizeClassName[size]);
+  }
+  // The exact height a truncated row and the expanded layer's placeholder pin.
+  for (const size of ['sm', 'md', 'lg']) {
+    add(tokenizerFixedHeightClassName[size]);
   }
   add(tokenizerStartIconWithTokensClassName);
   add(tokenizerEndLaneClassName);

@@ -61,6 +61,14 @@ export const sideNavClassName = {
   drawerFooterIcons: 'flex items-center gap-[var(--spacing-1)]',
   /** The rail and its drag handle, clipped as one box. */
   resizableContainer: 'relative flex shrink-0 h-full overflow-clip',
+  /**
+   * Keeps the shared ring inside the clipping boundary: the ring's offset
+   * becomes negative, so it draws inward. The wrapper cannot use
+   * `overflow-clip-margin`, because that paint allowance also adds the
+   * handle's half-pixel spill to AppShell's scrollable overflow.
+   */
+  resizableHandle:
+    '[--focus-outline-offset:calc(-1*var(--focus-outline-width))]',
   /** The mobile top bar, where the rail turns horizontal. */
   topbar: tw(
     'flex flex-row items-center justify-between',

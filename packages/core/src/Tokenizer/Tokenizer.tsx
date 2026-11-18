@@ -108,6 +108,7 @@ import {
   tokenizerIdleSpinnerClassName,
   tokenizerLayerClassName,
   tokenizerFieldSizeClassName,
+  tokenizerFixedHeightClassName,
   tokenizerOverflowTextClassName,
   tokenizerSheetFieldClassName,
   tokenizerSheetTriggerClassName,
@@ -123,7 +124,7 @@ import {OverflowList} from '../OverflowList';
 import {useLayer} from '../Layer/useLayer';
 import {useTooltip} from '../Tooltip';
 import {useAnnounce} from '../hooks/useAnnounce';
-import {colorVars, spacingVars, sizeVars} from '../theme/tokens.stylex';
+import {colorVars, spacingVars} from '../theme/tokens.stylex';
 import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
@@ -455,10 +456,11 @@ const styles = stylex.create({
   // The field's box and the input's own states stay here. The wrapper is the
   // same element as `fieldInputWrapperClassName()` and `inputGroupMemberClassName`:
   // these unlayered `padding`, `gap`, `flex-wrap` and `height` win over any
-  // class in the `astryx-base` layer, so the row's insets and its truncation
-  // arms are declared here too. The input states face the same tie against
-  // `typeaheadInputClassName`'s own `flex` and `min-w` utilities, where the
-  // sheet's order — not the state — would decide.
+  // class in the `astryx-base` layer, so the row's insets are declared here
+  // too; only the exact height a truncated row pins is a class
+  // (`tokenizerFixedHeightClassName`). The input states face the same tie
+  // against `typeaheadInputClassName`'s own `flex` and `min-w` utilities,
+  // where the sheet's order — not the state — would decide.
   wrapper: {
     position: 'relative',
     flexWrap: 'wrap',
@@ -558,18 +560,6 @@ const styles = stylex.create({
       '@media (forced-colors: active)': 'GrayText',
     },
   },
-});
-
-const truncatedSizeStyles = stylex.create({
-  sm: {height: sizeVars['--size-element-sm']},
-  md: {height: sizeVars['--size-element-md']},
-  lg: {height: sizeVars['--size-element-lg']},
-});
-
-const layerPlaceholderSizeStyles = stylex.create({
-  sm: {height: sizeVars['--size-element-sm']},
-  md: {height: sizeVars['--size-element-md']},
-  lg: {height: sizeVars['--size-element-lg']},
 });
 
 // =============================================================================
@@ -1781,7 +1771,6 @@ export function Tokenizer<T extends SearchableItem>({
         stylex.props(
           styles.wrapper,
           value.length > 0 && styles.wrapperWithTokens,
-          isTruncated && truncatedSizeStyles[size],
           isTruncated && styles.truncatedWrapper,
           localStatus && !isDisabled && isInGroupRow && styles.inGroupWrapper,
           controlXstyle,
@@ -1789,7 +1778,7 @@ export function Tokenizer<T extends SearchableItem>({
         tw(
           isInGroupRow && inputGroupMemberClassName,
           // The size floor leaves when truncation pins an exact height.
-          !isTruncated && sizeClassName,
+          isTruncated ? tokenizerFixedHeightClassName[size] : sizeClassName,
           fieldInputWrapperClassName({status: localStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           isDisabled && fieldInputWrapperFocusScopeClassName.nested,
@@ -2206,7 +2195,6 @@ export function Tokenizer<T extends SearchableItem>({
       </>
     );
   } else if (isLayerMode) {
-    const placeholderSizeStyle = layerPlaceholderSizeStyles[size];
     tokenizerContent = (
       <>
         <div
@@ -2221,7 +2209,6 @@ export function Tokenizer<T extends SearchableItem>({
             stylex.props(
               styles.wrapper,
               value.length > 0 && styles.wrapperWithTokens,
-              placeholderSizeStyle,
               isTruncated && styles.truncatedWrapper,
               localStatus &&
                 !isDisabled &&
@@ -2229,6 +2216,7 @@ export function Tokenizer<T extends SearchableItem>({
                 controlXstyle,
             ),
             tw(
+              tokenizerFixedHeightClassName[size],
               inputGroup && inputGroupMemberClassName,
               fieldInputWrapperClassName({status: localStatus?.type}),
               isDisabled && fieldInputWrapperDisabledClassName,

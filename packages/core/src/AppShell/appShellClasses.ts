@@ -146,3 +146,37 @@ export const APP_SHELL_SIDE_NAV_STICKY_CLASS = tw(
   'flex',
   'flex-col',
 );
+
+/**
+ * The skip-to-content link: a one-pixel box clipped to nothing until it takes
+ * focus, then a real link above the shell at the content's start corner.
+ *
+ * `sr-only` hides the resting link. Each `focus:` arm outranks it on its own,
+ * because a variant adds a pseudo-class to the selector, so the focus rule
+ * wins by specificity and not by sheet order. `focus:not-sr-only` is not used
+ * here: the focused link is `fixed`, and that utility would state
+ * `position: static` beside it.
+ */
+export const APP_SHELL_SKIP_LINK_CLASS = tw(
+  'sr-only',
+  'border-0',
+  '[top:0]',
+  '[inset-inline-start:0]',
+  'bg-[var(--color-background-surface)]',
+  '[color:var(--color-text-accent)]',
+  'z-[9999]',
+  'no-underline',
+  '[font-weight:var(--font-weight-semibold)]',
+  '[font-size:var(--text-body-size)]',
+  'focus:fixed',
+  'focus:w-auto',
+  'focus:h-auto',
+  'focus:overflow-visible',
+  'focus:[clip-path:none]',
+  'focus:whitespace-normal',
+  'focus:m-0',
+  'focus:[padding-block:var(--spacing-2)]',
+  'focus:[padding-inline:var(--spacing-4)]',
+  'focus:[top:var(--spacing-2)]',
+  'focus:[inset-inline-start:var(--spacing-2)]',
+);
