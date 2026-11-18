@@ -936,9 +936,14 @@ describe('BottomSheetPanel', () => {
       `max(calc(${chain}_-_var(--spacing-6)),0px)`;
     // The band under the grab bar is applied on top of the published
     // block-start: a lone Section escapes that and still starts below the bar
-    // (component:BottomSheet, Content area inset).
-    const BAND =
-      'calc(var(--container-padding-block-start,0px)+var(--spacing-6))';
+    // (component:BottomSheet, Content area inset). The ancestor arm repeats the
+    // sheet's own class, so it outranks the container's padding rule in the
+    // same layer.
+    const CLEARS_BAND =
+      '[.astryx-bottom-sheet_&]:[padding-block-start:calc(var(--container-padding-block-start,_0px)_+_var(--spacing-6))]';
+    // An explicit step publishes past the band in the same qualified arm.
+    const pastBandClass = (step: string) =>
+      `[.astryx-bottom-sheet_&]:[--container-padding-block-start:${pastBand(step)}]`;
 
     function renderWithPadding(padding?: 0 | 2) {
       render(
@@ -978,12 +983,7 @@ describe('BottomSheetPanel', () => {
         );
         if (edge === 'block-start') {
           // The applied edge keeps the band on top of the published inset.
-          expect(
-            getComputedStyle(content)
-              .getPropertyValue('padding-top')
-              .replace(/\s+/g, ''),
-            edge,
-          ).toBe(BAND);
+          expect(classesOf(content), edge).toContain(CLEARS_BAND);
           continue;
         }
         // Applied padding reads the published value, so bleed children
@@ -1009,21 +1009,18 @@ describe('BottomSheetPanel', () => {
       padding => {
         const content = renderWithPadding(padding);
         const expected = STEP_CLASS[padding];
-        for (const edge of Object.keys(THEME_CHAIN)) {
+        // The block start publishes only the inset past the band, in the arm
+        // that outranks the step the container publishes. It then applies the
+        // band on top.
+        expect(classesOf(content), 'block-start').toContain(
+          pastBandClass(expected),
+        );
+        expect(classesOf(content), 'block-start').toContain(CLEARS_BAND);
+        // Every other edge publishes and applies the step itself.
+        for (const edge of ['inline-start', 'inline-end', 'block-end']) {
           expect(publishedClass(content, edge), edge).toBe(
             `[--container-padding-${edge}:${expected}]`,
           );
-          // Every other edge applies what it published; the block start keeps
-          // the band the panel's own StyleX rule adds on top.
-          if (edge === 'block-start') {
-            expect(
-              getComputedStyle(content)
-                .getPropertyValue('padding-top')
-                .replace(/\s+/g, ''),
-              edge,
-            ).toBe(BAND);
-            continue;
-          }
           expect(classesOf(content), edge).toContain(
             `[padding-${edge}:var(--container-padding-${edge})]`,
           );

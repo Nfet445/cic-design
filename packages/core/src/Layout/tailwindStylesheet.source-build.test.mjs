@@ -188,6 +188,10 @@ import {
 } from '../Drawer/drawerClasses';
 import {bottomSheetEdgeTintClassName} from '../BottomSheet/bottomSheetEdgeTintClasses';
 import {
+  bottomSheetClearsGrabBarClassName,
+  bottomSheetPastGrabBarClassName,
+} from '../BottomSheet/bottomSheetPanelClasses';
+import {
   bottomSheetDialogClassName,
   bottomSheetPositionerClassName,
   bottomSheetScrimReducedMotionDurationClassName,
@@ -1742,6 +1746,12 @@ function familyClassNames() {
     }
   }
   add(drawerContentClassName);
+  // The bottom sheet's content box: the band it clears under the grab bar, and
+  // the inset each explicit padding step publishes past that band.
+  add(bottomSheetClearsGrabBarClassName);
+  for (const padding of [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10]) {
+    add(bottomSheetPastGrabBarClassName(padding));
+  }
   // The bottom sheet's edge tint: the strip WebKit samples for the iOS toolbar
   // colour.
   add(bottomSheetEdgeTintClassName);

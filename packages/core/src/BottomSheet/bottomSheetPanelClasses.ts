@@ -5,7 +5,7 @@
  * @input The panel's height state, its keyboard inset, and the sheet's custom
  *   properties
  * @output Utility class strings for the sheet, the grab bar, the scrolling
- *   body and the content box
+ *   body, the content box and the band its block-start padding clears
  * @position BottomSheet style primitives; scanned by the Tailwind build
  *
  * `pointer-events` has two arms in one class set and both may apply in a
@@ -14,13 +14,14 @@
  * transition to time the end of a motion, so they stay in
  * `bottomSheetPanelMotion.stylex.ts`.
  *
- * The block-start padding of the content box is not here either: the layout
- * container rules that publish it are unlayered and outrank this layer (see
- * `bottomSheetPanelPadding.stylex.ts`).
+ * The block-start arms below repeat `.astryx-bottom-sheet`, the sheet's own
+ * class, so their ancestor compound outranks the single-class layout container
+ * rules that publish and apply the same padding in this same layer.
  */
 
 import type {CSSProperties} from 'react';
 
+import type {SpacingStep} from '../utils/types';
 import {tw} from '../utils/tw';
 
 /**
@@ -161,3 +162,31 @@ export function bottomSheetContentClassName({
     hasKeyboardInset && 'after:h-[var(--astryx-bottom-sheet-keyboard-inset)]',
   );
 }
+
+// An explicit padding publishes only the part past the grab bar's band, so a
+// Section that escapes the published padding still starts below the bar.
+const PAST_GRAB_BAR: Record<SpacingStep, string> = {
+  0: '[.astryx-bottom-sheet_&]:[--container-padding-block-start:max(calc(var(--spacing-0)_-_var(--spacing-6)),0px)]',
+  0.5: '[.astryx-bottom-sheet_&]:[--container-padding-block-start:max(calc(var(--spacing-0-5)_-_var(--spacing-6)),0px)]',
+  1: '[.astryx-bottom-sheet_&]:[--container-padding-block-start:max(calc(var(--spacing-1)_-_var(--spacing-6)),0px)]',
+  1.5: '[.astryx-bottom-sheet_&]:[--container-padding-block-start:max(calc(var(--spacing-1-5)_-_var(--spacing-6)),0px)]',
+  2: '[.astryx-bottom-sheet_&]:[--container-padding-block-start:max(calc(var(--spacing-2)_-_var(--spacing-6)),0px)]',
+  3: '[.astryx-bottom-sheet_&]:[--container-padding-block-start:max(calc(var(--spacing-3)_-_var(--spacing-6)),0px)]',
+  4: '[.astryx-bottom-sheet_&]:[--container-padding-block-start:max(calc(var(--spacing-4)_-_var(--spacing-6)),0px)]',
+  5: '[.astryx-bottom-sheet_&]:[--container-padding-block-start:max(calc(var(--spacing-5)_-_var(--spacing-6)),0px)]',
+  6: '[.astryx-bottom-sheet_&]:[--container-padding-block-start:max(calc(var(--spacing-6)_-_var(--spacing-6)),0px)]',
+  8: '[.astryx-bottom-sheet_&]:[--container-padding-block-start:max(calc(var(--spacing-8)_-_var(--spacing-6)),0px)]',
+  10: '[.astryx-bottom-sheet_&]:[--container-padding-block-start:max(calc(var(--spacing-10)_-_var(--spacing-6)),0px)]',
+};
+
+/** What an explicit padding step publishes past the grab bar's band. */
+export function bottomSheetPastGrabBarClassName(padding: SpacingStep): string {
+  return PAST_GRAB_BAR[padding];
+}
+
+/**
+ * The band under the grab bar, applied on top of the published padding:
+ * `max(padding, the bar)` in all.
+ */
+export const bottomSheetClearsGrabBarClassName =
+  '[.astryx-bottom-sheet_&]:[padding-block-start:calc(var(--container-padding-block-start,_0px)_+_var(--spacing-6))]';

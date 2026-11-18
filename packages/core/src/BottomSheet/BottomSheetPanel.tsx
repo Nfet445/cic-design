@@ -43,16 +43,14 @@ import {
 import {mergeProps} from '../utils/mergeProps';
 import {
   bottomSheetBodyClassName,
+  bottomSheetClearsGrabBarClassName,
   bottomSheetContentClassName,
   bottomSheetHandleBarClassName,
   bottomSheetPanelClassName,
+  bottomSheetPastGrabBarClassName,
   type BottomSheetPanelInstanceStyle,
 } from './bottomSheetPanelClasses';
 import {bottomSheetSheetMotionStyles} from './bottomSheetPanelMotion.stylex';
-import {
-  bottomSheetClearsGrabBarStyles,
-  bottomSheetPastGrabBarStyles,
-} from './bottomSheetPanelPadding.stylex';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
@@ -1060,36 +1058,40 @@ export function BottomSheetPanel({
             getContentProps<HTMLDivElement>(
               scrollElementProps(
                 mergeProps(
-                  stylex.props(
-                    // An explicit padding publishes what reaches past the grab
-                    // bar's band, like the theme default (Layout/containerClasses.ts).
-                    !usesThemePadding &&
-                      bottomSheetPastGrabBarStyles[effectivePadding],
-                    // The band under the grab bar, on top of the published
-                    // padding past it: max(padding, the bar) in all.
-                    bottomSheetClearsGrabBarStyles.clearsGrabBar,
-                  ),
-                  tw(
-                    bottomSheetContentClassName({
-                      isTall: height === 'tall',
-                      hasKeyboardInset: height === 'tall' && keyboardInset > 0,
-                    }),
-                    container(
-                      usesThemePadding
-                        ? {useThemeDefault: 'bottom-sheet'}
-                        : {
-                            paddingInnerX: paddingToken,
-                            paddingInnerY: paddingToken,
-                            paddingOuterX: paddingToken,
-                            paddingOuterY: paddingToken,
-                          },
+                  {
+                    className: tw(
+                      // An explicit padding publishes what reaches past the grab
+                      // bar's band, like the theme default (Layout/containerClasses.ts).
+                      !usesThemePadding &&
+                        bottomSheetPastGrabBarClassName(effectivePadding),
+                      // The band under the grab bar, on top of the published
+                      // padding past it: max(padding, the bar) in all.
+                      bottomSheetClearsGrabBarClassName,
+                      bottomSheetContentClassName({
+                        isTall: height === 'tall',
+                        hasKeyboardInset:
+                          height === 'tall' && keyboardInset > 0,
+                      }),
+                      container(
+                        usesThemePadding
+                          ? {useThemeDefault: 'bottom-sheet'}
+                          : {
+                              paddingInnerX: paddingToken,
+                              paddingInnerY: paddingToken,
+                              paddingOuterX: paddingToken,
+                              paddingOuterY: paddingToken,
+                            },
+                      ),
                     ),
-                  ),
-                  height === 'tall' && keyboardInset > 0
-                    ? ({
-                        '--astryx-bottom-sheet-keyboard-inset': `${keyboardInset}px`,
-                      } as BottomSheetPanelInstanceStyle)
-                    : {},
+                  },
+                  {
+                    style:
+                      height === 'tall' && keyboardInset > 0
+                        ? ({
+                            '--astryx-bottom-sheet-keyboard-inset': `${keyboardInset}px`,
+                          } as BottomSheetPanelInstanceStyle)
+                        : undefined,
+                  },
                 ),
               ),
             ),
