@@ -4,7 +4,7 @@
 
 /**
  * @file SideNav.tsx
- * @input Uses React, HTMLAttributes, ReactNode, StyleX
+ * @input Uses React, HTMLAttributes, ReactNode, sideNavClasses
  * @output Exports SideNav component and SideNavProps
  * @position Core implementation; consumed by index.ts, tested by SideNav.test.tsx
  *
