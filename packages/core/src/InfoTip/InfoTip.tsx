@@ -41,7 +41,7 @@ import english from '../i18n/generated-english/InfoTip/InfoTip.generated';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {mergeProps} from '../utils/mergeProps';
 import {useTouchHitArea} from '../utils/touchHitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {infoTipTriggerClassName} from './infoTipClasses';
 import {pickDataAttributes} from '../utils/themeProps';
 import {xstyleProps} from '../utils/xstyle';
@@ -172,11 +172,8 @@ export function InfoTip({
         onPointerDownCapture={handlePointerDownCapture}
         onClick={handleClick}
         {...mergeProps(
-          {className: infoTipTriggerClassName},
-          stylex.props(
-            focusOutlineStyles.focusVisible,
-            touchHitAreaStyles.layer,
-          ),
+          {className: tw(infoTipTriggerClassName, touchHitAreaLayerClassName)},
+          stylex.props(focusOutlineStyles.focusVisible),
           tw(className, xstyleProps(xstyle).className),
           {...xstyleProps(xstyle).style, ...style},
         )}>

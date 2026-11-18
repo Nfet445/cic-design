@@ -315,8 +315,9 @@ describe('touch presentation', () => {
     };
     walk(root);
     expect(drifted).toEqual([]);
-    // Core writes the touch key as a literal in many places.
-    expect(pointerLiterals).toBeGreaterThan(50);
+    // Core writes the touch key as a literal in many places; a class map that
+    // spells the gate as a Tailwind `pointer-coarse` variant is not one.
+    expect(pointerLiterals).toBeGreaterThanOrEqual(50);
   });
 
   it('keeps every iOS gate in core spelled and nested as the resolver', () => {

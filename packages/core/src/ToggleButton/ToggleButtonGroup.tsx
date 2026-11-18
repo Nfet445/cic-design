@@ -29,14 +29,13 @@ import {
   type Ref,
 } from 'react';
 import {createLayerScopedContext} from '../Layer/layerScopedContext';
-import * as stylex from '@stylexjs/stylex';
 import type {ButtonSize} from '../Button';
 import type {BaseProps} from '../BaseProps';
 import {PressGroupContext} from '../hooks/pressGroupContext';
 import {useTouchPresentation} from '../utils/touchPresentation';
 import {useGroupPressTracking} from '../hooks/useGroupPressTracking';
 import {useMergedRefs} from '../hooks/useMergedRefs';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerBelowChildrenClassName} from '../internal/touchHitAreaClasses';
 import {toggleButtonGroupClassName} from './toggleButtonGroupClasses';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
@@ -256,12 +255,11 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): ReactNode {
   ).ref;
   const mergedRef = useMergedRefs(callerRef, groupRef, hitAreaRef);
 
-  // The group's own layout comes from utility classes. The touch hit band is a
-  // shared StyleX module that has not migrated, so its class joins them.
+  // The group's own layout comes from utility classes; the touch hit band is
+  // one of them.
   const layoutClassName = tw(
     toggleButtonGroupClassName({orientation, tracksPress}),
-    tracksPress &&
-      stylex.props(touchHitAreaStyles.layerBelowChildren).className,
+    tracksPress && touchHitAreaLayerBelowChildrenClassName,
   );
 
   return (

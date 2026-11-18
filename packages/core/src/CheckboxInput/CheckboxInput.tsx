@@ -60,7 +60,7 @@ import {pressBoxProps} from '../privateAttributes/pressBox.stylex';
 import {indicatorPressPaintHandDownClassName} from '../privateAttributes/press.stylex';
 import {registerBoxHold} from '../utils/boxHold';
 import {xstyleProps} from '../utils/xstyle';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -405,6 +405,10 @@ export function CheckboxInput({
           {
             className: tw(
               checkboxInputRowClassName({isLabelHidden, hasHitArea}),
+              // The touch hit band. Hover and focus reach the checkbox visual
+              // through the row's scope attribute rather than props, so the
+              // whole row drives it.
+              hasHitArea && touchHitAreaLayerClassName,
               // An indicator in another package may not name the private press
               // attribute. So the row hands its press image down to an
               // indicator that paints its own press
@@ -419,9 +423,6 @@ export function CheckboxInput({
             ),
           },
           stylex.props(
-            // Hover and focus reach the checkbox visual through the row's
-            // scope attribute rather than props, so the whole row drives it.
-            hasHitArea && touchHitAreaStyles.layer,
             // The touch press's strength and release live on the row the
             // controller writes to; the layer over the checkbox box inherits
             // and paints it. Under a row that owns the press, the box inherits

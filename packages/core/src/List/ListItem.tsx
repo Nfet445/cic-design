@@ -60,7 +60,7 @@ import {
   travellingRowClassName,
 } from '../privateAttributes/travelling.stylex';
 import {useTouchHitArea} from '../utils/touchHitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {tw} from '../utils/tw';
 import {
   listItemMarkerCircleClassName,
@@ -413,7 +413,6 @@ export function ListItem({
       xstyle={
         [
           hasDividers && isTouchTarget && rowPressLayerStyles.overDividers,
-          isTouchTarget && touchHitAreaStyles.layer,
           xstyle,
         ] as AstryxXStyle
       }
@@ -434,6 +433,10 @@ export function ListItem({
           // its own class, which outranks the shared `:has(:focus-visible)`
           // ring by specificity (privateAttributes/ownRingClasses.ts).
           reorderHandle && reorder?.session.rowStyle,
+          // Under a finger the row takes taps past its own box. It lands here,
+          // not in `xstyle`: Item resolves a list carrying a StyleX value as
+          // StyleX alone, which drops a class.
+          isTouchTarget && touchHitAreaLayerClassName,
           className,
         ),
         style,

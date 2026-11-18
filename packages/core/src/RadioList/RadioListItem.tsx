@@ -19,7 +19,7 @@
  */
 
 import React, {use, useId, useRef, type ReactNode} from 'react';
-import type {StyleXStyles} from '@stylexjs/stylex';
+import type {AstryxXStyle} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {RadioListContext} from './RadioList';
 import {RadioListReasonContext} from './RadioListReasonContext';
@@ -38,7 +38,7 @@ import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useTouchHitArea} from '../utils/touchHitArea';
 import {pressBoxProps} from '../privateAttributes/pressBox.stylex';
 import {registerBoxHold} from '../utils/boxHold';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {useIndicator} from '../Indicator/useIndicator';
 import {Item, type ItemAlign} from '../Item/Item';
 import {themeProps} from '../utils/themeProps';
@@ -320,9 +320,8 @@ export function RadioListItem({
           // The row keeps no press paint of its own: the circle paints, and
           // reads the strength whose release the row keeps.
           rowPressLayerStyles.cellWithoutLayer,
-          !isDisabled && touchHitAreaStyles.layer,
           xstyle,
-        ] as StyleXStyles
+        ] as AstryxXStyle
       }
       {...mergeProps(
         // One target for every row, carrying its size and runtime state so a
@@ -346,6 +345,10 @@ export function RadioListItem({
             // theme still overrides it from the higher `astryx-theme` layer.
             radioListItemRowClassName,
             !isDisabled && rowPressPaintRadioRowClassName,
+            // Under a finger the row takes taps past its own box. It lands
+            // here, not in `xstyle`: Item resolves a list carrying a StyleX
+            // value as StyleX alone, which drops a class.
+            !isDisabled && touchHitAreaLayerClassName,
             className,
           ),
           style,

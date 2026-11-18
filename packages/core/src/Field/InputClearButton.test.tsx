@@ -30,7 +30,7 @@ import {InternationalizationProvider} from '../i18n';
 import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {declaredValue} from '../__tests__/stylexDeclarations';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 
 function generateThemeTestCSS(theme: Parameters<typeof generateThemeCSS>[0]) {
   const {prose, component} = generateThemeCSS(theme);
@@ -229,9 +229,7 @@ describe('InputClearButton', () => {
     // neighbors leave room, through Button's band (AST-094 FR42).
     render(<InputClearButton label="Clear" onClick={() => {}} />);
     const button = screen.getByRole('button', {name: 'Clear'});
-    const bandClasses = (stylex.props(touchHitAreaStyles.layer).className ?? '')
-      .split(/\s+/)
-      .filter(Boolean);
+    const bandClasses = touchHitAreaLayerClassName.split(/\s+/).filter(Boolean);
     expect(bandClasses.length).toBeGreaterThan(0);
     const band = [...button.querySelectorAll('*')].find(element =>
       bandClasses.every(bandClass => element.classList.contains(bandClass)),

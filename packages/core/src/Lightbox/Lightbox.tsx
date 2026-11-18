@@ -39,7 +39,6 @@ import {
 } from 'react';
 import type {CSSProperties} from 'react';
 import {flushSync} from 'react-dom';
-import * as stylex from '@stylexjs/stylex';
 import {Icon} from '../Icon';
 import {IconButton} from '../IconButton';
 import {announceInModal} from '../hooks/useAnnounce';
@@ -48,7 +47,7 @@ import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {useAttachment} from '../hooks/useAttachment';
 import {observeResizeAfterLayout} from '../utils/sharedResizeObserver';
 import {useTouchHitArea} from '../utils/touchHitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {usePressTracker} from '../gestures/usePressTracker';
 import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import {xstyleProps} from '../utils/xstyle';
@@ -1904,8 +1903,7 @@ export function Lightbox({
                                         }}
                                         className={tw(
                                           lightboxCaptionToggleClassName,
-                                          stylex.props(touchHitAreaStyles.layer)
-                                            .className,
+                                          touchHitAreaLayerClassName,
                                         )}>
                                         {isCaptionOpen
                                           ? t('@astryx.lightbox.captionLess')

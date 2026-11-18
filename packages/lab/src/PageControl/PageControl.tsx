@@ -24,7 +24,6 @@ import {
   type KeyboardEvent,
   type Ref,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {
@@ -47,7 +46,7 @@ import {
 import {
   animatorFor,
   isRtlElement,
-  touchHitAreaStyles,
+  touchHitAreaLayerClassName,
   useTouchHitArea,
   useTouchPresentation,
 } from '@astryxdesign/core/internal/touch';
@@ -329,8 +328,8 @@ function PageControlRow({
       {...htmlProps}
       ref={mergedRef}
       {...mergeProps(
-        stylex.props(isTouch && touchHitAreaStyles.layer),
         tw(
+          isTouch && touchHitAreaLayerClassName,
           pageControlRootClassName,
           !isTouch && pageControlCroppedClassName,
           isTouch &&
@@ -341,11 +340,13 @@ function PageControlRow({
           className,
         ),
         {
-          ...xstyleProps(xstyle).style,
-          ...style,
-          width: layout.width,
-          height: PC.height,
-          ['--astryx-page-control-platter-transition' as string]: transition,
+          style: {
+            ...xstyleProps(xstyle).style,
+            ...style,
+            width: layout.width,
+            height: PC.height,
+            ['--astryx-page-control-platter-transition' as string]: transition,
+          },
         },
       )}
       role="slider"

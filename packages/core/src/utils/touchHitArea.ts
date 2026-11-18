@@ -7,13 +7,13 @@
  * @input Whether an element takes taps, how it grows, the shared touch hit
  *   area (utils/hitArea.ts) and the Web Animations around the element
  * @output `useTouchHitArea`, a callback ref that keeps an element's hit insets
- *   live for its invisible layer (`touchHitAreaStyles.layer`)
+ *   live for its invisible band (`touchHitAreaLayerClassName`)
  * @position Core-internal hook for the coarse-only 44 px target. List rows,
  *   InfoTip, CheckboxInput, RadioListItem, SegmentedControl segments and the
  *   press-tracking groups use it, and so can any control whose target outgrows
  *   its box under a finger.
  *
- * SYNC: When modified, update internal/touchHitArea.stylex.ts and
+ * SYNC: When modified, update internal/touchHitAreaClasses.ts and
  * touchHitArea.test.tsx.
  */
 
@@ -188,7 +188,7 @@ function holdWatch(
 /**
  * A callback ref that keeps its element's hit insets live while `enabled`:
  * the element takes taps, so it is interactive and not disabled or read-only.
- * Merge it into the element's ref, and pair it with `touchHitAreaStyles.layer`
+ * Merge it into the element's ref, and pair it with `touchHitAreaLayerClassName`
  * on the same element, or on a descendant with `ownsDescendantTouches` off.
  * The watch lasts while the element is attached, so a replaced element starts
  * its own. A re-render that hands the same element a
@@ -198,7 +198,7 @@ function holdWatch(
  * @example
  * ```
  * const hitAreaRef = useTouchHitArea(isInteractive && !isDisabled);
- * <li ref={hitAreaRef} {...stylex.props(isInteractive && touchHitAreaStyles.layer)} />
+ * <li ref={hitAreaRef} className={tw(isInteractive && touchHitAreaLayerClassName)} />
  * ```
  */
 export function useTouchHitArea(

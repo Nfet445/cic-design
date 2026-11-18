@@ -39,7 +39,7 @@ import {usePressFeedback} from '../hooks/usePressFeedback';
 import {isRenderable} from '../utils/isRenderable';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useTouchHitArea} from '../utils/touchHitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {tw} from '../utils/tw';
 import {xstyleProps} from '../utils/xstyle';
 
@@ -159,7 +159,6 @@ export function SegmentedControlItem({
           !isSelected &&
             !isItemDisabled &&
             interactionOverlayStyles.pressedAlpha,
-          hasHitArea && touchHitAreaStyles.layer,
         ),
         tw(
           segmentedItemClassName({
@@ -170,8 +169,10 @@ export function SegmentedControlItem({
             isLabelHidden,
             isTouchPresentation: ctx.isTouchPresentation === true,
           }),
-          // The shared hover and pressed overlay, on the segments a press can
-          // change: the selected segment keeps its raised surface as it is.
+          // The touch hit band, and the shared hover and pressed overlay on the
+          // segments a press can change: the selected segment keeps its raised
+          // surface as it is.
+          hasHitArea && touchHitAreaLayerClassName,
           !isSelected &&
             !isItemDisabled &&
             interactionOverlayBackgroundColorClassName,

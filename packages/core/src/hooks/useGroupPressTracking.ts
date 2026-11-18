@@ -11,7 +11,7 @@
  * @position Internal hook, not exported from the hooks entry. It drives
  *   useActionGroupTracking and the shared touch hit area (useTouchHitArea)
  *   for a group's members. Each group's root applies
- *   touchHitAreaStyles.layerBelowChildren. AlertDialog's tracking follows
+ *   touchHitAreaLayerBelowChildrenClassName. AlertDialog's tracking follows
  *   GROUP_PRESS_POINTERS too.
  *
  * SYNC: When modified, update ButtonGroupTracking.test.tsx and
@@ -114,7 +114,7 @@ export interface GroupPressTracking {
   /**
    * Merge into the group's root: it keeps the hit layer's insets live. While
    * the group tracks presses, the root applies
-   * `touchHitAreaStyles.layerBelowChildren` and is positioned, as the layer's
+   * `touchHitAreaLayerBelowChildrenClassName` and is positioned, as the band's
    * containing block.
    */
   readonly hitAreaRef: RefCallback<HTMLElement>;

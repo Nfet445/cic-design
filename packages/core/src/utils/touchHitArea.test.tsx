@@ -2,19 +2,18 @@
 
 /**
  * @file touchHitArea.test.tsx
- * @input Vitest, Testing Library, StyleX's injected rules, and a stubbed
- *   watchHitArea (utils/hitArea.ts)
- * @output Tests for the shared touch hit area hook and layer. They cover what
+ * @input Vitest, Testing Library, the band's class map, and the built package
+ *   stylesheet
+ * @output Tests for the shared touch hit area hook and band. They cover what
  *   the hook watches, an owner's growth and press check, a measurement while
- *   the parent moves, the stop, and the layer's CSS.
+ *   the parent moves, the stop, and the band's CSS.
  * @position Unit test for utils/touchHitArea.ts and
- *   internal/touchHitArea.stylex.ts. List/ListItem.hitArea.test.tsx covers the
+ *   internal/touchHitAreaClasses.ts. List/ListItem.hitArea.test.tsx covers the
  *   row wiring.
  */
 
 import {useCallback} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {afterEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import type * as HitAreaModule from './hitArea';
 import {HIT_INSET_PROPERTIES, type HitInsets, type HitRect} from './hitArea';
@@ -54,7 +53,12 @@ vi.mock('./hitArea', async importOriginal => {
 });
 
 import {useTouchHitArea} from './touchHitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {
+  touchHitAreaLayerBelowChildrenClassName,
+  touchHitAreaLayerClassName,
+} from '../internal/touchHitAreaClasses';
+import {type Stylesheet, stylesheetOf} from '../__tests__/classNameAssertions';
+import {buildAstryxTailwindCss} from '../../scripts/build-css-tailwind.mjs';
 
 function Host({
   enabled,
@@ -82,47 +86,50 @@ function Host({
         key={swap ? 'replaced' : 'first'}
         data-testid="host"
         ref={ref}
-        {...stylex.props(touchHitAreaStyles.layer)}
+        className={touchHitAreaLayerClassName}
       />
     </div>
   );
 }
 
-/** The element's injected rules for `pseudo`, split by the touch gate. */
-function pseudoRules(
-  el: Element,
-  pseudo: '::after' | '::before' = '::after',
-): {touch: string[]; other: string[]} {
-  const classes = el.className
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(name => `.${name}`);
-  const out = {touch: [] as string[], other: [] as string[]};
-  const visit = (rules: CSSRuleList, touch: boolean) => {
-    for (const rule of Array.from(rules)) {
-      if (rule instanceof CSSStyleRule) {
-        if (
-          rule.selectorText.includes(pseudo) &&
-          classes.some(cls => rule.selectorText.startsWith(cls))
-        ) {
-          (touch ? out.touch : out.other).push(
-            `${rule.selectorText} {${rule.style.cssText}}`,
-          );
-        }
-        continue;
-      }
-      const nested = (rule as CSSGroupingRule).cssRules;
-      if (nested == null) {
-        continue;
-      }
-      const condition = (rule as CSSConditionRule).conditionText ?? '';
-      visit(nested, touch || condition.includes('pointer: coarse'));
-    }
-  };
-  for (const sheet of Array.from(document.styleSheets)) {
-    visit(sheet.cssRules, false);
+/** Every band utility sits inside the coarse-pointer gate Tailwind prints. */
+const COARSE_GATE = '@media(pointer:coarse){';
+
+let sheet: Stylesheet;
+
+beforeAll(async () => {
+  sheet = stylesheetOf(await buildAstryxTailwindCss());
+});
+
+/**
+ * The pseudo-element a band utility draws and its declarations, read from the
+ * built sheet. The sheet's text keeps no whitespace, so a value reads as the
+ * sheet prints it.
+ */
+function bandRule(token: string): {pseudo: string; declarations: string} {
+  const block = sheet.blockOf(token);
+  if (block == null) {
+    expect.fail(`the sheet has no rule for "${token}"`);
   }
-  return out;
+  if (!block.startsWith(COARSE_GATE)) {
+    expect.fail(`"${token}" is not coarse-only: ${block}`);
+  }
+  const inner = block.slice(COARSE_GATE.length);
+  const open = inner.indexOf('{');
+  return {
+    pseudo: inner.slice(0, open),
+    declarations: inner.slice(open + 1, inner.lastIndexOf('}')),
+  };
+}
+
+/** A band's declarations, grouped by the pseudo-element they style. */
+function bandDeclarations(className: string): Map<string, string[]> {
+  const grouped = new Map<string, string[]>();
+  for (const token of className.split(' ')) {
+    const {pseudo, declarations} = bandRule(token);
+    grouped.set(pseudo, [...(grouped.get(pseudo) ?? []), declarations]);
+  }
+  return grouped;
 }
 
 function stubCoarse(): void {
@@ -352,56 +359,41 @@ describe('useTouchHitArea across re-renders', () => {
   });
 });
 
-describe('touchHitAreaStyles.layer', () => {
-  it('is a coarse-only ::after grown on all four sides by the inset properties past the host’s border, the element as its clip-path hole, with no z-index of its own, painting nothing, and the host starting no stacking context', () => {
-    render(<Host enabled={false} />);
-    const {touch, other} = pseudoRules(screen.getByTestId('host'));
-    const layer = touch.join('\n');
-    expect(layer).toContain('position: absolute');
+describe('touchHitAreaLayerClassName', () => {
+  it('is a coarse-only ::after grown on all four sides by the inset properties past the host’s border, the element as its clip-path hole, with no z-index of its own, and painting nothing', () => {
+    const band = bandDeclarations(touchHitAreaLayerClassName);
+    expect([...band.keys()]).toEqual(['&::after']);
+    const declarations = band.get('&::after') ?? [];
+    expect(declarations.join('')).toContain(
+      'content:var(--tw-content);position:absolute;',
+    );
     // Offset from the host's padding box: the inset, plus the border the host
     // declares on that side (the inset is measured from its border box). One
     // per side, in physical order: top, right, bottom, left.
     const offset = (side: keyof typeof HIT_INSET_PROPERTIES) =>
-      `calc\\(\\(var\\(${HIT_INSET_PROPERTIES[side]}, ?0px\\) \\+ var\\(--_hit-border-${side}, ?0px\\)\\) \\* -1\\)`;
-    expect(layer).toMatch(
-      new RegExp(
-        `inset: ${offset('top')} ${offset('right')} ${offset('bottom')} ${offset('left')}`,
-      ),
+      `calc((var(${HIT_INSET_PROPERTIES[side]},0px)+var(--_hit-border-${side},0px))*-1)`;
+    expect(declarations.join('')).toContain(
+      `content:var(--tw-content);inset:${offset('top')}${offset('right')}${offset('bottom')}${offset('left')};`,
     );
-    expect(layer).toMatch(/clip-path: polygon\(evenodd/);
+    const clip = declarations.find(name => name.includes('clip-path:')) ?? '';
+    expect(clip).toContain('clip-path:polygon(evenodd,');
+    // The host's own box is the hole, so the band paints around it.
+    expect(clip).toContain(`var(${HIT_INSET_PROPERTIES.left},0px)`);
     // No z-index of its own: what bounds a raise is the host's container's
-    // call (a List raises its rows' layers and isolates them, ListItem).
-    expect(layer).not.toMatch(/z-index/);
+    // call (a List raises its rows' bands and isolates them, ListItem).
+    expect(declarations.join('')).not.toContain('z-index');
     // It paints nothing: no paint declaration of its own.
-    expect(layer).not.toMatch(
-      /[{;]\s*(?:background|border|box-shadow|outline|isolation)[\w-]*\s*:/,
+    expect(declarations.join('')).not.toMatch(
+      /(^|;)(?:background|border|box-shadow|outline|isolation)[\w-]*:/,
     );
-    // With a mouse: no pseudo-element.
-    expect(other).toEqual([]);
   });
 });
 
-describe('touchHitAreaStyles.layerBelowChildren', () => {
+describe('touchHitAreaLayerBelowChildrenClassName', () => {
   it("is the same coarse-only band as the host's ::before, so the host's positioned children paint over its edge, and draws no ::after", () => {
-    render(
-      <>
-        <span
-          data-testid="below"
-          {...stylex.props(touchHitAreaStyles.layerBelowChildren)}
-        />
-        <span data-testid="above" {...stylex.props(touchHitAreaStyles.layer)} />
-      </>,
-    );
-    const below = screen.getByTestId('below');
-    const declarations = (rules: string[]) =>
-      rules.map(rule => rule.slice(rule.indexOf('{'))).sort();
-    const band = pseudoRules(below, '::before');
-    expect(band.touch.length).toBeGreaterThan(0);
-    expect(declarations(band.touch)).toEqual(
-      declarations(pseudoRules(screen.getByTestId('above')).touch),
-    );
-    // With a mouse: no pseudo-element, and never an `::after`.
-    expect(band.other).toEqual([]);
-    expect(pseudoRules(below)).toEqual({touch: [], other: []});
+    const below = bandDeclarations(touchHitAreaLayerBelowChildrenClassName);
+    expect([...below.keys()]).toEqual(['&::before']);
+    const above = bandDeclarations(touchHitAreaLayerClassName).get('&::after');
+    expect(below.get('&::before')).toEqual(above);
   });
 });
