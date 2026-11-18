@@ -33,6 +33,7 @@ import {Button} from '../Button/Button';
 import type {ButtonVariant} from '../Button';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils/mergeProps';
+import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
 import {useMediaQuery} from '../hooks/useMediaQuery';
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -50,8 +51,8 @@ import {useAlertMotion} from './useAlertMotion';
 import {
   alertDialogActionsRowClassName,
   alertDialogStackedActionClassName,
+  alertDialogTouchMotionClassName,
 } from './alertDialogClasses';
-import {alertDialogTouchMotionStyles} from './alertDialogTouchMotion.stylex';
 
 registerEnglishFallback(english);
 
@@ -270,11 +271,14 @@ export function AlertDialog({
       role={isInline ? 'group' : 'alertdialog'}
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
-      {...mergeProps(themeProps('alert-dialog'), {className, style})}
-      xstyle={[
-        motion.isDriving && alertDialogTouchMotionStyles.touchMotion,
-        xstyle,
-      ]}
+      {...mergeProps(themeProps('alert-dialog'), {
+        className: tw(
+          className,
+          motion.isDriving && alertDialogTouchMotionClassName,
+        ),
+        style,
+      })}
+      xstyle={xstyle}
       data-testid={testId}>
       <Layout
         content={
