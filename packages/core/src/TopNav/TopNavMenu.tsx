@@ -43,7 +43,7 @@ import {mergeProps, composeEventHandlers} from '../utils';
 import {xstyleProps} from '../utils/xstyle';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import type {BaseProps} from '../BaseProps';
-import {navItemStyles} from '../NavItem/navItemStyles.stylex';
+import {navItemClassName} from '../NavItem/navItemClasses';
 import {useTopNavSlot} from './TopNavContext';
 import {useTopNavRenderMode} from './TopNavRenderContext';
 import {useCloseMobileDrawerOnActivate} from '../AppShell/useCloseMobileDrawerOnActivate';
@@ -329,11 +329,11 @@ export function TopNavMenu({
           {...pressable}
           {...mergeProps(
             stylex.props(
-              navItemStyles.item,
               // The strength and the release; the colour is a class below.
               interactionOverlayStyles.pressedAlpha,
             ),
             tw(
+              navItemClassName(),
               topNavMenuDrawerHeaderClassName(),
               className,
               interactionOverlayBackgroundColorClassName,
@@ -373,11 +373,11 @@ export function TopNavMenu({
                   })}
                   {...mergeProps(
                     stylex.props(
-                      navItemStyles.item,
                       // The strength and the release; the colour is a class below.
                       interactionOverlayStyles.pressedAlpha,
                     ),
                     tw(
+                      navItemClassName(),
                       topNavMenuDrawerItemClassName(),
                       interactionOverlayBackgroundColorClassName,
                       focusOutlineFocusVisibleClassName,
