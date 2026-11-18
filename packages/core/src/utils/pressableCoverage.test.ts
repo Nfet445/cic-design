@@ -15,9 +15,10 @@
  * holds it equal to the marked set:
  *
  *  - A file paints a press when its StyleX carries an `':active` key, a
- *    `[data-astryx-press` arm, or composes `interactionOverlayStyles` or the
- *    press owner's ready-made paint (`indicatorPressPaintStyles`,
- *    `rowPressPaintStyles`).
+ *    `[data-astryx-press` arm, or composes `interactionOverlayStyles`; in the
+ *    class era, when it composes a press paint an owner module exports. The
+ *    names are read off those modules, so a new press class is covered the
+ *    moment its owner exports it — nobody edits this test to add a component.
  *  - A file is marked when it calls `usePressFeedback(`.
  *  - A file whose press arms are read off an ancestor scope marker
  *    (`stylex.when.ancestor(':active', someScope)`, the way an indicator
@@ -77,8 +78,34 @@ const source = new Map(
 // A press arm keys on `:active` or on the attribute the controller writes, as
 // a bare attribute selector or inside `:is(…)`. The press attribute's owner
 // module writes some arms for a component, which composes them ready-made.
-const PRESS_ARM =
-  /':active|'(?::is\()?\[data-astryx-press=|interactionOverlayStyles\.|indicatorPressPaintStyles\.|rowPressPaintStyles\.|menuPressLitRowClassName|rowPressPaintRadioRowClassName/;
+/**
+ * The modules that own press paint for the class era. A class exported from one
+ * of them is paint, and composing it is both the arm and the marker: the
+ * controller writes the attribute the class reads.
+ */
+const PRESS_PAINT_OWNERS = [
+  'privateAttributes/pressClasses.ts',
+  'privateAttributes/menuPressLitClasses.ts',
+  'Indicator/indicatorClasses.ts',
+];
+
+const PRESS_PAINT_NAMES = new Set(
+  PRESS_PAINT_OWNERS.flatMap(file =>
+    [
+      ...(source.get(file) ?? '').matchAll(
+        /export (?:const|function|type) ([A-Za-z_$][\w$]*)/g,
+      ),
+    ].map(match => match[1]),
+  ),
+);
+
+const PRESS_PAINT = new RegExp(
+  `\\b(?:${[...PRESS_PAINT_NAMES].sort().join('|')})\\b`,
+);
+
+const PRESS_ARM = new RegExp(
+  `':active|'(?::is\\()?\\[data-astryx-press=|interactionOverlayStyles\\.|indicatorPressPaintStyles\\.|rowPressPaintStyles\\.|${PRESS_PAINT.source}`,
+);
 const ANCESTOR_ARM =
   /stylex\.when\.ancestor\(\s*'(?::active|\[data-astryx-press=[^)]*)',\s*(\w+)\s*,?\s*\)/g;
 
@@ -112,12 +139,9 @@ function isMarked(file: string): boolean {
   return (
     text.includes('usePressFeedback(') ||
     delegatesToItem(text) ||
-    // A menu row paints its press through the lit class; `useMenuPress` is the
-    // controller for that family and writes the attribute the class reads.
-    text.includes('menuPressLitRowClassName') ||
-    // A RadioList row paints its press through a class the press controller
-    // owns; composing it is the marker.
-    text.includes('rowPressPaintRadioRowClassName')
+    // Composing a press class an owner module exports is the marker: the
+    // controller writes the attribute that class reads.
+    PRESS_PAINT.test(text)
   );
 }
 
@@ -165,6 +189,14 @@ const pressArmFiles = [...source.entries()]
   .sort();
 
 describe('every surface that paints a press is reachable by the touch press controller', () => {
+  it('reads the press paint names off the owner modules', () => {
+    // A floor for the derivation: a rename or a moved export would leave the
+    // set empty and quietly stop matching anything.
+    expect(PRESS_PAINT_NAMES.size).toBeGreaterThan(10);
+    expect([...PRESS_PAINT_NAMES]).toContain('menuPressLitRowClassName');
+    expect([...PRESS_PAINT_NAMES]).toContain('rowPressPaintRadioRowClassName');
+  });
+
   it('finds the pressable set from the source (a sanity floor, not a list)', () => {
     // Button, Item, the eight components of the first press PR and the ~20
     // composers of the overlay utility: well above this floor, and a regex
