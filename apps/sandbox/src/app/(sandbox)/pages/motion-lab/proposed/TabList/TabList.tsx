@@ -53,7 +53,7 @@ import type {BaseProps} from '@astryxdesign/core/BaseProps';
 import {TabListContext} from './TabListContext';
 import type {TabListSize} from './TabListContext';
 import {useSize} from '@astryxdesign/core/SizeContext';
-import {mergeProps, rtlStyles} from '@astryxdesign/core/utils';
+import {RTL_MIRROR_CLASS, mergeProps} from '@astryxdesign/core/utils';
 import {useListFocus} from '@astryxdesign/core/hooks';
 import {useKeyboardHint} from '@astryxdesign/core/hooks';
 import {useScrollOverflow} from '@astryxdesign/core/hooks';
@@ -928,7 +928,7 @@ export function TabList({
               icon="chevronLeft"
               size="sm"
               color="inherit"
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           </button>
         )}
@@ -951,7 +951,7 @@ export function TabList({
               icon="chevronRight"
               size="sm"
               color="inherit"
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           </button>
         )}
