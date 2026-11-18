@@ -37,7 +37,6 @@ import {
   type ReactNode,
   type SyntheticEvent,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   focusForLastInput,
   isCoarsePointer,
@@ -53,7 +52,7 @@ import {
 } from '@astryxdesign/core/internal/touch';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {useScrollableArea} from '@astryxdesign/core/hooks';
-import {focusOutlineStyles} from '@astryxdesign/core/utils';
+import {focusOutlineFocusVisibleClassName} from '@astryxdesign/core/utils';
 import {Icon} from '@astryxdesign/core/Icon';
 import {
   layerVelocities,
@@ -65,7 +64,6 @@ import {useBackSwipes, type BackSwipeStack} from './NavigationStackTouch';
 import {bars, navigation, springs} from './navigationMotion';
 import {useMotionEngine} from '../internal/useMotionEngine';
 import {useScrollEdgeEffect} from '../internal/useScrollEdgeEffect';
-import {mergeProps} from '@astryxdesign/core/utils';
 import {tw} from '../tw';
 import {
   navigationStackBackClassName,
@@ -334,8 +332,10 @@ function CardLayer({
       <div
         {...getViewportProps<HTMLDivElement>({
           ref: scrollerRef,
-          xstyle: focusOutlineStyles.focusVisible,
-          className: navigationStackScrollerClassName,
+          className: tw(
+            focusOutlineFocusVisibleClassName,
+            navigationStackScrollerClassName,
+          ),
         })}>
         {isLarge ? null : (
           <div {...edge.sentinelProps} data-navigation-scroll-edge-sentinel />
@@ -346,8 +346,8 @@ function CardLayer({
               <h1
                 ref={largeTitleCallback}
                 tabIndex={-1}
-                {...mergeProps(
-                  stylex.props(focusOutlineStyles.focusVisible),
+                className={tw(
+                  focusOutlineFocusVisibleClassName,
                   navigationStackLargeTitleClassName,
                 )}>
                 {props.title}
@@ -465,8 +465,8 @@ function BarLayer({
             ref={titleRefs}
             tabIndex={-1}
             aria-hidden={isLargeTitleShown || undefined}
-            {...mergeProps(
-              stylex.props(focusOutlineStyles.focusVisible),
+            className={tw(
+              focusOutlineFocusVisibleClassName,
               navigationStackBarTitleClassName,
             )}>
             {props.title}
