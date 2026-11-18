@@ -77,7 +77,7 @@ import {useFocusRegionContainment} from '../hooks/useFocusTrap';
 import {useModalOutlet} from '../Layer/modalOutlet';
 import {spacingVars} from '../theme/tokens.stylex';
 import {container} from '../Layout/container.stylex';
-import {containerCornerStyles} from '../Layout/containerCorners.stylex';
+import {containerCornerClassName} from '../Layout/containerCornersClasses';
 import type {SpacingToken} from '../Layout/container.stylex';
 import {
   spacingStepToToken,
@@ -640,9 +640,8 @@ export function Dialog({
           isFullscreen &&
             useThemeDefault &&
             dialogFullscreenSafeAreaStyles.fullscreenSafeArea,
-          containerCornerStyles.publish,
         ),
-        {className: dialogInnerClassName},
+        {className: tw(dialogInnerClassName, containerCornerClassName)},
       )}>
       <DialogContext value={dialogContextValue}>{children}</DialogContext>
     </div>

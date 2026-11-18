@@ -539,6 +539,7 @@ import {
   layoutSinglePanelMiddleClassName,
   layoutSingleStartPanelClassName,
 } from '../Layout/layoutClasses';
+import {containerCornerClassName} from '../Layout/containerCornersClasses';
 import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
@@ -1853,6 +1854,7 @@ function familyClassNames() {
     layoutPanelDividerStartClassName,
     layoutPanelCollapseEndClassName,
     layoutPanelCollapseStartClassName,
+    containerCornerClassName,
   ]) {
     add(className);
   }

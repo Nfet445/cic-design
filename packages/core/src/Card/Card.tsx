@@ -16,7 +16,7 @@
 import type {ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {container} from '../Layout/container.stylex';
-import {containerCornerStyles} from '../Layout/containerCorners.stylex';
+import {containerCornerClassName} from '../Layout/containerCornersClasses';
 import type {SpacingToken} from '../Layout/container.stylex';
 import {spacingStepToToken} from '../Layout/padding.stylex';
 import type {Elevation, SizeValue, SpacingStep} from '../utils/types';
@@ -219,6 +219,7 @@ export function Card({
             cardOverflowClassName({hasFixedHeight}),
             cardSizingClassName({width, height, maxWidth, minHeight}),
             cardCornersClassName,
+            containerCornerClassName,
             variant === 'default' && cardBorderClassName,
           ),
           style: sizingVars,
@@ -234,9 +235,8 @@ export function Card({
                   paddingOuterY: paddingToken,
                 },
           ),
-          containerCornerStyles.publish,
           // The border-inset padding reads the --container-padding-* vars the
-          // container set above, and it stays a StyleX rule because they are.
+          // container set above. It stays a StyleX rule so it outranks them.
           variant === 'default' && cardBorderStyles.padding,
           xstyle,
         ),
