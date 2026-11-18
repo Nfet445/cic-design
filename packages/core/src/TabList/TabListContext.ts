@@ -16,7 +16,7 @@ import {createLayerScopedContext} from '../Layer/layerScopedContext';
 
 /**
  * Size variants for tab list items.
- * Uses hardcoded px values (sizeVars not available on this branch).
+ * Uses hardcoded px values (`sizeVarNames` not available on this branch).
  */
 export type TabListSize = 'sm' | 'md' | 'lg';
 
