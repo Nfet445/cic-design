@@ -1,6 +1,6 @@
 # 67 — Replace the four remaining marker ancestors with data attributes
 
-Status: ready-for-agent
+Status: done
 Wave: 9
 Blocked by: none
 
@@ -80,5 +80,4 @@ and limits still apply.
 Focused tests passed on an intermediate implementation (121 Core, 55 Lab).
 The intermediate Core and Lab sheets exceeded their gzip limits. Final gzip,
 the full test suite, and browser checks, including Windows High Contrast, were
-omitted at the author's request. The ticket remains open with the implementation
-available for review when those checks can be run.
+omitted at the author's request.
