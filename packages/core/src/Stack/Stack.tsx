@@ -5,7 +5,7 @@
  * @input Uses React, ElementType, stack utility
  * @output Exports Stack polymorphic component and StackProps
  * @position Layout/Stack component; uses stackClasses.ts for its layout and
- *   stack.stylex.ts for the public `stack()` utility
+ *   its option unions, which the `Stack/stack.stylex` subpath republishes
  *
  * SYNC: When modified, update these files to stay in sync:
  * - /packages/core/src/Stack/Stack.doc.mjs
@@ -16,14 +16,14 @@
 import {createElement, type ElementType, type ReactNode, type Ref} from 'react';
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import type {
-  SpacingStep,
-  StackCrossAlignment,
-  StackDirection,
-  StackMainAlignment,
-  StackWrap,
-} from './stack.stylex';
-import {stackClassName} from './stackClasses';
+import {
+  stackClassName,
+  type SpacingStep,
+  type StackCrossAlignment,
+  type StackDirection,
+  type StackMainAlignment,
+  type StackWrap,
+} from './stackClasses';
 import type {SizeValue} from '../utils/types';
 import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {mergeProps} from '../utils/mergeProps';

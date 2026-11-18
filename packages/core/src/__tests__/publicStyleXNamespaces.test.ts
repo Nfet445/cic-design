@@ -312,13 +312,12 @@ describe('public StyleX namespaces', () => {
         ? true
         : false
     >().toEqualTypeOf<true>();
+    // Moved ahead of StyleX: these two build class names now.
     expectTypeOf<
-      ReturnType<typeof stack.stack> extends stylex.StyleXStyles ? true : false
+      ReturnType<typeof stack.stack> extends string ? true : false
     >().toEqualTypeOf<true>();
     expectTypeOf<
-      ReturnType<typeof stackItem.stackItem> extends stylex.StyleXStyles
-        ? true
-        : false
+      ReturnType<typeof stackItem.stackItem> extends string ? true : false
     >().toEqualTypeOf<true>();
   });
 });

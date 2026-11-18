@@ -16,7 +16,7 @@ import {Stack, type StackProps} from '../Stack/Stack';
 import type {
   StackCrossAlignment,
   StackMainAlignment,
-} from '../Stack/stack.stylex';
+} from '../Stack/stackClasses';
 
 export interface HStackProps extends Omit<
   StackProps,
