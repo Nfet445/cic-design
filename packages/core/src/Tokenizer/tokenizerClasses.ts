@@ -80,6 +80,13 @@ export const tokenizerTokenClassName = tw(
 );
 
 /**
+ * An `aria-disabled` token gets no system disabled paint in forced colors, so
+ * GrayText is the platform's disabled affordance there.
+ */
+export const tokenizerSheetTokenDisabledClassName =
+  'forced-colors:text-[color:GrayText]';
+
+/**
  * Restores the default 8px inline-start inset beside tokens, since the row
  * padding drops to 3px for border concentricity.
  */

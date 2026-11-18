@@ -47,6 +47,7 @@ import {colorVars} from '../theme/tokens.stylex';
 import {expectClassSet} from '../__tests__/classNameAssertions';
 import {
   tokenizerSheetFieldDisabledClassName,
+  tokenizerSheetTokenDisabledClassName,
   tokenizerSheetTriggerPlaceholderClassName,
   tokenizerSheetTriggerPlaceholderDisabledClassName,
 } from './tokenizerClasses';
@@ -2162,19 +2163,6 @@ describe('Tokenizer sheet presentation (single-sheet touch flow)', () => {
   });
 
   it('paints a disabled field, its placeholder, and its tokens GrayText in forced colors (AST-085 FR6)', () => {
-    const atoms = (style: stylex.StyleXStyles) =>
-      stylex
-        .props(style)
-        .className!.split(' ')
-        .filter(name => !name.includes('__'));
-    const forcedToken = stylex.create({
-      token: {
-        color: {
-          default: colorVars['--color-text-primary'],
-          '@media (forced-colors: active)': 'GrayText',
-        },
-      },
-    });
     const {unmount} = render(<Harness isDisabled />);
     const field = sheetField();
     expectClassSet(field, {
@@ -2183,9 +2171,9 @@ describe('Tokenizer sheet presentation (single-sheet touch flow)', () => {
     const tokens = field.querySelectorAll('.astryx-token');
     expect(tokens).toHaveLength(2);
     for (const token of tokens) {
-      for (const name of atoms(forcedToken.token)) {
-        expect(token).toHaveClass(name);
-      }
+      expectClassSet(token, {
+        includes: tokenizerSheetTokenDisabledClassName.split(/\s+/),
+      });
     }
     unmount();
     render(<Harness isDisabled initial={[]} />);
