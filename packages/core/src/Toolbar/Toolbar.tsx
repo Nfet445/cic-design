@@ -5,7 +5,7 @@
 /**
  * @file Toolbar.tsx
  * @input Uses Section, SizeContext, useListFocus, useKeyboardHint, StyleX,
- *   spacingVars
+ *   spacingVarNames
  * @output Exports Toolbar component and ToolbarProps
  * @position Core implementation; consumed by index.ts. Owns toolbar focus and
  *   keyboard navigation, excluding nested toolbars and popover contents.
@@ -23,7 +23,7 @@ import type {BaseProps} from '../BaseProps';
 import type {SectionVariant} from '../Section/Section';
 import type {SpacingStep} from '../utils/types';
 import type {ElementSize} from '../SizeContext/SizeContext';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {mergeProps} from '../utils';
 import {Section} from '../Section/Section';
 import {oneTabStopAmong, useInternalListFocus} from '../hooks/useListFocus';
@@ -85,9 +85,9 @@ function lanesHaveWrapped(row: Element): boolean {
  * creating even spacing around edge-compensated items (ghost buttons, tabs).
  */
 const edgeCompInsetForSize: Record<ElementSize, string> = {
-  sm: `calc(var(--container-padding-inline-start, ${spacingVars['--spacing-4']}) - ${spacingVars['--spacing-2']})`,
-  md: `calc(var(--container-padding-inline-start, ${spacingVars['--spacing-4']}) - ${spacingVars['--spacing-2']})`,
-  lg: `calc(var(--container-padding-inline-start, ${spacingVars['--spacing-4']}) - ${spacingVars['--spacing-2']})`,
+  sm: `calc(var(--container-padding-inline-start, ${spacingVarNames['--spacing-4']}) - ${spacingVarNames['--spacing-2']})`,
+  md: `calc(var(--container-padding-inline-start, ${spacingVarNames['--spacing-4']}) - ${spacingVarNames['--spacing-2']})`,
+  lg: `calc(var(--container-padding-inline-start, ${spacingVarNames['--spacing-4']}) - ${spacingVarNames['--spacing-2']})`,
 };
 
 export type ToolbarSize = ElementSize;
