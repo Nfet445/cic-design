@@ -29,6 +29,7 @@ import {useCloseMobileDrawerOnActivate} from '../AppShell/useCloseMobileDrawerOn
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {isRenderable} from '../utils/isRenderable';
 import {tw} from '../utils/tw';
@@ -141,12 +142,14 @@ export function TopNavMegaMenuItem({
           themeProps('top-nav-mega-menu-item', {mode: 'drawer'}),
           stylex.props(
             navItemStyles.item,
-            interactionOverlayStyles.backgroundColor,
+            // The strength and the release; the colour is a class below.
+            interactionOverlayStyles.pressedAlpha,
             xstyle,
           ),
           tw(
             topNavMegaMenuItemDrawerClassName(),
             className,
+            interactionOverlayBackgroundColorClassName,
             focusOutlineFocusVisibleClassName,
           ),
           style,
@@ -181,10 +184,15 @@ export function TopNavMegaMenuItem({
       tabIndex={tabIndex}
       {...mergeProps(
         themeProps('top-nav-mega-menu-item'),
-        stylex.props(interactionOverlayStyles.backgroundColor, xstyle),
+        stylex.props(
+          // The strength and the release; the colour is a class below.
+          interactionOverlayStyles.pressedAlpha,
+          xstyle,
+        ),
         tw(
           topNavMegaMenuItemClassName(),
           className,
+          interactionOverlayBackgroundColorClassName,
           focusOutlineFocusVisibleClassName,
         ),
         style,
