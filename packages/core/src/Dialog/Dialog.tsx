@@ -75,7 +75,7 @@ import {useLayerDismissal} from '../Layer/useLayerDismissal';
 import {useBackdropPress} from '../Layer/useBackdropPress';
 import {useFocusRegionContainment} from '../hooks/useFocusTrap';
 import {useModalOutlet} from '../Layer/modalOutlet';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {container, containerVars} from '../Layout/containerClasses';
 import {containerCornerClassName} from '../Layout/containerCornersClasses';
 import type {SpacingToken} from '../Layout/containerClasses';
@@ -162,7 +162,7 @@ export interface DialogPosition extends DialogBlockPosition {
 
 export {dialogFullscreenSafeAreaPaddingContract} from './dialogFullscreenSafeArea.stylex';
 
-const STANDARD_DIALOG_VIEWPORT_GUTTER = spacingVars['--spacing-4'];
+const STANDARD_DIALOG_VIEWPORT_GUTTER = spacingVarNames['--spacing-4'];
 const STANDARD_DIALOG_VIEWPORT_MAX_WIDTH = `calc(100dvw - ${STANDARD_DIALOG_VIEWPORT_GUTTER} - ${STANDARD_DIALOG_VIEWPORT_GUTTER})`;
 const STANDARD_DIALOG_MAX_WIDTH = `min(100%, ${STANDARD_DIALOG_VIEWPORT_MAX_WIDTH})`;
 
