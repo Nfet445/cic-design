@@ -4,7 +4,7 @@
 
 /**
  * @file TableCell.tsx
- * @input React, StyleX, TableContext, tableCellClasses
+ * @input React, TableContext, tableCellClasses
  * @output Exports TableCell component, TableCellProps
  * @position Sub-component; used inside Table children mode
  *

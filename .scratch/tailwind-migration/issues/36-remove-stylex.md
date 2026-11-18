@@ -132,3 +132,41 @@ Order of work:
 Measured at the time of writing: 217 non-test files under `packages/core/src` name `@stylexjs/stylex`
 (including `*.stylex.ts` modules), 37 in `packages/lab/src`, 1 in `packages/charts/src`, 3 in
 `packages/richtext/src`.
+
+## Comments — ticket 36C, the seven component files
+
+The seven files this window owns are at their frontier. `Table/TableCell.tsx`,
+`Table/TableHeaderCell.tsx`, `Table/TableRow.tsx`, `SideNav/SideNav.tsx` and
+`Chat/ChatComposerDrawer.tsx` hold no `stylex.create` of their own any more, and each answers a
+seam that already existed: `ContextMenu`'s `triggerClassName`, `NavItem`'s value, the marker.
+
+What moved here: `DropdownMenu/DropdownMenuSubMenu.tsx`'s `triggerStyles.caret` is now
+`dropdownMenuSubMenuCaretClassName` (`flex items-center`), registered in the sheet test. The
+earlier note in this ticket asked for the style-only-wrapper rule to resolve a class's
+declarations first. That did not happen, and seventeen wrappers in this package — `SideNav`'s
+three zone rows, `SideNavCollapseButton`'s mirrored chevron, `ChatToolCalls`' glyph boxes,
+`SideNavItem`'s actions slot — already carry the same `eslint-disable-next-line
+@astryx/no-style-only-wrapper` with a stated reason, all of them added by this migration. The
+caret's box is that same shape (a flex row of its own, `display` and `align-items`), so it takes
+the same suppression rather than waiting on the rule. Reverting it is one class and two comments
+if the rule learns to read class text.
+
+What still holds a map, and why:
+
+- `SideNav/SideNavItem.tsx` — `leftoverStyles` and `indentStyles`. Both set `width`,
+  `padding-inline` and `padding-inline-start` that `NavItem/navItemStyles.stylex.ts` also paints.
+  That module is unlayered and these utilities land in `@layer astryx-base`, so the unlayered rule
+  wins at every order and every specificity — the collapsed rail's square and the nesting indent
+  would both vanish. The seam is `NavItem/navItemStyles.ts`, not a new attribute.
+- `Table/TableRow.tsx` — `tableRowMarker` (`stylex.defineMarker()`), not a paint: cells and
+  `plugins/rowExpansion` read it through `stylex.when.ancestor`. A marker has no class form, and
+  its consumers are still `*.stylex.ts`. The row's own box is already classes.
+- `DropdownMenu/DropdownMenuSubMenu.tsx` still composes `layerAnimations`,
+  `layerViewportInset`, `focusOutlineStyles` and `menuRowStateStyles` — shared modules that
+  tickets 56 and 57 own.
+
+Measured: `packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs` passes with the
+2320 ceiling unchanged (`flex` and `items-center` were already in the sheet, so the caret added no
+rule). `Table`, `SideNav`, `Chat` and `DropdownMenu` suites are green, and
+`pnpm exec tsc --noEmit -p tsconfig.json` reports only the four pre-existing
+`src/i18n/getLocaleDirection.ts` errors this window does not own.

@@ -33,6 +33,12 @@ export function dropdownMenuSubMenuTriggerClassName({
   );
 }
 
+/**
+ * The caret's slot at the end of the trigger row. It is a box of its own: the
+ * centering must not reach the row's other children.
+ */
+export const dropdownMenuSubMenuCaretClassName = 'flex items-center';
+
 // The layer's viewport gutter, flattened into the cap that reads it: each
 // `env()`-less edge keeps a plain spacing fallback, and an engine that knows
 // neither the dynamic viewport unit nor safe areas takes the `@supports` arm.
