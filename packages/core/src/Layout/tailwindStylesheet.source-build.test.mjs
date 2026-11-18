@@ -612,6 +612,7 @@ import {
 import {
   scrollableAreaContentClassName,
   scrollableAreaContentWithInlineOverflowClassName,
+  scrollableAreaOverflowClassName,
   scrollableAreaViewportClassName,
 } from '../ScrollableArea/scrollableAreaClasses';
 import {
@@ -3536,6 +3537,7 @@ function familyClassNames() {
   // The anchored keyboard hint's key row and its label.
   add(anchoredHintKeysClassName);
   add(anchoredHintLabelClassName);
+  add(scrollableAreaOverflowClassName);
   // Field: the hidden label's info button and the panel search row.
   add(fieldLabelHiddenInfoTipClassName);
   add(panelSearchInputWrapperClassName);
