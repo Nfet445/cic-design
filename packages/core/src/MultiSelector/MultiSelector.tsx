@@ -80,6 +80,7 @@ import {
 import {
   selectorDividerClassName,
   selectorEmptyStateClassName,
+  selectorPopoverClassName,
   selectorSearchPanelClassName,
   selectorSectionHeadingClassName,
 } from '../Selector/selectorClasses';
@@ -167,9 +168,8 @@ const LAYER_OPEN: string = ':has([aria-expanded="true"])';
 // and it sets the same padding, background and shadow properties; two classes
 // in `astryx-base` are ordered by the sheet, not by `tw`: its chrome, the
 // ghost and secondary fills, the read-only and disabled press resets stay
-// here. `popover` stays because
-// `usePopover` takes StyleX styles only. Every child element uses
-// `multiSelectorClasses.ts`.
+// here. The popup's minimum width is `selectorPopoverClassName`, and every
+// child element uses `multiSelectorClasses.ts`.
 const styles = stylex.create({
   // Trigger container — the enhanced click target wrapping the combobox button and clear button as siblings
   triggerContainer: {
@@ -273,11 +273,6 @@ const styles = stylex.create({
   // A panel with a search field, capped as a whole.,
 
   // Dropdown container,,
-
-  // Popover container (for anchor positioning)
-  popover: {
-    minWidth: 'anchor-size(width)',
-  },
 
   // Section heading. Plain secondary text, no rules — the same treatment
   // DropdownMenu and CommandPaletteGroup already use for a group heading in a
@@ -2251,7 +2246,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
       placement: 'below',
       alignment: 'start',
       offset: 'var(--spacing-1)',
-      xstyle: styles.popover,
+      className: selectorPopoverClassName,
     });
   }
 
