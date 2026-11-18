@@ -47,11 +47,11 @@ import {
   rowPressPaintRadioRowClassName,
 } from '../privateAttributes/press.stylex';
 import {indicatorPressImageClassName} from '../Indicator/indicatorClasses';
-import {rowStyles} from './radioListItemRow.stylex';
 import {
   radioListItemIndicatorSlotClassName,
   radioListItemInputClassName,
   radioListItemPressOverlayClassName,
+  radioListItemRowClassName,
   radioListItemWrapperClassName,
 } from './radioListItemClasses';
 
@@ -320,11 +320,6 @@ export function RadioListItem({
           // The row keeps no press paint of its own: the circle paints, and
           // reads the strength whose release the row keeps.
           rowPressLayerStyles.cellWithoutLayer,
-          // Restore the bare default look: zero Item's padding/radius and its
-          // interactive hover/press background. Applied after Item's own base
-          // styles so it wins within the base layer; a `radio-list-item` theme
-          // still overrides it from the higher `astryx-theme` layer.
-          rowStyles.root,
           !isDisabled && touchHitAreaStyles.layer,
           xstyle,
         ] as StyleXStyles
@@ -345,6 +340,11 @@ export function RadioListItem({
         }),
         {
           className: tw(
+            // Restore the bare default look: zero Item's padding/radius and
+            // its interactive hover/press background. Each class names the row
+            // twice, so it wins within the base layer; a `radio-list-item`
+            // theme still overrides it from the higher `astryx-theme` layer.
+            radioListItemRowClassName,
             !isDisabled && rowPressPaintRadioRowClassName,
             className,
           ),

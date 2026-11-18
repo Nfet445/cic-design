@@ -26,6 +26,7 @@ import {
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {indicatorPressImageClassName} from '../Indicator/indicatorClasses';
 import {rowPressPaintRadioRowClassName} from '../privateAttributes/pressClasses';
+import {radioListItemRowClassName} from './radioListItemClasses';
 
 // A disabled row blocks pointers with a class, and jsdom has no sheet to
 // compute it from; find the row that carries the block instead.
@@ -1042,71 +1043,35 @@ describe('RadioList', () => {
       // change the DEFAULT look. The painting row zeroes Item's density
       // padding, its radius, and its interactive hover/press background, so an
       // unthemed RadioList renders as a flat surface (only the indicator tints
-      // on hover via `indicatorScope`). This matches the appearance before the
-      // target moved onto Item; a theme's `radio-list-item` overrides still win
-      // from the higher `astryx-theme` layer.
+      // on hover via `indicatorScope`). A theme's `radio-list-item` overrides
+      // still win from the higher `astryx-theme` layer.
       render(
         <RadioList label="Preference" value="a" onChange={() => {}}>
           <RadioListItem label="Selected" value="a" data-testid="selected" />
           <RadioListItem label="Plain" value="b" data-testid="plain" />
         </RadioList>,
       );
-      const cssFor = (className: string): string => {
-        const rules: string[] = [];
-        const walk = (list: CSSRuleList) => {
-          for (const rule of Array.from(list)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const anyRule = rule as any;
-            if (anyRule.cssRules) {
-              walk(anyRule.cssRules);
-            }
-            if (
-              typeof anyRule.cssText === 'string' &&
-              anyRule.cssText.includes(`.${className}`)
-            ) {
-              rules.push(anyRule.cssText);
-            }
-          }
-        };
-        for (const sheet of Array.from(document.styleSheets)) {
-          try {
-            walk(sheet.cssRules);
-          } catch {
-            // cross-origin/inaccessible sheet — skip
-          }
-        }
-        return rules.join('\n');
-      };
 
-      const plain = screen.getByTestId('plain');
-      const atoms = plain.className
-        .split(/\s+/)
-        .filter(c => /^x[a-z0-9]+$/i.test(c));
-      const declarations = atoms.map(cssFor).join('\n');
-
-      // The bare-look declarations land on the painting row.
-      expect(declarations).toMatch(/padding-block:\s*0/);
-      expect(declarations).toMatch(/padding-inline:\s*0/);
-      expect(declarations).toMatch(/border-radius:\s*0/);
-      expect(declarations).toMatch(/background-color:\s*transparent/);
-
-      // No default full-row hover highlight: the flat transparent background
-      // replaces Item's interactive `:hover` overlay, so no hover rule paints
-      // the row's own background. (The indicator still tints via its scope.)
-      expect(declarations).not.toMatch(
-        /:hover[^{]*\{[^}]*background-color:\s*var\(--color-overlay-hover\)/,
-      );
+      const rowClasses = classesOf(screen.getByTestId('plain'));
+      expectClassSet(screen.getByTestId('plain'), {
+        includes: radioListItemRowClassName.split(' '),
+      });
+      // Each declaration names the row class a second time, which is what
+      // outranks Item's own padding, radius and fill utilities in the same
+      // layer. A class that named it once would tie and lose on sheet order.
+      for (const className of radioListItemRowClassName.split(' ')) {
+        expect(className).toContain('.astryx-radio-list-item');
+      }
 
       // No default selected-row background: the selected row differs from the
       // plain row only by state markers, not by a painted background class.
-      const selected = screen.getByTestId('selected');
-      const selectedAtoms = selected.className
-        .split(/\s+/)
-        .filter(c => /^x[a-z0-9]+$/i.test(c));
-      const selectedDecls = selectedAtoms.map(cssFor).join('\n');
-      expect(selectedDecls).not.toMatch(
-        /background-color:\s*var\(--color-accent-muted\)/,
-      );
+      const selectedClasses = classesOf(screen.getByTestId('selected'));
+      expect(selectedClasses).toEqual(rowClasses);
+      expect(
+        selectedClasses.filter(className =>
+          className.includes('--color-accent-muted'),
+        ),
+      ).toEqual([]);
     });
   });
 

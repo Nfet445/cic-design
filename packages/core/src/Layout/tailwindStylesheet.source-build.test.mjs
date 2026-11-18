@@ -428,6 +428,7 @@ import {
   radioListItemIndicatorSlotClassName,
   radioListItemInputClassName,
   radioListItemPressOverlayClassName,
+  radioListItemRowClassName,
   radioListItemWrapperClassName,
 } from '../RadioList/radioListItemClasses';
 import {gridClassName, gridSpanClassName} from '../Grid/gridClasses';

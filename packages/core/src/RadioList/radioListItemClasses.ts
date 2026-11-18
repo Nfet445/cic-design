@@ -3,18 +3,34 @@
 /**
  * @file radioListItemClasses.ts
  * @input The control's size and whether the item is disabled
- * @output The wrapper, press overlay, native input and indicator slot classes
+ * @output The wrapper, press overlay, native input, indicator slot and the
+ *   row's bare default look
  * @position Internal to RadioListItem; the Tailwind build scans it for class
  *   names
  *
- * The row's bare default look stays StyleX (`radioListItemRow.stylex.ts`): it
- * has to beat the padding and radius Item sets as utilities in the same layer.
+ * The row's bare default look names the row class twice, so it outranks the
+ * padding and radius Item sets as utilities in the same layer.
  *
  * SYNC: When modified, update
  * - /packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
  */
 
 import {tw} from '../utils/tw';
+
+/**
+ * The row's default appearance is a bare surface: no density padding, no
+ * radius, and no full-row background — only the indicator tints on hover (via
+ * `indicatorScopeProps`). `min-w-0` preserves label truncation now that the
+ * Item is the row's flex child. Each declaration names `astryx-radio-list-item`
+ * a second time, because Item's own padding, radius and fill utilities sit in
+ * the same layer.
+ */
+export const radioListItemRowClassName = tw(
+  '[&.astryx-radio-list-item]:p-0',
+  '[&.astryx-radio-list-item]:rounded-none',
+  '[&.astryx-radio-list-item]:min-w-0',
+  '[&.astryx-radio-list-item]:bg-transparent',
+);
 
 /** Wrapper and input share the control's box; each size states both edges. */
 const SIZE: Record<'sm' | 'md', string> = {
