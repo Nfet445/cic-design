@@ -48,7 +48,7 @@ import {
   tooltipContentClassName,
   tooltipSurfaceClassName,
 } from './tooltipClasses';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 
 /**
  * Grace period (ms) before hiding on pointer-leave when no explicit `hideDelay`
@@ -928,7 +928,7 @@ export function useTooltip(options: TooltipOptions = {}): TooltipReturn {
       const renderProps = {
         placement: renderPlacement,
         alignment: props?.alignment ?? alignment,
-        offset: spacingVars['--spacing-1'],
+        offset: spacingVarNames['--spacing-1'],
         role: 'tooltip',
         className: tw(
           themeProps('tooltip').className,
