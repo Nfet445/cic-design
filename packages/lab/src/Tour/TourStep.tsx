@@ -48,7 +48,7 @@ import {Text} from '@astryxdesign/core/Text';
 import {focusOutlineFocusVisibleClassName} from '@astryxdesign/core/utils';
 import {Heading} from '@astryxdesign/core/Heading';
 import {VStack, HStack} from '@astryxdesign/core/Layout';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {spacingVarNames} from '@astryxdesign/core/theme';
 import {TourContext} from './TourContext';
 import {
   tourStepCalloutGapClassNames,
@@ -417,7 +417,7 @@ export function TourStep({
       {layer.render(<LayerDepthProvider>{content}</LayerDepthProvider>, {
         placement,
         alignment,
-        offset: spacingVars['--spacing-1'],
+        offset: spacingVarNames['--spacing-1'],
         // Push the callout clear of the highlight ring so the ring is never
         // covered (placement-aware; adds to the layer's anchor offset).
         className: tourStepCalloutGapClassNames[placement],
