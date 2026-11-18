@@ -4,16 +4,15 @@
  * @file tokenizerClasses.ts
  * @input A tokenizer's size, presentation, disabled state and grouped scroll
  *   state
- * @output Utility class names for the field's size floor, the token row, the
- *   start icon, the end lane,
+ * @output Utility class names for the field's size floor, the token row and
+ *   its insets, the start icon, the end lane,
  *   the grouped track and its edge fades, the expanded layer and the bottom
  *   sheet's field, trigger and placeholder
  * @position Style primitives; scanned by the Tailwind build
  *
- * The field's own box stays on StyleX (`Tokenizer.tsx`): its wrapper is the
- * same element as the shared field box class and sets the same `padding`,
- * `gap` and `backgroundColor` properties, which two classes in `astryx-base`
- * would order by the sheet rather than by `tw`. The input shares
+ * The input's own compact and at-max states stay on StyleX (`Tokenizer.tsx`):
+ * they reach the input through `BaseTypeahead`'s `inputXStyle` prop, which
+ * takes StyleX values only. They face the same tie against
  * `typeaheadInputClassName`'s own `flex` and `min-w` utilities inside the
  * layer, where the sheet's order — not the state — would decide.
  */
@@ -37,6 +36,43 @@ export const tokenizerFixedHeightClassName: Record<'sm' | 'md' | 'lg', string> =
     md: 'h-[var(--size-element-md)]',
     lg: 'h-[var(--size-element-lg)]',
   };
+
+/**
+ * The row's own box, on the same element as the shared input box.
+ *
+ * One wrap class per row, never both: two `flex-wrap` utilities are ordered by
+ * the sheet, not by the row's state, and the sheet emits `flex-wrap` after
+ * `flex-nowrap`. The gutter is the axis split of `gap` (`gap-x`/`gap-y`), whose
+ * longhands outrank the box's own uniform `gap` whatever order the sheet emits.
+ */
+export function tokenizerRowClassName(isNoWrap: boolean): string {
+  return tw(
+    isNoWrap ? 'flex-nowrap' : 'flex-wrap',
+    'gap-x-1',
+    'gap-y-1',
+    'cursor-text',
+    '[&:is(:disabled,[aria-disabled=true])]:cursor-default',
+  );
+}
+
+/**
+ * A row's inset when it holds tokens. Per-side utilities, not the shorthand:
+ * each edge rule outranks the shared box's `px`/`py` whatever order the sheet
+ * emits. 3px keeps a token's 4px radius concentric with the box's 8px one
+ * (8 - 4 - 1). The end edge also carries the measured end lane's reserve, which
+ * every row must stop short of because the lane is out of flow.
+ */
+export const tokenizerTokenRowClassName = tw(
+  '[padding-block-start:calc(var(--spacing-1)_-_1px)]',
+  '[padding-block-end:calc(var(--spacing-1)_-_1px)]',
+  'ps-[calc(var(--spacing-1)_-_1px)]',
+  'pe-[calc(var(--spacing-1)_-_1px_+_var(--astryx-tokenizer-end-lane-reserve,0px))]',
+  // The row gap matches the block inset, so wrapped rows look evenly spaced.
+  'gap-y-[calc(var(--spacing-1)_-_1px)]',
+);
+
+/** A truncated row keeps one line, so its overflow is clipped, not wrapped. */
+export const tokenizerTruncatedRowClassName = 'overflow-hidden';
 
 /** A token in the row, and the wrapper a `renderToken` pill renders into. */
 export const tokenizerTokenClassName = tw(

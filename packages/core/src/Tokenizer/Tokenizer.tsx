@@ -110,6 +110,9 @@ import {
   tokenizerFieldSizeClassName,
   tokenizerFixedHeightClassName,
   tokenizerOverflowTextClassName,
+  tokenizerRowClassName,
+  tokenizerTokenRowClassName,
+  tokenizerTruncatedRowClassName,
   tokenizerSheetFieldClassName,
   tokenizerSheetTriggerClassName,
   tokenizerSheetFieldDisabledClassName,
@@ -436,54 +439,22 @@ type TokenizerAcceptedProps<T extends SearchableItem> = Omit<
 // How far the end lane sits from the field's inline-end border, named once
 // because the input's reserve is derived from the same value.
 const END_LANE_INSET = 'var(--spacing-2)';
-const TOKEN_ROW_INSET = `calc(var(--spacing-1) - 1px)`;
 /**
  * Where a grouped strip's edge fade turns opaque, and how far focus scrolling
  * keeps a focused control from a faded edge. The fade is transparent across
  * the strip's focus-ring bleed, so a faded edge never paints into the row
  * padding.
  */
-// Kept in sync with useEndLaneReserve: wrapperWithTokens reads the custom
-// property directly, to keep token rows and the input short of the lane.
-const END_LANE_RESERVE_VAR = '--astryx-tokenizer-end-lane-reserve';
 const INPUT_TEXT_INSET = `calc(var(--spacing-2) - var(--spacing-1) + 1px)`;
 // The content width an empty, focused input has beyond its inset, so its
 // caret has room to draw.
 const INPUT_CARET_ROOM = '2px';
 
+// The input's own states stay here. They reach the input through
+// `BaseTypeahead`'s `inputXStyle`, which takes StyleX values only; the input
+// faces the same tie against `typeaheadInputClassName`'s own `flex` and `min-w`
+// utilities, where the sheet's order — not the state — would decide.
 const styles = stylex.create({
-  // The field's box and the input's own states stay here. The wrapper is the
-  // same element as `fieldInputWrapperClassName()` and `inputGroupMemberClassName`:
-  // these unlayered `padding`, `gap`, `flex-wrap` and `height` win over any
-  // class in the `astryx-base` layer, so the row's insets are declared here
-  // too; only the exact height a truncated row pins is a class
-  // (`tokenizerFixedHeightClassName`). The input states face the same tie
-  // against `typeaheadInputClassName`'s own `flex` and `min-w` utilities,
-  // where the sheet's order — not the state — would decide.
-  wrapper: {
-    position: 'relative',
-    flexWrap: 'wrap',
-    gap: 'var(--spacing-1)',
-    cursor: {
-      default: 'text',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    height: 'auto',
-  },
-  wrapperWithTokens: {
-    // Override padding for border concentricity: token border-radius
-    // (radius-1: 4px) sits concentric with wrapper border-radius
-    // (radius-2: 8px) when inset = radius-2 - radius-1 - border
-    // = 8 - 4 - 1 = 3px.
-    paddingBlock: TOKEN_ROW_INSET,
-    paddingInline: TOKEN_ROW_INSET,
-    // The end lane is out of flow, so tokens would wrap under it. Every row
-    // stops short of the measured lane instead; with no lane up the variable
-    // is absent and this is the ordinary inset.
-    paddingInlineEnd: `calc(${TOKEN_ROW_INSET} + var(${END_LANE_RESERVE_VAR}, 0px))`,
-    // Row gap must match paddingBlock so wrapped rows look evenly spaced.
-    rowGap: TOKEN_ROW_INSET,
-  },
   inputAtMax: {
     width: 0,
     minWidth: 0,
@@ -532,17 +503,6 @@ const styles = stylex.create({
     },
     // wrapperWithTokens already keeps the in-flow input short of the lane.
     paddingInlineEnd: 0,
-  },
-  truncatedWrapper: {
-    flexWrap: 'nowrap',
-    overflow: 'hidden',
-  },
-  inGroupWrapper: {
-    // InputGroup is a fixed-height, single-line surface: a second row would
-    // spill past the group's shared border, so the row never wraps. A single
-    // row of tokens fits the group height (token = element size - 8px, plus
-    // 3px block padding).
-    flexWrap: 'nowrap',
   },
   inGroupInput: {
     // Always in flow after the last token. The empty-query hit surface of
@@ -1767,14 +1727,13 @@ export function Tokenizer<T extends SearchableItem>({
           status: localStatus?.type,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(
-          styles.wrapper,
-          value.length > 0 && styles.wrapperWithTokens,
-          isTruncated && styles.truncatedWrapper,
-          localStatus && !isDisabled && isInGroupRow && styles.inGroupWrapper,
-          controlXstyle,
-        ),
+        stylex.props(controlXstyle),
         tw(
+          tokenizerRowClassName(
+            isTruncated || (localStatus != null && !isDisabled && isInGroupRow),
+          ),
+          value.length > 0 && tokenizerTokenRowClassName,
+          isTruncated && tokenizerTruncatedRowClassName,
           isInGroupRow && inputGroupMemberClassName,
           // The size floor leaves when truncation pins an exact height.
           isTruncated ? tokenizerFixedHeightClassName[size] : sizeClassName,
@@ -2026,14 +1985,14 @@ export function Tokenizer<T extends SearchableItem>({
               disabled: isDisabled ? 'disabled' : null,
             }),
             stylex.props(
-              styles.wrapper,
               // The field keeps the inline field's height for its size step,
               // as Selector's bottom-sheet trigger does; the sheet's own rows
               // and search field carry the touch-sized targets.
-              value.length > 0 && styles.wrapperWithTokens,
               status && !isDisabled && controlXstyle,
             ),
             tw(
+              tokenizerRowClassName(false),
+              value.length > 0 && tokenizerTokenRowClassName,
               tokenizerFieldSizeClassName[size],
               fieldInputWrapperClassName({status: status?.type}),
               isDisabled && fieldInputWrapperDisabledClassName,
@@ -2206,15 +2165,15 @@ export function Tokenizer<T extends SearchableItem>({
               disabled: isDisabled ? 'disabled' : null,
             }),
             stylex.props(
-              styles.wrapper,
-              value.length > 0 && styles.wrapperWithTokens,
-              isTruncated && styles.truncatedWrapper,
               localStatus &&
                 !isDisabled &&
                 // The placeholder is the element in the group's flex row.
                 controlXstyle,
             ),
             tw(
+              tokenizerRowClassName(isTruncated),
+              value.length > 0 && tokenizerTokenRowClassName,
+              isTruncated && tokenizerTruncatedRowClassName,
               tokenizerFixedHeightClassName[size],
               inputGroup && inputGroupMemberClassName,
               fieldInputWrapperClassName({status: localStatus?.type}),
