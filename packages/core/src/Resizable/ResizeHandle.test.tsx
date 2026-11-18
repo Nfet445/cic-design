@@ -1221,7 +1221,8 @@ describe('ResizeHandle', () => {
         />,
       );
       const hitArea = getSeparator().firstElementChild as HTMLElement;
-      expect(hitArea.className).toContain('hitAreaCenteredY');
+      // The block-axis centring is a class pair, and no offset toward the pill.
+      expectClassSet(hitArea, {includes: ['top-1/2', '-translate-y-1/2']});
       expect(hitArea.getAttribute('style') ?? '').not.toContain('translate');
     },
   );

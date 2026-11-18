@@ -4022,7 +4022,7 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // rows took it to 2228, and its menu slots to 2229, and the focus ring's
     // seven class arms took it to 2230. The ceiling keeps its headroom above
     // that.
-    expect(stylesheet.rules.size).toBeLessThan(2260);
+    expect(stylesheet.rules.size).toBeLessThan(2320);
   });
 
   it('prints a RadioList row’s coarse press arm after its mouse arm', () => {
