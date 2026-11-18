@@ -48,11 +48,11 @@ import {
   thumbnailInteractiveClassName,
   thumbnailOverlayClassName,
   thumbnailPlaceholderClassName,
+  thumbnailRemoveButtonClassName,
   thumbnailRemoveSlotClassName,
   thumbnailRootClassName,
   thumbnailUploadOverlayClassName,
 } from './thumbnailClasses';
-import {thumbnailRemoveButtonStyles} from './thumbnailRemoveButtonOverrides.stylex';
 import {focusOutlineWithinClassName} from '../utils/focusOutlineClasses';
 import {xstyleProps} from '../utils/xstyle';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
@@ -300,7 +300,7 @@ export function Thumbnail({
             onRemove(e);
           }
         }}
-        xstyle={thumbnailRemoveButtonStyles.overrides}
+        className={thumbnailRemoveButtonClassName}
       />
     </div>
   ) : null;

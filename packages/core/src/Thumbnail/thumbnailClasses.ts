@@ -5,7 +5,8 @@
  * @input Nothing — literal Tailwind class strings
  * @output Thumbnail's class map: the root, the image frame, the image, the
  *   inset border, the placeholder, the interactive frame with its hover and
- *   press layer, the remove slot, the disabled dimming and the upload overlay
+ *   press layer, the remove slot and button, the disabled dimming and the
+ *   upload overlay
  * @position Static styling for Thumbnail.tsx; scanned by
  *   `tailwind/astryx.input.css` to build `astryx-tailwind.css`
  *
@@ -102,6 +103,26 @@ export const thumbnailOverlayClassName = tw(
 export const thumbnailRemoveSlotClassName = tw(
   'absolute z-[1] leading-[0]',
   'top-[var(--spacing-1)] end-[var(--spacing-1)]',
+);
+
+/**
+ * The remove button's corner, size and scrim paint. Button paints the same
+ * properties with its own utilities, so each class names `astryx-button` a
+ * second time and wins by specificity rather than sheet order.
+ *
+ * Fixed colours instead of the luminance-adapting theme: a translucent scrim
+ * (--color-overlay) plus an --color-on-dark icon reads on any image without
+ * sampling pixel brightness. The `::after` is the coarse pointer's hit area.
+ */
+export const thumbnailRemoveButtonClassName = tw(
+  '[&.astryx-button]:[--_button-radius:calc(var(--radius-element)-var(--spacing-1))]',
+  '[&.astryx-button]:relative',
+  '[&.astryx-button]:h-5',
+  '[&.astryx-button]:min-w-5',
+  '[&.astryx-button]:bg-[var(--color-overlay)]',
+  '[&.astryx-button]:text-[color:var(--color-on-dark)]',
+  '[--_thumbnail-hit-inset:0px] pointer-coarse:[--_thumbnail-hit-inset:-2px]',
+  'after:content-[""] after:absolute after:inset-[var(--_thumbnail-hit-inset)]',
 );
 
 export const thumbnailDisabledClassName = 'opacity-50 pointer-events-none';

@@ -1353,6 +1353,7 @@ import {
   thumbnailInteractiveClassName,
   thumbnailOverlayClassName,
   thumbnailPlaceholderClassName,
+  thumbnailRemoveButtonClassName,
   thumbnailRemoveSlotClassName,
   thumbnailRootClassName,
   thumbnailUploadOverlayClassName,
@@ -3286,6 +3287,7 @@ function familyClassNames() {
   add(thumbnailInteractiveButtonClassName);
   add(thumbnailOverlayClassName);
   add(thumbnailRemoveSlotClassName);
+  add(thumbnailRemoveButtonClassName);
   add(thumbnailDisabledClassName);
   add(thumbnailUploadOverlayClassName);
   // Lightbox: the viewer's frame, a page's rail slot and the caption's shown,
