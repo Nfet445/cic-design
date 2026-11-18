@@ -54,7 +54,7 @@ import {useSize} from '../SizeContext/SizeContext';
 import {Spinner} from '../Spinner';
 import {useTooltip} from '../Tooltip';
 import {useFieldInputStyling} from '../Field/fieldParts';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {RTL_MIRROR_CLASS} from '../utils/rtlClasses';
 import {themeProps} from '../utils/themeProps';
 import {normalizeDayOfWeek} from '../utils/dateTypes';
@@ -816,9 +816,9 @@ export function TouchDateTimeField({
               aria-label={t('@astryx.dateInput.chooseMonthYear', {
                 monthYear: monthYearLabel,
               })}
-              {...mergeProps(
-                stylex.props(focusOutlineStyles.focusVisible),
+              className={tw(
                 dateTimeTouchTitleClassName,
+                focusOutlineFocusVisibleClassName,
               )}>
               <span className={dateTimeTouchTitleTextClassName}>
                 {monthYearLabel}
@@ -1127,11 +1127,11 @@ export function TouchDateTimeField({
             aria-disabled={isEffectivelyDisabled || undefined}
             aria-label={t('@astryx.dateInput.openCalendar')}
             tabIndex={-1}
-            {...mergeProps(
-              stylex.props(focusOutlineStyles.focusVisible),
+            className={tw(
               dateTimeInputIconButtonClassName({
                 isDisabled: isEffectivelyDisabled,
               }),
+              focusOutlineFocusVisibleClassName,
             )}>
             <Icon
               icon="calendar"
@@ -1217,11 +1217,11 @@ export function TouchDateTimeField({
               label: resolvedTimeLabel,
             })}
             tabIndex={-1}
-            {...mergeProps(
-              stylex.props(focusOutlineStyles.focusVisible),
+            className={tw(
               dateTimeInputIconButtonClassName({
                 isDisabled: isEffectivelyDisabled,
               }),
+              focusOutlineFocusVisibleClassName,
             )}>
             <Icon
               icon="clock"

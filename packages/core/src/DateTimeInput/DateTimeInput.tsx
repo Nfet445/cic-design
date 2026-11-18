@@ -107,7 +107,7 @@ import {
   dateTimeInputTimeListboxClassName,
   dateTimeInputTimeOptionClassName,
 } from './dateTimeInputClasses';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {useLocale} from '../i18n';
 import {
   formatLocaleTime,
@@ -1708,11 +1708,11 @@ function PointerDateTimeField({
                     ? t('@astryx.dateInput.toggleCalendarClose')
                     : t('@astryx.dateInput.openCalendar')
                 }
-                {...mergeProps(
-                  stylex.props(focusOutlineStyles.focusVisible),
+                className={tw(
                   dateTimeInputIconButtonClassName({
                     isDisabled: isEffectivelyDisabled,
                   }),
+                  focusOutlineFocusVisibleClassName,
                 )}>
                 <Icon
                   icon="calendar"

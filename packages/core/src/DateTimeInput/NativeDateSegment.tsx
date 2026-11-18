@@ -25,8 +25,8 @@
  */
 
 import {useCallback, useEffect, useRef, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {tw} from '../utils/tw';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import type {
   FieldInputBaseProps,
   FieldPartStyleProps,
@@ -39,7 +39,6 @@ import {Icon} from '../Icon';
 import {useLocale} from '../i18n';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {
-  focusOutlineStyles,
   formatSharedDate,
   parseDateInput,
   plainDateFromISO,
@@ -320,9 +319,9 @@ export function NativeDateSegment({
         aria-label={t('@astryx.dateInput.openCalendar')}
         tabIndex={-1}
         className={tw(
-          stylex.props(focusOutlineStyles.focusVisible).className,
           nativePickerSegmentIconButtonClassName,
           isEffectivelyDisabled && nativePickerSegmentDisabledClassName,
+          focusOutlineFocusVisibleClassName,
         )}>
         <Icon
           icon="calendar"
