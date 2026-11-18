@@ -1,6 +1,6 @@
 # tables, overlays and remaining leaves
 
-Status: ready-for-agent
+Status: done
 Blocked by: 54, 55
 Wave: 10
 Ticket: 57
@@ -127,3 +127,10 @@ there is no `privateAttributes/` owner for them yet.
 `useTableStickyColumns.test.tsx` gains one test that asserts the class text
 reaches the header, body, z-index and shadow classes, and the sheet test
 registers all five names.
+
+## Closing note
+
+Sticky columns are classes with no survivor (window J), the glide line is a class, and the remaining
+maps are the ones this file's `## Comments` names with their reasons: the `ProgressBar` fill ordering,
+the two safe-area compositions, the three motion modules, the thumbnail override pair, the
+`Table/table.stylex.ts` markers (ticket 07), and `DropdownMenuSubMenu`'s structural-only wrapper.

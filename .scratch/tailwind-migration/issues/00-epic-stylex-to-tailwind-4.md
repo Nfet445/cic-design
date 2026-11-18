@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 55 of 58 tickets done, plus two waves (layout primitives,
+Progress: 57 of 58 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -116,8 +116,8 @@ buttons) that landed before the tickets were written.
 - [x] `43-full-suite-green` — the full core suite back to its known-failing count
 - [x] `54-layout-text-stack-utilities` — `container()`, `padding()`, `text`, `stack`: 57 maps every component composes
 - [x] `55-field-and-input-wrappers` — the field base shorthand and every wrapper that cancels it
-- [ ] `56-focus-and-overrides` — `focusOutlineProps`, the press layers, and the twelve `*Overrides` rules that must outrank a class
-- [ ] `57-tables-overlays-leaves` — table seams, motion and safe-area modules, the one-map leaves
+- [x] `56-focus-and-overrides` — `focusOutlineProps`, the press layers, and the twelve `*Overrides` rules that must outrank a class
+- [x] `57-tables-overlays-leaves` — table seams, motion and safe-area modules, the one-map leaves
 - [ ] `36-remove-stylex` — `@stylexjs` leaves the repository
 
 ## Done when

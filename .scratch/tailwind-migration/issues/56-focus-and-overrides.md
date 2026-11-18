@@ -1,6 +1,6 @@
 # focus ring, press layers and the override modules
 
-Status: in-progress
+Status: done
 Blocked by: 54
 Wave: 10
 Ticket: 56
@@ -238,3 +238,16 @@ Notes for whoever continues:
   `dist/astryx-tailwind.css` 372.6 kB → 373.7 kB. `AppShell`'s classes were not registered in the
   sheet test before this window; `APP_SHELL_SKIP_LINK_CLASS`, `sideNavClassName.resizableHandle` and
   `tokenizerFixedHeightClassName` now are.
+
+## Closing note
+
+Every ring site that could take a class now does: `grep -rl "focusOutlineProps.focusVisible("` over
+non-test sources is empty, and the overlay family moved in windows 56g/H/I/K. What stays is the seam
+list below, each blocked by a StyleX-only argument rather than by paint:
+
+- `KeyboardFocusOutlineStyles` arms that publish variables (`publishFocusVisibleVars`) stay in
+  `packages/core/src/utils/focusOutline.stylex.ts`; they are variables, not paint.
+- Other `focusOutlineProps` members (`focusWithin`, `focusWithinFirstChild`,
+  `focusWithinOrPublished`, `suppressed`) still serve files whose element also receives an unlayered
+  reset from `Layer/useLayer.tsx`, which is the same blocker `BreadcrumbItem` and `anchoredHint`
+  record.
