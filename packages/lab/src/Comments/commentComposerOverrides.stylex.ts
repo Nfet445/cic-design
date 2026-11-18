@@ -7,9 +7,10 @@
  *   `xstyle`
  * @position Style exception; the component passes it through `xstyle`
  *
- * A plain utility here would be ordered by the built sheet, not by the class
- * attribute, and `Card` already sets its own container radius: the two
- * stylesheets share one layer, so neither class is guaranteed to win.
+ * `Card` already sets `rounded-[var(--radius-container)]`, so this radius must
+ * outrank it. Both stylesheets sit in `astryx-base`, where a plain utility of
+ * ours would be decided by the later sheet; StyleX's `:not(#\#)` selector
+ * wins at either order.
  */
 
 import * as stylex from '@stylexjs/stylex';
