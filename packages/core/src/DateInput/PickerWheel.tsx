@@ -25,7 +25,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {scrollTypeOf} from '../gestures/GestureHost';
 import {PanGestureRecognizer} from '../gestures/PanGestureRecognizer';
 import {TapGestureRecognizer} from '../gestures/TapGestureRecognizer';
@@ -36,8 +35,8 @@ import {resolveMotion} from '../motion/resolveMotion';
 import {picker} from '../motion/uikit/picker';
 import {registerScrollTable, scroll} from '../motion/uikit/scroll';
 import {registerSpringsTable, springs} from '../motion/uikit/springs';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {mergeProps} from '../utils/mergeProps';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {tw} from '../utils/tw';
 import {mod, nearestLoopCopy} from '../hooks/usePager';
 import {lockSelection} from '../gestures/selectionLock';
 import {
@@ -956,9 +955,9 @@ export function PickerWheel({
       {...listboxProps}
       data-wheel=""
       style={dateInputWheelInlineStyle}
-      {...mergeProps(
-        stylex.props(focusOutlineStyles.focusVisible),
+      className={tw(
         pickerWheelColumnClassName,
+        focusOutlineFocusVisibleClassName,
       )}>
       <div data-wheel-fade="" className={pickerWheelFadeClassName}>
         <div aria-hidden="true" className={pickerWheelBandClassName} />

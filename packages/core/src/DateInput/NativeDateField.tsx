@@ -72,7 +72,6 @@ import {Spinner} from '../Spinner';
 import {useTooltip} from '../Tooltip';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {
-  focusOutlineStyles,
   formatSharedDate,
   getInputARIA,
   mergeProps,
@@ -83,6 +82,7 @@ import {
   type ISODateString,
 } from '../utils';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
 import {
   registerEnglishFallback,
@@ -496,9 +496,9 @@ export function NativeDateField({
         aria-disabled={isEffectivelyDisabled || undefined}
         aria-label={t('@astryx.dateInput.openCalendar')}
         tabIndex={-1}
-        {...mergeProps(
-          stylex.props(focusOutlineStyles.focusVisible),
+        className={tw(
           nativeDateFieldIconButtonClassName,
+          focusOutlineFocusVisibleClassName,
         )}>
         <Icon
           icon="calendar"

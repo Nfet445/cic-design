@@ -129,7 +129,7 @@ import {
 } from '../Field/fieldParts';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {tw} from '../utils/tw';
@@ -919,11 +919,9 @@ function PointerDateField({
             ? t('@astryx.dateInput.toggleCalendarClose')
             : t('@astryx.dateInput.openCalendar')
         }
-        // The shared focus ring stays on StyleX; it is not a rule this map
-        // owns, so the two class sources join into one attribute.
         className={tw(
           dateInputToggleClassName({isDisabled: isEffectivelyDisabled}),
-          stylex.props(focusOutlineStyles.focusVisible).className,
+          focusOutlineFocusVisibleClassName,
         )}>
         <Icon
           icon="calendar"
