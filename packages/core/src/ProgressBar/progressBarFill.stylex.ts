@@ -24,7 +24,6 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {radiusVars, durationVars, easeVars} from '../theme/tokens.stylex';
 
 const styles = stylex.create({
   // The fill spans the whole track and slides with a transform, so a value
@@ -62,7 +61,7 @@ const styles = stylex.create({
       '@media (forced-colors: active)': 'CanvasText',
     },
     outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-    borderRadius: radiusVars['--radius-full'],
+    borderRadius: 'var(--radius-full)',
     transform: {
       default: 'translateX(calc(var(--_progress-bar-fill, 0%) - 100%))',
       ':dir(rtl)': {
@@ -97,7 +96,7 @@ const styles = stylex.create({
     // queries, as the other transitions spell them. The coarse key comes after
     // the touch key, so it wins there.
     transitionDuration: {
-      default: durationVars['--duration-medium'],
+      default: 'var(--duration-medium)',
       // The touch layer's move (the `progress.fillTrackMs` role times the
       // share moved), scaled by the theme's tempo.
       '@media (pointer: coarse)': {
@@ -113,7 +112,7 @@ const styles = stylex.create({
       '@media (prefers-reduced-motion: reduce) and (pointer: coarse)': '0s',
     },
     transitionTimingFunction: {
-      default: easeVars['--ease-standard'],
+      default: 'var(--ease-standard)',
       '@media (pointer: coarse)': 'var(--_progress-bar-curve, linear)',
     },
   },
