@@ -25,14 +25,6 @@
 export type NavItemSize = 'sm' | 'md' | 'lg';
 
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  typeScaleVars,
-  fontWeightVars,
-  sizeVars,
-} from '../theme/tokens.stylex';
 
 /**
  * Base styles shared by all nav item components.
@@ -43,7 +35,7 @@ import {
  * import {navItemStyles} from '@astryxdesign/core/navItemStyles';
  *
  * const styles = stylex.create({
- *   indented: { paddingInlineStart: spacingVars['--spacing-6'] },
+ *   indented: { paddingInlineStart: 'var(--spacing-6)' },
  * });
  *
  * <a {...stylex.props(navItemStyles.item, styles.indented)}>
@@ -56,27 +48,27 @@ export const navItemStyles = stylex.create({
   item: {
     display: 'flex',
     alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
+    gap: 'var(--spacing-2)',
     width: '100%',
     // A minimum, so an item grows with a larger text size and its label never
     // leaves it.
-    minHeight: sizeVars['--size-element-md'],
-    paddingInline: spacingVars['--spacing-2'],
+    minHeight: 'var(--size-element-md)',
+    paddingInline: 'var(--spacing-2)',
     paddingBlock: 0,
-    borderRadius: radiusVars['--radius-element'],
+    borderRadius: 'var(--radius-element)',
     borderWidth: 0,
     borderStyle: 'none',
     backgroundColor: 'transparent',
-    color: colorVars['--color-text-primary'],
+    color: 'var(--color-text-primary)',
     textDecoration: 'none',
     cursor: {
       default: 'pointer',
       ':is(:disabled,[aria-disabled="true"])': 'default',
     },
     fontFamily: 'inherit',
-    fontSize: typeScaleVars['--text-label-size'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    lineHeight: typeScaleVars['--text-label-leading'],
+    fontSize: 'var(--text-label-size)',
+    fontWeight: 'var(--font-weight-normal)',
+    lineHeight: 'var(--text-label-leading)',
     textAlign: 'start',
     boxSizing: 'border-box',
   },
@@ -89,18 +81,18 @@ export const navItemStyles = stylex.create({
     // here — a nav row is not a native control, so the keywords land without
     // it, and it would inherit into `endContent` and pin a Badge's own fill.
     backgroundColor: {
-      default: colorVars['--color-neutral'],
+      default: 'var(--color-neutral)',
       '@media (forced-colors: active)': 'Highlight',
     },
     color: {
       default: null,
       '@media (forced-colors: active)': 'HighlightText',
     },
-    fontWeight: fontWeightVars['--font-weight-medium'],
+    fontWeight: 'var(--font-weight-medium)',
     ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
       '@media (hover: hover)': {
         backgroundColor: {
-          default: colorVars['--color-neutral'],
+          default: 'var(--color-neutral)',
           // Nested, not a sibling `(hover: hover) and (forced-colors:
           // active)` block: as siblings `item`'s hover overlay ties on
           // specificity and wins on source order, erasing the fill.
@@ -110,7 +102,7 @@ export const navItemStyles = stylex.create({
     },
     ':active': {
       backgroundColor: {
-        default: colorVars['--color-neutral'],
+        default: 'var(--color-neutral)',
         '@media (forced-colors: active)': 'Highlight',
       },
     },
@@ -119,14 +111,14 @@ export const navItemStyles = stylex.create({
     // paints no overlay at any phase of the press.
     '[data-astryx-press="on"]': {
       backgroundColor: {
-        default: colorVars['--color-neutral'],
+        default: 'var(--color-neutral)',
         '@media (forced-colors: active)': 'Highlight',
       },
       backgroundImage: 'none',
     },
     '[data-astryx-press="fading"]': {
       backgroundColor: {
-        default: colorVars['--color-neutral'],
+        default: 'var(--color-neutral)',
         '@media (forced-colors: active)': 'Highlight',
       },
       backgroundImage: 'none',
@@ -135,26 +127,26 @@ export const navItemStyles = stylex.create({
 
   /** Disabled state — muted color, no interaction */
   disabled: {
-    color: colorVars['--color-text-disabled'],
+    color: 'var(--color-text-disabled)',
     cursor: 'default',
     pointerEvents: 'none' as const,
   },
 
   /** Small size variant */
   sm: {
-    minHeight: sizeVars['--size-element-sm'],
-    paddingInline: spacingVars['--spacing-1'],
+    minHeight: 'var(--size-element-sm)',
+    paddingInline: 'var(--spacing-1)',
   },
 
   /** Medium size variant (default) */
   md: {
-    minHeight: sizeVars['--size-element-md'],
-    paddingInline: spacingVars['--spacing-2'],
+    minHeight: 'var(--size-element-md)',
+    paddingInline: 'var(--spacing-2)',
   },
 
   /** Large size variant */
   lg: {
-    minHeight: sizeVars['--size-element-lg'],
-    paddingInline: spacingVars['--spacing-2'],
+    minHeight: 'var(--size-element-lg)',
+    paddingInline: 'var(--spacing-2)',
   },
 });
