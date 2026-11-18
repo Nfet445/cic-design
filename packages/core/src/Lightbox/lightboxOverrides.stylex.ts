@@ -22,17 +22,16 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {colorVars, focusVars} from '../theme/tokens.stylex';
 
 const styles = stylex.create({
   zoomButtonFocusInset: {
     outlineOffset: {
       default: null,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
+      ':focus-visible': `calc(-1 * var(--focus-outline-width))`,
     },
   },
   onDarkChrome: {
-    color: colorVars['--color-on-dark'],
+    color: 'var(--color-on-dark)',
   },
 });
 
