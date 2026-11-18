@@ -103,7 +103,7 @@ import {useInteractionModalityTracking} from '../utils/interactionModality';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   focusOwnerProps,
   focusOwnerRingClassName,
@@ -2234,9 +2234,9 @@ export function Selector<T extends SelectorOptionType>(
               aria-describedby={statusTooltip.describedBy}
               {...keepOpenProps}
               onClick={e => e.stopPropagation()}
-              {...stylex.props(
-                focusOutlineStyles.focusVisible,
-                styles.statusButton,
+              {...mergeProps(
+                stylex.props(styles.statusButton),
+                tw(focusOutlineFocusVisibleClassName),
               )}>
               <Icon
                 icon={STATUS_ICON_MAP[status.type]}
