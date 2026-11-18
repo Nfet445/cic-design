@@ -62,7 +62,7 @@ import {
 import {themeProps} from '../utils/themeProps';
 import {useAnnounceRenderedText} from '../hooks/useAnnounceRenderedText';
 import {useMergedRefs} from '../hooks/useMergedRefs';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineWithinClassName} from '../utils/focusOutlineClasses';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 import {
   registerEnglishFallback,
@@ -356,15 +356,11 @@ export function ChatComposer(props: ChatComposerProps) {
           onPointerDownCapture={() => setHasKeyboardEditorFocus(false)}
           onFocusCapture={handleBodyFocusCapture}
           onBlurCapture={handleBodyBlurCapture}
-          {...mergeProps(
-            tw(
-              chatComposerBodyClassName(density),
-              chatComposerElevationClassName(elevation),
-              xstyle && stylex.props(xstyle).className,
-            ),
-            stylex.props(
-              hasKeyboardEditorFocus && focusOutlineStyles.focusWithin,
-            ),
+          className={tw(
+            chatComposerBodyClassName(density),
+            chatComposerElevationClassName(elevation),
+            xstyle && stylex.props(xstyle).className,
+            hasKeyboardEditorFocus && focusOutlineWithinClassName,
           )}>
           {(headerActions || headerContext) && (
             <div className={chatComposerHeaderClassName}>
