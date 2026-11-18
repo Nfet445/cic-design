@@ -124,7 +124,7 @@ buttons) that landed before the tickets were written.
 - [x] `59-token-names`
 - [x] `60-last-stylex-maps`
 - [ ] `61-retire-stylex-build`
-- [ ] `62-xstyle-adapter`
+- [ ] `62-xstyle-adapter` (prop threaded; type narrowing open)
 - [ ] `63-major-changeset`
 - [ ] `64-maps-after-xstyle`
       — table seams, motion and safe-area modules, the one-map leaves

@@ -77,3 +77,28 @@ touched files: no new findings.
 Left for whoever closes ticket 62: the `controlXstyle`/`contentXstyle`/`fieldXstyle` family and the
 Layer `xstyle` still take `StyleXStyles`, and `packages/core/src/__tests__/xstyleContract.test.ts` is
 not written yet.
+
+## Comments — the prop is threaded, the type is not yet narrowed
+
+`packages/core/src/utils/xstyle.ts` classifies the value once: a string is a class, an object is inline
+style, and a legacy StyleX value still reaches its class through `stylex.props`. A dynamic
+`stylex.create` entry arrives as a list, so `isStyleXValue` accepts a list whose any member carries `$$css`.
+
+Every `xstyle` site now reads the adapter: `grep -rn "stylex.props(xstyle)" packages/core/src packages/lab/src`
+returns nothing, from 173 sites. Three shapes needed care and are worth a reviewer's eye:
+`BaseTypeahead` and `CommandPaletteItem` carried component styles next to the consumer value, so the slot
+split into `stylex.props(componentStyles)` plus `xstyleProps(xstyle)` in the class and style slots; a
+conditional `status && !isDisabled && xstyle` yields `false`, which reads as an object, so it passes
+`xstyleProps(condition ? xstyle : undefined)`; and `Stepper`'s vertical arm forwards `xstyle` through a
+variable that used to be `undefined`, which would have silently dropped a string class.
+
+Still open, and the reason the type stays `StyleXStyles` for now:
+
+- `packages/core/src/BaseProps.ts` declares `xstyle?: StyleXStyles`; narrowing it to
+  `string | React.CSSProperties` is the change that makes the new shape public, and it must land with the
+  subpath removals so one changeset describes one API change.
+- Eleven nested props still take a StyleX value: `controlXstyle` (21 files), `triggerXstyle` (3),
+  `sentinelXstyle` (2), and `inputXStyle`, `fieldXstyle`, `contentXstyle`, `containerXstyle`,
+  `layerXstyle` one each. Each becomes `AstryxXStyle` and each call site passes it through `xstyleProps`.
+- `packages/core/src/utils/focusOutline.stylex.ts` and `utils/interactionOverlay.stylex.ts` still export
+  StyleX values that callers compose, so those two modules leave with ticket 61.
