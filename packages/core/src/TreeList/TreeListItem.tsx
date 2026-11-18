@@ -18,7 +18,7 @@
 import {useId, useMemo, useRef, type ReactNode} from 'react';
 import {isRenderable} from '../utils/isRenderable';
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {
   focusOutlinePublishVarsClassName,
   focusOutlineWithinOrPublishedClassName,
@@ -268,7 +268,7 @@ export function TreeListItem({
   // themeable through `--tree-list-indent` (see #4308).
   const reservesChevronColumn = !hasChildren && hasExpandableItems;
   const indentDistance = reservesChevronColumn
-    ? `calc(${nestedLevel} * var(--tree-list-indent) + ${spacingVars['--spacing-4']} + ${spacingVars['--spacing-2']})`
+    ? `calc(${nestedLevel} * var(--tree-list-indent) + ${spacingVarNames['--spacing-4']} + ${spacingVarNames['--spacing-2']})`
     : `calc(${nestedLevel} * var(--tree-list-indent))`;
   const indentStyle: IndentStyle = {'--_tree-indent': indentDistance};
 

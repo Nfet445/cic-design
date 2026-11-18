@@ -14,20 +14,20 @@
  */
 
 import type {CSSProperties} from 'react';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
 import {treeListBranchesClassName} from './treeListBranchesClasses';
 
-const GUIDE_COLUMN_WIDTH = spacingVars['--spacing-5'];
+const GUIDE_COLUMN_WIDTH = spacingVarNames['--spacing-5'];
 
 /**
  * The guide owns its alignment to the chevron column. Its 20px container starts
  * where centering it on the natural 16px chevron leaves it after the row's 8px
  * inline padding: 8px + 16px / 2 - 20px / 2 = 6px.
  */
-const GUIDE_COLUMN_START = `calc(${spacingVars['--spacing-2']} + ${spacingVars['--spacing-4']} / 2 - ${GUIDE_COLUMN_WIDTH} / 2)`;
+const GUIDE_COLUMN_START = `calc(${spacingVarNames['--spacing-2']} + ${spacingVarNames['--spacing-4']} / 2 - ${GUIDE_COLUMN_WIDTH} / 2)`;
 
 /** Per-level indent width. Reads the public, themeable `--tree-list-indent`
  * lever set on the tree-list root (default `--spacing-4`, 16px), so the guide

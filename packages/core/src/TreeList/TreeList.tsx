@@ -26,7 +26,7 @@ import {
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {isRenderable} from '../utils/isRenderable';
-import {focusVars} from '../theme/tokens.stylex';
+import {focusVarNames} from '../theme/tokenVars';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {treeListClassName} from './treeListClasses';
@@ -66,7 +66,7 @@ import {
  * after it. A table view clips to its bounds the same way. Only the bottom
  * edge clips, past the reach of a row's focus ring.
  */
-const MOVING_CLIP = `inset(-100vmax -100vmax calc(-1 * (${focusVars['--focus-outline-width']} + ${focusVars['--focus-outline-offset']})) -100vmax)`;
+const MOVING_CLIP = `inset(-100vmax -100vmax calc(-1 * (${focusVarNames['--focus-outline-width']} + ${focusVarNames['--focus-outline-offset']})) -100vmax)`;
 
 const clipGenerations = new WeakMap<HTMLElement, number>();
 
