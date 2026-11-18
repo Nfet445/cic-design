@@ -53,7 +53,7 @@ import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {isRenderable} from '../utils/isRenderable';
 import {tw} from '../utils/tw';
 import {
@@ -509,7 +509,7 @@ export function TopNavMenu({
         {
           placement: 'below',
           alignment: slot,
-          offset: spacingVars['--spacing-1'],
+          offset: spacingVarNames['--spacing-1'],
         },
       )}
     </>
