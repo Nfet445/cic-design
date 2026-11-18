@@ -24,7 +24,7 @@
  * `::after` (its scroll shadow) stays untouched.
  */
 export const glidingDividerCellClassName =
-  "[[data-astryx-cell-gliding]]:[border-bottom-color:transparent] [[data-astryx-cell-gliding=line]]:after:content-[''] [[data-astryx-cell-gliding=line]]:after:absolute [[data-astryx-cell-gliding=line]]:after:[inset-inline:0] [[data-astryx-cell-gliding=line]]:after:[bottom:calc(-1*var(--_table-row-glide-offset,0px))] [[data-astryx-cell-gliding=line]]:after:h-0 [[data-astryx-cell-gliding=line]]:after:[border-bottom-width:var(--_table-row-glide-width,0px)] [[data-astryx-cell-gliding=line]]:after:[border-bottom-style:var(--_table-row-glide-style,solid)] [[data-astryx-cell-gliding=line]]:after:[border-bottom-color:var(--_table-row-glide-color,var(--color-border))] [[data-astryx-cell-gliding=line]]:after:pointer-events-none";
+  "[[data-astryx-cell-gliding]]:[border-bottom-color:transparent] [[data-astryx-cell-gliding=line]]:after:content-[''] [[data-astryx-cell-gliding=line]]:after:absolute [[data-astryx-cell-gliding=line]]:after:[inset-inline:0] [[data-astryx-cell-gliding=line]]:after:[bottom:var(--_table-row-glide-bottom,0px)] [[data-astryx-cell-gliding=line]]:after:h-0 [[data-astryx-cell-gliding=line]]:after:[border-bottom-width:var(--_table-row-glide-width,0px)] [[data-astryx-cell-gliding=line]]:after:[border-bottom-style:var(--_table-row-glide-style,solid)] [[data-astryx-cell-gliding=line]]:after:[border-bottom-color:var(--_table-row-glide-color,var(--color-border))] [[data-astryx-cell-gliding=line]]:after:pointer-events-none";
 
 /**
  * After the cell class on a detail panel's cell: its divider color is the one
