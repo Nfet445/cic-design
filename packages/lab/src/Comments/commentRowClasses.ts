@@ -59,6 +59,19 @@ export const commentRowSelectedFillClassName =
   '[&[data-thread-surface=card][data-thread-surface=card]]:[background-color:var(--color-background-muted)]';
 
 /**
+ * Forced colors drops the muted fill, so a selected thread keeps a visible
+ * outline there. The repeated attribute doubles the class's specificity, so the
+ * outline beats `commentRowFocusRingClassName` whatever order the two rules
+ * print in.
+ */
+export const commentRowSelectedForcedColorsClassName = tw(
+  '[&[data-thread-surface][data-thread-surface]]:forced-colors:[outline-style:solid]',
+  '[&[data-thread-surface][data-thread-surface]]:forced-colors:[outline-width:calc(var(--border-width)*2)]',
+  '[&[data-thread-surface][data-thread-surface]]:forced-colors:[outline-color:Highlight]',
+  '[&[data-thread-surface][data-thread-surface]]:forced-colors:[outline-offset:calc(var(--border-width)*-2)]',
+);
+
+/**
  * The system ring on the surface while the row's hidden toggle holds focus.
  * That toggle is clicked, not tabbed to, so `:focus-visible` never matches it
  * and the ring follows the row's own focus state instead.

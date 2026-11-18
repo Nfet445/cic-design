@@ -2,22 +2,18 @@
 
 /**
  * @file transferListOverrides.stylex.ts
- * @input Accepts nothing: every rule is fixed
- * @output StyleX values that reverse a utility Button or Item already sets
- * @position Style exception; the component passes them through `xstyle`
+ * @input Accepts nothing: the rule is fixed
+ * @output The text-link treatment of a panel header's action Button
+ * @position Style exception; the component passes it through `xstyle`
  *
- * A plain utility here would be ordered by the built sheet, not by the class
- * attribute, so it cannot be trusted to win: `Item`'s disabled row sets
- * `pointer-events-none` and dims to `opacity-50`, and `Button` sets its own
- * label type scale and background image.
+ * The rival is still StyleX: a Button paints its hover and pressed background
+ * image from `interactionOverlayStyles` (core `utils/interactionOverlay.stylex.ts`),
+ * which is unlayered and carries id specificity, so no class in `astryx-base`
+ * can state `background-image: none` over it. Every other declaration here
+ * would convert; the image arms hold the rule here until that module moves.
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVarNames,
-  sizeVarNames,
-  typeScaleVarNames,
-} from '@astryxdesign/core/theme';
 
 /**
  * A text-link treatment, but the hit target still has to clear the WCAG 2.5.8
@@ -47,17 +43,4 @@ export const transferListHeaderActionStyles = stylex.create({
     fontWeight: 'var(--text-body-weight)',
     lineHeight: 'var(--text-body-leading)',
   },
-});
-
-/** A disabled row still takes the pointer, so its disabled controls show their tooltips on hover. */
-export const transferListDisabledRowPointerStyles = stylex.create({
-  base: {pointerEvents: 'auto'},
-});
-
-/**
- * A disabled row already dims its end content, Remove included. Remove's own
- * disabled dim would make it fainter than the list's other controls.
- */
-export const transferListRemoveOnDisabledRowStyles = stylex.create({
-  base: {opacity: 1},
 });

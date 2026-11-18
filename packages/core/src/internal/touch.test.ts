@@ -146,11 +146,16 @@ describe('internal/touch', () => {
     const animator = await import('../motion/animator');
     const reduced = await import('../motion/reducedMotion');
     const hitArea = await import('../utils/touchHitArea');
-    const hitAreaStyles = await import('./touchHitArea.stylex');
+    const hitAreaClasses = await import('./touchHitAreaClasses');
     expect(entry.animatorFor).toBe(animator.animatorFor);
     expect(entry.reducedMotionFade).toBe(reduced.reducedMotionFade);
     expect(entry.useTouchHitArea).toBe(hitArea.useTouchHitArea);
-    expect(entry.touchHitAreaStyles).toBe(hitAreaStyles.touchHitAreaStyles);
+    expect(entry.touchHitAreaLayerClassName).toBe(
+      hitAreaClasses.touchHitAreaLayerClassName,
+    );
+    expect(entry.touchHitAreaLayerBelowChildrenClassName).toBe(
+      hitAreaClasses.touchHitAreaLayerBelowChildrenClassName,
+    );
     // An identity check passes when both sides are undefined, so each name
     // must also be defined.
     for (const name of [
@@ -160,7 +165,12 @@ describe('internal/touch', () => {
     ]) {
       expect(typeof entry[name], name).toBe('function');
     }
-    expect(entry.touchHitAreaStyles).toBeDefined();
+    for (const name of [
+      'touchHitAreaLayerClassName',
+      'touchHitAreaLayerBelowChildrenClassName',
+    ]) {
+      expect(typeof entry[name], name).toBe('string');
+    }
   });
 
   it("re-exports by name what NavigationStack's bars and scroll edge effect read", async () => {

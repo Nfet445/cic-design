@@ -38,44 +38,13 @@ import {listRowEdgeOf} from '../privateAttributes/listRow.stylex';
 import {travellingRaisedSwipeRowClassName} from '../privateAttributes/travellingClasses';
 import {swipeLayerLoaded} from '../Item/__tests__/swipeLayerLoaded';
 
-/**
- * The element's injected rules split by the touch gate: inside
- * `@media (pointer: coarse)` (TOUCH_QUERY, utils/touchQueries.ts), or
- * not.
- */
-function touchGatedRules(el: Element): {touch: string[]; other: string[]} {
-  const classes = el.className
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(name => `.${name}`);
-  const out = {touch: [] as string[], other: [] as string[]};
-  const visit = (rules: CSSRuleList, touch: boolean) => {
-    for (const rule of Array.from(rules)) {
-      if (rule instanceof CSSStyleRule) {
-        if (classes.some(cls => rule.selectorText.startsWith(cls))) {
-          (touch ? out.touch : out.other).push(
-            `${rule.selectorText} {${rule.style.cssText}}`,
-          );
-        }
-        continue;
-      }
-      const nested = (rule as CSSGroupingRule).cssRules;
-      if (nested == null) {
-        continue;
-      }
-      const condition = (rule as CSSConditionRule).conditionText ?? '';
-      visit(nested, touch || condition.includes('pointer: coarse'));
-    }
-  };
-  for (const sheet of Array.from(document.styleSheets)) {
-    visit(sheet.cssRules, false);
-  }
-  return out;
-}
 import {List} from './List';
 import {ListItem} from './ListItem';
 import {ListMarkerScope} from './ListContext';
-import {HIT_INSET_PROPERTIES} from '../utils/hitArea';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
+
+/** The classes that make a row take taps past its own box under a finger. */
+const BAND_CLASSES = touchHitAreaLayerClassName.split(' ');
 import {useAnimatedLayout} from '../hooks/useAnimatedLayout';
 
 describe('List', () => {
@@ -554,11 +523,7 @@ describe('List', () => {
   // Touch hit area
   // ===========================================================================
 
-  /** The rules among `rules` whose selector reaches the row's `::after`. */
-  const afterRules = (rules: string[]): string[] =>
-    rules.filter(rule => rule.slice(0, rule.indexOf('{')).includes('::after'));
-
-  it('gives an interactive, enabled row an invisible hit layer under a finger only', () => {
+  it('gives an interactive, enabled row an invisible hit band under a finger only', () => {
     render(
       <List>
         <ListItem label="Pressable" onClick={() => {}} />
@@ -569,45 +534,23 @@ describe('List', () => {
     );
     const row = (text: string) => screen.getByText(text).closest('li')!;
     for (const text of ['Pressable', 'Link']) {
-      const {touch, other} = touchGatedRules(row(text));
-      const layer = afterRules(touch).join('\n');
-      // Positioned past the row by the measured insets, clipped to the band
-      // outside the row's own box, and painting nothing.
-      expect(layer).toContain('position: absolute');
-      expect(layer).toMatch(/clip-path: polygon\(evenodd/);
-      // One inset per side, in physical order: top, right, bottom, left.
-      const offset = (side: keyof typeof HIT_INSET_PROPERTIES) =>
-        `calc\\(\\(var\\(${HIT_INSET_PROPERTIES[side]}, ?0px\\) \\+ var\\(--_hit-border-${side}, ?0px\\)\\) \\* -1\\)`;
-      expect(layer).toMatch(
-        new RegExp(
-          `inset: ${offset('top')} ${offset('right')} ${offset('bottom')} ${offset('left')}`,
-        ),
-      );
-      // Above the rows after it, so a later row does not hit-test over the
-      // band; painting nothing.
-      expectClassSet(row(text), {includes: [LIST_ITEM_BAND_RAISED]});
-      expect(layer).not.toMatch(
-        /[{;]\s*(?:background|border|box-shadow|outline)[\w-]*\s*:/,
-      );
+      // The row carries the shared coarse-only band, positioned past its box
+      // by the measured insets, clipped to the band outside the row's own box,
+      // and painting nothing (utils/touchHitArea.test.tsx asserts that CSS),
+      // then raised so a later row does not hit-test over it.
+      expectClassSet(row(text), {
+        includes: [...BAND_CLASSES, LIST_ITEM_BAND_RAISED],
+      });
       // The row box itself takes no z-index: it stays no stacking context.
       expect(
         classesOf(row(text)).filter(
           name => name.includes('z-index') && !name.includes('::after'),
         ),
       ).toEqual([]);
-      // At rest the row's stacking stays as it was: a rule that isolates the
-      // row is keyed on a press.
-      for (const rule of touch.filter(r => r.includes('isolation'))) {
-        expect(rule.slice(0, rule.indexOf('{'))).toContain(
-          '[data-astryx-press',
-        );
-      }
-      // With a mouse: no pseudo-element.
-      expect(afterRules(other)).toEqual([]);
     }
     // A row with nothing to press offers no target.
     for (const text of ['Read-only', 'Disabled']) {
-      expect(afterRules(touchGatedRules(row(text)).touch)).toEqual([]);
+      expectClassSet(row(text), {excludes: BAND_CLASSES});
     }
   });
 
@@ -1399,22 +1342,12 @@ describe('List and swipe actions', () => {
         />
       </ul>,
     );
-    const {touch} = touchGatedRules(screen.getByText('Outside').closest('li')!);
+    const row = screen.getByText('Outside').closest('li')!;
     // It keeps its touch target, the band past its box.
-    expect(
-      touch
-        .filter(rule => rule.slice(0, rule.indexOf('{')).includes('::after'))
-        .join('\n'),
-    ).toContain('position: absolute');
-    // But nothing it draws rises: not the band, not the row. A rule keyed on
-    // a press is left out, since it orders layers only inside the pressed row.
-    expect(
-      touch.filter(
-        rule =>
-          rule.includes('z-index') &&
-          !rule.slice(0, rule.indexOf('{')).includes('[data-astryx-press'),
-      ),
-    ).toEqual([]);
+    expectClassSet(row, {includes: BAND_CLASSES});
+    // But nothing it draws rises: not the band, not the row.
+    expectClassSet(row, {excludes: [LIST_ITEM_BAND_RAISED]});
+    expect(classesOf(row).filter(name => name.includes('z-index'))).toEqual([]);
   });
 
   it('passes swipe through to the row unchanged', () => {

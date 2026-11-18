@@ -11,7 +11,6 @@
  *   __tests__/ToggleButtonGroupTracking.interaction.browser.spec.ts
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {createRef, type Ref} from 'react';
 import {act, render} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
@@ -20,7 +19,10 @@ import {
   pointerQuery,
 } from '../gestures/__tests__/pointerQuery';
 import {isPressGroupItem} from '../privateAttributes/pressGroupItem.stylex';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {
+  touchHitAreaLayerBelowChildrenClassName,
+  touchHitAreaLayerClassName,
+} from '../internal/touchHitAreaClasses';
 import {Button} from '../Button/Button';
 import {ToggleButton} from './ToggleButton';
 import {ToggleButtonGroup} from './ToggleButtonGroup';
@@ -199,9 +201,7 @@ describe('ToggleButtonGroup tracks a held pointer across its toggles (family:act
   });
 
   it("draws each tracked toggle's touch band on the group's hit layer: a tracked toggle draws none of its own, and a toggle without a value keeps its own", () => {
-    const band = (stylex.props(touchHitAreaStyles.layer).className ?? '')
-      .split(' ')
-      .filter(Boolean);
+    const band = touchHitAreaLayerClassName.split(' ').filter(Boolean);
     expect(band.length).toBeGreaterThan(0);
     const hasOwnBand = (toggle: Element) =>
       [...toggle.querySelectorAll('*')].some(element =>
@@ -230,9 +230,7 @@ describe('ToggleButtonGroup tracks a held pointer across its toggles (family:act
   });
 
   it('gives the root its hit layer only under a coarse primary pointer, so a desktop root keeps its stacking', () => {
-    const layer = (
-      stylex.props(touchHitAreaStyles.layerBelowChildren).className ?? ''
-    )
+    const layer = touchHitAreaLayerBelowChildrenClassName
       .split(' ')
       .filter(Boolean);
     expect(layer.length).toBeGreaterThan(0);
@@ -645,9 +643,7 @@ describe('ToggleButtonGroup tracks a held pointer across its toggles (family:act
     const ref = createRef<HTMLDivElement>();
     const {group} = mount({ref});
     expect(ref.current).toBe(group);
-    const layer = (
-      stylex.props(touchHitAreaStyles.layerBelowChildren).className ?? ''
-    )
+    const layer = touchHitAreaLayerBelowChildrenClassName
       .split(' ')
       .filter(Boolean);
     expect(layer.filter(name => group.classList.contains(name))).toEqual(layer);

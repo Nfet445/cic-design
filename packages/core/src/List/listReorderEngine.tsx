@@ -89,7 +89,6 @@ import {useLayerDismissal} from '../Layer/useLayerDismissal';
 import {Kbd} from '../Kbd/Kbd';
 import {renderAnchoredHint} from '../hooks/anchoredHint';
 import {anchoredHintKeysClassName} from '../hooks/anchoredHintClasses';
-import * as stylex from '@stylexjs/stylex';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
 import {mergeProps} from '../utils/mergeProps';
@@ -109,7 +108,7 @@ import {subscribeInput} from '../utils/inputStream';
 import {nearestScroller} from '../utils/scrollingAncestor';
 import {useTouchPresentation} from '../utils/touchPresentation';
 import {useTouchHitArea} from '../utils/touchHitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {createDevWarnings, devWarn} from '../utils/devWarning';
 import {observeMutations} from '../utils/sharedMutationObserver';
 import {isLeaving, markLeaving} from '../privateAttributes/leaving.stylex';
@@ -2481,12 +2480,10 @@ function HintButton({
       onPointerDown={event => event.preventDefault()}
       onMouseDown={event => event.preventDefault()}
       onClick={onPress}
-      {...mergeProps(
-        stylex.props(touchHitAreaStyles.layer),
-        tw(
-          listReorderHintButtonClassName({isText}),
-          focusOutlineFocusVisibleClassName,
-        ),
+      className={tw(
+        listReorderHintButtonClassName({isText}),
+        focusOutlineFocusVisibleClassName,
+        touchHitAreaLayerClassName,
       )}>
       {children}
     </button>

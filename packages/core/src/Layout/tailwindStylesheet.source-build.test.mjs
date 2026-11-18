@@ -684,6 +684,10 @@ import {
 } from '../Overlay/overlayClasses';
 import {visuallyHiddenClassName} from '../VisuallyHidden/visuallyHiddenClasses';
 import {
+  touchHitAreaLayerBelowChildrenClassName,
+  touchHitAreaLayerClassName,
+} from '../internal/touchHitAreaClasses';
+import {
   swipeEntryClassName,
   swipeEntryCoveredClassName,
   swipeEntryDisabledClassName,
@@ -1617,6 +1621,10 @@ function familyClassNames() {
   // (controlled open and closed, always shown, hover and focus) per position.
   // VisuallyHidden: the clip block every accessible label reuses.
   add(visuallyHiddenClassName);
+  // The band every press target widens its hit area with, above or below the
+  // element's own children.
+  add(touchHitAreaLayerClassName);
+  add(touchHitAreaLayerBelowChildrenClassName);
   add(overlayContainerClassName);
   add(overlayScrimBaseClassName);
   for (const position of ['fill', 'bottom', 'top']) {

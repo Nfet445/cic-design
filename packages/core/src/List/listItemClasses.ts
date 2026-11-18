@@ -118,7 +118,7 @@ export const LIST_ITEM_DIVIDER = tw(
   '[border-block-end-color:var(--color-border)]',
   LIST_ITEM_DIVIDER_LAST_RESET,
   // The touch hit band starts past the divider, the edge of the box its
-  // insets are measured from (internal/touchHitArea.stylex.ts). The width
+  // insets are measured from (internal/touchHitAreaClasses.ts). The width
   // sits on the band itself, so content inside the row never inherits it.
   '[&::after]:[--_hit-border-bottom:var(--border-width)]',
   '[&:last-child::after]:[--_hit-border-bottom:0px]',
