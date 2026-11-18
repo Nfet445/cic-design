@@ -98,7 +98,7 @@ import {
   isInCalendarMonth,
 } from '../utils/calendarSystem';
 import {mergeProps, composeEventHandlers} from '../utils';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {useToday} from '../hooks/useToday';
@@ -1503,16 +1503,17 @@ function DayCell({
             //   'today-in-range' → today, not single-selected, inside a range
             marker: markerState,
           }),
-          focusOutlineProps.focusVisible(
-            interactionOverlayStyles.backgroundImage,
+          stylex.props(interactionOverlayStyles.backgroundImage),
+          tw(
+            dayButtonClassName({
+              isOutside,
+              isTodayRing: showsTodayRing,
+              isTodayInRangeRing: showsTodayInRangeRing,
+              isSelected: endpoint,
+              isDisabled: state.effectivelyDisabled,
+            }),
+            focusOutlineFocusVisibleClassName,
           ),
-          dayButtonClassName({
-            isOutside,
-            isTodayRing: showsTodayRing,
-            isTodayInRangeRing: showsTodayInRangeRing,
-            isSelected: endpoint,
-            isDisabled: state.effectivelyDisabled,
-          }),
         )}>
         {plainDateFormatDayNumber(dayNumber, locale)}
       </button>
