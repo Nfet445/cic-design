@@ -15,11 +15,7 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {
-  hasReleaseFade,
-  readsPressStrength,
-  rulesWithSelector,
-} from '../__tests__/pressState';
+import {hasReleaseFade, readsPressStrength} from '../__tests__/pressState';
 import {RadioList} from './RadioList';
 import {RadioListItem} from './RadioListItem';
 import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
@@ -29,6 +25,7 @@ import {
 } from '../utils/rtlClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {indicatorPressImageClassName} from '../Indicator/indicatorClasses';
+import {rowPressPaintRadioRowClassName} from '../privateAttributes/pressClasses';
 
 // A disabled row blocks pointers with a class, and jsdom has no sheet to
 // compute it from; find the row that carries the block instead.
@@ -1176,12 +1173,10 @@ function readsRowPress(el: Element): boolean {
  * nested control is the pressed one?
  */
 function declaresRowPress(el: Element): boolean {
-  return rulesWithSelector(el, ':active').some(
-    rule =>
-      rule.includes('--_radio-row-press:') &&
-      rule.includes('var(--color-overlay-pressed)') &&
-      rule.includes(':not(:has(button:not([aria-readonly="true"]):active'),
-  );
+  const classes = classesOf(el);
+  return rowPressPaintRadioRowClassName
+    .split(' ')
+    .every(className => classes.includes(className));
 }
 
 describe('pressed state', () => {

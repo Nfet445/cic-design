@@ -44,7 +44,7 @@ import {Item, type ItemAlign} from '../Item/Item';
 import {themeProps} from '../utils/themeProps';
 import {
   rowPressLayerStyles,
-  rowPressPaintStyles,
+  rowPressPaintRadioRowClassName,
 } from '../privateAttributes/press.stylex';
 import {indicatorPressImageClassName} from '../Indicator/indicatorClasses';
 import {rowStyles} from './radioListItemRow.stylex';
@@ -59,7 +59,7 @@ import {
 // none of its code.
 registerBoxHold();
 // The paint of a press the controller does not paint is declared on the row
-// (`rowPressPaintStyles.radioRow`) and inherited by the layer over the circle
+// (`rowPressPaintRadioRowClassName`) and inherited by the layer over the circle
 // (`radioListItemPressOverlayClassName`). Internal: not a theme hook.
 
 export interface RadioListItemProps extends BaseProps<HTMLDivElement> {
@@ -325,7 +325,6 @@ export function RadioListItem({
           // styles so it wins within the base layer; a `radio-list-item` theme
           // still overrides it from the higher `astryx-theme` layer.
           rowStyles.root,
-          !isDisabled && rowPressPaintStyles.radioRow,
           !isDisabled && touchHitAreaStyles.layer,
           xstyle,
         ] as StyleXStyles
@@ -344,7 +343,13 @@ export function RadioListItem({
           selected: isChecked ? 'selected' : null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        {className, style},
+        {
+          className: tw(
+            !isDisabled && rowPressPaintRadioRowClassName,
+            className,
+          ),
+          style,
+        },
       )}
       {...rest}
     />

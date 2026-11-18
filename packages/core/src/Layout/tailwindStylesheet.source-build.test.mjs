@@ -565,6 +565,7 @@ import {
   controlPressHeldClassName,
   indicatorPressPaintHandDownClassName,
   rowPressPaintCheckboxRowClassName,
+  rowPressPaintRadioRowClassName,
 } from '../privateAttributes/pressClasses';
 import {
   indicatorPressFillClassName,
@@ -2334,9 +2335,11 @@ function familyClassNames() {
   // The shared ring and the system's hover and press overlay as class arms.
   add(focusOutlineFocusVisibleClassName);
   add(interactionOverlayBackgroundImageClassName);
-  // The press paint a row hands down to a box, and the layer a coarse pointer
-  // keeps under a control for the whole release.
+  // The press paint a row hands down to a box, the layer a coarse pointer
+  // keeps under a control for the whole release, and the paint a RadioList row
+  // declares for a press the controller leaves unpainted.
   add(rowPressPaintCheckboxRowClassName);
+  add(rowPressPaintRadioRowClassName);
   add(indicatorPressPaintHandDownClassName);
   add(controlPressHeldClassName);
   // The press over a selection control's indicator: the `:active` fill and the
@@ -3857,9 +3860,22 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // its overlay and both border states mostly reuse the selectable card's
     // utilities; with the disabled dimming and the hidden control they took
     // the sheet to 1974. The avatar's three shape radii added 1977, and the
-    // hint's anchored surface and its keyboard row added 1982. The ceiling
-    // keeps its headroom above that.
+    // hint's anchored surface and its keyboard row added 1982. The RadioList
+    // row's own press paint added its mouse and coarse arms, and this branch
+    // measured 2015. The ceiling keeps its headroom above that.
     expect(stylesheet.rules.size).toBeLessThan(2020);
+  });
+
+  it('prints a RadioList row’s coarse press arm after its mouse arm', () => {
+    // The two arms have equal specificity, so the sheet order decides whether
+    // a finger keeps the row unpainted and only the circle answers.
+    const [mouseArm, coarseArm] = rowPressPaintRadioRowClassName.split(' ');
+    const positionOf = className =>
+      stylesheet.compact.indexOf(
+        `.${className.replace(/[^a-zA-Z0-9_-]/g, character => `\\${character}`)}`,
+      );
+    expect(positionOf(mouseArm)).toBeGreaterThanOrEqual(0);
+    expect(positionOf(coarseArm)).toBeGreaterThan(positionOf(mouseArm));
   });
 
   it('keeps the scrim takeover pin under prefers-reduced-motion', () => {
