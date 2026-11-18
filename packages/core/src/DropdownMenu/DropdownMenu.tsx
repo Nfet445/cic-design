@@ -135,7 +135,10 @@ import {
   getInteractionModality,
   useInteractionModalityTracking,
 } from '../utils/interactionModality';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {
+  focusOutlineFocusVisibleClassName,
+  focusOutlineSuppressedClassName,
+} from '../utils/focusOutlineClasses';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -670,11 +673,11 @@ function DropdownMenuBottomSheet({
         <Button
           {...button}
           ref={triggerRef}
-          className={tw(isOpen && dropdownMenuTriggerOpenClassName)}
-          xstyle={[
-            button.xstyle,
-            isFocusRingSuppressed && focusOutlineStyles.suppressed,
-          ]}
+          className={tw(
+            isOpen && dropdownMenuTriggerOpenClassName,
+            isFocusRingSuppressed && focusOutlineSuppressedClassName,
+          )}
+          xstyle={button.xstyle}
           tooltip={isOpen ? undefined : button.tooltip}
           endContent={resolvedEndContent}
           onPointerDown={event => {
@@ -1656,11 +1659,9 @@ function DropdownMenuPopover({
           className={tw(
             dropdownMenuTriggerPressableClassName,
             isOpen && dropdownMenuTriggerOpenClassName,
+            isFocusRingSuppressed && focusOutlineSuppressedClassName,
           )}
-          xstyle={[
-            button.xstyle,
-            isFocusRingSuppressed && focusOutlineStyles.suppressed,
-          ]}
+          xstyle={button.xstyle}
           tooltip={isOpen ? undefined : button.tooltip}
           endContent={resolvedEndContent}
           onClick={handleButtonClick}
@@ -1732,17 +1733,15 @@ function DropdownMenuPopover({
             {...menuPress.menuProps}
             {...mergeProps(
               themeProps('dropdown-menu', {presentation: 'popover'}),
-              stylex.props(
+              stylex.props(xstyle),
+              tw(
+                dropdownMenuPopoverClassName,
                 // Between a header and a footer the menu is a Tab stop, so
                 // keyboard focus on it must be visible (the base style removes
                 // the ring for the pointer-open focus target).
                 hasRegions &&
                   isMenuKeyboardFocused &&
-                  focusOutlineStyles.focusVisible,
-                xstyle,
-              ),
-              tw(
-                dropdownMenuPopoverClassName,
+                  focusOutlineFocusVisibleClassName,
                 hasOverflow
                   ? dropdownMenuSubMenuTouchClassName
                   : dropdownMenuSubMenuTouchPinchClassName,
