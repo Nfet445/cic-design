@@ -240,6 +240,12 @@ export interface TypeaheadProps<T extends SearchableItem> extends Omit<
 // Styles
 // =============================================================================
 
+/**
+ * The wrapper stays here: it shares its element with the shared field box class
+ * and sets the same `padding-block` and `gap`, which a class in `astryx-base`
+ * would only tie with — the sheet, not `tw`, would decide. `inputHidden` stays
+ * because BaseTypeahead takes it as `inputXStyle`, a StyleX-only argument.
+ */
 const styles = stylex.create({
   wrapper: {
     position: 'relative',

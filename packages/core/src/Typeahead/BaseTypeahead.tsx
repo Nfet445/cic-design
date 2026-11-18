@@ -362,6 +362,14 @@ export interface BaseTypeaheadProps<T extends SearchableItem> extends Omit<
 // Styles
 // =============================================================================
 
+/**
+ * Both caps stay here. Each states its fallback as two declarations for one
+ * property through `stylex.firstThatWorks`, in a fixed order — a `<length>` this
+ * browser may not parse first, then the `vh`/`vw` one it does — and one
+ * Tailwind arbitrary value cannot express that pair. `dropdownHeld` writes the
+ * same property as `dropdown`, and `popover`/`popoverCustomWidth` go to a
+ * layer's `xstyle`, which takes StyleX styles only.
+ */
 const styles = stylex.create({
   dropdown: {
     boxSizing: 'border-box',

@@ -150,6 +150,16 @@ const OVERLAY_MARGIN_PROPERTY = '--_selector-overlay-margin';
  */
 const LAYER_OPEN: string = ':has([aria-expanded="true"])';
 
+/**
+ * The control box and its variant chrome stay here: the box shares its element
+ * with `fieldInputWrapperClassName()`, whose background, border and shadow a
+ * class in `astryx-base` would only tie with — the sheet, not `tw`, would
+ * decide — and `triggerInGroup` cancels a `padding-block` this map writes
+ * unlayered, which no class can reach. `popover` stays because the layer's
+ * `xstyle` takes StyleX styles only. Every rule that draws inside the box comes
+ * from `selectorClasses.ts`, `selectorOptionClasses.ts` or
+ * `selectorPresentation.stylex.ts`.
+ */
 const styles = stylex.create({
   // Trigger container — the enhanced click target wrapping the combobox button and clear button as siblings
   triggerContainer: {
