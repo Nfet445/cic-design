@@ -19,7 +19,10 @@ on:
     # request runs once a maintainer labels it ci:run and pushes or reopens
     # (spec:AST-030 FR17).
     types: [opened, synchronize, reopened, ready_for_review]
-    branches: ['main', 'release/**']
+    # `poc/**` carries the Tailwind migration: an integration pull request there
+    # must run the same gates as one against main, or a branch can land with no
+    # check ever having loaded it.
+    branches: ['main', 'release/**', 'poc/**']
   merge_group:
   # Explicit release checks and baseline capture share the canonical owners.
   # Reviewed captures are committed through a normal pull request.
