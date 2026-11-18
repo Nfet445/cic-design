@@ -62,6 +62,7 @@ import {getInputARIA} from '../utils';
 import {joinAriaIDs} from '../utils/inputAria';
 import {withholdCallerHandlers} from '../utils/disabledInteraction';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {lockSelection, locksSelectionFor} from '../utils/selectionLock';
 import {useSize} from '../SizeContext/SizeContext';
@@ -1364,8 +1365,11 @@ export function NumberInput({
                 numberInputStepperButtonClassName({
                   isDisabled: isDisabled || isReadOnly || !canIncrement,
                 }),
+                // The hover and press paint; its strength and release stay the
+                // StyleX arm in the next slot.
+                interactionOverlayBackgroundImageClassName,
               ),
-              stylex.props(interactionOverlayStyles.backgroundImage),
+              stylex.props(interactionOverlayStyles.pressedAlpha),
             )}>
             <Icon
               icon="numberInput:stepperDown"
@@ -1415,8 +1419,11 @@ export function NumberInput({
                   isDisabled: isDisabled || isReadOnly || !canDecrement,
                 }),
                 NUMBER_INPUT_DECREMENT_CLASS,
+                // The hover and press paint; its strength and release stay the
+                // StyleX arm in the next slot.
+                interactionOverlayBackgroundImageClassName,
               ),
-              stylex.props(interactionOverlayStyles.backgroundImage),
+              stylex.props(interactionOverlayStyles.pressedAlpha),
             )}>
             <Icon icon="numberInput:stepperDown" size="xsm" color="inherit" />
           </button>
