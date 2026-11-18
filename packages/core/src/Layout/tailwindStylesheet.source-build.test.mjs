@@ -509,7 +509,11 @@ import {
   focusOutlineWithinFirstChildClassName,
   focusOutlineWithinOrPublishedClassName,
 } from '../utils/focusOutlineClasses';
-import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
+import {
+  interactionOverlayBackgroundColorClassName,
+  interactionOverlayBackgroundImageClassName,
+  interactionOverlayPressedBackgroundColorClassName,
+} from '../utils/interactionOverlayClasses';
 import {inputStatusIconButtonClassName} from '../hooks/inputStatusIconClasses';
 import {iconBoxClassName} from '../Icon/iconBoxClasses';
 import {
@@ -2435,6 +2439,8 @@ function familyClassNames() {
   // The shared ring and the system's hover and press overlay as class arms.
   add(focusOutlineFocusVisibleClassName);
   add(interactionOverlayBackgroundImageClassName);
+  add(interactionOverlayBackgroundColorClassName);
+  add(interactionOverlayPressedBackgroundColorClassName);
   // The press paint a row hands down to a box, the layer a coarse pointer
   // keeps under a control for the whole release, and the paint a RadioList row
   // declares for a press the controller leaves unpainted.
