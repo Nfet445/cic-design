@@ -37,7 +37,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
-import {spacingVars} from '../../../theme/tokens.stylex';
+import {spacingVarNames} from '../../../theme/tokenVars';
 import {focusOutlineFocusVisibleClassName} from '../../../utils/focusOutlineClasses';
 import {Icon} from '../../../Icon';
 import {mergeProps, mergeRefs} from '../../../utils';
@@ -258,9 +258,9 @@ function applyRowTreeAria(
 
 /** Indent step per level, by the `indent` config token. */
 const INDENT_STEP = {
-  sm: spacingVars['--spacing-3'],
-  md: spacingVars['--spacing-4'],
-  lg: spacingVars['--spacing-6'],
+  sm: spacingVarNames['--spacing-3'],
+  md: spacingVarNames['--spacing-4'],
+  lg: spacingVarNames['--spacing-6'],
 } as const;
 
 // =============================================================================
