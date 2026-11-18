@@ -53,7 +53,7 @@ import {
   thumbnailUploadOverlayClassName,
 } from './thumbnailClasses';
 import {thumbnailRemoveButtonStyles} from './thumbnailRemoveButtonOverrides.stylex';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineWithinClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
@@ -324,10 +324,7 @@ export function Thumbnail({
       <div
         {...(isInteractive ? pressable : undefined)}
         {...mergeProps(
-          mergeProps(
-            focusOutlineProps.focusWithin(),
-            isHoverReveal ? getContainerProps() : {},
-          ),
+          isHoverReveal ? getContainerProps() : {},
           stylex.props(
             // The touch press's strength and release, on the element the
             // controller writes to; the `::after` above paints off it.
@@ -337,6 +334,7 @@ export function Thumbnail({
             thumbnailImageContainerClassName,
             isInteractive && thumbnailInteractiveClassName,
             isInteractive && thumbnailOverlayClassName,
+            focusOutlineWithinClassName,
           ),
         )}>
         {hasOpen ? (
