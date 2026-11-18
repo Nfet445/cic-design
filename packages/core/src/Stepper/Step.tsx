@@ -126,6 +126,7 @@ import {
 } from './stepClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import type {BaseProps} from '../BaseProps';
 import {Icon} from '../Icon';
@@ -1035,7 +1036,7 @@ export function Step({
           ref={ref}
           {...mergeProps(
             stepThemeProps,
-            stylex.props(xstyle),
+            xstyleProps(xstyle),
             tw(stepItemClassName, otVerticalRootClassName, className),
             {...densityStyle(densitySpace, separatedDensityInline), ...style},
           )}
@@ -1126,7 +1127,7 @@ export function Step({
         ref={ref}
         {...mergeProps(
           stepThemeProps,
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(stepItemClassName, otHorizontalRootClassName, className),
           {...densityStyle(densitySpace, separatedDensityInline), ...style},
         )}
@@ -1177,7 +1178,7 @@ export function Step({
         ref={ref}
         {...mergeProps(
           stepThemeProps,
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(stepItemClassName, verticalRootClassName, className),
           {...densityStyle(densitySpace, separatedDensityInline), ...style},
         )}
@@ -1245,7 +1246,7 @@ export function Step({
       ref={ref}
       {...mergeProps(
         stepThemeProps,
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(stepItemClassName, horizontalStepClassName, className),
         {...densityStyle(densitySpace, separatedDensityInline), ...style},
       )}

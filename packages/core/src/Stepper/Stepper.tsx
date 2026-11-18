@@ -24,7 +24,6 @@
  */
 
 import {useCallback, useMemo, useRef, useState, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 
 import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import {tw} from '../utils/tw';
@@ -38,6 +37,7 @@ import {observeResize} from '../utils/sharedResizeObserver';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {Icon} from '../Icon';
 import {IconButton} from '../IconButton';
 import {
@@ -380,7 +380,7 @@ export function Stepper({
       {...rest}
       {...mergeProps(
         themeProps('stepper', {orientation, indicatorPosition}),
-        stylex.props(listXstyle),
+        xstyleProps(listXstyle),
         tw(stepperRootClassName({orientation, isOnTrack}), listClassName),
         listStyle,
       )}>
@@ -481,7 +481,7 @@ export function Stepper({
         <div
           {...mergeProps(
             themeProps('stepper-frame'),
-            stylex.props(xstyle),
+            xstyleProps(xstyle),
             tw(stepperFrameClassName, className),
             style,
           )}>
