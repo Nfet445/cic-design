@@ -37,6 +37,7 @@ export interface TextColorMap {
 }
 
 export {Text, type TextProps, type TextType, type TextSize} from './Text';
+export {truncationTooltipContentClassName} from './textClasses';
 export {
   Heading,
   type HeadingProps,

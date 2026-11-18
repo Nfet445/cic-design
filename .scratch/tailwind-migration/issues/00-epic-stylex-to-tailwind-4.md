@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 53 of 58 tickets done, plus two waves (layout primitives,
+Progress: 54 of 58 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -114,7 +114,7 @@ buttons) that landed before the tickets were written.
 - [x] `41-shared-modules-after-consumers` — the seven creations whose consumers own the property
 - [x] `42-table-plugin-styles` — the table plugins and the cells they borrow
 - [x] `43-full-suite-green` — the full core suite back to its known-failing count
-- [ ] `54-layout-text-stack-utilities` — `container()`, `padding()`, `text`, `stack`: 57 maps every component composes
+- [x] `54-layout-text-stack-utilities` — `container()`, `padding()`, `text`, `stack`: 57 maps every component composes
 - [ ] `55-field-and-input-wrappers` — the field base shorthand and every wrapper that cancels it
 - [ ] `56-focus-and-overrides` — `focusOutlineProps`, the press layers, and the twelve `*Overrides` rules that must outrank a class
 - [ ] `57-tables-overlays-leaves` — table seams, motion and safe-area modules, the one-map leaves

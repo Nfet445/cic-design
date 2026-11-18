@@ -1,7 +1,6 @@
 # layout, text and stack utilities
 
-Status: blocked — the last StyleX rule is the lab LineClamp tooltip read
-Blocked by: 30 (its `lab` LineClamp still reads `Text/text.stylex`)
+Status: done
 Wave: 10
 Ticket: 54
 Parent: `00-epic-stylex-to-tailwind-4`
@@ -103,3 +102,22 @@ Left: that one lab call, in ticket 30's files, which this ticket's standing rule
 deleted with the `./Text/text.stylex` export entry and its `['truncationTooltipStyles']` line in
 `__tests__/publicStyleXNamespaces.test.ts`. Status stays blocked on that call, so the epic box stays
 unticked.
+
+## Comments — window 3, closed by the parent
+
+`Text/truncationTooltip.stylex.ts` stays as a module, and it is the one
+`stylex.create` inside the layout family that the ticket keeps. The reason
+changed during the window: no core component reads it. `Text` draws the tooltip
+content with `truncationTooltipContentClassName` from `textClasses.ts`, and the
+lab `LineClamp` now imports that class from `@astryxdesign/core/Text` instead of
+`@astryxdesign/core/Text/text.stylex`, so the last in-tree reader is gone.
+
+What remains is the deprecated published subpath: `./Text/text.stylex` is in
+`packages/core/package.json` and `packages/core/src/__tests__/publicStyleXNamespaces.test.ts`,
+and ticket 35 promised consumers it keeps exporting its StyleX value until a
+major removes the subpath. Deleting the map would delete that export in a patch
+release, so the map stays until ticket 36 removes the published `*.stylex`
+subpaths as the breaking change they are.
+
+`grep -rn "stylex.create(" packages/core/src/{Layout,Text,Stack,Section,Toolbar}`
+outside tests therefore leaves exactly that module.
