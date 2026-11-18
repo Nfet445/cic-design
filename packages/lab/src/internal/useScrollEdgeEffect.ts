@@ -25,7 +25,7 @@ import {
   useTouchPresentation,
   type SpringDescription,
 } from '@astryxdesign/core/internal/touch';
-import {colorVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {colorVarNames} from '@astryxdesign/core/theme';
 import {observeResize} from '@astryxdesign/core/utils';
 import {useMotionEngine} from './useMotionEngine';
 import {
@@ -140,7 +140,7 @@ export function useScrollEdgeEffect({
   root,
   rootInset = 0,
   edge,
-  color = colorVars['--color-background-body'],
+  color = colorVarNames['--color-background-body'],
   layerXstyle,
   layerClassName,
   sentinelXstyle,
