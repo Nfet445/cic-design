@@ -49,6 +49,7 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
 } from '../Field';
 import {Token} from '../Token';
 import {useTooltip} from '../Tooltip';
@@ -72,7 +73,6 @@ import {
   type FieldInputBaseProps,
   useFieldInputStyling,
 } from '../Field/fieldParts';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import type {SizeValue} from '../utils/types';
 import type {SearchableItem, SearchSource} from './types';
 import {themeProps} from '../utils/themeProps';
@@ -693,16 +693,12 @@ export function Typeahead<T extends SearchableItem>({
         {...(inputGroup ? inputGroupItemProps : undefined)}
         {...mergeProps(
           themeProps('typeahead', {size, status: status?.type}),
-          stylex.props(
-            styles.wrapper,
-            sizeStyle,
-            isDisabled && inputDisabledFocusStyles.nestedRing,
-            controlXstyle,
-          ),
+          stylex.props(styles.wrapper, sizeStyle, controlXstyle),
           tw(
             inputGroup && inputGroupMemberClassName,
             fieldInputWrapperClassName({status: status?.type}),
             isDisabled && fieldInputWrapperDisabledClassName,
+            isDisabled && fieldInputWrapperFocusScopeClassName.nested,
             controlClassName,
           ),
           controlStyle,

@@ -88,8 +88,8 @@ Landed `refactor(text): оставить StyleX только правило по
 shim again — it re-exports the class builders and the one remaining StyleX value, whose map moved to
 `Text/truncationTooltip.stylex.ts` with its reason. The declarations the map holds were already literal
 classes: `truncationTooltipContentClassName` (`max-w-[300px]`, `[word-break:break-word]`) in
-`textClasses.ts` from the first window, so the sheet gains no class and stays at 2215 rules under its
-2230 ceiling.
+`textClasses.ts` from the first window, so the sheet gains no class: it measured 2215 on this branch
+before the merge and 2224 after it, still under the 2230 ceiling.
 
 Stays StyleX: `truncationTooltipStyles`, because `packages/lab` LineClamp passes it to `stylex.props`
 (`packages/lab/src/LineClamp/LineClamp.tsx:548`). A class string in that position becomes an inline style

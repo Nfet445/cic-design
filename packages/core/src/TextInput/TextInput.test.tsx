@@ -3,7 +3,7 @@
 /**
  * @file TextInput.test.tsx
  * @input Uses vitest, @testing-library/react, TextInput component, and the
- *   shared declaredValue StyleX read-back helper
+ *   shared field class maps
  * @output Unit tests for TextInput component behavior
  * @position Testing; validates TextInput.tsx implementation
  *
@@ -13,28 +13,14 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {render, screen, fireEvent, waitFor, act} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import {TestIcon} from '../__tests__/TestIcon';
-import {declaredValue} from '../__tests__/stylexDeclarations';
 import {expectClassSet} from '../__tests__/classNameAssertions';
 import {InputGroup} from '../InputGroup';
+import {fieldInputWrapperFocusScopeClassName} from '../Field/fieldClasses';
 import {TextInput} from './TextInput';
 
-// jsdom cannot match `:focus-visible`: compare the ring's StyleX class hash.
-const RING = stylex
-  .props(
-    stylex.create({
-      ring: {
-        boxShadow: {
-          default: null,
-          ':has(> [aria-disabled="true"]:focus-visible)': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-        },
-      },
-    }).ring,
-  )
-  .className!.split(' ')
-  .pop()!;
+// jsdom cannot match `:focus-visible`, so the ring is the class that keys on it.
+const RING = fieldInputWrapperFocusScopeClassName.direct;
 
 // Mock showPopover/hidePopover since jsdom does not implement them. Used by the
 // disabledMessage tooltip.

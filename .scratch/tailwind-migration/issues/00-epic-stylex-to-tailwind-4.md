@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 52 of 57 tickets done, plus two waves (layout primitives,
+Progress: 53 of 58 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -152,3 +152,4 @@ buttons) that landed before the tickets were written.
   `xstyle` stays unlayered.
 - [x] `51-consumer-assertions` — tests that still read what only StyleX injected
 - [x] `52-published-class-seams` — publish the class seams templates and markers still reach through StyleX
+- [x] `58-closed-layer-option-race` — a helper that waits on a row, not on the list

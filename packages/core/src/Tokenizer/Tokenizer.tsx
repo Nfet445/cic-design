@@ -56,7 +56,6 @@ import {
   type FieldInputBaseProps,
   useFieldInputStyling,
 } from '../Field/fieldParts';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {
   useScrollableArea,
@@ -89,6 +88,7 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
 } from '../Field';
 import {Token} from '../Token';
 import {Spinner} from '../Spinner';
@@ -1788,7 +1788,6 @@ export function Tokenizer<T extends SearchableItem>({
           value.length > 0 && styles.wrapperWithTokens,
           isTruncated ? truncatedSizeStyles[size] : sizeStyle,
           isTruncated && styles.truncatedWrapper,
-          isDisabled && inputDisabledFocusStyles.nestedRing,
           localStatus && !isDisabled && isInGroupRow && styles.inGroupWrapper,
           controlXstyle,
         ),
@@ -1796,6 +1795,7 @@ export function Tokenizer<T extends SearchableItem>({
           isInGroupRow && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: localStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
+          isDisabled && fieldInputWrapperFocusScopeClassName.nested,
           controlClassName,
         ),
         controlStyle,

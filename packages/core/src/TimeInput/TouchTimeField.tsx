@@ -27,7 +27,6 @@ import {
   type KeyboardEvent,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {BottomSheet} from '../BottomSheet';
 import {Button} from '../Button';
 import {
@@ -321,10 +320,7 @@ export function TouchTimeField({
           status: status?.type ?? null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(
-          isDisabled && inputDisabledFocusStyles.withinRing,
-          controlXstyle,
-        ),
+        stylex.props(controlXstyle),
         tw(
           inputGroup && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: status?.type}),

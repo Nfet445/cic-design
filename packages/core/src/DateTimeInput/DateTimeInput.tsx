@@ -33,7 +33,6 @@ import {
   type KeyboardEvent,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useEntryErrorBehavior} from '../Field/useEntryErrorBehavior';
 import type {EntryErrorBehavior} from '../FormLayout/FormLayoutContext';
 import {
@@ -1659,9 +1658,6 @@ function PointerDateTimeField({
               size,
               status: fieldStatus?.type ?? null,
             }),
-            stylex.props(
-              isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-            ),
             tw(
               fieldInputWrapperClassName({status: fieldStatus?.type}),
               isEffectivelyDisabled && fieldInputWrapperDisabledClassName,
@@ -1820,9 +1816,6 @@ function PointerDateTimeField({
               size,
               status: timeStatus?.type ?? null,
             }),
-            stylex.props(
-              isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-            ),
             tw(
               fieldInputWrapperClassName({status: timeStatus?.type}),
               isEffectivelyDisabled && fieldInputWrapperDisabledClassName,

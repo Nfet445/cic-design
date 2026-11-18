@@ -36,7 +36,6 @@ import {
   useTransition,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useCalendarConstraints} from '../Calendar';
 import type {DateInputProps} from './DateInput';
 import {
@@ -478,7 +477,6 @@ export function NativeDateField({
           // Disabled paint belongs to the disabled state only; a busy field
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
-          isEffectivelyDisabled && inputDisabledFocusStyles.inputFocusRing,
           fieldStatus && !isEffectivelyDisabled && controlXstyle,
         ),
         tw(

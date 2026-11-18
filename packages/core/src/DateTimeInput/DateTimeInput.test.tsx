@@ -20,8 +20,6 @@ import {
   within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import {getButton, queryButton} from '../__tests__/fastRoleQueries';
 import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {DateTimeInput, type DateTimeInputProps} from './DateTimeInput';
@@ -46,6 +44,11 @@ function generateThemeTestCSS(theme: Parameters<typeof generateThemeCSS>[0]) {
   const {prose, component} = generateThemeCSS(theme);
   return [prose, component].filter(Boolean).join('\n\n');
 }
+
+const FIELD_FOCUS_RING_CLASSES = [
+  'focus-within:border-[color:var(--color-accent)]',
+  'focus-within:shadow-[inset_0_0_0_2px_var(--color-accent-muted)]',
+];
 
 describe('DateTimeInput', () => {
   it('Enter on a busy field does not submit the form', async () => {
@@ -372,26 +375,7 @@ describe('DateTimeInput', () => {
     }
   });
 
-  it('restores the focus ring on a focused disabled field (AST-085 FR6)', () => {
-    // The same declarations as the field's ring style compile to the same
-    // atomic classes; the shared disabled style alone drops them.
-    const ringClasses = stylex
-      .props(
-        stylex.create({
-          ring: {
-            borderColor: {
-              default: colorVars['--color-border-emphasized'],
-              ':focus-within': colorVars['--color-accent'],
-            },
-            boxShadow: {
-              default: 'none',
-              ':focus-within': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-            },
-          },
-        }).ring,
-      )
-      .className!.split(' ')
-      .filter(name => !name.includes('__'));
+  it('restores the focus ring on a focused disabled field (spec:AST-085 FR6)', () => {
     render(<DateTimeInput label="Meeting" isDisabled onChange={() => {}} />);
     for (const input of [
       screen.getByRole('combobox'),
@@ -400,9 +384,9 @@ describe('DateTimeInput', () => {
       const wrapper = input.closest(
         '.astryx-date-time-input-date-segment, .astryx-date-time-input-time-segment',
       )!;
-      for (const name of ringClasses) {
-        expect(wrapper).toHaveClass(name);
-      }
+      // The box paints the ring for any focus inside it; the disabled state
+      // adds no class that turns it off.
+      expectClassSet(wrapper, {includes: FIELD_FOCUS_RING_CLASSES});
     }
   });
 

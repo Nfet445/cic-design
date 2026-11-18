@@ -26,7 +26,6 @@ import {
   useTransition,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {
   plainDateFromISO,
   plainDateDiffDays,
@@ -631,10 +630,7 @@ export function DateRangeInput({
             status: status?.type ?? null,
             disabled: isDisabled ? 'disabled' : null,
           }),
-          stylex.props(
-            isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-            status && !isEffectivelyDisabled && controlXstyle,
-          ),
+          stylex.props(status && !isEffectivelyDisabled && controlXstyle),
           tw(
             fieldInputWrapperClassName({status: status?.type}),
             isEffectivelyDisabled && fieldInputWrapperDisabledClassName,

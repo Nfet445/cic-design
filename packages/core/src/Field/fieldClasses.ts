@@ -7,9 +7,11 @@
  * @output The utility class strings Field's root, its horizontal label cell and
  *   its input/status wrapper carry, the custom property Field's width class
  *   reads, and the input box every input component paints, with its disabled
- *   state
- * @position Internal to Field, except `fieldInputWrapperClassName` and
- *   `fieldStatusBorderClassName`, which `@astryxdesign/core/Field` publishes
+ *   state and the focus ring that state restores
+ * @position Internal to Field, except the input box classes
+ *   (`fieldInputWrapperClassName`, `fieldInputWrapperDisabledClassName`,
+ *   `fieldInputWrapperFocusScopeClassName`, `fieldStatusBorderClassName`), which
+ *   `@astryxdesign/core/Field` publishes for a consumer's own control
  *   for a consumer that draws an input box of its own; the Tailwind build scans
  *   this module for class names
  *
@@ -196,3 +198,37 @@ export function fieldInputWrapperClassName({
  */
 export const fieldInputWrapperDisabledClassName =
   'cursor-default opacity-50 shadow-none';
+
+/**
+ * Which control inside a disabled box keeps the focus ring: `direct` is a
+ * control the box holds as a direct child, `nested` an input below other
+ * elements, and `input` any input the box contains.
+ */
+export type FieldFocusScope = 'direct' | 'nested' | 'input';
+
+/**
+ * The focus ring a disabled box restores: the box drops the ring for any focus
+ * inside it, and this class keeps it only while the field's own control has
+ * that focus, so a focused status button keeps just its own outline.
+ *
+ * The box paints its focus ring on `:focus-within`, so the class that turns it
+ * off states the missing control in `:not(:has(...))` and wins on specificity,
+ * not on the sheet order of two classes in `astryx-base`.
+ */
+export const fieldInputWrapperFocusScopeClassName: Record<
+  FieldFocusScope,
+  string
+> = {
+  direct: tw(
+    '[&:focus-within:not(:has(>_[aria-disabled=true]:focus-visible))]:border-[color:var(--color-border-emphasized)]',
+    '[&:focus-within:not(:has(>_[aria-disabled=true]:focus-visible))]:shadow-none',
+  ),
+  nested: tw(
+    '[&:focus-within:not(:has(input[aria-disabled=true]:focus-visible))]:border-[color:var(--color-border-emphasized)]',
+    '[&:focus-within:not(:has(input[aria-disabled=true]:focus-visible))]:shadow-none',
+  ),
+  input: tw(
+    '[&:focus-within:not(:has(input:focus))]:border-[color:var(--color-border-emphasized)]',
+    '[&:focus-within:not(:has(input:focus))]:shadow-none',
+  ),
+};

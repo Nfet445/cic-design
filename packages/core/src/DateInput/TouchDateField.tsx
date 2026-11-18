@@ -61,7 +61,6 @@ import {
 import {flushSync} from 'react-dom';
 import {moveFocusLeftBehind, noteFocusWithin} from '../utils/focusReturn';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {BottomSheet} from '../BottomSheet';
 import {Button} from '../Button';
 import {useCalendarConstraints} from '../Calendar';
@@ -933,7 +932,6 @@ export function TouchDateField({
           // Disabled paint belongs to the disabled state only; a busy field
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
-          isEffectivelyDisabled && inputDisabledFocusStyles.inputFocusRing,
           status && !isEffectivelyDisabled && controlXstyle,
         ),
         tw(
