@@ -49,7 +49,7 @@ import {useClickableContainer} from '../hooks/useClickableContainer';
 import {closestLayerRoot} from '../privateAttributes/layerRoot.stylex';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineWithinClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {tw} from '../utils/tw';
@@ -368,7 +368,6 @@ export function SelectableCard({
           variant,
           selected: isSelected ? 'true' : 'false',
         }),
-        focusOutlineProps.focusWithin(),
         classNameProp,
         style,
       )}
@@ -377,6 +376,7 @@ export function SelectableCard({
         isSelected && selectableCardRingClassName[selectedKey],
         !isDisabled && selectableCardOverlayClassName,
         isDisabled && selectableCardDisabledClassName,
+        focusOutlineWithinClassName,
         classNameProp,
       )}
       xstyle={[
