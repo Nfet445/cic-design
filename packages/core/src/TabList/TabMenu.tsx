@@ -20,6 +20,7 @@ import React, {useCallback, useId, useRef, type ReactNode} from 'react';
 import {Icon} from '../Icon';
 import {renderIconSlot, type IconType} from '../Icon';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {usePopoverInternal} from '../Popover/usePopover';
 import {MENU_ITEM_SELECTOR} from '../DropdownMenu/menuItemRoles';
 import {useListFocus} from '../hooks/useListFocus';
@@ -281,8 +282,10 @@ export function TabMenu({
                 }}
                 {...mergeProps(
                   themeProps('tab-menu-item'),
-                  focusOutlineProps.focusVisible(),
-                  tabMenuItemClassName(isSelected),
+                  tw(
+                    tabMenuItemClassName(isSelected),
+                    focusOutlineFocusVisibleClassName,
+                  ),
                 )}>
                 <span className={TAB_MENU_ITEM_CONTENT_CLASS}>
                   {option.icon &&

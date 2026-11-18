@@ -3,10 +3,9 @@
 import {createRef} from 'react';
 import {describe, it, expect} from 'vitest';
 import {render, screen, fireEvent} from '@testing-library/react';
-import * as stylex from '@stylexjs/stylex';
 import {Theme} from '../theme/Theme';
 import {defineTheme} from '../theme/defineTheme';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {ChatToolCalls} from './ChatToolCalls';
 
 describe('ChatToolCalls', () => {
@@ -233,9 +232,7 @@ describe('ChatToolCalls', () => {
     );
 
     const buttons = screen.getAllByRole('button');
-    const focusRingClasses = stylex
-      .props(focusOutlineStyles.focusVisible)
-      .className!.split(' ');
+    const focusRingClasses = focusOutlineFocusVisibleClassName.split(' ');
     const [focusRingMarker] = focusRingClasses;
     for (const button of buttons) {
       expect(button).toHaveClass(focusRingMarker);

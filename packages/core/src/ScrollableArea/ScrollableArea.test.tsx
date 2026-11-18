@@ -199,7 +199,7 @@ describe('ScrollableArea', () => {
     const source = stylesSource();
     expect(source).not.toContain('dynamicStyles.overflow(');
     expect(source).not.toContain('logicalOverflowStyle');
-    expect(hookSource()).toContain('styles.overflow(');
+    expect(hookSource()).toContain('scrollableAreaOverflowClassName');
     const classes = classesSource();
     expect(classes).toContain('min-w-full');
     expect(classes).toContain('min-h-full');
@@ -226,8 +226,12 @@ describe('ScrollableArea', () => {
         Messages
       </ScrollableArea>,
     );
-    expect(viewport.getAttribute('style')).toContain('--x-overflowX: hidden');
-    expect(viewport.getAttribute('style')).toContain('--x-overflowY: auto');
+    expect(viewport.getAttribute('style')).toContain(
+      '--astryx-scrollable-overflow-x: hidden',
+    );
+    expect(viewport.getAttribute('style')).toContain(
+      '--astryx-scrollable-overflow-y: auto',
+    );
     expect(viewport).not.toHaveAttribute('tabindex');
   });
 

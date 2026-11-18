@@ -49,6 +49,7 @@ import {useLinkComponent} from '../Link/useLinkComponent';
 import {isSafeUrl} from '../utils/safeUrl';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {spacingVars} from '../theme/tokens.stylex';
@@ -473,8 +474,10 @@ export function TopNavMenu({
                 // slides to another item would start a drag instead.
                 draggable={item.href != null ? false : undefined}
                 onClick={item.onClick}
-                {...focusOutlineProps.focusVisible()}
-                className={topNavMenuItemClassName()}>
+                className={tw(
+                  topNavMenuItemClassName(),
+                  focusOutlineFocusVisibleClassName,
+                )}>
                 <div className={topNavMenuItemIconClassName()}>{item.icon}</div>
                 <div className={topNavMenuItemContentClassName()}>
                   <span className={topNavMenuItemTitleClassName()}>

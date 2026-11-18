@@ -54,7 +54,7 @@ import {Icon, type IconName} from '../Icon';
 import {Spinner} from '../Spinner';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -215,8 +215,8 @@ function CallRow({
           chatToolCallsRowClassName,
           hasDetail && chatToolCallsRowClickableClassName,
           hasDetail && hasClippedFocusRing && chatFocusRingInsetClassName,
+          focusOutlineFocusVisibleClassName,
         ),
-        focusOutlineProps.focusVisible(),
       )}>
       <span
         title={status === 'error' ? call.errorMessage : undefined}
@@ -414,8 +414,10 @@ export function ChatToolCalls(props: ChatToolCallsProps) {
           }
         }}
         {...mergeProps(
-          chatToolCallsGroupHeaderClassName,
-          focusOutlineProps.focusVisible(),
+          tw(
+            chatToolCallsGroupHeaderClassName,
+            focusOutlineFocusVisibleClassName,
+          ),
         )}>
         {isExpanded ? (
           <>

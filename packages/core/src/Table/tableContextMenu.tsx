@@ -101,16 +101,19 @@ function toContextMenuOptions(
 function LazyTableContextMenu({
   element,
   getActions,
+  triggerClassName,
   triggerXstyle,
 }: {
   element: ReactNode;
   getActions: () => TableContextAction[];
+  triggerClassName?: string;
   triggerXstyle?: StyleXStyles | StyleXStyles[];
 }): ReactNode {
   const [options, setOptions] = useState<ContextMenuOption[] | null>(null);
   return (
     <ContextMenu
       items={options ?? []}
+      triggerClassName={triggerClassName}
       triggerXstyle={triggerXstyle}
       onOpenChange={open => {
         // Resolve actions when opening; clear on close so state derived later
@@ -148,6 +151,7 @@ export function hasTableContextActions(
 export function wrapInTableContextMenu(
   element: ReactNode,
   actions: TableContextActions | undefined,
+  triggerClassName?: string,
   triggerXstyle?: StyleXStyles | StyleXStyles[],
 ): ReactNode {
   // Getter form → resolve lazily on open.
@@ -156,6 +160,7 @@ export function wrapInTableContextMenu(
       <LazyTableContextMenu
         element={element}
         getActions={actions}
+        triggerClassName={triggerClassName}
         triggerXstyle={triggerXstyle}
       />
     );
@@ -168,6 +173,7 @@ export function wrapInTableContextMenu(
   return (
     <ContextMenu
       items={toContextMenuOptions(actions)}
+      triggerClassName={triggerClassName}
       triggerXstyle={triggerXstyle}>
       {element}
     </ContextMenu>

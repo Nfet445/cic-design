@@ -15,22 +15,26 @@ const LONG_LINE = `const options = createSearchField({${' clearLabel: "Clear sea
 describe('CodeBlock without script', () => {
   it('serves a code viewport that scrolls a long line', () => {
     const html = renderToString(<CodeBlock code={LONG_LINE} language="tsx" />);
-    expect(html).toContain('--x-overflowX:auto');
-    expect(html).not.toContain('--x-overflowX:clip');
+    expect(html).toContain('--astryx-scrollable-overflow-x:auto');
+    expect(html).not.toContain('--astryx-scrollable-overflow-x:clip');
   });
 
   it('serves a height-bounded viewport that scrolls past maxHeight', () => {
     const html = renderToString(
       <CodeBlock code={'const x = 1;\n'.repeat(40)} maxHeight={80} />,
     );
-    expect(html).toContain('--x-overflowY:auto');
-    expect(html).not.toContain('--x-overflowY:clip');
+    expect(html).toContain('--astryx-scrollable-overflow-y:auto');
+    expect(html).not.toContain('--astryx-scrollable-overflow-y:clip');
   });
 
   it('adds no Tab stop before overflow is measured', () => {
     const {container} = render(<CodeBlock code={LONG_LINE} language="tsx" />);
-    const viewport = container.querySelector('[style*="--x-overflowX"]');
-    expect(viewport?.getAttribute('style')).toContain('--x-overflowX: auto');
+    const viewport = container.querySelector(
+      '[style*="--astryx-scrollable-overflow-x"]',
+    );
+    expect(viewport?.getAttribute('style')).toContain(
+      '--astryx-scrollable-overflow-x: auto',
+    );
     expect(viewport).not.toHaveAttribute('tabindex');
   });
 });

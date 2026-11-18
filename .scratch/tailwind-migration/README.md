@@ -73,6 +73,10 @@ written into the ticket.
 
 ## Traps that cost a window each
 
+- A utility whose value is a `var()` with a fallback writes no rule; use the
+  property form. `overflow-x-[var(--x,clip)]` produced zero rules across four
+  builds, one of them cache-free, while `[overflow-x:var(--x,clip)]` emitted
+  both classes and turned the sheet test green.
 - A deprecated `.stylex.ts` shim that re-exports a class map under its old name
   is not a source for that name. `swizzle` read the shim's subpath and turned
   `import {iconBoxClassName} from '../Icon/iconBoxClasses'` into
