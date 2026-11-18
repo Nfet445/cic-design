@@ -18,7 +18,7 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {focusVars, spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {focusVarNames, spacingVarNames} from '@astryxdesign/core/theme';
 import {timeGridViewportScope} from './schedule.stylex';
 
 // The keyboard focus ring of the viewport: a pointer-transparent overlay laid
@@ -34,19 +34,19 @@ export const scheduleTimeGridFocusRingStyles = stylex.create({
     outlineWidth: {
       default: 0,
       [stylex.when.siblingBefore(':focus-visible', timeGridViewportScope)]:
-        focusVars['--focus-outline-width'],
+        'var(--focus-outline-width)',
     },
     outlineStyle: {
       default: 'none',
       [stylex.when.siblingBefore(':focus-visible', timeGridViewportScope)]:
-        focusVars['--focus-outline-style'],
+        'var(--focus-outline-style)',
     },
     outlineColor: {
       default: 'transparent',
       [stylex.when.siblingBefore(':focus-visible', timeGridViewportScope)]:
-        focusVars['--focus-outline-color'],
+        'var(--focus-outline-color)',
     },
-    outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
+    outlineOffset: `calc(-1 * var(--focus-outline-width))`,
   },
 });
 
@@ -55,8 +55,8 @@ export const scheduleTimeGridFocusRingStyles = stylex.create({
 export const scheduleEventPopoverBodyStyles = stylex.create({
   base: {
     maxBlockSize: stylex.firstThatWorks(
-      `calc(100dvb - 2 * ${spacingVars['--spacing-4']} - 2 * ${spacingVars['--spacing-3']})`,
-      `calc(100vh - 2 * ${spacingVars['--spacing-4']} - 2 * ${spacingVars['--spacing-3']})`,
+      `calc(100dvb - 2 * var(--spacing-4) - 2 * var(--spacing-3))`,
+      `calc(100vh - 2 * var(--spacing-4) - 2 * var(--spacing-3))`,
     ),
   },
 });
@@ -70,7 +70,7 @@ export const scheduleMonthCellFocusStyles = stylex.create({
   base: {
     outlineOffset: {
       default: null,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
+      ':focus-visible': `calc(-1 * var(--focus-outline-width))`,
     },
   },
 });

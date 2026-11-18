@@ -22,7 +22,7 @@ import {
   useCalendarSystem,
   type CalendarSystem,
 } from '@astryxdesign/core/internal/calendar-system';
-import {borderVars, spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {borderVarNames, spacingVarNames} from '@astryxdesign/core/theme';
 import {Spinner} from '@astryxdesign/core/Spinner';
 import {HStack} from '@astryxdesign/core/Stack';
 import {Heading, Text} from '@astryxdesign/core/Text';
@@ -837,7 +837,7 @@ export function monthChipVars(
     '--astryx-schedule-chip-block-start': `${MONTH_CHIP_TOP + level * MONTH_LEVEL_PITCH}px`,
     // One chip crosses its days' shared borders, so a span of n days is n widths
     // plus the borders it swallows, less the insets at both ends.
-    '--astryx-schedule-chip-inline-size': `calc(${span} * 100% + ${span - 1} * ${borderVars['--border-width']} - 2 * ${spacingVars['--spacing-0-5']})`,
+    '--astryx-schedule-chip-inline-size': `calc(${span} * 100% + ${span - 1} * ${borderVarNames['--border-width']} - 2 * ${spacingVarNames['--spacing-0-5']})`,
   };
 }
 

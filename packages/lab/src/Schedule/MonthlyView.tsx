@@ -14,7 +14,7 @@
  */
 
 import {useRef, type ReactNode} from 'react';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {spacingVarNames} from '@astryxdesign/core/theme';
 import {
   focusOutlineFocusVisibleClassName,
   mergeProps,
@@ -498,7 +498,7 @@ function ScheduleMonthlyView({
       {monthPopover.popover.render(openContent, {
         placement: 'below',
         alignment: 'start',
-        offset: spacingVars['--spacing-1'],
+        offset: spacingVarNames['--spacing-1'],
       })}
     </ScheduleFrame>
   );

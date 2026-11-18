@@ -26,7 +26,7 @@ import type {Locale} from '@astryxdesign/core/i18n';
 import type {CalendarSystem} from '@astryxdesign/core/internal/calendar-system';
 import {layerAnimations} from '@astryxdesign/core/Layer';
 import {usePopover} from '@astryxdesign/core/Popover';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {spacingVarNames} from '@astryxdesign/core/theme';
 import {
   focusOutlineFocusVisibleClassName,
   mergeProps,
@@ -719,7 +719,7 @@ export function TimeGridView({
           {
             placement: 'below',
             alignment: 'start',
-            offset: spacingVars['--spacing-1'],
+            offset: spacingVarNames['--spacing-1'],
           },
         )}
     </>
