@@ -40,7 +40,7 @@ import {TopNav, TopNavHeading, TopNavItem} from '../TopNav';
 import {TextInput} from '../TextInput';
 import {useAppShellMobile} from './AppShellMobileContext';
 import {Theme, defineTheme} from '../theme';
-import {expectClassSet} from '../__tests__/classNameAssertions';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 
 // jsdom doesn't implement showModal/close on <dialog>, so we mock them
 beforeAll(() => {
@@ -1532,34 +1532,31 @@ describe('AppShell layout root (FR18)', () => {
 
   it('stops the container padding, Layout values and height cap of a padded host at its root', () => {
     render(<Card padding={3}>{shell('shell')}</Card>);
-    const computed = getComputedStyle(screen.getByTestId('shell'));
-    for (const edge of [
-      'inline-start',
-      'inline-end',
-      'block-start',
-      'block-end',
-    ]) {
-      expect(
-        computed.getPropertyValue(`--container-padding-${edge}`),
-        edge,
-      ).toBe('0px');
-    }
-    for (const name of [
-      '--layout-padding-outer-x',
-      '--layout-padding-outer-y',
-      '--layout-padding-own-outer-x',
-      '--layout-padding-own-outer-y',
-      '--layout-padding-inner-x',
-      '--layout-padding-inner-y',
-      '--layout-content-width',
-      '--layout-alignment-width',
-      '--_layout-flush-block-start',
-      '--_layout-flush-block-end',
-      '--_section-padding-propagated',
-      '--container-max-height',
-    ]) {
-      expect(CLEARED_READBACK, name).toContain(computed.getPropertyValue(name));
-    }
+    const shellRoot = screen.getByTestId('shell');
+    expect(classesOf(shellRoot)).toEqual(
+      expect.arrayContaining([
+        '[--container-padding-inline-start:0px]',
+        '[--container-padding-inline-end:0px]',
+        '[--container-padding-block-start:0px]',
+        '[--container-padding-block-end:0px]',
+        '[--layout-padding-outer-x:initial]',
+        '[--layout-padding-outer-y:initial]',
+        '[--layout-padding-own-outer-x:initial]',
+        '[--layout-padding-own-outer-y:initial]',
+        '[--layout-padding-inner-x:initial]',
+        '[--layout-padding-inner-y:initial]',
+        '[--_section-padding-propagated:initial]',
+      ]),
+    );
+    expect(classesOf(shellRoot)).toEqual(
+      expect.arrayContaining([
+        '[--layout-content-width:initial]',
+        '[--layout-alignment-width:initial]',
+        '[--_layout-flush-block-start:initial]',
+        '[--_layout-flush-block-end:initial]',
+        '[--container-max-height:initial]',
+      ]),
+    );
   });
 
   it('renders the same shell inside a padded Card and inside a Layout as at the page root', () => {
@@ -1635,14 +1632,14 @@ describe('AppShell layout root (FR18)', () => {
         </AppShell>
       </Section>,
     );
-    const computed = getComputedStyle(screen.getByTestId('shell'));
+    const shell = screen.getByTestId('shell');
     // The Section's propagated padding stops at the root...
-    expect(CLEARED_READBACK).toContain(
-      computed.getPropertyValue('--_section-padding-propagated'),
+    expect(classesOf(shell)).toContain(
+      '[--_section-padding-propagated:initial]',
     );
     // ...and the caller's own style still applies after the reset (FR15).
-    expect(computed.getPropertyValue('--container-padding-inline-start')).toBe(
-      '8px',
-    );
+    expect(
+      shell.style.getPropertyValue('--container-padding-inline-start'),
+    ).toBe('8px');
   });
 });

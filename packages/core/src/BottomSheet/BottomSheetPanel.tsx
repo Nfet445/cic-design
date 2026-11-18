@@ -1005,7 +1005,6 @@ export function BottomSheetPanel({
       {...mergeProps(
         themeProps('bottom-sheet'),
         stylex.props(
-          overlayPaddingReset.reset,
           bottomSheetSheetMotionStyles.sheet,
           isClosing && bottomSheetSheetMotionStyles.sheetClosing,
           isClosing &&
@@ -1016,6 +1015,7 @@ export function BottomSheetPanel({
           xstyle,
         ),
         tw(
+          overlayPaddingReset.reset,
           layerTextResetClassName,
           layerStructureResetClassName,
           bottomSheetPanelClassName({

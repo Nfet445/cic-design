@@ -2511,7 +2511,6 @@ function useLayerImplementation(
 
       const stylexResult = stylex.props(
         styles.base,
-        overlayPaddingReset.reset,
         styles.keyboardCap(
           keyboardCap == null ? '100vh' : `${keyboardCap}px`,
           keyboardCap == null ? 'visible' : 'auto',
@@ -2523,6 +2522,7 @@ function useLayerImplementation(
         xstyle,
       );
       const combinedClassName = tw(
+        overlayPaddingReset.reset,
         layerTextResetClassName,
         layerStructureResetClassName,
         extraClassName,
@@ -2608,7 +2608,6 @@ function useLayerImplementation(
 
       const stylexResult = stylex.props(
         styles.base,
-        overlayPaddingReset.reset,
         // A fixed layer is never capped; it still sets its own limit so it is
         // not clamped by a capped layer it sits in.
         styles.keyboardCap('100vh', 'visible', 'initial'),

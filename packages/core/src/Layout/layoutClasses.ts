@@ -111,6 +111,20 @@ export const layoutPaddingResetClassName = tw(
 );
 
 /**
+ * Every layout custom property a layout root resets, so what renders inside it
+ * lays out as it does at a page root: the overlay boundary plus the Layout
+ * widths, the flush values and the height cap.
+ */
+export const layoutResetClassName = tw(
+  layoutPaddingResetClassName,
+  '[--layout-content-width:initial]',
+  '[--layout-alignment-width:initial]',
+  '[--_layout-flush-block-start:initial]',
+  '[--_layout-flush-block-end:initial]',
+  '[--container-max-height:initial]',
+);
+
+/**
  * `fill`: the 2x container block padding the root's negative margins removed
  * comes back as height. `auto`: the layout grows with its content instead.
  */
