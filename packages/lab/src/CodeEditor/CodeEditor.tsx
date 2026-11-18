@@ -25,8 +25,7 @@ import {
 } from 'react';
 import type {BaseProps} from '@astryxdesign/core';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
-import * as stylex from '@stylexjs/stylex';
-import {mergeProps} from '@astryxdesign/core/utils';
+import {mergeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {
   tokenize,
   tokenizeAsync,
@@ -484,7 +483,7 @@ export function CodeEditor({
       ref={ref}
       {...mergeProps(
         themeProps('codeeditor', {size, language}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           focused ? codeEditorFocusedClassName : codeEditorClassName,
           className,

@@ -19,8 +19,8 @@
  */
 
 import React, {type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils/mergeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {RTL_MIRROR_CLASS} from '../utils/rtlClasses';
 import {
@@ -115,7 +115,7 @@ export function TopNavMegaMenuFeaturedCard({
       ref={ref}
       {...mergeProps(
         themeProps('top-nav-mega-menu-featured-card'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(topNavFeaturedCardClassName(), className),
         style,
       )}

@@ -21,9 +21,8 @@
  * - /apps/storybook/stories/ChatAdditions.stories.tsx (examples)
  */
 
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
-import {mergeProps} from '@astryxdesign/core/utils';
+import {mergeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {themeProps} from '@astryxdesign/core/utils';
 import {tw} from '../tw';
 import {
@@ -149,7 +148,7 @@ export function ChatReactionBar({
       data-testid={testId}
       {...mergeProps(
         themeProps('chat-reaction-bar'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(chatReactionBarRootClassName, className),
         styleProp,
       )}>

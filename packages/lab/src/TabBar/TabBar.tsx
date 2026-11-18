@@ -32,7 +32,7 @@ import {useListFocus, useMergedRefs} from '@astryxdesign/core/hooks';
 import {useTouchPresentation} from '@astryxdesign/core/internal/touch';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {Icon} from '@astryxdesign/core/Icon';
-import {mergeProps, themeProps} from '@astryxdesign/core/utils';
+import {mergeProps, themeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {tw} from '../tw';
 import {tabBarItemMarker, tabBarMarkerStyles} from './tabBar.stylex';
 import {
@@ -469,7 +469,7 @@ export function TabBar({
       ref={ref}
       {...mergeProps(
         themeProps('tab-bar'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(tabBarRootClassName, tabBarRootInsetClassName, className),
         rootVars(style),
       )}

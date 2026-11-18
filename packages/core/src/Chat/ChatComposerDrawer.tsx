@@ -23,9 +23,9 @@
 
 import {useId, useState, type ReactNode} from 'react';
 import type {StyleXStyles} from '@stylexjs/stylex';
-import * as stylex from '@stylexjs/stylex';
 import {Badge} from '../Badge';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
@@ -162,10 +162,7 @@ export function ChatComposerDrawer({
         themeProps('chat-composer-drawer', {
           collapsed: isCollapsed ? 'collapsed' : null,
         }),
-        tw(
-          chatComposerDrawerClassName,
-          xstyle && stylex.props(xstyle).className,
-        ),
+        tw(chatComposerDrawerClassName, xstyleProps(xstyle).className),
         className,
         style,
       )}

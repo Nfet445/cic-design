@@ -16,7 +16,6 @@
 
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '../theme/types';
 import type {TableContextActions} from './types';
 import {useTableContext} from './useTableCellStyles';
@@ -29,6 +28,7 @@ import {
   wrapInTableContextMenu,
 } from './tableContextMenu';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {themeProps} from '../utils/themeProps';
 
 /** Props for TableHeaderCell — `<th>` wrapper with context-aware styling */
@@ -114,7 +114,7 @@ export function TableHeaderCell({
         mergeProps(themeProps('table-header-cell', {density: ctx?.density}), {
           className: cellClassName,
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         incomingClassName,
         incomingStyle,
       )}>

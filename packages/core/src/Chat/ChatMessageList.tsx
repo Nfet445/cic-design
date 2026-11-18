@@ -25,7 +25,6 @@
  */
 
 import {type ReactNode, useEffect, useMemo, useRef, useTransition} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
 import {
@@ -42,6 +41,7 @@ import {
   useChatLayoutContext,
 } from './ChatContext';
 import {isRenderable, mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {Spinner} from '../Spinner';
 import type {BaseProps} from '../BaseProps';
 import type {SpacingStep} from '../utils/types';
@@ -233,7 +233,7 @@ export function ChatMessageList({
               chatMessageListColumnClassName,
               focusOutlineFocusVisibleClassName,
               chatFocusRingInsetClassName,
-              xstyle && stylex.props(xstyle).className,
+              xstyleProps(xstyle).className,
             ),
           ),
           className,

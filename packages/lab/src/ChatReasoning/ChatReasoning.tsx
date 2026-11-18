@@ -17,9 +17,8 @@
  */
 
 import {useCallback, useId, useState, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
-import {mergeProps} from '@astryxdesign/core/utils';
+import {mergeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {themeProps} from '@astryxdesign/core/utils';
 import {tw} from '../tw';
 import {
@@ -154,7 +153,7 @@ export function ChatReasoning(props: ChatReasoningProps) {
           expanded: isExpanded ? 'expanded' : null,
           streaming: isStreaming ? 'streaming' : null,
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(chatReasoningRootClassName, className),
         style,
       )}

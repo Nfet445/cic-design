@@ -40,6 +40,7 @@ import {useListFocus} from '../hooks/useListFocus';
 import {useTypeahead} from '../hooks/useTypeahead';
 import {Icon} from '../Icon';
 import {mergeProps, composeEventHandlers} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import type {BaseProps} from '../BaseProps';
 import {navItemStyles} from '../NavItem/navItemStyles.stylex';
@@ -425,7 +426,7 @@ export function TopNavMenu({
         )}
         {...mergeProps(
           themeProps('top-nav-menu'),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             topNavMenuTriggerClassName(),
             topNavMenuTriggerOpenClassName(),

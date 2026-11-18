@@ -47,6 +47,7 @@ import {useMenuHover} from '../hooks/useMenuHover';
 import {Grid} from '../Grid/Grid';
 import {Icon} from '../Icon';
 import {mergeProps, composeEventHandlers} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {navItemStyles} from '../NavItem/navItemStyles.stylex';
 import {useTopNavSlot} from './TopNavContext';
@@ -313,7 +314,7 @@ function DefaultMegaMenu({
         )}
         {...mergeProps(
           themeProps('top-nav-mega-menu'),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             topNavMegaMenuTriggerClassName(),
             popover.isOpen && topNavMegaMenuTriggerOpenClassName(),

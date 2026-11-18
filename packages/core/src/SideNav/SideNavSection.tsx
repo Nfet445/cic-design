@@ -19,8 +19,8 @@
  */
 
 import React, {useId, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {sideNavSectionClassName} from './sideNavSectionClasses';
 import type {BaseProps} from '../BaseProps';
@@ -116,7 +116,7 @@ export function SideNavSection({
       ref={ref}
       {...mergeProps(
         themeProps('side-nav-section'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(sideNavSectionClassName.root, className),
         style,
       )}

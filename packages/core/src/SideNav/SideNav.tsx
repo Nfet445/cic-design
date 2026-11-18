@@ -33,9 +33,9 @@ import {
   type ReactNode,
 } from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {sideNavClassName} from './sideNavClasses';
 import {
@@ -731,7 +731,7 @@ export function SideNav({
         data-testid={testId}
         {...mergeProps(
           themeProps('side-nav', {mode: 'topbar'}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(sideNavClassName.topbar, className),
           style,
         )}>
@@ -828,7 +828,7 @@ export function SideNav({
       data-testid={testId}
       {...mergeProps(
         themeProps('side-nav'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           sideNavClassName.root,
           collapsed && sideNavClassName.rootCollapsed,

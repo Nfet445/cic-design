@@ -22,7 +22,6 @@
  */
 
 import {type ReactNode, useMemo, useId} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   ChatMessageContext,
   useChatListContext,
@@ -30,6 +29,7 @@ import {
   type ChatDensity,
 } from './ChatContext';
 import {isRenderable, mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
@@ -143,7 +143,7 @@ export function ChatMessage({
           themeProps('chat-message', {sender, density}),
           tw(
             chatMessageClassName({density, hasAvatar, sender}),
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
           ),
           className,
           styleProp,

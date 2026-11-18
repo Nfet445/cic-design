@@ -15,8 +15,8 @@
  */
 
 import {useMemo, type ReactNode, type Ref} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {dropdownMenuRadioGroupClassName} from './dropdownMenuClasses';
 import type {BaseProps} from '../BaseProps';
@@ -103,7 +103,7 @@ export function DropdownMenuRadioGroup({
       ref={ref}
       role="group"
       aria-label={label}
-      {...mergeProps(stylex.props(xstyle), {
+      {...mergeProps(xstyleProps(xstyle), {
         className: tw(dropdownMenuRadioGroupClassName, className),
         style,
       })}>

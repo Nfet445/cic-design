@@ -44,6 +44,7 @@ import * as stylex from '@stylexjs/stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {useChatStreamScroll} from './useChatStreamScroll';
 import {useChatNewMessages} from './useChatNewMessages';
 import {useChatKeyboard} from './useChatKeyboard';
@@ -272,7 +273,7 @@ export function ChatLayout({
           themeProps('chat-layout', {density}),
           tw(
             chatLayoutRootClassName(isSelfScrolling),
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
           ),
           className,
           style,

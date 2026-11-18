@@ -42,8 +42,8 @@ import {
 import {createPortal} from 'react-dom';
 import type {BaseProps} from '../BaseProps';
 import type {SearchableItem, SearchSource} from '../Typeahead/types';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps, isImeKeyEvent} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {
   chatComposerInputEditableClassName,
@@ -859,7 +859,7 @@ export function ChatComposerInput(props: ChatComposerInputProps) {
         themeProps('chat-composer-input'),
         tw(
           chatComposerInputRootClassName(isDisabled),
-          xstyle && stylex.props(xstyle).className,
+          xstyleProps(xstyle).className,
         ),
         className,
         style,
@@ -935,10 +935,7 @@ export function ChatComposerTokenElement(props: ChatComposerTokenElementProps) {
     <span
       ref={ref}
       {...mergeProps(
-        tw(
-          chatComposerTokenSpanClassName,
-          xstyle && stylex.props(xstyle).className,
-        ),
+        tw(chatComposerTokenSpanClassName, xstyleProps(xstyle).className),
         className,
         style,
       )}

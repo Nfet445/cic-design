@@ -29,7 +29,6 @@ import {
   type ReactNode,
   type Ref,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {Avatar} from '@astryxdesign/core/Avatar';
 import {Card} from '@astryxdesign/core/Card';
@@ -48,7 +47,7 @@ import {Popover} from '@astryxdesign/core/Popover';
 import {Text} from '@astryxdesign/core/Text';
 import {createStaticSource} from '@astryxdesign/core/Typeahead';
 import {radiusVarNames, spacingVarNames} from '@astryxdesign/core/theme';
-import {mergeProps, themeProps} from '@astryxdesign/core/utils';
+import {mergeProps, themeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {EmojiPicker} from '../EmojiPicker';
 import {agentToken} from './CommentMarkdown';
@@ -571,7 +570,7 @@ export function CommentComposerBase({
       {...restRootProps}
       {...mergeProps(
         themeProps('comment-composer'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}

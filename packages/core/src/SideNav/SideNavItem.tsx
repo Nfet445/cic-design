@@ -49,6 +49,7 @@ import type {LinkComponentType} from '../Link/types';
 import {usePopover} from '../Popover/usePopover';
 import {useMenuHover} from '../hooks/useMenuHover';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {useTooltip} from '../Tooltip';
 import {navItemStyles, type NavItemSize} from '../NavItem/navItemStyles.stylex';
@@ -557,7 +558,7 @@ export function SideNavItem({
       return (
         <div
           ref={rowRef}
-          {...mergeProps(stylex.props(xstyle), sideNavItemClassName.root)}>
+          {...mergeProps(xstyleProps(xstyle), sideNavItemClassName.root)}>
           <button
             ref={mergedTriggerRef}
             type="button"
@@ -627,7 +628,7 @@ export function SideNavItem({
     return (
       <div
         ref={isRowTrigger ? rowTooltipRef : rowRef}
-        {...mergeProps(stylex.props(xstyle), sideNavItemClassName.root)}>
+        {...mergeProps(xstyleProps(xstyle), sideNavItemClassName.root)}>
         {collapsedElement}
         {railTooltip.renderTooltip(label)}
       </div>
@@ -846,7 +847,7 @@ export function SideNavItem({
   const item = (
     <div
       ref={rowRef}
-      {...mergeProps(stylex.props(xstyle), sideNavItemClassName.root)}>
+      {...mergeProps(xstyleProps(xstyle), sideNavItemClassName.root)}>
       {itemElement}
       {hasChildren && !isCollapsed && (
         <div

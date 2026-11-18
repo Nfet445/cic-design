@@ -26,14 +26,13 @@ import {
   type Ref,
 } from 'react';
 import {flushSync} from 'react-dom';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {Banner} from '@astryxdesign/core/Banner';
 import {Button} from '@astryxdesign/core/Button';
 import {ChatLayout, ChatMessageList} from '@astryxdesign/core/Chat';
 import {EmptyState} from '@astryxdesign/core/EmptyState';
 import {VStack} from '@astryxdesign/core/Layout';
-import {mergeProps, themeProps} from '@astryxdesign/core/utils';
+import {mergeProps, themeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {CommentComposerBase} from './CommentComposer';
 import {
@@ -559,7 +558,7 @@ export function Comments({
         {...rest}
         {...mergeProps(
           themeProps('comments', {layout, density, container}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(!isEmbedded && commentsRootClassName, className),
           style,
         )}>

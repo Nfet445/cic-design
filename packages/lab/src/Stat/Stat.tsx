@@ -17,9 +17,8 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
-import {mergeProps} from '@astryxdesign/core/utils';
+import {mergeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {themeProps} from '@astryxdesign/core/utils';
 import {tw} from '../tw';
 import {
@@ -163,7 +162,7 @@ export function Stat({
       ref={ref}
       {...mergeProps(
         themeProps('stat', {size}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(statRootClassName, className),
         style,
       )}

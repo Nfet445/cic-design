@@ -18,8 +18,8 @@
 
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {
   topNavCenterRegionClassName,
@@ -153,7 +153,7 @@ export function TopNav({
         aria-label={label}
         {...mergeProps(
           themeProps('top-nav', {mode: 'mobile-bar'}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(topNavMobileBarClassName(), className),
           style,
         )}
@@ -214,7 +214,7 @@ export function TopNav({
       aria-label={label}
       {...mergeProps(
         themeProps('top-nav'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(topNavClassName(), className),
         style,
       )}

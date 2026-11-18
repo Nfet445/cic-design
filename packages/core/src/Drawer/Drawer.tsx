@@ -77,6 +77,7 @@ import {useBackdropPress} from '../Layer/useBackdropPress';
 import {layerClickBoundary} from '../Layer/layerClickBoundary';
 import {ModalAnnounceProvider} from '../hooks/ModalAnnounceProvider';
 import {composeEventHandlers, mergeProps, themeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
 import {tw} from '../utils/tw';
 import {container, overlayPaddingReset} from '../Layout';
@@ -407,7 +408,7 @@ export function Drawer({
       ref={mergedDialogRef}
       {...mergeProps(
         themeProps('drawer', {side: anchoredSide}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           overlayPaddingReset.reset,
           panelClassName,

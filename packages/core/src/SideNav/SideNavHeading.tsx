@@ -38,6 +38,7 @@ import {useSideNavCollapse} from './SideNavCollapseContext';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import type {BaseProps} from '../BaseProps';
 import {useMenuHover} from '../hooks/useMenuHover';
@@ -402,7 +403,7 @@ export function SideNavHeading({
           data-testid={testId}
           {...mergeProps(
             themeProps('side-nav-heading'),
-            stylex.props(xstyle),
+            xstyleProps(xstyle),
             tw(sideNavHeadingClassName.collapsedRoot, className),
             style,
           )}
@@ -525,7 +526,7 @@ export function SideNavHeading({
         data-testid={testId}
         {...mergeProps(
           themeProps('side-nav-heading'),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(sideNavHeadingClassName.root, className),
           style,
         )}>
@@ -556,7 +557,7 @@ export function SideNavHeading({
         data-testid={testId}
         {...mergeProps(
           themeProps('side-nav-heading'),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             sideNavHeadingClassName.root,
             sideNavHeadingClassName.menuTrigger,
@@ -586,7 +587,7 @@ export function SideNavHeading({
           {...triggerProps}
           {...mergeProps(
             themeProps('side-nav-heading'),
-            stylex.props(xstyle),
+            xstyleProps(xstyle),
             tw(
               sideNavHeadingClassName.root,
               sideNavHeadingClassName.menuTrigger,
@@ -665,7 +666,7 @@ export function SideNavHeading({
           {...triggerProps}
           {...mergeProps(
             themeProps('side-nav-heading'),
-            stylex.props(xstyle),
+            xstyleProps(xstyle),
             tw(sideNavHeadingClassName.root, className),
             style,
           )}>
@@ -749,7 +750,7 @@ export function SideNavHeading({
         data-testid={testId}
         {...mergeProps(
           themeProps('side-nav-heading'),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(sideNavHeadingClassName.root, className),
           style,
         )}
@@ -810,7 +811,7 @@ export function SideNavHeading({
       data-testid={testId}
       {...mergeProps(
         themeProps('side-nav-heading'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(sideNavHeadingClassName.root, className),
         style,
       )}

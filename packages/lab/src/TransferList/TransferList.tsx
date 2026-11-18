@@ -29,7 +29,6 @@ import {
   type RefObject,
   type SVGProps,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {Button} from '@astryxdesign/core/Button';
 import {Icon} from '@astryxdesign/core/Icon';
@@ -52,6 +51,7 @@ import {
   mergeProps,
   mergeRefs,
   themeProps,
+  xstyleProps,
 } from '@astryxdesign/core/utils';
 import {
   transferListClearsHandleClassName,
@@ -643,7 +643,7 @@ export function TransferList<T extends string = string>({
       {...restProps}
       {...mergeProps(
         themeProps('transfer-list'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(transferListRootClassName, className),
         style,
       )}

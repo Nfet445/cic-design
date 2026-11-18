@@ -3,9 +3,9 @@
 'use client';
 import type React from 'react';
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {themeProps} from '../utils/themeProps';
 
 export interface TableFooterProps extends BaseProps<HTMLTableSectionElement> {
@@ -26,7 +26,7 @@ export function TableFooter({
       ref={ref}
       {...mergeProps(
         themeProps('table-footer'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}

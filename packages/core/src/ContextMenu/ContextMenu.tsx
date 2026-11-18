@@ -99,6 +99,7 @@ import {useTypeahead} from '../hooks/useTypeahead';
 import {useLongPress} from '../hooks/useLongPress';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
 import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import type {StyleXStyles} from '../theme/types';
 import {themeProps} from '../utils/themeProps';
@@ -719,7 +720,7 @@ export function ContextMenu({
       onContextMenu={e => e.preventDefault()}
       {...menuPress.menuProps}
       {...mergeProps(
-        mergeProps(themeProps('context-menu'), stylex.props(xstyle)),
+        mergeProps(themeProps('context-menu'), xstyleProps(xstyle)),
         {
           className: tw(
             usesBottomSheet
@@ -769,7 +770,7 @@ export function ContextMenu({
         data-autofocus=""
         tabIndex={0}
         {...mergeProps(
-          mergeProps(themeProps('context-menu'), stylex.props(xstyle)),
+          mergeProps(themeProps('context-menu'), xstyleProps(xstyle)),
           {
             className: tw(
               contextMenuSheetMenuClassName,

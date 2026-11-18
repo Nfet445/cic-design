@@ -20,8 +20,8 @@
 
 import React, {useState, useCallback, useId, type ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {getKey, mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {
   chatFocusRingInsetClassName,
@@ -365,10 +365,7 @@ export function ChatToolCalls(props: ChatToolCallsProps) {
         ref={ref}
         {...mergeProps(
           themeProps('chat-tool-calls'),
-          tw(
-            chatToolCallsRootClassName,
-            xstyle && stylex.props(xstyle).className,
-          ),
+          tw(chatToolCallsRootClassName, xstyleProps(xstyle).className),
           className,
           style,
         )}
@@ -392,10 +389,7 @@ export function ChatToolCalls(props: ChatToolCallsProps) {
       ref={ref}
       {...mergeProps(
         themeProps('chat-tool-calls'),
-        tw(
-          chatToolCallsRootClassName,
-          xstyle && stylex.props(xstyle).className,
-        ),
+        tw(chatToolCallsRootClassName, xstyleProps(xstyle).className),
         className,
         style,
       )}

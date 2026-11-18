@@ -35,7 +35,6 @@ import {
   type KeyboardEvent,
   type Ref,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps, SizeValue} from '@astryxdesign/core';
 import {useGridFocus} from '@astryxdesign/core/hooks';
 import {useTranslator} from '@astryxdesign/core/i18n';
@@ -44,6 +43,7 @@ import {
   isImeKeyEvent,
   mergeProps,
   themeProps,
+  xstyleProps,
 } from '@astryxdesign/core/utils';
 import {Center} from '@astryxdesign/core/Center';
 import {Icon} from '@astryxdesign/core/Icon';
@@ -434,7 +434,7 @@ export function EmojiPicker({
       {...rest}
       {...mergeProps(
         themeProps('emoji-picker'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}>

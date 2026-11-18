@@ -24,6 +24,7 @@ import {glidingDividerRowClassName} from './glidingDivider';
 import {tableRowClassName} from './tableRowClasses';
 import {TableContext} from './TableContext';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
 
@@ -88,9 +89,9 @@ export function TableRow({
         {...props}
         {...mergeProps(
           themeProps('table-row'),
-          stylex.props(tableRowMarker, xstyle),
-          incomingClassName,
-          incomingStyle,
+          stylex.props(tableRowMarker),
+          tw(xstyleProps(xstyle).className, incomingClassName),
+          {...xstyleProps(xstyle).style, ...incomingStyle},
         )}>
         {children}
       </tr>
@@ -132,9 +133,9 @@ export function TableRow({
             carriesGlide && glidingDividerRowClassName,
           ),
         }),
-        stylex.props(tableRowMarker, xstyle),
-        incomingClassName,
-        incomingStyle,
+        stylex.props(tableRowMarker),
+        tw(xstyleProps(xstyle).className, incomingClassName),
+        {...xstyleProps(xstyle).style, ...incomingStyle},
       )}>
       {children}
     </tr>

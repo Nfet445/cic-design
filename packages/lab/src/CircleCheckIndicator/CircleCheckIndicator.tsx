@@ -12,9 +12,13 @@
  *   CircleCheckIndicator.test.tsx, index.ts and the story.
  */
 
-import * as stylex from '@stylexjs/stylex';
 import type {IndicatorProps} from '@astryxdesign/core/Indicator';
-import {isRenderable, mergeProps, themeProps} from '@astryxdesign/core/utils';
+import {
+  isRenderable,
+  mergeProps,
+  themeProps,
+  xstyleProps,
+} from '@astryxdesign/core/utils';
 import {
   circleBarClassName,
   circleCheckmarkClassName,
@@ -78,7 +82,7 @@ export function CircleCheckIndicator({
         // The press attribute goes with the classes: the host reads it to
         // leave its rounded-square press layer off over a circle.
         !isDisabled && circleCheckPressProps,
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         circleClassName({size, isFilled, isDisabled}),
         className,
         style,

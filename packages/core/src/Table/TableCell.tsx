@@ -16,7 +16,6 @@
 
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '../theme/types';
 import type {TableContextActions} from './types';
 import {
@@ -29,6 +28,7 @@ import {
 } from './tableCellClasses';
 import {useTableContext} from './useTableCellStyles';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {glidingDividerCellClassName} from './glidingDivider';
 import {themeProps} from '../utils/themeProps';
 
@@ -124,7 +124,7 @@ export function TableCell({
         }),
         // A glide moves the row's divider with the row; the class follows the
         // attribute the glide sets.
-        mergeProps(glidingDividerCellClassName, stylex.props(xstyle)),
+        mergeProps(glidingDividerCellClassName, xstyleProps(xstyle)),
         incomingClassName,
         incomingStyle,
       )}>

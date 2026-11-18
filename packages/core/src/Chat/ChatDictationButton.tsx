@@ -21,11 +21,11 @@
  */
 
 import React from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {UseSpeechRecognitionReturn} from './useSpeechRecognition';
 import {Button} from '../Button';
 import {Icon} from '../Icon';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
@@ -143,7 +143,7 @@ export function ChatDictationButton({
       ref={ref}
       {...mergeProps(
         themeProps('chat-dictation-button'),
-        xstyle ? stylex.props(xstyle) : undefined,
+        xstyleProps(xstyle),
         tw(chatDictationWrapperClassName, className),
         style,
       )}

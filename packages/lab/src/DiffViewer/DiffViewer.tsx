@@ -51,7 +51,6 @@ import {
   type Ref,
   type UIEvent,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 
 import type {BaseProps} from '@astryxdesign/core';
 import {
@@ -78,6 +77,7 @@ import {
   isRenderable,
   mergeProps,
   themeProps,
+  xstyleProps,
 } from '@astryxdesign/core/utils';
 import {Token, type TokenColor} from '@astryxdesign/core/Token';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
@@ -1812,7 +1812,7 @@ export function DiffViewer({
       ref={ref}
       {...mergeProps(
         themeProps('diff-viewer', {viewMode}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(diffViewerRootClassName, className),
         style,
       )}

@@ -25,9 +25,9 @@
  */
 
 import {useId, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {themeProps} from '../utils/themeProps';
 import {isRenderable} from '../utils/isRenderable';
 import {dropdownMenuGroupHeadingClassName} from './dropdownMenuClasses';
@@ -90,7 +90,7 @@ export function DropdownMenuGroup({
       ref={ref}
       role="group"
       aria-labelledby={hasTitle ? headingId : ariaLabelledBy}
-      {...mergeProps(stylex.props(xstyle), className, style)}>
+      {...mergeProps(xstyleProps(xstyle), className, style)}>
       {hasTitle && (
         <div
           id={headingId}
