@@ -20,7 +20,7 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import type {StyleXStyles} from '@stylexjs/stylex';
+import type {CompiledStyles, StyleXStyles} from '@stylexjs/stylex';
 
 /**
  * A consumer's override: a class, a style object, a legacy StyleX value, or a
@@ -52,6 +52,19 @@ export type XStyleProps = {
  * `string | React.CSSProperties` in the same change.
  */
 export function xstyleProps(xstyle?: AstryxXStyle): XStyleProps {
+  return resolveXstyle(xstyle);
+}
+
+export function composeXstyle(
+  styles: ReadonlyArray<
+    CompiledStyles | StyleXStyles | false | null | undefined
+  >,
+  xstyle?: AstryxXStyle,
+): XStyleProps {
+  return mergeXStyleList([...styles, xstyle]);
+}
+
+function resolveXstyle(xstyle?: AstryxXStyle | CompiledStyles): XStyleProps {
   if (xstyle == null) {
     return {};
   }
@@ -68,35 +81,73 @@ export function xstyleProps(xstyle?: AstryxXStyle): XStyleProps {
   return {style: xstyle as React.CSSProperties};
 }
 
-function mergeXStyleList(values: ReadonlyArray<AstryxXStyle>): XStyleProps {
+function mergeXStyleList(
+  values: ReadonlyArray<
+    AstryxXStyle | CompiledStyles | false | null | undefined
+  >,
+): XStyleProps {
   // Every StyleX value in the list resolves in ONE `stylex.props` call: two
   // separate calls would hand back two classes of equal specificity, and the
   // sheet's order would then decide which one wins instead of the list's.
   const styleXValues: StyleXStyles[] = [];
   const parts: {className?: string; style?: React.CSSProperties}[] = [];
   let firstStyleXIndex = -1;
-  for (const value of values) {
+  function collect(
+    value: AstryxXStyle | CompiledStyles | false | null | undefined,
+  ): void {
     if (value == null || value === false) {
-      continue;
+      return;
     }
-    if (typeof value !== 'string' && isStyleXValue(value)) {
+    // A dynamic StyleX value compiles to `[classSheet, inlineStyles]`, and its
+    // second member carries no `$$css`, so it classifies before the list
+    // branch or its inline half would read as a consumer style.
+    if (typeof value !== 'string' && isCompiledStyleXValue(value)) {
       if (firstStyleXIndex < 0) {
         firstStyleXIndex = parts.length;
       }
       styleXValues.push(value);
       parts.push({});
-      continue;
+      return;
     }
-    parts.push(xstyleProps(value));
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        collect(entry);
+      }
+      return;
+    }
+    parts.push(resolveXstyle(value));
+  }
+  for (const value of values) {
+    collect(value);
   }
   if (styleXValues.length > 0) {
     // The resolved classes take the place of the list's first StyleX entry, so
-    // a class written after it still comes after it in the output.
+    // a class written after it still comes after it in the output. The inline
+    // halves merge one value at a time, skipping `undefined`: a dynamic StyleX
+    // value that resolves to `undefined` states nothing, while resolving the
+    // list in one call lets it erase the value an earlier entry set.
     const resolved = stylex.props(...styleXValues);
-    parts[firstStyleXIndex] = {
-      className: resolved.className,
-      style: resolved.style,
-    };
+    // Each value keeps its own place in the list, so an inline object written
+    // between two StyleX values still wins over the first and loses to the
+    // second. Only the classes resolve together, at the first entry's index.
+    let index = firstStyleXIndex;
+    for (const value of styleXValues) {
+      let style: React.CSSProperties | undefined = resolved.style;
+      for (const inline of inlineStylesOf(value)) {
+        for (const [key, entry] of Object.entries(inline)) {
+          // A dynamic value that resolves to `undefined` states nothing, so it
+          // must not erase what an earlier entry set.
+          if (entry !== undefined) {
+            style = {...style, [key]: entry};
+          }
+        }
+      }
+      parts[index] = {
+        style,
+        className: index === firstStyleXIndex ? resolved.className : undefined,
+      };
+      index += 1;
+    }
   }
   const classes: string[] = [];
   let style: React.CSSProperties | undefined;
@@ -104,8 +155,12 @@ function mergeXStyleList(values: ReadonlyArray<AstryxXStyle>): XStyleProps {
     if (part.className) {
       classes.push(part.className);
     }
-    if (part.style) {
-      style = {...style, ...part.style};
+    if (!part.style) {
+      continue;
+    }
+    for (const [key, value] of Object.entries(part.style)) {
+      // An explicit `undefined` clears the value an earlier entry set.
+      style = {...style, [key]: value};
     }
   }
   const merged: XStyleProps = {};
@@ -119,21 +174,56 @@ function mergeXStyleList(values: ReadonlyArray<AstryxXStyle>): XStyleProps {
 }
 
 /**
- * A StyleX value is marked by `$$css`; a style object is not. A dynamic
- * `stylex.create` entry arrives as a list whose first member carries `$$css`
- * and whose later members are the variable values it produced, so a list
- * counts as one when any member does.
+ * The inline style objects a compiled StyleX value carries beside its classes.
+ */
+function inlineStylesOf(value: unknown): React.CSSProperties[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const found: React.CSSProperties[] = [];
+  for (const member of value) {
+    if (
+      typeof member === 'object' &&
+      member !== null &&
+      !Array.isArray(member) &&
+      (member as {$$css?: unknown}).$$css !== true
+    ) {
+      found.push(member as React.CSSProperties);
+    }
+  }
+  return found;
+}
+
+/**
+ * A dynamic StyleX value: a compiled-class tuple with its inline half.
+ */
+function isCompiledStyleXValue(value: unknown): value is StyleXStyles {
+  if (isStyleXValue(value)) {
+    return true;
+  }
+  // A compiled dynamic value is `[classNameObject, atomObject, inlineStyles]`,
+  // and the inline half carries no `$$css`, so the first member is the marker.
+  return Array.isArray(value) && value.length > 0 && isStyleXValue(value[0]);
+}
+
+/**
+ * A StyleX value is marked by `$$css`; a style object is not. A list counts
+ * as StyleX only when every non-empty entry is a StyleX value. Mixed lists
+ * need separate handling so consumer classes and styles are not passed to StyleX.
  */
 export function isStyleXValue(value: unknown): value is StyleXStyles {
   if (Array.isArray(value)) {
-    // A loop, not `.some`: this runs on every row of every render, and a test
-    // in List counts `Array.prototype.some` calls to prove one linear pass.
+    let hasStyleX = false;
     for (const member of value) {
-      if (isStyleXValue(member)) {
-        return true;
+      if (member == null || member === false) {
+        continue;
       }
+      if (!isStyleXValue(member)) {
+        return false;
+      }
+      hasStyleX = true;
     }
-    return false;
+    return hasStyleX;
   }
   return (
     typeof value === 'object' &&

@@ -1,6 +1,6 @@
 # Tests that only pass inside the full suite
 
-Status: ready-for-agent
+Status: done
 Wave: 9
 Owner: unassigned
 
@@ -41,3 +41,22 @@ run shape. Prefer fixing the component over loosening the assertion; if the
 assertion cannot express the intent, say why in a comment.
 
 Do not change the fourteen known ICU/Temporal failures.
+
+## Result
+
+The test found an option in jsdom before its popover opened. In a failing run,
+`aria-expanded` was `false` before ArrowDown, so the key opened the list rather
+than moving the highlight. The test now waits for an open list and the first
+active option before it moves to the second; it still checks that rebuilding the
+source neither reloads nor moves that highlight.
+
+Four isolated runs passed all 64 tests. The core suite reported 23,771 passed,
+18 failed, and one skipped on Node 26.13.1. The full repository suite stopped
+during the core build on existing `Intl.Locale` type errors. Those results have
+have not been repeated for the full suite on the Node version pinned by `.nvmrc`.
+A later isolated run on Node 24.22.1 passed all 65 tests, including one test
+added concurrently by another task.
+
+The specific shared state or preceding test, if any, was not identified. The
+observed cause is the race between mounted options and the open popover, not a
+proven dependency on a particular prior test.

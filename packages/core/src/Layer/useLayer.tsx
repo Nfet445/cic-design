@@ -26,7 +26,6 @@ import React, {
   type RefCallback,
 } from 'react';
 import {useCommittedRef, useCommittedRefInto} from '../hooks/useCommittedRef';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import {createPortal} from 'react-dom';
 import {LayerContentBoundary} from './layerScopedContext';
 import {layerClickBoundary} from './layerClickBoundary';
@@ -95,7 +94,7 @@ import {observeMutations} from '../utils/sharedMutationObserver';
 import {containsAlongFlatTree, parentAcrossShadow} from '../utils/flatTree';
 import {isDialogShown, isShadowRoot, isShownAsPopover} from '../utils/nodeType';
 import {subscribeInput} from '../utils/inputStream';
-import {xstyleProps} from '../utils/xstyle';
+import {xstyleProps, type AstryxXStyle} from '../utils/xstyle';
 
 /**
  * Props for a control that sits on the trigger but must not dismiss the layer.
@@ -178,9 +177,9 @@ export interface ContextRenderProps {
    */
   'aria-label'?: string;
   /**
-   * StyleX styles for the popover container.
+   * Consumer styles for the popover container.
    */
-  xstyle?: StyleXStyles;
+  xstyle?: AstryxXStyle;
   /**
    * Additional CSS class name(s) for the popover container.
    * Use with themeProps() for theme targeting when reflecting visual props.
@@ -222,9 +221,9 @@ export interface FixedRenderProps {
   x: number;
   y: number;
   /**
-   * StyleX styles for the popover container.
+   * Consumer styles for the popover container.
    */
-  xstyle?: StyleXStyles;
+  xstyle?: AstryxXStyle;
   /**
    * Additional CSS class name(s) for the popover container.
    * Use with themeProps() for theme targeting when reflecting visual props.

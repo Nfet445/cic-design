@@ -14,7 +14,8 @@ import {xstyleProps} from './xstyle';
 
 const probe = stylex.create({
   root: {color: 'red'},
-  dynamic: (width: string) => ({minWidth: width}),
+  dynamic: (width: string | undefined) => ({minWidth: width}),
+  otherDynamic: (width: string | undefined) => ({minWidth: width}),
 });
 
 // An aliased call stays out of the compiler, so the list reaches `stylex.props`
@@ -53,11 +54,57 @@ describe('xstyleProps', () => {
     });
   });
 
+  it('lets an inline object clear a prior value even beside StyleX', () => {
+    const result = xstyleProps([
+      probe.dynamic('12rem'),
+      {color: 'red'},
+      [{color: undefined}],
+    ]);
+    expect(result.style).toHaveProperty('color', undefined);
+    expect(Object.values(result.style ?? {})).toContain('12rem');
+  });
+
   it('appends a class after a StyleX value so the class still wins', () => {
     const {className} = xstyleProps([probe.root, 'my-app-button']);
     expect(className).toBe(
       `${stylex.props(probe.root).className} my-app-button`,
     );
+  });
+
+  it('does not erase a dynamic variable when a later StyleX value is undefined', () => {
+    const first = probe.dynamic('12rem');
+    const second = probe.otherDynamic(undefined);
+    expect(xstyleProps([first, [second]])).toEqual(runtimeProps(first, second));
+  });
+
+  it('preserves inline variable order around dynamic StyleX values', () => {
+    const dynamic = probe.dynamic('12rem');
+    const laterDynamic = probe.dynamic('24rem');
+    const dynamicStyle = runtimeProps(dynamic).style as React.CSSProperties;
+    const laterStyle = runtimeProps(laterDynamic).style as React.CSSProperties;
+    const key = Object.keys(dynamicStyle)[0];
+    expect(key).toBeTruthy();
+    const before = {[key]: 'before'} as React.CSSProperties;
+    const after = {[key]: 'after'} as React.CSSProperties;
+    expect(
+      xstyleProps([dynamic, before, laterDynamic]).style?.[
+        key as keyof React.CSSProperties
+      ],
+    ).toBe(laterStyle[key as keyof React.CSSProperties]);
+    expect(
+      xstyleProps([dynamic, after]).style?.[key as keyof React.CSSProperties],
+    ).toBe('after');
+  });
+
+  it('keeps mixed nested lists and dynamic StyleX values', () => {
+    const dynamic = probe.dynamic('12rem');
+    const result = xstyleProps([
+      probe.root,
+      [dynamic, 'consumer-class', {color: 'blue'}],
+    ]);
+    const resolved = runtimeProps(probe.root, dynamic);
+    expect(result.className).toBe(`${resolved.className} consumer-class`);
+    expect(result.style).toEqual({...resolved.style, color: 'blue'});
   });
 
   it('flattens a nested list', () => {

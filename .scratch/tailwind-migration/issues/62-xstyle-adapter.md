@@ -1,6 +1,6 @@
 # point xstyle at the Tailwind adapter
 
-Status: done
+Status: ready-for-human
 Blocked by: 61
 Wave: 9
 Ticket: 62
@@ -28,6 +28,16 @@ Retarget it at a Tailwind-shaped adapter: the prop accepts a class string or a s
 
 - `pnpm exec vitest run packages/core/src packages/lab/src packages/charts/src packages/richtext/src`
 - `pnpm -F @astryxdesign/core typecheck`
+
+## Current blocker
+
+The adapter still fails the regression test for an inline object clearing a prior
+value with `undefined`. Dynamic StyleX arrays and consumer lists can have the
+same runtime shape, while StyleX composition and inline object composition need
+different handling of `undefined`. A compatible contract or representation is
+needed; guessing from array shape or variable names is not reliable. The
+unlayered cascade also needs browser verification, and the no-`stylex.props`
+criterion is not yet met.
 
 ## Comments — window 62b
 

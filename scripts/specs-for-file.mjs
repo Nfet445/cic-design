@@ -926,6 +926,29 @@ function formatShortResult(result) {
   return lines.join('\n');
 }
 
+/** Group identical short views; detailed routes remain available per file. */
+export function formatDiffResults(results) {
+  const groups = new Map();
+  for (const result of results) {
+    const [, ...body] = formatResult(result).split('\n');
+    const key = body.join('\n');
+    const files = groups.get(key) ?? [];
+    files.push(
+      `${result.file}${result.exists ? '' : ' (not in the working tree)'}`,
+    );
+    groups.set(key, files);
+  }
+  return (
+    [...groups]
+      .map(
+        ([body, files]) =>
+          `${files.map(file => `  ${file}`).join('\n')}\n${body}`,
+      )
+      .join('\n\n') +
+    '\n\nUse --records or --json with the same scope for route details and full provenance.'
+  );
+}
+
 const WORKING_TREE_NOTE =
   "Records are read from the working tree. On a pull-request branch they include that branch's proposed records, so this is a lookup, not review authority.\n";
 
@@ -938,8 +961,9 @@ those records, and the trigger-routed global claims. --diff reads the change aga
 the working tree), between <base>..<head>, or from their merge base with
 <base>...<head>, lists its changed files when none
 are named, and puts first the claims whose owning record's concerns its added
-lines match. The linked records, cited claims and deciding specs are listed by
-id; --records shows how each one links.
+lines match. Identical per-file views are grouped in the default diff output.
+The linked records, cited claims and deciding specs are listed by id;
+--records shows links per file and --json includes full matching details.
 --unreached lists current records no other tracked file reaches.
 --unrouted lists tracked files no current record governs.`;
 
@@ -1109,9 +1133,11 @@ function main(argv) {
   else {
     console.log(WORKING_TREE_NOTE);
     console.log(
-      results
-        .map(result => formatResult(result, {records: listRecords}))
-        .join('\n\n'),
+      diff != null && !listRecords
+        ? formatDiffResults(results)
+        : results
+            .map(result => formatResult(result, {records: listRecords}))
+            .join('\n\n'),
     );
   }
   return 0;
