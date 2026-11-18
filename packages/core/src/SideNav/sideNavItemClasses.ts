@@ -2,17 +2,30 @@
 
 /**
  * @file sideNavItemClasses.ts
- * @input The theme's spacing, size, radius, duration and type-scale variables
- * @output The utility class strings a row, its label, its trailing slots, its
- *   children group and its popover carry
+ * @input The theme's spacing, size, radius, duration and type-scale variables,
+ *   and the row's size and nesting depth
+ * @output The utility class strings a row, its collapsed square, its nesting
+ *   indent, its label, its trailing slots, its children group and its popover
+ *   carry
  * @position Style primitives; the Tailwind build scans it for class names
  *
- * The row appearance itself comes from `navItemStyles`, which SideNavItem
- * composes. These classes cover the wrapper around it and the parts of a row
- * that `navItemStyles` does not paint.
+ * The row appearance itself comes from `navItemClasses`, which SideNavItem
+ * composes. These classes cover the wrapper around it, the parts of a row that
+ * the shared row does not paint, and the two boxes that replace a declaration
+ * it does: the collapsed square and the nesting indent. Both repeat the
+ * element's `class` attribute, so each outranks the shared row by specificity
+ * rather than by the sheet's order — and the indent repeats it twice, because
+ * it also has to outrank the size arm's `padding-inline`.
+ *
+ * The indent's depth is unbounded, so it travels as an inline
+ * `--astryx-side-nav-indent` count the class reads, never in a class name.
  */
 
 import {tw} from '../utils/tw';
+import type {NavItemSize} from '../NavItem/navItemClasses';
+
+/** The custom property a nested row's depth travels in; the classes read it. */
+export const SIDE_NAV_INDENT_VAR = '--astryx-side-nav-indent';
 
 export const sideNavItemClassName = {
   /** The row plus its children group, stacked. */
@@ -24,7 +37,7 @@ export const sideNavItemClassName = {
     'overflow-hidden text-ellipsis whitespace-nowrap',
   ),
   endContent: 'shrink-0 flex items-center',
-  // `pointer-events-auto`: a disabled row's `navItemStyles.disabled` turns
+  // `pointer-events-auto`: a disabled row's `navItemDisabledClassName` turns
   // pointer events off on the wrapper, and each control in the slot owns its
   // own disabled state.
   actions: tw(
@@ -93,3 +106,49 @@ export const sideNavItemClassName = {
     '[color:var(--color-text-secondary)]',
   ),
 } as const;
+
+/**
+ * The collapsed rail row: a square of the item's own size, with no inline
+ * padding, because it holds only its icon.
+ *
+ * It carries `min-height` too, and the collapsed path does not compose the
+ * size arm: the two tie on specificity, so one string states the whole box.
+ */
+const COLLAPSED_SQUARE_CLASS: Record<NavItemSize, string> = {
+  sm: '[&[class]]:w-[var(--size-element-sm)] [&[class]]:h-[var(--size-element-sm)] [&[class]]:min-h-[var(--size-element-sm)] [&[class]]:px-0',
+  md: '[&[class]]:w-[var(--size-element-md)] [&[class]]:h-[var(--size-element-md)] [&[class]]:min-h-[var(--size-element-md)] [&[class]]:px-0',
+  lg: '[&[class]]:w-[var(--size-element-lg)] [&[class]]:h-[var(--size-element-lg)] [&[class]]:min-h-[var(--size-element-lg)] [&[class]]:px-0',
+};
+
+export function sideNavItemCollapsedSquareClassName(size: NavItemSize): string {
+  return COLLAPSED_SQUARE_CLASS[size];
+}
+
+/**
+ * The nesting indent on the row element itself, where the row is the link or
+ * the button: the row's own inline-start padding plus one step per level.
+ *
+ * SYNC: the base padding matches `navItemSizeClassName`'s `sm` and `md`; the
+ * `lg` row uses the `md` padding, as the shared row does.
+ */
+const INDENT_CLASS: Record<NavItemSize, string> = {
+  sm: '[&[class][class]]:[padding-inline-start:calc(var(--spacing-1)+var(--astryx-side-nav-indent)*var(--spacing-6))]',
+  md: '[&[class][class]]:[padding-inline-start:calc(var(--spacing-2)+var(--astryx-side-nav-indent)*var(--spacing-6))]',
+  lg: '[&[class][class]]:[padding-inline-start:calc(var(--spacing-2)+var(--astryx-side-nav-indent)*var(--spacing-6))]',
+};
+
+/**
+ * The split row's indent: the steps alone, on the primary link or button. The
+ * row wrapper keeps its own base padding, so the whole indent is part of the
+ * click target rather than dead space that still shows feedback.
+ */
+const PRIMARY_INDENT_CLASS =
+  '[&[class]]:[padding-inline-start:calc(var(--astryx-side-nav-indent)*var(--spacing-6))]';
+
+export function sideNavItemIndentClassName(size: NavItemSize): string {
+  return INDENT_CLASS[size];
+}
+
+export function sideNavItemPrimaryIndentClassName(): string {
+  return PRIMARY_INDENT_CLASS;
+}
