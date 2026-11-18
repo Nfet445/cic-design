@@ -566,6 +566,22 @@ import {
 import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
+import {layerResetClassName} from '../Layer/layerResetClasses';
+import {
+  layerFixedClassName,
+  layerGutterBlockEndClassName,
+  layerGutterBlockStartClassName,
+  layerGutterInlineEndClassName,
+  layerGutterInlineStartClassName,
+  layerGutterVariablesClassName,
+  layerKeyboardDefaultsClassName,
+  layerPlacementBlockEndClassName,
+  layerPlacementBlockStartClassName,
+  layerPlacementInlineEndClassName,
+  layerPlacementInlineStartClassName,
+  layerScrollsOnOverflowClassName,
+  layerViewportFitClassName,
+} from '../Layer/layerClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {sideNavClassName} from '../SideNav/sideNavClasses';
 import {sideNavHeadingClassName} from '../SideNav/sideNavHeadingClasses';
@@ -2501,6 +2517,23 @@ function familyClassNames() {
   }
   add(layerTextResetClassName);
   add(layerStructureResetClassName);
+  add(layerResetClassName);
+  // The layer runtime's own box: the gutter variables its placement margins
+  // read, the clearance and gutter margins, the viewport cap, and the
+  // keyboard defaults every layer sets for its nested layers.
+  add(layerGutterVariablesClassName);
+  add(layerPlacementBlockStartClassName);
+  add(layerPlacementBlockEndClassName);
+  add(layerPlacementInlineStartClassName);
+  add(layerPlacementInlineEndClassName);
+  add(layerGutterBlockStartClassName);
+  add(layerGutterBlockEndClassName);
+  add(layerGutterInlineStartClassName);
+  add(layerGutterInlineEndClassName);
+  add(layerViewportFitClassName);
+  add(layerFixedClassName);
+  add(layerScrollsOnOverflowClassName);
+  add(layerKeyboardDefaultsClassName);
 
   // A link's root reads six inputs, so its map is walked over every
   // combination; its colour map adds one arm per text colour.
@@ -4633,9 +4666,11 @@ describe('dist/astryx-tailwind.css layer rules', () => {
     // component still inherits its text formatting and structural values. The
     // reset therefore sits in a `reset` sublayer of `astryx-base`, where any
     // component rule or caller className on the same element outranks it.
-    expect(stylesheet.compact).toContain(
-      '@layerreset{.astryx-layer-text-reset{',
+    expect(stylesheet.compact).toContain('@layerreset{.astryx-layer-reset{');
+    expect(stylesheet.ruleFor(layerResetClassName)).toBe(
+      'margin:0;padding:0;border-width:0;border-style:none;overflow:visible;background-color:transparent;',
     );
+    expect(stylesheet.compact).toContain('.astryx-layer-text-reset{');
     expect(stylesheet.ruleFor(layerTextResetClassName)).toBe(
       'font-family:var(--font-family-body);font-size:var(--text-body-size);font-weight:var(--text-body-weight);line-height:var(--text-body-leading);font-style:normal;text-align:start;text-align-last:auto;text-indent:0;text-transform:none;letter-spacing:normal;word-spacing:normal;text-shadow:none;white-space:normal;word-break:normal;overflow-wrap:normal;hyphens:manual;',
     );

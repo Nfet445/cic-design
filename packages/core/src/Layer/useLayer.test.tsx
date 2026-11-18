@@ -41,8 +41,23 @@ import {
   getSelfAlignment,
 } from './useLayer';
 import {preserveAnimations} from './preserveAnimations';
-import {getAnchorClearFallbacks} from './layerSlideRules';
+import {
+  getAnchorClearFallbacks,
+  LAYER_CLEARANCE_PROPERTY,
+} from './layerSlideRules';
 import {typeScaleVars} from '../theme/tokens.stylex';
+import {
+  layerGutterBlockEndClassName,
+  layerGutterBlockStartClassName,
+  layerGutterInlineEndClassName,
+  layerGutterInlineStartClassName,
+  layerPlacementBlockEndClassName,
+  layerPlacementBlockStartClassName,
+  layerPlacementInlineEndClassName,
+  layerPlacementInlineStartClassName,
+  layerScrollsOnOverflowClassName,
+  layerViewportFitClassName,
+} from './layerClasses';
 import {layerTextResetClassName} from './layerTextResetClasses';
 import {layerStructureResetClassName} from './layerStructureResetClasses';
 import {expectClassSet} from '../__tests__/classNameAssertions';
@@ -449,24 +464,47 @@ describe('viewport inset (spec:AST-059)', () => {
       [
         'below',
         'start',
-        ['farBelow', 'gutterInlineEnd'],
-        ['gutterInlineStart', 'farAbove'],
+        [layerGutterBlockEndClassName, layerGutterInlineEndClassName],
+        [layerGutterInlineStartClassName, layerGutterBlockStartClassName],
       ],
-      ['below', 'end', ['farBelow', 'gutterInlineStart'], ['gutterInlineEnd']],
+      [
+        'below',
+        'end',
+        [layerGutterBlockEndClassName, layerGutterInlineStartClassName],
+        [layerGutterInlineEndClassName],
+      ],
       [
         'above',
         'center',
-        ['farAbove', 'gutterInlineStart', 'gutterInlineEnd'],
-        ['farBelow'],
+        [
+          layerGutterBlockStartClassName,
+          layerGutterInlineStartClassName,
+          layerGutterInlineEndClassName,
+        ],
+        [layerGutterBlockEndClassName],
       ],
       [
         'end',
         'start',
-        ['farEnd', 'gutterBlockEnd'],
-        ['gutterBlockStart', 'farStart'],
+        [layerGutterInlineEndClassName, layerGutterBlockEndClassName],
+        [layerGutterBlockStartClassName, layerGutterInlineStartClassName],
       ],
-      ['start', 'end', ['farStart', 'gutterBlockStart'], ['gutterBlockEnd']],
-      ['end', 'center', ['farEnd', 'gutterBlockStart', 'gutterBlockEnd'], []],
+      [
+        'start',
+        'end',
+        [layerGutterInlineStartClassName, layerGutterBlockStartClassName],
+        [layerGutterBlockEndClassName, layerGutterInlineEndClassName],
+      ],
+      [
+        'end',
+        'center',
+        [
+          layerGutterInlineEndClassName,
+          layerGutterBlockStartClassName,
+          layerGutterBlockEndClassName,
+        ],
+        [],
+      ],
     ];
     for (const [placement, alignment, present, absent] of cases) {
       const {container, unmount} = render(
@@ -474,17 +512,16 @@ describe('viewport inset (spec:AST-059)', () => {
       );
       await user.click(container.querySelector('button')!);
       const layerEl = container.querySelector('[popover]') as HTMLElement;
-      expect(layerEl.className).toContain('useLayer__styles.viewportFit');
-      for (const key of present) {
-        expect(layerEl.className).toContain(`useLayer__styles.${key}`);
+      const classes = [...layerEl.classList];
+      for (const fitClassName of layerViewportFitClassName.split(' ')) {
+        expect(classes, fitClassName).toContain(fitClassName);
       }
-      for (const key of absent) {
-        expect(layerEl.className).not.toContain(`useLayer__styles.${key}`);
+      for (const className of present) {
+        expect(classes, className).toContain(className);
       }
-      // The gutter never caps the layer box's inline size: an auto-width
-      // layer shrinks to the room beside its trigger on its own, and a cap on
-      // the box keeps the browser from choosing a flip.
-      expect(layerEl.className).not.toMatch(/useLayer__styles\.maxInline/);
+      for (const className of absent) {
+        expect(classes, className).not.toContain(className);
+      }
       unmount();
     }
   });
@@ -504,8 +541,14 @@ describe('viewport inset (spec:AST-059)', () => {
     const {container} = render(<CustomHarness />);
     fireEvent.click(container.querySelector('button')!);
     const layerEl = container.querySelector('[popover]') as HTMLElement;
-    expect(layerEl.className).not.toContain('useLayer__styles.viewportFit');
-    expect(layerEl.className).not.toMatch(/useLayer__styles\.gutter/);
+    for (const fitClassName of layerViewportFitClassName.split(' ')) {
+      expect([...layerEl.classList]).not.toContain(fitClassName);
+    }
+    expect(
+      [...layerEl.classList].filter(className =>
+        className.startsWith('[margin-'),
+      ),
+    ).toEqual([]);
   });
 
   it('pins an aligned layer unsafe toward its anchor only while the anchor is out of view (FR4, FR5)', () => {
@@ -2988,79 +3031,78 @@ describe('useLayer context positioning', () => {
       );
     }
 
-    // Debug-mode StyleX variable names for the dynamic offset style, as in
-    // Grid.test.tsx. jsdom resolves neither the var indirection nor logical
-    // margin properties, so the declarations themselves are the assertion.
-    async function openAndGetOffsets(ui: React.ReactElement) {
+    // The clearance rides a private custom property the placement class
+    // reads, so the property and the class are the assertion: jsdom resolves
+    // neither the var indirection nor logical margin properties.
+    async function openLayer(ui: React.ReactElement): Promise<HTMLElement> {
       const user = userEvent.setup();
       const {container, getByRole} = render(ui);
       await user.click(getByRole('button', {name: 'trigger'}));
-      const el = container.querySelector('[popover]') as HTMLElement;
-      const read = (prop: string) => el.style.getPropertyValue(`--x-${prop}`);
-      return {
-        blockStart: read('marginBlockStart'),
-        blockEnd: read('marginBlockEnd'),
-        inlineStart: read('marginInlineStart'),
-        inlineEnd: read('marginInlineEnd'),
-      };
+      return container.querySelector('[popover]') as HTMLElement;
     }
 
-    const NONE = {blockStart: '', blockEnd: '', inlineStart: '', inlineEnd: ''};
+    const clearanceOf = (el: HTMLElement) =>
+      el.style.getPropertyValue(LAYER_CLEARANCE_PROPERTY).trim();
 
     // The clearance rides the anchor-facing edge of the placement axis; the
-    // far edge carries the static viewport gutter (spec:AST-059 FR1), which is
-    // a class, not a dynamic variable, so it does not appear here.
+    // far edge carries the static viewport gutter class (spec:AST-059 FR1).
     it('is flush against the anchor by default', async () => {
-      expect(
-        await openAndGetOffsets(<OffsetHarness placement="below" />),
-      ).toEqual(NONE);
+      const el = await openLayer(<OffsetHarness placement="below" />);
+      expect(clearanceOf(el)).toBe('');
+      expect([...el.classList]).toContain(layerGutterBlockEndClassName);
+      expect([...el.classList]).not.toContain(layerPlacementBlockEndClassName);
     });
 
     // The flip tactic swaps the two block margins with the area, so the gap
     // survives a position-try-fallbacks flip to the opposite side (#4803).
     it('clears the anchor-facing block edge for a block placement', async () => {
-      expect(
-        await openAndGetOffsets(<OffsetHarness placement="above" offset={8} />),
-      ).toEqual({...NONE, blockEnd: '8px'});
+      const el = await openLayer(
+        <OffsetHarness placement="above" offset={8} />,
+      );
+      expect(clearanceOf(el)).toBe('8px');
+      expect([...el.classList]).toContain(layerPlacementBlockEndClassName);
+      expect([...el.classList]).not.toContain(layerGutterBlockEndClassName);
     });
 
     it('clears the opposite block edge when placed below', async () => {
-      expect(
-        await openAndGetOffsets(<OffsetHarness placement="below" offset={8} />),
-      ).toEqual({...NONE, blockStart: '8px'});
+      const el = await openLayer(
+        <OffsetHarness placement="below" offset={8} />,
+      );
+      expect(clearanceOf(el)).toBe('8px');
+      expect([...el.classList]).toContain(layerPlacementBlockStartClassName);
+      expect([...el.classList]).not.toContain(layerGutterBlockStartClassName);
     });
 
     it('clears the anchor-facing inline edge for an inline placement', async () => {
-      expect(
-        await openAndGetOffsets(<OffsetHarness placement="end" offset={8} />),
-      ).toEqual({...NONE, inlineStart: '8px'});
+      const el = await openLayer(<OffsetHarness placement="end" offset={8} />);
+      expect(clearanceOf(el)).toBe('8px');
+      expect([...el.classList]).toContain(layerPlacementInlineStartClassName);
+      expect([...el.classList]).not.toContain(layerPlacementInlineEndClassName);
     });
 
     it('takes a CSS length string', async () => {
-      expect(
-        await openAndGetOffsets(
-          <OffsetHarness placement="below" offset="var(--spacing-1)" />,
-        ),
-      ).toEqual({...NONE, blockStart: 'var(--spacing-1)'});
+      const el = await openLayer(
+        <OffsetHarness placement="below" offset="var(--spacing-1)" />,
+      );
+      expect(clearanceOf(el)).toBe('var(--spacing-1)');
+      expect([...el.classList]).toContain(layerPlacementBlockStartClassName);
     });
 
     it('puts the viewport gutter on the far edge of the placement axis (FR1, FR6)', async () => {
-      const user = userEvent.setup();
-      const {container, getByRole} = render(
+      const el = await openLayer(
         <OffsetHarness placement="below" offset={8} />,
       );
-      await user.click(getByRole('button', {name: 'trigger'}));
-      const el = container.querySelector('[popover]') as HTMLElement;
-      expect(el.className).toContain('useLayer__styles.placementBelow');
-      expect(el.className).not.toContain('useLayer__styles.placementAbove');
+      expect([...el.classList]).toContain(layerPlacementBlockStartClassName);
+      expect([...el.classList]).toContain(layerGutterBlockEndClassName);
     });
 
     it('is ignored under custom positioning, which owns its own insets', async () => {
-      expect(
-        await openAndGetOffsets(
-          <OffsetHarness placement="below" offset={8} positioning="custom" />,
-        ),
-      ).toEqual(NONE);
+      const el = await openLayer(
+        <OffsetHarness placement="below" offset={8} positioning="custom" />,
+      );
+      expect(clearanceOf(el)).toBe('');
+      expect([...el.classList]).not.toContain(layerPlacementBlockEndClassName);
+      expect([...el.classList]).not.toContain(layerGutterBlockEndClassName);
     });
   });
 
@@ -4093,7 +4135,7 @@ describe('a layer that keeps its anchor clear (spec:AST-059 FR4)', () => {
     const {container, getByText} = render(<ClearHarness />);
     await user.click(getByText('Trigger'));
     const layerEl = container.querySelector('[popover]') as HTMLElement;
-    expect(layerEl.className).toContain('useLayer__styles.scrollsOnOverflow');
+    expect(layerEl.classList).toContain(layerScrollsOnOverflowClassName);
     expect(scrollSizeReads).not.toHaveBeenCalled();
     const css =
       document.getElementById('astryx-layer-slide-rules')?.textContent ?? '';
