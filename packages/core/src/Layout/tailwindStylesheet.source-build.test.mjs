@@ -155,6 +155,7 @@ import {
   menuBottomSheetClassName,
 } from '../DropdownMenu/menuBottomSheetClasses';
 import {
+  dropdownMenuSubMenuCaretClassName,
   dropdownMenuSubMenuDrillInClassName,
   dropdownMenuSubMenuFlyoutClassName,
   dropdownMenuSubMenuFlyoutMinWidthClassName,
@@ -3312,6 +3313,7 @@ function familyClassNames() {
       size: 'md',
     }),
   );
+  add(dropdownMenuSubMenuCaretClassName);
   add(dropdownMenuSubMenuDrillInClassName);
   add(dropdownMenuSubMenuFlyoutClassName);
   add(dropdownMenuSubMenuScrollClassName);

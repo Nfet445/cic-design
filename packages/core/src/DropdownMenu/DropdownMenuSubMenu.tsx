@@ -92,6 +92,7 @@ import {menuRowStateStyles} from './menuRowState.stylex';
 import {dropdownMenuInlineSizeVar} from './dropdownMenuClasses';
 import {menuPressLitRowClassName} from '../privateAttributes/menuPressLit.stylex';
 import {
+  dropdownMenuSubMenuCaretClassName,
   dropdownMenuSubMenuDrillInClassName,
   dropdownMenuSubMenuFlyoutClassName,
   dropdownMenuSubMenuFlyoutMinWidthClassName,
@@ -142,18 +143,6 @@ import {
 import english from '../i18n/generated-english/DropdownMenu/DropdownMenuSubMenu.generated';
 
 registerEnglishFallback(english);
-
-// The caret is a slot wrapper. It stays because its box is structural: the
-// no-style-only-wrapper rule lets a wrapper over one Astryx child stay only
-// when the style it applies resolves to a structural property, and `display`
-// and `alignItems` are structural. A class string resolves to no style, so the
-// rule reports the wrapper and the class would have nowhere to go.
-const triggerStyles = stylex.create({
-  caret: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-});
 
 export type DropdownMenuSubMenuPresentation =
   'flyout' | 'drill-in' | 'adaptive';
@@ -912,11 +901,13 @@ export function DropdownMenuSubMenu(
   });
 
   const endAffordance = hasSpinner ? (
-    <span {...stylex.props(triggerStyles.caret)}>
+    // eslint-disable-next-line @astryx/no-style-only-wrapper -- the caret's box is a flex row of its own, so the centering stays off the row's other children; the rule reads StyleX objects, not class text.
+    <span className={dropdownMenuSubMenuCaretClassName}>
       <Spinner size="sm" aria-hidden="true" />
     </span>
   ) : (
-    <span {...stylex.props(triggerStyles.caret)}>
+    // eslint-disable-next-line @astryx/no-style-only-wrapper -- the caret's box is a flex row of its own, so the centering stays off the row's other children; the rule reads StyleX objects, not class text.
+    <span className={dropdownMenuSubMenuCaretClassName}>
       <Icon
         icon="chevronRight"
         size="sm"
