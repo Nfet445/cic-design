@@ -1,7 +1,7 @@
 # remove stylex
 
 Status: blocked
-Blocked by: 56, 57
+Blocked by: 63
 Wave: 9
 Ticket: 36
 Parent: `00-epic-stylex-to-tailwind-4`
