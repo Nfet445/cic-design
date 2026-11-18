@@ -32,7 +32,7 @@ import {truncationTooltipContentClassName} from '@astryxdesign/core/Text';
 import type {LayerPlacement} from '@astryxdesign/core/Layer';
 import {
   composeEventHandlers,
-  focusOutlineStyles,
+  focusOutlineFocusVisibleClassName,
   mergeProps,
   themeProps,
   observeResize,
@@ -512,8 +512,8 @@ export function LineClamp({
         ref={mergedRef}
         {...mergeProps(
           themeProps('line-clamp'),
-          stylex.props(focusOutlineStyles.focusVisible, xstyle),
-          tw(lineClampClassName, className),
+          stylex.props(xstyle),
+          tw(focusOutlineFocusVisibleClassName, lineClampClassName, className),
           {...style, WebkitLineClamp: maxLines},
         )}
         // A truncated clamp is a tab stop so keyboard users can reveal the
