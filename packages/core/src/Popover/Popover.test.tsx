@@ -31,7 +31,6 @@ import {
   renderHook,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
 import {readFileSync} from 'node:fs';
 import React, {useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
@@ -42,7 +41,7 @@ import type {SpacingStep} from '../utils/types';
 import type {UsePopoverReturn} from './usePopover';
 import {Dialog} from '../Dialog';
 import {SegmentedControl, SegmentedControlItem} from '../SegmentedControl';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   popoverExplicitWidthClassName,
   popoverMatchTriggerClassName,
@@ -1080,9 +1079,7 @@ describe('Popover', () => {
         hidden: true,
       });
       await waitFor(() => expect(dialog).toHaveFocus());
-      for (const className of stylex
-        .props(focusOutlineStyles.focusVisible)
-        .className!.split(' ')) {
+      for (const className of focusOutlineFocusVisibleClassName.split(' ')) {
         expect(dialog).toHaveClass(className);
       }
       expect(
