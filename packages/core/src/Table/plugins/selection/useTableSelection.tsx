@@ -49,7 +49,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
-import {colorVars} from '../../../theme/tokens.stylex';
+import {colorVarNames} from '../../../theme/tokenVars';
 import {SELECTION_CELL_CLASS} from './selectionClasses';
 import {CheckboxInput} from '../../../CheckboxInput';
 import {mergeRefs} from '../../../utils';
@@ -348,7 +348,7 @@ function SelectionCellContentInner<T extends Record<string, unknown>>({
 // Styles
 // =============================================================================
 
-const selectedBgColor = colorVars['--color-accent-muted'];
+const selectedBgColor = colorVarNames['--color-accent-muted'];
 
 /**
  * The row's current fill, republished for pinned cells to read. Declared as a
