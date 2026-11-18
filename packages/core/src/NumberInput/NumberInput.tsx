@@ -120,7 +120,8 @@ const styles = stylex.create({
 
 export type NumberInputSize = 'sm' | 'md' | 'lg';
 
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 
 // Re-export shared types for convenience
 
@@ -1289,10 +1290,10 @@ export function NumberInput({
           fieldStatus &&
             !isDisabled &&
             inputStatusHoverShadowStyles[fieldStatus.type],
-          inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
         tw(
+          inputGroup && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: fieldStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           numberInputHeightClassName({size}),

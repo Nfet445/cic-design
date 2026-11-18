@@ -3,8 +3,14 @@
 /**
  * @file groupStyles.ts
  * @input Uses StyleX, theme tokens, and layer-aware group end-cap selectors
- * @output Exports shared group-aware styles for InputGroup children
+ * @output Exports the Button addon's group-aware styles and the member marker
  * @position Shared styles consumed by InputGroup-compatible controls and addons
+ *
+ * The member's own row rules (flex, radii, overlap, focus rank) are the class
+ * set `inputGroupMemberClassName` in `inputGroupClasses.ts`. This file keeps
+ * what a Button addon needs and cannot express with a class: the corner reset
+ * and the focused member's z-index both key on selectors over the group's
+ * children.
  */
 
 import * as stylex from '@stylexjs/stylex';
@@ -70,36 +76,6 @@ export const groupStyles = stylex.create({
     zIndex: {
       default: null,
       [DIRECT_INPUT_GROUP_ADDON_FOCUS_VISIBLE]: 2,
-    },
-  },
-  inGroup: {
-    flex: 1,
-    minWidth: 0,
-    height: '100%',
-    marginInlineStart: {
-      default: `calc(-1 * ${borderVars['--border-width']})`,
-      ':first-child': 0,
-    },
-    borderStartStartRadius: {
-      default: 0,
-      ':first-child': radiusVars['--radius-element'],
-    },
-    borderEndStartRadius: {
-      default: 0,
-      ':first-child': radiusVars['--radius-element'],
-    },
-    borderStartEndRadius: {
-      default: 0,
-      [IS_LAST_ITEM]: radiusVars['--radius-element'],
-    },
-    borderEndEndRadius: {
-      default: 0,
-      [IS_LAST_ITEM]: radiusVars['--radius-element'],
-    },
-    // Input wrappers already sit at z-index 1. A focused member goes one
-    // higher, so an unfocused input beside it cannot cover its focus ring.
-    ':focus-within': {
-      zIndex: 2,
     },
   },
 });

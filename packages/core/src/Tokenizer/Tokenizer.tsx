@@ -124,7 +124,7 @@ import {useLayer} from '../Layer/useLayer';
 import {useTooltip} from '../Tooltip';
 import {useAnnounce} from '../hooks/useAnnounce';
 import {colorVars, spacingVars, sizeVars} from '../theme/tokens.stylex';
-import {groupStyles} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
 import type {
@@ -453,12 +453,12 @@ const INPUT_CARET_ROOM = '2px';
 
 const styles = stylex.create({
   // The field's box and the input's own states stay here. The wrapper is the
-  // same element as `fieldInputWrapperClassName()`, and `groupStyles.inGroup`
-  // before it: their unlayered `padding`, `gap`, `flex-wrap` and `height` win
-  // over any class in the `astryx-base` layer, so the row's insets and its
-  // truncation arms must be declared here too. The input states face the same
-  // tie against `typeaheadInputClassName`'s own `flex` and `min-w` utilities,
-  // where the sheet's order — not the state — would decide.
+  // same element as `fieldInputWrapperClassName()` and `inputGroupMemberClassName`:
+  // these unlayered `padding`, `gap`, `flex-wrap` and `height` win over any
+  // class in the `astryx-base` layer, so the row's insets and its truncation
+  // arms are declared here too. The input states face the same tie against
+  // `typeaheadInputClassName`'s own `flex` and `min-w` utilities, where the
+  // sheet's order — not the state — would decide.
   wrapper: {
     position: 'relative',
     flexWrap: 'wrap',
@@ -1793,11 +1793,11 @@ export function Tokenizer<T extends SearchableItem>({
           localStatus &&
             !isDisabled &&
             inputStatusHoverShadowStyles[localStatus.type],
-          isInGroupRow && groupStyles.inGroup,
           isInGroupRow && styles.inGroupWrapper,
           controlXstyle,
         ),
         tw(
+          isInGroupRow && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: localStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           controlClassName,
@@ -2237,10 +2237,10 @@ export function Tokenizer<T extends SearchableItem>({
                 !isDisabled &&
                 inputStatusHoverShadowStyles[localStatus.type],
               // The placeholder is the element in the group's flex row.
-              inputGroup && groupStyles.inGroup,
               controlXstyle,
             ),
             tw(
+              inputGroup && inputGroupMemberClassName,
               fieldInputWrapperClassName({status: localStatus?.type}),
               isDisabled && fieldInputWrapperDisabledClassName,
               controlClassName,

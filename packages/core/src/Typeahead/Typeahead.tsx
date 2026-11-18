@@ -58,7 +58,8 @@ import {VisuallyHidden} from '../VisuallyHidden';
 import {Spinner} from '../Spinner';
 import {SpinnerOwnerContext} from '../Spinner/SpinnerOwnerContext';
 import {spacingVars, sizeVars} from '../theme/tokens.stylex';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
 import {getInputARIA, isImeKeyEvent, mergeProps} from '../utils';
@@ -698,10 +699,10 @@ export function Typeahead<T extends SearchableItem>({
             sizeStyle,
             status && !isDisabled && inputStatusHoverShadowStyles[status.type],
             isDisabled && inputDisabledFocusStyles.nestedRing,
-            inputGroup && groupStyles.inGroup,
             controlXstyle,
           ),
           tw(
+            inputGroup && inputGroupMemberClassName,
             fieldInputWrapperClassName({status: status?.type}),
             isDisabled && fieldInputWrapperDisabledClassName,
             controlClassName,

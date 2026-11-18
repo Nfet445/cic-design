@@ -72,7 +72,8 @@ import {useInputStatusIcon} from '../hooks/useInputStatusIcon';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useTooltip} from '../Tooltip';
 import {themeProps} from '../utils/themeProps';
 import {useLocale} from '../i18n';
@@ -781,10 +782,10 @@ function TimeField({
           fieldStatus &&
             !isDisabled &&
             inputStatusHoverShadowStyles[fieldStatus.type],
-          inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
         tw(
+          inputGroup && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: fieldStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           timeInputSizeClassName({size}),

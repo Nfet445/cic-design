@@ -128,7 +128,8 @@ import {
   MULTI_SELECTOR_ROW_LABEL_CLASS,
   multiSelectorOptionRowClassName,
 } from './multiSelectorOptionClasses';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -2420,16 +2421,16 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
               inputStatusHoverShadowStyles[status.type],
             // Grouped secondary triggers keep their neutral fill but take the
             // group's row height, connected edge radii, and focus stacking.
-            variant !== 'ghost' && inputGroup && groupStyles.inGroup,
             controlXstyle,
           ),
           tw(
+            variant !== 'ghost' && inputGroup && inputGroupMemberClassName,
             fieldInputWrapperClassName({
               status: variant === 'input' ? status?.type : undefined,
             }),
             isDisabled && fieldInputWrapperDisabledClassName,
             controlClassName,
-            // The group's row is the height wherever `groupStyles.inGroup`
+            // The group's row is the height wherever `inputGroupMemberClassName`
             // applies, as it was when both were StyleX declarations in one
             // sheet.
             !(inputGroup && variant !== 'ghost') &&

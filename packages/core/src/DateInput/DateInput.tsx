@@ -40,7 +40,8 @@ import {Icon} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useSize} from '../SizeContext/SizeContext';
 import {Spinner} from '../Spinner';
 import {
@@ -899,10 +900,10 @@ function PointerDateField({
           fieldStatus &&
             !isEffectivelyDisabled &&
             inputStatusHoverShadowStyles[fieldStatus.type],
-          inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
         tw(
+          inputGroup && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: fieldStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           dateInputSizeClassName({size}),

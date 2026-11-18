@@ -55,7 +55,8 @@ import {
 } from '../Field/textEntryTraits';
 import {joinAriaIDs} from '../utils/inputAria';
 
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 
 // Re-export shared types for convenience
 
@@ -457,10 +458,10 @@ export function TextInput({
         stylex.props(
           isDisabled && inputDisabledFocusStyles.ring,
           status && !isDisabled && inputStatusHoverShadowStyles[status.type],
-          inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
         tw(
+          inputGroup && inputGroupMemberClassName,
           fieldInputWrapperClassName({status: status?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           textInputHeightClassName({size}),

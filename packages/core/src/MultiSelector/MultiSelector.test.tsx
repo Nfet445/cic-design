@@ -44,7 +44,7 @@ import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {selectorPresentationStyles} from '../Selector/selectorPresentation.stylex';
-import {groupStyles} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {InputGroup, InputGroupText} from '../InputGroup';
 import {colorVars} from '../theme/tokens.stylex';
 import {COMPACT_TOUCH_PRESENTATION_QUERY} from '../hooks/useAdaptivePresentation';
@@ -5250,8 +5250,7 @@ describe('MultiSelector create row inside a grid', () => {
 });
 
 describe('MultiSelector in an InputGroup', () => {
-  const groupClasses = () =>
-    stylex.props(groupStyles.inGroup).className!.split(' ');
+  const groupClasses = () => inputGroupMemberClassName.split(' ');
   const triggerBox = (name: RegExp) =>
     screen
       .getByRole('combobox', {name})
