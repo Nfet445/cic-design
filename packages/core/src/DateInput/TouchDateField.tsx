@@ -71,9 +71,7 @@ import {
   InputClearButton,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {useInputStatusIcon, useMergedRefs} from '../hooks';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
@@ -936,16 +934,14 @@ export function TouchDateField({
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
           isEffectivelyDisabled && inputDisabledFocusStyles.inputFocusRing,
-          status && inputStatusBorderStyles[status.type],
           status &&
             !isEffectivelyDisabled &&
             inputStatusHoverShadowStyles[status.type],
-          status && inputStatusFocusWithinStyles[status.type],
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
         tw(
-          fieldInputWrapperClassName(),
+          fieldInputWrapperClassName({status: status?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           dateInputSizeClassName({size}),
           touchDateFieldWrapperClassName,

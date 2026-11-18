@@ -53,9 +53,7 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -1288,16 +1286,14 @@ export function NumberInput({
           styles.wrapper,
           hasNumberSteppers && styles.wrapperWithNumberSteppers,
           isDisabled && inputDisabledFocusStyles.ring,
-          fieldStatus && inputStatusBorderStyles[fieldStatus.type],
           fieldStatus &&
             !isDisabled &&
             inputStatusHoverShadowStyles[fieldStatus.type],
-          fieldStatus && inputStatusFocusWithinStyles[fieldStatus.type],
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
         tw(
-          fieldInputWrapperClassName(),
+          fieldInputWrapperClassName({status: fieldStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           numberInputHeightClassName({size}),
           controlClassName,

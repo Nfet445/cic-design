@@ -49,9 +49,7 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {Token} from '../Token';
 import {useTooltip} from '../Tooltip';
@@ -698,15 +696,13 @@ export function Typeahead<T extends SearchableItem>({
           stylex.props(
             styles.wrapper,
             sizeStyle,
-            status && inputStatusBorderStyles[status.type],
             status && !isDisabled && inputStatusHoverShadowStyles[status.type],
-            status && inputStatusFocusWithinStyles[status.type],
             isDisabled && inputDisabledFocusStyles.nestedRing,
             inputGroup && groupStyles.inGroup,
             controlXstyle,
           ),
           tw(
-            fieldInputWrapperClassName(),
+            fieldInputWrapperClassName({status: status?.type}),
             isDisabled && fieldInputWrapperDisabledClassName,
             controlClassName,
           ),

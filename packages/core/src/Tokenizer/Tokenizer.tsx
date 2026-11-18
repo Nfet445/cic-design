@@ -89,9 +89,7 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {Token} from '../Token';
 import {Spinner} from '../Spinner';
@@ -1792,17 +1790,15 @@ export function Tokenizer<T extends SearchableItem>({
           isTruncated ? truncatedSizeStyles[size] : sizeStyle,
           isTruncated && styles.truncatedWrapper,
           isDisabled && inputDisabledFocusStyles.nestedRing,
-          localStatus && inputStatusBorderStyles[localStatus.type],
           localStatus &&
             !isDisabled &&
             inputStatusHoverShadowStyles[localStatus.type],
-          localStatus && inputStatusFocusWithinStyles[localStatus.type],
           isInGroupRow && groupStyles.inGroup,
           isInGroupRow && styles.inGroupWrapper,
           controlXstyle,
         ),
         tw(
-          fieldInputWrapperClassName(),
+          fieldInputWrapperClassName({status: localStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           controlClassName,
         ),
@@ -2055,15 +2051,13 @@ export function Tokenizer<T extends SearchableItem>({
               // and search field carry the touch-sized targets.
               sizeStyles[size],
               value.length > 0 && styles.wrapperWithTokens,
-              status && inputStatusBorderStyles[status.type],
               status &&
                 !isDisabled &&
                 inputStatusHoverShadowStyles[status.type],
-              status && inputStatusFocusWithinStyles[status.type],
               controlXstyle,
             ),
             tw(
-              fieldInputWrapperClassName(),
+              fieldInputWrapperClassName({status: status?.type}),
               isDisabled && fieldInputWrapperDisabledClassName,
               tokenizerSheetFieldClassName(isDisabled),
               isDisabled && tokenizerSheetFieldDisabledClassName,
@@ -2239,17 +2233,15 @@ export function Tokenizer<T extends SearchableItem>({
               value.length > 0 && styles.wrapperWithTokens,
               placeholderSizeStyle,
               isTruncated && styles.truncatedWrapper,
-              localStatus && inputStatusBorderStyles[localStatus.type],
               localStatus &&
                 !isDisabled &&
                 inputStatusHoverShadowStyles[localStatus.type],
-              localStatus && inputStatusFocusWithinStyles[localStatus.type],
               // The placeholder is the element in the group's flex row.
               inputGroup && groupStyles.inGroup,
               controlXstyle,
             ),
             tw(
-              fieldInputWrapperClassName(),
+              fieldInputWrapperClassName({status: localStatus?.type}),
               isDisabled && fieldInputWrapperDisabledClassName,
               controlClassName,
             ),

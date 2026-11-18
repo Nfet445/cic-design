@@ -39,7 +39,6 @@ import {
   Field,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
 } from '../Field';
 import {useKeepLayerOpenProps} from '../Layer/useLayer';
@@ -2416,9 +2415,6 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             optimisticValue.length === 0 && styles.triggerPlaceholder,
             variant === 'input' &&
               status &&
-              inputStatusBorderStyles[status.type],
-            variant === 'input' &&
-              status &&
               !isDisabled &&
               inputStatusHoverShadowStyles[status.type],
             // Grouped secondary triggers keep their neutral fill but take the
@@ -2427,7 +2423,9 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             controlXstyle,
           ),
           tw(
-            fieldInputWrapperClassName(),
+            fieldInputWrapperClassName({
+              status: variant === 'input' ? status?.type : undefined,
+            }),
             isDisabled && fieldInputWrapperDisabledClassName,
             controlClassName,
             // The group's row is the height wherever `groupStyles.inGroup`

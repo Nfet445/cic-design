@@ -56,8 +56,6 @@ import {
   InputClearButton,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
-  inputStatusFocusWithinStyles,
   inputStatusHoverShadowStyles,
 } from '../Field';
 import {useInputStatusIcon, useMergedRefs} from '../hooks';
@@ -481,16 +479,14 @@ export function NativeDateField({
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
           isEffectivelyDisabled && inputDisabledFocusStyles.inputFocusRing,
-          fieldStatus && inputStatusBorderStyles[fieldStatus.type],
           fieldStatus &&
             !isEffectivelyDisabled &&
             inputStatusHoverShadowStyles[fieldStatus.type],
-          fieldStatus && inputStatusFocusWithinStyles[fieldStatus.type],
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
         tw(
-          fieldInputWrapperClassName(),
+          fieldInputWrapperClassName({status: fieldStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           dateInputSizeClassName({size}),
           nativeDateFieldWrapperClassName,

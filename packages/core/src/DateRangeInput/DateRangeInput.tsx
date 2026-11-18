@@ -47,9 +47,7 @@ import {
   type InputStatus,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {Icon} from '../Icon';
 import {Spinner} from '../Spinner';
@@ -636,15 +634,13 @@ export function DateRangeInput({
           }),
           stylex.props(
             isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-            status && inputStatusBorderStyles[status.type],
             status &&
               !isEffectivelyDisabled &&
               inputStatusHoverShadowStyles[status.type],
-            status && inputStatusFocusWithinStyles[status.type],
             controlXstyle,
           ),
           tw(
-            fieldInputWrapperClassName(),
+            fieldInputWrapperClassName({status: status?.type}),
             isEffectivelyDisabled && fieldInputWrapperDisabledClassName,
             dateRangeInputSizeClassName({size}),
             controlClassName,

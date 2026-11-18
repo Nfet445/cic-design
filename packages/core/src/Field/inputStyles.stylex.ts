@@ -3,15 +3,15 @@
 /**
  * @file inputStyles.stylex.ts
  * @input Uses theme tokens (color, spacing, radius, shadow, transition)
- * @output Exports shared input wrapper appearance styles, and the text field
- *   timing that shows the focus look at once under a coarse pointer
+ * @output Exports the status hover shadow of an input wrapper, and the shared
+ *   wrapper appearance a prototype still paints by StyleX
  * @position Shared styles consumed by TextInput, TextArea, NumberInput, DateInput,
  *   TimeInput, Selector, Typeahead, and Tokenizer
  *
- * Centralizes the input wrapper appearance (borders, focus outlines, hover shadows,
- * disabled state, status variants) so all input components stay in sync.
- * Individual components layer their own overrides (padding, alignment, etc.)
- * via stylex.props composition.
+ * A status border, its focus look and the field's own box are classes in
+ * `Field/fieldClasses.ts`. This module keeps the hover shadow, whose selector
+ * keys three states at once, and the wrapper map that the sandbox prototypes
+ * still apply directly.
  */
 
 import * as stylex from '@stylexjs/stylex';
@@ -91,42 +91,6 @@ export const inputWrapperStyles = stylex.create({
 });
 
 /**
- * Status border colors for input wrappers.
- * Keyed by InputStatusType. Under forced colors a focused field's border is
- * Highlight, as in the base style, for wrappers that apply no status focus
- * style of their own (Selector, MultiSelector).
- */
-export const inputStatusBorderStyles = stylex.create({
-  warning: {
-    borderColor: {
-      default: colorVars['--color-border-warning'],
-      ':focus-within': {
-        default: colorVars['--color-border-warning'],
-        '@media (forced-colors: active)': 'Highlight',
-      },
-    },
-  },
-  error: {
-    borderColor: {
-      default: colorVars['--color-border-error'],
-      ':focus-within': {
-        default: colorVars['--color-border-error'],
-        '@media (forced-colors: active)': 'Highlight',
-      },
-    },
-  },
-  success: {
-    borderColor: {
-      default: colorVars['--color-border-success'],
-      ':focus-within': {
-        default: colorVars['--color-border-success'],
-        '@media (forced-colors: active)': 'Highlight',
-      },
-    },
-  },
-});
-
-/**
  * Status hover shadow styles for input wrappers.
  * Keyed by InputStatusType.
  */
@@ -156,68 +120,6 @@ export const inputStatusHoverShadowStyles = stylex.create({
         {
           '@media (hover: hover)': shadowVars['--shadow-inset-success'],
         },
-    },
-  },
-});
-
-/**
- * Status focus border styles using :focus-within. Under forced colors the
- * focused border is Highlight, as in the base style.
- * Used by input wrappers that contain a child input/textarea element.
- * Keyed by InputStatusType.
- */
-export const inputStatusFocusWithinStyles = stylex.create({
-  warning: {
-    borderColor: {
-      default: colorVars['--color-border-warning'],
-      ':focus-within': {
-        default: colorVars['--color-border-warning'],
-        '@media (forced-colors: active)': 'Highlight',
-      },
-    },
-  },
-  error: {
-    borderColor: {
-      default: colorVars['--color-border-error'],
-      ':focus-within': {
-        default: colorVars['--color-border-error'],
-        '@media (forced-colors: active)': 'Highlight',
-      },
-    },
-  },
-  success: {
-    borderColor: {
-      default: colorVars['--color-border-success'],
-      ':focus-within': {
-        default: colorVars['--color-border-success'],
-        '@media (forced-colors: active)': 'Highlight',
-      },
-    },
-  },
-});
-
-/**
- * Status focus border styles using :focus.
- * Used by components where the wrapper itself receives focus (e.g. Selector button).
- * Keyed by InputStatusType.
- */
-export const inputStatusFocusStyles = stylex.create({
-  warning: {
-    borderColor: {
-      default: colorVars['--color-border-warning'],
-      ':focus': colorVars['--color-border-warning'],
-    },
-  },
-  error: {
-    borderColor: {
-      default: colorVars['--color-border-error'],
-      ':focus': colorVars['--color-border-error'],
-    },
-  },
-  success: {
-    borderColor: {
-      default: colorVars['--color-border-success'],
-      ':focus': colorVars['--color-border-success'],
     },
   },
 });

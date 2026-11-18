@@ -44,7 +44,6 @@ import {
   Field,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
 } from '../Field';
 import {Divider} from '../Divider';
@@ -2127,9 +2126,6 @@ export function Selector<T extends SelectorOptionType>(
             !selectedItem && styles.triggerPlaceholder,
             variant === 'input' &&
               status &&
-              inputStatusBorderStyles[status.type],
-            variant === 'input' &&
-              status &&
               !isDisabled &&
               inputStatusHoverShadowStyles[status.type],
             // Grouped secondary triggers keep their neutral fill but take the
@@ -2139,7 +2135,9 @@ export function Selector<T extends SelectorOptionType>(
             controlXstyle,
           ),
           tw(
-            fieldInputWrapperClassName(),
+            fieldInputWrapperClassName({
+              status: variant === 'input' ? status?.type : undefined,
+            }),
             isDisabled && fieldInputWrapperDisabledClassName,
             controlClassName,
             // A grouped trigger takes the group's row height; its own size

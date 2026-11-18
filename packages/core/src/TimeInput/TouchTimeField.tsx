@@ -35,9 +35,7 @@ import {
   InputClearButton,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
-  inputStatusBorderStyles,
   inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
 } from '../Field';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {useFieldInputStyling} from '../Field/fieldParts';
@@ -325,14 +323,12 @@ export function TouchTimeField({
         }),
         stylex.props(
           isDisabled && inputDisabledFocusStyles.withinRing,
-          status && inputStatusBorderStyles[status.type],
           status && !isDisabled && inputStatusHoverShadowStyles[status.type],
-          status && inputStatusFocusWithinStyles[status.type],
           inputGroup && groupStyles.inGroup,
           controlXstyle,
         ),
         tw(
-          fieldInputWrapperClassName(),
+          fieldInputWrapperClassName({status: status?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           touchTimeFieldSizeClassName({size}),
           controlClassName,
