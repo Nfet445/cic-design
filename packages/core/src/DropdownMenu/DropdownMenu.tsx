@@ -897,6 +897,13 @@ function DropdownMenuPopover({
   const handleLayerHide = useCallback(() => {
     releaseEntranceRef.current?.();
     releaseEntranceRef.current = null;
+    // A close that lands before the open's focus frame hands focus back to
+    // the trigger; the stale frame would then pull it into the closed menu.
+    if (openFocusFrameRef.current != null) {
+      cancelAnimationFrame(openFocusFrameRef.current);
+      openFocusFrameRef.current = null;
+      focusLastOnOpenRef.current = false;
+    }
     // Whatever closed the menu — light dismiss, the dismissal stack, Escape
     // or a controlled close — its flyouts close with it.
     hideOpenFlyouts();
@@ -935,6 +942,8 @@ function DropdownMenuPopover({
   // Defer item focus until the layer has committed open, so focus restore
   // captures the trigger instead of the first menu item.
   const shouldFocusOnOpenRef = useRef(false);
+  // The frame that move is waiting in, so a close before it can cancel it.
+  const openFocusFrameRef = useRef<number | null>(null);
 
   // How the next open was initiated. Keyboard (and programmatic) opens focus
   // the first enabled item per the APG menu-button pattern; pointer opens
@@ -1122,7 +1131,8 @@ function DropdownMenuPopover({
       return;
     }
     shouldFocusOnOpenRef.current = false;
-    requestAnimationFrame(() => {
+    openFocusFrameRef.current = requestAnimationFrame(() => {
+      openFocusFrameRef.current = null;
       const focusEnd = focusLastOnOpenRef.current ? focusLast : focusFirst;
       focusLastOnOpenRef.current = false;
       const isPointerOpen = openModalityRef.current === 'pointer';

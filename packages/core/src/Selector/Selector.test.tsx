@@ -56,7 +56,12 @@ import {
   SELECTOR_ROW_SELECTED_CLASS,
   selectorOptionRowClassName,
 } from './selectorOptionClasses';
-import {expectClassSet} from '../__tests__/classNameAssertions';
+import {
+  layerPlacementBlockEndClassName,
+  layerPlacementBlockStartClassName,
+} from '../Layer/layerClasses';
+import {LAYER_CLEARANCE_PROPERTY} from '../Layer/layerSlideRules';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {COMPACT_TOUCH_PRESENTATION_QUERY} from '../hooks/useAdaptivePresentation';
 
@@ -843,11 +848,14 @@ describe('Selector', () => {
       // placement="above" — and a position-try flip carries it to the other
       // side with the area, so the gap survives the flip (#4803).
       await waitFor(() => {
-        expect(popover.style.getPropertyValue('--x-marginBlockEnd')).toBe(
+        expect(popover.style.getPropertyValue(LAYER_CLEARANCE_PROPERTY)).toBe(
           spacingVars['--spacing-1'],
         );
       });
-      expect(popover.style.getPropertyValue('--x-marginBlockStart')).toBe('');
+      expect(classesOf(popover)).toContain(layerPlacementBlockEndClassName);
+      expect(classesOf(popover)).not.toContain(
+        layerPlacementBlockStartClassName,
+      );
     });
 
     it('clears the trigger in search mode', async () => {
@@ -868,10 +876,11 @@ describe('Selector', () => {
         .getByRole('listbox', {hidden: true})
         .closest('[popover]') as HTMLElement;
       await waitFor(() => {
-        expect(popover.style.getPropertyValue('--x-marginBlockStart')).toBe(
+        expect(popover.style.getPropertyValue(LAYER_CLEARANCE_PROPERTY)).toBe(
           spacingVars['--spacing-1'],
         );
       });
+      expect(classesOf(popover)).toContain(layerPlacementBlockStartClassName);
     });
 
     it('stays flush in the default selected-item overlay', async () => {
@@ -896,8 +905,15 @@ describe('Selector', () => {
             '--_selector-overlay-margin: min(-110px,',
           );
         });
-        expect(popover.style.getPropertyValue('--x-marginBlockStart')).toBe('');
-        expect(popover.style.getPropertyValue('--x-marginBlockEnd')).toBe('');
+        expect(popover.style.getPropertyValue(LAYER_CLEARANCE_PROPERTY)).toBe(
+          '',
+        );
+        expect(classesOf(popover)).not.toContain(
+          layerPlacementBlockStartClassName,
+        );
+        expect(classesOf(popover)).not.toContain(
+          layerPlacementBlockEndClassName,
+        );
       } finally {
         restoreRects();
       }

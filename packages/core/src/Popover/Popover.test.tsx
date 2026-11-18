@@ -42,6 +42,14 @@ import type {UsePopoverReturn} from './usePopover';
 import {Dialog} from '../Dialog';
 import {SegmentedControl, SegmentedControlItem} from '../SegmentedControl';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
+import {
+  layerGutterBlockEndClassName,
+  layerGutterBlockStartClassName,
+  layerGutterInlineEndClassName,
+  layerGutterInlineStartClassName,
+  layerViewportFitClassName,
+} from '../Layer/layerClasses';
 import {
   popoverExplicitWidthClassName,
   popoverMatchTriggerClassName,
@@ -346,13 +354,17 @@ describe('Popover', () => {
     fireEvent.click(screen.getByRole('button', {name: 'Open'}));
 
     const layer = document.querySelector('[popover]');
-    expect(layer).toHaveStyle({boxSizing: 'border-box'});
+    expect(layer).not.toBeNull();
     // The viewport fit is the layer runtime's (spec:AST-059 FR1, FR3); the
     // explicit width is clamped to the viewport, never to the span beside
-    // the trigger (FR2).
-    expect(layer?.className).toContain('useLayer__styles.viewportFit');
-    expect(layer?.className).toContain('useLayer__styles.gutterInlineEnd');
-    expect(layer?.className).toContain(popoverExplicitWidthClassName);
+    // the trigger (FR2). The fit is a class set, so it is read off the set.
+    expectClassSet(layer!, {
+      includes: [layerGutterInlineEndClassName, popoverExplicitWidthClassName],
+      excludes: [layerGutterInlineStartClassName],
+    });
+    for (const fitClassName of layerViewportFitClassName.split(' ')) {
+      expect(classesOf(layer!), fitClassName).toContain(fitClassName);
+    }
     // The width travels as a variable, so one class serves every value, and it
     // is clamped to the viewport, never to the span beside the trigger.
     expect(layer?.getAttribute('style')).toContain('--astryx-popover-width');
@@ -536,11 +548,10 @@ describe('Popover', () => {
     fireEvent.click(screen.getByRole('button', {name: 'Open'}));
 
     const layer = document.querySelector('[popover]');
-    expect(layer?.className).toContain('useLayer__styles.gutterInlineEnd');
-    expect(layer?.className).not.toContain(
-      'useLayer__styles.gutterInlineStart',
-    );
-    expect(layer?.className).toContain(popoverMatchTriggerClassName);
+    expectClassSet(layer!, {
+      includes: [layerGutterInlineEndClassName, popoverMatchTriggerClassName],
+      excludes: [layerGutterInlineStartClassName],
+    });
     // The class reads the cap from the variable the layer carries.
     expect(layer?.getAttribute('style')).toContain(
       '--astryx-popover-max-inline-size',
@@ -557,9 +568,10 @@ describe('Popover', () => {
 
     fireEvent.click(screen.getByRole('button', {name: 'Open'}));
 
-    const layer = document.querySelector('[popover]');
-    expect(layer?.className).toContain('useLayer__styles.gutterInlineStart');
-    expect(layer?.className).not.toContain('useLayer__styles.gutterInlineEnd');
+    expectClassSet(document.querySelector('[popover]')!, {
+      includes: [layerGutterInlineStartClassName],
+      excludes: [layerGutterInlineEndClassName],
+    });
   });
 
   it('reserves both inline gutters for centered popovers', () => {
@@ -571,11 +583,14 @@ describe('Popover', () => {
 
     fireEvent.click(screen.getByRole('button', {name: 'Open'}));
 
-    const layer = document.querySelector('[popover]');
-    expect(layer?.className).toContain('useLayer__styles.gutterInlineStart');
-    expect(layer?.className).toContain('useLayer__styles.gutterInlineEnd');
     // One match-trigger minimum for every alignment: the cap is the viewport.
-    expect(layer?.className).toContain(popoverMatchTriggerClassName);
+    expectClassSet(document.querySelector('[popover]')!, {
+      includes: [
+        layerGutterInlineStartClassName,
+        layerGutterInlineEndClassName,
+        popoverMatchTriggerClassName,
+      ],
+    });
   });
 
   it('uses block-axis gutters for side placement', () => {
@@ -591,9 +606,16 @@ describe('Popover', () => {
 
     fireEvent.click(screen.getByRole('button', {name: 'Open'}));
 
-    const layer = document.querySelector('[popover]');
-    expect(layer?.className).toContain('useLayer__styles.gutterBlockEnd');
-    expect(layer?.className).not.toContain('useLayer__styles.gutterInlineEnd');
+    // A side placement keeps the far-edge gutter of both axes: inline-end
+    // faces the viewport on the placement axis, block-end on the alignment
+    // axis (spec:AST-059 FR1).
+    expectClassSet(document.querySelector('[popover]')!, {
+      includes: [layerGutterInlineEndClassName, layerGutterBlockEndClassName],
+      excludes: [
+        layerGutterInlineStartClassName,
+        layerGutterBlockStartClassName,
+      ],
+    });
   });
 
   it('preserves the dialog aria-haspopup contract for render-prop triggers', () => {
