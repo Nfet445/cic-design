@@ -20,7 +20,7 @@ import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
 import {disabledInteractionProps} from '../utils/disabledInteraction';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {isSwipeOpen, useSwipeAction, type SwipeSide} from './useSwipeAction';
 import type {SwipeEntry, SwipeLayerProps} from './swipeHost';
 import {
@@ -216,8 +216,7 @@ export default function SwipeActionsLayer({
             : null)}
           {...mergeProps(
             themeProps('item-swipe-action', {variant}),
-            focusOutlineProps.focusVisible(),
-            entryClassName,
+            tw(entryClassName, focusOutlineFocusVisibleClassName),
           )}>
           {content}
         </button>

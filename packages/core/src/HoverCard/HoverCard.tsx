@@ -26,7 +26,7 @@ import {
 import {isRenderable} from '../utils/isRenderable';
 import {observeMutations} from '../utils/sharedMutationObserver';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   useHoverCard,
   type HoverCardFocusTrigger,
@@ -371,7 +371,6 @@ export function HoverCard({
   if (textOnly) {
     // The span is a tab stop Astryx adds: it draws the shared ring, which a
     // theme restyles through the focus-outline tokens.
-    const focusProps = focusOutlineProps.focusVisible();
     return (
       <>
         <span
@@ -389,9 +388,8 @@ export function HoverCard({
           aria-describedby={label ? undefined : hoverCard.describedBy}
           // The span is a tab stop Astryx adds: it draws the shared ring,
           // which a theme restyles through the focus-outline tokens.
-          {...focusProps}
           className={tw(
-            focusProps.className,
+            focusOutlineFocusVisibleClassName,
             hoverCardWrapperClassName.inline,
             showHoverIndication && hoverCardHoverIndicationClassName,
           )}>
