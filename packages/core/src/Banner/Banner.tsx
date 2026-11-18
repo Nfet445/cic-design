@@ -79,7 +79,7 @@ import {
   bannerTitleClassName,
 } from './bannerClasses';
 import {tw} from '../utils/tw';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {useCollapsible} from '../Collapsible/useCollapsible';
 import type {CollapsibleConfig} from '../Collapsible/useCollapsible';
 import {composeEventHandlers, isRenderable, mergeProps} from '../utils';
