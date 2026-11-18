@@ -90,7 +90,7 @@ import {createDevWarnings} from '../utils/devWarning';
 import {DialogContext} from './DialogContext';
 import {themeProps} from '../utils/themeProps';
 import type {DialogVariantMap} from './index';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 import {
   focusForLastInput,
@@ -733,13 +733,14 @@ export function Dialog({
       {...safeProps}
       {...mergeProps(
         themeProps('dialog', {variant}),
-        focusOutlineProps.focusVisible(undefined, xstyle),
+        stylex.props(xstyle),
         tw(
           overlayPaddingReset.reset,
           rootClassName,
           layerTextResetClassName,
           layerStructureResetClassName,
           className,
+          focusOutlineFocusVisibleClassName,
         ),
         {...layoutVariables, ...style},
       )}
