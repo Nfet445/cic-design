@@ -39,8 +39,10 @@ export type {AutoCapitalize, EnterKeyHint, InputMode} from './textEntryTraits';
 export {
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
   fieldStatusBorderClassName,
 } from './fieldClasses';
+export type {FieldFocusScope} from './fieldClasses';
 
 // Shared input styles
 

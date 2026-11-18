@@ -281,6 +281,7 @@ import {
   fieldHorizontalLabelsClassName,
   fieldInputStatusWrapperClassName,
   fieldInputWrapperClassName,
+  fieldInputWrapperFocusScopeClassName,
   fieldStatusBorderClassName,
 } from '../Field/fieldClasses';
 import {
@@ -450,6 +451,7 @@ import {
   numberInputEntryClassName,
   numberInputHeightClassName,
   numberInputStepperButtonClassName,
+  numberInputWrapperClassName,
 } from '../NumberInput/numberInputClasses';
 import {
   panelSearchInputFieldClassName,
@@ -2052,6 +2054,7 @@ function familyClassNames() {
     fieldAttachedStatusLayerClassName,
     fieldInputWrapperClassName(),
     ...Object.values(fieldStatusBorderClassName),
+    ...Object.values(fieldInputWrapperFocusScopeClassName),
     fieldScreenReaderOnlyClassName,
     fieldLabelStatusClassName,
     inputClearButtonClassName,
@@ -3468,6 +3471,9 @@ function familyClassNames() {
       add(numberInputStepperButtonClassName({isDisabled}));
     }
   }
+  for (const hasNumberSteppers of [false, true]) {
+    add(numberInputWrapperClassName({hasNumberSteppers}));
+  }
   add(NUMBER_INPUT_UNITS_CLASS);
   add(NUMBER_INPUT_STEPPER_COLUMN_CLASS);
   add(NUMBER_INPUT_DECREMENT_CLASS);
@@ -3923,11 +3929,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // row's own press paint added its mouse and coarse arms. Ticket 54 then
     // moved the heading level scale to class text — its eighteen size, leading
     // and weight rules — and the stack's own flex utilities out of StyleX, and
-    // this branch measured 2094. The container's own padding then moved out of
-    // StyleX too: each component's theme chain and each spacing token a padding
-    // prop accepts now prints its own class, and the Layout outer insets it
-    // publishes took the sheet to 2215. The ceiling keeps its headroom above
-    // that.
+    // this branch measured 2094. Ticket 55's field focus scope and NumberInput's
+    // per-side padding took it to 2104, and the container's own padding then
+    // moved out of StyleX as well: each component's theme chain and each
+    // spacing token a padding prop accepts now prints its own class, and the
+    // Layout outer insets it publishes took the sheet to 2215. The ceiling
+    // keeps its headroom above that.
     expect(stylesheet.rules.size).toBeLessThan(2230);
   });
 

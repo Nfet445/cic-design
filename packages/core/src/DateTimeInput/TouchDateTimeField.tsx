@@ -34,7 +34,6 @@ import {
   useTransition,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {BottomSheet} from '../BottomSheet';
 import {Button} from '../Button';
 import {useCalendarConstraints, type ISODateString} from '../Calendar';
@@ -1115,9 +1114,6 @@ export function TouchDateTimeField({
               size,
               status: status?.type ?? null,
             }),
-            stylex.props(
-              isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-            ),
             tw(
               fieldInputWrapperClassName({status: status?.type}),
               isEffectivelyDisabled && fieldInputWrapperDisabledClassName,
@@ -1206,9 +1202,6 @@ export function TouchDateTimeField({
               size,
               status: status?.type ?? null,
             }),
-            stylex.props(
-              isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-            ),
             tw(
               fieldInputWrapperClassName({status: status?.type}),
               isEffectivelyDisabled && fieldInputWrapperDisabledClassName,

@@ -13,15 +13,18 @@ import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {act, render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React, {useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import {TimeInput, type TimeInputEntryError} from './TimeInput';
 import {timeInputClassName} from './timeInputClasses';
-import {classesOf} from '../__tests__/classNameAssertions';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {InputGroup, InputGroupText} from '../InputGroup';
 import {InternationalizationProvider} from '../i18n';
 import type {ISOTimeString} from '../utils';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
+
+const FIELD_FOCUS_RING_CLASSES = [
+  'focus-within:border-[color:var(--color-accent)]',
+  'focus-within:shadow-[inset_0_0_0_2px_var(--color-accent-muted)]',
+];
 
 function politeRegion(): HTMLElement | null {
   return document.querySelector('[data-astryx-live-region="polite"]');
@@ -192,33 +195,13 @@ describe('TimeInput', () => {
     expect(input).toHaveFocus();
   });
 
-  it('restores the focus ring on a focused disabled field (AST-085 FR6)', () => {
-    // The same declarations as the field's ring style compile to the same
-    // atomic classes; the shared disabled style alone drops them.
-    const ringClasses = stylex
-      .props(
-        stylex.create({
-          ring: {
-            borderColor: {
-              default: colorVars['--color-border-emphasized'],
-              ':focus-within': colorVars['--color-accent'],
-            },
-            boxShadow: {
-              default: 'none',
-              ':focus-within': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-            },
-          },
-        }).ring,
-      )
-      .className!.split(' ')
-      .filter(name => !name.includes('__'));
+  it('restores the focus ring on a focused disabled field (spec:AST-085 FR6)', () => {
     render(<TimeInput label="Time" isDisabled onChange={() => {}} />);
     const wrapper = screen.getByRole('textbox').closest('.astryx-time-input')!;
-    for (const name of ringClasses) {
-      expect(wrapper).toHaveClass(name);
-    }
+    // The box paints the ring for any focus inside it; the disabled state adds
+    // no class that turns it off.
+    expectClassSet(wrapper, {includes: FIELD_FOCUS_RING_CLASSES});
   });
-
   it('shows clear button when hasClear is true and value exists', () => {
     render(
       <TimeInput

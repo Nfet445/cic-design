@@ -33,7 +33,6 @@ import React, {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useTooltip} from '../Tooltip';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {useIndicator} from '../Indicator';
@@ -44,6 +43,7 @@ import {
   Field,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
 } from '../Field';
 import {Divider} from '../Divider';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
@@ -2115,10 +2115,6 @@ export function Selector<T extends SelectorOptionType>(
             variant !== 'input' && interactionOverlayStyles.backgroundImage,
             surface.isTriggerFocusRingSuppressed &&
               selectorPresentationStyles.pointerRestoredFocus,
-            variant === 'input' &&
-              isDisabled &&
-              !surface.isTriggerFocusRingSuppressed &&
-              inputDisabledFocusStyles.ring,
             isEffectivelyReadOnly && styles.triggerReadOnly,
             variant !== 'input' && isDisabled && styles.triggerGhostDisabled,
             variant !== 'input' &&
@@ -2140,6 +2136,10 @@ export function Selector<T extends SelectorOptionType>(
               status: variant === 'input' ? status?.type : undefined,
             }),
             isDisabled && fieldInputWrapperDisabledClassName,
+            variant === 'input' &&
+              isDisabled &&
+              !surface.isTriggerFocusRingSuppressed &&
+              fieldInputWrapperFocusScopeClassName.direct,
             controlClassName,
             // A grouped trigger takes the group's row height; its own size
             // stops asserting one, as `triggerInGroup` did when both were

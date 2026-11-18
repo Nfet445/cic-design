@@ -31,7 +31,6 @@ import React, {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useTooltip} from '../Tooltip';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import type {IconName} from '../Icon';
@@ -39,6 +38,7 @@ import {
   Field,
   fieldInputWrapperClassName,
   fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
 } from '../Field';
 import {useKeepLayerOpenProps} from '../Layer/useLayer';
 import {InternalInputClearButton} from '../Field/InputClearButton';
@@ -2404,10 +2404,6 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             variant !== 'input' && focusOutlineStyles.focusWithin,
             surface.isTriggerFocusRingSuppressed &&
               selectorPresentationStyles.pointerRestoredFocus,
-            variant === 'input' &&
-              isDisabled &&
-              !surface.isTriggerFocusRingSuppressed &&
-              inputDisabledFocusStyles.ring,
             isEffectivelyReadOnly && styles.triggerReadOnly,
             variant !== 'input' && isDisabled && styles.triggerGhostDisabled,
             variant !== 'input' &&
@@ -2427,6 +2423,10 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
               status: variant === 'input' ? status?.type : undefined,
             }),
             isDisabled && fieldInputWrapperDisabledClassName,
+            variant === 'input' &&
+              isDisabled &&
+              !surface.isTriggerFocusRingSuppressed &&
+              fieldInputWrapperFocusScopeClassName.direct,
             controlClassName,
             // The group's row is the height wherever `inputGroupMemberClassName`
             // applies, as it was when both were StyleX declarations in one
