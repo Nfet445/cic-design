@@ -43,7 +43,6 @@ import {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars, sizeVars} from '../theme/tokens.stylex';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
@@ -100,17 +99,17 @@ registerEnglishFallback(english);
 const leftoverStyles = stylex.create({
   // A collapsed rail row holds only its icon, so it keeps a fixed square.
   collapsedItem: {
-    width: sizeVars['--size-element-md'],
-    height: sizeVars['--size-element-md'],
+    width: 'var(--size-element-md)',
+    height: 'var(--size-element-md)',
     paddingInline: 0,
   },
   collapsedSm: {
-    width: sizeVars['--size-element-sm'],
-    height: sizeVars['--size-element-sm'],
+    width: 'var(--size-element-sm)',
+    height: 'var(--size-element-sm)',
   },
   collapsedLg: {
-    width: sizeVars['--size-element-lg'],
-    height: sizeVars['--size-element-lg'],
+    width: 'var(--size-element-lg)',
+    height: 'var(--size-element-lg)',
   },
 });
 
@@ -125,13 +124,13 @@ const leftoverStyles = stylex.create({
 //   of the click target rather than dead space that still shows feedback.
 const indentStyles = stylex.create({
   sm: (depth: number) => ({
-    paddingInlineStart: `calc(${spacingVars['--spacing-1']} + ${depth} * ${spacingVars['--spacing-6']})`,
+    paddingInlineStart: `calc(var(--spacing-1) + ${depth} * var(--spacing-6))`,
   }),
   md: (depth: number) => ({
-    paddingInlineStart: `calc(${spacingVars['--spacing-2']} + ${depth} * ${spacingVars['--spacing-6']})`,
+    paddingInlineStart: `calc(var(--spacing-2) + ${depth} * var(--spacing-6))`,
   }),
   primary: (depth: number) => ({
-    paddingInlineStart: `calc(${depth} * ${spacingVars['--spacing-6']})`,
+    paddingInlineStart: `calc(${depth} * var(--spacing-6))`,
   }),
 });
 
