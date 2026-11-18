@@ -28,6 +28,7 @@ import {mergeProps} from '../utils';
 import {useCloseMobileDrawerOnActivate} from '../AppShell/useCloseMobileDrawerOnActivate';
 import {themeProps} from '../utils/themeProps';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
   disabledInteractionProps,
@@ -252,13 +253,18 @@ export function TopNavItem({
           }),
           stylex.props(
             navItemStyles.item,
-            interactionOverlayStyles.backgroundColor,
+            // The strength and the release; the colour is a class below.
+            interactionOverlayStyles.pressedAlpha,
             navItemStyles[size],
             isSelected && navItemStyles.selected,
             isDisabled && navItemStyles.disabled,
             xstyle,
           ),
-          tw(className, focusOutlineFocusVisibleClassName),
+          tw(
+            className,
+            interactionOverlayBackgroundColorClassName,
+            focusOutlineFocusVisibleClassName,
+          ),
           style,
         )}
         {...callerProps}
@@ -293,7 +299,8 @@ export function TopNavItem({
           selected: isSelected ? 'selected' : null,
         }),
         stylex.props(
-          interactionOverlayStyles.backgroundColor,
+          // The strength and the release; the colour is a class below.
+          interactionOverlayStyles.pressedAlpha,
           isDisabled && navItemStyles.disabled,
           xstyle,
         ),
@@ -302,6 +309,7 @@ export function TopNavItem({
           isSelected && topNavItemSelectedClassName(),
           isIconOnly && topNavItemIconOnlyClassName(),
           className,
+          interactionOverlayBackgroundColorClassName,
           focusOutlineFocusVisibleClassName,
         ),
         style,
