@@ -21,6 +21,14 @@
  * `::before`, so its positioned children paint over the clip path's edge, and
  * the pixels on their own edges stay theirs. SYNC: utils/hitArea.ts
  * HIT_INSET_PROPERTIES, utils/touchHitArea.ts and utils/touchHitArea.test.tsx.
+ *
+ * No rule in core rivals the band: it owns the host's `::after`, or its
+ * `::before` below its children, and no other module paints either on these
+ * hosts. It stays StyleX for one consumer it cannot convert here:
+ * `packages/lab/src/PageControl/PageControl.tsx` still composes
+ * `touchHitAreaStyles.layer` inside `stylex.props`, through the internal entry
+ * (internal/touch.ts), and its own paint is classes. The band becomes a class
+ * map in the same change as that one lab line.
  * @deprecated Internal seam: it is not a public API and it disappears
  *   when StyleX leaves the package.
  */
