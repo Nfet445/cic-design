@@ -137,7 +137,20 @@ export {
   textSizeVars,
   fontWeightVars,
   typeScaleVars,
-} from './tokens.stylex';
+  colorVarNames,
+  spacingVarNames,
+  sizeVarNames,
+  borderVarNames,
+  focusVarNames,
+  radiusVarNames,
+  shadowVarNames,
+  durationVarNames,
+  easeVarNames,
+  typographyVarNames,
+  textSizeVarNames,
+  fontWeightVarNames,
+  typeScaleVarNames,
+} from './tokenVars';
 
 // Export token key types for theme authoring
 export type {
@@ -153,7 +166,7 @@ export type {
   TextSizeVarName,
   FontWeightVarName,
   TypeScaleVarName,
-} from './tokens.stylex';
+} from './tokenVars';
 
 export {useTheme, useThemeName, ThemeContext} from './useTheme';
 export type {UseThemeReturn, ThemeContextValue} from './useTheme';

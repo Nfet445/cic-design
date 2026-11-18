@@ -356,19 +356,70 @@ export const typeScaleDefaults = {
 } as const;
 
 /**
- * Read a token group as the CSS custom properties it declares.
+ * Read a token group as the custom properties it declares.
+ *
+ * Each value is the reference itself, so a style compiles to `var(--token)`.
+ * The result is typed as plain strings: a call site that only needs the name
+ * must not depend on StyleX's token typing.
+ */
+function namesOf<T extends Record<string, string>>(
+  defaults: T,
+): Record<keyof T, string> {
+  const names: Record<string, string> = {};
+  for (const name of Object.keys(defaults)) {
+    names[name] = `var(${name})`;
+  }
+  return names as Record<keyof T, string>;
+}
+
+/**
+ * Read a token group as the token references StyleX accepts.
  *
  * The result keeps the type `defineVars` returns, because StyleX's property
- * types accept a token reference and reject a bare string. At runtime the
- * value is the reference itself, so a style compiles to `var(--token)`.
+ * types accept a token reference and reject a bare string.
  */
 function refsOf<T extends Record<string, string>>(defaults: T): VarGroup<T> {
-  const vars: Record<string, string> = {};
-  for (const name of Object.keys(defaults)) {
-    vars[name] = `var(${name})`;
-  }
-  return vars as VarGroup<T>;
+  return namesOf(defaults) as VarGroup<T>;
 }
+
+/** The `color` token group as names, each value a reference to its property. */
+export const colorVarNames = namesOf(colorDefaults);
+
+/** The `spacing` token group as names, each value a reference to its property. */
+export const spacingVarNames = namesOf(spacingDefaults);
+
+/** The `size` token group as names, each value a reference to its property. */
+export const sizeVarNames = namesOf(sizeDefaults);
+
+/** The `border` token group as names, each value a reference to its property. */
+export const borderVarNames = namesOf(borderDefaults);
+
+/** The `focus` token group as names, each value a reference to its property. */
+export const focusVarNames = namesOf(focusDefaults);
+
+/** The `radius` token group as names, each value a reference to its property. */
+export const radiusVarNames = namesOf(radiusDefaults);
+
+/** The `shadow` token group as names, each value a reference to its property. */
+export const shadowVarNames = namesOf(shadowDefaults);
+
+/** The `duration` token group as names, each value a reference to its property. */
+export const durationVarNames = namesOf(durationDefaults);
+
+/** The `ease` token group as names, each value a reference to its property. */
+export const easeVarNames = namesOf(easeDefaults);
+
+/** The `typography` token group as names, each value a reference to its property. */
+export const typographyVarNames = namesOf(typographyDefaults);
+
+/** The `textSize` token group as names, each value a reference to its property. */
+export const textSizeVarNames = namesOf(textSizeDefaults);
+
+/** The `fontWeight` token group as names, each value a reference to its property. */
+export const fontWeightVarNames = namesOf(fontWeightDefaults);
+
+/** The `typeScale` token group as names, each value a reference to its property. */
+export const typeScaleVarNames = namesOf(typeScaleDefaults);
 
 /** The `color` token group, each value a reference to its custom property. */
 export const colorVars = refsOf(colorDefaults);

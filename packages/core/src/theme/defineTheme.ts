@@ -118,7 +118,7 @@ import {
   textSizeDefaults,
   fontWeightDefaults,
   typeScaleDefaults,
-} from './tokens.stylex';
+} from './tokenVars';
 import type {MotionScaleConfig} from './expandMotionScale';
 import type {ThemeMotionConfig} from './themeMotion';
 import type {RadiusScaleConfig} from './expandRadiusScale';

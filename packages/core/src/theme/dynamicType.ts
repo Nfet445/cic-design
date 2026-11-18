@@ -38,7 +38,7 @@
 import {typography} from './uikitTypography';
 import {markTextSizeProbe} from '../privateAttributes/textSizeProbe.stylex';
 import {observeResize} from '../utils/sharedResizeObserver';
-import {textSizeDefaults, typeScaleDefaults} from './tokens.stylex';
+import {textSizeDefaults, typeScaleDefaults} from './tokenVars';
 
 // =============================================================================
 // Categories

@@ -34,7 +34,7 @@ import {
   type ResolvedMotionKnobs,
   type ThemeMotionKnobs,
 } from './motionKnobs';
-import {durationDefaults, easeDefaults} from './tokens.stylex';
+import {durationDefaults, easeDefaults} from './tokenVars';
 import {resolveTokenReferences} from './tokenReferences';
 
 export {
