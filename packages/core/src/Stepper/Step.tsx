@@ -125,6 +125,7 @@ import {
   verticalRootClassName,
 } from './stepClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import type {BaseProps} from '../BaseProps';
 import {Icon} from '../Icon';
@@ -1054,10 +1055,16 @@ export function Step({
               {...pressable}
               {...mergeProps(
                 stylex.props(
-                  interactionOverlayStyles.backgroundColor,
+                  interactionOverlayStyles.pressedAlpha,
                   focusOutlineStyles.focusVisible,
                 ),
-                tw(otInteractiveClassName, otRowWrapClassName),
+                tw(
+                  otInteractiveClassName,
+                  otRowWrapClassName,
+                  // The hover and press colour; its strength and release stay
+                  // the StyleX arm above.
+                  interactionOverlayBackgroundColorClassName,
+                ),
               )}>
               {inner}
             </button>
@@ -1141,13 +1148,16 @@ export function Step({
             {...pressable}
             {...mergeProps(
               stylex.props(
-                interactionOverlayStyles.backgroundColor,
+                interactionOverlayStyles.pressedAlpha,
                 focusOutlineStyles.focusVisible,
               ),
               tw(
                 otInteractiveClassName,
                 otColWrapClassName,
                 otPadBlockClassName,
+                // The hover and press colour; its strength and release stay the
+                // StyleX arm above.
+                interactionOverlayBackgroundColorClassName,
               ),
             )}>
             {innerH}
@@ -1205,13 +1215,16 @@ export function Step({
               {...pressable}
               {...mergeProps(
                 stylex.props(
-                  interactionOverlayStyles.backgroundColor,
+                  interactionOverlayStyles.pressedAlpha,
                   focusOutlineStyles.focusVisible,
                 ),
                 tw(
                   buttonResetClassName,
                   densityBlockClassName,
                   densityInlineClassName,
+                  // The hover and press colour; its strength and release stay
+                  // the StyleX arm above.
+                  interactionOverlayBackgroundColorClassName,
                 ),
                 densityStyle(densitySpace, separatedDensityInline),
               )}>
@@ -1275,13 +1288,16 @@ export function Step({
           aria-disabled={isDisabled || undefined}
           {...mergeProps(
             stylex.props(
-              interactionOverlayStyles.backgroundColor,
+              interactionOverlayStyles.pressedAlpha,
               focusOutlineStyles.focusVisible,
             ),
             tw(
               buttonResetClassName,
               densityBlockClassName,
               densityInlineClassName,
+              // The hover and press colour; its strength and release stay the
+              // StyleX arm above.
+              interactionOverlayBackgroundColorClassName,
             ),
             densityStyle(densitySpace, separatedDensityInline),
           )}>
