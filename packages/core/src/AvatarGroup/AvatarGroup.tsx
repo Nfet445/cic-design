@@ -28,7 +28,6 @@
 import {useId, useMemo, useState, type ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import {resolveSize, type AvatarShape, type AvatarSize} from '../Avatar';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
 import {AvatarGroupContext} from './AvatarGroupContext';
@@ -38,6 +37,7 @@ import {
 } from './avatarGroupClasses';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {useListFocus} from '../hooks/useListFocus';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -166,7 +166,7 @@ export function AvatarGroup({
         onFocus={composeEventHandlers(onFocus, handleFocus)}
         {...mergeProps(
           themeProps('avatar-group', {size, shape}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(avatarGroupClassName, className),
           // The overlap is the group's own measure, so it reaches the children
           // as an inline property their classes read.

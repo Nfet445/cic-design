@@ -15,13 +15,13 @@
  */
 
 import {type ReactNode, createElement} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {AnnounceRenderedText} from '../hooks/AnnounceRenderedText';
 import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   emptyStateActionsClassName,
   emptyStateActionsCompactClassName,
@@ -118,7 +118,7 @@ export function EmptyState({
           className: tw(
             emptyStateClassName,
             isCompact && emptyStateCompactClassName,
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
           ),
         },
         className,

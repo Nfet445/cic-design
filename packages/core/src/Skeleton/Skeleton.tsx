@@ -14,10 +14,10 @@
  */
 
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   skeletonAnimateClassName,
   skeletonClassName,
@@ -137,7 +137,7 @@ export function Skeleton({
             skeletonRadiusClassName[radiusProp],
             skeletonDimensionsClassName,
             skeletonDelayClassName,
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
           ),
         },
         className,

@@ -24,7 +24,6 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {isRenderable} from '../utils/isRenderable';
 import {focusVarNames} from '../theme/tokenVars';
 import {mergeProps} from '../utils';
@@ -48,6 +47,7 @@ import {
 } from '../utils/focusReturn';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 import {useFocusLeavingChange} from '../utils/useFocusLeavingChange';
+import {xstyleProps} from '../utils/xstyle';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useAnimatedLayout} from '../hooks/useAnimatedLayout';
 import {
@@ -699,7 +699,7 @@ export function TreeList({
       onKeyDown={handleRootKeyDown}
       {...mergeProps(
         themeProps('tree-list', {density, variant}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(treeListClassName.root, className),
         style,
       )}

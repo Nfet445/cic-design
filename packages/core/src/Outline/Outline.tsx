@@ -36,6 +36,7 @@ import {themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
   outlineDividerClassName,
@@ -301,7 +302,7 @@ export function Outline({
       data-testid={testId}
       {...mergeProps(
         themeProps('outline', {density}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(outlineRootClassName, className),
         style,
       )}>

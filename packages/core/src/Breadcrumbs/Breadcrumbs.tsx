@@ -4,7 +4,8 @@
 
 /**
  * @file Breadcrumbs.tsx
- * @input Uses React, layer-scoped context, stylex, class maps and theme tokens
+ * @input Uses React, layer-scoped context, the xstyle adapter, class maps,
+ *   and theme tokens
  * @output Exports Breadcrumbs component, BreadcrumbsProps, BreadcrumbContext
  * @position Core container component; consumed by index.ts
  *
@@ -18,7 +19,6 @@
 
 import {useMemo, type ReactNode} from 'react';
 import {createLayerScopedContext} from '../Layer/layerScopedContext';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {
@@ -27,6 +27,7 @@ import {
 } from './breadcrumbsClasses';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import type {BreadcrumbsVariantMap} from './index';
 import {
   registerEnglishFallback,
@@ -146,7 +147,7 @@ export function Breadcrumbs({
         aria-label={label}
         {...mergeProps(
           themeProps('breadcrumbs', {variant}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(breadcrumbsNavClassName, className),
           style,
         )}

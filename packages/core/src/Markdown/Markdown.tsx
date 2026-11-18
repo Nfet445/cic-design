@@ -16,7 +16,6 @@
 import {Suspense, useMemo, useRef, useState} from 'react';
 import type React from 'react';
 import {Fragment} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '@stylexjs/stylex';
 import type {TextDisplay} from '../theme/types';
 import {CodeBlock, Code} from '../CodeBlock';
@@ -118,6 +117,7 @@ import {
 } from './headingProjection';
 import {HeadingLinksRenderer} from './plugins/HeadingLinksRenderer';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import type {TranslatorFn} from '../i18n';
 import {
   registerEnglishFallback,
@@ -2247,7 +2247,7 @@ export function Markdown<
           mergeProps(themeProps('markdown', {density}), {
             className: tw(markdownRootClassName, markdownInlineRootClassName),
           }),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           className,
           style,
         )}>
@@ -2288,7 +2288,7 @@ export function Markdown<
         mergeProps(themeProps('markdown', {density}), {
           className: markdownRootClassName,
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}>

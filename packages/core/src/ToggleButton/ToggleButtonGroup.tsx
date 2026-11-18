@@ -42,6 +42,7 @@ import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import type {StyleXStyles} from '@stylexjs/stylex';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 
 // =============================================================================
 // Context
@@ -275,7 +276,7 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): ReactNode {
           mergeProps(themeProps('toggle-button-group'), {
             className: layoutClassName,
           }),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           className,
           style,
         )}>

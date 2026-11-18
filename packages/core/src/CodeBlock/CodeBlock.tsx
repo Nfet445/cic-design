@@ -21,7 +21,6 @@ import {
 } from 'react';
 import * as React from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {isRenderable, mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import {tw} from '../utils/tw';
 import {
@@ -81,6 +80,7 @@ import {ensureHighlightStyles} from './highlightStyles';
 import {applyHighlightRangesChunked} from './highlightRanges';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {SyntaxTheme, type SyntaxThemeDefinition} from '../theme/syntax';
 import {
   registerEnglishFallback,
@@ -994,7 +994,7 @@ export function CodeBlock({
             style: {['--_codeblock-width' as string]: widthProp},
           },
         ),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}

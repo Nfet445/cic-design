@@ -16,8 +16,8 @@
  */
 
 import type {ReactNode, Ref} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {composeEventHandlers, mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {useOverlay} from './useOverlay';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
@@ -125,9 +125,7 @@ export function Overlay({
       ref={useMergedRefs(ref, overlay.containerRef)}
       {...mergeProps(
         themeProps('overlay'),
-        xstyle == null
-          ? overlayScopeProps
-          : mergeProps(overlayScopeProps, stylex.props(xstyle)),
+        mergeProps(overlayScopeProps, xstyleProps(xstyle)),
         tw(overlayContainerClassName, className),
         style,
       )}

@@ -29,12 +29,12 @@ import {
 import type {BaseProps} from '../BaseProps';
 import {isRenderable} from '../utils/isRenderable';
 import type {SpacingStep} from '../utils/types';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {useOverflowInternal} from '../hooks/useOverflow';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {
   OVERFLOW_LIST_MAX_HEIGHT_VAR,
   overflowListContainerClassName,
@@ -384,7 +384,7 @@ export function OverflowList({
                 maxRows != null &&
                 overflowListMaxHeightClassName,
               className,
-              xstyle && stylex.props(xstyle).className,
+              xstyleProps(xstyle).className,
             ),
           },
           isMultiRow && rowHeight > 0 && maxRows != null

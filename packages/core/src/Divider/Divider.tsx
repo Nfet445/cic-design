@@ -4,8 +4,8 @@
 
 /**
  * @file Divider.tsx
- * @input Uses React, the divider class map, and stylex for the consumer's
- *   `xstyle`
+ * @input Uses React, the divider class map, and the xstyle adapter for the
+ *   consumer's `xstyle`
  * @output Exports Divider component and DividerProps
  * @position Divider component; provides visual separation with optional label
  *
@@ -18,7 +18,6 @@
 
 import {useId, type ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 
 import {
   dividerClassName,
@@ -32,6 +31,7 @@ import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import type {DividerVariantMap} from './index';
 
 /**
@@ -123,7 +123,7 @@ export function Divider({
           className: tw(
             dividerClassName[orientation],
             isFullBleed && dividerFullBleedClassName[orientation],
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
           ),
         }),
         className,

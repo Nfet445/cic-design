@@ -32,7 +32,6 @@
  */
 
 import React, {useCallback, type ComponentType, type SVGProps} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '@stylexjs/stylex';
 import {useThemeDefinition} from '../theme/useTheme';
 import {resolveIcon} from './globalIconRegistry';
@@ -41,6 +40,7 @@ import type {IconVariant} from './index';
 import {mergeProps} from '../utils/mergeProps';
 import {mergeRefs} from '../utils/mergeRefs';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {useIconSize} from './IconDefaultSizeContext';
 import {iconSizeValues, type IconSize} from './IconSize';
 import {
@@ -263,15 +263,15 @@ export function Icon({
       {...a11yProps}
       // The styling props (className, style, xstyle) are handled here so they
       // COMPOSE with the internal classes/styles instead of clobbering them:
-      // xstyle folds into stylex.props, and className/style merge via
-      // mergeProps. The remaining rest props keep their prior last-spread
+      // xstyle folds in through the adapter, and className/style merge
+      // via mergeProps. The remaining rest props keep their prior last-spread
       // precedence as escape hatches.
       {...mergeProps(
         mergeProps(themeProps('icon', {size, color}), {
           className: iconGlyphClassName(color),
           style: iconSizeStyle(size),
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}
@@ -336,8 +336,8 @@ function IconFromRegistry({
 
   // The styling props (className, style, xstyle) are handled here so they
   // COMPOSE with the internal astryx-icon class and the glyph classes instead
-  // of being shadowed by the later spread: xstyle folds into stylex.props, and
-  // className/style merge via mergeProps. Other span props keep their prior
+  // of being shadowed by the later spread: xstyle folds in through the
+  // adapter, and className/style merge via mergeProps. Other span props keep their prior
   // precedence (spread before the internal merge).
   const restSpanProps =
     (spanProps as React.HTMLAttributes<HTMLSpanElement>) ?? {};
@@ -356,7 +356,7 @@ function IconFromRegistry({
           className: iconRegistryClassName(color),
           style: iconSizeStyle(size),
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}>

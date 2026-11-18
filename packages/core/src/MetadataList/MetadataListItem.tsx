@@ -19,13 +19,13 @@
  */
 
 import {use, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {MetadataListContext} from './MetadataListContext';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
 import {isRenderable} from '../utils/isRenderable';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   metadataListItemIconClassName,
   metadataListItemLabelClassName,
@@ -121,7 +121,7 @@ export function MetadataListItem({
           {
             className: tw(
               metadataListItemStackedClassName,
-              xstyle && stylex.props(xstyle).className,
+              xstyleProps(xstyle).className,
             ),
           },
           className,
@@ -147,7 +147,7 @@ export function MetadataListItem({
           {
             className: tw(
               metadataListItemLabelClassName,
-              xstyle && stylex.props(xstyle).className,
+              xstyleProps(xstyle).className,
             ),
           },
           className,

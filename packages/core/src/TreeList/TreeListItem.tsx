@@ -34,6 +34,7 @@ import {
 } from '../hooks/useClickableContainer';
 import {Icon} from '../Icon';
 import {mergeProps} from '../utils/mergeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
 import {useFocusAcrossSwap} from '../utils/useFocusAcrossSwap';
 import {useLinkComponent} from '../Link/useLinkComponent';
@@ -160,6 +161,7 @@ export function TreeListItem({
   setSize,
   isTabbable,
 }: TreeListItemInternalProps) {
+  const xStyle = xstyleProps(xstyle);
   const pressable = usePressFeedback();
   const t = useComponentTranslator();
   const labelId = useId();
@@ -490,9 +492,8 @@ export function TreeListItem({
                   // overlay, whose own touch paint it turns off).
                   rowPressLayerStyles.cell,
                   rowPressLayerStyles.cellOnImage,
-                  xstyle,
                 )
-              : stylex.props(xstyle),
+              : {},
             tw(
               treeListItemClassName.contentWrapper,
               treeListItemDensityClassName[density],
@@ -508,13 +509,14 @@ export function TreeListItem({
                 focusOutlineWithinOrPublishedClassName,
               (isInteractive || (hasChildren && onClick == null)) &&
                 interactionOverlayBackgroundImageClassName,
+              xStyle.className,
               // Consumer row props are merged last so useContainerReveal can
               // publish both its classes and inline custom properties. Seed
               // the private indent first, then preserve the standard inline
               // style precedence promised by the TreeList contract.
               className,
             ),
-            {...indentStyle, ...style},
+            {...indentStyle, ...xStyle.style, ...style},
           )}
           ref={forwardsToLink ? linkRowRef : undefined}
           onClick={forwardsToLink ? delegateToLink : handleClick}

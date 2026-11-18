@@ -21,6 +21,7 @@ import {use, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {Icon} from '../Icon';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import {useInteractiveRole} from '../hooks/useInteractiveRole';
 import {TokenLink} from './TokenLink';
@@ -182,6 +183,7 @@ export function Token({
   const LinkComponent = useLinkComponent();
   const role = useInteractiveRole({href, onClick, isDisabled});
   const naming = use(TokenNamingContext);
+  const xStyle = xstyleProps(xstyle);
 
   // When role is 'button' via context (no explicit onClick), treat as
   // if onClick was provided — the popover attaches its own handler.
@@ -261,7 +263,7 @@ export function Token({
         tabIndex={0}
         {...mergeProps(
           themeProps('token', {color, size, disabled: 'disabled'}),
-          stylex.props(xstyle),
+          xStyle,
           tw(
             tokenClassName({
               size,
@@ -298,7 +300,7 @@ export function Token({
               disabled: isDisabled ? 'disabled' : null,
             }),
             // The strength and the release; the paint is a class below.
-            stylex.props(interactionOverlayStyles.pressedAlpha, xstyle),
+            stylex.props(interactionOverlayStyles.pressedAlpha),
             tw(
               tokenClassName({
                 size,
@@ -306,11 +308,12 @@ export function Token({
                 isInteractive: true,
                 isDisabled,
               }),
+              xStyle.className,
               className,
               interactionOverlayBackgroundImageClassName,
               focusOutlineFocusVisibleClassName,
             ),
-            style,
+            {...xStyle.style, ...style},
           )}
           {...rest}
           {...labellingProps}
@@ -362,7 +365,7 @@ export function Token({
           // Rings for the token's own button or link only; the remove button
           // rings itself.
           // The strength and the release; the paint is a class below.
-          stylex.props(interactionOverlayStyles.pressedAlpha, xstyle),
+          stylex.props(interactionOverlayStyles.pressedAlpha),
           tw(
             tokenClassName({
               size,
@@ -372,9 +375,10 @@ export function Token({
             }),
             focusOwnerRingClassName,
             interactionOverlayBackgroundImageClassName,
+            xStyle.className,
             className,
           ),
-          style,
+          {...xStyle.style, ...style},
         )}
         {...rest}
         {...labellingProps}
@@ -419,7 +423,7 @@ export function Token({
           // Rings for the token's own button or link only; the remove button
           // rings itself.
           // The strength and the release; the paint is a class below.
-          stylex.props(interactionOverlayStyles.pressedAlpha, xstyle),
+          stylex.props(interactionOverlayStyles.pressedAlpha),
           tw(
             tokenClassName({
               size,
@@ -429,9 +433,10 @@ export function Token({
             }),
             focusOwnerRingClassName,
             interactionOverlayBackgroundImageClassName,
+            xStyle.className,
             className,
           ),
-          style,
+          {...xStyle.style, ...style},
         )}
         {...rest}
         {...sharedProps}
@@ -472,7 +477,7 @@ export function Token({
           size,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(xstyle),
+        xStyle,
         tw(
           tokenClassName({
             size,

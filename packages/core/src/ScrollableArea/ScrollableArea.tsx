@@ -33,6 +33,7 @@ import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   scrollableAreaContentClassName,
   scrollableAreaContentWithInlineOverflowClassName,
@@ -170,7 +171,7 @@ export function ScrollableArea({
     stickyContainment,
   });
 
-  const xstyleProps = stylex.props(xstyle);
+  const xStyle = xstyleProps(xstyle);
   const mergedViewportProps = mergeProps(
     themeProps('scrollable-area', {axis}),
     stylex.props(focusOutlineStyles.focusVisible),
@@ -182,11 +183,11 @@ export function ScrollableArea({
         maxWidth,
         minHeight,
       }),
-      xstyleProps.className,
+      xStyle.className,
       className,
     ),
     {
-      ...xstyleProps.style,
+      ...xStyle.style,
       ...scrollableAreaSizeStyle({width, height, maxWidth, minHeight}),
       ...style,
     },

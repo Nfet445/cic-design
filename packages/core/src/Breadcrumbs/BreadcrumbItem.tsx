@@ -89,6 +89,7 @@ import {
 } from '../AppShell/useCloseMobileDrawerOnActivate';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 import {isRenderable} from '../utils/isRenderable';
+import {xstyleProps} from '../utils/xstyle';
 
 // Bundlers replace this value at build time. The declaration lets a product
 // without Node's types type-check this file.
@@ -308,7 +309,7 @@ export function BreadcrumbItem({
         ref={mergedItemRef}
         {...mergeProps(
           themeProps('breadcrumb-item', {variant: ctx.variant}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           tw(
             breadcrumbItemClassName,
             breadcrumbSizeClassName[isSupporting ? 'supporting' : 'default'],
@@ -353,7 +354,7 @@ export function BreadcrumbItem({
       ref={mergedItemRef}
       {...mergeProps(
         themeProps('breadcrumb-item', {variant: ctx.variant}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           breadcrumbItemClassName,
           breadcrumbSizeClassName[isSupporting ? 'supporting' : 'default'],

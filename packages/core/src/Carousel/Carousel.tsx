@@ -35,7 +35,6 @@ import {
   Children,
   isValidElement,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {focusOutlineSuppressedClassName} from '../utils/focusOutlineClasses';
 import {
   carouselItemClassName,
@@ -59,6 +58,7 @@ import type {BaseProps} from '../BaseProps';
 import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import type {SpacingStep} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {
@@ -597,7 +597,7 @@ export function Carousel({
       {...htmlProps}
       {...mergeProps(
         themeProps('carousel'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           carouselRootClassName,
           // The scroller is the focus owner. Its edge-fade mask would cover a

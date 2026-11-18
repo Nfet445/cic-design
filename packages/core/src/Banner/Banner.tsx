@@ -51,7 +51,6 @@
  */
 
 import {useId, useRef, useState, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {Button} from '../Button';
 import {Icon} from '../Icon';
@@ -85,6 +84,7 @@ import type {CollapsibleConfig} from '../Collapsible/useCollapsible';
 import {composeEventHandlers, isRenderable, mergeProps} from '../utils';
 import type {Elevation} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import type {BannerStatusMap, BannerContainerMap} from './index';
 import {
   registerEnglishFallback,
@@ -450,7 +450,7 @@ export function Banner({
             bannerClassName,
             bannerElevationClassName[elevation],
             isCard && elevation !== 'none' && bannerElevatedCardClassName,
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
           ),
         }),
         className,
