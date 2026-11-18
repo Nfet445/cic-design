@@ -34,7 +34,7 @@ import {usePopover} from '../Popover/usePopover';
 import {isPressInsideOwnedLayer, useOutsidePress} from '../Layer/outsidePress';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
 import {useHighlightedOptionScroll} from '../hooks/useHighlightedOptionScroll';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {mergeProps, groupItems, isImeKeyEvent} from '../utils';
 import {tw} from '../utils/tw';
 import {
@@ -945,7 +945,7 @@ export function useTriggerMenu(
       {
         placement: 'above',
         alignment: 'start',
-        offset: spacingVars['--spacing-1'],
+        offset: spacingVarNames['--spacing-1'],
         className: chatTriggerMenuSurfaceClassName,
       },
     );
