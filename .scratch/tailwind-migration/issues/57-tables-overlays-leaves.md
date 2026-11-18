@@ -67,3 +67,25 @@ Left: `Table/plugins/stickyColumns/useTableStickyColumns.tsx` (2 maps),
 `Drawer/drawerContentSafeArea.stylex.ts`, `Dialog/dialogFullscreenSafeArea.stylex.ts`,
 `ProgressBar/progressBarFill.stylex.ts`,
 `Thumbnail/thumbnailRemoveButtonOverrides.stylex.ts`).
+
+## Comments — survivors after windows 1 and J
+
+These stay on StyleX, each for a measured reason:
+
+- `packages/core/src/ProgressBar/progressBarFill.stylex.ts` — the fill paints one declaration group
+  under `:dir(rtl)`, `pointer: coarse`, `forced-colors: active` and `prefers-reduced-motion: reduce`
+  at once. A forced-colors utility and a coarse one have the same specificity, and Tailwind fixes the
+  variant order, so the forced-colors `width`/`transform`/`transition-property` trio cannot be made
+  to win; StyleX raises a conditional rule and negates later keys against earlier ones.
+- `packages/core/src/Drawer/drawerContentSafeArea.stylex.ts` and
+  `packages/core/src/Dialog/dialogFullscreenSafeArea.stylex.ts` — both compose padding with
+  `env(safe-area-inset-*)` on an element whose padding a `astryx-base` class already sets, so a class
+  would only tie.
+- `packages/core/src/DropdownMenu/DropdownMenuSubMenu.tsx` `triggerStyles.caret` — a `className`-only
+  wrapper, which `@internal/eslint-plugin-astryx/no-style-only-wrapper.js` rejects.
+- `packages/core/src/Table/table.stylex.ts` — StyleX markers, not paint (ticket 07).
+- `packages/core/src/BottomSheet/bottomSheetPanelMotion.stylex.ts`,
+  `bottomSheetStackMotion.stylex.ts`, `AlertDialog/alertDialogTouchMotion.stylex.ts` — animation arms
+  whose `animation-name` and `@starting-style` frames the layer cannot pair with a utility.
+- `packages/core/src/Thumbnail/thumbnailRemoveButtonOverrides.stylex.ts` — two rules for one property
+  on one element; inside `astryx-base` the sheet order would decide.
