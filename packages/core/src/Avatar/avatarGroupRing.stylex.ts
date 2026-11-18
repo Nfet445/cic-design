@@ -15,7 +15,6 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 
 const BORDER_WIDTH = 2;
 
@@ -23,8 +22,8 @@ export const avatarGroupStyles = stylex.create({
   ring: {
     borderWidth: BORDER_WIDTH,
     borderStyle: 'solid',
-    borderColor: colorVars['--color-background-surface'],
-    backgroundColor: colorVars['--color-background-surface'],
+    borderColor: 'var(--color-background-surface)',
+    backgroundColor: 'var(--color-background-surface)',
     // The ring sits outside the box, so a grouped face reads as one shape
     // whether or not its own picture shows a border.
     boxSizing: 'content-box',
