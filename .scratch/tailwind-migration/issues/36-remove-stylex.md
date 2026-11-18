@@ -288,3 +288,34 @@ sheet stayed under the ceiling only after the Progress animation folded into one
 
 `AppShellSafeArea.test.tsx` lost its whole `insertRule` recorder, because it no longer has a rule
 to read: it asserts class text now.
+
+## Comments — window 36O, two modules and a stated wait
+
+Two modules are gone: `TextArea/textAreaWrapper.stylex.ts` and
+`BottomSheet/bottomSheetPanelPadding.stylex.ts`. Neither had a `packages/core/package.json`
+subpath, a line in `publicStyleXNamespaces.test.ts`, or an entry in `scripts/sync-exports.js`,
+so each deletion is the file plus its consumer. Both rivals were single classes in the same
+layer, so every moved class doubles its selector:
+
+- `textAreaWrapperClassName` in `textAreaClasses.ts` zeroes the field box's padding with
+  `[&.astryx-text-area]:py-0` / `:px-0` / `:block`, against `FIELD_INPUT_BOX_CLASS` in
+  `Field/fieldClasses.ts`, and keeps `z-1` and `--_textarea-inline-padding` as plain classes.
+- `bottomSheetPastGrabBarClassName(padding)` and `bottomSheetClearsGrabBarClassName` in
+  `bottomSheetPanelClasses.ts` carry `[.astryx-bottom-sheet_&]:`, against the publish and apply
+  arms `Layout/containerClasses.ts` prints on the content box. The ancestor arm is the shape
+  Drawer's and Dialog's safe-area padding already use.
+
+The eleven padding steps are spelled as eleven literals: a helper that interpolated the step into
+the class name produced no rules at all, because the scanner reads source text, not values.
+
+`BottomSheetPanel.test.tsx` asserts the band as class text now, and the published explicit step as
+the qualified arm; `getComputedStyle(...).padding-top` cannot resolve a `var()` chain in jsdom.
+Both suites and the sheet suite are green, the sheet is 426,963 B raw and 47,825 B gzip under the
+1.15 × 42,331 gate, and the twelve new rules sit inside the ceiling.
+
+`packages/lab/src/TransferList/transferListOverrides.stylex.ts` stays, and its header now names
+the real blocker: `Button` composes `interactionOverlayStyles.backgroundImage` and
+`rowPressLayerStyles` through `stylex.props`, so the unlayered rule carries `:not(#\#)` and no
+`astryx-base` class can state `background-image: none` over it. The class arm
+(`interactionOverlayBackgroundImageClassName`) is published; the wait is Button adopting it. When
+it does, the header action becomes `tw(...)` on the same element and the module goes.
