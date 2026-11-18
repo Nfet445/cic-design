@@ -14,9 +14,8 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {durationVars, easeVars, spacingVars} from '../theme/tokens.stylex';
 
-const recedeLift = spacingVars['--spacing-2'];
+const recedeLift = 'var(--spacing-2)';
 const recededOneStep = `translateY(calc(-1 * ${recedeLift})) scale(0.96)`;
 const recededTwoSteps = `translateY(calc(-2 * ${recedeLift})) scale(0.92)`;
 
@@ -32,8 +31,8 @@ const styles = stylex.create({
   motion: {
     transformOrigin: '50% 0',
     transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-medium'],
-    transitionTimingFunction: easeVars['--ease-standard'],
+    transitionDuration: 'var(--duration-medium)',
+    transitionTimingFunction: 'var(--ease-standard)',
     '@media (prefers-reduced-motion: reduce)': {
       transitionDuration: '0.01s',
     },

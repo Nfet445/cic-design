@@ -19,7 +19,6 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {durationVars, easeVars} from '../theme/tokens.stylex';
 
 /**
  * The reduced-motion query. With a coarse primary pointer the sheet
@@ -50,13 +49,13 @@ export const bottomSheetSheetMotionStyles = stylex.create({
     },
     transitionProperty: 'transform, opacity',
     transitionDuration: {
-      default: durationVars['--duration-medium'],
+      default: 'var(--duration-medium)',
       '@media (prefers-reduced-motion: reduce)': {
         default: '0.01s',
         '@media (pointer: coarse)': `0.01s, ${CROSS_FADE_MS}ms`,
       },
     },
-    transitionTimingFunction: easeVars['--ease-standard'],
+    transitionTimingFunction: 'var(--ease-standard)',
     // The dialog writes its scrim's opacity on itself for each move of a drag,
     // and only its backdrop reads it. A custom property inherits, so each
     // write would restyle every element in the sheet. The panel ends the
@@ -93,7 +92,7 @@ export const bottomSheetSheetMotionStyles = stylex.create({
     // A pointer presentation closes on the theme's exit curve. A touch
     // presentation keeps its own curve, which the exit tokens do not change.
     transitionTimingFunction: {
-      default: easeVars['--ease-exit'],
+      default: 'var(--ease-exit)',
       '@media (pointer: coarse)': 'cubic-bezier(0.3, 0, 0.6, 0.6)',
     },
   },
