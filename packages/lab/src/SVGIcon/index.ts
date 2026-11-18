@@ -21,7 +21,7 @@ export type {
 } from './SVGIcon';
 
 export {variations, opticalSize} from './variations.stylex';
-export {iconVars} from './tokens.stylex';
+export {iconVars} from './svgIconClasses';
 
 export {
   xIcon,

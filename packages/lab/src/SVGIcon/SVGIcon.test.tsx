@@ -3,7 +3,7 @@
 import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {SVGIcon, type SVGIconDef} from './SVGIcon';
-import {iconVars} from './tokens.stylex';
+import {iconVars} from './svgIconClasses';
 import {iconColorClassNames, svgIconRootClassName} from './svgIconClasses';
 import {bellIcon, calendarIcon, homeIcon, xIcon} from './icons';
 

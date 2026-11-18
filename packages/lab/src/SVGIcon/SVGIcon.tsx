@@ -22,8 +22,11 @@
 import {type CSSProperties, type SVGProps, useId} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '@astryxdesign/core/utils';
-import {iconVars} from './tokens.stylex';
-import {iconColorClassNames, svgIconRootClassName} from './svgIconClasses';
+import {
+  iconColorClassNames,
+  iconVars,
+  svgIconRootClassName,
+} from './svgIconClasses';
 import {iconA11yProps} from './iconA11y';
 import {variations, opticalSize} from './variations.stylex';
 import {tw} from '../tw';

@@ -17,20 +17,71 @@
  * through the instance boundary but inherited properties do.
  */
 
+import {tw} from '../tw';
+
 /**
- * The icon box. `--icon-*` comes from `tokens.stylex.ts`, whose variable names
- * reach the sheet unchanged, and `opticalSize` in `variations.stylex.ts` sets
- * the square's size on the same element.
+ * The `--icon-*` properties as references, for the inline styles and SVG
+ * attributes that pass a value rather than a class.
  */
-export const svgIconRootClassName =
-  'inline-flex shrink-0 w-[var(--icon-size)] h-[var(--icon-size)] ps-[var(--icon-inline-offset)] pt-[var(--icon-block-offset)]';
+export const iconVars = {
+  '--icon-size': 'var(--icon-size)',
+  '--icon-stroke-width': 'var(--icon-stroke-width)',
+  '--icon-stroke-linecap': 'var(--icon-stroke-linecap)',
+  '--icon-stroke-linejoin': 'var(--icon-stroke-linejoin)',
+  '--icon-gap': 'var(--icon-gap)',
+  '--icon-gap-linejoin': 'var(--icon-gap-linejoin)',
+  '--icon-inline-offset': 'var(--icon-inline-offset)',
+  '--icon-block-offset': 'var(--icon-block-offset)',
+  '--icon-layer-primary-fill': 'var(--icon-layer-primary-fill)',
+  '--icon-layer-primary-stroke': 'var(--icon-layer-primary-stroke)',
+  '--icon-layer-primary-opacity': 'var(--icon-layer-primary-opacity)',
+  '--icon-layer-primary-stroke-role-fill':
+    'var(--icon-layer-primary-stroke-role-fill)',
+  '--icon-layer-primary-stroke-role-stroke':
+    'var(--icon-layer-primary-stroke-role-stroke)',
+  '--icon-layer-primary-stroke-role-opacity':
+    'var(--icon-layer-primary-stroke-role-opacity)',
+  '--icon-layer-primary-stroke-role-width':
+    'var(--icon-layer-primary-stroke-role-width)',
+  '--icon-layer-secondary-fill': 'var(--icon-layer-secondary-fill)',
+  '--icon-layer-secondary-stroke': 'var(--icon-layer-secondary-stroke)',
+  '--icon-layer-secondary-opacity': 'var(--icon-layer-secondary-opacity)',
+  '--icon-layer-secondary-stroke-role-fill':
+    'var(--icon-layer-secondary-stroke-role-fill)',
+  '--icon-layer-secondary-stroke-role-stroke':
+    'var(--icon-layer-secondary-stroke-role-stroke)',
+  '--icon-layer-secondary-stroke-role-opacity':
+    'var(--icon-layer-secondary-stroke-role-opacity)',
+  '--icon-layer-secondary-stroke-role-width':
+    'var(--icon-layer-secondary-stroke-role-width)',
+} as const;
+
+/**
+ * The `--icon-*` defaults, on the icon's own box: the values `tokens.stylex.ts`
+ * used to declare at `:root` are now read by the elements inside this box
+ * only. `variations` bounds the layer properties, so only the shared drawing
+ * properties need a default here.
+ */
+const iconDefaultsClassName =
+  '[--icon-size:24px] [--icon-stroke-width:1.5] [--icon-stroke-linecap:round] [--icon-stroke-linejoin:round] [--icon-gap:0.75] [--icon-gap-linejoin:round] [--icon-inline-offset:0px] [--icon-block-offset:0px]';
+
+/**
+ * The icon box. `opticalSize` in `variations.stylex.ts` sets the square's size
+ * on the same element.
+ */
+export const svgIconRootClassName = tw(
+  'inline-flex shrink-0 w-[var(--icon-size)] h-[var(--icon-size)] ps-[var(--icon-inline-offset)] pt-[var(--icon-block-offset)]',
+  iconDefaultsClassName,
+);
 
 /**
  * The weight-responsive box additionally centres the probe's baseline and
  * clips the `1ch` probe, which can be wider than the box.
  */
-export const weightedSvgIconRootClassName =
-  'inline-flex shrink-0 w-[var(--icon-size)] h-[var(--icon-size)] align-middle [font-family:AstryxWeightProbe] [font-synthesis:none] overflow-clip';
+export const weightedSvgIconRootClassName = tw(
+  'inline-flex shrink-0 w-[var(--icon-size)] h-[var(--icon-size)] align-middle [font-family:AstryxWeightProbe] [font-synthesis:none] overflow-clip',
+  iconDefaultsClassName,
+);
 
 /** The drawing fills the box and paints with the icon's own colour. */
 export const weightedSvgIconSvgClassName =
