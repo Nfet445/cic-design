@@ -48,12 +48,12 @@ import {
 import {useIsHydrating} from '../hooks/useIsHydrating';
 import {useSettledOpen} from '../hooks/useSettledOpen';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {useScrollLock} from '../hooks/useScrollLock';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {
   dialogInlineClassName,
+  dialogFullscreenSafeAreaClassName,
   dialogInnerClassName,
   dialogInsetBlockEndVar,
   dialogInsetBlockStartVar,
@@ -65,7 +65,6 @@ import {
   dialogWidthVar,
   type DialogEntrance,
 } from './dialogClasses';
-import {dialogFullscreenSafeAreaStyles} from './dialogFullscreenSafeArea.stylex';
 import {tw} from '../utils/tw';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
 import {layerClickBoundary} from '../Layer/layerClickBoundary';
@@ -161,7 +160,7 @@ export interface DialogPosition extends DialogBlockPosition {
   end?: number | string;
 }
 
-export {dialogFullscreenSafeAreaPaddingContract} from './dialogFullscreenSafeArea.stylex';
+export {dialogFullscreenSafeAreaPaddingContract} from './dialogClasses';
 
 const STANDARD_DIALOG_VIEWPORT_GUTTER = spacingVarNames['--spacing-4'];
 const STANDARD_DIALOG_VIEWPORT_MAX_WIDTH = `calc(100dvw - ${STANDARD_DIALOG_VIEWPORT_GUTTER} - ${STANDARD_DIALOG_VIEWPORT_GUTTER})`;
@@ -622,29 +621,23 @@ export function Dialog({
   const innerContent = (
     <div
       ref={outletRef}
-      {...mergeProps(
-        stylex.props(
-          isFullscreen &&
-            useThemeDefault &&
-            dialogFullscreenSafeAreaStyles.fullscreenSafeArea,
-        ),
-        {
-          className: tw(
-            dialogInnerClassName,
-            containerCornerClassName,
-            container(
-              useThemeDefault
-                ? {useThemeDefault: 'dialog'}
-                : {
-                    paddingInnerX: paddingToken,
-                    paddingInnerY: paddingToken,
-                    paddingOuterX: paddingToken,
-                    paddingOuterY: paddingToken,
-                  },
-            ),
+      {...mergeProps({
+        className: tw(
+          isFullscreen && useThemeDefault && dialogFullscreenSafeAreaClassName,
+          dialogInnerClassName,
+          containerCornerClassName,
+          container(
+            useThemeDefault
+              ? {useThemeDefault: 'dialog'}
+              : {
+                  paddingInnerX: paddingToken,
+                  paddingInnerY: paddingToken,
+                  paddingOuterX: paddingToken,
+                  paddingOuterY: paddingToken,
+                },
           ),
-        },
-      )}>
+        ),
+      })}>
       <DialogContext value={dialogContextValue}>{children}</DialogContext>
     </div>
   );

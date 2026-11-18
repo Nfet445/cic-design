@@ -24,17 +24,17 @@ const GUTTER_OWNERS = new Set([
   'Layer/layerViewportInset.stylex.ts',
   'AppShell/AppShell.tsx',
   'Lightbox/Lightbox.tsx',
-  'Dialog/Dialog.tsx',
   'Toast/ToastViewport.tsx',
   'BottomSheet/BottomSheetPanel.tsx',
   'Drawer/Drawer.tsx',
-  'Dialog/dialogFullscreenSafeArea.stylex.ts',
   'Drawer/drawerContentSafeArea.stylex.ts',
   'Stepper/Step.tsx',
   'Tokenizer/useEndLaneReserve.ts',
   // Class maps that now hold the same surfaces' safe-area padding.
   'AppShell/appShellClasses.ts',
   'BottomSheet/bottomSheetPanelClasses.ts',
+  'Dialog/dialogClasses.ts',
+  'Drawer/drawerClasses.ts',
   'Lightbox/lightboxClasses.ts',
 ]);
 

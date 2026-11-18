@@ -31,6 +31,7 @@ import {
   dialogFullscreenSafeAreaPaddingContract,
   resolveDialogPositionOffsets,
 } from './Dialog';
+import {dialogFullscreenSafeAreaClassName} from './dialogClasses';
 import {DialogHeader} from './DialogHeader';
 import {getFocusableElements, useFocusTrap} from '../hooks/useFocusTrap';
 import {
@@ -90,10 +91,6 @@ function resolveCSSVarFallback(
   return vars.has(varName)
     ? vars.get(varName)!
     : resolveCSSVarFallback(fallback, vars);
-}
-
-function normalizeCSSValue(value: string): string {
-  return value.replace(/\s+/g, '');
 }
 
 // Mock showModal and close methods since they're not fully implemented in jsdom
@@ -1644,6 +1641,23 @@ describe('Dialog', () => {
       );
     });
 
+    it('writes every contract padding into the fullscreen class', () => {
+      // The class carries underscores for spaces, so a rule survives the build
+      // only when it holds the contract value verbatim.
+      const classText = dialogFullscreenSafeAreaClassName.replaceAll('_', ' ');
+      for (const value of [
+        dialogFullscreenSafeAreaPaddingContract.blockStart,
+        dialogFullscreenSafeAreaPaddingContract.blockEnd,
+        dialogFullscreenSafeAreaPaddingContract.inlineStart.ltr,
+        dialogFullscreenSafeAreaPaddingContract.inlineStart.rtl,
+        dialogFullscreenSafeAreaPaddingContract.inlineEnd.ltr,
+        dialogFullscreenSafeAreaPaddingContract.inlineEnd.rtl,
+      ]) {
+        expect(classText).toContain(value);
+      }
+      expect(classText).toContain(':dir(rtl)');
+    });
+
     it('protects default fullscreen content with safe-area padding', () => {
       render(
         <Dialog
@@ -1656,21 +1670,13 @@ describe('Dialog', () => {
       );
 
       const wrapper = screen.getByTestId('child').parentElement!;
-      const computed = window.getComputedStyle(wrapper);
-      expect(normalizeCSSValue(computed.paddingInlineStart)).toBe(
-        normalizeCSSValue(
-          dialogFullscreenSafeAreaPaddingContract.inlineStart.ltr,
-        ),
-      );
-      expect(normalizeCSSValue(computed.paddingInlineEnd)).toBe(
-        normalizeCSSValue(
-          dialogFullscreenSafeAreaPaddingContract.inlineEnd.ltr,
-        ),
-      );
+      expectClassSet(wrapper, {
+        includes: dialogFullscreenSafeAreaClassName.split(' '),
+      });
       expect(wrapper.parentElement!.tagName).toBe('DIALOG');
     });
 
-    it('applies RTL fullscreen safe-area padding to the opposite logical edges', () => {
+    it('keeps the safe-area padding class inside a right-to-left tree', () => {
       render(
         <div dir="rtl">
           <Dialog
@@ -1684,17 +1690,10 @@ describe('Dialog', () => {
       );
 
       const wrapper = screen.getByTestId('rtl-child').parentElement!;
-      const computed = window.getComputedStyle(wrapper);
-      expect(normalizeCSSValue(computed.paddingInlineStart)).toBe(
-        normalizeCSSValue(
-          dialogFullscreenSafeAreaPaddingContract.inlineStart.rtl,
-        ),
-      );
-      expect(normalizeCSSValue(computed.paddingInlineEnd)).toBe(
-        normalizeCSSValue(
-          dialogFullscreenSafeAreaPaddingContract.inlineEnd.rtl,
-        ),
-      );
+      expectClassSet(wrapper, {
+        includes: dialogFullscreenSafeAreaClassName.split(' '),
+      });
+      expect(wrapper.closest('[dir="rtl"]')).not.toBeNull();
     });
 
     it('resolves theme zero padding before the default fullscreen safe-area fallback', () => {

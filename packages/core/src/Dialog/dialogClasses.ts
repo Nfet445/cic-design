@@ -171,6 +171,50 @@ export function dialogRootClassName({
   );
 }
 
+// The theme padding the fullscreen fallback reads, then the device safe area.
+const FULLSCREEN_SAFE_AREA_BLOCK_START =
+  'var(--astryx-dialog-padding-block-start, var(--astryx-dialog-padding, max(var(--spacing-4), env(safe-area-inset-top, 0px))))';
+const FULLSCREEN_SAFE_AREA_BLOCK_END =
+  'var(--astryx-dialog-padding-block-end, var(--astryx-dialog-padding, max(var(--spacing-4), env(safe-area-inset-bottom, 0px))))';
+const FULLSCREEN_SAFE_AREA_INLINE_START_LTR =
+  'var(--astryx-dialog-padding-inline-start, var(--astryx-dialog-padding-inline, var(--astryx-dialog-padding, max(var(--spacing-4), env(safe-area-inset-left, 0px)))))';
+const FULLSCREEN_SAFE_AREA_INLINE_START_RTL =
+  'var(--astryx-dialog-padding-inline-start, var(--astryx-dialog-padding-inline, var(--astryx-dialog-padding, max(var(--spacing-4), env(safe-area-inset-right, 0px)))))';
+const FULLSCREEN_SAFE_AREA_INLINE_END_LTR =
+  'var(--astryx-dialog-padding-inline-end, var(--astryx-dialog-padding-inline, var(--astryx-dialog-padding, max(var(--spacing-4), env(safe-area-inset-right, 0px)))))';
+const FULLSCREEN_SAFE_AREA_INLINE_END_RTL =
+  'var(--astryx-dialog-padding-inline-end, var(--astryx-dialog-padding-inline, var(--astryx-dialog-padding, max(var(--spacing-4), env(safe-area-inset-left, 0px)))))';
+
+/** @internal Verified by Dialog.test.tsx; not re-exported from the package entry point. */
+export const dialogFullscreenSafeAreaPaddingContract = {
+  blockStart: FULLSCREEN_SAFE_AREA_BLOCK_START,
+  blockEnd: FULLSCREEN_SAFE_AREA_BLOCK_END,
+  inlineStart: {
+    ltr: FULLSCREEN_SAFE_AREA_INLINE_START_LTR,
+    rtl: FULLSCREEN_SAFE_AREA_INLINE_START_RTL,
+  },
+  inlineEnd: {
+    ltr: FULLSCREEN_SAFE_AREA_INLINE_END_LTR,
+    rtl: FULLSCREEN_SAFE_AREA_INLINE_END_RTL,
+  },
+} as const;
+
+// `.astryx-dialog` in the selector adds one compound, so this padding beats the
+// single-class container padding the dialog theme writes on the same element.
+// `:dir(rtl)` flips the inline edges, and outranks the LTR arm by the same
+// compound.
+const FULLSCREEN_SAFE_AREA = tw(
+  '[.astryx-dialog_&]:[padding-block-start:var(--astryx-dialog-padding-block-start,_var(--astryx-dialog-padding,_max(var(--spacing-4),_env(safe-area-inset-top,_0px))))]',
+  '[.astryx-dialog_&]:[padding-block-end:var(--astryx-dialog-padding-block-end,_var(--astryx-dialog-padding,_max(var(--spacing-4),_env(safe-area-inset-bottom,_0px))))]',
+  '[.astryx-dialog_&]:[padding-inline-start:var(--astryx-dialog-padding-inline-start,_var(--astryx-dialog-padding-inline,_var(--astryx-dialog-padding,_max(var(--spacing-4),_env(safe-area-inset-left,_0px)))))]',
+  '[.astryx-dialog_&]:[padding-inline-end:var(--astryx-dialog-padding-inline-end,_var(--astryx-dialog-padding-inline,_var(--astryx-dialog-padding,_max(var(--spacing-4),_env(safe-area-inset-right,_0px)))))]',
+  '[.astryx-dialog_&:dir(rtl)]:[padding-inline-start:var(--astryx-dialog-padding-inline-start,_var(--astryx-dialog-padding-inline,_var(--astryx-dialog-padding,_max(var(--spacing-4),_env(safe-area-inset-right,_0px)))))]',
+  '[.astryx-dialog_&:dir(rtl)]:[padding-inline-end:var(--astryx-dialog-padding-inline-end,_var(--astryx-dialog-padding-inline,_var(--astryx-dialog-padding,_max(var(--spacing-4),_env(safe-area-inset-left,_0px)))))]',
+);
+
+/** Padding for a fullscreen dialog that keeps the theme's default padding. */
+export const dialogFullscreenSafeAreaClassName = FULLSCREEN_SAFE_AREA;
+
 /** The class set of the scrolling inner surface. */
 export const dialogInnerClassName = INNER;
 
