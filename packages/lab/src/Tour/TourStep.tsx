@@ -30,7 +30,6 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   LayerDepthProvider,
   useLayer,
@@ -46,7 +45,7 @@ import {
   useInteractionModalityTracking,
 } from '@astryxdesign/core/internal/touch';
 import {Text} from '@astryxdesign/core/Text';
-import {mergeProps, focusOutlineStyles} from '@astryxdesign/core/utils';
+import {focusOutlineFocusVisibleClassName} from '@astryxdesign/core/utils';
 import {Heading} from '@astryxdesign/core/Heading';
 import {VStack, HStack} from '@astryxdesign/core/Layout';
 import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
@@ -355,8 +354,8 @@ export function TourStep({
       ref={setRegion}
       aria-labelledby={headingId}
       tabIndex={-1}
-      {...mergeProps(
-        stylex.props(focusOutlineStyles.focusVisible),
+      className={tw(
+        focusOutlineFocusVisibleClassName,
         tourStepSurfaceClassName,
       )}
       data-testid={testId}>
