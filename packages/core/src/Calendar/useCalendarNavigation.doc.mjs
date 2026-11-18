@@ -21,7 +21,8 @@ export const docs = {
     {
       name: 'options',
       type: 'UseCalendarNavigationOptions',
-      description: 'Configuration for visible month, calendar system, and navigation callbacks.',
+      description:
+        'Configuration for visible month, calendar system, and navigation callbacks.',
       required: true,
     },
     {
@@ -71,7 +72,8 @@ export const docs = {
     {
       name: 'visibleMonths',
       type: 'PlainDate[]',
-      description: 'Array of Gregorian first-day PlainDate objects for each currently visible month.',
+      description:
+        'Array of Gregorian first-day PlainDate objects for each currently visible month.',
     },
     {
       name: 'visibleCalendarMonths',
@@ -146,9 +148,11 @@ export const docsDense = {
   returnDescriptions: {
     baseMonth: 'First day PlainDate of focus month.',
     visibleMonths: 'Array of first-day PlainDate objects for visible months.',
-    visibleCalendarMonths: 'Year/month pairs in active calendar system for useCalendarDays.',
+    visibleCalendarMonths:
+      'Year/month pairs in active calendar system for useCalendarDays.',
     monthYearLabel: 'Localized month-year header string.',
-    navigateMonth: 'Steps visible month by delta, setting pendingFocus if focusedDate passed.',
+    navigateMonth:
+      'Steps visible month by delta, setting pendingFocus if focusedDate passed.',
     pendingFocus: 'Target ISO date to focus across month boundary.',
     clearPendingFocus: 'Clears pending focus state.',
   },
@@ -158,15 +162,18 @@ export const docsDense = {
     bestPractices: [
       {
         guidance: true,
-        description: 'Wire navigateMonth(-1) and navigateMonth(1) to Previous/Next buttons.',
+        description:
+          'Wire navigateMonth(-1) and navigateMonth(1) to Previous/Next buttons.',
       },
       {
         guidance: true,
-        description: 'Provide focusedDate and offset to navigateMonth during keyboard navigation.',
+        description:
+          'Provide focusedDate and offset to navigateMonth during keyboard navigation.',
       },
       {
         guidance: false,
-        description: 'Format month-year labels manually instead of using monthYearLabel.',
+        description:
+          'Format month-year labels manually instead of using monthYearLabel.',
       },
     ],
   },

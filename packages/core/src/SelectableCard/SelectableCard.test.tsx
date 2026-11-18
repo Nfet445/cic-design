@@ -12,11 +12,10 @@ import {describe, it, expect, vi} from 'vitest';
 import {render, screen, fireEvent} from '@testing-library/react';
 import {SelectableCard} from './SelectableCard';
 import {
-  afterPaintsPress,
   hasReleaseFade,
   pressArmsShadowedByDefault,
-  readsPressStrength,
 } from '../__tests__/pressState';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 describe('SelectableCard', () => {
   it('renders children', () => {
@@ -205,10 +204,18 @@ describe('SelectableCard pressed state (touch)', () => {
       throw new Error('the card carries no pressable marker');
     }
     expect(hasReleaseFade(card)).toBe(true);
-    expect(readsPressStrength(card, '[data-astryx-press="on"]')).toBe(true);
-    expect(readsPressStrength(card)).toBe(true);
-    expect(afterPaintsPress(card, '[data-astryx-press="on"]')).toBe(true);
-    expect(afterPaintsPress(card)).toBe(true);
+    // The `::after` layer reads the press strength the shared overlay arm owns,
+    // and carries the press as its own colour and image, spelled per state so
+    // that neither a layered sheet nor a flat one can shadow it.
+    expectClassSet(card, {
+      includes: [
+        'after:bg-[var(--_press-overlay)]',
+        '[&[data-astryx-press=on]]:after:[background-image:var(--_press-paint-image)]',
+        '[&[data-astryx-press=fading]]:after:[background-image:var(--_press-paint-image)]',
+        '[&[data-astryx-press=on]]:after:bg-transparent',
+        '[&[data-astryx-press=fading]]:after:bg-transparent',
+      ],
+    });
     // In a layered stylesheet a press arm on a custom property the card also
     // declares without it never applies.
     expect(pressArmsShadowedByDefault(card)).toEqual([]);

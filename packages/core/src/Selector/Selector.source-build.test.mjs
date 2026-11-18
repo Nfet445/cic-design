@@ -3,7 +3,8 @@
 /**
  * @file Selector.source-build.test.mjs
  * @input Uses Babel, an arrow-lowering plugin, the StyleX compiler, and Selector source
- * @output Verifies raw Selector source survives a consumer's Babel pipeline
+ * @output Verifies raw Selector source survives a consumer's Babel pipeline and
+ *   that its styles are class text rather than StyleX rules
  * @position Regression test for Selector source-build compatibility
  */
 
@@ -32,11 +33,12 @@ const lowerArrows = () => ({
   },
 });
 
-const EXPECTED_PADDING_DECLARATIONS = [
-  'padding-block:calc((var(--size-element-sm) - max(min(var(--spacing-5),max(var(--size-element-sm) - 2 * var(--border-width),1.5em)),20px,1rem) - 2 * var(--border-width)) / 2)',
-  'padding-block:calc((var(--size-element-md) - max(min(var(--spacing-5),max(var(--size-element-md) - 2 * var(--border-width),1.5em)),20px,1rem) - 2 * var(--border-width)) / 2)',
-  'padding-block:calc((var(--size-element-lg) - max(min(var(--spacing-5),max(var(--size-element-lg) - 2 * var(--border-width),1.5em)),20px,1rem) - 2 * var(--border-width)) / 2)',
-];
+// The size paddings are class text in `selectorOptionClasses.ts` now, so the
+// calculation no longer passes through StyleX: a `padding-block` rule here
+// would mean the computed helper crept back into this module.
+const CLASS_MAP_SOURCE = path.join(__dirname, 'selectorOptionClasses.ts');
+const SIZE_PADDING_CLASS = size =>
+  `[padding-block:calc((var(--size-element-${size})-max(min(var(--spacing-5),max(var(--size-element-${size})-2*var(--border-width),1.5em)),20px,1rem)-2*var(--border-width))/2)]`;
 
 describe('Selector source-build compatibility (#5464)', () => {
   it('compiles after a consumer preset lowers module-scope arrows', async () => {
@@ -70,10 +72,16 @@ describe('Selector source-build compatibility (#5464)', () => {
       ],
     });
 
-    const declarations = (result?.metadata?.stylex ?? [])
-      .map(([, rule]) => rule.ltr.match(/^\.[^{]+\{(.+)\}$/)?.[1])
-      .filter(declaration => declaration?.startsWith('padding-block:calc'));
+    // The module's styles are class text now: a rule here would mean a
+    // computed style crept back into the source a consumer has to compile.
+    expect(result?.metadata?.stylex ?? []).toEqual([]);
+  });
 
-    expect(declarations).toEqual(EXPECTED_PADDING_DECLARATIONS);
+  it('states the trigger size paddings as class text', async () => {
+    const source = await fs.readFile(CLASS_MAP_SOURCE, 'utf8');
+
+    for (const size of ['sm', 'md', 'lg']) {
+      expect(source).toContain(SIZE_PADDING_CLASS(size));
+    }
   });
 });

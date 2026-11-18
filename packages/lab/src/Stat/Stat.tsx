@@ -4,7 +4,7 @@
 
 /**
  * @file Stat.tsx
- * @input Uses React, StyleX, and Astryx core theme tokens/utilities
+ * @input Uses React, the shared `tw` helper and Astryx core utilities
  * @output Exports Stat component, StatProps, StatDelta, StatDeltaDirection,
  *   StatDeltaSentiment, StatSize types
  * @position Lab implementation; consumed by packages/lab/src/index.ts
@@ -17,114 +17,23 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  fontWeightVars,
-  spacingVars,
-  textSizeVars,
-  typeScaleVars,
-  typographyVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import type {BaseProps} from '@astryxdesign/core';
-import {mergeProps} from '@astryxdesign/core/utils';
+import {mergeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {themeProps} from '@astryxdesign/core/utils';
-
-/**
- * Base styles
- */
-const styles = stylex.create({
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: spacingVars['--spacing-1'],
-    minWidth: 0,
-  },
-  label: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-secondary'],
-  },
-  valueRow: {
-    display: 'flex',
-    alignItems: 'baseline',
-    gap: spacingVars['--spacing-2'],
-    minWidth: 0,
-  },
-  value: {
-    fontFamily: typographyVars['--font-family-heading'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    lineHeight: typeScaleVars['--text-heading-2-leading'],
-    color: colorVars['--color-text-primary'],
-    fontVariantNumeric: 'tabular-nums',
-  },
-  delta: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    fontVariantNumeric: 'tabular-nums',
-    whiteSpace: 'nowrap',
-  },
-  deltaGlyph: {
-    flexShrink: 0,
-  },
-  description: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-  },
-  media: {
-    marginTop: spacingVars['--spacing-1'],
-    alignSelf: 'stretch',
-    minWidth: 0,
-  },
-  srOnly: {
-    position: 'absolute',
-    width: '1px',
-    height: '1px',
-    padding: 0,
-    margin: '-1px',
-    overflow: 'hidden',
-    clip: 'rect(0 0 0 0)',
-    whiteSpace: 'nowrap',
-    borderWidth: 0,
-  },
-});
-
-/**
- * Value font-size per size variant
- */
-const sizeStyles = stylex.create({
-  sm: {
-    fontSize: textSizeVars['--font-size-xl'],
-  },
-  md: {
-    fontSize: textSizeVars['--font-size-2xl'],
-  },
-  lg: {
-    fontSize: textSizeVars['--font-size-3xl'],
-  },
-});
-
-/**
- * Delta color per resolved sentiment
- */
-const sentimentStyles = stylex.create({
-  positive: {
-    color: colorVars['--color-text-success'],
-  },
-  negative: {
-    color: colorVars['--color-text-error'],
-  },
-  neutral: {
-    color: colorVars['--color-text-secondary'],
-  },
-});
+import {tw} from '../tw';
+import {
+  statDeltaClassName,
+  statDeltaGlyphClassName,
+  statDescriptionClassName,
+  statLabelClassName,
+  statMediaClassName,
+  statRootClassName,
+  statScreenReaderTextClassName,
+  statSentimentClassNames,
+  statSizeClassNames,
+  statValueClassName,
+  statValueRowClassName,
+} from './statClasses';
 
 /** Trend direction of a delta; picks the glyph (up/down arrow, flat dash). */
 export type StatDeltaDirection = 'up' | 'down' | 'flat';
@@ -253,18 +162,23 @@ export function Stat({
       ref={ref}
       {...mergeProps(
         themeProps('stat', {size}),
-        stylex.props(styles.base, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(statRootClassName, className),
         style,
       )}
       {...props}>
-      <span {...stylex.props(styles.label)}>{label}</span>
-      <span {...stylex.props(styles.valueRow)}>
-        <span {...stylex.props(styles.value, sizeStyles[size])}>{value}</span>
+      <span className={statLabelClassName}>{label}</span>
+      <span className={statValueRowClassName}>
+        <span className={tw(statValueClassName, statSizeClassNames[size])}>
+          {value}
+        </span>
         {delta != null && sentiment != null ? (
           <span
             data-sentiment={sentiment}
-            {...stylex.props(styles.delta, sentimentStyles[sentiment])}>
+            className={tw(
+              statDeltaClassName,
+              statSentimentClassNames[sentiment],
+            )}>
             <svg
               aria-hidden="true"
               viewBox="0 0 12 12"
@@ -275,22 +189,20 @@ export function Stat({
               strokeWidth={1.5}
               strokeLinecap="round"
               strokeLinejoin="round"
-              {...stylex.props(styles.deltaGlyph)}>
+              className={statDeltaGlyphClassName}>
               <path d={DELTA_GLYPH_PATHS[delta.direction]} />
             </svg>
             {delta.value}
-            <span {...stylex.props(styles.srOnly)}>
+            <span className={statScreenReaderTextClassName}>
               ({DIRECTION_TEXT[delta.direction]})
             </span>
           </span>
         ) : null}
       </span>
       {description != null ? (
-        <span {...stylex.props(styles.description)}>{description}</span>
+        <span className={statDescriptionClassName}>{description}</span>
       ) : null}
-      {media != null ? (
-        <div {...stylex.props(styles.media)}>{media}</div>
-      ) : null}
+      {media != null ? <div className={statMediaClassName}>{media}</div> : null}
     </div>
   );
 }

@@ -14,10 +14,7 @@ import {Suspense, startTransition, use, useState, type ReactNode} from 'react';
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {render, screen, act, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {
-  declaresPressedOverlay,
-  rulesDeclaredFor,
-} from '../__tests__/pressState';
+import {classesOf} from '../__tests__/classNameAssertions';
 import * as stylex from '@stylexjs/stylex';
 import {Slider} from './Slider';
 import {FormLayout} from '../FormLayout';
@@ -26,6 +23,13 @@ import {
   __resetInteractionModalityForTest,
   getInteractionModality,
 } from '../utils/interactionModality';
+
+/** The thumb's pressed paint is a class: it reads the pressed overlay token. */
+function declaresPressedOverlay(el: Element): boolean {
+  return classesOf(el).some(className =>
+    className.includes('--color-overlay-pressed'),
+  );
+}
 
 // Mock showPopover/hidePopover (not implemented in jsdom) so the tooltip layer
 // reflects its open state via a `popover-open` attribute the tests can assert.
@@ -1009,13 +1013,10 @@ describe('Slider', () => {
   // --- Marks color ---
 
   /** Whether the element has an unconditional rule painting a token. */
+  // The mark's fill is a class now, and jsdom never loads the built Tailwind
+  // sheet, so the class set is what these tests can read.
   function declaresColorToken(el: Element, token: string): boolean {
-    return rulesDeclaredFor(el).some(rule => {
-      const selector = rule
-        .slice(0, rule.indexOf('{'))
-        .replaceAll(':not(#\\#)', '');
-      return !selector.includes(':') && rule.includes(`var(${token})`);
-    });
+    return classesOf(el).some(className => className.includes(`var(${token})`));
   }
 
   it('uses the track color for unfilled marks and the accent for filled marks', () => {

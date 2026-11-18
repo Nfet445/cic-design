@@ -43,28 +43,30 @@ import {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  sizeVars,
-  fontWeightVars,
-  typeScaleVars,
-  durationVars,
-  easeVars,
-  radiusVars,
-} from '../theme/tokens.stylex';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {usePopover} from '../Popover/usePopover';
 import {useMenuHover} from '../hooks/useMenuHover';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {useTooltip} from '../Tooltip';
-import {navItemStyles, type NavItemSize} from '../NavItem/navItemStyles.stylex';
+import {
+  navItemClassName,
+  navItemDisabledClassName,
+  navItemSelectedClassName,
+  navItemSizeClassName,
+  type NavItemSize,
+} from '../NavItem/navItemClasses';
 import {SizeProvider} from '../SizeContext/SizeContext';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {
+  focusOutlineFocusVisibleClassName,
+  focusOutlineSuppressedClassName,
+  focusOutlineWithinFirstChildClassName,
+} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
   useSideNavCollapse,
@@ -87,225 +89,37 @@ import {
 import english from '../i18n/generated-english/SideNav/SideNavItem.generated';
 import {isRenderable} from '../utils/isRenderable';
 import {createSharedContext} from '../utils/sharedContext';
+import {tw} from '../utils/tw';
+import {
+  SIDE_NAV_INDENT_VAR,
+  sideNavItemClassName,
+  sideNavItemCollapsedSquareClassName,
+  sideNavItemIndentClassName,
+  sideNavItemPrimaryIndentClassName,
+} from './sideNavItemClasses';
 
 registerEnglishFallback(english);
 // =============================================================================
 // Styles
 // =============================================================================
 
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-  },
-  // A collapsed rail row holds only its icon, so it keeps a fixed square.
-  itemCollapsed: {
-    justifyContent: 'center',
-    width: sizeVars['--size-element-md'],
-    height: sizeVars['--size-element-md'],
-    paddingInline: 0,
-  },
-  itemCollapsedSm: {
-    width: sizeVars['--size-element-sm'],
-    height: sizeVars['--size-element-sm'],
-  },
-  itemCollapsedLg: {
-    width: sizeVars['--size-element-lg'],
-    height: sizeVars['--size-element-lg'],
-  },
-  label: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  endContent: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-  },
-  // Row-level secondary controls (actions slot) — siblings of the primary
-  // element at the trailing edge of the row. pointerEvents opts back in when
-  // a disabled row's navItemStyles.disabled sets pointer-events: none on the
-  // wrapper: the slot is passthrough, so each control owns its own disabled
-  // state (keyboard focus already reaches it either way).
-  actions: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    pointerEvents: 'auto',
-  },
-  // The group clips its rows only for the 0fr collapse animation. Nested rows
-  // sit flush with the group, so a permanent clip would cut off their focus
-  // ring, which paints outside the row. The expanded group therefore stops
-  // clipping once it has finished opening: `overflow` is discrete, so it rides
-  // the same transition with `allow-discrete` and a delay equal to the open
-  // duration, holding `hidden` until the rows' height has settled. Collapsing
-  // flips back to `hidden` at once (no delay on the collapsed state), so
-  // nothing spills while the group closes.
-  //
-  // Reduced fallback: a browser without `transition-behavior: allow-discrete`
-  // (the tier below current Baseline) cannot delay the switch, so the group
-  // stops clipping as soon as it starts opening and the opening rows briefly
-  // overlap the row below. The group still opens and the ring still shows.
-  childrenCollapsible: {
-    display: 'grid',
-    gridTemplateRows: '1fr',
-    overflow: 'visible',
-    transitionProperty: 'grid-template-rows, overflow',
-    transitionBehavior: 'allow-discrete',
-    transitionDuration: {
-      default: `${durationVars['--duration-medium']}, 0s`,
-      '@media (prefers-reduced-motion: reduce)': '0s, 0s',
-    },
-    transitionDelay: {
-      default: `0s, ${durationVars['--duration-medium']}`,
-      '@media (prefers-reduced-motion: reduce)': '0s, 0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  childrenCollapsed: {
-    gridTemplateRows: '0fr',
-    overflow: 'hidden',
-    transitionDelay: '0s, 0s',
-  },
-  // No inline padding: nested rows fill the full width of the nav list, and
-  // each row carries its own indent (`indentStyles` below). `minHeight: 0`
-  // lets the 0fr track shrink this item to nothing; the group clips it.
-  childrenInner: {
-    minHeight: 0,
-  },
-  expandChevron: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: spacingVars['--spacing-6'],
-    height: spacingVars['--spacing-6'],
-    // Icon's `lg` would also set font-size: 1.5rem, and the registry chevron
-    // is a 1em SVG — that would blow the glyph up from the 14px it inherits
-    // from the row to the full 24px box. The 24px box is the touch/alignment
-    // target, not the glyph size, so keep the glyph on the inherited size.
-    fontSize: 'inherit',
-    transitionProperty: 'transform',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-    flexShrink: 0,
-  },
-  // Inside a whole-row toggle the chevron takes its 1em glyph's height, so
-  // the row's height comes from its label, not from the chevron's box.
-  expandChevronInRow: {
-    height: 'auto',
-  },
-  expandChevronExpanded: {
-    transform: 'rotate(180deg)',
-  },
-  // Standalone toggle button for the chevron when collapsible + href.
-  // Boxed like a `size="sm"` icon Button so it and whatever sits in
-  // `actions` paint one size of hover pill; without a box of its own it
-  // shrank to the 24px chevron beside a 28px menu button.
-  // SYNC: matches ROW_CONTROL_SIZE below.
-  expandToggle: {
-    width: sizeVars['--size-element-sm'],
-    height: sizeVars['--size-element-sm'],
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-  },
-  // Primary action element inside the split-action row (link or button).
-  // Flex:1 so it fills remaining space, giving a wide click target.
-  // `alignSelf: stretch` makes it fill the row's height too — without it the
-  // element collapses to its line box (20px), under the 24px WCAG 2.5.8
-  // target-size floor even though the row it sits in is 32px tall.
-  // Resets both link and button appearance so it blends into the row.
-  splitAction: {
-    display: 'flex',
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    gap: spacingVars['--spacing-2'],
-    flex: 1,
-    minWidth: 0,
-    color: 'inherit',
-    textDecoration: 'none',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    fontWeight: 'inherit',
-    lineHeight: 'inherit',
-    textAlign: 'start',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // No border and no background: `usePopover` paints the panel this renders
-  // into. Drawing a second surface here put square corners inside its rounded
-  // ones. The radius matches so a theme retargeting `--radius-container`
-  // keeps the two in step.
-  popoverSurface: {
-    borderRadius: radiusVars['--radius-container'],
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-1'],
-    minWidth: 180,
-  },
-  // The gap from the rail belongs on the positioned layer, where
-  // `DropdownMenu` keeps it. On the content div it insets the content instead,
-  // leaving the panel flush against the rail.
-  popoverGap: {
-    marginInlineStart: spacingVars['--spacing-1'],
-    marginInlineEnd: spacingVars['--spacing-1'],
-  },
-  popoverHeader: {
-    paddingInline: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-1'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    color: colorVars['--color-text-secondary'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-  },
-});
-
 // Nesting indent, drawn inside the row: one `--spacing-6` step per nesting
 // level. The row itself stays full width, so its hover and selected fill
-// matches a top-level row's.
-// - `sm` / `md` — the ordinary row, where the row element is the link or
+// matches a top-level row's. The depth is unbounded, so it reaches the element
+// as an inline count and the class computes the padding from it.
+// - the row class — the ordinary row, where the row element is the link or
 //   button: its own inline-start padding plus the steps.
-//   SYNC: the base padding matches navItemStyles.sm / .md / .lg.
-// - `primary` — the row-wrapper path: the wrapper keeps its base padding and
-//   the steps go on the primary link or button, so the whole indent is part
-//   of the click target rather than dead space that still shows feedback.
-const indentStyles = stylex.create({
-  sm: (depth: number) => ({
-    paddingInlineStart: `calc(${spacingVars['--spacing-1']} + ${depth} * ${spacingVars['--spacing-6']})`,
-  }),
-  md: (depth: number) => ({
-    paddingInlineStart: `calc(${spacingVars['--spacing-2']} + ${depth} * ${spacingVars['--spacing-6']})`,
-  }),
-  primary: (depth: number) => ({
-    paddingInlineStart: `calc(${depth} * ${spacingVars['--spacing-6']})`,
-  }),
-});
+// - the primary class — the row-wrapper path: the wrapper keeps its base
+//   padding and the steps go on the primary link or button, so the whole
+//   indent is part of the click target rather than dead space that still shows
+//   feedback.
+type IndentStyle = React.CSSProperties &
+  Partial<Record<typeof SIDE_NAV_INDENT_VAR, string>>;
+
+/** The indent's depth as the inline value its class reads. */
+function indentStyle(depth: number): IndentStyle {
+  return {[SIDE_NAV_INDENT_VAR]: String(depth)};
+}
 
 /**
  * How many SideNavItems deep the current item sits: 0 at the top level,
@@ -325,7 +139,7 @@ SideNavItemDepthContext.displayName = 'SideNavItemDepthContext';
  * the way `SideNav` already cascades one size to its footer icons. An
  * explicit `size` on a supplied control still wins.
  *
- * SYNC: `styles.expandToggle` carries the matching box.
+ * SYNC: `sideNavItemClassName.toggle` carries the matching box.
  */
 const ROW_CONTROL_SIZE = 'sm';
 
@@ -698,18 +512,21 @@ export function SideNavItem({
           selected: isSelected ? 'selected' : null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        focusOutlineProps.focusVisible(
-          navItemStyles.item,
-          interactionOverlayStyles.backgroundColor,
-          navItemStyles[size],
-          styles.itemCollapsed,
-          size === 'sm' && styles.itemCollapsedSm,
-          size === 'lg' && styles.itemCollapsedLg,
-          isSelected && navItemStyles.selected,
-          isDisabled && navItemStyles.disabled,
+        stylex.props(
+          // The strength and the release; the colour is a class below.
+          interactionOverlayStyles.pressedAlpha,
         ),
         // Spread after `rest`, so keep the caller's class beside these.
-        rest.className,
+        tw(
+          navItemClassName(),
+          sideNavItemCollapsedSquareClassName(size),
+          sideNavItemClassName.collapsedItem,
+          isSelected && navItemSelectedClassName(),
+          isDisabled && navItemDisabledClassName(),
+          rest.className,
+          interactionOverlayBackgroundColorClassName,
+          focusOutlineFocusVisibleClassName,
+        ),
       ),
       ...pressable,
     };
@@ -722,7 +539,9 @@ export function SideNavItem({
     // Items with children: popover trigger + popover
     if (hasChildren) {
       return (
-        <div ref={rowRef} {...stylex.props(styles.root, xstyle)}>
+        <div
+          ref={rowRef}
+          {...mergeProps(xstyleProps(xstyle), sideNavItemClassName.root)}>
           <button
             ref={mergedTriggerRef}
             type="button"
@@ -736,18 +555,22 @@ export function SideNavItem({
           </button>
           {popover.render(
             <div
-              {...stylex.props(styles.popoverSurface)}
+              className={sideNavItemClassName.popoverSurface}
               onMouseEnter={hoverContentProps.onMouseEnter}
               onMouseLeave={hoverContentProps.onMouseLeave}
               onClick={() => popover.hide()}>
-              <div {...stylex.props(styles.popoverHeader)}>{label}</div>
+              <div className={sideNavItemClassName.popoverHeader}>{label}</div>
               <SideNavCollapseContext value={EXPANDED_COLLAPSE_STATE}>
                 <SideNavItemDepthContext value={0}>
                   {children}
                 </SideNavItemDepthContext>
               </SideNavCollapseContext>
             </div>,
-            {placement: 'end', alignment: 'start', xstyle: styles.popoverGap},
+            {
+              placement: 'end',
+              alignment: 'start',
+              className: sideNavItemClassName.popoverGap,
+            },
           )}
         </div>
       );
@@ -756,7 +579,7 @@ export function SideNavItem({
     // Items without children: icon-only link or button, its label in a
     // tooltip. The control is the trigger, so the element that takes focus is
     // the one described. A disabled control takes no pointer
-    // (`navItemStyles.disabled`), so its row listens for the tooltip instead;
+    // (`navItemDisabledClassName`), so its row listens for the tooltip instead;
     // the control still takes focus (focusin reaches the row) and stays the
     // element described (spec:AST-085 FR5).
     const isRowTrigger = isDisabled;
@@ -788,7 +611,7 @@ export function SideNavItem({
     return (
       <div
         ref={isRowTrigger ? rowTooltipRef : rowRef}
-        {...stylex.props(styles.root, xstyle)}>
+        {...mergeProps(xstyleProps(xstyle), sideNavItemClassName.root)}>
         {collapsedElement}
         {railTooltip.renderTooltip(label)}
       </div>
@@ -803,20 +626,22 @@ export function SideNavItem({
           // `inherit` — see the collapsed path above.
           color: isSelected ? 'inherit' : isDisabled ? 'disabled' : 'secondary',
         })}
-      {!isCollapsed && <span {...stylex.props(styles.label)}>{label}</span>}
+      {!isCollapsed && (
+        <span className={sideNavItemClassName.label}>{label}</span>
+      )}
       {!isCollapsed && isRenderable(endContent) && (
-        <span {...stylex.props(styles.endContent)}>{endContent}</span>
+        <span className={sideNavItemClassName.endContent}>{endContent}</span>
       )}
       {!isCollapsed && isItemCollapsible && !hasIndependentToggle && (
         <Icon
           icon="chevronDown"
           size="lg"
           color="inherit"
-          xstyle={[
-            styles.expandChevron,
-            styles.expandChevronInRow,
-            !isItemCollapsed && styles.expandChevronExpanded,
-          ]}
+          className={tw(
+            sideNavItemClassName.chevron,
+            sideNavItemClassName.chevronInRow,
+            !isItemCollapsed && sideNavItemClassName.chevronExpanded,
+          )}
         />
       )}
     </>
@@ -829,21 +654,22 @@ export function SideNavItem({
   });
 
   const itemStyleArgs = [
-    navItemStyles.item,
-    interactionOverlayStyles.backgroundColor,
-    navItemStyles[size],
-    isSelected && navItemStyles.selected,
-    isDisabled && navItemStyles.disabled,
+    // The strength and the release; the colour is a class below.
+    interactionOverlayStyles.pressedAlpha,
   ] as const;
   const rowIndent =
-    depth > 0 && indentStyles[size === 'sm' ? 'sm' : 'md'](depth);
-  const primaryIndent = depth > 0 && indentStyles.primary(depth);
+    depth > 0 && sideNavItemIndentClassName(size === 'sm' ? 'sm' : 'md');
+  const primaryIndent = depth > 0 && sideNavItemPrimaryIndentClassName();
 
   // The indent is a runtime value, so it reaches the element as an inline
-  // style. These props are spread after `rest`, so fold the caller's `style`
-  // back in (caller wins) rather than letting the indent replace it, and the
-  // caller's `className` beside the row's own classes.
+  // custom property. These props are spread after `rest`, so fold the caller's
+  // `style` back in (caller wins) rather than letting the indent replace it,
+  // and the caller's `className` beside the row's own classes.
   const callerStyle = {className: rest.className, style: rest.style};
+  const rowIndentStyle = depth > 0 ? indentStyle(depth) : undefined;
+  const indentedStyle = rowIndentStyle
+    ? {...rowIndentStyle, ...callerStyle.style}
+    : callerStyle.style;
 
   // Three shapes of the same row appearance:
   // - `rowProps` — split-action path (toggle, no actions): presentational
@@ -854,23 +680,49 @@ export function SideNavItem({
   //   never match, and matching any descendant instead would light the whole
   //   row around the chevron's or an action's own ring.
   const rowProps = {
-    ...mergeProps(itemThemeProps, stylex.props(...itemStyleArgs)),
+    ...mergeProps(
+      itemThemeProps,
+      stylex.props(...itemStyleArgs),
+      tw(
+        navItemClassName(),
+        navItemSizeClassName(size),
+        isSelected && navItemSelectedClassName(),
+        isDisabled && navItemDisabledClassName(),
+        interactionOverlayBackgroundColorClassName,
+      ),
+    ),
     ...pressable,
   };
   const focusableRowProps = {
     ...mergeProps(
       itemThemeProps,
-      mergeProps(
-        focusOutlineProps.focusVisible(...itemStyleArgs, rowIndent),
-        callerStyle,
+      stylex.props(...itemStyleArgs),
+      tw(
+        navItemClassName(),
+        navItemSizeClassName(size),
+        isSelected && navItemSelectedClassName(),
+        isDisabled && navItemDisabledClassName(),
+        rowIndent,
+        callerStyle.className,
+        interactionOverlayBackgroundColorClassName,
+        focusOutlineFocusVisibleClassName,
       ),
+      indentedStyle,
     ),
     ...pressable,
   };
   const actionsRowProps = {
     ...mergeProps(
       itemThemeProps,
-      focusOutlineProps.focusWithinFirstChild(...itemStyleArgs),
+      stylex.props(...itemStyleArgs),
+      tw(
+        navItemClassName(),
+        navItemSizeClassName(size),
+        isSelected && navItemSelectedClassName(),
+        isDisabled && navItemDisabledClassName(),
+        interactionOverlayBackgroundColorClassName,
+        focusOutlineWithinFirstChildClassName,
+      ),
     ),
     ...pressable,
   };
@@ -910,15 +762,18 @@ export function SideNavItem({
           {...rest}
           {...rowPrimaryAriaProps}
           {...mergeProps(
-            hasActions
-              ? // The wrapper rings for this element; suppressing here is what
-                // keeps the UA's own ring from painting inside that one.
-                focusOutlineProps.suppressed(styles.splitAction, primaryIndent)
-              : focusOutlineProps.focusVisible(
-                  styles.splitAction,
-                  primaryIndent,
-                ),
-            callerStyle,
+            tw(
+              primaryIndent,
+              sideNavItemClassName.splitAction,
+              callerStyle.className,
+              // The wrapper rings for this element; suppressing here is what
+              // keeps the UA's own ring from painting inside that one.
+              hasActions
+                ? focusOutlineSuppressedClassName
+                : focusOutlineFocusVisibleClassName,
+            ),
+            // Second argument is a props object, so the style rides in one.
+            indentedStyle ? {style: indentedStyle} : {},
           )}>
           {itemContent}
         </NavItemElement>
@@ -933,24 +788,32 @@ export function SideNavItem({
             }
             aria-expanded={!isItemCollapsed}
             aria-controls={`${id}-children`}
-            {...pressable}
-            {...focusOutlineProps.focusVisible(
-              styles.expandToggle,
-              interactionOverlayStyles.backgroundColor,
+            {...mergeProps(
+              pressable,
+              stylex.props(
+                // The strength and the release; the colour is a class below.
+                interactionOverlayStyles.pressedAlpha,
+              ),
+              tw(
+                sideNavItemClassName.toggle,
+                interactionOverlayBackgroundColorClassName,
+                focusOutlineFocusVisibleClassName,
+              ),
             )}>
             <Icon
               icon="chevronDown"
               size="lg"
               color="inherit"
-              xstyle={[
-                styles.expandChevron,
-                !isItemCollapsed && styles.expandChevronExpanded,
-              ]}
+              className={tw(
+                sideNavItemClassName.chevron,
+                !isItemCollapsed && sideNavItemClassName.chevronExpanded,
+              )}
             />
           </button>
         )}
         {hasActions && (
-          <span {...stylex.props(styles.actions)}>
+          /* eslint-disable-next-line @astryx/no-style-only-wrapper -- SizeProvider renders no element, so the slot box lives on this span; the rule reads StyleX objects, not class text. */
+          <span className={sideNavItemClassName.actions}>
             <SizeProvider value={ROW_CONTROL_SIZE}>{actions}</SizeProvider>
           </span>
         )}
@@ -981,7 +844,9 @@ export function SideNavItem({
   }
 
   const item = (
-    <div ref={rowRef} {...stylex.props(styles.root, xstyle)}>
+    <div
+      ref={rowRef}
+      {...mergeProps(xstyleProps(xstyle), sideNavItemClassName.root)}>
       {itemElement}
       {hasChildren && !isCollapsed && (
         <div
@@ -990,11 +855,13 @@ export function SideNavItem({
           aria-labelledby={`${id}-label`}
           aria-hidden={isItemCollapsed}
           inert={isItemCollapsed ? true : undefined}
-          {...stylex.props(
-            styles.childrenCollapsible,
-            isItemCollapsed && styles.childrenCollapsed,
+          className={tw(
+            sideNavItemClassName.childrenGroup,
+            isItemCollapsed
+              ? sideNavItemClassName.childrenGroupCollapsed
+              : sideNavItemClassName.childrenGroupExpanded,
           )}>
-          <div {...stylex.props(styles.childrenInner)}>
+          <div className={sideNavItemClassName.childrenInner}>
             <span id={`${id}-label`} hidden>
               {label}
             </span>

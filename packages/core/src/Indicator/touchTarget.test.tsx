@@ -12,7 +12,6 @@
  *   Indicator/__tests__/TouchTargets.interaction.browser.spec.ts
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {fireEvent, render, screen} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {CheckboxInput} from '../CheckboxInput/CheckboxInput';
@@ -21,7 +20,9 @@ import {CheckboxListItem} from '../CheckboxList/CheckboxListItem';
 import {RadioList} from '../RadioList/RadioList';
 import {RadioListItem} from '../RadioList/RadioListItem';
 import {HIT_INSET_PROPERTIES, resetHitAreaForTests} from '../utils/hitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {checkboxInputRowClassName} from '../CheckboxInput/checkboxInputClasses';
+import {classesOf} from '../__tests__/classNameAssertions';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 
 interface Declared {
   media: string | null;
@@ -91,9 +92,7 @@ function paddingBlockOf(el: Element, media: string | null): string[] {
 
 /** Whether `el` carries every class of the shared hit band. */
 function hasHitLayer(el: Element): boolean {
-  const layer = (stylex.props(touchHitAreaStyles.layer).className ?? '')
-    .split(/\s+/)
-    .filter(Boolean);
+  const layer = touchHitAreaLayerClassName.split(/\s+/).filter(Boolean);
   if (layer.length === 0) {
     throw new Error('the hit band has no classes');
   }
@@ -119,12 +118,20 @@ describe('CheckboxInput under a finger', () => {
       screen.getByRole('checkbox', {name: 'Accept terms'}),
       '[data-astryx-pressable]',
     );
-    expect(valueOf(row, 'min-height', TOUCH)).toBeUndefined();
-    expect(valueOf(row, 'min-height', null)).toBeUndefined();
+    // The row's own height is the row's, never the band's: the band is a
+    // pseudo-element, so no min-height utility appears at either pointer.
+    expect(
+      Array.from(row.classList).filter(name => name.includes('min-h-')),
+    ).toEqual([]);
     expect(hasHitLayer(row)).toBe(true);
     // The row holds the band only under a finger; a mouse sees no change.
-    expect(valueOf(row, 'position', TOUCH)).toBe('relative');
-    expect(valueOf(row, 'position', null)).toBeUndefined();
+    const rowClass = checkboxInputRowClassName({
+      isLabelHidden: false,
+      hasHitArea: true,
+    });
+    expect(rowClass.split(' ')).toContain('pointer-coarse:relative');
+    expect(classesOf(row)).toEqual(expect.arrayContaining(rowClass.split(' ')));
+    expect(classesOf(row)).not.toContain('relative');
   });
 
   it('gives a label-hidden, disabled or read-only checkbox no hit band', () => {

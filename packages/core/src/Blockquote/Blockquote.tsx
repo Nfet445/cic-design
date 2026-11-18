@@ -2,7 +2,8 @@
 
 /**
  * @file Blockquote.tsx
- * @input Uses React, stylex, spacing and color tokens
+ * @input Uses React, the blockquote class map, and the xstyle adapter for the
+ *   consumer's `xstyle`
  * @output Exports Blockquote component and BlockquoteProps
  * @position Blockquote component; renders styled quotations with optional attribution
  *
@@ -15,10 +16,14 @@
 
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars, spacingVars, typeScaleVars} from '../theme/tokens.stylex';
+import {
+  blockquoteCiteClassName,
+  blockquoteClassName,
+} from './blockquoteClasses';
 import {isRenderable, mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 export interface BlockquoteProps extends BaseProps<HTMLQuoteElement> {
   /** Ref forwarded to the root <blockquote> element */
@@ -31,28 +36,6 @@ export interface BlockquoteProps extends BaseProps<HTMLQuoteElement> {
    */
   cite?: ReactNode;
 }
-
-const styles = stylex.create({
-  root: {
-    borderInlineStartWidth: spacingVars['--spacing-0-5'],
-    borderInlineStartStyle: 'solid',
-    borderInlineStartColor: colorVars['--color-border-emphasized'],
-    paddingInlineStart: spacingVars['--spacing-4'],
-    color: colorVars['--color-text-secondary'],
-    overflowWrap: 'break-word',
-    marginInlineStart: 0,
-    marginInlineEnd: 0,
-    marginBlockStart: 0,
-    marginBlockEnd: 0,
-  },
-  cite: {
-    display: 'block',
-    marginBlockStart: spacingVars['--spacing-2'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontStyle: 'normal',
-  },
-});
 
 /**
  * Blockquote component for displaying quoted content.
@@ -79,7 +62,9 @@ export function Blockquote({
       ref={ref}
       {...mergeProps(
         themeProps('blockquote'),
-        stylex.props(styles.root, xstyle),
+        {
+          className: tw(blockquoteClassName, xstyleProps(xstyle).className),
+        },
         className,
         style,
       )}
@@ -89,7 +74,9 @@ export function Blockquote({
         A bare <cite>, never wrapped in <footer>: <blockquote> is a sectioning
         root, so a <footer> inside it maps to a contentinfo document landmark.
       */}
-      {isRenderable(cite) && <cite {...stylex.props(styles.cite)}>{cite}</cite>}
+      {isRenderable(cite) && (
+        <cite className={blockquoteCiteClassName}>{cite}</cite>
+      )}
     </blockquote>
   );
 }

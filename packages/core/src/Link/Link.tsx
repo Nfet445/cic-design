@@ -17,17 +17,9 @@
  */
 
 import {use, type ReactNode} from 'react';
-import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
+import type {BaseProps} from '../BaseProps';
 
-import {
-  colorVars,
-  durationVars,
-  easeVars,
-  focusVars,
-  spacingVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import {Icon} from '../Icon';
 import {Tooltip} from '../Tooltip';
 import {Text} from '../Text';
@@ -43,11 +35,20 @@ import type {
 import {useLinkComponent} from './useLinkComponent';
 import type {LinkComponentType} from './types';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  linkClassName,
+  linkColorClassName,
+  linkExternalIconInClampedTextClassName,
+  linkLabelClassName,
+} from './linkClasses';
 import {computeTargetAndRel} from './computeTargetAndRel';
 import {useInteractiveRole} from '../hooks/useInteractiveRole';
 import {themeDataAttributes, themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayPressedBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {disabledInteractionProps} from '../utils/disabledInteraction';
 import {
@@ -57,127 +58,6 @@ import {
 import english from '../i18n/generated-english/Link/Link.generated';
 
 registerEnglishFallback(english);
-
-/**
- * Base link styles
- */
-const styles = stylex.create({
-  base: {
-    display: 'inline-flex',
-    // The root stops at its container, and the label below can shrink. Thus
-    // a label with no break opportunity, such as a bare URL, wraps inside the
-    // line and does not push past it.
-    maxWidth: '100%',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-0-5'],
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-    fontWeight: 'inherit',
-    textDecoration: {
-      default: 'none',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': 'underline',
-      },
-    },
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    transitionProperty: 'color, text-decoration',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  // A truncating root may shrink below its label's length inside a flex row,
-  // so its Text overflows and draws an ellipsis (`component:Link` FR6,
-  // `component:Text` FR4).
-  truncating: {
-    minWidth: 0,
-  },
-  // A flex item's min-width defaults to its longest word; zero lets the label
-  // shrink to the root, so its text wraps.
-  label: {
-    minWidth: 0,
-  },
-  /**
-   * Reset styles for rendering as a <button> when href is undefined.
-   * Strips all native button chrome so it looks identical to a link.
-   */
-  buttonReset: {
-    backgroundColor: 'transparent',
-    borderStyle: 'none',
-    padding: 0,
-    // Browsers centre a button's text; a wrapped label lines up as an
-    // anchor's does.
-    textAlign: 'inherit',
-    pointerEvents: 'auto',
-    position: 'relative',
-  },
-  // Inside a clamped Text the root joins the text's line boxes, so the
-  // clamp can cut through the link. An inline-flex box is atomic: a clamp
-  // cannot truncate it. The clamp also clips at the line edges, so the ring
-  // sits inside each line box.
-  inClampedText: {
-    display: 'inline',
-    outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
-  },
-  externalIconInClampedText: {
-    marginInlineStart: spacingVars['--spacing-0-5'],
-    verticalAlign: 'middle',
-  },
-  hasUnderline: {
-    textDecoration: 'underline',
-  },
-  disabled: {
-    cursor: 'default',
-    opacity: 0.5,
-    pointerEvents: 'none',
-  },
-  standalone: {
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-  },
-});
-
-/**
- * Link color styles — applied to the <a> element so the underline
- * and icon colors match the text color set by Text.
- */
-const linkColorStyles = stylex.create({
-  primary: {
-    color: {
-      default: colorVars['--color-text-primary'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': `color-mix(in srgb, ${colorVars['--color-text-primary']}, ${colorVars['--color-tint-hover']} 15%)`,
-      },
-    },
-  },
-  secondary: {
-    color: {
-      default: colorVars['--color-text-secondary'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': `color-mix(in srgb, ${colorVars['--color-text-secondary']}, ${colorVars['--color-tint-hover']} 15%)`,
-      },
-    },
-  },
-  disabled: {
-    color: colorVars['--color-text-disabled'],
-  },
-  placeholder: {
-    color: colorVars['--color-text-secondary'],
-  },
-  accent: {
-    color: {
-      default: colorVars['--color-text-accent'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': `color-mix(in srgb, ${colorVars['--color-text-accent']}, ${colorVars['--color-tint-hover']} 15%)`,
-      },
-    },
-  },
-  inherit: {
-    color: 'inherit',
-  },
-});
 
 export interface LinkProps extends BaseProps<
   HTMLAnchorElement | HTMLButtonElement
@@ -401,7 +281,23 @@ export function Link({
   // For a color the root paints, the label inherits it, so the label, the
   // underline, and the icon keep one color at rest and on hover, whatever a
   // theme sets on its text targets.
-  const labelColor: TextColor = color in linkColorStyles ? 'inherit' : color;
+  const labelColor: TextColor = color in linkColorClassName ? 'inherit' : color;
+
+  // The link's own paint, kept before the caller's className so a consumer
+  // rule still merges last.
+  const rootClassName = tw(
+    linkClassName({
+      hasUnderline,
+      isButton: renderAsButton,
+      isDisabled,
+      // A button is its own box: a clamp never cuts a control's own content,
+      // so it keeps the inline-flex form.
+      isInClampedText: isInClampedText && !renderAsButton,
+      isStandalone,
+      isTruncating: maxLines > 0,
+    }),
+    linkColorClassName[color],
+  );
 
   const sharedContent = (
     <>
@@ -412,7 +308,7 @@ export function Link({
         color={labelColor}
         display={display}
         maxLines={maxLines}
-        xstyle={styles.label}>
+        className={linkLabelClassName}>
         {children}
       </Text>
       {isExternalWithIcon && (
@@ -421,8 +317,15 @@ export function Link({
             icon="externalLink"
             size="xsm"
             color="inherit"
-            xstyle={isInClampedText && styles.externalIconInClampedText}
+            className={
+              isInClampedText
+                ? linkExternalIconInClampedTextClassName
+                : undefined
+            }
           />
+          {/* The label and the hint are adjacent inline boxes, so the hint
+              needs a word boundary of its own: without it a screen reader
+              reads `Docs(opens in new tab)`. */}{' '}
           <VisuallyHidden>{newTabLabel}</VisuallyHidden>
         </>
       )}
@@ -441,21 +344,21 @@ export function Link({
         aria-label={label || undefined}
         {...mergeProps(
           themeProps('link', {color}),
-          focusOutlineProps.focusVisible(
-            styles.base,
-            styles.buttonReset,
-            linkColorStyles[color],
-            // The system's pressed overlay behind the text; the hover stays the
-            // colour change above, so a press is the one background it paints.
-            !isDisabled && interactionOverlayStyles.pressedBackgroundColor,
-            hasUnderline && styles.hasUnderline,
-            isStandalone && styles.standalone,
-            isDisabled && styles.disabled,
-            maxLines > 0 && styles.truncating,
-            xstyle,
+          stylex.props(
+            // The strength and the release; the press paint is a class below.
+            !isDisabled && interactionOverlayStyles.pressedAlpha,
           ),
-          className,
-          style,
+          tw(
+            rootClassName,
+            className,
+            // The system's pressed overlay behind the text; the hover stays
+            // the colour change above, so a press is the one background it
+            // paints.
+            !isDisabled && interactionOverlayPressedBackgroundColorClassName,
+            focusOutlineFocusVisibleClassName,
+            xstyleProps(xstyle).className,
+          ),
+          {...xstyleProps(xstyle).style, ...style},
         )}
         {...props}
         {...reflectedAttributes}
@@ -477,17 +380,8 @@ export function Link({
         tabIndex={0}
         {...mergeProps(
           themeProps('link', {color}),
-          focusOutlineProps.focusVisible(
-            styles.base,
-            isInClampedText && styles.inClampedText,
-            linkColorStyles[color],
-            hasUnderline && styles.hasUnderline,
-            isStandalone && styles.standalone,
-            styles.disabled,
-            maxLines > 0 && styles.truncating,
-            xstyle,
-          ),
-          className,
+          xstyleProps(xstyle),
+          tw(rootClassName, className, focusOutlineFocusVisibleClassName),
           style,
         )}
         {...props}
@@ -510,19 +404,18 @@ export function Link({
         tabIndex={isDisabled ? -1 : undefined}
         {...mergeProps(
           themeProps('link', {color}),
-          focusOutlineProps.focusVisible(
-            styles.base,
-            isInClampedText && styles.inClampedText,
-            linkColorStyles[color],
-            !isDisabled && interactionOverlayStyles.pressedBackgroundColor,
-            hasUnderline && styles.hasUnderline,
-            isStandalone && styles.standalone,
-            isDisabled && styles.disabled,
-            maxLines > 0 && styles.truncating,
-            xstyle,
+          stylex.props(
+            // The strength and the release; the press paint is a class below.
+            !isDisabled && interactionOverlayStyles.pressedAlpha,
           ),
-          className,
-          style,
+          tw(
+            rootClassName,
+            className,
+            !isDisabled && interactionOverlayPressedBackgroundColorClassName,
+            focusOutlineFocusVisibleClassName,
+            xstyleProps(xstyle).className,
+          ),
+          {...xstyleProps(xstyle).style, ...style},
         )}
         {...props}
         {...reflectedAttributes}>

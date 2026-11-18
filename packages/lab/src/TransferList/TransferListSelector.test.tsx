@@ -670,11 +670,12 @@ describe('TransferListSelector', () => {
     expect(
       screen.getByRole('combobox', {name: 'Table columns'}),
     ).toHaveTextContent('Customize columns');
-    expect(
-      screen.getByTestId('column-selector').closest('.astryx-field'),
-    ).toHaveStyle({
-      '--x-width': 'min(41rem, calc(100vw - 32px))',
-    });
+    const field = screen
+      .getByTestId('column-selector')
+      .closest<HTMLElement>('.astryx-field');
+    expect(field?.style.getPropertyValue('--astryx-field-width')).toBe(
+      'min(41rem, calc(100vw - 32px))',
+    );
 
     await openSelector('Table columns');
     await waitFor(() => {

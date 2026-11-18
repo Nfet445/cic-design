@@ -19,18 +19,21 @@
  */
 
 import {use, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  fontWeightVars,
-} from '../theme/tokens.stylex';
 import {MetadataListContext} from './MetadataListContext';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
 import {isRenderable} from '../utils/isRenderable';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  metadataListItemIconClassName,
+  metadataListItemLabelClassName,
+  metadataListItemStackedClassName,
+  metadataListItemStackedLabelClassName,
+  metadataListItemStackedValueClassName,
+  metadataListItemValueClassName,
+} from './metadataListItemClasses';
 
 // =============================================================================
 // Types
@@ -63,65 +66,6 @@ export interface MetadataListItemProps extends BaseProps<HTMLDivElement> {
 // =============================================================================
 // Styles
 // =============================================================================
-
-const styles = stylex.create({
-  // Label (dt) — inline (side-by-side with value)
-  label: {
-    color: colorVars['--color-text-secondary'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    margin: 0,
-    padding: 0,
-    minHeight: 24,
-    wordBreak: 'break-word',
-  },
-  // Value (dd) — inline
-  value: {
-    color: colorVars['--color-text-primary'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    margin: 0,
-    padding: 0,
-    minHeight: 24,
-    wordBreak: 'break-word',
-  },
-  // Stacked layout wrapper (label on top)
-  stackedWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-  },
-  // Stacked label
-  stackedLabel: {
-    color: colorVars['--color-text-secondary'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    margin: 0,
-    padding: 0,
-  },
-  stackedValue: {
-    color: colorVars['--color-text-primary'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    margin: 0,
-    padding: 0,
-    wordBreak: 'break-word',
-  },
-  iconWrapper: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    flexShrink: 0,
-    color: colorVars['--color-text-secondary'],
-  },
-});
 
 // =============================================================================
 // Component
@@ -160,7 +104,7 @@ export function MetadataListItem({
   const labelContent = (
     <>
       {isRenderable(icon) && (
-        <span {...stylex.props(styles.iconWrapper)}>{icon}</span>
+        <span className={metadataListItemIconClassName}>{icon}</span>
       )}
       {label}
     </>
@@ -174,13 +118,20 @@ export function MetadataListItem({
         data-testid={testId}
         {...mergeProps(
           themeProps('metadata-list-item'),
-          stylex.props(styles.stackedWrapper, xstyle),
+          {
+            className: tw(
+              metadataListItemStackedClassName,
+              xstyleProps(xstyle).className,
+            ),
+          },
           className,
           style,
         )}
         {...rest}>
-        <dt {...stylex.props(styles.stackedLabel)}>{labelContent}</dt>
-        <dd {...stylex.props(styles.stackedValue)}>{children}</dd>
+        <dt className={metadataListItemStackedLabelClassName}>
+          {labelContent}
+        </dt>
+        <dd className={metadataListItemStackedValueClassName}>{children}</dd>
       </div>
     );
   }
@@ -193,7 +144,12 @@ export function MetadataListItem({
         data-testid={testId ? `${testId}-label` : undefined}
         {...mergeProps(
           themeProps('metadata-list-item'),
-          stylex.props(styles.label, xstyle),
+          {
+            className: tw(
+              metadataListItemLabelClassName,
+              xstyleProps(xstyle).className,
+            ),
+          },
           className,
           style,
         )}
@@ -202,7 +158,7 @@ export function MetadataListItem({
       </dt>
       <dd
         data-testid={testId ? `${testId}-value` : undefined}
-        {...stylex.props(styles.value)}>
+        className={metadataListItemValueClassName}>
         {children}
       </dd>
     </>

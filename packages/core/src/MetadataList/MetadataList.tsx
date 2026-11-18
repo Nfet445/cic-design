@@ -17,13 +17,6 @@
  */
 
 import {Children, useId, useMemo, useState, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  spacingVars,
-  colorVars,
-  typeScaleVars,
-  fontWeightVars,
-} from '../theme/tokens.stylex';
 import {
   MetadataListContext,
   type MetadataListLabelConfig,
@@ -32,6 +25,16 @@ import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
 import {isRenderable} from '../utils/isRenderable';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  metadataListClassName,
+  metadataListColumnsClassName,
+  metadataListGridClassName,
+  metadataListResetClassName,
+  metadataListTitleClassName,
+  metadataListToggleClassName,
+} from './metadataListClasses';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -105,76 +108,6 @@ export interface MetadataListProps extends Omit<
 // Styles
 // =============================================================================
 
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  title: {
-    marginBottom: spacingVars['--spacing-3'],
-  },
-  // dl reset
-  dl: {
-    margin: 0,
-    padding: 0,
-  },
-  // Vertical orientation — grid layout for label-value pairs
-  gridSingle: {
-    display: 'grid',
-    gridTemplateColumns: 'auto minmax(0, 1fr)',
-    gap: `${spacingVars['--spacing-2']} ${spacingVars['--spacing-4']}`,
-    alignItems: 'baseline',
-  },
-  gridMulti: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: spacingVars['--spacing-4'],
-  },
-  // Stacked labels (position: 'top') within a single-column layout
-  gridStackedSingle: {
-    display: 'grid',
-    gridTemplateColumns: '1fr',
-    gap: spacingVars['--spacing-3'],
-  },
-  gridStackedMulti: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: spacingVars['--spacing-4'],
-  },
-  // Horizontal orientation — flex row with wrapping
-  horizontal: {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacingVars['--spacing-4'],
-  },
-  // Show more/less button
-  toggleButton: {
-    appearance: 'none',
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: `${spacingVars['--spacing-2']} 0`,
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    color: colorVars['--color-text-accent'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    fontFamily: 'inherit',
-    textAlign: 'start',
-    alignSelf: 'flex-start',
-  },
-});
-
-// A fixed numeric column count (and a custom label width) is only known at
-// runtime, so it comes from a dynamic style rather than a static rule.
-const dynamicStyles = stylex.create({
-  gridTemplate: (gridTemplateColumns: string) => ({gridTemplateColumns}),
-});
-
 // =============================================================================
 // Component
 // =============================================================================
@@ -247,29 +180,30 @@ export function MetadataList({
       : childrenArray;
 
   const titleContent = isRenderable(title) ? (
-    <div {...stylex.props(styles.title)}>{title}</div>
+    <div className={metadataListTitleClassName}>{title}</div>
   ) : null;
 
   // Determine grid style based on columns and label position
-  const getGridStyle = () => {
+  const getGridClassName = () => {
     if (isHorizontal) {
-      return styles.horizontal;
+      return metadataListGridClassName.horizontal;
     }
     const isStacked = labelConfig.position === 'top';
     if (isStacked) {
       return columns === 'single' || columns === 1
-        ? styles.gridStackedSingle
-        : styles.gridStackedMulti;
+        ? metadataListGridClassName.stackedSingle
+        : metadataListGridClassName.multi;
     }
     // Labels at the inline start
     if (columns === 'single' || columns === 1) {
-      return styles.gridSingle;
+      return metadataListGridClassName.single;
     }
-    return styles.gridMulti;
+    return metadataListGridClassName.multi;
   };
 
   // The grid template for a fixed numeric column count, or for a custom label
-  // width. Both are runtime values, so they resolve to a dynamic style below.
+  // width. Both are runtime values, so they reach the stylesheet as the
+  // `--_metadata-list-columns` variable behind one class.
   // The track shape depends on the label position: stacked labels put a whole
   // item in one cell, while side labels split each item into a label track and
   // a value track.
@@ -306,19 +240,27 @@ export function MetadataList({
             columns: String(columns),
             orientation,
           }),
-          stylex.props(styles.root, xstyle),
+          {
+            className: tw(metadataListClassName, xstyleProps(xstyle).className),
+          },
           className,
           style,
         )}>
         {titleContent}
         <dl
           id={contentId}
-          {...stylex.props(
-            styles.dl,
-            getGridStyle(),
-            gridTemplateColumns != null &&
-              dynamicStyles.gridTemplate(gridTemplateColumns),
-          )}>
+          className={tw(
+            metadataListResetClassName,
+            getGridClassName(),
+            gridTemplateColumns != null && metadataListColumnsClassName,
+          )}
+          style={
+            gridTemplateColumns != null
+              ? {
+                  ['--_metadata-list-columns' as string]: gridTemplateColumns,
+                }
+              : undefined
+          }>
           {visibleChildren}
         </dl>
         {isExceedMax && (
@@ -327,7 +269,7 @@ export function MetadataList({
             aria-controls={contentId}
             aria-expanded={isShowAll}
             onClick={() => setIsShowAll(prev => !prev)}
-            {...stylex.props(styles.toggleButton)}>
+            className={metadataListToggleClassName}>
             {isShowAll
               ? t('@astryx.metadataList.showLess')
               : t('@astryx.metadataList.showMore')}

@@ -30,10 +30,10 @@ import React, {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
   type RefObject,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {BaseTypeaheadFocusContext} from './BaseTypeaheadFocusContext';
 import {useBusyIndicatorLane} from './busyIndicatorLane';
 import {useTrailingKeyDown} from './trailingKeyDown';
@@ -41,7 +41,6 @@ import {
   CommittedChoicesKeyContext,
   useCommittedChoices,
 } from './committedChoicesKey';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import {usePopoverInternal} from '../Popover/usePopover';
 import {useAnnounce} from '../hooks/useAnnounce';
 import {useAnnounceRenderedText} from '../hooks/useAnnounceRenderedText';
@@ -59,15 +58,6 @@ import {Icon} from '../Icon';
 import {Spinner} from '../Spinner';
 import {SpinnerOwnerContext} from '../Spinner/SpinnerOwnerContext';
 import {
-  borderVars,
-  colorVars,
-  spacingVars,
-  radiusVars,
-  typographyVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
-import {
   characterCount,
   composeEventHandlers,
   getKey,
@@ -75,9 +65,24 @@ import {
   mergeProps,
 } from '../utils';
 import {warnOnce} from '../utils/devWarning';
+import {xstyleProps, type AstryxXStyle} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import type {SearchContext, SearchableItem, SearchSource} from './types';
 import {themeProps} from '../utils/themeProps';
+import {
+  TYPEAHEAD_DEFAULT_ITEM_CLASS,
+  TYPEAHEAD_MENU_WIDTH_CLASS,
+  TYPEAHEAD_ROW_CONTENT_CLASS,
+  typeaheadDropdownClassName,
+  typeaheadEmptyStateClassName,
+  typeaheadGroupHeadingClassName,
+  typeaheadInputClassName,
+  typeaheadInputDisabledClassName,
+  typeaheadLoadingStatusClassName,
+  typeaheadPopoverClassName,
+  typeaheadRowClassName,
+} from './typeaheadClasses';
+import {tw} from '../utils/tw';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {FOCUSABLE_SELECTOR} from '../hooks/focusableSelector';
@@ -320,9 +325,9 @@ export interface BaseTypeaheadProps<T extends SearchableItem> extends Omit<
   ariaLabelledBy?: string;
 
   /**
-   * Additional StyleX styles for the input element.
+   * Additional styles for the input element.
    */
-  inputXStyle?: StyleXStyles;
+  inputXStyle?: AstryxXStyle;
 
   /**
    * Legacy input-specific alias for native `tabIndex`. When provided, this
@@ -360,162 +365,27 @@ export interface BaseTypeaheadProps<T extends SearchableItem> extends Omit<
 // Styles
 // =============================================================================
 
-const styles = stylex.create({
-  input: {
-    display: 'block',
-    flex: 1,
-    minWidth: '60px',
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    outline: 'none',
-    '::placeholder': {
-      color: colorVars['--color-text-secondary'],
-    },
-  },
-  inputDisabled: {
-    cursor: 'default',
-  },
-  dropdown: {
-    boxSizing: 'border-box',
-    // Matches DROPDOWN_MAX_HEIGHT, which the room-below cap uses. It is no
-    // taller than its layer's block-size cap either, which folds in the
-    // software keyboard: the list ends above the keyboard with the layer.
-    maxHeight: stylex.firstThatWorks(
-      `min(300px, ${layerViewportInset.maxBlockSize})`,
-      `min(300px, ${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-    overflowY: 'auto',
-    padding: spacingVars['--spacing-1'],
-  },
-  // Once a later list for the same query arrives, the popup holds its height
-  // above the field, or the room below it (spec:AST-092 FR6).
-  dropdownHeld: (height: number) => ({
-    maxHeight: `${height}px`,
-  }),
-  // The menu prefers the input's width and renders an explicit menuWidth at
-  // its size, both clamped to the layer runtime's viewport cap rather than to
-  // the room beside the input (spec:AST-059 FR2, FR7).
-  popover: {
-    boxSizing: 'border-box',
-    minWidth: stylex.firstThatWorks(
-      `min(anchor-size(width), ${layerViewportInset.maxInlineSize})`,
-      `min(anchor-size(width), ${layerViewportInset.maxInlineSizeFallback})`,
-      'anchor-size(width)',
-    ),
-  },
-  popoverCustomWidth: (width: string) => ({
-    width,
-  }),
-  groupHeading: {
-    paddingInline: spacingVars['--spacing-2'],
-    paddingBlockStart: spacingVars['--spacing-2'],
-    paddingBlockEnd: spacingVars['--spacing-1'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    userSelect: 'none',
-  },
-  item: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%',
-    padding: spacingVars['--spacing-2'],
-    borderRadius: radiusVars['--radius-element'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    outline: 'none',
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    textAlign: 'start',
-  },
-  itemHighlighted: {
-    backgroundColor: colorVars['--color-overlay-hover'],
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'Highlight',
-    },
-    outlineStyle: {
-      default: null,
-      '@media (forced-colors: active)': 'solid',
-    },
-    outlineWidth: {
-      default: null,
-      '@media (forced-colors: active)': borderVars['--border-width'],
-    },
-  },
-  itemSelected: {
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  itemContent: {
-    display: 'flex',
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-  defaultItem: {
-    minWidth: 0,
-    width: '100%',
-  },
-  emptyState: {
-    padding: spacingVars['--spacing-3'],
-    textAlign: 'center',
-    fontSize: typeScaleVars['--text-supporting-size'],
-    color: colorVars['--color-text-secondary'],
-  },
-  // The indicator a direct caller gets. In flow, where it has always been, so
-  // it reserves its own width and the input's text never runs under it.
-  // Typeahead and Tokenizer take the indicator over and paint it in their own
-  // inline-end lane instead; this is what renders for everyone else.
-  loadingStatus: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    padding: spacingVars['--spacing-1'],
-  },
-});
-
-/**
- * Size-specific overrides for dropdown list items.
- * Matches the pattern used by DropdownMenuItem / Selector so that
- * an `sm` typeahead renders compact list items.
- */
-const itemSizeStyles = stylex.create({
-  sm: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  md: {
-    paddingBlock: spacingVars['--spacing-1-5'],
-  },
-  lg: {
-    paddingBlock: spacingVars['--spacing-2'],
-  },
-});
-
 // =============================================================================
 // Helpers
 // =============================================================================
 
-/** The result popup's maximum height in CSS pixels (`styles.dropdown`). */
+/** A held popup height, read by `typeaheadDropdownClassName`. */
+type HeldBlockSizeStyle = CSSProperties &
+  Record<'--astryx-typeahead-held-block-size', string>;
+
+const heldBlockSizeStyle = (height: number): HeldBlockSizeStyle => ({
+  '--astryx-typeahead-held-block-size': `${height}px`,
+});
+
+/** A per-instance `menuWidth`, read by `TYPEAHEAD_MENU_WIDTH_CLASS`. */
+type MenuWidthStyle = CSSProperties &
+  Record<'--astryx-typeahead-menu-width', string>;
+
+const menuWidthStyle = (width: string): MenuWidthStyle => ({
+  '--astryx-typeahead-menu-width': width,
+});
+
+/** The result popup's maximum height in CSS pixels. */
 const DROPDOWN_MAX_HEIGHT = 300;
 
 /**
@@ -2291,10 +2161,9 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
       aria-label={t('@astryx.typeahead.searchResults')}
       {...mergeProps(
         themeProps('typeahead-dropdown'),
-        stylex.props(
-          styles.dropdown,
-          heldHeight != null && styles.dropdownHeld(heldHeight),
-        ),
+        typeaheadDropdownClassName,
+        undefined,
+        heldHeight != null ? heldBlockSizeStyle(heldHeight) : undefined,
       )}>
       {results.length === 0 && hasSearched && !isSearchPending ? (
         <div
@@ -2303,7 +2172,7 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
           aria-disabled="true"
           {...mergeProps(
             themeProps('typeahead-empty-state'),
-            stylex.props(styles.emptyState),
+            typeaheadEmptyStateClassName,
           )}>
           {emptySearchText}
         </div>
@@ -2336,18 +2205,20 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
                       index === highlightedIndex ? 'highlighted' : null,
                     selected: isSelected ? 'selected' : null,
                   }),
-                  stylex.props(
-                    styles.item,
-                    itemSizeStyles[size],
-                    index === highlightedIndex && styles.itemHighlighted,
-                    isSelected && styles.itemSelected,
-                  ),
+                  typeaheadRowClassName({
+                    isHighlighted: index === highlightedIndex,
+                    isSelected,
+                    size,
+                  }),
                 )}>
-                <span {...stylex.props(styles.itemContent)}>
+                <span className={TYPEAHEAD_ROW_CONTENT_CLASS}>
                   {renderItem ? (
                     renderItem(item)
                   ) : (
-                    <TypeaheadItem item={item} xstyle={styles.defaultItem} />
+                    <TypeaheadItem
+                      item={item}
+                      className={TYPEAHEAD_DEFAULT_ITEM_CLASS}
+                    />
                   )}
                 </span>
                 {isSelected && <Icon icon="check" size="sm" color="primary" />}
@@ -2368,7 +2239,9 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
                 key={`group-${group.heading}`}
                 role="group"
                 aria-label={group.heading}>
-                <div aria-hidden="true" {...stylex.props(styles.groupHeading)}>
+                <div
+                  aria-hidden="true"
+                  className={typeaheadGroupHeadingClassName}>
                   {group.heading}
                 </div>
                 {options}
@@ -2397,6 +2270,7 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
     });
   }
 
+  const xstyleSlots = xstyleProps([inputXStyle, xstyle]);
   const content = (
     <>
       <input
@@ -2467,18 +2341,19 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
           hasAutoCorrect: false,
         })}
         {...mergeProps(
-          stylex.props(
-            styles.input,
-            isDisabled && styles.inputDisabled,
-            inputXStyle,
-            xstyle,
-          ),
+          {
+            className: tw(
+              typeaheadInputClassName,
+              isDisabled && typeaheadInputDisabledClassName,
+            ),
+          },
+          xstyleSlots,
           className,
           style,
         )}
       />
       {isLoading && busyLane == null && (
-        <span {...stylex.props(styles.loadingStatus)}>
+        <span className={typeaheadLoadingStatusClassName}>
           {/* Named, never live: the typeahead announces its search. */}
           <SpinnerOwnerContext value={true}>
             <Spinner
@@ -2498,17 +2373,20 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
         {
           placement: 'below',
           alignment: 'start',
-          offset: spacingVars['--spacing-1'],
-          xstyle: [
-            styles.popover,
-            menuWidth != null &&
-              styles.popoverCustomWidth(
-                clampInlineSize(
-                  menuWidth,
-                  layerViewportInset.maxInlineSizeFallback,
-                ),
-              ),
-          ],
+          offset: 'var(--spacing-1)',
+          className: tw(
+            typeaheadPopoverClassName,
+            menuWidth != null && TYPEAHEAD_MENU_WIDTH_CLASS,
+          ),
+          style:
+            menuWidth != null
+              ? menuWidthStyle(
+                  clampInlineSize(
+                    menuWidth,
+                    layerViewportInset.maxInlineSizeFallback,
+                  ),
+                )
+              : undefined,
         },
       )}
     </>

@@ -4,7 +4,8 @@
 
 /**
  * @file ChatReasoning.tsx
- * @input Uses React, StyleX, theme tokens
+ * @input Uses React, StyleX for the `xstyle` passthrough, class maps from
+ *   `chatReasoningClasses.ts`
  * @output Exports ChatReasoning component
  * @position Chat component — compact collapsible reasoning/thinking display
  *
@@ -17,18 +18,27 @@
 
 import {useCallback, useId, useState, type ReactNode} from 'react';
 import type {BaseProps} from '@astryxdesign/core';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  typographyVars,
-  fontWeightVars,
-  durationVars,
-  easeVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
-import {mergeProps} from '@astryxdesign/core/utils';
+import {mergeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {themeProps} from '@astryxdesign/core/utils';
+import {tw} from '../tw';
+import {
+  chatReasoningChevronClassName,
+  chatReasoningChevronExpandedClassName,
+  chatReasoningContentClassName,
+  chatReasoningContentCollapsedClassName,
+  chatReasoningContentExpandedClassName,
+  chatReasoningContentInnerClassName,
+  chatReasoningContentPaddingClassName,
+  chatReasoningDurationClassName,
+  chatReasoningHeaderClassName,
+  chatReasoningIconClassName,
+  chatReasoningLabelClassName,
+  chatReasoningLabelRowClassName,
+  chatReasoningPreviewClassName,
+  chatReasoningRootClassName,
+  chatReasoningSeparatorClassName,
+  chatReasoningStreamingLabelClassName,
+} from './chatReasoningClasses';
 
 // =============================================================================
 // Types
@@ -50,130 +60,6 @@ export interface ChatReasoningProps extends BaseProps<HTMLDivElement> {
   /** Callback when expanded state changes. */
   onExpandedChange?: (isExpanded: boolean) => void;
 }
-
-// =============================================================================
-// Animations
-// =============================================================================
-
-const shimmerKeyframes = stylex.keyframes({
-  '0%': {backgroundPosition: '200% 0'},
-  '100%': {backgroundPosition: '-200% 0'},
-});
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    marginBlockStart: spacingVars['--spacing-2'],
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1-5'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    userSelect: 'none',
-    minHeight: '24px',
-    paddingBlock: spacingVars['--spacing-0-5'],
-  },
-  icon: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: '16px',
-    height: '16px',
-    color: colorVars['--color-text-secondary'],
-  },
-  labelRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-  label: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-secondary'],
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
-  },
-  duration: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontFamily: typographyVars['--font-family-body'],
-    color: colorVars['--color-text-disabled'],
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
-  },
-  separator: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    color: colorVars['--color-text-disabled'],
-    flexShrink: 0,
-  },
-  preview: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontFamily: typographyVars['--font-family-body'],
-    color: colorVars['--color-text-disabled'],
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    minWidth: 0,
-  },
-  chevron: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: '14px',
-    height: '14px',
-    color: colorVars['--color-text-disabled'],
-    transition: `transform ${durationVars['--duration-fast']} ${easeVars['--ease-standard']}`,
-  },
-  chevronExpanded: {
-    transform: 'rotate(180deg)',
-  },
-  shimmer: {
-    backgroundImage: `linear-gradient(90deg, ${colorVars['--color-text-secondary']} 0%, ${colorVars['--color-text-disabled']} 50%, ${colorVars['--color-text-secondary']} 100%)`,
-    backgroundSize: '200% 100%',
-    backgroundClip: 'text',
-    color: 'transparent',
-    animationName: shimmerKeyframes,
-    animationDuration: '4s',
-    animationTimingFunction: 'linear',
-    animationIterationCount: 'infinite',
-  },
-  content: {
-    display: 'grid',
-    gridTemplateRows: '0fr',
-    transition: `grid-template-rows ${durationVars['--duration-medium']} ${easeVars['--ease-standard']}`,
-  },
-  contentExpanded: {
-    gridTemplateRows: '1fr',
-  },
-  contentInner: {
-    overflow: 'hidden',
-    minHeight: 0,
-  },
-  contentPadding: {
-    paddingBlockStart: spacingVars['--spacing-2'],
-    paddingInlineStart: `calc(16px + ${spacingVars['--spacing-1-5']})`,
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontFamily: typographyVars['--font-family-body'],
-    color: colorVars['--color-text-secondary'],
-  },
-});
 
 // =============================================================================
 // Icons
@@ -267,8 +153,8 @@ export function ChatReasoning(props: ChatReasoningProps) {
           expanded: isExpanded ? 'expanded' : null,
           streaming: isStreaming ? 'streaming' : null,
         }),
-        stylex.props(styles.root, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(chatReasoningRootClassName, className),
         style,
       )}
       {...rest}>
@@ -284,31 +170,38 @@ export function ChatReasoning(props: ChatReasoningProps) {
             toggle();
           }
         }}
-        {...stylex.props(styles.header)}>
-        <span {...stylex.props(styles.icon)}>
+        className={chatReasoningHeaderClassName}>
+        <span className={chatReasoningIconClassName}>
           <ThinkingIcon />
         </span>
-        <div {...stylex.props(styles.labelRow)}>
-          <span {...stylex.props(styles.label, isStreaming && styles.shimmer)}>
+        <div className={chatReasoningLabelRowClassName}>
+          <span
+            className={
+              isStreaming
+                ? chatReasoningStreamingLabelClassName
+                : chatReasoningLabelClassName
+            }>
             {label}
           </span>
           {duration != null && !isStreaming && (
             <>
-              <span {...stylex.props(styles.separator)}>·</span>
-              <span {...stylex.props(styles.duration)}>{duration}</span>
+              <span className={chatReasoningSeparatorClassName}>·</span>
+              <span className={chatReasoningDurationClassName}>{duration}</span>
             </>
           )}
           {!isExpanded && previewText && !isStreaming && (
             <>
-              <span {...stylex.props(styles.separator)}>—</span>
-              <span {...stylex.props(styles.preview)}>{previewText}</span>
+              <span className={chatReasoningSeparatorClassName}>—</span>
+              <span className={chatReasoningPreviewClassName}>
+                {previewText}
+              </span>
             </>
           )}
         </div>
         <span
-          {...stylex.props(
-            styles.chevron,
-            isExpanded && styles.chevronExpanded,
+          className={tw(
+            chatReasoningChevronClassName,
+            isExpanded && chatReasoningChevronExpandedClassName,
           )}>
           <ChevronDownIcon />
         </span>
@@ -321,9 +214,14 @@ export function ChatReasoning(props: ChatReasoningProps) {
         // it from AT and the tab order while keeping the element rendered, so
         // the grid-template-rows expand/collapse transition still runs.
         inert={!isExpanded}
-        {...stylex.props(styles.content, isExpanded && styles.contentExpanded)}>
-        <div {...stylex.props(styles.contentInner)}>
-          <div {...stylex.props(styles.contentPadding)}>{children}</div>
+        className={tw(
+          chatReasoningContentClassName,
+          isExpanded
+            ? chatReasoningContentExpandedClassName
+            : chatReasoningContentCollapsedClassName,
+        )}>
+        <div className={chatReasoningContentInnerClassName}>
+          <div className={chatReasoningContentPaddingClassName}>{children}</div>
         </div>
       </div>
     </div>

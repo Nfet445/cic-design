@@ -4,7 +4,8 @@
 
 /**
  * @file Outline.tsx
- * @input Uses React, StyleX, Astryx link provider integration, Outline hooks/types
+ * @input Uses React, StyleX, Astryx link provider integration, the outline
+ *   class map, Outline hooks/types
  * @output Exports Outline component and OutlineProps type
  * @position Core implementation; consumed by index.ts
  *
@@ -25,24 +26,28 @@
 
 import {useRef} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  durationVars,
-  easeVars,
-  radiusVars,
-  spacingVars,
-  typeScaleVars,
-  fontWeightVars,
-} from '../theme/tokens.stylex';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import type {BaseProps} from '../BaseProps';
 import {useScrollSpy} from './useScrollSpy';
 import type {OutlineItem} from './types';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {usePressFeedback} from '../hooks/usePressFeedback';
+import {
+  outlineDividerClassName,
+  outlineIndicatorClassName,
+  outlineItemClassName,
+  outlineLabelClassName,
+  outlineLinkClassName,
+  outlineListClassName,
+  outlineRootClassName,
+  outlineTrackClassName,
+} from './outlineClasses';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {
@@ -129,138 +134,6 @@ export interface OutlineProps extends BaseProps<HTMLElement> {
 
   /** Test ID for testing frameworks. */
   'data-testid'?: string;
-}
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'row',
-    position: 'relative',
-    gap: spacingVars['--spacing-0-5'],
-    width: '100%',
-  },
-  track: {
-    position: 'relative',
-    width: '2px',
-    flexShrink: 0,
-    order: -1,
-  },
-  dividerLine: {
-    position: 'absolute',
-    insetBlockStart: 0,
-    insetBlockEnd: 0,
-    insetInlineStart: 0,
-    width: '2px',
-    backgroundColor: colorVars['--color-border'],
-    borderRadius: radiusVars['--radius-full'],
-    pointerEvents: 'none',
-  },
-  indicator: {
-    position: 'absolute',
-    insetInlineStart: 0,
-    width: '2px',
-    backgroundColor: colorVars['--color-icon-primary'],
-    borderRadius: radiusVars['--radius-full'],
-    pointerEvents: 'none',
-    zIndex: 1,
-    positionAnchor: '--outline-active',
-    top: 'anchor(--outline-active top, 0px)',
-    height: 'anchor-size(--outline-active height, 0px)',
-    transitionProperty: 'top, height',
-    transitionDuration: durationVars['--duration-fast-min'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  activeAnchor: {
-    anchorName: '--outline-active',
-  },
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-    margin: 0,
-    padding: 0,
-    listStyle: 'none',
-    flex: 1,
-    minWidth: 0,
-  },
-  item: {
-    listStyleType: 'none',
-    margin: 0,
-    padding: 0,
-  },
-  link: {
-    alignItems: 'center',
-    borderRadius: radiusVars['--radius-element'],
-    boxSizing: 'border-box',
-    color: colorVars['--color-text-secondary'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    display: 'flex',
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    position: 'relative',
-    textAlign: 'start',
-    textDecoration: 'none',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionProperty: 'background-color, color',
-    transitionTimingFunction: easeVars['--ease-standard'],
-    width: '100%',
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-      '@media (hover: hover)': {
-        color: colorVars['--color-text-primary'],
-      },
-    },
-  },
-  activeLink: {
-    color: colorVars['--color-text-primary'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  label: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-});
-
-const densityStyles = stylex.create({
-  compact: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInlineEnd: spacingVars['--spacing-2'],
-  },
-  default: {
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInlineEnd: spacingVars['--spacing-2'],
-  },
-});
-
-const indentStyles = stylex.create({
-  level1: {paddingInlineStart: spacingVars['--spacing-3']},
-  level2: {paddingInlineStart: spacingVars['--spacing-7']},
-  level3: {paddingInlineStart: spacingVars['--spacing-11']},
-  level4: {paddingInlineStart: spacingVars['--spacing-12']},
-});
-
-function getIndentStyle(level: number) {
-  // Map heading levels 1-6 to visual indent levels 1-4
-  // Level 1 (h1) = indent 1, Level 2 (h2) = indent 1, Level 3 (h3) = indent 2, etc.
-  const indentLevel = Math.max(1, Math.min(4, level - 1 || 1));
-  switch (indentLevel) {
-    case 1:
-      return indentStyles.level1;
-    case 2:
-      return indentStyles.level2;
-    case 3:
-      return indentStyles.level3;
-    default:
-      return indentStyles.level4;
-  }
 }
 
 /**
@@ -429,16 +302,16 @@ export function Outline({
       data-testid={testId}
       {...mergeProps(
         themeProps('outline', {density}),
-        stylex.props(styles.root, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(outlineRootClassName, className),
         style,
       )}>
-      <ul {...stylex.props(styles.list)} role="list">
+      <ul className={outlineListClassName} role="list">
         {items.map(item => {
           const isActive = item.id === resolvedActiveId;
 
           return (
-            <li key={item.id} {...stylex.props(styles.item)} role="listitem">
+            <li key={item.id} className={outlineItemClassName} role="listitem">
               <LinkComponent
                 href={`#${item.id}`}
                 aria-current={isActive ? 'location' : undefined}
@@ -450,16 +323,17 @@ export function Outline({
                     active: isActive ? 'active' : null,
                     level: item.level,
                   }),
-                  focusOutlineProps.focusVisible(
-                    styles.link,
-                    interactionOverlayStyles.backgroundColor,
-                    densityStyles[density],
-                    getIndentStyle(item.level),
-                    isActive && styles.activeLink,
-                    isActive && styles.activeAnchor,
+                  stylex.props(
+                    // The strength and the release; the colour is a class below.
+                    interactionOverlayStyles.pressedAlpha,
+                  ),
+                  tw(
+                    outlineLinkClassName(density, item.level, isActive),
+                    interactionOverlayBackgroundColorClassName,
+                    focusOutlineFocusVisibleClassName,
                   ),
                 )}>
-                <span {...stylex.props(styles.label)}>{item.label}</span>
+                <span className={outlineLabelClassName}>{item.label}</span>
               </LinkComponent>
             </li>
           );
@@ -468,13 +342,13 @@ export function Outline({
 
       {/* Track divider. Rendered after the list so the active anchor appears
           earlier in DOM order; `order: -1` keeps the track visually before it. */}
-      <div {...stylex.props(styles.track)} aria-hidden="true">
-        <span {...stylex.props(styles.dividerLine)} />
+      <div className={outlineTrackClassName} aria-hidden="true">
+        <span className={outlineDividerClassName} />
       </div>
       <span
         {...mergeProps(
           themeProps('outline-indicator'),
-          stylex.props(styles.indicator),
+          outlineIndicatorClassName,
         )}
         aria-hidden="true"
       />

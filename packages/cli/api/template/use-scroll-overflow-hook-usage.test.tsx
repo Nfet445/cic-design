@@ -49,12 +49,15 @@ function strip(): HTMLElement {
   return element;
 }
 
+const FADES: [name: string, needle: string][] = [
+  ['fadeBoth', 'black_calc(100%'],
+  ['fadeLeft', 'to_right'],
+  ['fadeRight', 'to_left'],
+];
+
 function fade(): string {
-  return (
-    strip()
-      .className.split(' ')
-      .find(name => name.startsWith('fade')) ?? 'none'
-  );
+  const className = strip().className;
+  return FADES.find(([, needle]) => className.includes(needle))?.[0] ?? 'none';
 }
 
 function setRightToLeft(): void {

@@ -3,7 +3,7 @@
 /**
  * @file TextInput.test.tsx
  * @input Uses vitest, @testing-library/react, TextInput component, and the
- *   shared declaredValue StyleX read-back helper
+ *   shared field class maps
  * @output Unit tests for TextInput component behavior
  * @position Testing; validates TextInput.tsx implementation
  *
@@ -13,27 +13,14 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {render, screen, fireEvent, waitFor, act} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import {TestIcon} from '../__tests__/TestIcon';
-import {declaredValue} from '../__tests__/stylexDeclarations';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {InputGroup} from '../InputGroup';
+import {fieldInputWrapperFocusScopeClassName} from '../Field/fieldClasses';
 import {TextInput} from './TextInput';
 
-// jsdom cannot match `:focus-visible`: compare the ring's StyleX class hash.
-const RING = stylex
-  .props(
-    stylex.create({
-      ring: {
-        boxShadow: {
-          default: null,
-          ':has(> [aria-disabled="true"]:focus-visible)': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-        },
-      },
-    }).ring,
-  )
-  .className!.split(' ')
-  .pop()!;
+// jsdom cannot match `:focus-visible`, so the ring is the class that keys on it.
+const RING = fieldInputWrapperFocusScopeClassName.direct;
 
 // Mock showPopover/hidePopover since jsdom does not implement them. Used by the
 // disabledMessage tooltip.
@@ -262,6 +249,36 @@ describe('TextInput', () => {
   });
 
   describe('status prop', () => {
+    // The status border replaces the neutral one on the same element; a second
+    // class could not win, so both live in one map in `../Field/fieldClasses`.
+    it.each(['error', 'warning', 'success'] as const)(
+      'paints the %s border through the shared box class',
+      type => {
+        render(
+          <TextInput
+            label="Email"
+            value=""
+            onChange={() => {}}
+            status={{type}}
+          />,
+        );
+        const wrapper = screen.getByRole('textbox')
+          .parentElement as HTMLElement;
+        expectClassSet(wrapper, {
+          includes: [
+            `border-[color:var(--color-border-${type})]`,
+            'forced-colors:focus-within:border-[color:Highlight]',
+          ],
+          // A status field keeps its status colour while focused: the accent
+          // border belongs to the neutral box alone.
+          excludes: [
+            'border-[color:var(--color-border-emphasized)]',
+            'focus-within:border-[color:var(--color-accent)]',
+          ],
+        });
+      },
+    );
+
     it('renders with error status icon', () => {
       const {container} = render(
         <TextInput
@@ -1548,9 +1565,10 @@ describe('TextInput text size', () => {
     // inputFontFloor.test.ts; what this asserts is the visible result off
     // the gate: the plain token size, not a floor.
     render(<TextInput label="Name" value="" onChange={() => {}} />);
-    expect(declaredValue(screen.getByLabelText('Name'), 'font-size')).toBe(
-      'var(--text-body-size)',
-    );
+    expectClassSet(screen.getByLabelText('Name'), {
+      includes: ['text-[length:var(--text-body-size)]'],
+      excludes: ['text-[length:max(1rem,var(--text-body-size))]'],
+    });
   });
 });
 
@@ -1560,6 +1578,6 @@ describe('TextInput in a narrow row', () => {
       <TextInput label="Search" value="" onChange={() => {}} />,
     );
     const root = container.querySelector('.astryx-field')!;
-    expect(getComputedStyle(root).minWidth).toBe('0');
+    expectClassSet(root, {includes: ['min-w-0']});
   });
 });

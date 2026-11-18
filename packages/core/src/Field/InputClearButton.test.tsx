@@ -19,6 +19,7 @@ import path from 'node:path';
 import {describe, it, expect, vi, afterEach} from 'vitest';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import * as stylex from '@stylexjs/stylex';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {
   InputClearButton,
   InternalInputClearButton,
@@ -29,7 +30,7 @@ import {InternationalizationProvider} from '../i18n';
 import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {declaredValue} from '../__tests__/stylexDeclarations';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 
 function generateThemeTestCSS(theme: Parameters<typeof generateThemeCSS>[0]) {
   const {prose, component} = generateThemeCSS(theme);
@@ -207,7 +208,9 @@ describe('InputClearButton', () => {
     // The button pins a 20px box of its own (tighter than Button's sm
     // default); the coarse-pointer overlay below grows the hit area from it.
     render(<InputClearButton label="Clear" onClick={() => {}} />);
-    expect(declaredValue(screen.getByRole('button'), 'height')).toBe('20px');
+    expectClassSet(screen.getByRole('button'), {
+      includes: ['h-5', 'shrink-0'],
+    });
   });
 
   it('applies the caller xstyle to the button', () => {
@@ -226,9 +229,7 @@ describe('InputClearButton', () => {
     // neighbors leave room, through Button's band (AST-094 FR42).
     render(<InputClearButton label="Clear" onClick={() => {}} />);
     const button = screen.getByRole('button', {name: 'Clear'});
-    const bandClasses = (stylex.props(touchHitAreaStyles.layer).className ?? '')
-      .split(/\s+/)
-      .filter(Boolean);
+    const bandClasses = touchHitAreaLayerClassName.split(/\s+/).filter(Boolean);
     expect(bandClasses.length).toBeGreaterThan(0);
     const band = [...button.querySelectorAll('*')].find(element =>
       bandClasses.every(bandClass => element.classList.contains(bandClass)),

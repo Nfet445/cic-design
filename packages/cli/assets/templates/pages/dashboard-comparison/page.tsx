@@ -18,7 +18,6 @@
  */
 
 import {useState, type CSSProperties} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   VStack,
   HStack,
@@ -457,19 +456,12 @@ function MetricCard({metric}: {metric: Metric}) {
 }
 
 // Grid's `columns` prop carries a single minWidth, so the roomier track floor
-// for wide viewports rides in as an xstyle override: Grid routes its track
-// template through a CSS var and applies `xstyle` last, so this wins. Below
-// the breakpoint the value is left unset and the `columns` prop stands.
-const METRICS_WIDE = '@media (min-width: 900px)';
-
-const metricsGridStyles = stylex.create({
-  grid: {
-    gridTemplateColumns: {
-      default: null,
-      [METRICS_WIDE]: 'repeat(auto-fit, minmax(320px, 1fr))',
-    },
-  },
-});
+// for wide viewports rides in as a class: Grid's declaration sits in
+// `astryx-base` and a consumer class sits after that layer, so it wins. Below
+// the breakpoint no class matches and the `columns` prop stands.
+const metricsGridStyles = {
+  grid: 'min-[900px]:grid-cols-[repeat(auto-fit,minmax(320px,1fr))]',
+} as const;
 
 // ============= ACTIVE USERS TREND =============
 
@@ -718,13 +710,9 @@ const acquisitionColumns: TableColumn<AcqRow>[] = [
 // AspectRatio takes its width from the container, and as a flex child its own
 // `width: 100%` would resolve against the whole header row. Pinning a width
 // here gives it the definite box it needs and makes the tile a 32px square.
-const sectionIconStyles = stylex.create({
-  tile: {
-    width: 'var(--spacing-8)',
-    backgroundColor: 'var(--color-background-muted)',
-    borderRadius: 'var(--radius-element)',
-  },
-});
+const sectionIconStyles = {
+  tile: 'w-[var(--spacing-8)] bg-[var(--color-background-muted)] rounded-[var(--radius-element)]',
+} as const;
 
 function SectionHeading({
   title,
@@ -739,7 +727,10 @@ function SectionHeading({
     <HStack hAlign="between" vAlign="center" gap={3} wrap="wrap">
       <HStack gap={3} vAlign="center">
         {icon ? (
-          <AspectRatio ratio={1} fit="center" xstyle={sectionIconStyles.tile}>
+          <AspectRatio
+            ratio={1}
+            fit="center"
+            className={sectionIconStyles.tile}>
             <Icon icon={icon} size="sm" color="secondary" />
           </AspectRatio>
         ) : null}
@@ -834,7 +825,7 @@ export default function DataDashboardPage() {
               <Grid
                 columns={{minWidth: 240, repeat: 'fit'}}
                 gap={3}
-                xstyle={metricsGridStyles.grid}>
+                className={metricsGridStyles.grid}>
                 {OVERVIEW_METRICS.map(metric => (
                   <MetricCard key={metric.key} metric={metric} />
                 ))}

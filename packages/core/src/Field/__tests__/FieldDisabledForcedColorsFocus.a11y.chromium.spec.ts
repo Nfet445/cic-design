@@ -1,5 +1,5 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
-// @pr-a11y scope ^(packages/core/src/Field/inputDisabledFocus\.ts|packages/core/src/Field/__tests__/FieldDisabledForcedColorsFocus|packages/core/src/(Selector|MultiSelector|DateInput|TimeInput|DateRangeInput|DateTimeInput|TextInput|Typeahead)/|apps/storybook/stories/(TextInput|Selector|DateInput|TimeInput|DateRangeInput|DateTimeInput|Typeahead)\.stories)
+// @pr-a11y scope ^(packages/core/src/Field/fieldClasses\.ts|packages/core/src/Field/__tests__/FieldDisabledForcedColorsFocus|packages/core/src/(Selector|MultiSelector|DateInput|TimeInput|DateRangeInput|DateTimeInput|TextInput|Typeahead)/|apps/storybook/stories/(TextInput|Selector|DateInput|TimeInput|DateRangeInput|DateTimeInput|Typeahead)\.stories)
 
 /**
  * @file FieldDisabledForcedColorsFocus.a11y.chromium.spec.ts

@@ -7,7 +7,8 @@ export const docs = {
   subComponentOf: 'Chat',
   displayName: 'Chat Composer Token Element',
   isHiddenFromOverview: true,
-  description: 'Renders a single token chip outside the contentEditable input. Wraps a badge config or custom render function in the correct data-astryx-token span so the token serializes properly and stays visually consistent with tokens inside the composer.',
+  description:
+    'Renders a single token chip outside the contentEditable input. Wraps a badge config or custom render function in the correct data-astryx-token span so the token serializes properly and stays visually consistent with tokens inside the composer.',
   playground: {
     defaults: {
       token: {value: '@astryx', label: '@astryx', variant: 'blue'},
@@ -17,7 +18,8 @@ export const docs = {
     {
       name: 'token',
       type: 'ChatComposerToken',
-      description: 'The token to render. Pass a badge config ({ value, label, variant?, icon? }) for the common case, or a custom render ({ value, render }) for full control.',
+      description:
+        'The token to render. Pass a badge config ({ value, label, variant?, icon? }) for the common case, or a custom render ({ value, render }) for full control.',
       required: true,
     },
   ],
@@ -37,7 +39,8 @@ export const docsDense = {
   name: 'ChatComposerTokenElement',
   isHiddenFromOverview: true,
   displayName: 'Chat Composer Token Element',
-  description: 'token chip outside contentEditable; badge config or custom render in data-astryx-token span',
+  description:
+    'token chip outside contentEditable; badge config or custom render in data-astryx-token span',
   propDescriptions: {
     token: 'badge config or custom render',
   },

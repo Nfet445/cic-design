@@ -4,7 +4,8 @@
 
 /**
  * @file ChatMessage.tsx
- * @input Uses React, StyleX, ChatContext, theme tokens
+ * @input Uses React, StyleX only for the caller's xstyle, ChatContext and the
+ *   class map
  * @output Exports ChatMessage component and ChatMessageProps
  * @position Sender context wrapper — handles avatar, name, alignment by sender role
  *
@@ -21,13 +22,6 @@
  */
 
 import {type ReactNode, useMemo, useId} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  fontWeightVars,
-} from '../theme/tokens.stylex';
 import {
   ChatMessageContext,
   useChatListContext,
@@ -35,9 +29,18 @@ import {
   type ChatDensity,
 } from './ChatContext';
 import {isRenderable, mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-import {chatMessageVars} from './chatMessage.vars.stylex';
+import {tw} from '../utils/tw';
+import {
+  chatMessageAvatarWrapClassName,
+  chatMessageChildrenClassName,
+  chatMessageClassName,
+  chatMessageContentClassName,
+  chatMessageMetadataSlotClassName,
+  chatMessageNameClassName,
+} from './chatClasses';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -85,104 +88,6 @@ export interface ChatMessageProps extends BaseProps<HTMLElement> {
   density?: ChatDensity;
 }
 
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    maxWidth: '100%',
-  },
-  rootGapCompact: {
-    gap: spacingVars['--spacing-1-5'],
-  },
-  rootGapBalanced: {
-    gap: spacingVars['--spacing-2'],
-  },
-  rootGapSpacious: {
-    gap: spacingVars['--spacing-3'],
-  },
-  rootAssistant: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-  },
-  rootUser: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'flex-start',
-  },
-  rootSystem: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  // Slot wrappers collapse when the caller's content renders nothing, so an
-  // empty Fragment or a component that returns null leaves no gap. Content is
-  // never inspected to decide this.
-  // Judged from this article (parent-relative), never from siblings, so the
-  // global stylesheet keeps no sibling-relative :has().
-  avatarOffset: {
-    [chatMessageVars['--_chat-avatar-offset']]: {
-      default: '0px',
-      ':has([data-chat-name])': spacingVars['--spacing-5'],
-    },
-  },
-  avatarWrap: {
-    display: {default: null, ':empty': 'none'},
-    flexShrink: 0,
-    // The avatar lines up with a bubble's name row when the message holds
-    // one; the article sets the offset (see chatMessageVars).
-    marginBlockStart: chatMessageVars['--_chat-avatar-offset'],
-  },
-  contentColumn: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minWidth: 0,
-  },
-  contentColumnSystem: {
-    maxWidth: '90%',
-    alignItems: 'center',
-  },
-  contentColumnAssistant: {
-    alignItems: 'flex-start',
-  },
-  contentColumnUser: {
-    alignItems: 'flex-end',
-  },
-  name: {
-    display: {default: null, ':empty': 'none'},
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    color: colorVars['--color-text-secondary'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    marginBlockEnd: spacingVars['--spacing-1'],
-  },
-  metadata: {
-    display: {default: null, ':empty': 'none'},
-  },
-  childrenWrap: {
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-    width: '100%',
-  },
-  childrenAssistant: {
-    alignItems: 'flex-start',
-  },
-  childrenUser: {
-    alignItems: 'flex-end',
-  },
-  childrenSystem: {
-    alignItems: 'center',
-  },
-  childrenGapCompact: {
-    gap: spacingVars['--spacing-0-5'],
-  },
-  childrenGapBalanced: {
-    gap: spacingVars['--spacing-1'],
-  },
-  childrenGapSpacious: {
-    gap: spacingVars['--spacing-1-5'],
-  },
-});
-
 /**
  * Sender context wrapper for chat messages.
  *
@@ -217,41 +122,6 @@ export function ChatMessage({
 
   const contextValue = useMemo(() => ({sender, density}), [sender, density]);
 
-  const rootGap =
-    density === 'compact'
-      ? styles.rootGapCompact
-      : density === 'spacious'
-        ? styles.rootGapSpacious
-        : styles.rootGapBalanced;
-
-  const childrenGap =
-    density === 'compact'
-      ? styles.childrenGapCompact
-      : density === 'spacious'
-        ? styles.childrenGapSpacious
-        : styles.childrenGapBalanced;
-
-  const rootAlignment =
-    sender === 'system'
-      ? styles.rootSystem
-      : sender === 'user'
-        ? styles.rootUser
-        : styles.rootAssistant;
-
-  const columnAlignment =
-    sender === 'system'
-      ? styles.contentColumnSystem
-      : sender === 'user'
-        ? styles.contentColumnUser
-        : styles.contentColumnAssistant;
-
-  const childrenAlignment =
-    sender === 'system'
-      ? styles.childrenSystem
-      : sender === 'user'
-        ? styles.childrenUser
-        : styles.childrenAssistant;
-
   const isSystem = sender === 'system';
   const hasAvatar = !isSystem && isRenderable(avatar);
   const hasName = !isSystem && isRenderable(name);
@@ -271,36 +141,30 @@ export function ChatMessage({
         aria-labelledby={hasName ? nameId : undefined}
         {...mergeProps(
           themeProps('chat-message', {sender, density}),
-          stylex.props(
-            styles.avatarOffset,
-            styles.root,
-            rootAlignment,
-            hasAvatar && rootGap,
-            xstyle,
+          tw(
+            chatMessageClassName({density, hasAvatar, sender}),
+            xstyleProps(xstyle).className,
           ),
           className,
           styleProp,
         )}>
-        {hasAvatar && <div {...stylex.props(styles.avatarWrap)}>{avatar}</div>}
+        {hasAvatar && (
+          <div className={chatMessageAvatarWrapClassName}>{avatar}</div>
+        )}
 
-        <div {...stylex.props(styles.contentColumn, columnAlignment)}>
+        <div className={chatMessageContentClassName(sender)}>
           {hasName && (
-            <div id={nameId} {...stylex.props(styles.name)}>
+            <div id={nameId} className={chatMessageNameClassName}>
               {name}
             </div>
           )}
 
-          <div
-            {...stylex.props(
-              styles.childrenWrap,
-              childrenAlignment,
-              childrenGap,
-            )}>
+          <div className={chatMessageChildrenClassName({density, sender})}>
             {children}
           </div>
 
           {hasMetadata && (
-            <div {...stylex.props(styles.metadata)}>{metadata}</div>
+            <div className={chatMessageMetadataSlotClassName}>{metadata}</div>
           )}
         </div>
       </article>

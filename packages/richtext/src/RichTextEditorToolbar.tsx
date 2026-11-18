@@ -75,12 +75,21 @@ import {Divider} from '@astryxdesign/core/Divider';
 import {HStack} from '@astryxdesign/core/Layout';
 import {getExtendedIcon} from '@astryxdesign/core/Icon';
 import {useThemeName} from '@astryxdesign/core/theme';
-import {isRenderable, rtlStyles} from '@astryxdesign/core/utils';
 import {
-  fontWeightVars,
-  spacingVars,
-  typeScaleVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
+  RTL_MIRROR_CLASS,
+  isRenderable,
+  mergeProps,
+} from '@astryxdesign/core/utils';
+import {
+  toolbarActionsClassName,
+  toolbarCompactClassName,
+  toolbarDividerClassName,
+  toolbarFixedSlotClassName,
+  toolbarGlyphDirectionalClassName,
+  toolbarGlyphTextClassName,
+  toolbarLinkAnchorClassName,
+} from './richTextToolbarClasses';
+import {tw} from './tw';
 import {useTranslator, type TranslatorFn} from '@astryxdesign/core/i18n';
 import {
   FORMAT_TEXT_COMMAND,
@@ -110,66 +119,6 @@ import {$selectedExtensionNodesOnly} from './markdownExtensionNode';
 /** Block types exposed by the toolbar's format selector. */
 type BlockType =
   'paragraph' | 'h1' | 'h2' | 'h3' | 'quote' | 'bullet' | 'number';
-
-// The link popover's anchor: a box around the Link button that takes no
-// space of its own.
-const linkAnchorStyles = stylex.create({
-  wrapper: {
-    display: 'inline-flex',
-    flexShrink: 0,
-  },
-});
-
-// A vertical Divider's default 100% height needs a definite parent height.
-// Toolbar slots are sized by their controls instead, so let flexbox stretch
-// these group separators across the slot's resolved height.
-const toolbarDividerStyles = stylex.create({
-  vertical: {
-    alignSelf: 'stretch',
-    height: 'auto',
-  },
-});
-
-const glyphStyles = stylex.create({
-  // A transform needs a box: the wrapper is inline-flex so the mirror applies.
-  directional: {
-    display: 'inline-flex',
-  },
-  text: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-bold'],
-    fontVariantNumeric: 'tabular-nums',
-  },
-});
-
-const toolbarScrollStyles = stylex.create({
-  // Core Toolbar owns an 8px block inset. This transparent RichText-only
-  // surface overlaps 4px of that inset at each block edge, so its controls and
-  // following editor body retain a 4px visual gutter.
-  compactToolbar: {
-    '--astryx-section-padding-inline-start': spacingVars['--spacing-1'],
-    '--astryx-section-padding-inline-end': spacingVars['--spacing-1'],
-    marginBlockStart: `calc(-1 * ${spacingVars['--spacing-1']})`,
-    marginBlockEnd: `calc(-1 * ${spacingVars['--spacing-1']})`,
-  },
-  // The row scrolls when it runs out of room, so a control keeps its own
-  // width. A Selector's field may shrink, which squeezes its label to a
-  // sliver, so it sits in a slot that may not.
-  fixedSlot: {
-    display: 'flex',
-    flexShrink: 0,
-  },
-  actions: {
-    flex: '1 1 0%',
-    width: 0,
-    maxWidth: '100%',
-    minWidth: 0,
-    overflowX: 'auto',
-    overflowY: 'hidden',
-    overscrollBehaviorX: 'contain',
-    scrollbarWidth: 'thin',
-  },
-});
 
 /**
  * Stable icon-registry keys for the toolbar's controls. A theme overrides any
@@ -447,7 +396,7 @@ const defaultToolbarIcons: Record<string, ReactNode> = {
 /** Renders a short text label as a toolbar glyph (for heading buttons). */
 function TextGlyph({label}: {label: string}) {
   return (
-    <span aria-hidden="true" {...stylex.props(glyphStyles.text)}>
+    <span aria-hidden="true" className={toolbarGlyphTextClassName}>
       {label}
     </span>
   );
@@ -482,7 +431,7 @@ function DirectionalGlyph({children}: {children: ReactNode}) {
   return (
     <span
       aria-hidden="true"
-      {...stylex.props(glyphStyles.directional, rtlStyles.mirror)}>
+      className={`${toolbarGlyphDirectionalClassName} ${RTL_MIRROR_CLASS}`}>
       {children}
     </span>
   );
@@ -583,6 +532,7 @@ export function RichTextEditorToolbar({
   hasNewTabLinks = true,
   endContent,
   xstyle,
+  className,
   ref,
   ...rest
 }: RichTextEditorToolbarProps) {
@@ -770,13 +720,14 @@ export function RichTextEditorToolbar({
         ref={ref}
         label={label}
         size={size}
-        xstyle={[toolbarScrollStyles.compactToolbar, xstyle]}
+        className={tw(toolbarCompactClassName, className)}
+        xstyle={xstyle}
         startContent={
           <HStack
             gap={1}
             role="group"
             aria-label={t('@astryx.richTextEditor.toolbar.actions')}
-            xstyle={toolbarScrollStyles.actions}>
+            className={toolbarActionsClassName}>
             <IconButton
               label={t('@astryx.richTextEditor.toolbar.undo')}
               icon={<DirectionalGlyph>{icon('undo')}</DirectionalGlyph>}
@@ -796,9 +747,9 @@ export function RichTextEditorToolbar({
             <Divider
               orientation="vertical"
               aria-label={t('@astryx.richTextEditor.toolbar.historyDivider')}
-              xstyle={toolbarDividerStyles.vertical}
+              className={toolbarDividerClassName}
             />
-            <div {...stylex.props(toolbarScrollStyles.fixedSlot)}>
+            <div className={toolbarFixedSlotClassName}>
               <Selector
                 label={t('@astryx.richTextEditor.toolbar.blockFormat')}
                 isLabelHidden
@@ -814,7 +765,7 @@ export function RichTextEditorToolbar({
             <Divider
               orientation="vertical"
               aria-label={t('@astryx.richTextEditor.toolbar.formatDivider')}
-              xstyle={toolbarDividerStyles.vertical}
+              className={toolbarDividerClassName}
             />
             {INLINE_FORMAT_ACTIONS.map(action => (
               <ToggleButton
@@ -834,7 +785,7 @@ export function RichTextEditorToolbar({
               <span
                 key="link"
                 ref={linkAnchorRef}
-                {...stylex.props(linkAnchorStyles.wrapper)}>
+                className={toolbarLinkAnchorClassName}>
                 <ToggleButton
                   ref={linkButtonRef}
                   label={t('@astryx.richTextEditor.toolbar.link')}

@@ -22,7 +22,7 @@ import {Switch} from '@astryxdesign/core/Switch';
 import {Heading, Text} from '@astryxdesign/core/Text';
 import {VStack} from '@astryxdesign/core/Layout';
 import {useAnimatedLayout} from '@astryxdesign/core/hooks';
-import {rtlStyles} from '@astryxdesign/core/utils';
+import {RTL_MIRROR_CLASS} from '@astryxdesign/core/utils';
 import {ContextMenu} from '@astryxdesign/core/ContextMenu';
 import {
   Cog6ToothIcon,
@@ -474,19 +474,25 @@ export const Interactive: Story = {
         isSelected
         onClick={() => {}}
         startContent={<Icon icon={InboxIcon} />}
-        endContent={<Icon icon={ChevronRightIcon} xstyle={rtlStyles.mirror} />}
+        endContent={
+          <Icon icon={ChevronRightIcon} className={RTL_MIRROR_CLASS} />
+        }
       />
       <ListItem
         label="Sent"
         onClick={() => {}}
         startContent={<Icon icon={PaperAirplaneIcon} />}
-        endContent={<Icon icon={ChevronRightIcon} xstyle={rtlStyles.mirror} />}
+        endContent={
+          <Icon icon={ChevronRightIcon} className={RTL_MIRROR_CLASS} />
+        }
       />
       <ListItem
         label="Drafts"
         onClick={() => {}}
         startContent={<Icon icon={DocumentIcon} />}
-        endContent={<Icon icon={ChevronRightIcon} xstyle={rtlStyles.mirror} />}
+        endContent={
+          <Icon icon={ChevronRightIcon} className={RTL_MIRROR_CLASS} />
+        }
       />
     </List>
   ),
@@ -541,7 +547,7 @@ function EndControlsDemo() {
           label="Network"
           onClick={() => {}}
           endContent={
-            <Icon icon={ChevronRightIcon} xstyle={rtlStyles.mirror} />
+            <Icon icon={ChevronRightIcon} className={RTL_MIRROR_CLASS} />
           }
           swipe={forgetSwipe}
         />
@@ -560,7 +566,7 @@ function EndControlsDemo() {
           label="Bluetooth"
           onClick={() => {}}
           endContent={
-            <Icon icon={ChevronRightIcon} xstyle={rtlStyles.mirror} />
+            <Icon icon={ChevronRightIcon} className={RTL_MIRROR_CLASS} />
           }
         />
       </List>

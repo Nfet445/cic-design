@@ -3,9 +3,9 @@
 /**
  * @file layerViewportInset.source-build.test.mjs
  * @input Uses Babel, the core StyleX build config, the StyleX rule processor,
- *   and the sources that cap or inset anchored layers
- * @output Verifies the shipped stylesheet carries the dynamic-viewport,
- *   safe-area gutter and caps (spec:AST-059 FR1–FR3), not only the fallbacks
+ *   and the sources that still read the viewport inset as a constant
+ * @output Verifies no constant reference ships unresolved behind a fallback
+ *   (spec:AST-059 FR1–FR3)
  * @position Regression test for the compiled layer viewport inset
  *
  * `stylex.firstThatWorks(a, b)` turns two `var()` arguments into one nested
@@ -28,7 +28,6 @@ const CORE_ROOT = path.resolve(SRC, '..');
 
 const SOURCES = [
   'Layer/layerViewportInset.stylex.ts',
-  'Layer/useLayer.tsx',
   'Popover/Popover.tsx',
   'DropdownMenu/DropdownMenu.tsx',
   'DropdownMenu/DropdownMenuSubMenu.tsx',
@@ -48,13 +47,6 @@ async function compileStylesheet() {
   return stylexBabelPlugin.processStylexRules(rules, false);
 }
 
-/** Every declaration of `property` in the compiled sheet. */
-function declarations(css, property) {
-  return [...css.matchAll(new RegExp(`[{;]${property}:([^;}]+)`, 'g'))].map(
-    match => match[1],
-  );
-}
-
 describe('layer viewport inset stylesheet (spec:AST-059)', () => {
   it('leaves no constant reference unresolved behind a fallback', async () => {
     const css = await compileStylesheet();
@@ -64,29 +56,9 @@ describe('layer viewport inset stylesheet (spec:AST-059)', () => {
     const undefinedReferences = [
       ...css.matchAll(/var\((--x[a-z0-9]+),/g),
     ].flatMap(match => (defined.has(match[1]) ? [] : [match[0]]));
-    // Covers the caps and the four alignment-axis gutter margins.
+    // Covers the remaining constants these sources read: the popover caps and
+    // the slide rules' gutters. The layer's own cap and gutter margins are
+    // class text now, which Tailwind emits or drops whole.
     expect(undefinedReferences).toEqual([]);
-  });
-
-  it('caps both axes against the dynamic viewport and the safe-area gutters', async () => {
-    const css = await compileStylesheet();
-    const blockCaps = declarations(css, 'max-height');
-    const inlineCaps = declarations(css, 'max-width');
-
-    expect(blockCaps).toContainEqual(
-      expect.stringMatching(
-        /^calc\(min\(calc\(100dvb - .*safe-area-inset-top.*var\(--_layer-keyboard-max-block-size, 100dvb\)/,
-      ),
-    );
-    expect(inlineCaps).toContainEqual(
-      expect.stringMatching(/^calc\(calc\(100vi - .*safe-area-inset-left/),
-    );
-    // The older-engine fallbacks still ship, ahead of the preferred value.
-    expect(blockCaps).toContainEqual(
-      expect.stringMatching(/^calc\(min\(calc\(100vh - /),
-    );
-    expect(inlineCaps).toContainEqual(
-      expect.stringMatching(/^calc\(calc\(100vw - /),
-    );
   });
 });

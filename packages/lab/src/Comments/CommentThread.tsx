@@ -21,11 +21,10 @@
  */
 
 import {useCallback, useMemo, useRef, type Ref} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {LayerDepthProvider} from '@astryxdesign/core/Layer';
 import {VStack} from '@astryxdesign/core/Layout';
-import {mergeProps, themeProps} from '@astryxdesign/core/utils';
+import {mergeProps, themeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {CommentRow} from './CommentRow';
 import {
   CommentsContextProvider,
@@ -208,7 +207,7 @@ export function CommentThread({
         }}
         {...mergeProps(
           themeProps('comment-thread', {container: container ?? 'section'}),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           className,
           style,
         )}>

@@ -2,7 +2,7 @@
 
 /**
  * @file CommandPaletteFooter.tsx
- * @input Uses React, StyleX, Kbd
+ * @input Uses React, the class map, Kbd
  * @output Exports CommandPaletteFooter component
  * @position Sub-component; footer with keyboard hints
  *
@@ -13,17 +13,16 @@
 'use client';
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  typographyVars,
-} from '../theme/tokens.stylex';
+  commandPaletteFooterClassName,
+  commandPaletteFooterHintClassName,
+} from './commandPaletteFooterClasses';
 import {Kbd} from '../Kbd';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -31,28 +30,6 @@ import {
 import english from '../i18n/generated-english/CommandPalette/CommandPaletteFooter.generated';
 
 registerEnglishFallback(english);
-
-const styles = stylex.create({
-  footer: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-4'],
-    paddingInline: spacingVars['--spacing-4'],
-    paddingBlock: spacingVars['--spacing-2'],
-    flexShrink: 0,
-    // Inherit font so custom children match hint text treatment
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-  },
-  hint: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-});
 
 export interface CommandPaletteFooterProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the footer element. */
@@ -103,23 +80,23 @@ export function CommandPaletteFooter({
       ref={ref}
       {...mergeProps(
         themeProps('command-palette-footer'),
-        stylex.props(styles.footer, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(commandPaletteFooterClassName, className),
         style,
       )}
       {...props}>
       {children ?? (
         <>
-          <span {...stylex.props(styles.hint)}>
+          <span className={commandPaletteFooterHintClassName}>
             <Kbd keys="up" />
             <Kbd keys="down" />
             {t('@astryx.commandPalette.footer.navigate')}
           </span>
-          <span {...stylex.props(styles.hint)}>
+          <span className={commandPaletteFooterHintClassName}>
             <Kbd keys="enter" />
             {t('@astryx.commandPalette.footer.select')}
           </span>
-          <span {...stylex.props(styles.hint)}>
+          <span className={commandPaletteFooterHintClassName}>
             <Kbd keys="escape" />
             {t('@astryx.commandPalette.footer.close')}
           </span>

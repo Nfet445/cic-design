@@ -77,21 +77,23 @@ describe('build-css dependency extraction', () => {
     const {root, src} = await fixture();
     const provider = path.join(root, 'provider');
     await fs.mkdir(provider, {recursive: true});
-    const dataSource = await fs.readFile(
-      new URL(
-        '../packages/core/src/theme/dataTokens.stylex.ts',
-        import.meta.url,
-      ),
-      'utf8',
+    // Core's data-token group no longer comes from `defineVars`, so a probe
+    // group of the same size stands in for it here.
+    const members = Array.from(
+      {length: 56},
+      (_, index) => `'--color-data-probe-${index}': 'red'`,
     );
-    await fs.writeFile(path.join(provider, 'data.stylex.ts'), dataSource);
+    await fs.writeFile(
+      path.join(provider, 'data.stylex.ts'),
+      `import * as stylex from '@stylexjs/stylex';\nexport const dataVars = stylex.defineVars({${members.join(', ')}});\n`,
+    );
     await fs.writeFile(
       path.join(provider, 'Component.ts'),
       'export const value = 1;\n',
     );
     await fs.writeFile(
       path.join(src, 'Consumer.ts'),
-      `import {dataVars} from '@probe/data.stylex';\nexport const color = dataVars['--color-data-categorical-blue'];\n`,
+      `import {dataVars} from '@probe/data.stylex';\nexport const color = dataVars['--color-data-probe-0'];\n`,
     );
     const providerTarget = {
       src: provider,

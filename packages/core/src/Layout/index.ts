@@ -21,8 +21,16 @@ export type {
 // padding system does not cross a fixed/top-layer boundary)
 export {overlayPaddingReset} from './overlayPaddingReset.stylex';
 
-// Edge compensation utility
-export {edgeCompSlot, EDGE_COMP_ATTR} from './edgeCompensation.stylex';
+// The class form of the same seams, for a consumer that builds its own
+// container or overlay root: the inner wrapper of a layout, and the padding
+// boundary an overlay root draws.
+export {
+  layoutInnerClassName,
+  layoutPaddingResetClassName,
+} from './layoutClasses';
+
+// Edge compensation attribute
+export {EDGE_COMP_ATTR} from './edgeCompensation.stylex';
 
 // Stack utilities (re-exported from Stack module)
 export {stack} from '../Stack/stack.stylex';

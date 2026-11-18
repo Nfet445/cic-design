@@ -13,15 +13,17 @@
  */
 
 import React, {use, useCallback, useMemo, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {useInternalListFocus} from '../hooks/useListFocus';
 import {useMenuPress} from '../hooks/useMenuPress';
 import {pressOnItemsOnly} from '../hooks/menuPressOnItems';
-import {menuTouchActionStyles} from '../DropdownMenu/menuTouchAction.stylex';
 import {useMenuOverflow} from '../DropdownMenu/useMenuOverflow';
+import {
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
 import {useTypeahead} from '../hooks/useTypeahead';
 import {themeProps} from '../utils/themeProps';
@@ -33,25 +35,16 @@ import {
 } from './NavMenuContext';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-  },
-});
+import {tw} from '../utils/tw';
+import {
+  navHeadingMenuClassName,
+  navHeadingMenuMinWidthClassName,
+  navHeadingMenuMinWidthVar,
+} from './navHeadingMenuClasses';
 
-const sizeStyles = stylex.create({
-  sm: {
-    minWidth: 160,
-  },
-  md: {
-    minWidth: 200,
-  },
-  lg: {
-    minWidth: 240,
-  },
-});
+/** The minimum width the caller states, read by the size class. */
+type NavHeadingMenuStyle = React.CSSProperties &
+  Partial<Record<typeof navHeadingMenuMinWidthVar, string>>;
 
 /** The rows a press can act on. */
 const ENABLED_ITEM_SELECTOR = '[role="menuitem"]:not([aria-disabled="true"])';
@@ -186,7 +179,14 @@ export function NavHeadingMenu({
     [closeMenu, size],
   );
 
-  const inlineStyle = minWidth != null ? {...styleProp, minWidth} : styleProp;
+  const overrideStyle: NavHeadingMenuStyle | undefined =
+    minWidth == null
+      ? styleProp
+      : {
+          ...styleProp,
+          [navHeadingMenuMinWidthVar]:
+            typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
+        };
 
   const preventedBeforeDescendantsRef = useRef(new WeakSet<Event>());
   const handleMenuKeyDownCapture = (
@@ -214,16 +214,16 @@ export function NavHeadingMenu({
         data-testid={testId}
         {...mergeProps(
           themeProps('nav-heading-menu', {size}),
-          stylex.props(
-            styles.root,
-            sizeStyles[size],
+          xstyleProps(xstyle),
+          tw(
+            navHeadingMenuClassName,
+            navHeadingMenuMinWidthClassName[size],
             hasOverflow
-              ? menuTouchActionStyles.scrolls
-              : menuTouchActionStyles.fits,
-            xstyle,
+              ? dropdownMenuSubMenuTouchClassName
+              : dropdownMenuSubMenuTouchPinchClassName,
+            className,
           ),
-          className,
-          inlineStyle,
+          overrideStyle,
         )}
         {...rest}
         {...menuPress.menuProps}

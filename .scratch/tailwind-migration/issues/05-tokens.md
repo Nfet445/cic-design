@@ -1,6 +1,6 @@
 # tokens
 
-Status: ready-for-agent
+Status: done
 Blocked by: —
 Wave: 3
 Ticket: 05

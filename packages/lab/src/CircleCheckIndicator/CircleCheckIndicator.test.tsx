@@ -28,16 +28,17 @@ const circleTheme = defineTheme({
   indicators: {checkbox: CircleCheckIndicator},
 });
 
-/** The visible mark: whether the check and the bar display. */
+/** The visible mark: whether the check and the bar carry the class that shows them. */
 function marks(root: Element) {
   const check = root.querySelector('.astryx-circle-check-indicator-check');
   const dash = root.querySelector('.astryx-circle-check-indicator-dash');
   if (check == null || dash == null) {
     throw new Error('the mark elements are missing');
   }
+  // jsdom injects no sheet, so the display class stands for the shown mark.
   return {
-    check: getComputedStyle(check).display !== 'none',
-    dash: getComputedStyle(dash).display !== 'none',
+    check: check.classList.contains('block'),
+    dash: dash.classList.contains('block'),
   };
 }
 

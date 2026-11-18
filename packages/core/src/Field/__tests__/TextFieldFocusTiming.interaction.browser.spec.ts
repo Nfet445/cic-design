@@ -7,7 +7,7 @@
  * @output Proofs that a tapped text field shows its focus look at once, while
  *   a mouse click and the keyboard still fade it in
  * @position Interaction evidence for the text field timing in
- *   Field/inputStyles.stylex.ts, which ChatComposer and RichTextEditor share
+ *   Field/fieldClasses.ts, which TextInput and RichTextEditor share
  */
 
 import {

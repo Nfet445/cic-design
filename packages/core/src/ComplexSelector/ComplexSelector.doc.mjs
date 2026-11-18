@@ -211,8 +211,20 @@ export const docs = {
         },
         {
           name: 'contentXstyle',
-          type: 'StyleXStyles',
-          description: 'StyleX styles for the popup content container.',
+          type: 'AstryxXStyle',
+          description:
+            'A class name, inline style object, StyleX value, or list of these for the popup content container.',
+        },
+        {
+          name: 'contentClassName',
+          type: 'string',
+          description:
+            'Class name for the popup content container. A width the content computes for itself reaches the box as `contentStyle` beside this class.',
+        },
+        {
+          name: 'contentStyle',
+          type: 'CSSProperties',
+          description: 'Inline styles for the popup content container.',
         },
         {
           name: 'onClick',
@@ -416,6 +428,10 @@ export const docsDense = {
       'StyleX styles for the visual control box (border, background, icons); not the trigger button.',
     controlClassName: 'Class name for the visual control box.',
     controlStyle: 'Inline styles for the visual control box.',
+    contentXstyle:
+      'Class name, inline style object, StyleX value, or list for the popup content container.',
+    contentClassName: 'Class name for the popup content container.',
+    contentStyle: 'Inline styles for the popup content container.',
     statusVariant:
       'How status message is placed: attached overlaps below input (detached for secondary and ghost); detached floats below w/ spacing; tooltip shows on status icon.',
     accessibility:

@@ -24,12 +24,6 @@ import {HStack} from '../HStack/HStack';
 import {Text} from '../Text/Text';
 import {VStack} from '../VStack/VStack';
 import {
-  colorVars,
-  radiusVars,
-  shadowVars,
-  spacingVars,
-} from '../theme/tokens.stylex';
-import {
   createMotionEngine,
   defaultPrefersReducedMotion,
 } from '../motion/animator';
@@ -55,27 +49,27 @@ type Animator = ReturnType<typeof createMotionEngine>;
 const s = stylex.create({
   page: {
     minHeight: '100vh',
-    backgroundColor: colorVars['--color-background-surface'],
+    backgroundColor: 'var(--color-background-surface)',
   },
   bar: {
     position: 'sticky',
     top: 0,
     zIndex: 3,
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    backgroundColor: colorVars['--color-background-surface'],
+    paddingBlock: 'var(--spacing-2)',
+    paddingInline: 'var(--spacing-3)',
+    backgroundColor: 'var(--color-background-surface)',
     borderBottomWidth: 1,
     borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
+    borderBottomColor: 'var(--color-border)',
   },
   rows: {
-    padding: spacingVars['--spacing-4'],
+    padding: 'var(--spacing-4)',
   },
   scrim: {
     position: 'fixed',
     inset: 0,
     zIndex: 1,
-    backgroundColor: colorVars['--color-overlay'],
+    backgroundColor: 'var(--color-overlay)',
   },
   sheet: {
     position: 'fixed',
@@ -83,11 +77,11 @@ const s = stylex.create({
     bottom: 0,
     zIndex: 2,
     height: 240,
-    padding: spacingVars['--spacing-4'],
-    backgroundColor: colorVars['--color-background-surface'],
-    borderStartStartRadius: radiusVars['--radius-element'],
-    borderStartEndRadius: radiusVars['--radius-element'],
-    boxShadow: shadowVars['--shadow-high'],
+    padding: 'var(--spacing-4)',
+    backgroundColor: 'var(--color-background-surface)',
+    borderStartStartRadius: 'var(--radius-element)',
+    borderStartEndRadius: 'var(--radius-element)',
+    boxShadow: 'var(--shadow-high)',
   },
 });
 

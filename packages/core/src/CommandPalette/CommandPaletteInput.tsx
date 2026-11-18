@@ -3,7 +3,7 @@
 'use client';
 /**
  * @file CommandPaletteInput.tsx
- * @input Uses React, StyleX, Icon, CommandPaletteContext, DialogContext
+ * @input Uses React, the class map, Icon, CommandPaletteContext, DialogContext
  * @output Exports CommandPaletteInput component and props
  * @position Search input for the command palette
  *
@@ -21,23 +21,28 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Icon} from '../Icon';
 import {Spinner} from '../Spinner';
 import {isImeKeyEvent, isRenderable, mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {
-  colorVars,
-  typeScaleVars,
-  spacingVars,
-  typographyVars,
-} from '../theme/tokens.stylex';
+  commandPaletteInputEndClassName,
+  commandPaletteInputFieldClassName,
+  commandPaletteInputIconClassName,
+  commandPaletteInputSpinnerClassName,
+  commandPaletteInputWrapperClassName,
+} from './commandPaletteInputClasses';
 import {useCommandPaletteContext} from './CommandPaletteContext';
 import {BusyStartSettleContext} from './busyStartSettle';
 import {useDialogContext} from '../Dialog/DialogContext';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {
+  focusOutlineFocusVisibleClassName,
+  focusOutlineSuppressedClassName,
+} from '../utils/focusOutlineClasses';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
+import {xstyleProps} from '../utils/xstyle';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
@@ -49,66 +54,6 @@ import english from '../i18n/generated-english/CommandPalette/CommandPaletteInpu
 import {textEntryTraitAttributes} from '../Field/textEntryTraits';
 
 registerEnglishFallback(english);
-const styles = stylex.create({
-  wrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-4'],
-    paddingBlock: spacingVars['--spacing-3'],
-    flexShrink: 0,
-  },
-  // The icon span needs explicit flex centering to avoid line-height offset
-  icon: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-    color: colorVars['--color-text-secondary'],
-  },
-  // Groups spinner + endContent on the right with a consistent gap
-  end: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    flexShrink: 0,
-  },
-  // Delay spinner appearance to avoid flickering on near-instant searches.
-  // Uses @starting-style + transition-delay so the spinner only appears
-  // if the search is still pending after 150ms.
-  spinner: {
-    opacity: 1,
-    transitionProperty: 'opacity',
-    transitionDuration: '1ms',
-    transitionDelay: '150ms',
-    '@starting-style': {
-      opacity: 0,
-    },
-  },
-  input: {
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: colorVars['--color-text-primary'],
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    padding: 0,
-    '::placeholder': {
-      color: colorVars['--color-text-secondary'],
-    },
-  },
-});
-
 export interface CommandPaletteInputProps extends Omit<
   BaseProps<HTMLInputElement>,
   'onChange'
@@ -307,19 +252,22 @@ export function CommandPaletteInput({
     <div
       {...mergeProps(
         themeProps('command-palette-input'),
-        stylex.props(styles.wrapper, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(commandPaletteInputWrapperClassName, className),
         style,
       )}>
-      <span {...stylex.props(styles.icon)}>
+      <span className={commandPaletteInputIconClassName}>
         <Icon icon="search" size="sm" color="inherit" />
       </span>
       <input
         {...props}
         ref={useMergedRefs(ref, inputRef, modalityRef)}
-        {...(isKeyboardFocus
-          ? focusOutlineProps.focusVisible(styles.input)
-          : focusOutlineProps.suppressed(styles.input))}
+        className={tw(
+          commandPaletteInputFieldClassName,
+          isKeyboardFocus
+            ? focusOutlineFocusVisibleClassName
+            : focusOutlineSuppressedClassName,
+        )}
         type="text"
         // Autocorrect would rewrite names and identifiers.
         {...textEntryTraitAttributes({
@@ -369,9 +317,13 @@ export function CommandPaletteInput({
         onBlur={handleBlur}
       />
       {(ctx?.isBusy || hasEndContent) && (
-        <span {...stylex.props(styles.end)}>
+        <span className={commandPaletteInputEndClassName}>
           {ctx?.isBusy && (
-            <span {...stylex.props(styles.icon, styles.spinner)}>
+            <span
+              className={tw(
+                commandPaletteInputIconClassName,
+                commandPaletteInputSpinnerClassName,
+              )}>
               <Spinner size="sm" aria-hidden="true" />
             </span>
           )}

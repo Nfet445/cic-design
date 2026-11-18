@@ -21,7 +21,8 @@ export const docs = {
     {
       name: 'options',
       type: 'UseCalendarConstraintsOptions',
-      description: 'Configuration for date bounds, range-span limits, and custom rules.',
+      description:
+        'Configuration for date bounds, range-span limits, and custom rules.',
       required: true,
     },
     {
@@ -77,12 +78,14 @@ export const docs = {
     {
       name: 'minDate',
       type: 'PlainDate | null',
-      description: 'Parsed minimum date as a PlainDate object, or null if min was not provided.',
+      description:
+        'Parsed minimum date as a PlainDate object, or null if min was not provided.',
     },
     {
       name: 'maxDate',
       type: 'PlainDate | null',
-      description: 'Parsed maximum date as a PlainDate object, or null if max was not provided.',
+      description:
+        'Parsed maximum date as a PlainDate object, or null if max was not provided.',
     },
   ],
   usage: {
@@ -120,13 +123,17 @@ export const docsDense = {
     options: 'Date constraint configuration.',
     'options.min': 'Earliest selectable ISO date.',
     'options.max': 'Latest selectable ISO date.',
-    'options.dateConstraints': 'Array of predicates returning false for disabled dates.',
-    'options.maxRangeSpan': 'Max days in range counting endpoints, measured from rangeAnchor.',
-    'options.minRangeSpan': 'Min days in range counting endpoints, measured from rangeAnchor.',
+    'options.dateConstraints':
+      'Array of predicates returning false for disabled dates.',
+    'options.maxRangeSpan':
+      'Max days in range counting endpoints, measured from rangeAnchor.',
+    'options.minRangeSpan':
+      'Min days in range counting endpoints, measured from rangeAnchor.',
     'options.rangeAnchor': 'Active range start PlainDate for span constraints.',
   },
   returnDescriptions: {
-    isDateDisabled: 'Function returning true if PlainDate violates any constraint.',
+    isDateDisabled:
+      'Function returning true if PlainDate violates any constraint.',
     minDate: 'Parsed min PlainDate or null.',
     maxDate: 'Parsed max PlainDate or null.',
   },
@@ -140,7 +147,8 @@ export const docsDense = {
       },
       {
         guidance: true,
-        description: 'Use dateConstraints for recurring blackout dates or closures.',
+        description:
+          'Use dateConstraints for recurring blackout dates or closures.',
       },
       {
         guidance: false,

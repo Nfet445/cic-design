@@ -20,10 +20,15 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React, {useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {PowerSearch} from './PowerSearch';
 import {PowerSearchEditPopover} from './PowerSearchEditPopover';
+import {powerSearchPopoverLayerClassName} from './powerSearchClasses';
+import {
+  powerSearchEditPopoverChipRowClassName,
+  powerSearchEditPopoverContainerClassName,
+  powerSearchEditPopoverNestedFieldSelectorClassName,
+} from './powerSearchEditPopoverClasses';
 import {useInternalConfig} from './useInternalConfig';
 import type {PowerSearchConfig, PowerSearchFilter} from './types';
 
@@ -571,47 +576,19 @@ describe('PowerSearch', () => {
 // =============================================================================
 
 // jsdom performs no real layout (and never matches @container conditions), so
-// these tests assert the declarations that produce the narrow-width behavior
-// rather than measured geometry, via StyleX probe classes: one deterministic
-// atomic class per property/value/condition, so an element carries a probe's
-// classes exactly when it has the same declaration. The dev debug class
-// (contains "__") is excluded.
-const CHIP_ROW_COLLAPSE = '@container (max-width: 399px)';
-
-const probe = stylex.create({
-  responsiveLayerMinWidth: {
-    minWidth: stylex.firstThatWorks(
-      `min(400px, ${layerViewportInset.maxInlineSize})`,
-      `min(400px, ${layerViewportInset.maxInlineSizeFallback})`,
-    ),
-  },
-  fixedLayerMinWidth: {minWidth: 400},
-  queryContainer: {containerType: 'inline-size'},
-  responsiveWrap: {
-    flexWrap: {default: 'nowrap', [CHIP_ROW_COLLAPSE]: 'wrap'},
-  },
-  cellMaxWidth: {maxWidth: '100%'},
-  nestedFieldCellWidth: {width: 200},
-});
-
-function atomicClasses(style: (typeof probe)[keyof typeof probe]): string[] {
-  const {className = ''} = stylex.props(style);
-  const classes = className
-    .split(' ')
-    .filter(c => c !== '' && !c.includes('__'));
-  // A probe resolving to no atomic classes would make every assertion built
-  // on it vacuous, including the not-toHaveClass loops; fail loudly instead.
-  expect(classes.length).toBeGreaterThan(0);
-  return classes;
+// these tests assert the classes that carry the narrow-width declarations
+// rather than measured geometry.
+function findByClasses(root: HTMLElement, classString: string): HTMLElement {
+  const tokens = classString.split(' ');
+  const found = [...root.querySelectorAll<HTMLElement>('*')].find(el =>
+    tokens.every(token => classesOf(el).includes(token)),
+  );
+  expect(found).not.toBeNull();
+  return found as HTMLElement;
 }
 
-function expectProbeClasses(
-  el: HTMLElement,
-  style: (typeof probe)[keyof typeof probe],
-) {
-  for (const cls of atomicClasses(style)) {
-    expect(el).toHaveClass(cls);
-  }
+function expectClasses(el: HTMLElement, classString: string) {
+  expect(classesOf(el)).toEqual(expect.arrayContaining(classString.split(' ')));
 }
 
 describe('narrow-width layout (#4761)', () => {
@@ -633,11 +610,12 @@ describe('narrow-width layout (#4761)', () => {
   }
 
   function getChipRow(container: HTMLElement): HTMLElement {
-    // Locate the chip row by its collapse declaration, then sanity-check it
-    // really is the row holding the field / operator / value cells.
-    const [rowCls] = atomicClasses(probe.responsiveWrap);
-    const row = container.querySelector(`.${rowCls}`) as HTMLElement;
-    expect(row).not.toBeNull();
+    // Locate the chip row by its collapse classes, then sanity-check it really
+    // is the row holding the field / operator / value cells.
+    const row = findByClasses(
+      container,
+      powerSearchEditPopoverChipRowClassName,
+    );
     expect(row).toHaveClass('astryx-stack');
     expect(row.children).toHaveLength(3);
     return row;
@@ -650,14 +628,15 @@ describe('narrow-width layout (#4761)', () => {
     // in this file can match and the chip rows would never wrap.
     const root = container.firstElementChild as HTMLElement;
     expect(root).not.toBeNull();
-    expectProbeClasses(root, probe.queryContainer);
+    expectClasses(root, powerSearchEditPopoverContainerClassName);
   });
 
   it('filter chip row wraps below the collapse width instead of overflowing', () => {
     const {container} = render(<EditHarness />);
 
     const row = getChipRow(container);
-    expectProbeClasses(row, probe.responsiveWrap);
+    expectClasses(row, powerSearchEditPopoverChipRowClassName);
+    expect(classesOf(row)).toContain('@max-[399px]:flex-wrap');
   });
 
   it('operator cell is capped at the row width', () => {
@@ -666,7 +645,7 @@ describe('narrow-width layout (#4761)', () => {
     // Capped so a long translated operator label truncates inside the
     // Selector trigger instead of pushing the row wider than the popover.
     const operatorCell = getChipRow(container).children[1] as HTMLElement;
-    expectProbeClasses(operatorCell, probe.cellMaxWidth);
+    expect(classesOf(operatorCell)).toContain('max-w-full');
   });
 
   it('nested sub-filter rows wrap instead of overflowing on one line', () => {
@@ -717,18 +696,19 @@ describe('narrow-width layout (#4761)', () => {
     const {container} = render(<NestedHarness />);
 
     // Locate the sub-filter row through its fixed-width field cell.
-    const [cellCls] = atomicClasses(probe.nestedFieldCellWidth);
-    const fieldCell = container.querySelector(`.${cellCls}`) as HTMLElement;
-    expect(fieldCell).not.toBeNull();
+    const fieldCell = findByClasses(
+      container,
+      powerSearchEditPopoverNestedFieldSelectorClassName,
+    );
     const row = fieldCell.parentElement as HTMLElement;
     expect(row).toHaveClass('astryx-stack');
-    expectProbeClasses(row, probe.responsiveWrap);
+    expectClasses(row, powerSearchEditPopoverChipRowClassName);
 
     // The fixed-width cells are capped so they cannot clip in containers
     // narrower than their design width (or under deep TreeList indentation).
-    expectProbeClasses(fieldCell, probe.cellMaxWidth);
+    expect(classesOf(fieldCell)).toContain('max-w-full');
     const operatorCell = row.children[1] as HTMLElement;
-    expectProbeClasses(operatorCell, probe.cellMaxWidth);
+    expect(classesOf(operatorCell)).toContain('max-w-full');
   });
 
   it('edit popover layer yields to viewports narrower than its 400px floor', () => {
@@ -759,12 +739,12 @@ describe('narrow-width layout (#4761)', () => {
       .closest('[popover]') as HTMLElement;
     expect(layer).not.toBeNull();
 
-    // The fixed 400px floor is clamped by the layer runtime's viewport cap
-    // (spec:AST-059 FR7), so the popover never opens wider than the screen.
-    expectProbeClasses(layer, probe.responsiveLayerMinWidth);
-    for (const cls of atomicClasses(probe.fixedLayerMinWidth)) {
-      expect(layer).not.toHaveClass(cls);
-    }
+    // The fixed 400px floor is clamped by the layer runtime's viewport cap,
+    // so the popover never opens wider than the screen. jsdom cannot resolve
+    // the built sheet, so assert the classes the layer asked for.
+    expect(classesOf(layer)).toEqual(
+      expect.arrayContaining(powerSearchPopoverLayerClassName.split(' ')),
+    );
   });
 });
 

@@ -155,6 +155,32 @@ check of the family's states.
       package (ticket 36).
 - [ ] `astryx.css` retires or stays per OQ1, and every import of it in the
       repository changes (ticket 36).
+- [ ] Every remaining `.stylex.ts` module is a DEC-9 escape: it names the
+      consumer utility it must beat, and nothing else holds StyleX.
+
+#### The escape set (DEC-9)
+
+These modules stay `.stylex.ts` because the rule each one carries must outrank a
+class the caller passes in, and a lower layer cannot outrank a higher one. Each
+line names its rival; a module whose rival is another `astryx-base` class is not
+on this list — it converts by repeating its own qualifier.
+
+- `packages/core/src/Avatar/avatarGroupRing.stylex.ts` — the caller's `border-0`,
+  `border-*` or `ms-*` utility on a group member.
+- `packages/core/src/Switch/switchHoverPress.stylex.ts`,
+  `packages/core/src/Table/plugins/rowExpansion/rowExpansionOverrides.stylex.ts`,
+  `packages/lab/src/Schedule/scheduleOverrides.stylex.ts`,
+  `packages/lab/src/TabBar/tabBar.stylex.ts` — each reads a
+  `stylex.defineMarker()` through `stylex.when.ancestor`, and a marker has no
+  class form.
+- `packages/core/src/BottomSheet/bottomSheetPanelMotion.stylex.ts` — its
+  `transition-property`, `-duration` and `-delay` are read back through
+  `getComputedStyle` to decide when a sheet has settled.
+- `packages/core/src/ProgressBar/progressBarFill.stylex.ts` — four conditions at
+  once, where Tailwind fixes the variant order and `forced-colors` cannot be
+  raised above `pointer: coarse`.
+- `packages/core/src/Icon/IconSize.stylex.ts` — a deprecated compatibility
+  export only; it disappears with the major that removes the subpath.
 
 ## Verification
 
@@ -172,16 +198,30 @@ check of the family's states.
 
 ## Status
 
-- Current phase: `4` — waves 1 and 2 are done and pushed, wave 0 is the next
-  ticket. The layout family proved the contract; all five members of
-  `family:buttons` are settled, four of them migrated, and the whole sheet
-  still fits the budget the stylesheet test enforces.
-- The remaining work is scheduled: 36 tickets over waves 0 and 3-9, each with
-  its files, its `Blocked by:` line and its verification, in
+- Current phase: `6` — StyleX leaves. Waves 1 and 2 landed on `main` in
+  pull request #1; waves 3 through 8 are integrating on the migration trunk
+  behind pull request #2, one merge commit per ticket.
+- Done: 58 of the 63 tickets. Every family wave landed on the migration trunk
+  except the removal stages: the sheet the trunk builds is 373.7 kB raw,
+  42.5 kB gzipped and 2 300 rule blocks, and every package's sheet test holds
+  its gate.
+- Remaining: the five removal tickets. `59` moved the token names off the
+  StyleX runtime; `60` deletes the last maps with the component-owned token
+  modules under them; `61` retires the StyleX half of `packages/build` and
+  `scripts/build-css.mjs`; `62` points `xstyle` at the Tailwind adapter that
+  keeps its value unlayered; `63` writes the `breaking` changeset and the
+  consumer notes.
+- What stays on StyleX, each with a measured reason recorded in its ticket: the
+  `ProgressBar` fill (four conditions at once, and Tailwind fixes the variant
+  order), the two safe-area compositions, the three motion modules, the
+  thumbnail override pair, the `Table` markers, and every seam that takes a
+  StyleX-only argument until ticket `62` replaces it.
+- The work is scheduled: 49 tickets over waves 0 and 3–9, each with its files,
+  its `Blocked by:` line and its verification, in
   [`.scratch/tailwind-migration/`](../../../.scratch/tailwind-migration/map.md).
   `packages/native` and `packages/vega` are out of scope: neither imports
   StyleX, and Tailwind CSS does not apply to React Native.
 - Blockers: `spec:AST-119` and the two amendments need owner approval, which
-  every wave pull request carries; OQ1 and OQ3 change the consumer story and
-  must settle before Phase 5; OQ2 decides whether FR8's class set is a promise.
-  OQ3 is answered for this plan: the consumer's `xstyle` stays unlayered.
+  every wave pull request carries; OQ1, OQ2 and OQ4 shape the consumer story
+  and must settle before Phase 5. OQ3 is answered for this plan: the
+  consumer's `xstyle` stays unlayered.

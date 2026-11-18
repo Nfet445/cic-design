@@ -14,27 +14,15 @@ import {renderToString} from 'react-dom/server';
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import {TestIcon} from '../__tests__/TestIcon';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {TextArea} from './TextArea';
+import {fieldInputWrapperFocusScopeClassName} from '../Field/fieldClasses';
 import {InternationalizationProvider} from '../i18n';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 
-// jsdom cannot match `:focus-visible`: compare the ring's StyleX class hash.
-const RING = stylex
-  .props(
-    stylex.create({
-      ring: {
-        boxShadow: {
-          default: null,
-          ':has(> [aria-disabled="true"]:focus-visible)': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-        },
-      },
-    }).ring,
-  )
-  .className!.split(' ')
-  .pop()!;
+// jsdom cannot match `:focus-visible`, so the ring is the class that keys on it.
+const RING = fieldInputWrapperFocusScopeClassName.direct;
 
 // FieldStatus announces status messages through the persistent useAnnounce
 // singletons; remove them between tests so role/aria-live queries in this
@@ -328,10 +316,14 @@ describe('TextArea', () => {
       );
       const parent = zeroTextParent(container);
       expect(parent).not.toBeNull();
-      expect(parent?.className).toContain('startIcon');
-      expect(screen.getByRole('textbox').className).toContain(
-        'textareaWithStartIcon',
-      );
+      expectClassSet(parent!, {
+        includes: ['absolute', 'start-[var(--_textarea-inline-padding)]'],
+      });
+      expectClassSet(screen.getByRole('textbox'), {
+        includes: [
+          'ps-[calc(var(--_textarea-inline-padding)_+_var(--spacing-6))]',
+        ],
+      });
     });
   });
 

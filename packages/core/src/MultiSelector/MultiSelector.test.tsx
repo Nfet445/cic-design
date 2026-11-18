@@ -44,10 +44,12 @@ import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {selectorPresentationStyles} from '../Selector/selectorPresentation.stylex';
-import {groupStyles} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {InputGroup, InputGroupText} from '../InputGroup';
-import {colorVars, focusVars} from '../theme/tokens.stylex';
+import {colorVars} from '../theme/tokens.stylex';
 import {COMPACT_TOUCH_PRESENTATION_QUERY} from '../hooks/useAdaptivePresentation';
+import {MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS} from './multiSelectorOptionClasses';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 
 /**
  * Enters a search query as one change. Typing it key by key can land several
@@ -138,6 +140,12 @@ afterEach(() => {
 
 // Helper: jsdom popover content is in the DOM but may not be
 // "visible" in the accessibility tree. Use hidden: true to find it.
+/**
+ * The action cell's ring is read from its classes: jsdom cannot parse the
+ * built Tailwind sheet, so the class set is what says the cell draws one.
+ */
+const RING_CLASSES = MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS.split(' ');
+
 const h = {hidden: true} as const;
 
 /** A busy control's Spinner is decorative and silent (spec:AST-086 FR8). */
@@ -4858,19 +4866,6 @@ describe('MultiSelector option actions (grid)', () => {
     // jsdom resolves no custom property, so the ring is read from StyleX
     // classes: a class name hashes one property and its value, and the same
     // declaration yields the same class wherever it is written.
-    const ring = stylex.create({
-      active: {
-        outlineWidth: focusVars['--focus-outline-width'],
-        outlineStyle: focusVars['--focus-outline-style'],
-        outlineColor: focusVars['--focus-outline-color'],
-        outlineOffset: focusVars['--focus-outline-offset'],
-      },
-    });
-    const ringClasses = stylex
-      .props(ring.active)
-      .className!.split(' ')
-      .filter(token => /^x[a-z0-9]+$/.test(token));
-    expect(ringClasses).toHaveLength(4);
 
     const user = userEvent.setup();
     render(
@@ -4885,31 +4880,13 @@ describe('MultiSelector option actions (grid)', () => {
     await user.click(trigger);
     const bug = screen.getByRole('row', {name: 'Bug', ...h});
     const actionCell = bug.children[1] as HTMLElement;
-    for (const token of ringClasses) {
-      expect(actionCell).not.toHaveClass(token);
-    }
+    expectClassSet(actionCell, {excludes: RING_CLASSES});
     fireEvent.keyDown(trigger, {key: 'ArrowRight'});
     expect(trigger).toHaveAttribute('aria-activedescendant', actionCell.id);
-    for (const token of ringClasses) {
-      expect(actionCell).toHaveClass(token);
-    }
+    expectClassSet(actionCell, {includes: RING_CLASSES});
   });
 
   it('draws no focus ring on an action cell highlighted after pointer input, until a key moves the highlight', async () => {
-    const ring = stylex.create({
-      active: {
-        outlineWidth: focusVars['--focus-outline-width'],
-        outlineStyle: focusVars['--focus-outline-style'],
-        outlineColor: focusVars['--focus-outline-color'],
-        outlineOffset: focusVars['--focus-outline-offset'],
-      },
-    });
-    const ringClasses = stylex
-      .props(ring.active)
-      .className!.split(' ')
-      .filter(token => /^x[a-z0-9]+$/.test(token));
-    expect(ringClasses).toHaveLength(4);
-
     const user = userEvent.setup();
     render(
       <MultiSelector
@@ -4927,34 +4904,18 @@ describe('MultiSelector option actions (grid)', () => {
     fireEvent.pointerMove(actionCell, {screenX: 210, screenY: 210});
     // The hover moved the highlight onto the action cell, without the ring.
     expect(trigger).toHaveAttribute('aria-activedescendant', actionCell.id);
-    for (const token of ringClasses) {
-      expect(actionCell).not.toHaveClass(token);
-    }
+    expectClassSet(actionCell, {excludes: RING_CLASSES});
     // Keyboard navigation back onto the cell draws it.
     fireEvent.keyDown(trigger, {key: 'ArrowLeft'});
     fireEvent.keyDown(trigger, {key: 'ArrowRight'});
     expect(trigger).toHaveAttribute('aria-activedescendant', actionCell.id);
-    for (const token of ringClasses) {
-      expect(actionCell).toHaveClass(token);
-    }
+    expectClassSet(actionCell, {includes: RING_CLASSES});
   });
 
   // A caller-rendered trigger in a same-origin iframe reads the iframe's last
   // input, as the built-in trigger does: after a click on the page and keys
   // in the iframe, the highlighted action cell takes the ring.
   it('rings the action cell after keyboard input in the iframe a caller-rendered trigger lives in', () => {
-    const ring = stylex.create({
-      active: {
-        outlineWidth: focusVars['--focus-outline-width'],
-        outlineStyle: focusVars['--focus-outline-style'],
-        outlineColor: focusVars['--focus-outline-color'],
-        outlineOffset: focusVars['--focus-outline-offset'],
-      },
-    });
-    const ringClasses = stylex
-      .props(ring.active)
-      .className!.split(' ')
-      .filter(token => /^x[a-z0-9]+$/.test(token));
     const frame = document.createElement('iframe');
     document.body.appendChild(frame);
     const frameDocument = frame.contentDocument!;
@@ -4991,9 +4952,7 @@ describe('MultiSelector option actions (grid)', () => {
       const bug = within(grid).getByRole('row', {name: 'Bug', ...h});
       const actionCell = bug.children[1] as HTMLElement;
       expect(grid).toHaveAttribute('aria-activedescendant', actionCell.id);
-      for (const token of ringClasses) {
-        expect(actionCell).toHaveClass(token);
-      }
+      expectClassSet(actionCell, {includes: RING_CLASSES});
     } finally {
       cleanup();
       frame.remove();
@@ -5001,22 +4960,8 @@ describe('MultiSelector option actions (grid)', () => {
   });
 
   describe('ring under mixed input', () => {
-    const ringClasses = () => {
-      const ring = stylex.create({
-        active: {
-          outlineWidth: focusVars['--focus-outline-width'],
-          outlineStyle: focusVars['--focus-outline-style'],
-          outlineColor: focusVars['--focus-outline-color'],
-          outlineOffset: focusVars['--focus-outline-offset'],
-        },
-      });
-      return stylex
-        .props(ring.active)
-        .className!.split(' ')
-        .filter(token => /^x[a-z0-9]+$/.test(token));
-    };
     const hasRing = (cell: HTMLElement) =>
-      ringClasses().every(token => cell.classList.contains(token));
+      RING_CLASSES.every(className => classesOf(cell).includes(className));
 
     async function openWithKeyboardOnBugAction() {
       const user = userEvent.setup();
@@ -5305,8 +5250,7 @@ describe('MultiSelector create row inside a grid', () => {
 });
 
 describe('MultiSelector in an InputGroup', () => {
-  const groupClasses = () =>
-    stylex.props(groupStyles.inGroup).className!.split(' ');
+  const groupClasses = () => inputGroupMemberClassName.split(' ');
   const triggerBox = (name: RegExp) =>
     screen
       .getByRole('combobox', {name})

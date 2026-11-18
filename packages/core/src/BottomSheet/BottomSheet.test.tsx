@@ -38,6 +38,7 @@ import {__focusTakeoverCallersForTest} from '../keyboard/keyboardHeight';
 import {__resetRevealsAtReportForTest} from '../keyboard/useMobileKeyboard';
 import {getKeyboardLayoutGuide} from '../keyboard/keyboardLayoutGuide';
 import {animatorFor} from '../motion/animator';
+import {classesOf} from '../__tests__/classNameAssertions';
 
 // A sheet has no stops unless its host asks for them, so the tests that
 // exercise detents pass their own. These three — a 14% peek, a half-height
@@ -5078,19 +5079,13 @@ describe('BottomSheet', () => {
           Content
         </BottomSheet>,
       );
-      const sheet = getSheet();
-      const computed = window.getComputedStyle(sheet);
-      expect(
-        computed.getPropertyValue('--container-padding-inline-start'),
-      ).toBe('0px');
-      expect(computed.getPropertyValue('--container-padding-inline-end')).toBe(
-        '0px',
-      );
-      expect(computed.getPropertyValue('--container-padding-block-start')).toBe(
-        '0px',
-      );
-      expect(computed.getPropertyValue('--container-padding-block-end')).toBe(
-        '0px',
+      expect(classesOf(getSheet())).toEqual(
+        expect.arrayContaining([
+          '[--container-padding-inline-start:0px]',
+          '[--container-padding-inline-end:0px]',
+          '[--container-padding-block-start:0px]',
+          '[--container-padding-block-end:0px]',
+        ]),
       );
     });
   });
@@ -5103,11 +5098,9 @@ describe('BottomSheet', () => {
         </BottomSheet>,
       );
       const box = screen.getByTestId('sheet-child').parentElement!;
-      expect(
-        getComputedStyle(box).getPropertyValue(
-          '--container-padding-inline-start',
-        ),
-      ).toBe('var(--spacing-0)');
+      expect(classesOf(box)).toContain(
+        '[--container-padding-inline-start:var(--spacing-0)]',
+      );
       expect(getSheet().hasAttribute('padding')).toBe(false);
     });
 
@@ -5122,11 +5115,9 @@ describe('BottomSheet', () => {
         </BottomSheetSwitcher>,
       );
       const box = screen.getByTestId('switcher-child').parentElement!;
-      expect(
-        getComputedStyle(box).getPropertyValue(
-          '--container-padding-inline-start',
-        ),
-      ).toBe('var(--spacing-2)');
+      expect(classesOf(box)).toContain(
+        '[--container-padding-inline-start:var(--spacing-2)]',
+      );
     });
   });
 });

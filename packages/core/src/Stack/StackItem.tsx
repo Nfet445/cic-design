@@ -5,7 +5,7 @@
  * @input Uses React, ElementType, stackItemClasses utility, StackItemScrollRegion
  * @output Exports StackItem polymorphic component and StackItemProps
  * @position Layout/Stack component; uses stackItemClasses.ts for its layout
- *   and stackItem.stylex.ts for the public `stackItem()` utility. A scrollable
+ *   and its option unions. A scrollable
  *   `div` or `span` item renders through StackItemScrollRegion, which names
  *   it while it scrolls.
  *
@@ -16,12 +16,15 @@
 
 import {createElement, type ElementType, type ReactNode, type Ref} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
-import type {StackItemCrossAlignSelf, StackItemSize} from './stackItem.stylex';
-import {stackItemClassName} from './stackItemClasses';
+import {
+  type StackItemCrossAlignSelf,
+  type StackItemSize,
+  stackItemClassName,
+} from './stackItemClasses';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {StackItemScrollRegion} from '../hooks/StackItemScrollRegion';
 
 export interface StackItemProps extends BaseProps<HTMLElement> {
@@ -103,7 +106,7 @@ export function StackItem({
       mergeProps(themeProps('stack-item', {size}), {
         className: layoutClassName,
       }),
-      stylex.props(xstyle),
+      xstyleProps(xstyle),
       className,
       style,
     ),

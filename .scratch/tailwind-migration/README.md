@@ -36,7 +36,15 @@ A ticket is done when all five exist:
 2. coverage of those classes in the package's stylesheet test, and the sheet
    inside the size gate;
 3. the family's tests assert classes and variables, not declarations that jsdom
-   cannot evaluate;
+   cannot evaluate. A test that reads `getComputedStyle`, walks
+   `document.styleSheets` or matches StyleX debug class names only ever passed
+   because StyleX injected a real sheet at runtime. jsdom cannot parse the built
+   Tailwind sheet at all — importing `packages/core/dist/astryx-tailwind.css`
+   throws `Could not parse CSS stylesheet` and then `RangeError: Maximum call
+stack size exceeded` inside `@acemir/cssom` on nested rules — so no component
+   change can revive such an assertion. Assert the class set through
+   `packages/core/src/__tests__/classNameAssertions.ts` instead, and say in the
+   ticket which assertions moved and why;
 4. a browser check page for the family, with the values it shows recorded in
    the pull request;
 5. a changeset (`component`, patch) and the ticket updated to `done`.
@@ -62,6 +70,102 @@ written into the ticket.
 - **Compiled text:** every class is a literal in a `*Classes.ts` file. A class
   assembled by interpolation reaches the DOM with no rule behind it, and the
   stylesheet test is what catches it.
+
+- An arbitrary value that calls `calc()` loses the underscores of any variable it reads: Tailwind
+  normalises the expression and prints `var(-- table-row-glide-offset,0px)`, which is invalid CSS and
+  silently does nothing. The same name survives in a plain property form
+  (`[bottom:var(--_table-row-glide-offset,0px)]`) and in a utility form
+  (`-mb-[var(--_table-row-divider-width,0px)]` emits
+  `margin-bottom: calc(var(--…) * -1)`). When a rule needs the negated value, publish the negation as
+  its own property from script (`--_table-row-glide-bottom`) instead of writing `calc(-1 * var(…))`.
+- Text in a `.ts`/`.tsx` module that is not named `*Classes.ts` never reaches the sheet: the build's
+  `@source` glob is `../src/**/*Classes.ts`. A class map placed beside its logic compiles to nothing,
+  and the sheet test catches it as a missing rule.
+
+## Traps that cost a window each
+
+- An inset focus ring is a value, not a second utility. The shared ring reads
+  `var(--focus-outline-offset)`, so set that variable on the element instead of
+  adding a second `outline-offset` class that would tie at (0,2,0) and settle by
+  sheet order.
+- A utility whose value is a `var()` with a fallback writes no rule; use the
+  property form. `overflow-x-[var(--x,clip)]` produced zero rules across four
+  builds, one of them cache-free, while `[overflow-x:var(--x,clip)]` emitted
+  both classes and turned the sheet test green.
+- A deprecated `.stylex.ts` shim that re-exports a class map under its old name
+  is not a source for that name. `swizzle` read the shim's subpath and turned
+  `import {iconBoxClassName} from '../Icon/iconBoxClasses'` into
+  `import {iconBoxSizeStyles as iconBoxClassName} from
+'@astryxdesign/core/Icon/IconSize.stylex'` — a different value under a
+  misleading name. `choosePublic` now keeps a `.stylex` subpath out of an
+  import whose origin is a plain module.
+
+- `mergeProps(xds, stylexResult, classNameOrStyle, style)` takes a **class
+  string** or a **style object** as its third argument, never `{className}`.
+  A migrated map is a string: join it with `tw()`, and never hand it to
+  `stylex.props()`, which only accepts StyleX values.
+- An arbitrary value can lose to a plain utility on ordering, not on wording:
+  `font-[var(--font-weight-semibold)]` prints **before** `.font-medium`, and two
+  opacities or two backgrounds are ordered by the sheet. Use the stock utility
+  (`font-semibold`) or move the state into a variant whose selector carries the
+  specificity (`[&[aria-disabled=true]]:opacity-…`, `aria-pressed:bg-…`).
+- Keyframes live in `packages/core/tailwind/astryx.input.css` as
+  `@keyframes astryxX`, because the build scans class maps only. A duration
+  computed from tokens is spelled out inside the arbitrary class, never
+  interpolated.
+- A rule that must beat the layer's own utilities — a padding `container()`
+  sets, a motion arm that has to outrank another animation — stays in its own
+  tiny `.stylex.ts` beside the component, with one sentence saying why. Three
+  such files exist (`Card/cardBorder.stylex.ts`,
+  `Dialog/dialogFullscreenSafeArea.stylex.ts`,
+  `AlertDialog/alertDialogTouchMotion.stylex.ts` and `Drawer/drawerContentSafeArea.stylex.ts`).
+- Every class-coverage ticket edits the same block of
+  `packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs`, so its
+  merge always conflicts. Resolve by keeping **both** sides at the statement
+  level, add the `it(` closer or `import {` opener the halves need, remove any
+  extra `  });` that closes the `describe` early, and run `node --check` before
+  vitest. Then set one ceiling with the measured number in the comment.
+- Migrating one component trips four guards at once, and every one wants the
+  class map rather than an exception: `theme/derivedVarRegistry.test.ts` (a new
+  variable needs the `*.doc.mjs` `theming.vars[]`/`derived[]` entry, a
+  `theme/derivedVarRegistry.ts` record and its `DIR_TO_REGISTRY_KEY` line),
+  `theme/themeMotion.test.ts` (a literal `var()` must be read from the map once
+  it moves), `theme/themingTargets.test.ts` (an exception that no longer applies
+  is deleted, not kept) and `theme/dynamicType.test.ts` together with
+  `inputFontFloor.test.ts` (repoint to the map file). Otherwise the guard fails
+  **after** the merge, in whichever ticket merges next.
+- A test that leans on jsdom computing a declaration from a class breaks the
+  moment the class arrives: `user.click` used to reject a disabled row because
+  the StyleX rule gave it `pointer-events: none`, and once
+  `Item/itemDisabledClassName` became a class the click went through. Assert
+  the class on the row (`classesOf(node).includes('pointer-events-none')`) and
+  that the handler stayed silent, never the computed value.
+- Tailwind reads class text, so an **interpolated** class never exists: a
+  variant built as `` `[@media(hover:hover)]:[&:is(${SCOPE}:hover_*)]` `` compiles
+  to nothing and the sheet silently omits it. Spell the whole class out; a
+  shared prefix costs bytes, not correctness. The same bites the built sheet
+  checks: `grep -c` for the plain selector found `0` while the escaped selector
+  was there all along — grep for `clip:rect` or the declaration, not for the
+  class name.
+- `mergeProps` takes **at most four** arguments (`base, overrides,
+classNameOrStyle, style`). A fifth argument is silently dropped along with
+  `className` and `style` on the same element, and the unit tests that read a
+  computed value then fail in the browser, not in jsdom. When you need both a
+  props object and a class string: `mergeProps(base, extraProps, tw(a, b), style)`.
+- A private attribute that a class text must name needs a doubled spelling to
+  win on specificity, not on order: `[data-astryx-overlay-scope][data-astryx-overlay-scope]`
+  in the ancestor variant, because one attribute ties with the hidden state's own
+  utility inside `@layer astryx-base` and the sheet order then decides. The owner
+  module still lives in `privateAttributes/<name>.stylex.ts`, and the class file
+  carries one narrow `eslint-disable @astryx/no-raw-private-attribute` whose
+  reason names the owner.
+- Deleting a `*.stylex.ts` module also means deleting its `packages/core/package.json`
+  export entry. A subpath whose `source` no longer exists fails
+  `__tests__/publicStyleXNamespaces.test.ts` with `expected [18] to deeply equal
+[20]`, and only there.
+- Concurrency: three windows is the safe number. Six made every suite four
+  minutes long and killed the windows at their 1800 s limit with the work
+  uncommitted.
 
 ## Release and rollback
 
@@ -89,3 +193,26 @@ written into the ticket.
 Temporal behaviour on Node 26 (`Calendar`, `PowerSearch.calendarSystems`,
 `Timestamp`, `postinstall`, four `utils/` calendar tests). A wave must not make
 them worse and must not fix them; a change in that count is a finding.
+
+- A utility cannot cancel an unlayered declaration. `@layer astryx-base` loses to every
+  unlayered StyleX rule at any order, so a rest state that writes `outline-width: 0` to keep a
+  wrapper's ring off while its child rings itself has to stay StyleX until the ring application
+  itself is a class; `!important` would beat the theme instead. Ticket 53 records the cases.
+- A StyleX rule that must beat a utility wins by selector, not by order: StyleX emits
+  `:not(#\#)`, which outranks any plain utility inside the same layer. So an exception module
+  (`Comment`/`Schedule`/`transferList` overrides in `packages/lab`) can stay StyleX and still
+  win — write down the exact utility it beats, not "because it is unlayered".
+
+## Gates that must exist, not just pass
+
+- A check nobody runs is not a gate. Before a wave closes, name the command that
+  fails when the invariant breaks, and the job that runs it:
+  `node packages/<pkg>/scripts/build-css-tailwind.mjs` plus the package's
+  `*TailwindStylesheet.source-build.test.mjs` (the sheet), `@astryx/no-invisible-class`
+  (class text the scanner cannot read), `@astryx/no-raw-private-attribute`
+  (a private attribute outside its owner), `pnpm check:migration-map` (this map
+  against the ticket headers), and `node scripts/pre-commit-checks.mjs`
+  (typecheck plus the tests beside the staged files).
+- `.github/workflows/ci.yml` runs on a pull request whose **base** is `main`,
+  `release/**` or `poc/**`. A draft pull request runs nothing until it is marked
+  ready, so flip it to ready before asking for a review.

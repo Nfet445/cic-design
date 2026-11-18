@@ -29,7 +29,6 @@ import React, {
   type RefObject,
 } from 'react';
 import {flushSync} from 'react-dom';
-import * as stylex from '@stylexjs/stylex';
 import {BaseTypeaheadFocusContext} from './BaseTypeaheadFocusContext';
 import {
   BusyIndicatorLaneProvider,
@@ -47,10 +46,9 @@ import {
   Field,
   InputClearButton,
   type InputStatus,
-  inputWrapperStyles,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
 } from '../Field';
 import {Token} from '../Token';
 import {useTooltip} from '../Tooltip';
@@ -58,32 +56,36 @@ import {renderIconSlot, type IconType} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {Spinner} from '../Spinner';
 import {SpinnerOwnerContext} from '../Spinner/SpinnerOwnerContext';
-import {spacingVars, sizeVars} from '../theme/tokens.stylex';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
-import {
-  composeEventHandlers,
-  getInputARIA,
-  isImeKeyEvent,
-  mergeProps,
-} from '../utils';
+import {getInputARIA, isImeKeyEvent, mergeProps} from '../utils';
 import {joinAriaIDs} from '../utils/inputAria';
+import {
+  TYPEAHEAD_INPUT_HIDDEN_CLASS,
+  TYPEAHEAD_WRAPPER_CLASS,
+  TYPEAHEAD_TOKEN_OVERLAY_CLASS,
+  typeaheadContentLaneClassName,
+  typeaheadEndLaneClassName,
+  typeaheadWrapperSizeClassName,
+} from './typeaheadClasses';
 import {TrailingKeyDownContext} from './trailingKeyDown';
 import {
   type FieldInputBaseProps,
   useFieldInputStyling,
 } from '../Field/fieldParts';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import type {SizeValue} from '../utils/types';
 import type {SearchableItem, SearchSource} from './types';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import type {FieldStatusPlacement} from '../Field/fieldStatusPlacement';
 import {setInputValue} from '../utils/setInputValue';
+import {xstyleProps} from '../utils/xstyle';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -237,113 +239,6 @@ export interface TypeaheadProps<T extends SearchableItem> extends Omit<
 }
 
 // =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  wrapper: {
-    position: 'relative',
-    // No `flexWrap`. The shared field base does not wrap and neither does
-    // TextInput; this field only ever holds one token, so there is no second
-    // row to wrap to. It also cannot wrap and keep its end controls in flow:
-    // flex moves an item to a new line rather than shrinking it, so a long
-    // value put the clear button and spinner on a row of their own (a 280px
-    // field grew to 46px tall). Unwrapped, the token ellipsizes instead.
-    gap: spacingVars['--spacing-1'],
-    // Standard padding minus border width to prevent height jump
-    // when a token (28px) is added inside the input
-    paddingBlock: `calc(${spacingVars['--spacing-1']} - 1px)`,
-    cursor: {
-      default: 'text',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // The busy indicator and the clear button, at the field's inline end.
-  //
-  // In flow, as a flex child — an in-flow box takes up room, so the input
-  // cannot run underneath it and nothing has to be measured. That is
-  // TextInput's arrangement for the same two controls.
-  //
-  // The `auto` margin keeps them in the corner in the states where the
-  // content lane is not the only flexible item in the row (a start icon, a
-  // grouped row): `auto` gives free space to the margin rather than to a
-  // sibling, so it needs no sibling to exist.
-  endLane: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    marginInlineStart: 'auto',
-  },
-  // The field's content lane: the input, and the token painted over it.
-  //
-  // This is the box the value is allowed to occupy, and it is what makes the
-  // end lane's space its own — the lane is an ordinary flex item that ends
-  // exactly where `endLane` begins, so a value bounded by it can never reach
-  // the clear button or the spinner. Before it existed the token was
-  // positioned against the whole field, so a value longer than the input ran
-  // under the end controls and past the field's border (measured 33px of
-  // overlap and 4px outside the border at a 180px field).
-  //
-  // `flex: 1` with `min-width: 0` is TextInput's own arrangement for its
-  // input: the lane takes the free space so the end controls sit in the
-  // corner, and yields all of it when the field is narrow, so a narrow field
-  // never overflows. Stretched, so its padding box matches the field's
-  // content box in the block direction and the token keeps the vertical
-  // placement it has always had.
-  contentLane: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    flex: 1,
-    minWidth: 0,
-  },
-  // While a token shows, the input keeps its place in the row and its own
-  // intrinsic width — it is only made invisible and inert. That width is what
-  // sizes the field, exactly as it does for TextInput, so a Typeahead is as
-  // wide with a value as without one. Collapsing it to nothing instead left
-  // the field measuring the token: in any shrink-to-fit parent it snapped to
-  // the value's length (measured 199px to 57px, #5560), and block-level
-  // parents hid it because they fill their container whatever their content
-  // is, which is why no story caught it.
-  inputHidden: {
-    opacity: 0,
-    // The token is painted over this space and owns the pointer; the input
-    // must not swallow clicks meant for it, or for the wrapper's own
-    // click-to-edit.
-    pointerEvents: 'none',
-  },
-  // Painted over the input rather than beside it. In flow the token would add
-  // its own width to the row, which is the same value-dependent sizing from
-  // the other direction — a long value would grow the field.
-  //
-  // Bounded by the content lane at both ends. `fit-content` shrink-wraps the
-  // label but resolves against the space left between the two insets, so a
-  // long value ellipsizes at the lane's edge instead of running under the end
-  // controls; the `auto` end margin is what keeps that pair of insets from
-  // being over-constrained, which would drop the end one and let the token
-  // overflow again. The negative inline start and the zero block start put it
-  // where it has always sat: the lane's padding box is the field's content
-  // box, 3px inside the field's own padding on both axes.
-  tokenOverlay: {
-    position: 'absolute' as const,
-    insetBlockStart: 0,
-    insetInlineStart: `calc(-1 * (${spacingVars['--spacing-1']} - 1px))`,
-    insetInlineEnd: 0,
-    width: 'fit-content',
-    marginBlock: 0,
-    marginInlineStart: 0,
-    marginInlineEnd: 'auto',
-  },
-});
-
-const wrapperSizeStyles = stylex.create({
-  sm: {minHeight: sizeVars['--size-element-sm']},
-  md: {minHeight: sizeVars['--size-element-md']},
-  lg: {minHeight: sizeVars['--size-element-lg']},
-});
-
-// =============================================================================
 // Component
 // =============================================================================
 
@@ -400,7 +295,7 @@ function EndLane({
     return null;
   }
   return (
-    <div {...stylex.props(styles.endLane)}>
+    <div className={typeaheadEndLaneClassName}>
       {isBusy && (
         // Named, never live: the typeahead announces its search.
         <SpinnerOwnerContext value={true}>
@@ -705,7 +600,7 @@ export function Typeahead<T extends SearchableItem>({
       ? joinAriaIDs(ariaLabelledBy ?? fieldLabelId, ariaLabelledByProp)
       : ariaLabelledBy;
 
-  const sizeStyle = wrapperSizeStyles[size];
+  const sizeClassName = typeaheadWrapperSizeClassName[size];
 
   const typeaheadContent = (
     <>
@@ -724,21 +619,17 @@ export function Typeahead<T extends SearchableItem>({
         {...(inputGroup ? inputGroupItemProps : undefined)}
         {...mergeProps(
           themeProps('typeahead', {size, status: status?.type}),
-          stylex.props(
-            inputWrapperStyles.base,
-            inputWrapperStyles.textField,
-            styles.wrapper,
-            sizeStyle,
-            status && inputStatusBorderStyles[status.type],
-            status && !isDisabled && inputStatusHoverShadowStyles[status.type],
-            status && inputStatusFocusWithinStyles[status.type],
-            isDisabled && inputWrapperStyles.disabled,
-            isDisabled && inputDisabledFocusStyles.nestedRing,
-            inputGroup && groupStyles.inGroup,
-            controlXstyle,
+          tw(
+            TYPEAHEAD_WRAPPER_CLASS,
+            sizeClassName,
+            inputGroup && inputGroupMemberClassName,
+            fieldInputWrapperClassName({status: status?.type}),
+            isDisabled && fieldInputWrapperDisabledClassName,
+            isDisabled && fieldInputWrapperFocusScopeClassName.nested,
+            xstyleProps(controlXstyle).className,
+            controlClassName,
           ),
-          controlClassName,
-          controlStyle,
+          {...xstyleProps(controlXstyle).style, ...controlStyle},
         )}>
         {startIcon &&
           renderIconSlot(startIcon, {size: 'sm', color: 'secondary'})}
@@ -749,7 +640,7 @@ export function Typeahead<T extends SearchableItem>({
             indicator lands in the end controls below beside the clear button
             rather than as a second one inside the base. */}
         <BusyIndicatorLaneProvider value={busyLane}>
-          <div {...stylex.props(styles.contentLane)}>
+          <div className={typeaheadContentLaneClassName}>
             {showToken && (
               <>
                 {/* The token's button is the field's Tab stop while a value
@@ -776,7 +667,7 @@ export function Typeahead<T extends SearchableItem>({
                       .filter(Boolean)
                       .join(' ') || undefined
                   }
-                  xstyle={styles.tokenOverlay}
+                  className={TYPEAHEAD_TOKEN_OVERLAY_CLASS}
                 />
               </>
             )}
@@ -822,7 +713,9 @@ export function Typeahead<T extends SearchableItem>({
                   debounceMs={debounceMs}
                   anchorRef={wrapperRef}
                   onKeyDown={handleKeyDown}
-                  inputXStyle={showToken ? styles.inputHidden : undefined}
+                  className={
+                    showToken ? TYPEAHEAD_INPUT_HIDDEN_CLASS : undefined
+                  }
                   // While the token is shown the input is invisible and inert behind
                   // it — take it out of the Tab order so keyboard users don't hit a
                   // stop they cannot see (WCAG 2.4.3 / 2.4.7). It stays

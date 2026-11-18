@@ -4,7 +4,8 @@
 
 /**
  * @file StatusDot.tsx
- * @input Uses React
+ * @input Uses React, the status-dot class map, and the xstyle adapter for
+ *   the consumer's `xstyle`
  * @output Exports StatusDot component, StatusDotProps, StatusDotVariant types
  * @position Core implementation; consumed by index.ts
  *
@@ -18,122 +19,19 @@
 
 import type {ReactNode} from 'react';
 
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import type {BaseProps} from '../BaseProps';
 import {Tooltip} from '../Tooltip/Tooltip';
 import {isRenderable, mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  statusDotClassName,
+  statusDotIconClassName,
+  statusDotPulsingClassName,
+  statusDotVariantClassName,
+} from './statusDotClasses';
 import type {StatusDotVariantMap} from './index';
-
-/**
- * Pulse animation keyframes
- */
-const pulseKeyframes = stylex.keyframes({
-  '0%': {opacity: 1},
-  '50%': {opacity: 0.5},
-  '100%': {opacity: 1},
-});
-
-/** Fixed dot size in px. A user-supplied icon is drawn into this same field. */
-const DOT_SIZE = 8;
-
-/**
- * Base styles
- */
-const styles = stylex.create({
-  base: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '50%',
-    flexShrink: 0,
-    width: `${DOT_SIZE}px`,
-    height: `${DOT_SIZE}px`,
-  },
-  pulsing: {
-    animationName: pulseKeyframes,
-    animationDuration: '2s',
-    animationTimingFunction: 'ease-in-out',
-    animationIterationCount: 'infinite',
-  },
-  reducedMotion: {
-    '@media (prefers-reduced-motion: reduce)': {
-      animationName: 'none',
-    },
-  },
-  // A user-supplied icon fills the whole 8px field and paints from
-  // `currentColor` (the variant's ink).
-  icon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    lineHeight: 0,
-    width: `${DOT_SIZE}px`,
-    height: `${DOT_SIZE}px`,
-  },
-});
-
-/**
- * Variant styles mapping to theme color tokens.
- *
- * Each variant sets both the plate colour and an ink colour: a user-supplied
- * `icon` paints from `currentColor`, so plate and ink can never drift out of
- * contrast (same contract as AvatarStatusDot). A status dot is a mark on the
- * page, so its plate is the status icon role, which holds 3:1 or more against
- * the page and card surfaces; the strong fill does not (the warning fill lands
- * near 1.8:1 on a muted card). The ink is the surface colour, the same pair
- * the other way round, as the neutral dot's is. Accent keeps its own pair.
- */
-const variants = stylex.create({
-  success: {
-    backgroundColor: colorVars['--color-icon-success'],
-    color: colorVars['--color-background-surface'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible (architecture:theme-tokens INV11).
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-  warning: {
-    backgroundColor: colorVars['--color-icon-warning'],
-    color: colorVars['--color-background-surface'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible (architecture:theme-tokens INV11).
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-  error: {
-    backgroundColor: colorVars['--color-icon-error'],
-    color: colorVars['--color-background-surface'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible (architecture:theme-tokens INV11).
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-  accent: {
-    backgroundColor: colorVars['--color-accent'],
-    color: colorVars['--color-on-accent'],
-  },
-  neutral: {
-    backgroundColor: colorVars['--color-icon-secondary'],
-    color: colorVars['--color-background-surface'],
-  },
-});
 
 /**
  * Status dot variant type derived from StatusDotVariantMap.
@@ -194,7 +92,8 @@ export interface StatusDotProps extends BaseProps<HTMLSpanElement> {
  * guidance in the component docs.
  *
  * Renders as a non-focusable `<span>` with `role="img"` and
- * `aria-label` for accessibility. Styles use Astryx theme tokens via StyleX.
+ * `aria-label` for accessibility. Styles are Tailwind utilities over Astryx
+ * theme tokens.
  * Wrap your app in `<Theme>` to apply a theme.
  *
  * @example
@@ -228,19 +127,20 @@ export function StatusDot({
       aria-label={label}
       {...mergeProps(
         themeProps('status-dot', {variant}),
-        stylex.props(
-          styles.base,
-          variants[variant],
-          isPulsing && styles.pulsing,
-          isPulsing && styles.reducedMotion,
-          xstyle,
-        ),
+        {
+          className: tw(
+            statusDotClassName,
+            statusDotVariantClassName[variant],
+            isPulsing && statusDotPulsingClassName,
+            xstyleProps(xstyle).className,
+          ),
+        },
         className,
         style,
       )}
       {...props}>
       {showsIcon && (
-        <span aria-hidden="true" {...stylex.props(styles.icon)}>
+        <span aria-hidden="true" className={statusDotIconClassName}>
           {icon}
         </span>
       )}

@@ -2,7 +2,7 @@
 
 /**
  * @file Card.tsx
- * @input Uses container utility, StyleX
+ * @input Uses container utility, StyleX, Tailwind utilities for the surface
  * @output Exports Card component, CardProps, CardVariant types
  * @position Core card container component
  *
@@ -14,23 +14,28 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import type {StyleXStyles} from '@stylexjs/stylex';
-import {
-  borderVars,
-  colorVars,
-  radiusVars,
-  shadowVars,
-} from '../theme/tokens.stylex';
-import {container} from '../Layout/container.stylex';
-import {containerCornerStyles} from '../Layout/containerCorners.stylex';
-import type {SpacingToken} from '../Layout/container.stylex';
+import {container} from '../Layout/containerClasses';
+import {containerCornerClassName} from '../Layout/containerCornersClasses';
+import type {SpacingToken} from '../Layout/containerClasses';
 import {spacingStepToToken} from '../Layout/padding.stylex';
 import type {Elevation, SizeValue, SpacingStep} from '../utils/types';
 import {mergeProps} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import type {CardVariantMap} from './index';
+import {
+  cardBorderClassName,
+  cardBorderPaddingClassName,
+  cardClassName,
+  cardCornersClassName,
+  cardElevationClassName,
+  cardOverflowClassName,
+  cardSizeVars,
+  cardSizingClassName,
+  cardVariantClassName,
+} from './cardClasses';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 // =============================================================================
 // Variant type
@@ -53,130 +58,9 @@ import type {CardVariantMap} from './index';
  */
 export type CardVariant = keyof CardVariantMap;
 
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  card: {
-    '--_card-radius': radiusVars['--radius-container'],
-    borderRadius: 'var(--_card-radius)',
-    // A card in a flex row or grid cell yields to its track instead of
-    // holding it at the card's min-content width (a long ID or a nowrap row
-    // inside used to widen `1fr` tracks and overflow phone rows).
-    minWidth: 0,
-    // Clip, not scroll: `overflow-x: auto` would make every card a scroll
-    // container, so sticky descendants would stick to the card instead of
-    // the page, and an overflowing card would become an unnamed keyboard tab
-    // stop. Content that cannot wrap is clipped at the card edge; long
-    // values truncate (Text maxLines) and wide content brings its own scroll
-    // region (Table, ScrollableArea).
-    overflow: 'clip',
-    // Resting elevation is set via --_card-elevation (see elevationStyles).
-    // The shadow list also reads --_card-ring so composing surfaces — e.g.
-    // SelectableCard's inset selection ring — can layer their own shadow
-    // alongside elevation instead of clobbering the single box-shadow property.
-    // Unset vars fall back to a transparent no-op shadow.
-    boxShadow:
-      'var(--_card-ring, 0 0 transparent), var(--_card-elevation, 0 0 transparent)',
-  },
-  // The border is drawn *inside* the padding — its width is subtracted from
-  // each side — so total inset (border + padding) equals the padding token
-  // rather than exceeding it by the border width.
-  withBorder: {
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-    paddingInlineStart: `calc(var(--container-padding-inline-start) - ${borderVars['--border-width']})`,
-    paddingInlineEnd: `calc(var(--container-padding-inline-end) - ${borderVars['--border-width']})`,
-    paddingBlockStart: `calc(var(--container-padding-block-start) - ${borderVars['--border-width']})`,
-    paddingBlockEnd: `calc(var(--container-padding-block-end) - ${borderVars['--border-width']})`,
-  },
-  // A full-bleed child reaches under the border, so it takes the outer radius.
-  corners: {
-    '--_container-corner-block-start': 'var(--_card-radius)',
-    '--_container-corner-block-end': 'var(--_card-radius)',
-  },
-  // Fixed-height cards scroll content; overflow: auto also clips to border-radius
-  scrollable: {
-    overflow: 'auto',
-  },
-});
-
-// Background variant styles — each maps to a design token. Typed as PARTIAL
-// over CardVariant: a theme can add a variant, and the record deliberately has
-// no entry for it, so the lookup is undefined, StyleX drops it, and the card
-// takes base styles for the theme rule to paint over.
-const variantStyles: Partial<Record<CardVariant, StyleXStyles>> = stylex.create(
-  {
-    default: {
-      backgroundColor: colorVars['--color-background-card'],
-    },
-    transparent: {
-      backgroundColor: 'transparent',
-    },
-    muted: {
-      backgroundColor: colorVars['--color-background-muted'],
-    },
-    blue: {
-      backgroundColor: colorVars['--color-background-blue'],
-    },
-    cyan: {
-      backgroundColor: colorVars['--color-background-cyan'],
-    },
-    gray: {
-      backgroundColor: colorVars['--color-background-gray'],
-    },
-    green: {
-      backgroundColor: colorVars['--color-background-green'],
-    },
-    orange: {
-      backgroundColor: colorVars['--color-background-orange'],
-    },
-    pink: {
-      backgroundColor: colorVars['--color-background-pink'],
-    },
-    purple: {
-      backgroundColor: colorVars['--color-background-purple'],
-    },
-    red: {
-      backgroundColor: colorVars['--color-background-red'],
-    },
-    teal: {
-      backgroundColor: colorVars['--color-background-teal'],
-    },
-    yellow: {
-      backgroundColor: colorVars['--color-background-yellow'],
-    },
-  },
-);
-
-// Elevation → shadow-token map. Sets the private --_card-elevation variable
-// (not box-shadow directly) so it composes with --_card-ring in the shadow
-// list above — a selection ring and a resting elevation coexist without one
-// overwriting the other. 'none' is a transparent no-op (not the CSS literal
-// `none`, which would be invalid inside the comma-separated shadow list).
-const elevationStyles = stylex.create({
-  none: {'--_card-elevation': '0 0 transparent'},
-  low: {'--_card-elevation': shadowVars['--shadow-low']},
-  med: {'--_card-elevation': shadowVars['--shadow-med']},
-  high: {'--_card-elevation': shadowVars['--shadow-high']},
-});
-
-// Dynamic styles for sizing props
-const dynamicStyles = stylex.create({
-  sizing: (
-    width: SizeValue | null,
-    height: SizeValue | null,
-    maxWidth: SizeValue | null,
-    minHeight: SizeValue | null,
-  ) => ({
-    width,
-    height,
-    maxWidth,
-    minHeight,
-  }),
-});
+/** The inline sizing custom properties the sizing classes read. */
+type CardStyle = React.CSSProperties &
+  Partial<Record<(typeof cardSizeVars)[keyof typeof cardSizeVars], string>>;
 
 export type {SizeValue} from '../utils/types';
 
@@ -300,43 +184,61 @@ export function Card({
     ? undefined
     : (spacingStepToToken[padding] as SpacingToken);
 
+  // Sizing goes through CSS variables so a consumer class can override it: an
+  // inline `width` would beat every class, a class-level `width` would not.
+  const sizingVars: CardStyle = {
+    ...(width != null && {
+      [cardSizeVars.width]: typeof width === 'number' ? `${width}px` : width,
+    }),
+    ...(height != null && {
+      [cardSizeVars.height]:
+        typeof height === 'number' ? `${height}px` : height,
+    }),
+    ...(maxWidth != null && {
+      [cardSizeVars.maxWidth]:
+        typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+    }),
+    ...(minHeight != null && {
+      [cardSizeVars.minHeight]:
+        typeof minHeight === 'number' ? `${minHeight}px` : minHeight,
+    }),
+  };
+
   return (
     <div
       ref={ref}
       {...mergeProps(
-        themeProps('card', {variant, elevation}),
-        stylex.props(
-          styles.card,
-          // A theme's own variant is not a key here: the lookup is undefined,
-          // StyleX drops it, and the theme rule paints over base styles.
-          variantStyles[variant],
-          elevationStyles[elevation],
-          hasFixedHeight && styles.scrollable,
-          dynamicStyles.sizing(
-            width ?? null,
-            height ?? null,
-            maxWidth ?? null,
-            minHeight ?? null,
+        mergeProps(themeProps('card', {variant, elevation}), {
+          className: tw(
+            cardClassName,
+            // A theme's own variant is not a key here: the lookup is
+            // undefined, the class is dropped, and the theme rule paints over
+            // the base surface.
+            cardVariantClassName[variant],
+            cardElevationClassName[elevation],
+            cardOverflowClassName({hasFixedHeight}),
+            cardSizingClassName({width, height, maxWidth, minHeight}),
+            cardCornersClassName,
+            containerCornerClassName,
+            container(
+              paddingToken == null
+                ? {useThemeDefault: 'card'}
+                : {
+                    paddingInnerX: paddingToken,
+                    paddingInnerY: paddingToken,
+                    paddingOuterX: paddingToken,
+                    paddingOuterY: paddingToken,
+                  },
+            ),
+            variant === 'default' && cardBorderClassName,
+            // The border-inset padding reads the --container-padding-* vars
+            // the container class above publishes.
+            variant === 'default' && cardBorderPaddingClassName,
           ),
-          ...container(
-            paddingToken == null
-              ? {useThemeDefault: 'card'}
-              : {
-                  paddingInnerX: paddingToken,
-                  paddingInnerY: paddingToken,
-                  paddingOuterX: paddingToken,
-                  paddingOuterY: paddingToken,
-                },
-          ),
-          styles.corners,
-          containerCornerStyles.publish,
-          // Applied after the container padding so the border-inset calc wins;
-          // it reads the --container-padding-* vars set above.
-          variant === 'default' && styles.withBorder,
-          xstyle,
-        ),
-        className,
-        style,
+          style: sizingVars,
+        }),
+        tw(className, xstyleProps(xstyle).className),
+        {...xstyleProps(xstyle).style, ...style},
       )}
       {...props}>
       {children}

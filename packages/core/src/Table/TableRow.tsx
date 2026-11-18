@@ -4,7 +4,7 @@
 
 /**
  * @file TableRow.tsx
- * @input React, StyleX, TableContext, theme tokens
+ * @input React, StyleX, TableContext, tableRowClasses
  * @output Exports TableRow component, TableRowProps
  * @position Sub-component; used inside a Table section (TableHeader /
  *   TableBody / TableFooter) in children mode
@@ -17,13 +17,13 @@
 
 import {use, type ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars, durationVars, easeVars} from '../theme/tokens.stylex';
 import type {StyleXStyles} from '../theme/types';
-import {tableRowMarker} from './table.stylex';
-import {glidingDividerStyles} from './glidingDivider';
+import {glidingDividerRowClassName} from './glidingDivider';
+import {tableRowClassName} from './tableRowClasses';
 import {TableContext} from './TableContext';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
+import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
 
 /** Props for TableRow — thin `<tr>` wrapper */
@@ -42,99 +42,6 @@ export interface TableRowProps extends BaseProps<HTMLTableRowElement> {
    */
   isHeaderRow?: boolean;
 }
-
-/**
- * Zebra striping counts body rows — and a row-expansion panel is not one.
- *
- * The panel is appended as a sibling `<tr>` (see BaseTable's `afterRow`), so a
- * plain `:nth-child(even)` counts it and every row below an open panel takes
- * the opposite stripe: expanding one row repaints half the table. Counting
- * `of :not([data-expansion-panel])` leaves the panel out of the sequence, so
- * the rows keep their parity whatever is open.
- */
-const NOT_PANEL_ROW = ':nth-child(even of :not([data-expansion-panel]))';
-
-const logicalStripedRowStyles = stylex.create({
-  row: {
-    backgroundColor: colorVars['--color-background-muted'],
-    '--table-row-overlay': colorVars['--color-background-muted'],
-  },
-  hover: {
-    backgroundColor: {
-      default: colorVars['--color-background-muted'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    '--table-row-overlay': {
-      default: colorVars['--color-background-muted'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    transitionProperty: 'background-color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-});
-
-const stripedRowStyles = stylex.create({
-  row: {
-    backgroundColor: {
-      default: null,
-      [NOT_PANEL_ROW]: colorVars['--color-background-muted'],
-    },
-    // Publish the row's current overlay color as an inheritable variable so
-    // pinned/sticky cells (which paint an opaque background over the otherwise
-    // transparent row) can replay the exact same striping. Unset on odd rows.
-    '--table-row-overlay': {
-      default: null,
-      [NOT_PANEL_ROW]: colorVars['--color-background-muted'],
-    },
-  },
-});
-
-const hoverRowStyles = stylex.create({
-  row: {
-    backgroundColor: {
-      default: null,
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    '--table-row-overlay': {
-      default: null,
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    transitionProperty: 'background-color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-});
-
-const stripedHoverRowStyles = stylex.create({
-  row: {
-    backgroundColor: {
-      default: null,
-      [NOT_PANEL_ROW]: colorVars['--color-background-muted'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    '--table-row-overlay': {
-      default: null,
-      [NOT_PANEL_ROW]: colorVars['--color-background-muted'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    transitionProperty: 'background-color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-});
 
 /**
  * TableRow — a `<tr>` wrapper for children/streaming mode.
@@ -180,63 +87,51 @@ export function TableRow({
         {...props}
         {...mergeProps(
           themeProps('table-row'),
-          stylex.props(tableRowMarker, xstyle),
-          incomingClassName,
-          incomingStyle,
+          tw(xstyleProps(xstyle).className, incomingClassName),
+          {...xstyleProps(xstyle).style, ...incomingStyle},
         )}>
         {children}
       </tr>
     );
   }
 
-  const rowStyles: StyleXStyles[] = [];
-
   // Striped + hover styling is for body rows only — the header row must not
   // pick up the hover highlight (or striping) even when hasHover/isStriped.
-  if (!isHeaderRow) {
-    // Handle striped + hover combination to avoid backgroundColor conflicts
-    const logicalIndex = (props as Record<string, unknown>)[
-      'data-table-logical-index'
-    ];
-    if (logicalIndex != null) {
-      if (ctx.isStriped && Number(logicalIndex) % 2 === 1) {
-        rowStyles.push(
-          ctx.hasHover
-            ? logicalStripedRowStyles.hover
-            : logicalStripedRowStyles.row,
-        );
-      } else if (ctx.hasHover) {
-        rowStyles.push(hoverRowStyles.row);
-      }
-    } else if (ctx.isStriped && ctx.hasHover) {
-      rowStyles.push(stripedHoverRowStyles.row);
-    } else if (ctx.isStriped) {
-      rowStyles.push(stripedRowStyles.row);
-    } else if (ctx.hasHover) {
-      rowStyles.push(hoverRowStyles.row);
-    }
-  }
+  const logicalIndex = (props as Record<string, unknown>)[
+    'data-table-logical-index'
+  ];
+  // A body that renders its rows in order states each row's parity as a
+  // logical index. One that keeps only a slice in the DOM does not, and the
+  // stripe then comes from the row's place among its siblings.
+  const hasKnownPosition = logicalIndex != null;
+  const rowClassName = !isHeaderRow
+    ? tableRowClassName({
+        hasHover: ctx.hasHover,
+        hasKnownPosition,
+        isStriped: hasKnownPosition
+          ? ctx.isStriped && Number(logicalIndex) % 2 === 1
+          : ctx.isStriped,
+      })
+    : undefined;
 
-  if (ctx.dividers === 'rows' || ctx.dividers === 'grid') {
-    // Note: last-body-row border removal is handled by TableCell
-    // to avoid affecting the header row in <thead>.
-    // While a glide moves the row, its divider moves with it.
-    rowStyles.push(glidingDividerStyles.row);
-  }
-
-  if (xstyle) {
-    rowStyles.push(...xstyle);
-  }
+  // A glide moves the row, and its divider with it; the class follows the
+  // attribute the glide sets.
+  const carriesGlide =
+    (ctx?.dividers === 'rows' || ctx?.dividers === 'grid') ?? false;
 
   return (
     <tr
       ref={ref}
       {...props}
       {...mergeProps(
-        themeProps('table-row'),
-        stylex.props(tableRowMarker, ...rowStyles),
-        incomingClassName,
-        incomingStyle,
+        mergeProps(themeProps('table-row'), {
+          className: tw(
+            rowClassName,
+            carriesGlide && glidingDividerRowClassName,
+          ),
+        }),
+        tw(xstyleProps(xstyle).className, incomingClassName),
+        {...xstyleProps(xstyle).style, ...incomingStyle},
       )}>
       {children}
     </tr>

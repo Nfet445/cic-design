@@ -27,11 +27,15 @@ import {
   type RefAttributes,
   type RefCallback,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {attachScrollKeyboardDelegation} from './scrollKeyboardDelegation';
+import {
+  scrollableAreaOverflowClassName,
+  scrollableAreaOverflowVars,
+} from '../ScrollableArea/scrollableAreaClasses';
 import {useIsomorphicLayoutEffect} from './useIsomorphicLayoutEffect';
 import {mergeProps} from '../utils/mergeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {mergeRefs} from '../utils/mergeRefs';
 import {observeResize} from '../utils/sharedResizeObserver';
 import {
@@ -125,13 +129,6 @@ const INITIAL_MAPPING: LogicalAxisMapping = {
   blockReversed: false,
 };
 const LOGICAL_AXES = ['inline', 'block'] as const;
-
-const styles = stylex.create({
-  overflow: (
-    overflowX: 'auto' | 'hidden' | 'clip',
-    overflowY: 'auto' | 'hidden' | 'clip',
-  ) => ({overflowX, overflowY}),
-});
 
 /**
  * The inline declarations of an ancestor that change what the hook measures
@@ -693,17 +690,24 @@ export function useScrollableArea({
       const {xstyle, ...domProps} = props;
       const callerProps = {
         ...domProps,
-        style: withoutOwnedOverflow(domProps.style),
+        style: {
+          ...withoutOwnedOverflow(domProps.style),
+          [scrollableAreaOverflowVars.x]: containsSticky
+            ? scrollsOnX
+              ? 'auto'
+              : 'hidden'
+            : 'clip',
+          [scrollableAreaOverflowVars.y]: containsSticky
+            ? scrollsOnY
+              ? 'auto'
+              : 'hidden'
+            : 'clip',
+        } as CSSProperties,
       };
       const styledProps = mergeProps(
         callerProps,
-        stylex.props(
-          xstyle,
-          styles.overflow(
-            containsSticky ? (scrollsOnX ? 'auto' : 'hidden') : 'clip',
-            containsSticky ? (scrollsOnY ? 'auto' : 'hidden') : 'clip',
-          ),
-        ),
+        xstyleProps(xstyle),
+        scrollableAreaOverflowClassName,
       ) as ScrollableElementProps<E>;
       // Focus state is stale while an axis scrolls, so until an axis change is
       // measured, the last measured scrolling keeps a focused viewport's
@@ -777,7 +781,7 @@ export function useScrollableArea({
       const {xstyle, ...domProps} = props;
       const styledProps = mergeProps(
         domProps,
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
       ) as ScrollableElementProps<E>;
       const result: ScrollableElementProps<E> = {
         ...styledProps,

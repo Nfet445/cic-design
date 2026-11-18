@@ -52,10 +52,11 @@ function isInsideStylexCreate(node) {
  */
 function isFullNullOverride(objectExpression) {
   const properties = objectExpression.properties.filter(
-    p => p.type === 'Property' && p.key?.value !== '$$css'
+    p => p.type === 'Property' && p.key?.value !== '$$css',
   );
-  return properties.length > 0 && properties.every(
-    p => p.value?.type === 'Literal' && p.value.value === null
+  return (
+    properties.length > 0 &&
+    properties.every(p => p.value?.type === 'Literal' && p.value.value === null)
   );
 }
 
@@ -70,7 +71,7 @@ const rule = {
     },
     messages: {
       noNullOverride:
-        'Avoid null style overrides in stylex.create(). Use an explicit value like \'none\' instead. ' +
+        "Avoid null style overrides in stylex.create(). Use an explicit value like 'none' instead. " +
         'Null overrides prevent the build from inlining style objects into class name strings.',
     },
     schema: [],
@@ -87,7 +88,7 @@ const rule = {
           node.value?.type === 'ObjectExpression' &&
           isFullNullOverride(node.value)
         ) {
-          context.report({ node, messageId: 'noNullOverride' });
+          context.report({node, messageId: 'noNullOverride'});
         }
       },
     };

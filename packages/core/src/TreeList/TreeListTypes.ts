@@ -12,7 +12,7 @@
  */
 
 import type {CSSProperties, ReactNode} from 'react';
-import type {StyleXStyles} from '@stylexjs/stylex';
+import type {AstryxXStyle} from '../utils/xstyle';
 import type {TreeListVariantMap} from './index';
 
 /** Spacing density for tree list items. */
@@ -64,8 +64,8 @@ export interface TreeListItemData {
   /** Whether the item is initially expanded. Only meaningful for items with children. */
   isExpanded?: boolean;
 
-  /** StyleX styles applied to the item's row element. */
-  xstyle?: StyleXStyles;
+  /** The consumer's own override for the item's row element. */
+  xstyle?: AstryxXStyle;
 
   /** Class applied to the item's row element. */
   className?: string;

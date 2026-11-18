@@ -48,6 +48,8 @@ import {Theme, defineTheme} from '../theme';
 import {HoverCard} from './HoverCard';
 import {useHoverCard} from './useHoverCard';
 import {useFocusTrap} from '../hooks/useFocusTrap';
+import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 
 // Store original matches to restore later
@@ -608,9 +610,9 @@ describe('HoverCard', () => {
       '[popover]',
     );
     expect(layer).not.toBeNull();
-    expect(getComputedStyle(layer as Element).fontFamily).toBe(
-      'var(--font-family-body)',
-    );
+    // The layer root carries the shared text reset, whose rule in the sheet's
+    // reset layer sets the body font: `font-family: var(--font-family-body)`.
+    expectClassSet(layer as Element, {includes: [layerTextResetClassName]});
   });
 
   it('advertises a dialog popup on the trigger when labelled', () => {

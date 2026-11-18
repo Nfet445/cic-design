@@ -38,66 +38,99 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 0 of 36 done, 2 waves done before the tickets existed.
+Progress: 62 of 66 tickets done, plus two waves (layout primitives,
+buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
 
-- [ ] `01-stylesheet-build-cache` — cache the sheet build per class map
-- [ ] `02-test-harness` — shared class assertions, per-package sheet test, gzip gate
-- [ ] `03-browser-check-pages` — checked-in pages and fixtures per family
-- [ ] `04-css-export-types` — a declaration the stylesheet itself carries
+- [x] `01-stylesheet-build-cache` — cache the sheet build per class map
+- [x] `02-test-harness` — shared class assertions, per-package sheet test, gzip gate
+- [x] `03-browser-check-pages` — checked-in pages and fixtures per family
+- [x] `04-css-export-types` — a declaration the stylesheet itself carries
 
 ### Wave 3 — shared infrastructure and `family:layout-regions`
 
-- [ ] `05-tokens` — 18 `defineVars` become `tokens.css` plus a shim, 251 importers follow
-- [ ] `06-theme-modules` — data tokens, derived registry, `defineTheme`, colour modes
-- [ ] `07-private-attributes` — markers and variables, 26 `.stylex.ts` files
-- [ ] `08-icon` — `Icon/` and the `IconSize` contract
-- [ ] `09-text` — the typography vocabulary every family reads
-- [ ] `10-indicator` — indicator states over the new marker path
-- [ ] `11-layer-hooks-utils` — layer plumbing, hooks, focus ring, interaction overlay
-- [ ] `12-layout-regions` — `Layout/`, its regions and `AppShell`
-- [ ] `13-section-toolbar` — `Section/`, `Toolbar/`, family closed
+- [x] `05-tokens` — 18 `defineVars` become `tokens.css` plus a shim, 251 importers follow
+- [x] `06-theme-modules` — data tokens, derived registry, `defineTheme`, colour modes
+- [x] `07-private-attributes` — markers and variables, 26 `.stylex.ts` files
+- [x] `08-icon` — `Icon/` and the `IconSize` contract
+- [x] `09-text` — the typography vocabulary every family reads
+- [x] `10-indicator` — indicator states over the new marker path
+- [x] `11-layer-hooks-utils` — layer plumbing, hooks, focus ring, interaction overlay
+- [x] `12-layout-regions` — `Layout/`, its regions and `AppShell`
+- [x] `13-section-toolbar` — `Section/`, `Toolbar/`, family closed
 
 ### Wave 4 — `family:input-fields` in three pull requests
 
-- [ ] `14-field-and-text-inputs` — `Field`, `TextInput`, `TextArea`, `NumberInput`, `FileInput`
-- [ ] `15-choice-inputs` — `Selector`, `MultiSelector`, `ComplexSelector`, `Typeahead`
-- [ ] `16-date-inputs` — `DateInput`, `DateRangeInput`, `DateTimeInput`, `TimeInput`
+- [x] `14-field-and-text-inputs` — `Field`, `TextInput`, `TextArea`, `NumberInput`, `FileInput`
+- [x] `15-choice-inputs` — `Selector`, `MultiSelector`, `ComplexSelector`, `Typeahead`
+- [x] `16-date-inputs` — `DateInput`, `DateRangeInput`, `DateTimeInput`, `TimeInput`
 
 ### Wave 5 — the shared style modules
 
-- [ ] `17-shared-stylex-modules` — `xstyle` becomes the only StyleX input left
+- [x] `17-shared-stylex-modules` — `xstyle` becomes the only StyleX input left
 
 ### Wave 6 — `family:navigation-destinations`
 
-- [ ] `18-links-and-items` — links, rows, avatars, pagination, cards
-- [ ] `19-tabs-and-headings` — `TabList`, nav tabs, tab menus, `SegmentedControl`
-- [ ] `20-side-nav` — `SideNav`, `TreeList`, the size cascade
-- [ ] `21-top-nav` — `TopNav` and its mega menus
+- [x] `18-links-and-items` — links, rows, avatars, pagination, cards
+- [x] `19-tabs-and-headings` — `TabList`, nav tabs, tab menus, `SegmentedControl`
+- [x] `20-side-nav` — `SideNav`, `TreeList`, the size cascade
+- [x] `21-top-nav` — `TopNav` and its mega menus
 
 ### Wave 7 — `family:overlay-dismissal` and `family:action-groups`
 
-- [ ] `22-dialogs-and-sheets` — `Dialog`, `AlertDialog`, `Drawer`, `BottomSheet`, `MobileNav`, `Lightbox`
-- [ ] `23-menus` — `DropdownMenu`, `ContextMenu`, `MoreMenu`, option menus
-- [ ] `24-tooltip-hovercard` — `Tooltip`, `HoverCard`
-- [ ] `25-search-surfaces` — `CommandPalette`, `PowerSearch`, `Tokenizer`, composer popup
+- [x] `22-dialogs-and-sheets` — `Dialog`, `AlertDialog`, `Drawer`, `BottomSheet`, `MobileNav`, `Lightbox`
+- [x] `23-menus` — `DropdownMenu`, `ContextMenu`, `MoreMenu`, option menus
+- [x] `49-overflow-and-gesture` — scroll shadows, overflow measurement, swipe, resize
+- [x] `50-bottom-sheet-host` — the `BottomSheet` host and `Lightbox`, split out of ticket 22 because their tests own about twenty computed-style reads
+- [x] `24-tooltip-hovercard` — `Tooltip`, `HoverCard`
+- [x] `25-search-surfaces` — `CommandPalette`, `PowerSearch`, `Tokenizer`, composer popup
 
 ### Wave 8 — the data surfaces
 
-- [ ] `26-data-tables-record` — write `docs/families/data-tables.md` first
-- [ ] `27-table-structure` — header, rows, cells
-- [ ] `28-table-behaviour` — sorting, filtering, selection, virtualised body
-- [ ] `29-charts-and-richtext` — two packages get their own sheets
-- [ ] `30-lab` — 58 creations in two halves
+- [x] `26-data-tables-record` — write `docs/families/data-tables.md` first
+- [x] `27-table-structure` — header, rows, cells
+- [x] `28-table-behaviour` — sorting, filtering, selection, virtualised body
+- [x] `29-charts-and-richtext` — two packages get their own sheets
+- [x] `30-lab` — 58 creations in two halves
+- [x] `46-display-and-feedback` — Card, Divider, Markdown, Code, Spinner, Toast, Carousel
+- [x] `47-form-controls-and-leftovers` — Switch, Checkbox, Radio, Slider, Stepper, and the family leftovers
+- [x] `48-chat-surface` — thirteen files and twenty-three creations
+
+- [x] `53-press-and-own-ring` — the press layers and the own-ring container, the last maps in `privateAttributes`
 
 ### Wave 9 — themes, consumers, removal
 
-- [ ] `31-themes` — the bridge keeps its names, only its shape changes
-- [ ] `32-cli-docs-and-templates` — docs and 51 templates stop teaching StyleX
-- [ ] `33-storybook-and-vibe-tests` — both load the sheet
-- [ ] `34-swizzle-and-render-pipeline` — ejected source states its stylesheet
-- [ ] `35-deprecate-stylex-subpaths` — 80 export entries, one release
+- [x] `31-themes` — the bridge keeps its names, only its shape changes
+- [x] `32-cli-docs-and-templates` — consumer styling docs stop teaching StyleX
+- [x] `45-template-pages-and-blocks` — the shipped page and block templates become class-based
+- [x] `33-storybook-and-vibe-tests` — both load the sheet
+- [x] `34-swizzle-and-render-pipeline` — ejected source states its stylesheet
+- [x] `35-deprecate-stylex-subpaths` — 80 export entries, one release
+- [x] `37-table-row-and-cell` — row and body cell
+- [x] `38-data-token-sheet` — 56 data tokens get their own sheet
+- [x] `39-layout-regions-page` — a check page that does not contradict the classes
+- [x] `40-integration-regressions` — repair the wave's merged failures
+- [x] `41-shared-modules-after-consumers` — the seven creations whose consumers own the property
+- [x] `42-table-plugin-styles` — the table plugins and the cells they borrow
+- [x] `43-full-suite-green` — the full core suite back to its known-failing count
+- [x] `54-layout-text-stack-utilities` — `container()`, `padding()`, `text`, `stack`: 57 maps every component composes
+- [x] `55-field-and-input-wrappers` — the field base shorthand and every wrapper that cancels it
+- [x] `56-focus-and-overrides` — `focusOutlineProps`, the press layers, and the twelve `*Overrides` rules that must outrank a class
+- [x] `57-tables-overlays-leaves`
+
+### Wave 9 — removing StyleX
+
+- [x] `59-token-names`
+- [x] `60-last-stylex-maps`
+- [x] `61-retire-stylex-build`
+- [x] `62-xstyle-adapter` (prop threaded; type narrowing open)
+- [ ] `63-major-changeset`
+- [x] `64-maps-after-xstyle`
+- [x] `65-focus-return-regression`
+      — table seams, motion and safe-area modules, the one-map leaves
+- [x] `66-typeahead-test-isolation`
+- [ ] `67-marker-ancestors` — implementation checked; Windows High Contrast remains
 - [ ] `36-remove-stylex` — `@stylexjs` leaves the repository
 
 ## Done when
@@ -130,3 +163,6 @@ Progress: 0 of 36 done, 2 waves done before the tickets existed.
 - OQ1 (the fate of `astryx.css`), OQ2 (whether the class set is a promise) and
   OQ4 (swizzle) stay open on `spec:AST-119`; OQ3 is answered: the consumer's
   `xstyle` stays unlayered.
+- [x] `51-consumer-assertions` — tests that still read what only StyleX injected
+- [x] `52-published-class-seams` — publish the class seams templates and markers still reach through StyleX
+- [x] `58-closed-layer-option-race` — a helper that waits on a row, not on the list

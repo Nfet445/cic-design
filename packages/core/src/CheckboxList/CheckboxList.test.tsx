@@ -19,15 +19,17 @@ import {
   waitFor,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
 import {CheckboxList} from './CheckboxList';
 import {CheckboxListItem} from './CheckboxListItem';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {List} from '../List/List';
 import {CheckboxInput} from '../CheckboxInput/CheckboxInput';
+import {
+  checkboxInputRowPressImageClassName,
+  checkboxInputRowPressOverlayClassName,
+} from '../CheckboxInput/checkboxInputClasses';
 import {FormLayout} from '../FormLayout/FormLayout';
-import {indicatorScope} from '../Indicator/indicator.markers.stylex';
 import {stubMatchMedia} from '../__tests__/stubMatchMedia';
 import {
   declaresPressPaint,
@@ -1560,8 +1562,6 @@ describe('CheckboxList group disabled state', () => {
 });
 
 describe('CheckboxListItem press surface', () => {
-  const hoverScopeClass = stylex.props(indicatorScope).className ?? '';
-
   // The row owns its checkbox's press under every primary pointer: a
   // finger's, a mouse's and a pen's.
   afterEach(() => {
@@ -1633,28 +1633,20 @@ describe('CheckboxListItem press surface', () => {
    * `data-astryx-press` arms (on the row itself, not an ancestor).
    */
   function declaresRowPressPaint(row: Element): boolean {
-    const rules = rulesFor(row, style =>
-      style.getPropertyValue('--_checkbox-row-press-paint'),
+    const declared = classesOf(row).filter(name =>
+      name.includes('--_checkbox-row-press-paint'),
     );
-    const rest = rules.filter(
-      rule =>
-        rule.conditions.length === 0 &&
-        !rule.selector.includes('data-astryx-press'),
+    const rest = declared.filter(name =>
+      name.includes('[--_checkbox-row-press-paint:none]'),
     );
-    const pressed = rules.filter(rule =>
-      rule.value.includes('var(--_press-paint-image)'),
+    const pressed = declared.filter(name =>
+      name.includes('var(--_press-paint-image)'),
     );
     return (
       rest.length > 0 &&
-      rest.every(rule => rule.value === 'none') &&
       pressed.length > 0 &&
-      pressed.every(
-        rule =>
-          /^\.[\w-]+(?:\.[\w-]+)*:is\(\[data-astryx-press="(?:on|fading)"\]\)(?::not\(#\\#\))*$/.test(
-            rule.selector,
-          ) &&
-          !rule.conditions.some(condition => condition.includes('pointer')),
-      )
+      pressed.length + rest.length === declared.length &&
+      pressed.every(name => /\[&\[data-astryx-press=(on|fading)\]\]/.test(name))
     );
   }
 
@@ -1664,13 +1656,12 @@ describe('CheckboxListItem press surface', () => {
    * further out (the shared `--_press-paint-image`)?
    */
   function readsRowPressPaint(wrapper: Element): boolean {
-    const layer = rulesFor(wrapper, style => style.backgroundImage).filter(
-      rule => rule.selector.includes('::after'),
-    );
+    const classes = classesOf(wrapper);
     return (
-      layer.some(rule =>
-        rule.value.includes('var(--_checkbox-row-press-paint'),
-      ) && !layer.some(rule => rule.value.includes('var(--_press-paint-image)'))
+      checkboxInputRowPressOverlayClassName
+        .split(' ')
+        .every(name => classes.includes(name)) &&
+      !classes.some(name => name.includes('--_press-paint-image'))
     );
   }
 
@@ -1682,7 +1673,6 @@ describe('CheckboxListItem press surface', () => {
         <CheckboxListItem label="SMS" value="sms" description="Rates apply" />
       </CheckboxList>,
     );
-    expect(hoverScopeClass).not.toBe('');
     for (const name of ['Email', 'SMS']) {
       const row = rowOf(name);
       const {wrapper, control} = parts(row);
@@ -1700,10 +1690,11 @@ describe('CheckboxListItem press surface', () => {
       expect(hasReleaseFade(row)).toBe(true);
       expect(declaresRowPressPaint(row)).toBe(true);
       expect(readsRowPressPaint(wrapper)).toBe(true);
-      // Hover stays the checkbox's own. The row paints every press, so the
-      // box draws no `:active` fill.
-      expect(classesOf(control)).toContain(hoverScopeClass);
-      expect(classesOf(row)).not.toContain(hoverScopeClass);
+      // Hover stays the checkbox's own: the control marks its own hover
+      // scope, so the row's hover does not reach the box. The row paints every
+      // press, so the box draws no `:active` fill.
+      expect(control).toHaveAttribute('data-astryx-indicator-scope');
+      expect(row).not.toHaveAttribute('data-astryx-indicator-scope');
       expect(hasPressedArm(wrapper)).toBe(false);
     }
   });
@@ -1755,13 +1746,15 @@ describe('CheckboxListItem press surface', () => {
     const {control} = parts(rowOf('Email'));
     // The checkbox's own row is never pressed here, so its own press states
     // would hand the indicator nothing.
-    const handed = rulesFor(
-      control,
-      style =>
-        /--_indicator-press-image:\s*([^;]+)/.exec(style.cssText)?.[1] ?? '',
-    ).map(rule => rule.value);
+    const handed = classesOf(control).filter(name =>
+      name.includes('--_indicator-press-image'),
+    );
     expect(handed).toHaveLength(1);
-    expect(handed[0]).toMatch(/^var\(--_checkbox-row-press-paint,\s*none\)$/);
+    expect(checkboxInputRowPressImageClassName.split(' ')).toContain(handed[0]);
+    // The box reads the same row paint the row hands down.
+    expect(checkboxInputRowPressOverlayClassName).toContain(
+      'var(--_checkbox-row-press-paint,none)',
+    );
   });
 
   it('makes the row the one press surface on a fine-pointer page too', () => {

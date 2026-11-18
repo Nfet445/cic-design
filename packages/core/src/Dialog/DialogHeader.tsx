@@ -4,7 +4,7 @@
 
 /**
  * @file DialogHeader.tsx
- * @input Uses React, StyleX, LayoutHeader, Button, Icon, Heading, Text, DialogContext, isRenderable, mergeProps, themeProps
+ * @input Uses React, LayoutHeader, Button, Icon, Heading, Text, DialogContext, isRenderable, mergeProps, themeProps
  * @output Exports DialogHeader component and DialogHeaderProps
  * @position Dialog header component; used with Dialog and Layout
  *
@@ -17,8 +17,6 @@
  */
 
 import {useEffect, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {spacingVars, sizeVars, typeScaleVars} from '../theme/tokens.stylex';
 import {LayoutHeader} from '../Layout/LayoutHeader';
 import {Button} from '../Button/Button';
 import {Icon} from '../Icon/Icon';
@@ -28,6 +26,12 @@ import type {BaseProps} from '../BaseProps';
 import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
+import {
+  layerHeaderActionsClassName,
+  layerHeaderContainerClassName,
+  layerHeaderSlotClassName,
+  layerHeaderTitleBlockClassName,
+} from '../Layer/layerHeaderClasses';
 import {useDialogContext} from './DialogContext';
 import {
   registerEnglishFallback,
@@ -36,43 +40,6 @@ import {
 import english from '../i18n/generated-english/Dialog/DialogHeader.generated';
 
 registerEnglishFallback(english);
-
-const styles = stylex.create({
-  container: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-3'],
-  },
-  // Compensate for the medium icon button's visual padding on the end slot.
-  endBlockEdgeCompensation: {
-    marginBlock: `calc(-1 * ${spacingVars['--spacing-2']})`,
-  },
-  endInlineEdgeCompensation: {
-    marginInlineEnd: `calc(-1 * ${spacingVars['--spacing-2']})`,
-  },
-  titleWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0'],
-    flex: 1,
-    minWidth: 0,
-    // Visual centering: align title center with close button center
-    // buttonCenter = size-element-md/2 = 16px (close button midpoint relative to edge)
-    // titleCenter = heading-2-size * heading-2-leading / 2 = 14px
-    // adjustment = 8 - 14 = -6px
-    marginBlock: `calc(${sizeVars['--size-element-md']} / 2 - ${spacingVars['--spacing-2']} - ${typeScaleVars['--text-heading-2-size']} * ${typeScaleVars['--text-heading-2-leading']} / 2)`,
-  },
-  titleFocusable: {
-    outline: 'none',
-  },
-  actions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    flexShrink: 0,
-  },
-});
 
 export interface DialogHeaderProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element */
@@ -212,31 +179,28 @@ export function DialogHeader({
       style={style}
       {...rest}>
       <div
-        {...mergeProps(
-          themeProps('dialog-header'),
-          stylex.props(styles.container),
-        )}>
+        {...mergeProps(themeProps('dialog-header'), {
+          className: layerHeaderContainerClassName,
+        })}>
         {hasStartContent && (
           <div
-            {...mergeProps(
-              themeProps('dialog-header-start-content'),
-              stylex.props(styles.actions),
-            )}>
+            {...mergeProps(themeProps('dialog-header-start-content'), {
+              className: layerHeaderSlotClassName,
+            })}>
             {startContent}
           </div>
         )}
         <div
-          {...mergeProps(
-            themeProps('dialog-header-title-block'),
-            stylex.props(styles.titleWrapper),
-          )}>
+          {...mergeProps(themeProps('dialog-header-title-block'), {
+            className: layerHeaderTitleBlockClassName,
+          })}>
           <Heading
             ref={titleRef}
             id={titleId}
             level={2}
             tabIndex={-1}
             data-autofocus={shouldAutoFocus ? 'dialog-title' : undefined}
-            xstyle={styles.titleFocusable}>
+            className="outline-none">
             {title}
           </Heading>
           {hasSubtitle && (
@@ -247,14 +211,12 @@ export function DialogHeader({
         </div>
         {(hasEndContent || onOpenChange != null) && (
           <div
-            {...mergeProps(
-              themeProps('dialog-header-end-content'),
-              stylex.props(
-                styles.actions,
-                shouldCompensateEndBlock && styles.endBlockEdgeCompensation,
-                shouldCompensateEndInline && styles.endInlineEdgeCompensation,
-              ),
-            )}>
+            {...mergeProps(themeProps('dialog-header-end-content'), {
+              className: layerHeaderActionsClassName({
+                hasBlockCompensation: shouldCompensateEndBlock,
+                hasInlineCompensation: shouldCompensateEndInline,
+              }),
+            })}>
             {endContent}
             {onOpenChange && (
               <Button

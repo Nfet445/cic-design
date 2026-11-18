@@ -39,6 +39,7 @@ import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
 import {joinAriaIDs} from '../utils/inputAria';
+import {xstyleProps} from '../utils/xstyle';
 import {
   CheckboxListContext,
   type CheckboxListContextValue,
@@ -336,7 +337,7 @@ export function CheckboxList({
             observeRequiredGroup,
           )}
           {...mergeProps(
-            stylex.props(controlXstyle),
+            xstyleProps(controlXstyle),
             controlClassName,
             controlStyle,
           )}

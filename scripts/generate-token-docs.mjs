@@ -6,7 +6,7 @@
  * @description Generates the tokens namespace (tree/tokens.doc.mjs), one child
  *   guide per token category (tree/tokens-<key>.doc.mjs), and a hand-written
  *   usage guide (tree/tokens-usage.doc.mjs), from the sources of truth:
- *   packages/core/src/theme/tokens.stylex.ts, plus the domain tokens in
+ *   packages/core/src/theme/tokenVars.ts, plus the domain tokens in
  *   packages/core/src/theme/domainTokens/dataTokens.ts (data visualization) and
  *   packages/core/src/theme/syntax/tokens.ts (code syntax).
  *
@@ -29,10 +29,10 @@ import {fileURLToPath} from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const TOKENS_SRC = resolve(ROOT, 'packages/core/src/theme/tokens.stylex.ts');
+const TOKENS_SRC = resolve(ROOT, 'packages/core/src/theme/tokenVars.ts');
 const DATA_TOKENS_SRC = resolve(
   ROOT,
-  'packages/core/src/theme/dataTokens.stylex.ts',
+  'packages/core/src/theme/dataTokenVars.ts',
 );
 const SYNTAX_TOKENS_SRC = resolve(
   ROOT,
@@ -57,7 +57,7 @@ function sourceText(file) {
  * Extract key-value pairs from a `const xxxDefaults = { ... } as const;` block.
  * Returns array of [tokenName, defaultValue].
  * @param {string} name
- * @param {string} [file] the source that exports it (default tokens.stylex.ts)
+ * @param {string} [file] the source that exports it (default tokenVars.ts)
  */
 function extractDefaults(name, file = TOKENS_SRC) {
   const src = sourceText(file);
@@ -365,7 +365,7 @@ for (const group of groups) {
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 // AUTO-GENERATED — do not edit manually.
-// Source: packages/core/src/theme/tokens.stylex.ts,
+// Source: packages/core/src/theme/tokenVars.ts,
 //   dataTokens.stylex.ts, and syntax/tokens.ts
 // Run: node scripts/generate-token-docs.mjs
 

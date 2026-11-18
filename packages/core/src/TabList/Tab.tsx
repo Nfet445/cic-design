@@ -19,31 +19,33 @@
 
 import React, {useCallback, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  sizeVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import type {BaseProps} from '../BaseProps';
 import {useTabListContext} from './TabListContext';
 import type {TabListSize} from './TabListContext';
-import {tabScope} from './tab.markers.stylex';
+import {
+  TAB_END_CONTENT_CLASS,
+  TAB_ICON_CLASS,
+  TAB_LABEL_CONTAINER_CLASS,
+  TAB_LABEL_SIZER_CLASS,
+  TAB_LABEL_TEXT_CLASS,
+  tabClassName,
+  tabHoverLayerClassName,
+  tabIconSizeClassName,
+  tabIndicatorClassName,
+} from './tabListClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {withholdCallerHandlers} from '../utils/disabledInteraction';
 import {EDGE_COMP_ATTR} from '../Layout/edgeCompensation.stylex';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {isRenderable} from '../utils/isRenderable';
+import {xstyleProps} from '../utils/xstyle';
 
 export interface TabProps extends BaseProps<HTMLButtonElement> {
   /**
@@ -97,178 +99,6 @@ export interface TabProps extends BaseProps<HTMLButtonElement> {
    */
   endContent?: ReactNode;
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-// The touch press's paint, declared by the shared overlay styles on the
-// element the controller writes to (`pressedAlpha`) at the press's strength,
-// 1 while on and 1 → 0 over the release, and inherited resolved by the layer
-// that paints it. See interactionOverlay.stylex.ts.
-const pressedOverlayImage = 'var(--_press-paint-image)';
-
-const styles = stylex.create({
-  base: {
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-3'],
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    borderRadius: radiusVars['--radius-element'],
-    fontFamily: 'inherit',
-    fontSize: typeScaleVars['--text-label-size'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    color: colorVars['--color-text-secondary'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    textDecoration: 'none',
-    whiteSpace: 'nowrap',
-    transitionProperty: 'color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  hoverBg: {
-    position: 'absolute',
-    inset: 0,
-    margin: 'auto',
-    width: '100%',
-    borderRadius: radiusVars['--radius-element'],
-    pointerEvents: 'none',
-    backgroundColor: {
-      default: 'transparent',
-      [stylex.when.ancestor(':hover', tabScope)]: {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-      // Pressed: the same layer steps up to the pressed overlay, read off the
-      // tab the way the hover is, so a press paints on a finger too. Repeated
-      // inside the hover-capable branch so it outranks the hover rule there
-      // (a media-nested rule carries extra generated priority; see
-      // interactionOverlay.stylex.ts).
-      [stylex.when.ancestor(':active', tabScope)]: {
-        default: colorVars['--color-overlay-pressed'],
-        '@media (hover: hover)': colorVars['--color-overlay-pressed'],
-        // Under a coarse pointer the touch press model writes `data-astryx-press`
-        // on the tab instead, and paints as an image below.
-        '@media (pointer: coarse)': 'transparent',
-      },
-    },
-    // The touch press, as an image layer over the colour: an image change is
-    // discrete, so the layer's colour transition cannot fade the onset in,
-    // and the strength the tab's `pressedAlpha` arms own (1 while on, 1 → 0
-    // over the release) is what moves. Coarse pointers only, like the colour
-    // arms above; see interactionOverlay.stylex.ts.
-    backgroundImage: {
-      default: null,
-      [stylex.when.ancestor('[data-astryx-press="on"]', tabScope)]: {
-        default: null,
-        '@media (pointer: coarse)': pressedOverlayImage,
-      },
-      [stylex.when.ancestor('[data-astryx-press="fading"]', tabScope)]: {
-        default: null,
-        '@media (pointer: coarse)': pressedOverlayImage,
-      },
-    },
-    transitionProperty: 'background-color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  selected: {
-    color: colorVars['--color-text-primary'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  indicator: {
-    position: 'absolute',
-    // Sits on the tab's bottom edge by default (-1px). When the tab strip
-    // reserves space for a divider rail — TabList `hasDivider` or a Toolbar
-    // with a bottom divider — that ancestor sets `--_tab-indicator-bottom`
-    // to drop the indicator onto the rail beneath the reserved gap.
-    bottom: 'var(--_tab-indicator-bottom, -1px)',
-    insetInlineStart: spacingVars['--spacing-3'],
-    insetInlineEnd: spacingVars['--spacing-3'],
-    height: '2px',
-    borderRadius: radiusVars['--radius-full'],
-    pointerEvents: 'none',
-    transitionProperty: 'opacity, background-color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  indicatorSelected: {
-    backgroundColor: colorVars['--color-accent'],
-    opacity: 1,
-  },
-  indicatorUnselected: {
-    backgroundColor: 'transparent',
-    opacity: 0,
-  },
-  icon: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  labelContainer: {
-    display: 'inline-grid',
-  },
-  labelText: {
-    gridRowStart: 1,
-    gridColumnStart: 1,
-  },
-  labelSizer: {
-    gridRowStart: 1,
-    gridColumnStart: 1,
-    visibility: 'hidden',
-    pointerEvents: 'none',
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  endContentWrapper: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-});
-
-// A minimum, not a fixed height: a tab grows with a larger text size, so its
-// label is never clipped.
-const sizeStyles = stylex.create({
-  sm: {minHeight: sizeVars['--size-element-sm']},
-  md: {minHeight: sizeVars['--size-element-md']},
-  lg: {minHeight: sizeVars['--size-element-lg']},
-});
-
-// The hover background fills the tab (inset 0) and is never shorter than the
-// element size.
-const hoverSizeStyles = stylex.create({
-  sm: {minHeight: sizeVars['--size-element-sm']},
-  md: {minHeight: sizeVars['--size-element-md']},
-  lg: {minHeight: sizeVars['--size-element-lg']},
-});
-
-const layoutStyles = stylex.create({
-  // A hugging tab keeps its label's width. Without this the strip's flex
-  // shrinks every tab below its text before overflow can scroll, and on a
-  // narrow screen the labels draw over one another.
-  hug: {
-    flexShrink: 0,
-  },
-  fill: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-});
-
-const iconSizeStyles = stylex.create({
-  sm: {width: '14px', height: '14px'},
-  md: {width: '16px', height: '16px'},
-  lg: {width: '18px', height: '18px'},
-});
 
 /**
  * Tab item component. Renders as an anchor when `href` is provided,
@@ -360,7 +190,7 @@ export function Tab({
   );
 
   const iconElement = isRenderable(displayIcon) ? (
-    <span {...stylex.props(styles.icon, iconSizeStyles[size])}>
+    <span className={tw(TAB_ICON_CLASS, tabIconSizeClassName(size))}>
       {displayIcon}
     </span>
   ) : null;
@@ -402,27 +232,23 @@ export function Tab({
       themeProps('tab', {
         selected: isSelected ? 'selected' : null,
       }),
-      focusOutlineProps.focusVisible(
-        styles.base,
-        sizeStyles[size],
-        isSelected && styles.selected,
-        isFill ? layoutStyles.fill : layoutStyles.hug,
-        !isDisabled && tabScope,
+      stylex.props(
         // The touch press's strength and release live on the tab the
         // controller writes to; the hover layer inherits and paints it.
         !isDisabled && interactionOverlayStyles.pressedAlpha,
-        xstyle,
       ),
-      className,
-      style,
+      tw(
+        tabClassName({size, isSelected, isFill}),
+        className,
+        focusOutlineFocusVisibleClassName,
+        xstyleProps(xstyle).className,
+      ),
+      {...xstyleProps(xstyle).style, ...style},
     ),
   };
 
   const hoverBgElement = (
-    <span
-      aria-hidden="true"
-      {...stylex.props(styles.hoverBg, hoverSizeStyles[size])}
-    />
+    <span aria-hidden="true" className={tabHoverLayerClassName(size)} />
   );
 
   const indicatorElement = (
@@ -431,25 +257,22 @@ export function Tab({
         themeProps('tab-indicator', {
           selected: isSelected ? 'selected' : null,
         }),
-        stylex.props(
-          styles.indicator,
-          isSelected ? styles.indicatorSelected : styles.indicatorUnselected,
-        ),
+        tabIndicatorClassName({isSelected}),
       )}
     />
   );
 
   const labelElement = hasVisibleLabel ? (
-    <span {...stylex.props(styles.labelContainer)}>
-      <span {...stylex.props(styles.labelText)}>{label}</span>
-      <span aria-hidden="true" {...stylex.props(styles.labelSizer)}>
+    <span className={TAB_LABEL_CONTAINER_CLASS}>
+      <span className={TAB_LABEL_TEXT_CLASS}>{label}</span>
+      <span aria-hidden="true" className={TAB_LABEL_SIZER_CLASS}>
         {label}
       </span>
     </span>
   ) : null;
 
   const endContentElement = isRenderable(endContent) ? (
-    <span {...stylex.props(styles.endContentWrapper)}>{endContent}</span>
+    <span className={TAB_END_CONTENT_CLASS}>{endContent}</span>
   ) : null;
 
   if (isLink) {

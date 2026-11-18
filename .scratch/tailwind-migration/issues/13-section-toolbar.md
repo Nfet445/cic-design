@@ -1,6 +1,6 @@
 # section toolbar
 
-Status: ready-for-agent
+Status: done
 Blocked by: 12
 Wave: 3
 Family: `family:layout-regions`
@@ -26,6 +26,8 @@ Migrate `Section/` (4) and `Toolbar/` to class maps and close `family:layout-reg
 - `pnpm exec vitest run packages/core/src/Section packages/core/src/Toolbar`
 
 ## Notes
+
+- Landed as `Section/sectionClasses.ts` and `Toolbar/toolbarClasses.ts`. The browser page is written and unregistered: four checks do not pass yet — `w-[var(--astryx-section-width)]` and the escape class are emitted, but `--astryx-section-width` and the toolbar `min-h-[var(--size-element-sm)]` rule are missing from the built sheet, so the page cannot verify them until that is understood. See `39-layout-regions-page.md`.
 
 - Follow the ticket rules in `.scratch/tailwind-migration/README.md`: one ticket, one worker, one pull request, one changeset.
 - Reuse the contract in `docs/specs/AST-119-tailwind-utility-styling/spec.md` (FR1–FR10, DEC-1…DEC-7); do not invent a second styling path.

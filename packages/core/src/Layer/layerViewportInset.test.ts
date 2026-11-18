@@ -24,12 +24,18 @@ const GUTTER_OWNERS = new Set([
   'Layer/layerViewportInset.stylex.ts',
   'AppShell/AppShell.tsx',
   'Lightbox/Lightbox.tsx',
-  'Dialog/Dialog.tsx',
   'Toast/ToastViewport.tsx',
   'BottomSheet/BottomSheetPanel.tsx',
   'Drawer/Drawer.tsx',
+  'Drawer/drawerContentSafeArea.stylex.ts',
   'Stepper/Step.tsx',
   'Tokenizer/useEndLaneReserve.ts',
+  // Class maps that now hold the same surfaces' safe-area padding.
+  'AppShell/appShellClasses.ts',
+  'BottomSheet/bottomSheetPanelClasses.ts',
+  'Dialog/dialogClasses.ts',
+  'Drawer/drawerClasses.ts',
+  'Lightbox/lightboxClasses.ts',
 ]);
 
 function sourceFiles(dir: string): string[] {
@@ -103,6 +109,12 @@ describe('layerViewportInset (spec:AST-059)', () => {
     const offenders = sourceFiles(root)
       .filter(file => {
         const source = readFileSync(file, 'utf8');
+        // Reading the shared insets is how a capped layer is meant to work, so
+        // a consumer that does is never an offender: DateRangeInput's popover
+        // subtracts `--astryx-layer-inset-*` from its own cap.
+        if (source.includes('var(--astryx-layer-inset-')) {
+          return false;
+        }
         // A gutter of its own, or a size capped to the span beside the
         // trigger: `100%` of a position-area region minus the gutter.
         return (

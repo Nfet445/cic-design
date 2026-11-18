@@ -10,26 +10,18 @@
  */
 
 import {lazy, Suspense, useEffect, type ReactNode, type RefObject} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Heading} from '../Heading';
 import {Section} from '../Section';
-import {spacingVars} from '../theme/tokens.stylex';
+import {
+  SELECTOR_BOTTOM_SHEET_CONTENT_CLASS,
+  SELECTOR_BOTTOM_SHEET_HEADING_CLASS,
+} from './selectorOptionClasses';
 
 const LazyBottomSheet = lazy(async () =>
   import('../BottomSheet/BottomSheet').then(module => ({
     default: module.BottomSheet,
   })),
 );
-
-const styles = stylex.create({
-  content: {
-    width: '100%',
-  },
-  heading: {
-    marginBlockEnd: spacingVars['--spacing-2'],
-    marginInline: spacingVars['--spacing-3'],
-  },
-});
 
 interface SelectorBottomSheetProps {
   children: ReactNode;
@@ -78,8 +70,8 @@ export function SelectorBottomSheet({
         height="hug"
         purpose="info">
         <Section paddingBlockStart={4} paddingBlockEnd={0} paddingInline={1}>
-          <div {...stylex.props(styles.content)}>
-            <Heading level={3} xstyle={styles.heading}>
+          <div className={SELECTOR_BOTTOM_SHEET_CONTENT_CLASS}>
+            <Heading level={3} className={SELECTOR_BOTTOM_SHEET_HEADING_CLASS}>
               {label}
             </Heading>
             {children}

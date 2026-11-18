@@ -17,20 +17,21 @@ const sourcePath = path.resolve(
   '../../assets/templates/blocks/components/Table/TableFloatingBulkActionsTable.tsx',
 );
 const source = fs.readFileSync(sourcePath, 'utf8');
-const pageStyles = source.match(/page:\s*\{([\s\S]*?)\n\s{2}\},/)?.[1];
-const tableRegionStyles = source.match(
-  /tableRegion:\s*\{([\s\S]*?)\n\s{2}\},/,
-)?.[1];
-const toolbarStyles = source.match(/toolbar:\s*\{([\s\S]*?)\n\s{2}\},/)?.[1];
+/** The class string a key of the block's one class map carries. */
+const classesOf = name =>
+  source.match(new RegExp(`${name}:\\s*'([^']*)'`))?.[1];
+const pageClasses = classesOf('page');
+const tableRegionClasses = classesOf('tableRegion');
+const toolbarClasses = classesOf('toolbar');
 const columns = source.match(
   /const columns:[\s\S]*?=\s*\[([\s\S]*?)\n\];/,
 )?.[1];
 
 describe('Table floating bulk-actions template', () => {
   it('caps the demo height without capping its width', () => {
-    expect(pageStyles).toContain('maxBlockSize: 640');
-    expect(pageStyles).not.toContain('maxWidth');
-    expect(pageStyles).not.toContain('marginInline');
+    expect(pageClasses).toContain('max-h-[640px]');
+    expect(pageClasses).not.toContain('max-w');
+    expect(pageClasses).not.toContain('mx-');
   });
 
   it('uses the shared logical-axis scroll behavior', () => {
@@ -43,18 +44,18 @@ describe('Table floating bulk-actions template', () => {
     expect(source).not.toContain('role="region"');
     expect(source).not.toContain('tabIndex={0}');
     expect(source).not.toContain('aria-label="Metrics"');
-    expect(pageStyles).not.toContain('overflowY');
-    expect(pageStyles).not.toContain('overscrollBehavior');
+    expect(pageClasses).not.toContain('overflow');
+    expect(pageClasses).not.toContain('overscroll');
   });
 
   it('keeps the floating toolbar inside an isolated local stacking context', () => {
-    expect(pageStyles).toContain("isolation: 'isolate'");
-    expect(toolbarStyles).toContain('zIndex: 1');
-    expect(toolbarStyles).not.toContain('zIndex: 20');
+    expect(pageClasses).toContain('isolate');
+    expect(toolbarClasses).toContain('z-[1]');
+    expect(toolbarClasses).not.toContain('z-20');
   });
 
   it('shares one reserved-space variable across the placement geometry', () => {
-    expect(tableRegionStyles).toContain("'--table-bulk-actions-space'");
+    expect(tableRegionClasses).toContain('--table-bulk-actions-space');
     expect(source.match(/var\(--table-bulk-actions-space\)/g)).toHaveLength(4);
   });
 

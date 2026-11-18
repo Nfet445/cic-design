@@ -7,7 +7,8 @@
  * @output Asserts the list row's press layer stays internal: neither
  *   `@astryxdesign/core/utils` nor `@astryxdesign/core/utils/interactionOverlay.stylex`
  *   exposes the row layer's styles (`rowPressLayerStyles`, `cell`,
- *   `cellOnImage`), and core's `exports` do not list the modules that hold them (`architecture:public-component-api` INV12)
+ *   `cellOnImage`), and core's `exports` do not list the modules that hold
+ *   them (`architecture:public-component-api` INV12)
  * @position Unit test beside utils/interactionOverlay.stylex.ts and
  */
 
@@ -18,7 +19,7 @@ import * as utils from './index';
 import * as overlay from './interactionOverlay.stylex';
 
 const ROW_LAYER_STYLES = ['cell', 'cellOnImage', 'control'];
-const ROW_LAYER_EXPORTS = ['rowPressLayerStyles', 'controlPressLayerStyles'];
+const ROW_LAYER_EXPORTS = ['rowPressLayerStyles'];
 
 describe("the list row's press layer stays internal", () => {
   it('is not exported from @astryxdesign/core/utils/interactionOverlay.stylex', () => {
@@ -47,5 +48,6 @@ describe("the list row's press layer stays internal", () => {
       typeof entry === 'string' ? entry : entry.source,
     );
     expect(sources).not.toContain('./src/privateAttributes/press.stylex.ts');
+    expect(sources).not.toContain('./src/privateAttributes/pressClasses.ts');
   });
 });

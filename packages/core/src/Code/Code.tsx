@@ -2,7 +2,8 @@
 
 /**
  * @file Code.tsx
- * @input Uses React, StyleX, theme tokens
+ * @input Uses React, the code class map, and the xstyle adapter for the
+ *   consumer's `xstyle`
  * @output Exports Code component for inline code styling
  * @position Core implementation; lives in own Code/ dir, re-exported by CodeBlock/
  *
@@ -15,53 +16,16 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+  codeClassName,
+  codeColorClassName,
+  codeInheritSizeClassName,
+} from './codeClasses';
 import {mergeProps} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-
-const styles = stylex.create({
-  base: {
-    fontFamily: typographyVars['--font-family-code'],
-    fontSize: typeScaleVars['--text-code-size'],
-    lineHeight: 'inherit',
-    backgroundColor: colorVars['--color-background-muted'],
-    paddingInline: spacingVars['--spacing-1'],
-    paddingBlock: spacingVars['--spacing-0'],
-    borderRadius: radiusVars['--radius-inner'],
-    // Prevent code from breaking parent layout
-    overflowWrap: 'break-word',
-    wordBreak: 'break-word',
-  },
-});
-
-const colorStyles = stylex.create({
-  primary: {
-    color: colorVars['--color-text-primary'],
-  },
-  secondary: {
-    color: colorVars['--color-text-secondary'],
-  },
-  inherit: {
-    color: 'inherit',
-  },
-});
-
-const sizeStyles = stylex.create({
-  // Adopt the surrounding text's font-size and line-height, for inline code
-  // that should match differently-sized text around it.
-  inherit: {
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-  },
-});
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 /** Text color for {@link Code}, mirroring the primary/secondary/inherit subset of Text. */
 export type CodeColor = 'primary' | 'secondary' | 'inherit';
@@ -115,12 +79,14 @@ export function Code({
       {...props}
       {...mergeProps(
         themeProps('code', {color, size}),
-        stylex.props(
-          styles.base,
-          colorStyles[color],
-          size && sizeStyles[size],
-          xstyle,
-        ),
+        {
+          className: tw(
+            codeClassName,
+            codeColorClassName[color],
+            size && codeInheritSizeClassName,
+            xstyleProps(xstyle).className,
+          ),
+        },
         className,
         style,
       )}>

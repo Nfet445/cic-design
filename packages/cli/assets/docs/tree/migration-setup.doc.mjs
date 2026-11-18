@@ -16,7 +16,6 @@ export const docs = {
   description:
     'Install the theme, wire CSS layers, audit resets, and run the foundation smoke test before migrating any surface.',
   keywords: [
-    'setup',
     'theme',
     'reset',
     'smoke test',

@@ -51,7 +51,6 @@ import {
   type Ref,
   type UIEvent,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 
 import type {BaseProps} from '@astryxdesign/core';
 import {
@@ -72,26 +71,18 @@ import {
   SyntaxTheme,
   type SyntaxThemeDefinition,
 } from '@astryxdesign/core/theme/syntax';
+import {spacingVarNames} from '@astryxdesign/core/theme';
 import {
-  borderVars,
-  colorVars,
-  durationVars,
-  easeVars,
-  fontWeightVars,
-  radiusVars,
-  spacingVars,
-  typeScaleVars,
-  typographyVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
-import {
-  focusOutlineProps,
+  focusOutlineFocusVisibleClassName,
   isRenderable,
   mergeProps,
-  rtlStyles,
   themeProps,
+  xstyleProps,
 } from '@astryxdesign/core/utils';
 import {Token, type TokenColor} from '@astryxdesign/core/Token';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
+
+import {tw} from '../tw';
 
 import type {
   DiffViewerFile,
@@ -100,6 +91,71 @@ import type {
   DiffViewerLineRef,
   DiffViewerSide,
 } from './diffTypes';
+import {
+  DIFF_VIEWER_COLUMN_WIDTH_VAR,
+  DIFF_VIEWER_PANE_COLUMNS_VAR,
+  DIFF_VIEWER_PIN_OFFSET_VAR,
+  DIFF_VIEWER_SPLIT_ROWS_VAR,
+  diffViewerAddedRowClassName,
+  diffViewerAnnotationClassName,
+  diffViewerAnnotationContentClassName,
+  diffViewerBarAddedClassName,
+  diffViewerBarClassName,
+  diffViewerBarRemovedClassName,
+  diffViewerChangeAddedClassName,
+  diffViewerChangeRemovedClassName,
+  diffViewerChevronClassName,
+  diffViewerChevronExpandedClassName,
+  diffViewerCodeClassName,
+  diffViewerCodeWrappedClassName,
+  diffViewerColumnHeaderClassName,
+  diffViewerColumnWidthClassName,
+  diffViewerFillerClassName,
+  diffViewerFoldClassName,
+  diffViewerFoldContentClassName,
+  diffViewerFoldWrappedClassName,
+  diffViewerGutterAddedClassName,
+  diffViewerGutterButtonClassName,
+  diffViewerGutterClassName,
+  diffViewerGutterRemovedClassName,
+  diffViewerHeaderDividerClassName,
+  diffViewerHeaderEndClassName,
+  diffViewerHeaderClassName,
+  diffViewerHunkClassName,
+  diffViewerHunkTextStickyClassName,
+  diffViewerHunkWrappedClassName,
+  diffViewerInvisibleClassName,
+  diffViewerLtrClassName,
+  diffViewerMarkerAddedClassName,
+  diffViewerMarkerClassName,
+  diffViewerMarkerRemovedClassName,
+  diffViewerMarkerSlimClassName,
+  diffViewerMessageClassName,
+  diffViewerMirrorClassName,
+  diffViewerPaneClassName,
+  diffViewerPaneColumnsClassName,
+  diffViewerPaneNewClassName,
+  diffViewerPaneOldClassName,
+  diffViewerPaneRowClassName,
+  diffViewerPaneSpanClassName,
+  diffViewerPaneTableClassName,
+  diffViewerPaneTableScrollClassName,
+  diffViewerPaneTableWrappedClassName,
+  diffViewerPathClassName,
+  diffViewerRemovedRowClassName,
+  diffViewerRootClassName,
+  diffViewerSizerClassName,
+  diffViewerSplitClassName,
+  diffViewerStatAddedClassName,
+  diffViewerStatRemovedClassName,
+  diffViewerStatsClassName,
+  diffViewerStickyClassName,
+  diffViewerTableClassName,
+  diffViewerTableScrollClassName,
+  diffViewerTableWrappedClassName,
+  diffViewerToggleClassName,
+  diffViewerViewportClassName,
+} from './diffViewerClasses';
 import {diffInlineRanges, type InlineRange} from './inlineDiff';
 
 /** How hunks are laid out: one column, or old and new side by side. */
@@ -683,7 +739,7 @@ function buildSpans(
   text: string,
   tokens: SyntaxToken[],
   emphasis: readonly InlineRange[],
-  changeXstyle: stylex.StyleXStyles,
+  changeClassName: string,
 ): ReactNode {
   if (text === '') {
     return '\u200b';
@@ -708,10 +764,7 @@ function buildSpans(
       i++;
     }
     parts.push(
-      <span
-        key={`c${first}`}
-        data-diff-change=""
-        {...stylex.props(changeXstyle)}>
+      <span key={`c${first}`} data-diff-change="" className={changeClassName}>
         {run}
       </span>,
     );
@@ -727,413 +780,21 @@ const TAB_SIZE = 2;
 
 // Column widths, also used to place pinned cells and size split panes.
 const MARKER_WIDTH: Record<DiffViewerChangeIndicator, string> = {
-  classic: `calc(1ch + ${spacingVars['--spacing-1']} + ${spacingVars['--spacing-2']})`,
-  bars: spacingVars['--spacing-3'],
-  none: spacingVars['--spacing-2'],
+  classic: `calc(1ch + ${spacingVarNames['--spacing-1']} + ${spacingVarNames['--spacing-2']})`,
+  bars: spacingVarNames['--spacing-3'],
+  none: spacingVarNames['--spacing-2'],
 };
 
-function gutterWidth(digits: number): string {
-  return `calc(${digits}ch + 2 * ${spacingVars['--spacing-2']})`;
+/* A per-instance value is a private variable a class reads, never an inline
+   declaration. */
+function customProperty(name: `--${string}`, value: string): CSSProperties {
+  const style: Record<`--${string}`, string> = {[name]: value};
+  return style;
 }
 
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-    overflow: 'hidden',
-    // The pinned cells' z-index stacks inside the DiffViewer, never against
-    // the host page (a sticky page header stays on top).
-    isolation: 'isolate',
-    borderRadius: radiusVars['--radius-element'],
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-    backgroundColor: 'var(--color-syntax-background)',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    minWidth: 0,
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    backgroundColor: colorVars['--color-background-surface'],
-    color: colorVars['--color-text-primary'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-  },
-  headerDivider: {
-    borderBottomWidth: borderVars['--border-width'],
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-  toggle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    minWidth: 0,
-    padding: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    font: 'inherit',
-    textAlign: 'start',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  chevron: {
-    display: 'inline-flex',
-    flexShrink: 0,
-    color: colorVars['--color-icon-secondary'],
-    transitionProperty: 'transform',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  chevronExpanded: {
-    transform: 'rotate(90deg)',
-  },
-  path: {
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    fontFamily: typographyVars['--font-family-code'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  stats: {
-    display: 'inline-flex',
-    gap: spacingVars['--spacing-1'],
-    flexShrink: 0,
-    fontFamily: typographyVars['--font-family-code'],
-  },
-  statAdded: {
-    color: colorVars['--color-text-green'],
-  },
-  statRemoved: {
-    color: colorVars['--color-text-red'],
-  },
-  headerEnd: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    marginInlineStart: 'auto',
-    flexShrink: 0,
-  },
-  // The hunk area reads left-to-right in every page direction, as code
-  // editors do: line numbers stay on the left and a line wider than the
-  // viewer opens at its start. Under RTL a mirrored table would open scrolled
-  // to the lines' ends, cutting off every line's start.
-  viewport: {
-    minWidth: 0,
-    direction: 'ltr',
-  },
-  message: {
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-    color: colorVars['--color-text-secondary'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-  },
-  table: {
-    borderCollapse: 'collapse',
-    borderSpacing: 0,
-    fontFamily: typographyVars['--font-family-code'],
-    fontSize: typeScaleVars['--text-code-size'],
-    lineHeight: typeScaleVars['--text-code-leading'],
-    color: 'var(--color-syntax-variable)',
-    tabSize: TAB_SIZE,
-  },
-  tableScroll: {
-    width: 'max-content',
-    minWidth: '100%',
-  },
-  tableWrapped: {
-    width: '100%',
-    tableLayout: 'fixed',
-  },
-  gutter: {
-    paddingBlock: 0,
-    paddingInline: spacingVars['--spacing-2'],
-    textAlign: 'end',
-    verticalAlign: 'top',
-    whiteSpace: 'nowrap',
-    userSelect: 'none',
-    color: 'var(--color-syntax-punctuation)',
-  },
-  gutterAdded: {
-    color: 'var(--color-syntax-added-marker)',
-  },
-  gutterRemoved: {
-    color: 'var(--color-syntax-removed-marker)',
-  },
-  gutterButton: {
-    display: 'inline',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    font: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    textDecorationLine: {
-      default: 'none',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': 'underline',
-    },
-  },
-  marker: {
-    position: 'relative',
-    paddingBlock: 0,
-    paddingInlineStart: spacingVars['--spacing-1'],
-    paddingInlineEnd: spacingVars['--spacing-2'],
-    verticalAlign: 'top',
-    whiteSpace: 'pre',
-    userSelect: 'none',
-    color: colorVars['--color-text-secondary'],
-  },
-  // Bars and no indicator: the column is only a gap before the code (and
-  // holds the bar).
-  markerSlim: {
-    paddingInline: 0,
-  },
-  // The bar sits at the start of the indicator column, beside the code.
-  // Added lines get a solid bar, removed lines a dashed one, so the two read
-  // apart without relying on colour.
-  bar: {
-    position: 'absolute',
-    insetBlock: 0,
-    insetInlineStart: 0,
-    width: `calc(3 * ${borderVars['--border-width']})`,
-  },
-  barAdded: {
-    backgroundColor: 'var(--color-syntax-added-marker)',
-  },
-  barRemoved: {
-    backgroundImage: `repeating-linear-gradient(to bottom, var(--color-syntax-removed-marker) 0 calc(2 * ${borderVars['--border-width']}), transparent calc(2 * ${borderVars['--border-width']}) calc(4 * ${borderVars['--border-width']}))`,
-  },
-  // Line numbers and change indicators stay put while unwrapped code scrolls
-  // sideways. They paint the syntax background under their tint so scrolled
-  // code does not show through.
-  sticky: {
-    position: 'sticky',
-    zIndex: 1,
-    backgroundColor: 'var(--color-syntax-background)',
-  },
-  markerAdded: {
-    color: 'var(--color-syntax-added-marker)',
-  },
-  markerRemoved: {
-    color: 'var(--color-syntax-removed-marker)',
-  },
-  // Code, hunk headers, paths, and counts read left-to-right in every page
-  // direction.
-  ltr: {
-    direction: 'ltr',
-    unicodeBidi: 'isolate',
-  },
-  code: {
-    textAlign: 'start',
-    paddingBlock: 0,
-    paddingInlineStart: 0,
-    paddingInlineEnd: spacingVars['--spacing-4'],
-    verticalAlign: 'top',
-    whiteSpace: 'pre',
-  },
-  // Break at spaces first, and inside a token only when a word cannot fit.
-  codeWrapped: {
-    whiteSpace: 'pre-wrap',
-    wordBreak: 'normal',
-    overflowWrap: 'anywhere',
-    // Text inside keeps `anywhere` too (Text FR3).
-    '--_astryx-text-overflow-wrap': 'anywhere',
-  },
-  // Row tints are a background-image layer so a pinned (sticky) cell can lay
-  // them over an opaque syntax background.
-  added: {
-    backgroundImage:
-      'linear-gradient(var(--color-syntax-added), var(--color-syntax-added))',
-  },
-  removed: {
-    backgroundImage:
-      'linear-gradient(var(--color-syntax-removed), var(--color-syntax-removed))',
-  },
-  // The changed words of a paired line: two more layers of the row tint, so
-  // a syntax theme's tint styles both and the words stand out with or
-  // without the row tint under them.
-  change: {
-    borderRadius: radiusVars['--radius-inner'],
-    boxDecorationBreak: 'clone',
-  },
-  changeAdded: {
-    backgroundColor: 'var(--color-syntax-added)',
-    backgroundImage:
-      'linear-gradient(var(--color-syntax-added), var(--color-syntax-added))',
-  },
-  changeRemoved: {
-    backgroundColor: 'var(--color-syntax-removed)',
-    backgroundImage:
-      'linear-gradient(var(--color-syntax-removed), var(--color-syntax-removed))',
-  },
-  // The empty half of a split row whose other side has no counterpart.
-  filler: {
-    backgroundColor: 'var(--color-syntax-diff-header)',
-  },
-  hunk: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-3'],
-    textAlign: 'start',
-    backgroundColor: 'var(--color-syntax-diff-header)',
-    color: 'var(--color-syntax-punctuation)',
-    whiteSpace: 'pre',
-    borderBlockWidth: borderVars['--border-width'],
-    borderBlockStyle: 'solid',
-    borderBlockColor: colorVars['--color-border'],
-  },
-  fold: {
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    textAlign: 'start',
-    backgroundColor: 'var(--color-syntax-diff-header)',
-    color: colorVars['--color-text-secondary'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    borderBlockWidth: borderVars['--border-width'],
-    borderBlockStyle: 'solid',
-    borderBlockColor: colorVars['--color-border'],
-  },
-  foldContent: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: spacingVars['--spacing-3'],
-  },
-  // Unwrapped, the header text stays at the visible start while the code
-  // scrolls.
-  hunkTextSticky: {
-    position: 'sticky',
-    insetInlineStart: spacingVars['--spacing-3'],
-  },
-  // Split view: two panes in one grid. Each pane spans every row track and
-  // shares them through `subgrid`, so a row is as tall as its taller side
-  // (wrapped code, an annotation) while each pane scrolls sideways alone.
-  split: {
-    display: 'grid',
-    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
-  },
-  pane: {
-    display: 'grid',
-    gridRow: '1 / -1',
-    gridTemplateRows: 'subgrid',
-    gridTemplateColumns: 'minmax(0, 1fr)',
-    minWidth: 0,
-  },
-  paneOld: {
-    gridColumn: 1,
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-  },
-  paneNew: {
-    gridColumn: 2,
-  },
-  paneTable: {
-    display: 'grid',
-    gridRow: '1 / -1',
-    gridTemplateRows: 'subgrid',
-  },
-  paneTableScroll: {
-    width: 'max-content',
-    minWidth: '100%',
-  },
-  paneTableWrapped: {
-    width: '100%',
-  },
-  paneRow: {
-    display: 'grid',
-    gridColumn: '1 / -1',
-    gridTemplateColumns: 'subgrid',
-  },
-  paneSpan: {
-    gridColumn: '1 / -1',
-  },
-  invisible: {
-    visibility: 'hidden',
-  },
-  // Unwrapped split view: a zero-height, invisible row in both panes holding
-  // the widest line of either side, so both code columns (and so both
-  // scroll widths) match and the panes can scroll in lockstep.
-  sizer: {
-    gridColumn: '-2 / -1',
-    height: 0,
-    visibility: 'hidden',
-    pointerEvents: 'none',
-  },
-  // Column headers exist for assistive technology only: their text is
-  // visually hidden, so the header row takes no height.
-  columnHeader: {
-    padding: 0,
-    borderWidth: 0,
-  },
-
-  // Annotation cells stay left-to-right like the rest of the hunk area, so
-  // they start at its visible left edge and the split divider stays put.
-  annotation: {
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    verticalAlign: 'top',
-    whiteSpace: 'normal',
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: colorVars['--color-background-surface'],
-    borderBlockWidth: borderVars['--border-width'],
-    borderBlockStyle: 'solid',
-    borderBlockColor: colorVars['--color-border'],
-  },
-});
-
-// The caller's content (review comments) reads in the page's direction. Its
-// row stays in the left-to-right hunk area and scrolls with the code, as in a
-// code editor. Inline-size containment keeps the content out of the table's
-// max-content width, so a long comment wraps within the width the code sets
-// instead of widening the table; long unbroken words wrap too.
-const annotationStyles = stylex.create({
-  content: {
-    direction: {default: null, ':is([dir="rtl"] *)': 'rtl'},
-    overflowWrap: 'anywhere',
-    // Text inside keeps `anywhere` too (Text FR3).
-    '--_astryx-text-overflow-wrap': 'anywhere',
-    contain: 'inline-size',
-  },
-});
-
-const dynamicStyles = stylex.create({
-  columnWidth: (width: string) => ({
-    width,
-  }),
-  stickyAt: (offset: string) => ({
-    insetInlineStart: offset,
-  }),
-  splitRows: (count: number) => ({
-    gridTemplateRows: `repeat(${count}, auto)`,
-  }),
-  paneColumns: (columns: string) => ({
-    gridTemplateColumns: columns,
-  }),
-});
+function gutterWidth(digits: number): string {
+  return `calc(${digits}ch + 2 * ${spacingVarNames['--spacing-2']})`;
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -1200,9 +861,11 @@ function DiffViewerPane({
       data-diff-pane={side}
       {...withoutInlineOverscroll(
         getViewportProps<HTMLDivElement>({
-          ...stylex.props(
-            styles.pane,
-            side === 'old' ? styles.paneOld : styles.paneNew,
+          className: tw(
+            diffViewerPaneClassName,
+            side === 'old'
+              ? diffViewerPaneOldClassName
+              : diffViewerPaneNewClassName,
           ),
           ref: viewportRef,
           onScroll,
@@ -1210,14 +873,17 @@ function DiffViewerPane({
       )}>
       <div
         role="table"
-        {...getContentProps<HTMLDivElement>(
-          stylex.props(
-            styles.table,
-            styles.paneTable,
-            isWrapped ? styles.paneTableWrapped : styles.paneTableScroll,
-            dynamicStyles.paneColumns(columns),
+        {...getContentProps<HTMLDivElement>({
+          className: tw(
+            diffViewerTableClassName,
+            diffViewerPaneTableClassName,
+            diffViewerPaneColumnsClassName,
+            isWrapped
+              ? diffViewerPaneTableWrappedClassName
+              : diffViewerPaneTableScrollClassName,
           ),
-        )}>
+          style: customProperty(DIFF_VIEWER_PANE_COLUMNS_VAR, columns),
+        })}>
         {children}
       </div>
     </div>
@@ -1437,13 +1103,15 @@ export function DiffViewer({
   const gutter = gutterWidth(digits);
   const markerWidth = MARKER_WIDTH[changeIndicator];
   const isSlimMarker = changeIndicator !== 'classic';
-  const pinAt = (offset: string | null) =>
-    isPinned &&
-    offset != null && [styles.sticky, dynamicStyles.stickyAt(offset)];
+  const pinStyle = (offset: string) =>
+    customProperty(DIFF_VIEWER_PIN_OFFSET_VAR, offset);
+  const pinClassName = isPinned ? diffViewerStickyClassName : undefined;
 
   const tint = (kind: DiffViewerLine['kind'] | undefined) =>
     hasChangeBackground &&
-    (kind === 'added' ? styles.added : kind === 'removed' && styles.removed);
+    (kind === 'added'
+      ? diffViewerAddedRowClassName
+      : kind === 'removed' && diffViewerRemovedRowClassName);
 
   const cellRole = (tag: CellTag) => (tag === 'div' ? {role: 'cell'} : {});
 
@@ -1476,14 +1144,15 @@ export function DiffViewer({
       <Cell
         key={key}
         {...cellRole(tag)}
-        {...stylex.props(
-          styles.gutter,
-          pinAt(pinOffset),
+        className={tw(
+          diffViewerGutterClassName,
+          pinClassName,
           tint(kind),
-          kind === 'added' && styles.gutterAdded,
-          kind === 'removed' && styles.gutterRemoved,
-          cell == null && styles.filler,
-        )}>
+          kind === 'added' && diffViewerGutterAddedClassName,
+          kind === 'removed' && diffViewerGutterRemovedClassName,
+          cell == null && diffViewerFillerClassName,
+        )}
+        style={isPinned ? pinStyle(pinOffset) : undefined}>
         {actionRef != null && onLineNumberClick != null ? (
           <button
             type="button"
@@ -1493,7 +1162,10 @@ export function DiffViewer({
               line: number,
             })}
             onClick={event => onLineNumberClick(actionRef, event)}
-            {...focusOutlineProps.focusVisible(styles.gutterButton)}>
+            className={tw(
+              focusOutlineFocusVisibleClassName,
+              diffViewerGutterButtonClassName,
+            )}>
             {number}
           </button>
         ) : (
@@ -1516,25 +1188,35 @@ export function DiffViewer({
       <Cell
         key={key}
         {...cellRole(tag)}
-        {...stylex.props(
-          styles.marker,
-          isSlimMarker && styles.markerSlim,
-          pinAt(pinOffset),
+        className={tw(
+          isSlimMarker
+            ? diffViewerMarkerSlimClassName
+            : diffViewerMarkerClassName,
+          pinClassName,
           tint(kind),
-          kind === 'added' && styles.markerAdded,
-          kind === 'removed' && styles.markerRemoved,
-          cell == null && styles.filler,
-        )}>
+          cell == null && diffViewerFillerClassName,
+        )}
+        style={isPinned ? pinStyle(pinOffset) : undefined}>
         {isChange && changeIndicator === 'classic' && (
-          <span aria-hidden="true">{kind === 'added' ? '+' : '-'}</span>
+          <span
+            aria-hidden="true"
+            className={
+              kind === 'added'
+                ? diffViewerMarkerAddedClassName
+                : diffViewerMarkerRemovedClassName
+            }>
+            {kind === 'added' ? '+' : '-'}
+          </span>
         )}
         {isChange && changeIndicator === 'bars' && (
           <span
             aria-hidden="true"
             data-diff-bar=""
-            {...stylex.props(
-              styles.bar,
-              kind === 'added' ? styles.barAdded : styles.barRemoved,
+            className={tw(
+              diffViewerBarClassName,
+              kind === 'added'
+                ? diffViewerBarAddedClassName
+                : diffViewerBarRemovedClassName,
             )}
           />
         )}
@@ -1557,18 +1239,21 @@ export function DiffViewer({
         key={key}
         {...cellRole(tag)}
         data-diff={kind != null && kind !== 'context' ? kind : undefined}
-        {...stylex.props(
-          styles.code,
-          styles.ltr,
-          isWrapped && styles.codeWrapped,
+        className={tw(
+          isWrapped ? diffViewerCodeWrappedClassName : diffViewerCodeClassName,
+          diffViewerLtrClassName,
           tint(kind),
-          cell == null && styles.filler,
+          cell == null && diffViewerFillerClassName,
         )}>
         {cell != null &&
-          buildSpans(cell.line.content, cell.tokens, cell.emphasis, [
-            styles.change,
-            kind === 'added' ? styles.changeAdded : styles.changeRemoved,
-          ])}
+          buildSpans(
+            cell.line.content,
+            cell.tokens,
+            cell.emphasis,
+            kind === 'added'
+              ? diffViewerChangeAddedClassName
+              : diffViewerChangeRemovedClassName,
+          )}
       </Cell>
     );
   };
@@ -1580,7 +1265,10 @@ export function DiffViewer({
     isSticky: boolean,
   ) => (
     <span
-      {...stylex.props(styles.foldContent, isSticky && styles.hunkTextSticky)}>
+      className={tw(
+        diffViewerFoldContentClassName,
+        isSticky && diffViewerHunkTextStickyClassName,
+      )}>
       <span>{t('@astryx.diffViewer.largeChange', {count: changedLines})}</span>
       <Button
         size="sm"
@@ -1605,7 +1293,11 @@ export function DiffViewer({
     );
 
   const renderHunkText = (header: string) => (
-    <span {...stylex.props(styles.ltr, isPinned && styles.hunkTextSticky)}>
+    <span
+      className={tw(
+        diffViewerLtrClassName,
+        isPinned && diffViewerHunkTextStickyClassName,
+      )}>
       {header}
     </span>
   );
@@ -1623,7 +1315,7 @@ export function DiffViewer({
       <Header
         key={key}
         {...(tag === 'th' ? {scope: 'col'} : {role: 'columnheader'})}
-        {...stylex.props(styles.columnHeader)}>
+        className={diffViewerColumnHeaderClassName}>
         <VisuallyHidden>{label}</VisuallyHidden>
       </Header>
     );
@@ -1636,18 +1328,29 @@ export function DiffViewer({
     const markerPin = hasLineNumbers ? `calc(2 * ${gutter})` : '0px';
     return (
       <table
-        {...stylex.props(
-          styles.table,
-          isWrapped ? styles.tableWrapped : styles.tableScroll,
+        className={tw(
+          diffViewerTableClassName,
+          isWrapped
+            ? diffViewerTableWrappedClassName
+            : diffViewerTableScrollClassName,
         )}>
         <colgroup>
           {hasLineNumbers && (
-            <col {...stylex.props(dynamicStyles.columnWidth(gutter))} />
+            <col
+              className={diffViewerColumnWidthClassName}
+              style={customProperty(DIFF_VIEWER_COLUMN_WIDTH_VAR, gutter)}
+            />
           )}
           {hasLineNumbers && (
-            <col {...stylex.props(dynamicStyles.columnWidth(gutter))} />
+            <col
+              className={diffViewerColumnWidthClassName}
+              style={customProperty(DIFF_VIEWER_COLUMN_WIDTH_VAR, gutter)}
+            />
           )}
-          <col {...stylex.props(dynamicStyles.columnWidth(markerWidth))} />
+          <col
+            className={diffViewerColumnWidthClassName}
+            style={customProperty(DIFF_VIEWER_COLUMN_WIDTH_VAR, markerWidth)}
+          />
           <col />
         </colgroup>
         <thead>
@@ -1665,7 +1368,7 @@ export function DiffViewer({
             if (row.type === 'hunk') {
               return (
                 <tr key={row.key}>
-                  <td colSpan={columns} {...stylex.props(styles.hunk)}>
+                  <td colSpan={columns} className={diffViewerHunkClassName}>
                     {renderHunkText(row.header)}
                   </td>
                 </tr>
@@ -1674,7 +1377,7 @@ export function DiffViewer({
             if (row.type === 'fold') {
               return (
                 <tr key={row.key}>
-                  <td colSpan={columns} {...stylex.props(styles.fold)}>
+                  <td colSpan={columns} className={diffViewerFoldClassName}>
                     {renderFold(row.fold)}
                   </td>
                 </tr>
@@ -1691,8 +1394,10 @@ export function DiffViewer({
                 </tr>
                 {note != null && (
                   <tr>
-                    <td colSpan={columns} {...stylex.props(styles.annotation)}>
-                      <div {...stylex.props(annotationStyles.content)}>
+                    <td
+                      colSpan={columns}
+                      className={diffViewerAnnotationClassName}>
+                      <div className={diffViewerAnnotationContentClassName}>
                         {note}
                       </div>
                     </td>
@@ -1786,7 +1491,7 @@ export function DiffViewer({
     const renderSide = (side: DiffViewerSide) => {
       const isOld = side === 'old';
       const rows: ReactNode[] = [
-        <div key="head" role="row" {...stylex.props(styles.paneRow)}>
+        <div key="head" role="row" className={diffViewerPaneRowClassName}>
           {hasLineNumbers &&
             columnHeader(
               'div',
@@ -1814,14 +1519,18 @@ export function DiffViewer({
           // The new side repeats the header for its own table's readers but
           // shows only the band.
           rows.push(
-            <div key={row.key} role="row" {...stylex.props(styles.paneRow)}>
+            <div
+              key={row.key}
+              role="row"
+              className={diffViewerPaneRowClassName}>
               <div
                 role="cell"
-                {...stylex.props(
-                  styles.hunk,
-                  styles.paneSpan,
+                className={tw(
                   // A side is half as wide as the unified header's row.
-                  isWrapped && styles.codeWrapped,
+                  isWrapped
+                    ? diffViewerHunkWrappedClassName
+                    : diffViewerHunkClassName,
+                  diffViewerPaneSpanClassName,
                 )}>
                 {isOld ? (
                   renderHunkText(row.header)
@@ -1832,7 +1541,10 @@ export function DiffViewer({
                         and they still scroll in lockstep. */}
                     <span
                       aria-hidden="true"
-                      {...stylex.props(styles.ltr, styles.invisible)}>
+                      className={tw(
+                        diffViewerLtrClassName,
+                        diffViewerInvisibleClassName,
+                      )}>
                       {row.header}
                     </span>
                     <VisuallyHidden>{row.header}</VisuallyHidden>
@@ -1847,13 +1559,17 @@ export function DiffViewer({
           // Only the old side holds the control; the new side keeps its row
           // as tall and gives its own table's readers the label.
           rows.push(
-            <div key={row.key} role="row" {...stylex.props(styles.paneRow)}>
+            <div
+              key={row.key}
+              role="row"
+              className={diffViewerPaneRowClassName}>
               <div
                 role="cell"
-                {...stylex.props(
-                  styles.fold,
-                  styles.paneSpan,
-                  isWrapped && styles.codeWrapped,
+                className={tw(
+                  isWrapped
+                    ? diffViewerFoldWrappedClassName
+                    : diffViewerFoldClassName,
+                  diffViewerPaneSpanClassName,
                 )}>
                 {isOld ? (
                   renderFold(row.fold)
@@ -1861,7 +1577,7 @@ export function DiffViewer({
                   <>
                     <span
                       aria-hidden="true"
-                      {...stylex.props(styles.invisible)}>
+                      className={diffViewerInvisibleClassName}>
                       {renderFold(row.fold)}
                     </span>
                     <VisuallyHidden>
@@ -1883,7 +1599,7 @@ export function DiffViewer({
             role="row"
             // The empty half of an unpaired change is spacing, not a line.
             aria-hidden={cell == null ? true : undefined}
-            {...stylex.props(styles.paneRow)}>
+            className={diffViewerPaneRowClassName}>
             {renderGutter('div', cell, side, 'g', '0px')}
             {renderMarker('div', cell, 'm', markerPin)}
             {renderCode('div', cell, 'c')}
@@ -1896,12 +1612,17 @@ export function DiffViewer({
               key={`${row.key}n`}
               role="row"
               aria-hidden={note == null ? true : undefined}
-              {...stylex.props(styles.paneRow)}>
+              className={diffViewerPaneRowClassName}>
               <div
                 role="cell"
-                {...stylex.props(styles.annotation, styles.paneSpan)}>
+                className={tw(
+                  diffViewerAnnotationClassName,
+                  diffViewerPaneSpanClassName,
+                )}>
                 {note != null && (
-                  <div {...stylex.props(annotationStyles.content)}>{note}</div>
+                  <div className={diffViewerAnnotationContentClassName}>
+                    {note}
+                  </div>
                 )}
               </div>
             </div>,
@@ -1914,8 +1635,13 @@ export function DiffViewer({
             key="sizer"
             data-diff-sizer=""
             aria-hidden="true"
-            {...stylex.props(styles.paneRow)}>
-            <div {...stylex.props(styles.code, styles.ltr, styles.sizer)}>
+            className={diffViewerPaneRowClassName}>
+            <div
+              className={tw(
+                diffViewerCodeClassName,
+                diffViewerLtrClassName,
+                diffViewerSizerClassName,
+              )}>
               {sizerText}
             </div>
           </div>,
@@ -1944,7 +1670,11 @@ export function DiffViewer({
     return (
       <div
         data-diff-split=""
-        {...stylex.props(styles.split, dynamicStyles.splitRows(rowCount))}>
+        className={diffViewerSplitClassName}
+        style={customProperty(
+          DIFF_VIEWER_SPLIT_ROWS_VAR,
+          `repeat(${rowCount}, auto)`,
+        )}>
         {renderSide('old')}
         {renderSide('new')}
       </div>
@@ -1954,13 +1684,13 @@ export function DiffViewer({
   let body: ReactNode;
   if (file.isBinary) {
     body = (
-      <div {...stylex.props(styles.message)}>
+      <div className={diffViewerMessageClassName}>
         {t('@astryx.diffViewer.binary')}
       </div>
     );
   } else if (file.hunks.length === 0) {
     body = (
-      <div {...stylex.props(styles.message)}>
+      <div className={diffViewerMessageClassName}>
         {t('@astryx.diffViewer.noChanges')}
       </div>
     );
@@ -1970,7 +1700,7 @@ export function DiffViewer({
     body = (
       <>
         {isLargeFile && (
-          <div data-diff-fold="" {...stylex.props(styles.fold)}>
+          <div data-diff-fold="" className={diffViewerFoldClassName}>
             {renderFoldControl(
               unfoldedChangedLines,
               !isFileFolded,
@@ -1983,7 +1713,7 @@ export function DiffViewer({
           <div
             {...withoutInlineOverscroll(
               getViewportProps<HTMLDivElement>({
-                ...stylex.props(styles.viewport),
+                className: diffViewerViewportClassName,
                 style: scrollStyle,
               }),
             )}>
@@ -2010,10 +1740,9 @@ export function DiffViewer({
 
   const pathEl = (
     <span
-      {...mergeProps(
-        themeProps('diff-viewer-path'),
-        stylex.props(styles.path, styles.ltr),
-      )}>
+      {...mergeProps(themeProps('diff-viewer-path'), {
+        className: tw(diffViewerPathClassName, diffViewerLtrClassName),
+      })}>
       {displayPath}
     </span>
   );
@@ -2021,23 +1750,29 @@ export function DiffViewer({
   const header =
     displayPath != null || headerEnd != null ? (
       <div
-        {...mergeProps(
-          themeProps('diff-viewer-header'),
-          stylex.props(styles.header, !isCollapsed && styles.headerDivider),
-        )}>
+        {...mergeProps(themeProps('diff-viewer-header'), {
+          className: tw(
+            diffViewerHeaderClassName,
+            !isCollapsed && diffViewerHeaderDividerClassName,
+          ),
+        })}>
         {canCollapse ? (
           <button
             type="button"
             aria-expanded={!isCollapsed}
             aria-controls={bodyId}
             onClick={toggleCollapsed}
-            {...focusOutlineProps.focusVisible(styles.toggle)}>
+            className={tw(
+              focusOutlineFocusVisibleClassName,
+              diffViewerToggleClassName,
+            )}>
             <span
-              {...stylex.props(
-                styles.chevron,
-                !isCollapsed && styles.chevronExpanded,
+              className={tw(
+                diffViewerChevronClassName,
+                !isCollapsed && diffViewerChevronExpandedClassName,
               )}>
-              <span {...stylex.props(isCollapsed && rtlStyles.mirror)}>
+              <span
+                className={isCollapsed ? diffViewerMirrorClassName : undefined}>
                 <Icon icon="chevronRight" size="xsm" color="inherit" />
               </span>
             </span>
@@ -2050,11 +1785,12 @@ export function DiffViewer({
           <Token size="sm" color={statusColor} label={statusLabel} />
         )}
         {(addedCount > 0 || removedCount > 0) && (
-          <span {...stylex.props(styles.stats, styles.ltr)}>
-            <span aria-hidden="true" {...stylex.props(styles.statAdded)}>
+          <span
+            className={tw(diffViewerStatsClassName, diffViewerLtrClassName)}>
+            <span aria-hidden="true" className={diffViewerStatAddedClassName}>
               {t('@astryx.diffViewer.addedCount', {count: addedCount})}
             </span>
-            <span aria-hidden="true" {...stylex.props(styles.statRemoved)}>
+            <span aria-hidden="true" className={diffViewerStatRemovedClassName}>
               {t('@astryx.diffViewer.removedCount', {count: removedCount})}
             </span>
             <VisuallyHidden>
@@ -2066,7 +1802,7 @@ export function DiffViewer({
           </span>
         )}
         {headerEnd != null && (
-          <div {...stylex.props(styles.headerEnd)}>{headerEnd}</div>
+          <div className={diffViewerHeaderEndClassName}>{headerEnd}</div>
         )}
       </div>
     ) : null;
@@ -2076,8 +1812,8 @@ export function DiffViewer({
       ref={ref}
       {...mergeProps(
         themeProps('diff-viewer', {viewMode}),
-        stylex.props(styles.root, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(diffViewerRootClassName, className),
         style,
       )}
       {...props}>

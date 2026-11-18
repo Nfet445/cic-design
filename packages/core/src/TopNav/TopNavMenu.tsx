@@ -4,14 +4,17 @@
 
 /**
  * @file TopNavMenu.tsx
- * @input Uses React, StyleX, usePopover, useMenuHover, useListFocus,
- *   useTypeahead, TopNavItem tokens, and the shared navigation policy
+ * @input Uses React, usePopover, useMenuHover, useListFocus, useTypeahead,
+ *   TopNavItem tokens, and the shared navigation policy
  * @output Exports TopNavMenu component and related types
  * @position Navigation item with hover-triggered overflow menu for TopNav
+ *
+ * The menu's own surfaces are Tailwind utilities in topNavMenuClasses.ts.
  *
  * SYNC: When modified, update these files to stay in sync:
  * - /packages/core/src/TopNav/TopNav.doc.mjs
  * - /packages/core/src/TopNav/TopNavMenu.test.tsx
+ * - /packages/core/src/TopNav/topNavMenuClasses.ts
  * - /packages/core/src/TopNav/index.ts
  * - /packages/cli/assets/templates/blocks/components/TopNav/ (showcase blocks)
  */
@@ -28,221 +31,52 @@ import {usePopoverInternal} from '../Popover/usePopover';
 import {useMenuHover} from '../hooks/useMenuHover';
 import {useMenuPress} from '../hooks/useMenuPress';
 import {pressOnItemsOnly} from '../hooks/menuPressOnItems';
-import {menuTouchActionStyles} from '../DropdownMenu/menuTouchAction.stylex';
 import {useMenuOverflow} from '../DropdownMenu/useMenuOverflow';
+import {
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
 import {useListFocus} from '../hooks/useListFocus';
 import {useTypeahead} from '../hooks/useTypeahead';
 import {Icon} from '../Icon';
 import {mergeProps, composeEventHandlers} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import type {BaseProps} from '../BaseProps';
-import {navItemStyles} from '../NavItem/navItemStyles.stylex';
+import {navItemClassName} from '../NavItem/navItemClasses';
 import {useTopNavSlot} from './TopNavContext';
 import {useTopNavRenderMode} from './TopNavRenderContext';
 import {useCloseMobileDrawerOnActivate} from '../AppShell/useCloseMobileDrawerOnActivate';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import {isSafeUrl} from '../utils/safeUrl';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {isRenderable} from '../utils/isRenderable';
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  trigger: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-1-5'],
-    paddingInline: spacingVars['--spacing-3'],
-    borderRadius: radiusVars['--radius-element'],
-    fontSize: typeScaleVars['--text-label-size'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-secondary'],
-    textDecoration: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    transitionProperty: 'background-color, color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    backgroundColor: {
-      default: 'transparent',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    borderWidth: 0,
-    borderStyle: 'none',
-    fontFamily: 'inherit',
-  },
-  triggerOpen: {
-    color: colorVars['--color-text-primary'],
-    backgroundColor: colorVars['--color-overlay-hover'],
-  },
-  chevron: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    // The registry chevron is a 1em SVG, so it has always rendered at the
-    // trigger's own font size (--text-label-size). Icon's size box would repin
-    // it to a fixed rem (the nearest, sm, is 1rem = 16px vs the 14px here), so
-    // hold it on the inherited em: same pixels, and still tracks the type
-    // scale when a theme changes the label size.
-    width: '1em',
-    height: '1em',
-    fontSize: 'inherit',
-    transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  chevronOpen: {
-    transform: 'rotate(180deg)',
-  },
-  menuContainer: {
-    // A held pointer slides across the items; it selects no text.
-    userSelect: 'none',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-1'],
-    minWidth: 280,
-    padding: spacingVars['--spacing-1'],
-  },
-  menuItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-3'],
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-3'],
-    borderRadius: radiusVars['--radius-element'],
-    textDecoration: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    transitionProperty: 'background-color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    backgroundColor: {
-      default: 'transparent',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    borderWidth: 0,
-    borderStyle: 'none',
-  },
-  menuItemIcon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 40,
-    height: 40,
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: colorVars['--color-neutral'],
-    flexShrink: 0,
-  },
-  menuItemContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-1'],
-    minWidth: 0,
-  },
-  menuItemTitle: {
-    fontSize: typeScaleVars['--text-label-size'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    color: colorVars['--color-text-primary'],
-  },
-  menuItemDescription: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    color: colorVars['--color-text-secondary'],
-  },
-});
-
-const drawerStyles = stylex.create({
-  section: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  header: {
-    justifyContent: 'space-between',
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-  },
-  chevron: {
-    display: 'inline-flex',
-    // Same em pin as styles.chevron above — the drawer header inherits
-    // --text-label-size from navItemStyles.item.
-    width: '1em',
-    height: '1em',
-    fontSize: 'inherit',
-    transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  chevronExpanded: {
-    transform: 'rotate(180deg)',
-  },
-  // The section clips its items only for the 0fr collapse animation: a
-  // permanent clip cuts off the focus ring, which paints outside the item.
-  // `overflow` is discrete, so it rides the transition with `allow-discrete`
-  // and switches to `visible` only after the open has finished. Collapsing
-  // clips again at once.
-  items: {
-    display: 'grid',
-    gridTemplateRows: '0fr',
-    overflow: 'hidden',
-    transitionProperty: 'grid-template-rows, overflow',
-    transitionBehavior: 'allow-discrete',
-    transitionDuration: `${durationVars['--duration-medium']}, 0s`,
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  itemsExpanded: {
-    gridTemplateRows: '1fr',
-    overflow: 'visible',
-    transitionDelay: `0s, ${durationVars['--duration-medium']}`,
-  },
-  itemsInner: {
-    minHeight: 0,
-  },
-  item: {
-    paddingInlineStart: spacingVars['--spacing-6'],
-    textDecoration: 'none',
-  },
-  itemIcon: {
-    flexShrink: 0,
-    width: 20,
-    height: 20,
-  },
-  itemText: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-  },
-  itemDescription: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    color: colorVars['--color-text-secondary'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-  },
-});
+import {tw} from '../utils/tw';
+import {
+  topNavMenuChevronClassName,
+  topNavMenuChevronOpenClassName,
+  topNavMenuContainerClassName,
+  topNavMenuDrawerHeaderClassName,
+  topNavMenuDrawerItemClassName,
+  topNavMenuDrawerItemDescriptionClassName,
+  topNavMenuDrawerItemIconClassName,
+  topNavMenuDrawerItemTextClassName,
+  topNavMenuDrawerItemsClassName,
+  topNavMenuDrawerItemsInnerClassName,
+  topNavMenuDrawerSectionClassName,
+  topNavMenuItemClassName,
+  topNavMenuItemContentClassName,
+  topNavMenuItemDescriptionClassName,
+  topNavMenuItemIconClassName,
+  topNavMenuItemTitleClassName,
+  topNavMenuTriggerClassName,
+  topNavMenuTriggerOpenClassName,
+} from './topNavMenuClasses';
 
 // =============================================================================
 // Types
@@ -480,7 +314,7 @@ export function TopNavMenu({
   // Drawer mode: collapsible section
   if (renderMode === 'drawer') {
     return (
-      <div {...stylex.props(drawerStyles.section)}>
+      <div className={topNavMenuDrawerSectionClassName()}>
         <button
           ref={ref}
           type="button"
@@ -494,35 +328,37 @@ export function TopNavMenu({
           aria-controls={`${menuId}-items`}
           {...pressable}
           {...mergeProps(
-            focusOutlineProps.focusVisible(
-              navItemStyles.item,
-              interactionOverlayStyles.backgroundColor,
-              drawerStyles.header,
-              xstyle,
+            stylex.props(
+              // The strength and the release; the colour is a class below.
+              interactionOverlayStyles.pressedAlpha,
             ),
-            className,
-            style,
+            tw(
+              navItemClassName(),
+              topNavMenuDrawerHeaderClassName(),
+              className,
+              interactionOverlayBackgroundColorClassName,
+              focusOutlineFocusVisibleClassName,
+              xstyleProps(xstyle).className,
+            ),
+            {...xstyleProps(xstyle).style, ...style},
           )}>
           {label}
           <Icon
             icon="chevronDown"
             size="sm"
             color="inherit"
-            xstyle={[
-              drawerStyles.chevron,
-              drawerExpanded && drawerStyles.chevronExpanded,
-            ]}
+            className={tw(
+              topNavMenuChevronClassName(),
+              drawerExpanded && topNavMenuChevronOpenClassName(),
+            )}
           />
         </button>
         <div
           id={`${menuId}-items`}
           aria-hidden={!drawerExpanded}
           inert={!drawerExpanded ? true : undefined}
-          {...stylex.props(
-            drawerStyles.items,
-            drawerExpanded && drawerStyles.itemsExpanded,
-          )}>
-          <div {...stylex.props(drawerStyles.itemsInner)}>
+          className={topNavMenuDrawerItemsClassName()}>
+          <div className={topNavMenuDrawerItemsInnerClassName()}>
             {items.map(item => {
               const Element =
                 item.href == null && item.onClick ? 'button' : LinkComponent;
@@ -535,20 +371,28 @@ export function TopNavMenu({
                   onClick={closeDrawerAfter((_e: React.MouseEvent) => {
                     item.onClick?.();
                   })}
-                  {...focusOutlineProps.focusVisible(
-                    navItemStyles.item,
-                    interactionOverlayStyles.backgroundColor,
-                    drawerStyles.item,
+                  {...mergeProps(
+                    stylex.props(
+                      // The strength and the release; the colour is a class below.
+                      interactionOverlayStyles.pressedAlpha,
+                    ),
+                    tw(
+                      navItemClassName(),
+                      topNavMenuDrawerItemClassName(),
+                      interactionOverlayBackgroundColorClassName,
+                      focusOutlineFocusVisibleClassName,
+                    ),
                   )}>
                   {isRenderable(item.icon) && (
-                    <span {...stylex.props(drawerStyles.itemIcon)}>
+                    <span className={topNavMenuDrawerItemIconClassName()}>
                       {item.icon}
                     </span>
                   )}
-                  <span {...stylex.props(drawerStyles.itemText)}>
+                  <span className={topNavMenuDrawerItemTextClassName()}>
                     {item.title}
                     {item.description && (
-                      <span {...stylex.props(drawerStyles.itemDescription)}>
+                      <span
+                        className={topNavMenuDrawerItemDescriptionClassName()}>
                         {item.description}
                       </span>
                     )}
@@ -582,12 +426,13 @@ export function TopNavMenu({
         )}
         {...mergeProps(
           themeProps('top-nav-menu'),
-          focusOutlineProps.focusVisible(
-            styles.trigger,
-            popover.isOpen && styles.triggerOpen,
-            xstyle,
+          xstyleProps(xstyle),
+          tw(
+            topNavMenuTriggerClassName(),
+            topNavMenuTriggerOpenClassName(),
+            className,
+            focusOutlineFocusVisibleClassName,
           ),
-          className,
           style,
         )}>
         {label}
@@ -595,7 +440,10 @@ export function TopNavMenu({
           icon="chevronDown"
           size="sm"
           color="inherit"
-          xstyle={[styles.chevron, popover.isOpen && styles.chevronOpen]}
+          className={tw(
+            topNavMenuChevronClassName(),
+            popover.isOpen && topNavMenuChevronOpenClassName(),
+          )}
         />
       </button>
       {popover.render(
@@ -614,11 +462,13 @@ export function TopNavMenu({
           // hook's basic arrow-key handler.
           onKeyDown={menuKeyDown}
           onFocus={handleFocus}
-          {...stylex.props(
-            styles.menuContainer,
-            hasOverflow
-              ? menuTouchActionStyles.scrolls
-              : menuTouchActionStyles.fits,
+          {...mergeProps(
+            tw(
+              topNavMenuContainerClassName(),
+              hasOverflow
+                ? dropdownMenuSubMenuTouchClassName
+                : dropdownMenuSubMenuTouchPinchClassName,
+            ),
           )}>
           {items.map(item => {
             const Element = item.href ? 'a' : 'div';
@@ -638,14 +488,17 @@ export function TopNavMenu({
                 // slides to another item would start a drag instead.
                 draggable={item.href != null ? false : undefined}
                 onClick={item.onClick}
-                {...focusOutlineProps.focusVisible(styles.menuItem)}>
-                <div {...stylex.props(styles.menuItemIcon)}>{item.icon}</div>
-                <div {...stylex.props(styles.menuItemContent)}>
-                  <span {...stylex.props(styles.menuItemTitle)}>
+                className={tw(
+                  topNavMenuItemClassName(),
+                  focusOutlineFocusVisibleClassName,
+                )}>
+                <div className={topNavMenuItemIconClassName()}>{item.icon}</div>
+                <div className={topNavMenuItemContentClassName()}>
+                  <span className={topNavMenuItemTitleClassName()}>
                     {item.title}
                   </span>
                   {item.description && (
-                    <span {...stylex.props(styles.menuItemDescription)}>
+                    <span className={topNavMenuItemDescriptionClassName()}>
                       {item.description}
                     </span>
                   )}
@@ -657,7 +510,7 @@ export function TopNavMenu({
         {
           placement: 'below',
           alignment: slot,
-          offset: spacingVars['--spacing-1'],
+          offset: spacingVarNames['--spacing-1'],
         },
       )}
     </>

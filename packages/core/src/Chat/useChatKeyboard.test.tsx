@@ -64,12 +64,11 @@ function messagesOf(): HTMLElement {
 }
 
 // The room the message area's end padding makes for the keyboard, CSS px: the
-// `+ Npx` its functional style adds to the density's own padding.
+// end room its geometry variable carries, which the padding class adds to the
+// density's own padding.
 function keyboardRoom(element: HTMLElement): number {
-  const match = /--[\w-]+:\s*calc\([^;]*\+\s*(-?[\d.]+)px\)/.exec(
-    element.getAttribute('style') ?? '',
-  );
-  return match == null ? 0 : Number(match[1]);
+  const value = element.style.getPropertyValue('--astryx-chat-end-room');
+  return value === '' ? 0 : parseFloat(value);
 }
 
 // The lift an element is laid out with: the value its functional style

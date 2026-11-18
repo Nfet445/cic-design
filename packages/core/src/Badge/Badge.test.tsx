@@ -4,7 +4,8 @@ import {describe, it, expect} from 'vitest';
 import {createElement, Fragment, type ReactNode} from 'react';
 import {render, screen} from '@testing-library/react';
 import {Badge} from './Badge';
-import {getForcedColorsRules} from '../__tests__/forcedColors';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {badgeVariantClassName} from './badgeClasses';
 
 describe('Badge', () => {
   it('renders with default variant', () => {
@@ -134,14 +135,27 @@ describe('Badge', () => {
   });
 });
 
-// jsdom cannot emulate forced colors, so this asserts the compiled rule the
-// status fill relies on (architecture:theme-tokens INV11): the fill becomes
-// Canvas, and a CanvasText boundary keeps its shape.
+// jsdom cannot emulate forced colors, so this asserts the class the status
+// fill relies on: the fill becomes Canvas, and a CanvasText boundary keeps its
+// shape.
 describe('Badge forced colors', () => {
   it('keeps a visible boundary on the status fill', () => {
-    render(<Badge variant="error" label="Failed" />);
-    const css = getForcedColorsRules();
-    expect(css).toContain('outline-style: solid;');
-    expect(css).toContain('outline-color: canvastext;');
+    const {container} = render(<Badge variant="error" label="Failed" />);
+    const root = container.firstElementChild!;
+    expectClassSet(root, {
+      includes: [
+        'forced-colors:outline-[1px]',
+        'forced-colors:outline-solid',
+        'forced-colors:outline-[color:CanvasText]',
+      ],
+    });
+    // Every semantic status carries the same boundary, not just the one under
+    // test; a tint variant does not.
+    for (const variant of ['info', 'success', 'warning', 'error'] as const) {
+      expect(badgeVariantClassName[variant]).toContain(
+        'forced-colors:outline-[color:CanvasText]',
+      );
+    }
+    expect(badgeVariantClassName.blue).not.toContain('forced-colors:');
   });
 });

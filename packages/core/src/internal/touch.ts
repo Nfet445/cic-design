@@ -115,11 +115,14 @@ export type {UseFingerScrollOptions} from '../gestures/useFingerScroll';
 export {getGestureHost} from '../gestures/GestureHost';
 export {isCoarsePointer} from '../utils/coarsePointer';
 // Lab's PageControl also reads an element's shared animator, the Reduce
-// Motion cross-fade, and the touch hit area's hook and layer.
+// Motion cross-fade, and the touch hit area's hook and band classes.
 export {animatorFor} from '../motion/animator';
 export {reducedMotionFade} from '../motion/reducedMotion';
 export {useTouchHitArea} from '../utils/touchHitArea';
-export {touchHitAreaStyles} from './touchHitArea.stylex';
+export {
+  touchHitAreaLayerClassName,
+  touchHitAreaLayerBelowChildrenClassName,
+} from './touchHitAreaClasses';
 
 // Lab's TabBar tracks its press with the shared action-group tracker.
 export {useActionGroupTracking} from '../hooks/useActionGroupTracking';

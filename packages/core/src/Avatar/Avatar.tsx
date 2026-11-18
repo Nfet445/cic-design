@@ -28,13 +28,29 @@ import {
   type ReactNode,
 } from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {
-  colorVars,
-  typographyVars,
-  fontWeightVars,
-  radiusVars,
-} from '../theme/tokens.stylex';
+  avatarContentClassName,
+  avatarFallbackClassName,
+  avatarImageClassName,
+  avatarInitialsClassName,
+  avatarInteractiveClassName,
+  avatarLoneFallbackClassName,
+  avatarRootClassName,
+  avatarShapeClassName,
+  avatarStatusCircleClassName,
+  avatarStatusClassName,
+  avatarStatusCornerClassName,
+  avatarVars,
+} from './avatarClasses';
+import {
+  avatarGroupDynamicStyles,
+  avatarGroupStyles,
+} from './avatarGroupRing.stylex';
+
+/** A per-instance value reaches CSS as one of the avatar's own variables. */
+type AvatarInstanceStyle = React.CSSProperties &
+  Partial<Record<(typeof avatarVars)[keyof typeof avatarVars], string>>;
+import {tw} from '../utils/tw';
 import {AvatarSizeContext} from './AvatarSizeContext';
 import {
   AvatarStatusLabelContext,
@@ -45,7 +61,9 @@ import {mergeProps} from '../utils';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {themeProps} from '../utils/themeProps';
 import {firstCharacter} from '../utils/characters';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import * as stylex from '@stylexjs/stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {useTooltip} from '../Tooltip/useTooltip';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {useLinkComponent} from '../Link/useLinkComponent';
@@ -129,193 +147,6 @@ export function resolveSize(size: AvatarSize): number {
       return 128;
   }
 }
-
-// Sets one local custom property rather than `borderRadius` directly, so
-// every clipping/ring surface that needs the shape's radius (the wrapper,
-// the interactive focus ring, the content div that actually clips via
-// `overflow: hidden`, and AvatarGroupOverflow's "+N" indicator) reads the
-// same value instead of each hardcoding its own borderRadius independently.
-// A theme override only has to reach this one property, not fight the
-// per-surface StyleX class order to change the shape everywhere at once.
-export const shapeStyles = stylex.create({
-  circle: {
-    '--_avatar-radius': radiusVars['--radius-full'],
-  },
-  rounded: {
-    '--_avatar-radius': radiusVars['--radius-element'],
-  },
-  square: {
-    '--_avatar-radius': radiusVars['--radius-none'],
-  },
-});
-
-/**
- * Base styles for the avatar
- * Uses a wrapper/content structure so status isn't clipped by overflow:hidden
- */
-const styles = stylex.create({
-  wrapper: {
-    position: 'relative',
-    display: 'inline-flex',
-    flexShrink: 0,
-    // Reads the shape variant's `--_avatar-radius` (set by `shapeStyles`
-    // below) rather than a hardcoded value, so `shape` actually changes the
-    // wrapper's own radius instead of only the content div's clip.
-    borderRadius: 'var(--_avatar-radius)',
-  },
-  content: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    userSelect: 'none',
-    // The content div is the one that actually clips (via overflow: hidden
-    // above), so it needs its own border-radius matching the wrapper's.
-    // It inherits `--_avatar-radius` from the wrapper, since custom
-    // properties cascade to descendants even though border-radius itself
-    // does not.
-    borderRadius: 'var(--_avatar-radius)',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  fallback: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    height: '100%',
-    // Fallback surface (initials + default icon). Background, text color,
-    // weight, and per-size font size are all themed directly via the stable
-    // `.astryx-avatar-fallback` class target (font size through its size
-    // variant, `.astryx-avatar-fallback.<size>`), so the defaults here are
-    // plain values with no internal-var seam. See Avatar.doc.mjs theming.
-    // Primary text: secondary text on the neutral tint falls below 4.5:1 in
-    // dark mode.
-    backgroundColor: colorVars['--color-neutral'],
-    color: colorVars['--color-text-primary'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    textTransform: 'uppercase',
-  },
-  // After `fallback` on a lone Avatar: in forced colors its initials and
-  // default icon take the color around them, which the browser forces to
-  // CanvasText, so a control that paints itself disabled (GrayText) or
-  // selected (HighlightText) carries them with it; an
-  // authored color would be forced to CanvasText whatever the control shows.
-  // A grouped face keeps it: its ring's opaque fill is forced to Canvas, so
-  // only CanvasText is sure to read on it.
-  loneFallback: {
-    color: {
-      default: colorVars['--color-text-primary'],
-      '@media (forced-colors: active)': 'currentColor',
-    },
-  },
-  status: {
-    position: 'absolute',
-  },
-  // Reset the intrinsic styling of the interactive element (<a>/<button>) so it
-  // is a transparent, correctly-sized wrapper around the avatar visuals. The
-  // element carries the focus-visible accent ring for keyboard users.
-  interactive: {
-    appearance: 'none',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    font: 'inherit',
-    textDecoration: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    // Match the avatar's shape (via `--_avatar-radius`) so the focus ring
-    // hugs it, whichever shape variant is in effect.
-    borderRadius: 'var(--_avatar-radius)',
-  },
-});
-
-/**
- * Dynamic styles that depend on the avatar size
- */
-const dynamicStyles = stylex.create({
-  // Generated content draws the initials. They are part of the picture, not
-  // text of the control. On a link or button, visible text that the name does
-  // not contain fails Label in Name. Newer engines get empty alternative text.
-  // Older engines draw the plain string; the aria-label still names the
-  // control.
-  initials: (quoted: string) => ({
-    '::before': {
-      content: {
-        default: quoted,
-        '@supports (content: "a" / "")': `${quoted} / ""`,
-      },
-    },
-  }),
-  size: (size: number) => ({
-    width: size,
-    height: size,
-  }),
-  // Initials font size defaults to the proportional `size × ratio` scale. It's
-  // a StyleX dynamic style, so the value lands via a class (not an inline
-  // property) — a theme's `.astryx-avatar-fallback.<size>` rule in the theme
-  // layer overrides it per size tier, no internal var needed.
-  fontSize: (size: number) => ({
-    fontSize: `${size * INITIALS_FONT_SIZE_RATIO}px`,
-  }),
-  statusPositionCircle: (size: number) => ({
-    bottom: size * CIRCLE_EDGE_OFFSET_RATIO,
-    insetInlineEnd: size * CIRCLE_EDGE_OFFSET_RATIO,
-    // `insetInlineEnd` anchors to the right edge in LTR / left in RTL, so the
-    // outward push must mirror too: +X in LTR, −X in RTL (Y is unaffected).
-    transform: {
-      default: 'translate(50%, 50%)',
-      ':is([dir="rtl"] *)': 'translate(-50%, 50%)',
-    },
-  }),
-  statusPositionCorner: {
-    bottom: 0,
-    insetInlineEnd: 0,
-    // Same RTL mirroring as statusPositionCircle above: insetInlineEnd
-    // anchors to the right edge in LTR / left in RTL, so the outward push
-    // must flip sign too.
-    transform: {
-      default: 'translate(25%, 25%)',
-      ':is([dir="rtl"] *)': 'translate(-25%, 25%)',
-    },
-  },
-});
-
-const BORDER_WIDTH = 2;
-
-const groupStyles = stylex.create({
-  ring: {
-    borderWidth: BORDER_WIDTH,
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-background-surface'],
-    backgroundColor: colorVars['--color-background-surface'],
-    boxSizing: 'content-box',
-  },
-  // Every avatar takes the overlap, not just `:not(:first-child)`: a
-  // HoverCard or Tooltip wraps its trigger in its own element, which makes
-  // every wrapped avatar a first child. AvatarGroup pads its start edge by the
-  // same amount so the first avatar still sits inside the group's box.
-  overlap: {
-    marginInlineStart: 'var(--_avatar-group-overlap)',
-  },
-});
-
-const groupDynamicStyles = stylex.create({
-  overlap: (offset: number) => ({
-    '--_avatar-group-overlap': `${offset}px`,
-  }),
-});
 
 export interface AvatarProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element */
@@ -801,13 +632,13 @@ export function Avatar({
   // The inner visuals are identical across the static and interactive variants.
   const visualContent = (
     <>
-      <div {...stylex.props(styles.content)}>
+      <div className={avatarContentClassName}>
         {showImage && (
           <img
             src={src}
             alt=""
             onError={() => setErroredSrc(src)}
-            {...stylex.props(styles.image)}
+            className={avatarImageClassName}
           />
         )}
         {showFallbackImage && (
@@ -815,19 +646,24 @@ export function Avatar({
             src={fallbackSrc}
             alt=""
             onError={() => setErroredFallbackSrc(fallbackSrc)}
-            {...stylex.props(styles.image)}
+            className={avatarImageClassName}
           />
         )}
         {showInitials && (
           <div
             {...mergeProps(
               themeProps('avatar-fallback', {size: resolvedSize}),
-              stylex.props(
-                styles.fallback,
-                avatarGroup == null && styles.loneFallback,
-                dynamicStyles.fontSize(numericSize),
-                dynamicStyles.initials(cssString(initials)),
+              tw(
+                avatarFallbackClassName,
+                avatarGroup == null && avatarLoneFallbackClassName,
+                avatarInitialsClassName,
               ),
+              {
+                [avatarVars.initialsSize]: `${
+                  numericSize * INITIALS_FONT_SIZE_RATIO
+                }px`,
+                [avatarVars.initials]: cssString(initials),
+              } as AvatarInstanceStyle,
             )}
           />
         )}
@@ -835,9 +671,9 @@ export function Avatar({
           <div
             {...mergeProps(
               themeProps('avatar-fallback', {size: resolvedSize}),
-              stylex.props(
-                styles.fallback,
-                avatarGroup == null && styles.loneFallback,
+              tw(
+                avatarFallbackClassName,
+                avatarGroup == null && avatarLoneFallbackClassName,
               ),
             )}>
             <DefaultIcon size={numericSize} />
@@ -848,12 +684,21 @@ export function Avatar({
           included, renders nothing, not a stray "0". */}
       {Boolean(status) && (
         <div
-          {...stylex.props(
-            styles.status,
+          className={tw(
+            avatarStatusClassName,
             resolvedShape === 'circle'
-              ? dynamicStyles.statusPositionCircle(numericSize)
-              : dynamicStyles.statusPositionCorner,
-          )}>
+              ? avatarStatusCircleClassName
+              : avatarStatusCornerClassName,
+          )}
+          style={
+            resolvedShape === 'circle'
+              ? ({
+                  [avatarVars.statusInset]: `${
+                    numericSize * CIRCLE_EDGE_OFFSET_RATIO
+                  }px`,
+                } as AvatarInstanceStyle)
+              : undefined
+          }>
           {status}
         </div>
       )}
@@ -866,18 +711,26 @@ export function Avatar({
   // `<a>`/`<button>` and the static `<div>` carry the exact same box.
   const rootStylexProps = mergeProps(
     themeProps('avatar', {size: resolvedSize, shape: resolvedShape}),
-    focusOutlineProps.focusVisible(
-      styles.wrapper,
-      dynamicStyles.size(numericSize),
-      isInteractive && styles.interactive,
-      avatarGroup && groupStyles.ring,
-      avatarGroup && groupStyles.overlap,
-      avatarGroup && groupDynamicStyles.overlap(-avatarGroup.overlap),
-      shapeStyles[resolvedShape],
-      xstyle,
+    stylex.props(
+      avatarGroup && avatarGroupStyles.ring,
+      avatarGroup && avatarGroupStyles.overlap,
+      avatarGroup && avatarGroupDynamicStyles.overlap(-avatarGroup.overlap),
     ),
-    className,
-    style,
+    tw(
+      avatarRootClassName,
+      avatarShapeClassName[resolvedShape],
+      isInteractive && avatarInteractiveClassName,
+      focusOutlineFocusVisibleClassName,
+      className,
+      xstyleProps(xstyle).className,
+    ),
+    // A resolved size is a per-instance number, so it reaches CSS as the
+    // variable the sizing classes read; a caller's `style` still wins.
+    {
+      [avatarVars.size]: `${numericSize}px`,
+      ...xstyleProps(xstyle).style,
+      ...style,
+    } as AvatarInstanceStyle,
   );
 
   let rootElement: ReactNode;

@@ -2,7 +2,7 @@
 
 /**
  * @file CommandPaletteEmpty.tsx
- * @input Uses React, StyleX
+ * @input Uses React, the class map
  * @output Exports CommandPaletteEmpty component
  * @position Sub-component; empty state shown when there are no items to display
  *
@@ -13,37 +13,12 @@
 'use client';
 
 import React, {type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  typographyVars,
-} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-
-const styles = stylex.create({
-  empty: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingBlock: spacingVars['--spacing-8'],
-    paddingInline: spacingVars['--spacing-4'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    textAlign: 'center' as const,
-    // Lets an unbroken token (a path or URL echoed into the message) wrap
-    // instead of setting the centered line's minimum width, which pushes text
-    // past both inline edges where neither side can scroll to it.
-    overflowWrap: 'anywhere',
-    // Text inside keeps `anywhere` too (Text FR3).
-    '--_astryx-text-overflow-wrap': 'anywhere',
-  },
-});
+import {xstyleProps} from '../utils/xstyle';
+import {commandPaletteEmptyClassName} from './commandPaletteEmptyClasses';
 
 export interface CommandPaletteEmptyProps extends BaseProps<HTMLDivElement> {
   ref?: React.Ref<HTMLDivElement>;
@@ -83,8 +58,8 @@ export function CommandPaletteEmpty({
       ref={ref}
       {...mergeProps(
         themeProps('command-palette-empty'),
-        stylex.props(styles.empty, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(commandPaletteEmptyClassName, className),
         style,
       )}
       {...props}>

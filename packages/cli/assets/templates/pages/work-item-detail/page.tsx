@@ -3,9 +3,7 @@
 'use client';
 
 import {type ReactNode, useRef, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {useMediaQuery} from '@astryxdesign/core/hooks';
-import {colorVars, radiusVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {
   Layout,
   LayoutHeader,
@@ -30,7 +28,6 @@ import {MoreMenu} from '@astryxdesign/core/MoreMenu';
 import type {DropdownMenuOption} from '@astryxdesign/core/DropdownMenu';
 import {Link} from '@astryxdesign/core/Link';
 import {Icon} from '@astryxdesign/core/Icon';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {AspectRatio} from '@astryxdesign/core/AspectRatio';
 import {Divider} from '@astryxdesign/core/Divider';
 import {StatusDot} from '@astryxdesign/core/StatusDot';
@@ -58,20 +55,15 @@ import {
   EyeIcon,
 } from '@heroicons/react/24/outline';
 
-const styles = stylex.create({
+const styles = {
   // A vertical rule has no intrinsic height and the breadcrumb row centers its
   // children rather than stretching them, so the separator needs its own.
-  breadcrumbRule: {
-    height: 12,
-  },
+  breadcrumbRule: 'h-3',
   // Fixed square tile the attachment icon centers in. AspectRatio keeps it
   // square; the width is what stops it growing with the row.
-  attachmentTile: {
-    width: 40,
-    backgroundColor: colorVars['--color-background-muted'],
-    borderRadius: radiusVars['--radius-element'],
-  },
-});
+  attachmentTile:
+    'w-10 bg-[var(--color-background-muted)] rounded-[var(--radius-element)]',
+} as const;
 
 // ─── Editable fields ────────────────────────────────────────────────────────
 /** Shape shared by every Selector option list on this page. */
@@ -387,16 +379,22 @@ function PageHeader({
                   <Icon
                     icon={ArrowLeftIcon}
                     size="sm"
-                    xstyle={rtlStyles.mirror}
+                    className="rtl:[transform:scaleX(-1)]"
                   />
                   All Tasks
                 </HStack>
               </Link>
-              <Divider orientation="vertical" xstyle={styles.breadcrumbRule} />
+              <Divider
+                orientation="vertical"
+                className={styles.breadcrumbRule}
+              />
               <Text type="supporting" color="secondary">
                 PLT-247
               </Text>
-              <Divider orientation="vertical" xstyle={styles.breadcrumbRule} />
+              <Divider
+                orientation="vertical"
+                className={styles.breadcrumbRule}
+              />
               <Text type="supporting" color="secondary">
                 Platform / Onboarding
               </Text>
@@ -603,7 +601,7 @@ function AttachmentsSection() {
                 <AspectRatio
                   ratio={1}
                   fit="center"
-                  xstyle={styles.attachmentTile}>
+                  className={styles.attachmentTile}>
                   <Icon
                     icon={ATTACHMENT_ICONS[attachment.kind]}
                     size="lg"

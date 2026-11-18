@@ -19,9 +19,11 @@ import {Icon, type IconSize} from '../Icon/Icon';
 import type {IconName} from '../Icon/globalIconRegistry';
 import type {InputStatus, InputStatusType} from '../Field/types';
 import {useTooltip} from '../Tooltip/useTooltip';
-import {radiusVars} from '../theme/tokens.stylex';
+import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {inputStatusIconButtonClassName} from './inputStatusIconClasses';
+import {inputStatusIconFocusStyles} from './inputStatusIconFocus.stylex';
 import type {FieldStatusPlacement} from '../Field/fieldStatusPlacement';
 import {
   registerEnglishFallback,
@@ -49,40 +51,6 @@ const STATUS_BUTTON_LABEL_KEY: Record<InputStatusType, string> = {
   error: '@astryx.input.statusButton.error',
   success: '@astryx.input.statusButton.success',
 };
-
-const styles = stylex.create({
-  // Contain the anchor so the tooltip positions against the icon, and keep the
-  // glyph vertically centered within the input control.
-  iconAnchor: {
-    display: 'inline-flex',
-    alignItems: 'center',
-  },
-  // The tooltip-variant status affordance is a real button so it is keyboard
-  // focusable and tappable. Strip the native chrome and show only a focus ring.
-  statusButton: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    // The button owns its pointer events, so hover opens the tooltip in a
-    // non-interactive trailing slot. TextArea's end slot has
-    // `pointer-events: none`, which would block this button's hover.
-    pointerEvents: 'auto',
-    borderRadius: radiusVars['--radius-full'],
-    // Not the shared offset: this button sits inside the field, and measured at
-    // the standard 3px its ring crosses the field border.
-    outlineOffset: {default: null, ':focus-visible': '2px'},
-  },
-});
 
 export interface UseInputStatusIconOptions {
   /** The input's status, or undefined when there is none. */
@@ -220,9 +188,12 @@ export function useInputStatusIcon({
           aria-describedby={tooltip.describedBy}
           onClick={handleButtonClick}
           onBlur={handleButtonBlur}
-          {...stylex.props(
-            focusOutlineStyles.focusVisible,
-            styles.statusButton,
+          {...mergeProps(
+            stylex.props(
+              focusOutlineStyles.focusVisible,
+              inputStatusIconFocusStyles.offset,
+            ),
+            inputStatusIconButtonClassName,
           )}>
           {icon}
         </button>

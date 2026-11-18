@@ -53,11 +53,23 @@ const PREBUILT_STYLESHEETS = {
 
 /**
  * Variable modules a prebuilt stylesheet compiles though none of the package's
- * modules imports them. Core's public `dataVars` entry is one, since an app
- * reads its defaults as plain `var()` references. The targets of
+ * modules imports them. Core's public `dataVars` entry is one: a chart reads
+ * it without any other Core module, and the entry keeps that module in Core's
+ * block. Its declarations come from `GENERATED_SHEETS`. The targets of
  * scripts/build-css.mjs take their `stylexEntries` from this list.
  */
 const STYLEX_ENTRIES = {[CORE]: ['theme/dataTokens.stylex.ts']};
+
+/**
+ * Generated declaration sheets a source build prints after a package's rules,
+ * in the order it prints them. Token defaults used to be `defineVars` rules the
+ * walk collected from `STYLEX_ENTRIES`; they now live in generated sheets, so a
+ * source build that replaces the prebuilt stylesheet carries them the same way.
+ * Paths resolve from the package directory.
+ */
+const GENERATED_SHEETS = {
+  [CORE]: ['src/theme/tokens.css', 'src/theme/dataTokens.css'],
+};
 
 /**
  * Locate an installed package's directory by walking `node_modules` up from
@@ -427,13 +439,60 @@ function processRules(rules) {
 }
 
 /**
+ * A generated sheet without the banner that names its generator. The prebuilt
+ * build strips the same lines before it joins a sheet into `astryx.css`.
+ */
+function withoutBanner(css) {
+  return css.replace(/^(?:\/\*[^*]*\*\/[ \t]*\n)+/, '').trim();
+}
+
+/** The generated declaration sheets a package's block carries, joined. */
+function generatedSheets({name, dir}) {
+  return (GENERATED_SHEETS[name] ?? [])
+    .map(file => path.join(dir, file))
+    .filter(file => fs.existsSync(file))
+    .map(file => withoutBanner(fs.readFileSync(file, 'utf8')))
+    .join('\n\n');
+}
+
+/**
+ * The generated declaration sheets an installed package's block carries, or ''
+ * when it has none. The webpack PostCSS build joins this into its library
+ * layer, where the prebuilt stylesheet prints the same declarations.
+ */
+function generatedSheetCss(name, from) {
+  const dir = findPackageDir(name, from);
+  return dir == null ? '' : generatedSheets({name, dir});
+}
+
+/**
+ * The generated declaration sheets of the package that owns `file`, or '' when
+ * it has none. The package is the nearest directory above the file with a
+ * `package.json`, so this finds a workspace source tree that no `node_modules`
+ * entry names — the Vite plugin aliases package sources, and a stylesheet it
+ * splits from those sources needs the same declarations.
+ */
+function generatedSheetsFor(file) {
+  let dir = path.dirname(file);
+  for (;;) {
+    if (fs.existsSync(path.join(dir, 'package.json'))) {
+      return generatedSheets({name: readManifest(dir).name, dir});
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) return '';
+    dir = parent;
+  }
+}
+
+/**
  * Print a package's rules as its prebuilt stylesheet prints them, or nothing
  * when there are no rules. Each block carries the order, so the order holds
  * whichever block or chunk loads first. The product needs no line of its own.
  */
-function renderPackage(rules) {
+function renderPackage(rules, extraCss = '') {
   const css = processRules(rules);
-  return css.trim() ? layerBlock(css) : '';
+  const body = extraCss === '' ? css : `${css}\n\n${extraCss}`;
+  return body.trim() ? layerBlock(body) : '';
 }
 
 /**
@@ -451,7 +510,7 @@ async function sourceStylesheet({cwd}) {
     if (pkg.name === CORE) {
       provided = new Set([...modules].filter(file => STYLEX_MODULE.test(file)));
     }
-    blocks.push(renderPackage(rules));
+    blocks.push(renderPackage(rules, generatedSheets(pkg)));
   }
   return {css: blocks.filter(Boolean).join('\n'), packages};
 }
@@ -463,6 +522,9 @@ module.exports = {
   PREBUILT_OPTIONS,
   STYLEX_ENTRIES,
   STYLEX_MODULE,
+  GENERATED_SHEETS,
+  generatedSheetCss,
+  generatedSheetsFor,
   LAYER_ORDER,
   prebuiltStylesheet,
   findPackageDir,

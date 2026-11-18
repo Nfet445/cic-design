@@ -17,8 +17,14 @@
  * - /packages/lab/src/TransferList/index.ts
  */
 
-import {useCallback, useEffect, useRef, useState, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import {Button} from '@astryxdesign/core/Button';
 import {
   ComplexSelector,
@@ -26,65 +32,22 @@ import {
 } from '@astryxdesign/core/ComplexSelector';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {HStack} from '@astryxdesign/core/Stack';
-import {borderVars, colorVars} from '@astryxdesign/core/theme/tokens.stylex';
 import type {Reorderable} from '@astryxdesign/core';
 import {
   adaptReorderable,
   reorderableOptions,
 } from '@astryxdesign/core/internal/reorder';
 import {TransferList, type TransferListProps} from './TransferList';
+import {
+  transferListSelectorContentClassName,
+  transferListSelectorFieldsetBusyClassName,
+  transferListSelectorFieldsetClassName,
+  transferListSelectorFooterClassName,
+  transferListSelectorSurfaceClassName,
+} from './transferListClasses';
+import {tw} from '../tw';
 
 const DEFAULT_SELECTOR_WIDTH = 'min(41rem, calc(100vw - 32px))';
-
-const styles = stylex.create({
-  // Width tracks the `width` prop, so the field and its popup are one
-  // measurement rather than two that can disagree.
-  content: (width: string) => ({
-    width,
-    maxWidth: width,
-    maxHeight: 'calc(100vh - 32px)',
-    padding: 0,
-    overflow: 'hidden',
-    borderRadius: 'inherit',
-  }),
-  surface: {
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-    minHeight: 0,
-    maxHeight: 'inherit',
-  },
-  fieldset: {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 'auto',
-    minWidth: 0,
-    minHeight: 0,
-    margin: 0,
-    padding: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    overflowY: 'auto',
-    overscrollBehavior: 'contain',
-  },
-  // Busy is not disabled: `disabled` on this fieldset would blur the Add or
-  // Remove button the user just activated, dropping focus to <body>. The
-  // pending state is carried by aria-busy plus the trigger's spinner, so this
-  // only has to read as unavailable to the pointer.
-  fieldsetBusy: {
-    cursor: {
-      default: 'progress',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  footer: {
-    flexShrink: 0,
-    borderBlockStartWidth: borderVars['--border-width'],
-    borderBlockStartStyle: 'solid',
-    borderBlockStartColor: colorVars['--color-border'],
-    backgroundColor: colorVars['--color-background-surface'],
-  },
-});
 
 type TransferListSelectorShellProp =
   | 'label'
@@ -263,6 +226,11 @@ export function TransferListSelector<T extends string = string>({
     typeof width === 'number'
       ? `${width}px`
       : (width ?? DEFAULT_SELECTOR_WIDTH);
+  // The popup's box reads its width from this variable, which the class map
+  // beside the selector declares.
+  const contentStyle = {
+    '--_transfer-list-selector-width': resolvedWidth,
+  } as CSSProperties;
 
   return (
     <ComplexSelector
@@ -279,7 +247,8 @@ export function TransferListSelector<T extends string = string>({
       isDisabled={isDisabled}
       isLoading={isLoading}
       width={resolvedWidth}
-      contentXstyle={styles.content(resolvedWidth)}>
+      contentClassName={transferListSelectorContentClassName}
+      contentStyle={contentStyle}>
       {(appliedValue, commit, close, state) => {
         const isStaged = commitBehavior === 'staged';
         const transferListValue = isStaged ? draftValue : appliedValue;
@@ -315,7 +284,7 @@ export function TransferListSelector<T extends string = string>({
         return (
           <div
             aria-busy={state.isBusy || undefined}
-            {...stylex.props(styles.surface)}>
+            className={transferListSelectorSurfaceClassName}>
             {isStaged && (
               <ResetDraftAfterClose
                 isOpen={state.isOpen}
@@ -324,9 +293,9 @@ export function TransferListSelector<T extends string = string>({
             )}
             <fieldset
               aria-disabled={isDisabled || undefined}
-              {...stylex.props(
-                styles.fieldset,
-                state.isBusy && styles.fieldsetBusy,
+              className={tw(
+                transferListSelectorFieldsetClassName,
+                state.isBusy && transferListSelectorFieldsetBusyClassName,
               )}>
               <TransferList
                 label={label}
@@ -365,7 +334,11 @@ export function TransferListSelector<T extends string = string>({
               />
             </fieldset>
             {isStaged && (
-              <HStack gap={2} hAlign="end" padding={3} xstyle={styles.footer}>
+              <HStack
+                gap={2}
+                hAlign="end"
+                padding={3}
+                className={transferListSelectorFooterClassName}>
                 <Button
                   label={cancelLabel}
                   variant="ghost"

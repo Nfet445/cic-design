@@ -35,7 +35,8 @@ import {Spinner} from '../Spinner/Spinner';
 import {Icon} from '../Icon/Icon';
 import {VisuallyHidden} from '../VisuallyHidden/VisuallyHidden';
 import {IconDefaultSizeProvider} from '../Icon/IconDefaultSizeContext';
-import {iconBoxSizeStyles, type IconSize} from '../Icon/IconSize.stylex';
+import type {IconSize} from '../Icon/IconSize';
+import {iconBoxClassName} from '../Icon/iconBoxClasses';
 
 import {EDGE_COMP_ATTR} from '../Layout/edgeCompensation.stylex';
 import {useSize} from '../SizeContext/SizeContext';
@@ -48,22 +49,20 @@ import {
 } from '../hooks/pressGroupContext';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
-import {
-  groupStyles as inputGroupStyles,
-  inputGroupItemProps,
-} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupButtonAddonClassName} from '../InputGroup/inputGroupClasses';
 import {mergeProps} from '../utils/mergeProps';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useTouchHitArea} from '../utils/touchHitArea';
 import {ButtonHitAreaContext} from './buttonHitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {
-  controlPressLayerStyles,
+  controlPressHeldClassName,
   rowPressLayerStyles,
 } from '../privateAttributes/press.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
@@ -93,6 +92,7 @@ import {
   buttonWidthVar,
 } from './buttonClasses';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 registerEnglishFallback(english);
 
@@ -510,17 +510,13 @@ export function Button({
       ? null
       : {[buttonWidthVar]: typeof width === 'number' ? `${width}px` : width};
 
-  // Shared StyleX props for both button and link rendering. `xstyle` stays last
-  // so a consumer style still lands after the component's own atoms.
-  const sharedStylexProps = focusOutlineProps.focusVisible(
+  // Shared StyleX props for both button and link rendering.
+  const sharedStylexProps = stylex.props(
     interactionOverlayStyles.backgroundImage,
     // The press the controller writes, on a layer under the label whose
     // release runs on the compositor.
     rowPressLayerStyles.cell,
     rowPressLayerStyles.cellOnImage,
-    controlPressLayerStyles.control,
-    inputGroup != null && buttonGroup == null && inputGroupStyles.buttonAddon,
-    xstyle,
   );
 
   const sharedMergedProps = mergeProps(
@@ -534,15 +530,27 @@ export function Button({
       }),
       sharedStylexProps,
     ),
-    {className: layoutClassName, style: widthStyle ?? undefined},
-    className,
-    style,
+    {
+      // Under a coarse primary pointer the button keeps its press layer from
+      // the touch to the end of the release (`controlPressHeldClassName`).
+      className: tw(
+        layoutClassName,
+        controlPressHeldClassName,
+        focusOutlineFocusVisibleClassName,
+        // Inside a group the addon runs the row's height and squares the
+        // corners it shares with a neighbour.
+        inputGroup != null &&
+          buttonGroup == null &&
+          inputGroupButtonAddonClassName,
+      ),
+      style: widthStyle ?? undefined,
+    },
+    tw(className, xstyleProps(xstyle).className),
+    {...xstyleProps(xstyle).style, ...style},
   );
 
   const iconSize = iconSizeByButtonSize[size];
-  const hitAreaClassName = hasHitArea
-    ? stylex.props(touchHitAreaStyles.layer).className
-    : undefined;
+  const hitAreaClassName = hasHitArea ? touchHitAreaLayerClassName : undefined;
 
   const buttonContent = (
     <>
@@ -573,7 +581,7 @@ export function Button({
           <span
             className={tw(
               buttonIconWrapperClassName,
-              stylex.props(iconBoxSizeStyles[iconSize]).className,
+              iconBoxClassName[iconSize],
             )}>
             <IconDefaultSizeProvider value={iconSize}>
               {icon}

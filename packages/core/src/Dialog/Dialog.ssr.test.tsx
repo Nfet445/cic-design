@@ -15,6 +15,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {createRoot, hydrateRoot} from 'react-dom/client';
 import {renderToString} from 'react-dom/server';
 import {Dialog} from './Dialog';
+import {classesOf} from '../__tests__/classNameAssertions';
 
 beforeEach(() => {
   HTMLDialogElement.prototype.showModal = vi.fn(function (
@@ -74,15 +75,30 @@ describe('Dialog: open on the server (FR8)', () => {
     expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalledTimes(1);
     expect(dialog).toHaveAttribute('open');
     expect(dialog).toHaveAttribute('aria-modal', 'true');
-    expect(dialog?.className).not.toBe(serverDialog(false).className);
+    // The open state rides the `open` attribute, not a class, so the class set
+    // stays the one the server markup shipped; the sheet's `open:` classes read
+    // the attribute.
+    expect(classesOf(dialog!)).toEqual(classesOf(serverDialog(false)));
     expect(recoverableErrors).toEqual([]);
     expect(logged).not.toHaveBeenCalled();
     await act(async () => root.unmount());
   });
 
   it('opens settled after hydration, without its entry animation, and animates a later open (spec:AST-013 FR13)', async () => {
-    const entryMotion = (dialog: HTMLDialogElement) =>
-      getComputedStyle(dialog).animationName;
+    // jsdom cannot parse the built sheet, so the entrance is read from the
+    // class set the dialog asked for, not from a computed animation name.
+    const entryMotion = (dialog: HTMLDialogElement) => {
+      const classes = classesOf(dialog);
+      if (classes.includes('open:[animation-name:astryxDialogEnter]')) {
+        return 'astryxDialogEnter';
+      }
+      if (
+        classes.includes('open:[animation-name:astryxDialogEnterFullscreen]')
+      ) {
+        return 'astryxDialogEnterFullscreen';
+      }
+      return 'none';
+    };
     // A client-opened Dialog plays its entry animation.
     const client = document.createElement('div');
     document.body.appendChild(client);

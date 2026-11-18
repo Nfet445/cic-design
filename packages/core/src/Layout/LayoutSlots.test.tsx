@@ -20,6 +20,7 @@ import {LayoutHeader} from './LayoutHeader';
 import {LayoutFooter} from './LayoutFooter';
 import {LayoutContent} from './LayoutContent';
 import {LayoutPanel} from './LayoutPanel';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {LayoutDividerContext} from './LayoutDividerContext';
 import {useResizable} from '../Resizable/useResizable';
 
@@ -311,7 +312,7 @@ describe('LayoutContent', () => {
       '.astryx-layout-content',
     ) as HTMLElement;
 
-    expect(getComputedStyle(root).overflow).toBe('auto');
+    expectClassSet(root, {includes: ['overflow-auto']});
     expect(root).toHaveTextContent('Body');
     expect(root.childNodes).toHaveLength(1);
     expect(root.querySelector('[data-layout-content-inner]')).toBeNull();

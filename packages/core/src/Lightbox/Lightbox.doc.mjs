@@ -126,6 +126,29 @@ export const docs = {
   ],
   theming: {
     targets: [{className: 'astryx-lightbox', visualProps: []}],
+    vars: [
+      {
+        name: '--astryx-lightbox-page-offset',
+        description:
+          'Offset of a page in the rail: its index times the page width plus the gap. Lightbox sets it per page.',
+        default: 'none',
+        private: true,
+      },
+      {
+        name: '--astryx-lightbox-caption-toggle-width',
+        description:
+          'Measured width of the caption toggle. An open caption that scrolls keeps its lines clear of it.',
+        default: 'none',
+        private: true,
+      },
+      {
+        name: '--astryx-lightbox-caption-toggle-lines',
+        description:
+          'Number of caption lines the toggle place generates, so the clamp ends just before the toggle.',
+        default: 'none',
+        private: true,
+      },
+    ],
   },
   usage: {
     anatomy,
@@ -227,6 +250,28 @@ export const docsZh = {
   ],
   theming: {
     targets: [{className: 'astryx-lightbox', visualProps: []}],
+    vars: [
+      {
+        name: '--astryx-lightbox-page-offset',
+        description:
+          '页在轨道中的偏移：索引乘以页宽与间隙之和。由灯箱逐页设置。',
+        default: 'none',
+        private: true,
+      },
+      {
+        name: '--astryx-lightbox-caption-toggle-width',
+        description:
+          '实测的说明切换按钮宽度。可滚动的展开说明据此让每一行避开它。',
+        default: 'none',
+        private: true,
+      },
+      {
+        name: '--astryx-lightbox-caption-toggle-lines',
+        description: '切换按钮占位生成的行数，使截断恰好停在按钮之前。',
+        default: 'none',
+        private: true,
+      },
+    ],
   },
   usage: {
     anatomy,

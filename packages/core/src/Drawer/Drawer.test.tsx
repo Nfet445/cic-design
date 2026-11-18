@@ -26,8 +26,13 @@ import {DrawerHeader} from './DrawerHeader';
 import {Button} from '../Button';
 import {ButtonGroup} from '../ButtonGroup';
 import {Tooltip} from '../Tooltip/Tooltip';
-import {layerTextReset} from '../Layer/layerTextReset.stylex';
-import {layerStructureReset} from '../Layer/layerStructureReset.stylex';
+import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
+import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
+import {
+  classesOf,
+  expectClassSet,
+  expectVariable,
+} from '../__tests__/classNameAssertions';
 
 // Mock dialog methods since they're not fully implemented in jsdom
 beforeEach(() => {
@@ -79,7 +84,7 @@ describe('Drawer', () => {
         Content
       </Drawer>,
     );
-    expect(getComputedStyle(screen.getByRole('dialog')).overflow).toBe('clip');
+    expectClassSet(screen.getByRole('dialog'), {includes: ['overflow-clip']});
   });
 
   it('renders children when open', () => {
@@ -382,8 +387,8 @@ describe('Drawer', () => {
       const classes = dialog.className.split(' ');
       expect(classes).toContain('astryx-drawer');
       expect(classes).toContain('inspector-panel');
-      // Drawer's own StyleX styling survives the merge.
-      expect(getComputedStyle(dialog).position).toBe('fixed');
+      // Drawer's own styling survives the merge.
+      expectClassSet(dialog, {includes: ['fixed']});
     });
 
     it('merges a consumer xstyle after Drawer styles so the override wins', () => {
@@ -399,7 +404,7 @@ describe('Drawer', () => {
       );
       const dialog = screen.getByRole('dialog');
       expect(getComputedStyle(dialog).maxWidth).toBe('240px');
-      expect(getComputedStyle(dialog).position).toBe('fixed');
+      expectClassSet(dialog, {includes: ['fixed']});
       expect(dialog.className).toContain('astryx-drawer');
     });
 
@@ -415,9 +420,9 @@ describe('Drawer', () => {
       );
       const dialog = screen.getByRole('dialog');
       expect(dialog.style.zIndex).toBe('30');
-      // The width budget travels as a StyleX dynamic inline variable and must
-      // survive the merge rather than be replaced by the consumer style.
-      expect(dialog.getAttribute('style')).toContain('400px');
+      // The width budget travels as an inline custom property and must survive
+      // the merge rather than be replaced by the consumer style.
+      expectVariable(dialog, '--astryx-drawer-width', '400px');
     });
 
     it('forwards a data attribute and an ARIA attribute to the root dialog', () => {
@@ -556,22 +561,13 @@ describe('Drawer', () => {
         </Drawer>,
       );
       const dialog = screen.getByRole('dialog');
-      const classes = dialog.className.split(' ');
-      // The shared resets, not a local copy, supply the layer baseline.
-      for (const cls of (stylex.props(layerTextReset.reset).className ?? '')
-        .split(' ')
-        .filter(Boolean)) {
-        expect(classes).toContain(cls);
-      }
-      for (const cls of (
-        stylex.props(layerStructureReset.reset).className ?? ''
-      )
-        .split(' ')
-        .filter(Boolean)) {
-        expect(classes).toContain(cls);
-      }
-      // The baseline resolves on the root itself, not from the page.
-      expect(getComputedStyle(dialog).textAlign).toBe('start');
+      // The shared resets, not a local copy, supply the layer baseline: their
+      // rules in the sheet's reset layer declare the body font, the body size
+      // and `text-align: start`, so the root resolves the baseline itself
+      // instead of inheriting it from the page.
+      expectClassSet(dialog, {
+        includes: [layerTextResetClassName, layerStructureResetClassName],
+      });
     });
   });
 
@@ -1300,33 +1296,37 @@ describe('Drawer', () => {
         </Drawer>,
       );
       const dialog = screen.getByRole('dialog');
-      const computed = window.getComputedStyle(dialog);
-      expect(
-        computed.getPropertyValue('--container-padding-inline-start'),
-      ).toBe('0px');
-      expect(computed.getPropertyValue('--container-padding-inline-end')).toBe(
-        '0px',
-      );
-      expect(computed.getPropertyValue('--container-padding-block-start')).toBe(
-        '0px',
-      );
-      expect(computed.getPropertyValue('--container-padding-block-end')).toBe(
-        '0px',
+      expect(classesOf(dialog)).toEqual(
+        expect.arrayContaining([
+          '[--container-padding-inline-start:0px]',
+          '[--container-padding-inline-end:0px]',
+          '[--container-padding-block-start:0px]',
+          '[--container-padding-block-end:0px]',
+        ]),
       );
     });
   });
 
   describe('container padding', () => {
-    // StyleX lowers the block edges to their physical properties. block-end is
-    // asserted separately: its applied edge composes the safe-area inset.
-    const EDGES = [
-      ['inline-start', 'padding-inline-start'],
-      ['inline-end', 'padding-inline-end'],
-      ['block-start', 'padding-top'],
-    ] as const;
-    // StyleX strips the space after the var() fallback comma.
+    // block-end is asserted separately: its applied edge composes the
+    // safe-area inset.
+    const EDGES = ['inline-start', 'inline-end', 'block-start'] as const;
+    // Underscores spell the spaces Tailwind's arbitrary value cannot carry.
     const SAFE_AREA_BLOCK_END =
-      'calc(var(--container-padding-block-end,0px) + env(safe-area-inset-bottom,0px))';
+      '[.astryx-drawer_&]:[padding-block-end:calc(var(--container-padding-block-end,_0px)_+_env(safe-area-inset-bottom,_0px))]';
+    const DRAWER = 'var(--astryx-drawer-padding,var(--spacing-4))';
+    // The chain each edge publishes when no padding prop names a step.
+    const THEME_CHAIN: Record<string, string> = {
+      'inline-start': `var(--astryx-drawer-padding-inline-start,var(--astryx-drawer-padding-inline,${DRAWER}))`,
+      'inline-end': `var(--astryx-drawer-padding-inline-end,var(--astryx-drawer-padding-inline,${DRAWER}))`,
+      'block-start': `var(--astryx-drawer-padding-block-start,${DRAWER})`,
+      'block-end': `var(--astryx-drawer-padding-block-end,${DRAWER})`,
+    };
+    // Tailwind spells the two half steps as their own variables.
+    const STEP_CLASS: Record<0 | 2, string> = {
+      0: 'var(--spacing-0)',
+      2: 'var(--spacing-2)',
+    };
 
     function renderWithPadding(padding?: 0 | 2) {
       render(
@@ -1340,53 +1340,46 @@ describe('Drawer', () => {
       );
       // The content area is the child's parent: the scrolling box inside the
       // panel, not the panel itself.
-      return getComputedStyle(
-        screen.getByTestId('drawer-child').parentElement!,
-      );
+      return screen.getByTestId('drawer-child').parentElement as HTMLElement;
     }
 
-    it("defaults to Dialog's --spacing-4 inset and publishes the theme chain", () => {
-      const computed = renderWithPadding();
-      for (const [edge, property] of EDGES) {
-        const published = computed
-          .getPropertyValue(`--container-padding-${edge}`)
-          .replace(/\s+/g, '');
-        expect(published, edge).toContain(
-          `var(--astryx-drawer-padding-${edge}`,
-        );
-        // No theme padding resolves to --spacing-4, as in Dialog.
-        expect(published, edge).toContain(
-          'var(--astryx-drawer-padding,var(--spacing-4))',
+    /** The class that publishes one container edge on the content area. */
+    function publishedClass(content: HTMLElement, edge: string): string {
+      const className = classesOf(content).find(candidate =>
+        candidate.startsWith(`[--container-padding-${edge}:`),
+      );
+      expect(className, edge).toBeDefined();
+      return className as string;
+    }
+
+    /** The applied padding class: it reads back what the container published. */
+    function appliedClass(edge: string): string {
+      return `[padding-${edge}:var(--container-padding-${edge})]`;
+    }
+
+    it("defaults to Drawer's --spacing-4 inset and publishes the theme chain", () => {
+      const content = renderWithPadding();
+      for (const edge of [...EDGES, 'block-end']) {
+        expect(publishedClass(content, edge), edge).toBe(
+          `[--container-padding-${edge}:${THEME_CHAIN[edge]}]`,
         );
         // Applied padding reads the published value, so bleed children
         // subtract exactly the inset they sit in.
-        expect(computed.getPropertyValue(property), edge).toBe(
-          `var(--container-padding-${edge})`,
-        );
+        expect(classesOf(content), edge).toContain(appliedClass(edge));
       }
       // block-end publishes the same chain, while the APPLIED edge adds the
       // home-indicator safe area on top of the container inset.
-      const publishedEnd = computed
-        .getPropertyValue('--container-padding-block-end')
-        .replace(/\s+/g, '');
-      expect(publishedEnd).toContain('var(--astryx-drawer-padding-block-end');
-      expect(publishedEnd).toContain(
-        'var(--astryx-drawer-padding,var(--spacing-4))',
-      );
-      expect(computed.getPropertyValue('padding-bottom')).toBe(
-        SAFE_AREA_BLOCK_END,
-      );
+      expect(classesOf(content)).toContain(SAFE_AREA_BLOCK_END);
       // The Layout insets read the same chain, so a Layout inside the drawer
       // lines its regions up on the drawer's inset, as in Dialog.
-      for (const name of [
-        '--layout-padding-outer-x',
-        '--layout-padding-outer-y',
-        '--layout-padding-inner-x',
-        '--layout-padding-inner-y',
-      ]) {
-        const value = computed.getPropertyValue(name).replace(/\s+/g, '');
-        expect(value, name).toContain(
-          'var(--astryx-drawer-padding,var(--spacing-4))',
+      for (const [name, chain] of [
+        ['outer-x', THEME_CHAIN['inline-start']],
+        ['outer-y', THEME_CHAIN['block-start']],
+        ['inner-x', THEME_CHAIN['inline-start']],
+        ['inner-y', THEME_CHAIN['block-start']],
+      ] as const) {
+        expect(classesOf(content), name).toContain(
+          `[--layout-padding-${name}:${chain}]`,
         );
       }
     });
@@ -1394,24 +1387,22 @@ describe('Drawer', () => {
     it.each([0, 2] as const)(
       'applies and publishes an explicit padding step (%s)',
       padding => {
-        const computed = renderWithPadding(padding);
-        const expected = `var(--spacing-${padding})`;
-        for (const [edge, property] of EDGES) {
-          expect(
-            computed.getPropertyValue(`--container-padding-${edge}`),
-            edge,
-          ).toBe(expected);
-          expect(computed.getPropertyValue(property), edge).toBe(expected);
+        const content = renderWithPadding(padding);
+        const expected = STEP_CLASS[padding];
+        for (const edge of [...EDGES, 'block-end']) {
+          expect(publishedClass(content, edge), edge).toBe(
+            `[--container-padding-${edge}:${expected}]`,
+          );
+          // The applied edge reads what was published, so a bleed child
+          // subtracts exactly the inset it sits in.
+          expect(classesOf(content), edge).toContain(appliedClass(edge));
         }
-        expect(computed.getPropertyValue('--container-padding-block-end')).toBe(
-          expected,
-        );
-        expect(computed.getPropertyValue('padding-bottom')).toBe(
-          SAFE_AREA_BLOCK_END,
-        );
-        expect(computed.getPropertyValue('--layout-padding-inner-x')).toBe(
-          expected,
-        );
+        expect(classesOf(content)).toContain(SAFE_AREA_BLOCK_END);
+        for (const name of ['outer-x', 'outer-y', 'inner-x', 'inner-y']) {
+          expect(classesOf(content), name).toContain(
+            `[--layout-padding-${name}:${expected}]`,
+          );
+        }
       },
     );
 
@@ -1419,11 +1410,9 @@ describe('Drawer', () => {
       renderWithPadding(2);
       const dialog = screen.getByRole('dialog');
       expect(dialog.hasAttribute('padding')).toBe(false);
-      expect(
-        getComputedStyle(dialog).getPropertyValue(
-          '--container-padding-inline-start',
-        ),
-      ).toBe('0px');
+      expect(classesOf(dialog)).toContain(
+        '[--container-padding-inline-start:0px]',
+      );
     });
   });
 });
@@ -1632,11 +1621,14 @@ describe('Drawer unmounting while open', () => {
     );
   }
 
+  // jsdom's UA sheet hides a popover host that is not `:popover-open`, and the
+  // stand-in above tracks that state outside the cascade, so the panel's own
+  // `flex` class (which the shipped sheet carries) never reaches the query.
   function openAndFocusSave(): HTMLElement {
     const edit = screen.getByRole('button', {name: 'Edit'});
     edit.focus();
     fireEvent.click(edit);
-    const save = screen.getByRole('button', {name: 'Save'});
+    const save = screen.getByRole('button', {name: 'Save', hidden: true});
     save.focus();
     return edit;
   }
@@ -1647,10 +1639,14 @@ describe('Drawer unmounting while open', () => {
         render(<Inspector unmountWith={unmountWith} hasScrim={hasScrim} />);
         const edit = openAndFocusSave();
 
-        fireEvent.click(screen.getByRole('button', {name: 'Save'}));
+        fireEvent.click(
+          screen.getByRole('button', {name: 'Save', hidden: true}),
+        );
         await Promise.resolve();
 
-        expect(screen.queryByRole('button', {name: 'Save'})).toBeNull();
+        expect(
+          screen.queryByRole('button', {name: 'Save', hidden: true}),
+        ).toBeNull();
         expect(edit).toHaveFocus();
       });
     }
@@ -1659,7 +1655,7 @@ describe('Drawer unmounting while open', () => {
   it('leaves focus where the user moved it before the unmount', async () => {
     render(<Inspector unmountWith="save" hasScrim={false} />);
     openAndFocusSave();
-    const save = screen.getByRole('button', {name: 'Save'});
+    const save = screen.getByRole('button', {name: 'Save', hidden: true});
     const elsewhere = screen.getByRole('button', {name: 'Elsewhere'});
     elsewhere.focus();
 
@@ -1679,6 +1675,8 @@ describe('Drawer unmounting while open', () => {
     openAndFocusSave();
     await Promise.resolve();
 
-    expect(screen.getByRole('button', {name: 'Save'})).toHaveFocus();
+    expect(
+      screen.getByRole('button', {name: 'Save', hidden: true}),
+    ).toHaveFocus();
   });
 });

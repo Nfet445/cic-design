@@ -3,59 +3,21 @@
 'use client';
 
 import {useRef, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {InputClearButton} from '@astryxdesign/core/Field';
 import {useInputContainer} from '@astryxdesign/core/hooks';
 import {Icon} from '@astryxdesign/core/Icon';
-import {
-  colorVars,
-  focusVars,
-  radiusVars,
-  spacingVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import {MagnifyingGlassIcon} from '@heroicons/react/24/outline';
 
-const styles = stylex.create({
-  field: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    width: 320,
-    minHeight: 40,
-    paddingInline: spacingVars['--spacing-3'],
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border-emphasized'],
-    borderRadius: radiusVars['--radius-element'],
-    cursor: 'text',
-    outlineWidth: {
-      default: 0,
-      ':has(> input:focus-visible)': focusVars['--focus-outline-width'],
-    },
-    outlineStyle: {
-      default: 'none',
-      ':has(> input:focus-visible)': focusVars['--focus-outline-style'],
-    },
-    outlineColor: {
-      default: null,
-      ':has(> input:focus-visible)': focusVars['--focus-outline-color'],
-    },
-    outlineOffset: {
-      default: 0,
-      ':has(> input:focus-visible)': focusVars['--focus-outline-offset'],
-    },
-  },
-  input: {
-    flexGrow: 1,
-    minWidth: 0,
-    borderStyle: 'none',
-    outlineStyle: 'none',
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-  },
-});
+const styles = {
+  /*
+   * The ring sits on the container, which holds the focus, so it reads
+   * `:has()` rather than `:focus-visible`.
+   */
+  field:
+    'flex items-center gap-2 w-[320px] min-h-10 px-3 border border-[var(--color-border-emphasized)] rounded-[var(--radius-element)] cursor-text outline-none [&:has(>input:focus-visible)]:[outline-width:var(--focus-outline-width)] [&:has(>input:focus-visible)]:[outline-style:var(--focus-outline-style)] [&:has(>input:focus-visible)]:[outline-color:var(--focus-outline-color)] [&:has(>input:focus-visible)]:[outline-offset:var(--focus-outline-offset)]',
+  input:
+    'grow min-w-0 border-none outline-none bg-transparent text-inherit [font-family:inherit] [font-size:inherit]',
+} as const;
 
 export default function UseInputContainerHookUsage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,7 +30,7 @@ export default function UseInputContainerHookUsage() {
       ref={containerRef}
       onClick={onClick}
       onMouseUp={onMouseUp}
-      {...stylex.props(styles.field)}>
+      className={styles.field}>
       <Icon icon={MagnifyingGlassIcon} color="secondary" />
       <input
         ref={inputRef}
@@ -77,7 +39,7 @@ export default function UseInputContainerHookUsage() {
         placeholder="Search"
         value={query}
         onChange={event => setQuery(event.target.value)}
-        {...stylex.props(styles.input)}
+        className={styles.input}
       />
       {query !== '' && (
         <InputClearButton

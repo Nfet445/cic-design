@@ -28,10 +28,9 @@ import {
   act,
   cleanup,
 } from '@testing-library/react';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
-import {colorVars} from '../theme/tokens.stylex';
 import {
   createRef,
   Profiler,
@@ -46,6 +45,7 @@ import {
 import {FormLayout} from '../FormLayout/FormLayout';
 import {Dialog} from '../Dialog/Dialog';
 import {Typeahead} from './Typeahead';
+import {fieldInputWrapperFocusScopeClassName} from '../Field/fieldClasses';
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {BaseTypeahead} from './BaseTypeahead';
@@ -97,22 +97,6 @@ afterAll(() => {
 afterEach(() => {
   __resetLiveRegionsForTest();
 });
-
-// Test data
-// The disabled focus ring a nested input's wrapper carries, by its StyleX class.
-const NESTED_RING = stylex
-  .props(
-    stylex.create({
-      ring: {
-        boxShadow: {
-          default: null,
-          ':has(input[aria-disabled="true"]:focus-visible)': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-        },
-      },
-    }).ring,
-  )
-  .className!.split(' ')
-  .pop()!;
 
 const fruits: SearchableItem[] = [
   {id: '1', label: 'Apple'},
@@ -2984,9 +2968,13 @@ describe('Typeahead disabledMessage', () => {
     expect(input).toHaveValue('');
     expect(input).toHaveAttribute('aria-expanded', 'false');
     expect(onChange).not.toHaveBeenCalled();
-    // jsdom cannot match :focus-visible: the field's wrapper carries the
-    // disabled focus ring's class (spec:AST-085 FR6).
-    expect(input.closest(`.${NESTED_RING}`)).not.toBeNull();
+    // jsdom cannot match :focus-visible, and it cannot parse an arbitrary
+    // variant as a selector, so the disabled wrapper (the only `opacity-50`
+    // above the input) is found first: it carries the ring's classes
+    // (spec:AST-085 FR6).
+    expectClassSet(input.closest('.opacity-50')!, {
+      includes: fieldInputWrapperFocusScopeClassName.nested.split(' '),
+    });
   });
 
   it('drops a search answer that arrives after the field became disabled', async () => {
@@ -3280,7 +3268,7 @@ describe('end controls stay in flow', () => {
     );
     const clear = screen.getByRole('button', {name: /clear/i});
     const lane = clear.parentElement as HTMLElement;
-    expect(getComputedStyle(lane).marginInlineStart).toBe('auto');
+    expectClassSet(lane, {includes: ['ms-auto']});
   });
 
   it('keeps the field on one row so the controls cannot be pushed off it', () => {
@@ -3336,7 +3324,7 @@ describe('end controls stay in flow', () => {
       />,
     );
     const token = container.querySelector('.astryx-token') as HTMLElement;
-    expect(getComputedStyle(token).position).toBe('absolute');
+    expectClassSet(token, {includes: ['absolute']});
   });
 
   it('lets the token take the pointer that the hidden input would swallow', () => {
@@ -3350,9 +3338,9 @@ describe('end controls stay in flow', () => {
         onChange={() => {}}
       />,
     );
-    expect(getComputedStyle(screen.getByRole('combobox')).pointerEvents).toBe(
-      'none',
-    );
+    expectClassSet(screen.getByRole('combobox'), {
+      includes: ['opacity-0', 'pointer-events-none'],
+    });
   });
 });
 
@@ -3389,7 +3377,7 @@ describe('the value is bounded by the content lane', () => {
     expect(lane.parentElement).toBe(field);
     // The token's containing block is the lane, which is what bounds it.
     expect(token.parentElement).toBe(lane);
-    expect(getComputedStyle(lane).position).toBe('relative');
+    expectClassSet(lane, {includes: ['relative']});
   });
 
   it('lets the lane yield its whole width, so a narrow field cannot overflow', () => {
@@ -3398,9 +3386,7 @@ describe('the value is bounded by the content lane', () => {
     // whatever a narrow parent or an InputGroup gives it.
     const {container} = renderWithValue();
     const lane = screen.getByRole('combobox').parentElement as HTMLElement;
-    const style = getComputedStyle(lane);
-    expect(style.minWidth).toBe('0');
-    expect(style.flexGrow).toBe('1');
+    expectClassSet(lane, {includes: ['min-w-0', 'flex-1']});
     // Nothing states a width: a narrow parent gets all of it back.
     expect(
       (container.querySelector('.astryx-typeahead') as HTMLElement).style
@@ -3414,13 +3400,12 @@ describe('the value is bounded by the content lane', () => {
     // is past the clear button.
     const {container} = renderWithValue();
     const token = container.querySelector('.astryx-token') as HTMLElement;
-    const style = getComputedStyle(token);
-    expect(style.insetInlineEnd).toBe('0');
     // `fit-content` against that pair of insets is what shrink-wraps the
     // label yet still caps it at the lane; the `auto` end margin is what
     // keeps the pair from being over-constrained and dropping the end inset.
-    expect(style.width).toBe('fit-content');
-    expect(style.marginInlineEnd).toBe('auto');
+    expectClassSet(token, {
+      includes: ['[inset-inline-end:0]', 'w-fit', '[margin-inline-end:auto]'],
+    });
   });
 });
 

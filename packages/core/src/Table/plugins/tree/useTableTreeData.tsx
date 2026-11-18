@@ -37,16 +37,22 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  focusVars,
-  radiusVars,
-  spacingVars,
-} from '../../../theme/tokens.stylex';
-import {focusOutlineProps} from '../../../utils/focusOutline.stylex';
+import {spacingVarNames} from '../../../theme/tokenVars';
+import {focusOutlineFocusVisibleClassName} from '../../../utils/focusOutlineClasses';
 import {Icon} from '../../../Icon';
-import {mergeRefs} from '../../../utils';
+import {mergeProps, mergeRefs} from '../../../utils';
+import {tw} from '../../../utils/tw';
+import {
+  TREE_CELL_CLASS,
+  TREE_CELL_INDENT_CLASS,
+  TREE_CHEVRON_GLYPH_CLASS,
+  TREE_CHEVRON_GLYPH_STATE_CLASS,
+  TREE_CLICKABLE_ROW_CLASS,
+  TREE_EXPANDER_CLASS,
+  TREE_HEADER_CELL_CLASS,
+  TREE_INDENT_VARIABLE,
+  TREE_LEAF_SPACER_CLASS,
+} from './treeClasses';
 import {
   hasInteractiveAncestor,
   hasTextSelection,
@@ -252,101 +258,10 @@ function applyRowTreeAria(
 
 /** Indent step per level, by the `indent` config token. */
 const INDENT_STEP = {
-  sm: spacingVars['--spacing-3'],
-  md: spacingVars['--spacing-4'],
-  lg: spacingVars['--spacing-6'],
+  sm: spacingVarNames['--spacing-3'],
+  md: spacingVarNames['--spacing-4'],
+  lg: spacingVarNames['--spacing-6'],
 } as const;
-
-const treeStyles = stylex.create({
-  cell: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  indent: (paddingInlineStart: string) => ({
-    paddingInlineStart,
-  }),
-  // A compact row is shorter than the ring around the 24px toggle, and the
-  // cell clips its overflow, so there the ring sits inside the toggle.
-  expanderFocusInset: {
-    outlineOffset: {
-      default: null,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-  },
-  expanderButton: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '24px',
-    height: '24px',
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    borderRadius: radiusVars['--radius-inner'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    color: colorVars['--color-icon-secondary'],
-    transitionProperty: 'color, background-color',
-    transitionDuration: '150ms',
-    padding: 0,
-    flexShrink: '0',
-    // Match IconButton ghost hover: subtle overlay background
-    backgroundImage: {
-      default: null,
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': `linear-gradient(${colorVars['--color-overlay-hover']}, ${colorVars['--color-overlay-hover']})`,
-      },
-    },
-    ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-      color: colorVars['--color-icon-primary'],
-    },
-  },
-  chevronIcon: {
-    transitionProperty: 'transform',
-    transitionDuration: '150ms',
-  },
-  // The RTL mirror is folded into each state's transform rather than living on
-  // a parent span. Both are `transform`, so on one element the later value
-  // would win — spelling out `scaleX(-1) rotate(...)` per state composes them
-  // exactly as the nested elements did, while leaving a single element to
-  // carry the glyph's theme target.
-  chevronIconCollapsed: {
-    transform: {
-      default: 'rotate(0deg)',
-      ':is([dir="rtl"] *)': 'scaleX(-1) rotate(0deg)',
-    },
-  },
-  chevronIconExpanded: {
-    transform: {
-      default: 'rotate(90deg)',
-      ':is([dir="rtl"] *)': 'scaleX(-1) rotate(90deg)',
-    },
-  },
-  /** Keeps leaf content aligned with expandable siblings. */
-  leafSpacer: {
-    display: 'inline-block',
-    width: '24px',
-    height: '24px',
-    flexShrink: '0',
-  },
-  /** Header expand-all toggle: same affordance as a row expander. */
-  headerCell: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    minWidth: 0,
-  },
-  /** Whole-row-click expansion: signal the row is interactive. */
-  clickableRow: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-});
 
 // =============================================================================
 // Cell content
@@ -375,10 +290,8 @@ function TreeExpander({
   return (
     <button
       type="button"
-      {...focusOutlineProps.focusVisible(
-        treeStyles.expanderButton,
-        isCompact && treeStyles.expanderFocusInset,
-      )}
+      className={tw(TREE_EXPANDER_CLASS, focusOutlineFocusVisibleClassName)}
+      style={isCompact ? TREE_EXPANDER_INSET_RING_STYLE : undefined}
       onClick={e => {
         e.stopPropagation();
         onToggle();
@@ -391,12 +304,12 @@ function TreeExpander({
         // The rotation rides on the glyph rather than a wrapper span so the
         // theme target below reaches both the mark and its open/closed
         // transform.
-        xstyle={[
-          treeStyles.chevronIcon,
+        className={tw(
+          TREE_CHEVRON_GLYPH_CLASS,
           isExpanded
-            ? treeStyles.chevronIconExpanded
-            : treeStyles.chevronIconCollapsed,
-        ]}
+            ? TREE_CHEVRON_GLYPH_STATE_CLASS.expanded
+            : TREE_CHEVRON_GLYPH_STATE_CLASS.collapsed,
+        )}
       />
     </button>
   );
@@ -424,10 +337,8 @@ function TreeExpandAllToggle({
   return (
     <button
       type="button"
-      {...focusOutlineProps.focusVisible(
-        treeStyles.expanderButton,
-        isCompact && treeStyles.expanderFocusInset,
-      )}
+      className={tw(TREE_EXPANDER_CLASS, focusOutlineFocusVisibleClassName)}
+      style={isCompact ? TREE_EXPANDER_INSET_RING_STYLE : undefined}
       onClick={e => {
         e.stopPropagation();
         if (allExpanded) {
@@ -447,12 +358,12 @@ function TreeExpandAllToggle({
         size="xsm"
         // Same one-element treatment as the row expander: the glyph carries
         // both the rotation and the theme target.
-        xstyle={[
-          treeStyles.chevronIcon,
+        className={tw(
+          TREE_CHEVRON_GLYPH_CLASS,
           allExpanded
-            ? treeStyles.chevronIconExpanded
-            : treeStyles.chevronIconCollapsed,
-        ]}
+            ? TREE_CHEVRON_GLYPH_STATE_CLASS.expanded
+            : TREE_CHEVRON_GLYPH_STATE_CLASS.collapsed,
+        )}
       />
     </button>
   );
@@ -501,10 +412,10 @@ function TreeCellContentInner<T extends Record<string, unknown>>({
 
   return (
     <div
-      {...stylex.props(
-        treeStyles.cell,
-        meta.level > 0 && treeStyles.indent(indent),
-      )}>
+      className={tw(TREE_CELL_CLASS, meta.level > 0 && TREE_CELL_INDENT_CLASS)}
+      style={
+        meta.level > 0 ? {[TREE_INDENT_VARIABLE as string]: indent} : undefined
+      }>
       {meta.hasChildren ? (
         <TreeExpander
           isExpanded={meta.isExpanded}
@@ -512,7 +423,7 @@ function TreeCellContentInner<T extends Record<string, unknown>>({
           rowLabel={config.getRowLabel?.(item)}
         />
       ) : (
-        <span {...stylex.props(treeStyles.leafSpacer)} />
+        <span className={TREE_LEAF_SPACER_CLASS} />
       )}
       {children}
     </div>
@@ -522,6 +433,11 @@ function TreeCellContentInner<T extends Record<string, unknown>>({
 // =============================================================================
 // Hook
 // =============================================================================
+
+/** A compact row's expander draws the shared ring inside its own box. */
+const TREE_EXPANDER_INSET_RING_STYLE = {
+  '--focus-outline-offset': 'calc(-1 * var(--focus-outline-width))',
+} as React.CSSProperties;
 
 export function useTableTreeData<T extends Record<string, unknown>>(
   config: UseTableTreeDataConfig<T>,
@@ -677,7 +593,7 @@ export function useTableTreeData<T extends Record<string, unknown>>(
         return {
           ...props,
           content: (
-            <span {...stylex.props(treeStyles.headerCell)}>
+            <span className={TREE_HEADER_CELL_CLASS}>
               <TreeExpandAllToggle
                 isAllExpanded={isAllExpanded}
                 onExpandAll={onExpandAll}
@@ -770,8 +686,12 @@ export function useTableTreeData<T extends Record<string, unknown>>(
               }
               cfg.onToggleItem(item);
             },
+            className: tw(
+              withRef.htmlProps.className,
+              TREE_CLICKABLE_ROW_CLASS,
+            ),
           },
-          xstyle: [...withRef.xstyle, treeStyles.clickableRow],
+          xstyle: withRef.xstyle,
         };
       },
     };

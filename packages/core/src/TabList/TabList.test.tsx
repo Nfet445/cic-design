@@ -14,11 +14,8 @@ import {describe, it, expect, vi, beforeAll, afterAll} from 'vitest';
 import {act, render, screen, fireEvent, waitFor} from '@testing-library/react';
 import {__resetMenuPressForTest} from '../hooks/useMenuPress';
 import userEvent from '@testing-library/user-event';
-import {
-  hasPressedArm,
-  hasReleaseFade,
-  readsPressStrength,
-} from '../__tests__/pressState';
+import {hasReleaseFade} from '../__tests__/pressState';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {TabList} from './TabList';
 import type {TabListProps} from './TabList';
 import {Tab} from './Tab';
@@ -1417,15 +1414,23 @@ describe('TabList overflow (scroll)', () => {
     const {strip} = renderStrip();
     strip.scrollBy = vi.fn();
 
+    // jsdom parses no stylesheet, so the mask is read off the class set: each
+    // class carries the whole gradient, and an underscore stands for a space.
     fakeScrollBox(strip, {scrollWidth: 600, clientWidth: 300});
     fireEvent.scroll(strip);
-    expect(getComputedStyle(strip).maskImage).toContain(`transparent ${bleed}`);
+    expect(
+      classesOf(strip).some(className =>
+        className.includes('transparent_var(--_tab-strip-bleed)'),
+      ),
+    ).toBe(true);
 
     fakeScrollBox(strip, {scrollWidth: 600, clientWidth: 300, scrollLeft: 150});
     fireEvent.scroll(strip);
-    expect(getComputedStyle(strip).maskImage).toContain(
-      `transparent calc(100% - ${bleed})`,
-    );
+    expect(
+      classesOf(strip).some(className =>
+        className.includes('transparent_calc(100%_-_var(--_tab-strip-bleed))'),
+      ),
+    ).toBe(true);
   });
 
   it('is no wider than the TabList until the strip holds focus', () => {
@@ -1437,11 +1442,17 @@ describe('TabList overflow (scroll)', () => {
     // covered in a browser, since jsdom does not recompute style on a focus
     // change.
     const {strip} = renderStrip();
-    const cs = getComputedStyle(strip);
+    const classSet = new Set(classesOf(strip));
 
-    expect(cs.getPropertyValue('--_tab-strip-bleed')).toBe('0px');
-    expect(cs.paddingInline).toBe('var(--_tab-strip-bleed)');
-    expect(cs.marginInline).toBe('calc(-1 * (var(--_tab-strip-bleed)))');
+    expect(classSet).toContain('[--_tab-strip-bleed:0px]');
+    // Both edges pad by the bleed and take it straight back off, so the tabs
+    // do not move and the ring is not clipped.
+    expect(classSet).toContain('px-[var(--_tab-strip-bleed)]');
+    expect(classSet).toContain('-mx-[var(--_tab-strip-bleed)]');
+    // Only a focus-visible ring inside the strip raises the bleed.
+    expect(classSet).toContain(
+      '[&:has(:focus-visible)]:[--_tab-strip-bleed:calc(var(--focus-outline-width)_+_var(--focus-outline-offset))]',
+    );
   });
 
   it('does not hand focus to an arrow, which is hidden from assistive tech', () => {
@@ -1721,13 +1732,21 @@ describe('pressed state', () => {
       </TabList>,
     );
     const tab = screen.getByRole('button', {name: 'Settings'});
-    // The hover surface is a child layer read off the tab; the press paints
-    // the same layer, so the assertion is on that layer.
+    // The hover surface is a child layer read off the tab through the group;
+    // the press paints the same layer, so the assertion is on that layer's
+    // classes. jsdom cannot parse the built Tailwind sheet, so a computed
+    // style would assert nothing.
     const surface = tab.querySelector('span[aria-hidden="true"]');
     if (surface == null) {
       throw new Error('the tab has no hover surface to press');
     }
-    expect(hasPressedArm(surface)).toBe(true);
+    expectClassSet(tab, {
+      includes: [
+        'active:[--_tab-overlay:var(--color-overlay-pressed)]',
+        '[@media(hover:hover)]:active:[--_tab-overlay:var(--color-overlay-pressed)]',
+      ],
+    });
+    expectClassSet(surface, {includes: ['bg-[var(--_tab-overlay)]']});
   });
 
   it('does not activate a disabled button tab or call its handler', async () => {
@@ -1874,10 +1893,18 @@ describe('pressed state', () => {
       throw new Error('the tab has no hover surface to press');
     }
     // The controller writes the tab; the tab owns the strength and its
-    // release, and the surface paints the pressed token at that strength on
-    // both touch arms.
+    // release, and the surface paints the pressed image on both touch arms.
+    // The arm is read off the surface's class list: jsdom cannot parse the
+    // built Tailwind sheet, so a computed style would assert nothing.
     expect(hasReleaseFade(tab)).toBe(true);
-    expect(readsPressStrength(surface, '[data-astryx-press="on"]')).toBe(true);
-    expect(readsPressStrength(surface)).toBe(true);
+    expectClassSet(tab, {
+      includes: [
+        'pointer-coarse:[&[data-astryx-press=on]]:[--_tab-press-image:var(--_press-paint-image)]',
+        'pointer-coarse:[&[data-astryx-press=fading]]:[--_tab-press-image:var(--_press-paint-image)]',
+      ],
+    });
+    expectClassSet(surface, {
+      includes: ['[background-image:var(--_tab-press-image,none)]'],
+    });
   });
 });

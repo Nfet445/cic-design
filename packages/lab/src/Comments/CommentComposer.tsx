@@ -4,7 +4,7 @@
 
 /**
  * @file CommentComposer.tsx
- * @input Uses React, StyleX, ChatComposer, ChatComposerInput, ChatSendButton,
+ * @input Uses React, ChatComposer, ChatComposerInput, ChatSendButton,
  *   Popover, IconButton, Card, EmojiPicker, Typeahead's static source
  * @output Exports CommentComposer and CommentComposerProps, and the internal
  *   CommentComposerBase the Comments family's threads use
@@ -29,7 +29,6 @@ import {
   type ReactNode,
   type Ref,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {Avatar} from '@astryxdesign/core/Avatar';
 import {Card} from '@astryxdesign/core/Card';
@@ -47,11 +46,12 @@ import {HStack, StackItem, VStack} from '@astryxdesign/core/Layout';
 import {Popover} from '@astryxdesign/core/Popover';
 import {Text} from '@astryxdesign/core/Text';
 import {createStaticSource} from '@astryxdesign/core/Typeahead';
-import {radiusVars, spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
-import {mergeProps, themeProps} from '@astryxdesign/core/utils';
+import {radiusVarNames, spacingVarNames} from '@astryxdesign/core/theme';
+import {mergeProps, themeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {EmojiPicker} from '../EmojiPicker';
 import {agentToken} from './CommentMarkdown';
+import {commentComposerQuoteCardClassName} from './commentComposerClasses';
 import {
   ErrorBanner,
   MetadataActionLink,
@@ -70,24 +70,16 @@ import type {
   CommentUploadedImage,
 } from './types';
 
-const styles = stylex.create({
-  // Concentric with the composer: its container radius less its compact
-  // padding is the inner radius.
-  quoteCard: {
-    borderRadius: radiusVars['--radius-inner'],
-  },
-});
-
 // ChatComposer's themeable radius variable, set on its frame so the body and
 // its concentric inner radius both follow: comment composers use the
 // container radius instead of the rounder chat radius.
 const COMPOSER_RADIUS_STYLE: CSSProperties & Record<`--${string}`, string> = {
-  '--_chat-composer-radius': radiusVars['--radius-container'],
+  '--_chat-composer-radius': radiusVarNames['--radius-container'],
 };
 
 /* The picker's width is the Popover's, which the Popover clamps to the room
    beside its trigger; the picker fills whatever it gets. */
-const PICKER_WIDTH = `calc(${spacingVars['--spacing-8']} * 11)`;
+const PICKER_WIDTH = `calc(${spacingVarNames['--spacing-8']} * 11)`;
 
 /* Clicks on these keep their own meaning inside the composer; a click anywhere
    else in it focuses the input. */
@@ -433,7 +425,7 @@ export function CommentComposerBase({
                   elevation="none"
                   padding={2}
                   width="100%"
-                  xstyle={styles.quoteCard}
+                  className={commentComposerQuoteCardClassName}
                   data-composer-anchor="quote">
                   <HStack gap={1} align="start" width="100%">
                     <StackItem size="fill">
@@ -578,7 +570,7 @@ export function CommentComposerBase({
       {...restRootProps}
       {...mergeProps(
         themeProps('comment-composer'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}

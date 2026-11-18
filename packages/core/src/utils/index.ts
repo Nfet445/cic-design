@@ -76,6 +76,7 @@ export {characterCount, firstCharacter, truncateCharacters} from './characters';
 
 export {mergeProps} from './mergeProps';
 export {mergeRefs} from './mergeRefs';
+export {tw} from './tw';
 export {isFocusDetached} from './isFocusDetached';
 export {composeEventHandlers} from './composeEventHandlers';
 export {themeProps, themeDataAttributes} from './themeProps';
@@ -104,13 +105,32 @@ export type {RGBA} from './color';
 
 export {devWarn, devError, warnOnce, formatDevMessage} from './devWarning';
 
-export {rtlStyles} from './rtlStyles';
+export {
+  RTL_MIRROR_CLASS,
+  rtlCenterInlineClassName,
+  rtlCenterInlineBlockOffsetClassName,
+} from './rtlClasses';
 
-// The shared focus ring, exported for @astryxdesign/lab — same reason
-// rtlStyles is: a style that must be identical across packages, not copied.
+// The shared focus ring, exported for @astryxdesign/lab — a style that must be
+// identical across packages, not copied.
 export {focusOutlineStyles, focusOutlineProps} from './focusOutline.stylex';
 
+// The same ring as a class arm, for a composer that draws it without StyleX.
+export {
+  focusOutlineFocusVisibleClassName,
+  focusOutlinePublishVarsClassName,
+  focusOutlineSuppressedClassName,
+  focusOutlineWithinClassName,
+  focusOutlineWithinComboboxClassName,
+  focusOutlineWithinFirstChildClassName,
+  focusOutlineWithinOrPublishedClassName,
+} from './focusOutlineClasses';
+
 export {isImeKeyEvent} from './ime';
+
+// A consumer's `xstyle` override, classified into the two slots an element takes.
+export {xstyleProps} from './xstyle';
+export type {AstryxXStyle, XStyleProps} from './xstyle';
 
 // The touch press model's one composable: the shared hover and pressed overlay
 // styles, which carry the press's strength, its release and its paint. A local
@@ -118,3 +138,6 @@ export {isImeKeyEvent} from './ime';
 // that paints and composes one of these on it; the controller, its attributes
 // and its clocks are internals.
 export {interactionOverlayStyles} from './interactionOverlay.stylex';
+// The same overlay as a class arm, for a surface that paints its own press
+// without StyleX.
+export {interactionOverlayBackgroundImageClassName} from './interactionOverlayClasses';

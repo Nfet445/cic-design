@@ -25,30 +25,21 @@ import {
   useTransition,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useEntryErrorBehavior} from '../Field/useEntryErrorBehavior';
 import type {EntryErrorBehavior} from '../FormLayout/FormLayoutContext';
-import {
-  colorVars,
-  sizeVars,
-  radiusVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import {
   Field,
   InputClearButton,
   type InputStatus,
-  inputWrapperStyles,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
 } from '../Field';
 import {Icon} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useSize} from '../SizeContext/SizeContext';
 import {Spinner} from '../Spinner';
 import {
@@ -86,74 +77,7 @@ import {
 import {useCalendarPresentation} from './useCalendarPresentation';
 import {useDevWarning} from '../hooks/useDevWarning';
 
-const styles = stylex.create({
-  iconButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-  },
-  iconButtonDisabled: {
-    cursor: 'default',
-  },
-  input: {
-    display: 'block',
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    outline: 'none',
-    '::placeholder': {
-      color: colorVars['--color-text-secondary'],
-    },
-  },
-  inputDisabled: {
-    cursor: 'default',
-  },
-  inputInvalid: {
-    color: colorVars['--color-text-secondary'],
-  },
-});
-
-const sizeStyles = stylex.create({
-  sm: {
-    height: sizeVars['--size-element-sm'],
-    minWidth: 180,
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-    minWidth: 180,
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
-    minWidth: 180,
-  },
-});
-
-export type DateInputSize = keyof typeof sizeStyles;
+export type DateInputSize = 'sm' | 'md' | 'lg';
 
 /**
  * Named display formats for a committed date value. These are the date-only
@@ -205,9 +129,16 @@ import {
 } from '../Field/fieldParts';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  dateInputControlClassName,
+  dateInputSizeClassName,
+  dateInputToggleClassName,
+} from './dateInputClasses';
 import type {FieldStatusPlacement} from '../Field/fieldStatusPlacement';
 import {
   registerEnglishFallback,
@@ -960,24 +891,19 @@ function PointerDateField({
           status: fieldStatus?.type ?? null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
-          sizeStyles[size],
+        xstyleProps(
           // Disabled paint belongs to the disabled state only; a busy field
           // keeps its ordinary paint and shows the Spinner (spec:AST-085
           // FR6, family:buttons FR4).
-          isDisabled && inputWrapperStyles.disabled,
-          isEffectivelyDisabled && inputDisabledFocusStyles.inputFocusRing,
-          fieldStatus && inputStatusBorderStyles[fieldStatus.type],
-          fieldStatus &&
-            !isEffectivelyDisabled &&
-            inputStatusHoverShadowStyles[fieldStatus.type],
-          fieldStatus && inputStatusFocusWithinStyles[fieldStatus.type],
-          inputGroup && groupStyles.inGroup,
-          controlXstyle,
+          fieldStatus && !isEffectivelyDisabled ? controlXstyle : undefined,
         ),
-        controlClassName,
+        tw(
+          inputGroup && inputGroupMemberClassName,
+          fieldInputWrapperClassName({status: fieldStatus?.type}),
+          isDisabled && fieldInputWrapperDisabledClassName,
+          dateInputSizeClassName({size}),
+          controlClassName,
+        ),
         controlStyle,
       )}>
       {inputGroup && <VisuallyHidden id={inputLabelID}>{label}</VisuallyHidden>}
@@ -994,10 +920,9 @@ function PointerDateField({
             ? t('@astryx.dateInput.toggleCalendarClose')
             : t('@astryx.dateInput.openCalendar')
         }
-        {...stylex.props(
-          focusOutlineStyles.focusVisible,
-          styles.iconButton,
-          isEffectivelyDisabled && styles.iconButtonDisabled,
+        className={tw(
+          dateInputToggleClassName({isDisabled: isEffectivelyDisabled}),
+          focusOutlineFocusVisibleClassName,
         )}>
         <Icon
           icon="calendar"
@@ -1050,11 +975,10 @@ function PointerDateField({
         aria-controls={popover.isOpen ? popover.id : undefined}
         aria-autocomplete="none"
         autoComplete="off"
-        {...stylex.props(
-          styles.input,
-          isEffectivelyDisabled && styles.inputDisabled,
-          isInvalid && styles.inputInvalid,
-        )}
+        className={dateInputControlClassName({
+          isDisabled: isEffectivelyDisabled,
+          isInvalid,
+        })}
       />
       {hiddenFormValue !== null && formControl.name != null && (
         <input

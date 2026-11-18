@@ -120,7 +120,6 @@ import {IconButton} from '@astryxdesign/core/IconButton';
 import {Link} from '@astryxdesign/core/Link';
 import {Breadcrumbs, BreadcrumbItem} from '@astryxdesign/core/Breadcrumbs';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
-import {colorVars} from '@astryxdesign/core/theme/tokens.stylex';
 import {Token} from '@astryxdesign/core/Token';
 import {TextInput} from '@astryxdesign/core/TextInput';
 import {Tab, TabList} from '@astryxdesign/core/TabList';
@@ -136,7 +135,6 @@ import {
   useTableTreeState,
 } from '@astryxdesign/core/Table';
 import type {TableColumn, TablePlugin} from '@astryxdesign/core/Table';
-import * as stylex from '@stylexjs/stylex';
 /*
  * Lucide throughout, not Heroicons. A repository page needs a branch and a
  * fork glyph and Heroicons has no git iconography at all, so mixing sets was
@@ -627,14 +625,12 @@ function commitAge(epochMs: number): string {
 
 // ============= KEYBOARD =============
 
-const styles = stylex.create({
+const styles = {
   /*
    * Toolbar pads its own contents by 12px, but the table body sits on a 16px
    * content line. The difference is added out here so the two agree.
    */
-  headerContainer: {
-    paddingInline: '4px',
-  },
+  headerContainer: '[padding-inline:4px]',
   /*
    * The wash for the selected folder.
    *
@@ -647,14 +643,10 @@ const styles = stylex.create({
    * zebra stripe, which sets `background-color` on this same row and would
    * otherwise replace it.
    */
-  selectedRow: {
-    boxShadow: `inset 0 0 0 100vmax ${colorVars['--color-background-blue']}`,
-  },
+  selectedRow: '[box-shadow:inset_0_0_0_100vmax_var(--color-background-blue)]',
   // Inside the TabList so its divider border keeps spanning the whole card.
-  readmeTabs: {
-    paddingInline: '4px',
-  },
-});
+  readmeTabs: '[padding-inline:4px]',
+} as const;
 
 /** Header width below which the view switcher and search give up their space. */
 const NARROW_HEADER = 720;
@@ -810,9 +802,16 @@ function useTreeKeyboardNav({
          * because it owns the only `transformBodyRow` in the bag — a second
          * plugin transforming the same row would have to be merged by hand.
          */
-        xstyle: [...props.xstyle, item.id === selectedId && styles.selectedRow],
         htmlProps: {
           ...props.htmlProps,
+          // The plugin bag has no `className`; the row's own class attribute
+          // is where a second transform would have to put one anyway.
+          className:
+            item.id === selectedId
+              ? [props.htmlProps.className, styles.selectedRow]
+                  .filter(Boolean)
+                  .join(' ')
+              : props.htmlProps.className,
           /*
            * Roving tabindex: one stop for the whole table. Selection and the
            * cursor are separate — the cursor is wherever the arrows left off,
@@ -1222,7 +1221,7 @@ function ReadmePanel({
           role="tablist"
           size="sm"
           hasDivider
-          xstyle={styles.readmeTabs}>
+          className={styles.readmeTabs}>
           <Tab value="readme" label="Readme" panelId="repo-readme" />
           {hasRepoTabs && (
             <Tab
@@ -1541,7 +1540,7 @@ export default function FileTreeTemplate() {
           label="Repository"
           size="sm"
           dividers={['bottom']}
-          xstyle={styles.headerContainer}
+          className={styles.headerContainer}
           startContent={
             <HStack gap={2} vAlign="center">
               {/*

@@ -11,10 +11,9 @@
 import {describe, it, expect, vi} from 'vitest';
 import {fireEvent, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import {InputGroup} from '../InputGroup/InputGroup';
 import {MultiSelector, type MultiSelectorProps} from './MultiSelector';
+import {fieldInputWrapperFocusScopeClassName} from '../Field/fieldClasses';
 
 function Harness({
   grouped = false,
@@ -97,20 +96,9 @@ describe('MultiSelector disabled (spec:AST-085)', () => {
     expect(new FormData(form()).getAll('fruit')).toEqual([]);
   });
 
-  // jsdom cannot match `:focus-visible`: compare the ring's StyleX class hash.
-  const RING = stylex
-    .props(
-      stylex.create({
-        ring: {
-          boxShadow: {
-            default: null,
-            ':has(> [aria-disabled="true"]:focus-visible)': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-          },
-        },
-      }).ring,
-    )
-    .className!.split(' ')
-    .pop()!;
+  // jsdom cannot match `:focus-visible`, so the ring is the class that keys on
+  // it: the box keeps the ring only for the trigger's own focus.
+  const RING = fieldInputWrapperFocusScopeClassName.direct.split(' ');
 
   it.each([
     ['input', true],
@@ -121,8 +109,9 @@ describe('MultiSelector disabled (spec:AST-085)', () => {
     (variant, ring) => {
       render(<Harness isDisabled variant={variant} />);
       const wrapper = trigger().parentElement!;
-      expect(wrapper.classList.contains(RING)).toBe(ring);
-      expect(getComputedStyle(wrapper).cursor).toBe('default');
+      expect(RING.every(name => wrapper.classList.contains(name))).toBe(ring);
+      // The disabled cursor is a class, and jsdom resolves no Tailwind sheet.
+      expect(wrapper.classList.contains('cursor-default')).toBe(true);
     },
   );
 });

@@ -4,7 +4,7 @@
 
 /**
  * @file SideNav.tsx
- * @input Uses React, HTMLAttributes, ReactNode, StyleX
+ * @input Uses React, HTMLAttributes, ReactNode, sideNavClasses
  * @output Exports SideNav component and SideNavProps
  * @position Core implementation; consumed by index.ts, tested by SideNav.test.tsx
  *
@@ -33,10 +33,10 @@ import {
   type ReactNode,
 } from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
-import type {StyleXStyles} from '@stylexjs/stylex';
-import {focusVars, spacingVars} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
+import {tw} from '../utils/tw';
+import {sideNavClassName} from './sideNavClasses';
 import {
   SideNavCollapseContext,
   type SideNavCollapseState,
@@ -226,143 +226,6 @@ function resolveRegionCollapseConfig(
 // Styles
 // =============================================================================
 
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    width: 260,
-    backgroundColor: 'inherit',
-    boxSizing: 'border-box',
-    overflow: 'hidden',
-  },
-  rootCollapsed: {
-    width: spacingVars['--spacing-12'],
-  },
-  stickyTop: {
-    display: 'flex',
-    flexDirection: 'column',
-    flexShrink: 0,
-    position: 'sticky',
-    top: 0,
-    zIndex: 1,
-    backgroundColor: 'inherit',
-    paddingBlockStart: spacingVars['--spacing-2'],
-    paddingBlockEnd: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
-    gap: spacingVars['--spacing-2'],
-  },
-  stickyTopCollapsed: {
-    alignItems: 'center',
-  },
-  topContent: {},
-  scrollable: {
-    flex: 1,
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  scrollableCollapsed: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-  },
-  scrollableNoTop: {
-    paddingBlockStart: spacingVars['--spacing-2'],
-  },
-  scrollableWithTop: {
-    paddingBlockStart: spacingVars['--spacing-1'],
-  },
-  scrollableNoBottom: {
-    paddingBlockEnd: spacingVars['--spacing-2'],
-  },
-  scrollableWithBottom: {
-    paddingBlockEnd: spacingVars['--spacing-1'],
-  },
-  stickyBottom: {
-    display: 'flex',
-    flexDirection: 'column',
-    flexShrink: 0,
-    marginTop: 'auto',
-    position: 'sticky',
-    bottom: 0,
-    backgroundColor: 'inherit',
-    gap: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
-    paddingBlockStart: spacingVars['--spacing-1'],
-    paddingBlockEnd: spacingVars['--spacing-2'],
-  },
-  footerRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  footerRowCollapsed: {
-    flexDirection: 'column-reverse',
-  },
-  footerIcons: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  footerIconsCollapsed: {
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  stickyBottomCollapsed: {
-    paddingBlockStart: 0,
-    alignItems: 'center',
-  },
-  // Drawer footer — pushed to bottom of the scrollable content area
-  drawerFooter: {
-    display: 'flex',
-    flexDirection: 'column',
-    marginBlockStart: 'auto',
-    gap: spacingVars['--spacing-2'],
-    paddingBlockStart: spacingVars['--spacing-2'],
-  },
-  drawerFooterIcons: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  // Resizable container — wraps the nav and the drag handle
-  resizableContainer: {
-    position: 'relative',
-    display: 'flex',
-    flexShrink: 0,
-    height: '100%',
-    overflow: 'clip',
-  },
-  resizableHandle: {
-    // Keep the shared ring inside the clipping boundary. The wrapper cannot
-    // use overflow-clip-margin: that paint allowance also contributes the
-    // overlay's half-pixel spill to AppShell's scrollable overflow.
-    outlineOffset: {
-      default: '0',
-      ':focus-visible': `calc(0px - ${focusVars['--focus-outline-width']})`,
-    },
-  },
-  // Topbar mode — horizontal layout for mobile top bar
-  topbar: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 48,
-    width: '100%',
-    backgroundColor: 'inherit',
-    boxSizing: 'border-box',
-    overflow: 'hidden',
-  },
-  topbarIcons: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    marginInlineStart: 'auto',
-  },
-});
-
 /**
  * Cascaded to the icon rows through `SizeContext` so the built-in collapse
  * button and the consumer's `footerIcons` come out one height. An explicit
@@ -408,17 +271,6 @@ export interface SideNavProps extends BaseProps<HTMLElement> {
    * Footer icon bar (e.g., help, notifications, avatar).
    */
   footerIcons?: ReactNode;
-  /**
-   * StyleX styles created via `stylex.create()`. Merged with the component's
-   * base styles inside a single `stylex.props()` call for optimal deduplication.
-   *
-   * @example
-   * ```
-   * const overrides = stylex.create({ root: { marginBottom: 8 } });
-   * <Component xstyle={overrides.root} />
-   * ```
-   */
-  xstyle?: StyleXStyles;
   /**
    * CSS class name(s) appended to the root element.
    * If you're using StyleX, prefer `xstyle` for optimal style deduplication.
@@ -867,12 +719,13 @@ export function SideNav({
         data-testid={testId}
         {...mergeProps(
           themeProps('side-nav', {mode: 'topbar'}),
-          stylex.props(styles.topbar, xstyle),
-          className,
+          xstyleProps(xstyle),
+          tw(sideNavClassName.topbar, className),
           style,
         )}>
         {header}
-        <div {...stylex.props(styles.topbarIcons)}>
+        {/* eslint-disable-next-line @astryx/no-style-only-wrapper -- the icon row is a flex box with its own gap, which a context provider cannot carry; the rule reads StyleX objects, not class text. */}
+        <div className={sideNavClassName.topbarIcons}>
           <SizeProvider value={FOOTER_ICON_SIZE}>{footerIcons}</SizeProvider>
         </div>
       </div>
@@ -898,10 +751,11 @@ export function SideNav({
         {topContent}
         {children}
         {hasDrawerFooter && (
-          <div {...stylex.props(styles.drawerFooter)}>
+          <div className={sideNavClassName.drawerFooter}>
             {footer}
             {isRenderable(footerIcons) && (
-              <div {...stylex.props(styles.drawerFooterIcons)}>
+              // eslint-disable-next-line @astryx/no-style-only-wrapper -- the icon row is a flex box with its own gap, which a context provider cannot carry; the rule reads StyleX objects, not class text.
+              <div className={sideNavClassName.drawerFooterIcons}>
                 <SizeProvider value={FOOTER_ICON_SIZE}>
                   {footerIcons}
                 </SizeProvider>
@@ -923,10 +777,11 @@ export function SideNav({
         {topContent}
         {children}
         {hasDrawerFooter && (
-          <div {...stylex.props(styles.drawerFooter)}>
+          <div className={sideNavClassName.drawerFooter}>
             {footer}
             {isRenderable(footerIcons) && (
-              <div {...stylex.props(styles.drawerFooterIcons)}>
+              // eslint-disable-next-line @astryx/no-style-only-wrapper -- the icon row is a flex box with its own gap, which a context provider cannot carry; the rule reads StyleX objects, not class text.
+              <div className={sideNavClassName.drawerFooterIcons}>
                 <SizeProvider value={FOOTER_ICON_SIZE}>
                   {footerIcons}
                 </SizeProvider>
@@ -961,8 +816,12 @@ export function SideNav({
       data-testid={testId}
       {...mergeProps(
         themeProps('side-nav'),
-        stylex.props(styles.root, collapsed && styles.rootCollapsed, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(
+          sideNavClassName.root,
+          collapsed && sideNavClassName.rootCollapsed,
+          className,
+        ),
         resizableNavStyle,
       )}
       {...props}
@@ -971,39 +830,40 @@ export function SideNav({
       id={navId}>
       {hasStickyTop && (
         <div
-          {...stylex.props(
-            styles.stickyTop,
-            collapsed && styles.stickyTopCollapsed,
+          className={tw(
+            sideNavClassName.stickyTop,
+            collapsed && sideNavClassName.stickyTopCollapsed,
           )}>
           {header}
-          {isRenderable(topContent) && (
-            <div {...stylex.props(styles.topContent)}>{topContent}</div>
-          )}
+          {isRenderable(topContent) && <div>{topContent}</div>}
         </div>
       )}
       <div
-        {...stylex.props(
-          styles.scrollable,
-          collapsed && styles.scrollableCollapsed,
-          hasStickyTop ? styles.scrollableWithTop : styles.scrollableNoTop,
+        className={tw(
+          sideNavClassName.scrollable,
+          collapsed && sideNavClassName.scrollableCollapsed,
+          hasStickyTop
+            ? sideNavClassName.scrollableWithTop
+            : sideNavClassName.scrollableNoTop,
           hasStickyBottom
-            ? styles.scrollableWithBottom
-            : styles.scrollableNoBottom,
+            ? sideNavClassName.scrollableWithBottom
+            : sideNavClassName.scrollableNoBottom,
         )}>
         {children}
       </div>
       {(hasStickyBottom || showCollapseButton) && (
         <div
-          {...stylex.props(
-            styles.stickyBottom,
-            collapsed && styles.stickyBottomCollapsed,
+          className={tw(
+            sideNavClassName.stickyBottom,
+            collapsed && sideNavClassName.stickyBottomCollapsed,
           )}>
           {footer}
           {(showCollapseButton || isRenderable(footerIcons)) && (
+            // eslint-disable-next-line @astryx/no-style-only-wrapper -- the footer row is a flex box that turns with the rail, which a context provider cannot carry; the rule reads StyleX objects, not class text.
             <div
-              {...stylex.props(
-                styles.footerRow,
-                collapsed && styles.footerRowCollapsed,
+              className={tw(
+                sideNavClassName.footerRow,
+                collapsed && sideNavClassName.footerRowCollapsed,
               )}>
               <SizeProvider value={FOOTER_ICON_SIZE}>
                 {showCollapseButton && <SideNavCollapseButton />}
@@ -1024,7 +884,7 @@ export function SideNav({
   // mounted, and their state (an open nested group) and focus persist (FR6).
   // Only the handle comes and goes.
   const rail = isResizable ? (
-    <div ref={resizeWrapperRef} {...stylex.props(styles.resizableContainer)}>
+    <div ref={resizeWrapperRef} className={sideNavClassName.resizableContainer}>
       {navElement}
       {showResizeHandle && (
         <ResizeHandle
@@ -1033,7 +893,7 @@ export function SideNav({
           position="overlay"
           pillPlacement="end"
           isAlwaysVisible={false}
-          xstyle={styles.resizableHandle}
+          className={sideNavClassName.resizableHandle}
           resizable={ownerRegion ?? resizableHook.props}
           label={t('@astryx.sideNav.resizeSidebar')}
           aria-controls={navId}

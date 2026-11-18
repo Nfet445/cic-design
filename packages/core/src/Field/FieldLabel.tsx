@@ -17,21 +17,22 @@
  */
 
 import {useMemo, useRef, type ReactNode, type RefObject} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils/mergeProps';
 
-import {
-  colorVars,
-  fontWeightVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import {renderIconSlot} from '../Icon/Icon';
 import type {IconType} from '../Icon';
 import {InfoTip} from '../InfoTip/InfoTip';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  fieldDescriptionClassName,
+  fieldLabelClassName,
+  fieldLabelGroupClassName,
+  fieldLabelRowClassName,
+  fieldLabelHiddenInfoTipClassName,
+  fieldLabelStatusClassName,
+} from './fieldLabelClasses';
 import {useInputContainer} from '../hooks/useInputContainer';
 import {useResolvedOptionality} from '../hooks/useResolvedRequired';
 import {
@@ -41,104 +42,6 @@ import {
 import english from '../i18n/generated-english/Field/FieldLabel.generated';
 
 registerEnglishFallback(english);
-
-const styles = stylex.create({
-  // The label and its description read as a single block, with no space
-  // between them. They need a wrapper of their own to get that: as bare
-  // siblings they pick up the column gap of whichever caller holds them
-  // (Field, CheckboxInput, Switch), which is the spacing meant to separate
-  // the label group from the control below it.
-  labelGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  // A hidden label group must not take a slot in the caller's layout, or an
-  // empty box would draw the caller's gap around nothing. Dropping the
-  // wrapper box leaves the sr-only children out of flow directly under the
-  // caller, so the group occupies no space at all.
-  labelGroupHidden: {
-    display: 'contents',
-  },
-  label: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-secondary'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  labelDisabled: {
-    color: colorVars['--color-text-disabled'],
-    cursor: 'default',
-  },
-  // A button inside a label also activates the label's control, so the info
-  // button sits outside it, in one row with the label.
-  labelRow: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    // In a block label cell, keep the row's top on the cell's top, not on a
-    // text baseline.
-    verticalAlign: 'top',
-    gap: spacingVars['--spacing-1'],
-  },
-  // With a hidden label the row takes no slot in the caller's layout.
-  labelRowHidden: {
-    display: 'contents',
-  },
-  // A hidden label's info button takes no layout slot. While it has keyboard
-  // focus, it moves into flow above the control. There nothing covers or clips
-  // it. It stays positioned, because InfoTip's touch band needs a positioned
-  // host.
-  infoTipHidden: {
-    position: {default: 'absolute', ':focus-visible': 'relative'},
-    alignSelf: 'flex-start',
-    clip: {default: 'rect(0, 0, 0, 0)', ':focus-visible': 'auto'},
-    overflow: {default: 'hidden', ':focus-visible': 'visible'},
-    whiteSpace: 'nowrap',
-  },
-  srOnly: {
-    borderStyle: 'none',
-    clip: 'rect(0, 0, 0, 0)',
-    height: 1,
-    insetInlineStart: 0,
-    margin: -1,
-    overflow: 'hidden',
-    padding: 0,
-    pointerEvents: 'none',
-    position: 'absolute',
-    top: 0,
-    userSelect: 'none',
-    whiteSpace: 'nowrap',
-    width: 1,
-  },
-  optionalRequired: {
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-  },
-  description: {
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    color: colorVars['--color-text-secondary'],
-  },
-  // When the description forwards clicks to a click-activatable control
-  // (checkbox/switch), it reads as part of the same hit target as the label.
-  descriptionClickable: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-});
 
 export interface FieldLabelProps extends BaseProps<HTMLLabelElement> {
   /** Ref forwarded to the root element */
@@ -300,7 +203,7 @@ export function FieldLabel({
       {labelIcon && renderIconSlot(labelIcon, {size: 'sm', color: 'inherit'})}
       {label}
       {statusText && (
-        <span {...stylex.props(styles.optionalRequired)}>
+        <span className={fieldLabelStatusClassName}>
           <span aria-hidden="true"> ∙ </span>
           {statusText}
         </span>
@@ -324,13 +227,10 @@ export function FieldLabel({
         // cannot know it, and any encoding it guessed would be wrong for a
         // caller that arranges labels differently (Field's
         // `horizontal-labels`).
-        themeProps('field-label'),
-        stylex.props(
-          styles.label,
-          isDisabled && styles.labelDisabled,
-          isLabelHidden && styles.srOnly,
-          xstyle,
-        ),
+        mergeProps(themeProps('field-label'), {
+          className: fieldLabelClassName({isDisabled, isLabelHidden}),
+        }),
+        xstyleProps(xstyle),
         className,
         style,
       )}>
@@ -339,16 +239,12 @@ export function FieldLabel({
   );
 
   const labelWithHelp = labelTooltip ? (
-    <span
-      {...stylex.props(
-        styles.labelRow,
-        isLabelHidden && styles.labelRowHidden,
-      )}>
+    <span className={fieldLabelRowClassName({isLabelHidden})}>
       {labelElement}
       <InfoTip
         content={labelTooltip}
         label={t('@astryx.field.labelTooltip', {label})}
-        xstyle={isLabelHidden ? styles.infoTipHidden : undefined}
+        className={isLabelHidden ? fieldLabelHiddenInfoTipClassName : undefined}
       />
     </span>
   ) : (
@@ -362,21 +258,16 @@ export function FieldLabel({
   }
 
   return (
-    <div
-      {...stylex.props(
-        styles.labelGroup,
-        isLabelHidden && styles.labelGroupHidden,
-      )}>
+    <div className={fieldLabelGroupClassName({isLabelHidden})}>
       {labelWithHelp}
       <span
         ref={forwardsDescriptionClick ? descriptionRef : undefined}
         id={descriptionID}
         {...(forwardsDescriptionClick ? descriptionClickProps : undefined)}
-        {...stylex.props(
-          styles.description,
-          forwardsDescriptionClick && styles.descriptionClickable,
-          isLabelHidden && styles.srOnly,
-        )}>
+        className={fieldDescriptionClassName({
+          forwardsClick: forwardsDescriptionClick,
+          isLabelHidden,
+        })}>
         {description}
       </span>
     </div>

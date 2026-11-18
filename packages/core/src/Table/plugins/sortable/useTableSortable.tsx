@@ -15,9 +15,14 @@
  */
 
 import {useId, useRef, useMemo, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars, spacingVars, radiusVars} from '../../../theme/tokens.stylex';
-import {focusOutlineProps} from '../../../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../../../utils/focusOutlineClasses';
+import {tw} from '../../../utils/tw';
+import {
+  sortButtonClassName,
+  SORT_INDICATOR_CLASS,
+  SORT_INDICATOR_UNSORTED_CLASS,
+  SORT_RANK_CLASS,
+} from './sortClasses';
 import {Icon} from '../../../Icon';
 import {ComponentIcon} from '../../../Icon/ComponentIcon';
 import {resolveContextActions} from '../../tableContextMenu';
@@ -119,65 +124,6 @@ export interface UseTableSortableConfig<TSortKey extends string = string> {
    */
   isMultiSortEnabled?: boolean;
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const sortStyles = stylex.create({
-  button: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    margin: 0,
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    font: 'inherit',
-    color: 'inherit',
-    width: '100%',
-    height: '100%',
-    textAlign: 'inherit',
-    borderRadius: radiusVars['--radius-inner'],
-  },
-  // The button is a full-width flex container, so the `textAlign` a column's
-  // `align` puts on the <th> cannot position its contents. Mirror the column
-  // alignment onto the main axis, or an `align: 'end'` numeric column ends up
-  // with a left-hugging header over right-aligned figures.
-  buttonAlignCenter: {
-    justifyContent: 'center',
-  },
-  buttonAlignEnd: {
-    justifyContent: 'flex-end',
-  },
-  // The wrapper takes no block size, so a theme's larger glyph overflows it
-  // instead of growing the Sort control or the header row. When the slot
-  // hides the glyph, the empty wrapper collapses, so the button's gap does
-  // not offset an end-aligned label.
-  iconWrapper: {
-    display: {default: 'inline-flex', ':empty': 'none'},
-    alignItems: 'center',
-    blockSize: 0,
-  },
-  iconWrapperUnsorted: {
-    opacity: {
-      default: 0.35,
-      ':is(th:hover *)': 1,
-      ':focus-visible': 1,
-    },
-  },
-  rank: {
-    fontSize: 10,
-    // eslint-disable-next-line @astryx/no-hardcoded-styles -- no token for lineHeight:1 (tight badge)
-    lineHeight: '1',
-    color: colorVars['--color-text-accent'],
-  },
-});
 
 // =============================================================================
 // Helpers
@@ -293,21 +239,18 @@ function SortHeaderButton<T extends Record<string, unknown>>({
     <>
       <button
         type="button"
-        {...focusOutlineProps.focusVisible(
-          sortStyles.button,
-          column.align === 'end'
-            ? sortStyles.buttonAlignEnd
-            : column.align === 'center'
-              ? sortStyles.buttonAlignCenter
-              : null,
+        className={tw(
+          sortButtonClassName(column.align),
+          focusOutlineFocusVisibleClassName,
         )}
         aria-describedby={rank != null ? priorityId : undefined}
         onClick={handleClick}>
         <span>{children}</span>
+        {/* eslint-disable-next-line @astryx/no-style-only-wrapper -- the slot is a box: zero block size so a larger glyph overflows, and the wrapper holds the glyph's opacity. The rule reads StyleX objects, not class text. */}
         <span
-          {...stylex.props(
-            sortStyles.iconWrapper,
-            direction == null && sortStyles.iconWrapperUnsorted,
+          className={tw(
+            SORT_INDICATOR_CLASS,
+            direction == null && SORT_INDICATOR_UNSORTED_CLASS,
           )}>
           <ComponentIcon
             slot="table-sort-indicator"
@@ -318,7 +261,7 @@ function SortHeaderButton<T extends Record<string, unknown>>({
         </span>
         {/* eslint-disable-next-line @astryx/no-nullish-jsx-guard -- `rank` is the column's sort position, a number */}
         {rank != null && (
-          <span {...stylex.props(sortStyles.rank)} aria-hidden="true">
+          <span className={SORT_RANK_CLASS} aria-hidden="true">
             {rank}
           </span>
         )}

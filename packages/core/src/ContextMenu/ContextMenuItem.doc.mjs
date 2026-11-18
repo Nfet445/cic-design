@@ -7,7 +7,8 @@ export const docs = {
   subComponentOf: 'ContextMenu',
   displayName: 'Context Menu Item',
   isHiddenFromOverview: true,
-  description: 'Menu item component for compound mode. Re-exported from DropdownMenuItem for discoverability.',
+  description:
+    'Menu item component for compound mode. Re-exported from DropdownMenuItem for discoverability.',
   props: [
     {
       name: 'icon',
@@ -27,7 +28,8 @@ export const docs = {
     {
       name: 'endContent',
       type: 'ReactNode',
-      description: 'Additional content rendered after the label and description.',
+      description:
+        'Additional content rendered after the label and description.',
     },
     {
       name: 'xstyle',

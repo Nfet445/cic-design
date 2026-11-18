@@ -235,9 +235,9 @@ export const docs = {
     },
     {
       name: 'xstyle',
-      type: 'StyleXStyles',
+      type: 'AstryxXStyle',
       description:
-        'StyleX styles for layout customization (margins, positioning, sizing). Must be a stylex.create() value, not an inline style object like style={{}}.',
+        'A class name, inline style object, StyleX value, or list of these for the chart root. The style prop takes precedence over inline styles here.',
     },
     {
       name: 'className',

@@ -33,26 +33,14 @@ import {
   type KeyboardEvent,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useEntryErrorBehavior} from '../Field/useEntryErrorBehavior';
 import type {EntryErrorBehavior} from '../FormLayout/FormLayoutContext';
-import {
-  colorVars,
-  sizeVars,
-  radiusVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-  fontWeightVars,
-} from '../theme/tokens.stylex';
 import {
   Field,
   InputClearButton,
   type InputStatus,
-  inputWrapperStyles,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
 } from '../Field';
 import {Icon} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -107,7 +95,20 @@ import {useMediaQuery} from '../hooks/useMediaQuery';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {useSize} from '../SizeContext/SizeContext';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {tw} from '../utils/tw';
+import {
+  dateTimeInputControlClassName,
+  dateTimeInputIconButtonClassName,
+  dateTimeInputIconClassName,
+  dateTimeInputNativeRowClassName,
+  dateTimeInputRowClassName,
+  dateTimeInputSegmentClassName,
+  dateTimeInputSizeClassName,
+  dateTimeInputTimeListboxClassName,
+  dateTimeInputTimeOptionClassName,
+} from './dateTimeInputClasses';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {useLocale} from '../i18n';
 import {
   formatLocaleTime,
@@ -163,152 +164,7 @@ export type {
   InputStatusType as DateTimeInputStatusType,
 } from '../Field';
 
-// Two 196px segments plus the 8px gap fit at exactly 400px. Below that,
-// flex wrapping moves each growing segment onto its own full-width row.
-const HORIZONTAL_SEGMENT_BASIS = 196;
-
-const styles = stylex.create({
-  row: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: spacingVars['--spacing-2'],
-  },
-  nativeRow: {
-    // Match DateInput's closed-field floor. Without one, WebKit reports almost
-    // no intrinsic width for appearance:none temporal inputs with overlays.
-    minInlineSize: 180,
-  },
-  iconButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-  },
-  iconButtonDisabled: {
-    cursor: 'default',
-  },
-  icon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  input: {
-    display: 'block',
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    outline: 'none',
-    '::placeholder': {
-      color: colorVars['--color-text-secondary'],
-    },
-  },
-  inputDisabled: {
-    cursor: 'default',
-  },
-  inputInvalid: {
-    color: colorVars['--color-text-secondary'],
-  },
-  dateWrapper: {
-    flex: 1,
-    flexBasis: HORIZONTAL_SEGMENT_BASIS,
-    minWidth: 0,
-  },
-  timeWrapper: {
-    flex: 1,
-    flexBasis: HORIZONTAL_SEGMENT_BASIS,
-    minWidth: 0,
-  },
-  // Preset-time list. Paddings and states mirror BaseTypeahead's dropdown and
-  // Selector's options so every list in the system reads the same.
-  timeListbox: {
-    boxSizing: 'border-box',
-    maxHeight: 300,
-    overflowY: 'auto',
-    padding: spacingVars['--spacing-1'],
-    minWidth: 'anchor-size(width)',
-  },
-  timeOption: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%',
-    paddingBlock: spacingVars['--spacing-1-5'],
-    paddingInline: spacingVars['--spacing-2'],
-    borderRadius: radiusVars['--radius-element'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    textAlign: 'start',
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-  },
-  timeOptionHighlighted: {
-    backgroundColor: colorVars['--color-overlay-hover'],
-  },
-  timeOptionSelected: {
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-});
-
-/**
- * Size-specific padding for the preset-time options, so an `sm` field gets a
- * compact list. Matches DropdownMenuItem / Selector / BaseTypeahead.
- */
-const timeOptionSizeStyles = stylex.create({
-  sm: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  md: {
-    paddingBlock: spacingVars['--spacing-1-5'],
-  },
-  lg: {
-    paddingBlock: spacingVars['--spacing-2'],
-  },
-});
-
 const TOUCH_POINTER_QUERY = '(pointer: coarse)';
-
-const sizeStyles = stylex.create({
-  sm: {
-    height: sizeVars['--size-element-sm'],
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
-  },
-});
 
 export interface DateTimeInputProps extends Omit<
   FieldInputBaseProps<HTMLInputElement>,
@@ -1787,12 +1643,12 @@ function PointerDateTimeField({
             status: shownStatus?.type ?? null,
             disabled: isDisabled ? 'disabled' : null,
           }),
-          stylex.props(
-            styles.row,
-            usesNativePicker && styles.nativeRow,
-            controlXstyle,
+          xstyleProps(controlXstyle),
+          tw(
+            dateTimeInputRowClassName,
+            usesNativePicker && dateTimeInputNativeRowClassName,
+            controlClassName,
           ),
-          controlClassName,
           controlStyle,
         )}>
         {/* Date input */}
@@ -1803,18 +1659,11 @@ function PointerDateTimeField({
               size,
               status: fieldStatus?.type ?? null,
             }),
-            stylex.props(
-              inputWrapperStyles.base,
-              inputWrapperStyles.textField,
-              sizeStyles[size],
-              styles.dateWrapper,
-              isEffectivelyDisabled && inputWrapperStyles.disabled,
-              isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-              fieldStatus && inputStatusBorderStyles[fieldStatus.type],
-              fieldStatus &&
-                !isEffectivelyDisabled &&
-                inputStatusHoverShadowStyles[fieldStatus.type],
-              fieldStatus && inputStatusFocusWithinStyles[fieldStatus.type],
+            tw(
+              fieldInputWrapperClassName({status: fieldStatus?.type}),
+              isEffectivelyDisabled && fieldInputWrapperDisabledClassName,
+              dateTimeInputSizeClassName({size}),
+              dateTimeInputSegmentClassName,
             ),
           )}>
           {usesNativePicker ? (
@@ -1860,10 +1709,11 @@ function PointerDateTimeField({
                     ? t('@astryx.dateInput.toggleCalendarClose')
                     : t('@astryx.dateInput.openCalendar')
                 }
-                {...stylex.props(
-                  focusOutlineStyles.focusVisible,
-                  styles.iconButton,
-                  isEffectivelyDisabled && styles.iconButtonDisabled,
+                className={tw(
+                  dateTimeInputIconButtonClassName({
+                    isDisabled: isEffectivelyDisabled,
+                  }),
+                  focusOutlineFocusVisibleClassName,
                 )}>
                 <Icon
                   icon="calendar"
@@ -1914,11 +1764,10 @@ function PointerDateTimeField({
                 aria-controls={popover.isOpen ? popover.id : undefined}
                 aria-autocomplete="none"
                 autoComplete="off"
-                {...stylex.props(
-                  styles.input,
-                  isEffectivelyDisabled && styles.inputDisabled,
-                  isDateInvalid && styles.inputInvalid,
-                )}
+                className={dateTimeInputControlClassName({
+                  isDisabled: isEffectivelyDisabled,
+                  isRejected: isDateInvalid,
+                })}
               />
               {hiddenFormValue !== null && formControl.name != null && (
                 <input
@@ -1968,18 +1817,11 @@ function PointerDateTimeField({
               size,
               status: timeStatus?.type ?? null,
             }),
-            stylex.props(
-              inputWrapperStyles.base,
-              inputWrapperStyles.textField,
-              sizeStyles[size],
-              styles.timeWrapper,
-              isEffectivelyDisabled && inputWrapperStyles.disabled,
-              isEffectivelyDisabled && inputDisabledFocusStyles.withinRing,
-              timeStatus && inputStatusBorderStyles[timeStatus.type],
-              timeStatus &&
-                !isEffectivelyDisabled &&
-                inputStatusHoverShadowStyles[timeStatus.type],
-              timeStatus && inputStatusFocusWithinStyles[timeStatus.type],
+            tw(
+              fieldInputWrapperClassName({status: timeStatus?.type}),
+              isEffectivelyDisabled && fieldInputWrapperDisabledClassName,
+              dateTimeInputSizeClassName({size}),
+              dateTimeInputSegmentClassName,
             ),
           )}>
           {usesNativeTimePicker ? (
@@ -2010,7 +1852,7 @@ function PointerDateTimeField({
             />
           ) : (
             <>
-              <div {...stylex.props(styles.icon)}>
+              <div className={dateTimeInputIconClassName}>
                 <Icon
                   icon="clock"
                   size="sm"
@@ -2065,11 +1907,10 @@ function PointerDateTimeField({
                     : undefined
                 }
                 aria-busy={isBusy || undefined}
-                {...stylex.props(
-                  styles.input,
-                  isEffectivelyDisabled && styles.inputDisabled,
-                  typedTime.isRejected && styles.inputInvalid,
-                )}
+                className={dateTimeInputControlClassName({
+                  isDisabled: isEffectivelyDisabled,
+                  isRejected: typedTime.isRejected,
+                })}
               />
               {/*
                 Announces the time rejection message that the field status
@@ -2121,7 +1962,7 @@ function PointerDateTimeField({
               })}
               {...mergeProps(
                 themeProps('date-time-input-time-listbox'),
-                stylex.props(styles.timeListbox),
+                dateTimeInputTimeListboxClassName,
               )}>
               {timeOptions.map((option, index) => {
                 const isSelected = option.time === selectedOptionTime;
@@ -2139,13 +1980,11 @@ function PointerDateTimeField({
                     onMouseEnter={() => highlightTimeOnHover(index)}
                     {...mergeProps(
                       themeProps('date-time-input-time-option'),
-                      stylex.props(
-                        styles.timeOption,
-                        timeOptionSizeStyles[size],
-                        index === activeTimeIndex &&
-                          styles.timeOptionHighlighted,
-                        isSelected && styles.timeOptionSelected,
-                      ),
+                      dateTimeInputTimeOptionClassName({
+                        size,
+                        isHighlighted: index === activeTimeIndex,
+                        isSelected,
+                      }),
                     )}>
                     {option.label}
                   </div>

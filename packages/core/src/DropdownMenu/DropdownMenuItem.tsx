@@ -34,88 +34,21 @@ import {
   type PointerEvent,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {renderIconSlot, type IconType} from '../Icon';
 import {Item} from '../Item';
 import {useLinkComponent} from '../Link/useLinkComponent';
-import {
-  colorVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-  focusVars,
-} from '../theme/tokens.stylex';
 import {composeEventHandlers, mergeProps} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {useDropdownMenuContext} from './DropdownMenuContext';
+import {dropdownMenuItemClassName} from './dropdownMenuClasses';
+import {menuRowStateStyles} from './menuRowState.stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {menuPressLitRowStyle} from '../privateAttributes/menuPressLit.stylex';
+import {menuPressLitRowClassName} from '../privateAttributes/menuPressLit.stylex';
+import {tw} from '../utils/tw';
 import {focusMenuItemOnHover} from './menuItemHover';
 import {isModifiedClick, keepDisabledRowUnfocused} from './menuItemRoles';
 import {themeProps} from '../utils/themeProps';
 import {usePressFeedback} from '../hooks/usePressFeedback';
-
-const menuItemStyles = stylex.create({
-  root: {
-    boxSizing: 'border-box',
-    width: '100%',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
-    borderRadius: `max(0px, calc(var(--_dropdown-menu-radius, ${spacingVars['--spacing-2']}) - var(--_dropdown-menu-padding, ${spacingVars['--spacing-1']})))`,
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: {
-      default: 'transparent',
-      // menuPressLitRowStyle sets the variable on the row a held finger or pen
-      // lights.
-      ':focus': `var(--_menu-row-focus-paint, ${colorVars['--color-overlay-hover']})`,
-      // The pressed look only where hover exists. Under a finger the row a
-      // press BEGAN on would otherwise stay painted while the highlight (focus)
-      // moves to the row under the finger — two rows lit. A held finger or pen
-      // sets the variable on the menu. Then only the lit row keeps the look.
-      '@media (hover: hover)': {
-        default: null,
-        ':active:where(:not(:disabled,[aria-disabled="true"]))': `var(--_menu-row-active-paint, ${colorVars['--color-overlay-pressed']})`,
-      },
-    },
-    borderWidth: 0,
-    borderStyle: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    textAlign: 'start',
-    // Rows show focus with a translucent overlay, which forced colors replace
-    // with the page color. The standard focus ring (focusOutlineStyles), drawn
-    // inside the row by its own width, marks the focused row in every mode.
-    outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
-  },
-  disabled: {
-    opacity: 0.5,
-    cursor: 'default',
-  },
-  destructive: {
-    // Only recolor the text/icon; the hover / focus background stays the shared
-    // neutral overlay from `root` so the hover state matches every other menu
-    // item. The semantic status foreground covers the label, description, icon,
-    // and any bare text on a plain surface.
-    color: colorVars['--color-text-error'],
-    '--_item-label-color': colorVars['--color-text-error'],
-    '--_item-description-color': colorVars['--color-text-error'],
-  },
-});
-
-const itemSizeStyles = stylex.create({
-  sm: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  md: {
-    paddingBlock: spacingVars['--spacing-1-5'],
-  },
-  lg: {},
-});
 
 export interface DropdownMenuItemProps extends Omit<
   BaseProps,
@@ -309,11 +242,7 @@ export function DropdownMenuItem({
       isDisabled={isDisabled}
       xstyle={[
         focusOutlineStyles.focusVisible,
-        menuItemStyles.root,
-        menuPressLitRowStyle,
-        itemSizeStyles[menuSize],
-        isDestructive && menuItemStyles.destructive,
-        isDisabled && menuItemStyles.disabled,
+        menuRowStateStyles.paintedRow,
         xstyle,
       ]}
       {...mergeProps(
@@ -322,7 +251,15 @@ export function DropdownMenuItem({
           variant: isDestructive ? 'destructive' : null,
         }),
         {
-          className,
+          className: tw(
+            dropdownMenuItemClassName({
+              isDestructive,
+              isDisabled,
+              size: menuSize,
+            }),
+            menuPressLitRowClassName,
+            className,
+          ),
           style,
         },
       )}

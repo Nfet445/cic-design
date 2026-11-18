@@ -2,7 +2,7 @@
 
 /**
  * @file AspectRatio.tsx
- * @input Uses React, stylex
+ * @input Uses React, the xstyle adapter, the class map
  * @output Exports AspectRatio component, AspectRatioProps, AspectRatioShape, AspectRatioFit
  * @position AspectRatio component; maintains a specific aspect ratio for its children
  *
@@ -13,11 +13,36 @@
  * - /packages/cli/assets/templates/blocks/components/AspectRatio/ (showcase blocks)
  */
 
-import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
+import type {CSSProperties, ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  ASPECT_RATIO_VAR,
+  aspectRatioChildCenterClassName,
+  aspectRatioChildClassName,
+  aspectRatioChildContainClassName,
+  aspectRatioChildCoverClassName,
+  aspectRatioChildFillClassName,
+  aspectRatioClassName,
+  aspectRatioEllipseClassName,
+  aspectRatioRatioClassName,
+} from './aspectRatioClasses';
+
+/**
+ * The ratio travels as a private variable with a class reading it, never as an
+ * inline declaration: an inline `aspect-ratio` would beat every class, while a
+ * class sits in the component's cascade layer and yields to consumer CSS. The
+ * variable is private because the ratio is not a theming surface.
+ */
+function ratioStyle(ratio: number): CSSProperties {
+  const style: Record<`--${string}`, string> = {
+    [ASPECT_RATIO_VAR]: String(ratio),
+  };
+  return style;
+}
 
 /**
  * The shape of the aspect ratio container.
@@ -117,70 +142,6 @@ export interface AspectRatioProps extends BaseProps<HTMLDivElement> {
   children: ReactNode;
 }
 
-const styles = stylex.create({
-  container: {
-    position: 'relative',
-    width: '100%',
-    overflow: 'clip',
-    minHeight: 0,
-    flexShrink: 0,
-  },
-  ellipse: {
-    // 50% on both axes follows the box dimensions, so the clip respects the
-    // ratio: a circle at 1:1 and an oval at non-square ratios.
-    borderRadius: '50%',
-  },
-  child: {
-    position: 'absolute',
-    top: 0,
-    insetInlineStart: 0,
-    width: '100%',
-    height: '100%',
-  },
-  // fit="center" centers the child at its natural size from the wrapper —
-  // no styles on the child itself.
-  childCenter: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  // `cover`/`contain` must style the child itself (`object-fit` only applies
-  // on the replaced element), and StyleX has no child selector. The
-  // `:not([stylex-hack])` pseudo-class always matches, so StyleX accepts the
-  // key and emits `.x:not([stylex-hack]) > *`, a direct-child rule in the
-  // `astryx-base` layer like every other component style.
-  childFill: {
-    ':not([stylex-hack]) > *': {
-      width: '100%',
-      height: '100%',
-    },
-  },
-  childCover: {
-    ':not([stylex-hack]) > :is(img, video)': {
-      objectFit: 'cover',
-    },
-  },
-  childContain: {
-    ':not([stylex-hack]) > :is(img, video)': {
-      objectFit: 'contain',
-    },
-  },
-});
-
-// The ratio compiles to a CSS variable + a class-level declaration
-// (aspect-ratio: var(--x)) instead of a raw inline style, so consumer
-// overrides — `xstyle` rules, including ones inside @media/@container
-// queries — can still win. A raw inline `aspect-ratio` would beat any class
-// (same rationale as Grid's dynamic track values). Non-StyleX consumers
-// don't need a dedicated hook: the compiled declaration sits in the
-// `astryx-base` cascade layer, so any unlayered consumer rule wins
-// regardless of specificity.
-const dynamicStyles = stylex.create({
-  ratio: (ratio: number) => ({
-    aspectRatio: ratio,
-  }),
-});
-
 /**
  * AspectRatio component for maintaining a specific aspect ratio for its children.
  *
@@ -240,14 +201,16 @@ export function AspectRatio({
       ref={ref}
       {...mergeProps(
         themeProps('aspect-ratio', {shape}),
-        stylex.props(
-          styles.container,
-          dynamicStyles.ratio(ratio),
-          shape === 'ellipse' && styles.ellipse,
-          xstyle,
-        ),
-        className,
-        style,
+        {
+          className: tw(
+            aspectRatioClassName,
+            aspectRatioRatioClassName,
+            shape === 'ellipse' && aspectRatioEllipseClassName,
+            className,
+            xstyleProps(xstyle).className,
+          ),
+        },
+        {...ratioStyle(ratio), ...style},
       )}
       {...props}>
       {/* The marker attribute carries the fit value. No Astryx style keys on
@@ -255,12 +218,13 @@ export function AspectRatio({
           still target it. */}
       <div
         data-astryx-aspect-ratio-override={fit}
-        {...stylex.props(
-          styles.child,
-          fit === 'center' && styles.childCenter,
-          (fit === 'cover' || fit === 'contain') && styles.childFill,
-          fit === 'cover' && styles.childCover,
-          fit === 'contain' && styles.childContain,
+        className={tw(
+          aspectRatioChildClassName,
+          fit === 'center' && aspectRatioChildCenterClassName,
+          (fit === 'cover' || fit === 'contain') &&
+            aspectRatioChildFillClassName,
+          fit === 'cover' && aspectRatioChildCoverClassName,
+          fit === 'contain' && aspectRatioChildContainClassName,
         )}>
         {children}
       </div>

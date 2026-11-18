@@ -11,7 +11,7 @@
  * All drawings of an icon live in one SVG; CSS shows the one whose weight
  * range contains the current font weight. The weight comes from the text
  * around the icon, read by a 1ch-wide probe container (see weightProbe.ts
- * and weighted.stylex.ts), so an icon inside bold text draws its bold
+ * and svgIconClasses.ts), so an icon inside bold text draws its bold
  * drawing with no prop. `weight` pins it, and an ancestor can set
  * `--astryx-icon-weight` to pin a subtree.
  *
@@ -23,13 +23,21 @@
  */
 
 import type {CSSProperties, SVGProps} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps, themeProps} from '@astryxdesign/core/utils';
-import {iconVars} from './tokens.stylex';
-import {iconColorStyles} from './colors.stylex';
+import {
+  iconColorClassNames,
+  iconSizeClassNames,
+  weightedIconSpriteClassName,
+  weightedSvgIconRootClassName,
+  weightedSvgIconSvgClassName,
+} from './svgIconClasses';
 import {iconA11yProps} from './iconA11y';
-import {opticalSize} from './variations.stylex';
-import {weightProbeStyles, weightRanges} from './weighted.stylex';
+import {
+  weightProbeClassName,
+  weightProbeSvgClassName,
+  weightRangeClassNames,
+} from './svgIconClasses';
+import {tw} from '../tw';
 import {registerWeightProbe} from './weightProbe';
 import type {
   IconWeight,
@@ -72,44 +80,12 @@ export interface WeightedIconSpriteProps {
   icons: readonly WeightedIconDef[];
 }
 
-const styles = stylex.create({
-  // The fixed-size box. The probe must be the first font so `1ch` reflects
-  // the font weight; icons draw no text, so this changes nothing visible.
-  root: {
-    display: 'inline-flex',
-    flexShrink: 0,
-    width: iconVars['--icon-size'],
-    height: iconVars['--icon-size'],
-    // The probe's text sets this box's baseline. Centering it keeps the icon
-    // where SVGIcon sits in running text and leaves the line where it was.
-    verticalAlign: 'middle',
-    fontFamily: 'AstryxWeightProbe',
-    fontSynthesis: 'none',
-    // The probe can be wider than the box; it must not add scrollable
-    // overflow to the page.
-    overflow: 'clip',
-  },
-  svg: {
-    display: 'block',
-    flexShrink: 0,
-    width: iconVars['--icon-size'],
-    height: iconVars['--icon-size'],
-    fill: 'currentColor',
-  },
-  sprite: {
-    position: 'absolute',
-    width: 0,
-    height: 0,
-    overflow: 'hidden',
-  },
-});
-
-type RangeKey = keyof typeof weightRanges;
+type RangeKey = keyof typeof weightRangeClassNames;
 
 function Layer({layer}: {layer: WeightedIconLayer}) {
   const key = `r${layer.from}_${layer.to}` as RangeKey;
   return (
-    <g {...stylex.props(weightRanges[key])}>
+    <g className={weightRangeClassNames[key]}>
       {layer.paths.map((path, i) => (
         <path
           key={i}
@@ -136,7 +112,7 @@ export function WeightedIconSprite({icons}: WeightedIconSpriteProps) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
       focusable="false"
-      {...stylex.props(styles.sprite)}>
+      className={weightedIconSpriteClassName}>
       {icons.map(icon => (
         <symbol
           key={icon.name}
@@ -182,23 +158,30 @@ export function WeightedSVGIcon({
     weight != null ? {'--astryx-icon-weight': String(weight)} : undefined;
 
   return (
+    // The probe must be the first font so `1ch` reflects the font weight;
+    // icons draw no text, so the probe font changes nothing visible.
     <span
       ref={installWeightProbe}
       {...mergeProps(
         themeProps('weighted-svg-icon', {size, color}),
-        stylex.props(styles.root, iconColorStyles[color], opticalSize[size]),
+        tw(
+          iconSizeClassNames[size],
+          weightedSvgIconRootClassName,
+          iconColorClassNames[color],
+        ),
       )}>
-      <span {...stylex.props(weightProbeStyles.probe)}>
+      <span className={weightProbeClassName}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox={icon.viewBox ?? '0 0 24 24'}
           {...a11yProps}
           {...props}
-          {...mergeProps(
-            stylex.props(styles.svg, weightProbeStyles.svg),
+          className={tw(
+            weightedSvgIconSvgClassName,
+            weightProbeSvgClassName,
             className,
-            {...pinnedStyle, ...(style as CSSProperties)},
-          )}>
+          )}
+          style={{...pinnedStyle, ...(style as CSSProperties)}}>
           {sprite ? (
             <use href={`#${weightedIconSymbolId(icon)}`} />
           ) : (

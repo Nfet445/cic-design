@@ -21,33 +21,13 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {nativePickerSegmentSlotClassName} from './nativePickerSegmentClasses';
 import {DateTimeInput} from './DateTimeInput';
 import type {ISODateTimeString} from './DateTimeInput';
 import {resetDateSegmentProbe} from '../DateInput/nativeDateSegments';
 
 const HOVER_CAPABLE = /\(\s*hover\s*:\s*hover\s*\)/;
-
-// jsdom does not perform intrinsic flex layout. These classes pin the
-// DateInput-aligned native field floor and confirm that value slots remain
-// shrinkable rather than carrying their own preferred width.
-const nativeSizingProbe = stylex.create({
-  row: {minInlineSize: 180},
-  slot: {flex: 1, minInlineSize: 0},
-});
-
-function expectProbeClasses(
-  element: HTMLElement,
-  style: (typeof nativeSizingProbe)[keyof typeof nativeSizingProbe],
-): void {
-  const classes = (stylex.props(style).className ?? '')
-    .split(' ')
-    .filter(className => className !== '' && !className.includes('__'));
-  expect(classes.length).toBeGreaterThan(0);
-  for (const className of classes) {
-    expect(element).toHaveClass(className);
-  }
-}
 
 class MockResizeObserver {
   observe() {}
@@ -167,12 +147,18 @@ describe('DateTimeInput nativePicker', () => {
 
     const row = container.querySelector('.astryx-date-time-input');
     expect(row).toBeInstanceOf(HTMLElement);
-    expectProbeClasses(row as HTMLElement, nativeSizingProbe.row);
+    // jsdom performs no layout, so the class is the evidence: the native row
+    // keeps DateInput's 180px closed-field floor.
+    expectClassSet(row as HTMLElement, {includes: ['min-w-[180px]']});
 
     for (const input of [getNativeDateInput(), getNativeTimeInput()]) {
       const slot = input.parentElement;
       expect(slot).toBeInstanceOf(HTMLElement);
-      expectProbeClasses(slot as HTMLElement, nativeSizingProbe.slot);
+      // The slot is a class, so its identity is the class set rather than a
+      // probe drawn from the same declarations.
+      expectClassSet(slot as HTMLElement, {
+        includes: nativePickerSegmentSlotClassName.split(' '),
+      });
     }
   });
 

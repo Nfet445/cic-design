@@ -43,6 +43,7 @@ import {
   useLayerKeyboardClearance,
 } from './useLayerKeyboardClearance';
 import {useLayer} from './useLayer';
+import {layerKeyboardDefaultCapClassName} from './layerClasses';
 
 const guide = {
   inset: 0,
@@ -329,18 +330,19 @@ describe('keyboardClearanceCap', () => {
 });
 
 /**
- * The cap a layer's own element declares: its own value of the cap property,
- * through the StyleX variable its class reads. It is never one inherited from
- * an ancestor layer.
+ * The cap a layer's own element declares: the inline value the runtime writes
+ * while the keyboard caps it, or the uncapped limit its defaults class
+ * declares otherwise. It is never one inherited from an ancestor layer.
+ * jsdom applies no stylesheet, so the class stands in for the computed value.
  */
 function ownCap(el: HTMLElement): string {
-  const declared = getComputedStyle(el)
+  const declared = el.style
     .getPropertyValue(LAYER_KEYBOARD_CAP_PROPERTY)
     .trim();
-  const variable = /^var\((--[^),\s]+)/.exec(declared)?.[1];
-  return variable == null
-    ? el.style.getPropertyValue(LAYER_KEYBOARD_CAP_PROPERTY).trim()
-    : el.style.getPropertyValue(variable).trim();
+  if (declared !== '') {
+    return declared;
+  }
+  return el.classList.contains(layerKeyboardDefaultCapClassName) ? '100vh' : '';
 }
 
 /** A layer from the runtime that holds a second layer from the runtime. */

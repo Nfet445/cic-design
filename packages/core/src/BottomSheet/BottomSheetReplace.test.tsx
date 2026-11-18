@@ -480,7 +480,10 @@ describe('BottomSheet replace: the handoff', () => {
     expect(one).not.toHaveAttribute('data-sheet-stack-depth');
     // The retained panel stays put (no exit transform) and takes no pointer.
     expect(getPanel(one).style.transform).toBe('');
-    expect(getComputedStyle(getPanel(one)).pointerEvents).toBe('none');
+    // jsdom injects no Tailwind sheet, so the arm is read off the class set.
+    expect(getPanel(one).className.split(/\s+/)).toContain(
+      'pointer-events-none',
+    );
   });
 
   it('fades the replaced sheet only after the entering motion completes, then closes its dialog', () => {

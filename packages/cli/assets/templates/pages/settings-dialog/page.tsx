@@ -27,7 +27,7 @@
  *
  * **Customise from the system outward.** Stop at the first level that works:
  * (1) an Astryx component prop, (2) a theme token or component override when
- * the value belongs across the surface, (3) local `xstyle` for layout the
+ * the value belongs across the surface, (3) local `className` for layout the
  * component cannot express. Anything after that needs a comment recording the
  * missing system capability; otherwise one local fix becomes the next
  * contributor's copy-paste pattern.
@@ -72,7 +72,6 @@ import {HStack} from '@astryxdesign/core/HStack';
 import {useMediaQuery} from '@astryxdesign/core/hooks';
 import {Icon} from '@astryxdesign/core/Icon';
 import {IconButton} from '@astryxdesign/core/IconButton';
-import {rtlStyles} from '@astryxdesign/core/utils';
 import {Kbd} from '@astryxdesign/core/Kbd';
 import {Layout, LayoutContent} from '@astryxdesign/core/Layout';
 import {ListItem} from '@astryxdesign/core/List';
@@ -145,7 +144,6 @@ import {
   UserIcon,
   UsersIcon,
 } from '@heroicons/react/24/outline';
-import * as stylex from '@stylexjs/stylex';
 import {
   Children,
   type ComponentType,
@@ -164,7 +162,8 @@ import {
  * Where the hub swaps its two-column shell for the one-column phone layout.
  *
  * The SHELL's breakpoint only. Rows do not read it — they stack on the panel's
- * own width instead (`ROW_STACK`), because the two questions have different
+ * own width instead (the 480px container breakpoint below), because the two
+ * questions have different
  * answers: the pane is the dialog's width less a 260px rail, and the rail goes
  * away below this line, so the panel is ~380px at a 700px viewport and ~390px
  * at 420px. Keyed to the viewport, rows would stack hardest exactly where they
@@ -173,7 +172,6 @@ import {
 const NARROW_VIEWPORT = '(max-width: 640px)';
 
 /** The panel column rows measure themselves against. */
-const PANEL_CONTAINER = 'settings-panel';
 
 /**
  * The ONE width at which every row on a panel goes from two columns to one.
@@ -189,8 +187,6 @@ const PANEL_CONTAINER = 'settings-panel';
  * gutter, and the widest control on the surface. Rows with smaller controls
  * have room to spare at that width and stack anyway, which is the point.
  */
-const ROW_STACK = `@container ${PANEL_CONTAINER} (max-width: 480px)`;
-
 /** The one inset for this surface: spacing step 4 === 16px. */
 const ROW_PADDING = 4;
 
@@ -208,119 +204,67 @@ const noop = () => {};
  */
 const CONTROL_WIDTH = 192;
 
-const styles = stylex.create({
+const styles = {
   // `SideNav`'s root sets a starting width but no `flex-shrink`, so as a flex
   // child it gives that width back to whatever the content pane demands — the
   // rail visibly narrows as you click through panels until labels ellipsize.
-  sideNav: {
-    flexShrink: 0,
-  },
+  sideNav: 'shrink-0',
   // Neither `SideNav` nor `SideNavSection` sets a gap, so the only separation
   // between two groups is each section's own block padding. The default reads
   // as one long list rather than five groups.
-  sideNavSection: {
-    paddingBlock: 'var(--spacing-2)',
-  },
+  sideNavSection: '[padding-block:var(--spacing-2)]',
   // The pinned close control. It sits first in the scrolling column and takes
   // no height, so it overlays the heading's line instead of claiming a row —
   // and, being a child of the whole column rather than of the heading, it
   // stays pinned for the entire scroll (a sticky box is clamped by its
   // containing block).
-  closeAnchor: {
-    position: 'sticky',
+  closeAnchor:
     // 0 pins the control against the pane's CONTENT box — which is where it
     // rests unscrolled, so it holds that corner exactly rather than jumping
     // into the gutter the moment the body moves. Verify this after any change
     // to the pane's padding: the pin line follows the content box, not the
     // padding box, so the two only agree when this is 0.
-    insetBlockStart: 0,
-    zIndex: 1,
-    height: 0,
-  },
+    'sticky [inset-block-start:0] z-[1] h-0',
   // Opaque, or the body scrolls visibly through the button. Only the control's
   // own box is covered — a full-width band would wipe a strip of the body for
   // no one's benefit.
-  closeBacking: {
-    display: 'flex',
-    // The dialog's own canvas, so the button covers the body scrolling under it.
-    backgroundColor: 'var(--color-background-surface)',
-    borderRadius: 'var(--radius-element)',
-  },
+  closeBacking:
+    'flex bg-[var(--color-background-surface)] rounded-[var(--radius-element)]',
   // ONE height for every panel. A dialog sizes to its content, so without this
   // the frame grows and shrinks as you click through the navigation — the rail
   // and the close button move under the cursor between one panel and the next.
   // `Dialog maxHeight` cannot do it: a maximum only stops a tall panel, it does
   // not hold a short one open. So the shell states the height and the panels
   // scroll inside it.
-  shell: {
-    height: 'min(800px, calc(100dvh - 2rem))',
-  },
-});
+  shell: 'h-[min(800px,calc(100dvh-2rem))]',
+} as const;
 
 /** The panel column, and the settings row that measures itself against it. */
-const row = stylex.create({
+const row = {
   // The column every row asks its width question of. It is this element and
   // not the scroll pane, because a row is as wide as the column, and the
   // column is what a future `contentWidth` cap would narrow.
-  panel: {
-    containerType: 'inline-size',
-    containerName: PANEL_CONTAINER,
-  },
-  line: {
-    display: 'flex',
-    flexDirection: {default: 'row', [ROW_STACK]: 'column'},
-    // The one alignment that moves: centred against the control beside it,
-    // stretched to the full row above it — which is what puts a stacked control
-    // on the row's own inset, the edge the icon starts at.
-    alignItems: {default: 'center', [ROW_STACK]: 'stretch'},
-    // Stacked, the control drops into the same column as `detail`, which the
-    // row already spaces at 8px — so 8px here too, and a stacked row reads as
-    // one rhythm rather than a 12px step to the control and an 8px step to its
-    // detail.
-    gap: {
-      default: 'var(--spacing-3)',
-      [ROW_STACK]: 'var(--spacing-2)',
-    },
-  },
-  textColumn: {
-    // Lifted once stacked: holding 420px inside a ~400px column would just be a
-    // narrower column for no reason.
-    maxWidth: {default: 420, [ROW_STACK]: 'none'},
-  },
-  control: {
-    flexShrink: 0,
-  },
-});
+  panel: '@container/settings-panel',
+  line: 'flex flex-row items-center gap-3 @max-[480px]/settings-panel:flex-col @max-[480px]/settings-panel:items-stretch @max-[480px]/settings-panel:gap-2',
+  // 420px, lifted once stacked: holding it inside a ~400px column would just be
+  // a narrower column for no reason.
+  textColumn: 'max-w-[420px] @max-[480px]/settings-panel:max-w-none',
+  control: 'shrink-0',
+} as const;
 
 /** The miniature drawn inside each theme card. */
-const preview = stylex.create({
+const preview = {
   // One bar of "text". Astryx has no primitive for a content placeholder at
   // this scale — `Skeleton` is the near miss, and it animates.
-  bar: {
-    height: 4,
-    width: '50%',
-    borderRadius: 999,
-    backgroundColor: 'var(--color-border-emphasized)',
-  },
-  barWide: {
-    width: '66%',
-  },
-  clip: {
-    overflow: 'hidden',
-    borderRadius: 'var(--radius-element)',
-  },
+  bar: 'h-1 w-1/2 rounded-full bg-[var(--color-border-emphasized)]',
+  barWide: 'h-1 w-[66%] rounded-full bg-[var(--color-border-emphasized)]',
+  clip: 'overflow-hidden rounded-[var(--radius-element)]',
   // The two borderless regions of the miniature. `Theme` re-declares these
   // tokens for the mode it is previewing, so Light stays light in a dark app.
-  mutedSurface: {
-    backgroundColor: 'var(--color-background-muted)',
-  },
-  contentSurface: {
-    backgroundColor: 'var(--color-background-surface)',
-  },
-  inert: {
-    pointerEvents: 'none',
-  },
-});
+  mutedSurface: 'bg-[var(--color-background-muted)]',
+  contentSurface: 'bg-[var(--color-background-surface)]',
+  inert: 'pointer-events-none',
+} as const;
 
 /**
  * The chosen face, as a TOKEN override rather than a `font-family` on the
@@ -328,8 +272,7 @@ const preview = stylex.create({
  * re-declaring the token re-points every `Text` inside the preview whatever
  * specificity those rules carry; setting `font-family` reaches only what
  * inherits it, and a preview built that way silently keeps showing the system
- * font. It rides on `style` because StyleX's `xstyle` types accept only known
- * CSS properties, and a custom property is not one.
+ * font. It rides on `style` because a class cannot name an arbitrary token.
  */
 function faceStyle(stack: string): CSSProperties {
   const style: Record<string, string> = {'--font-family-body': stack};
@@ -628,7 +571,7 @@ function SettingsCard({
  * or, below the panel's stacking width, the control underneath and full width.
  *
  * Every row on a panel makes that switch at the same moment, on the panel's
- * own width rather than the viewport's — see `ROW_STACK`. There is deliberately
+ * own width rather than the viewport's. There is deliberately
  * no per-row opt-out: a row that keeps two columns while its neighbours have
  * given up reads as a bug rather than as a decision.
  *
@@ -679,16 +622,15 @@ function SettingsRow({
 }) {
   return (
     <VStack padding={ROW_PADDING} gap={2}>
-      {/* `Stack` with the direction in `xstyle` rather than in `direction`:
+      {/* `Stack` with the direction in a class rather than in `direction`:
           the switch happens inside a container query, which a prop cannot
-          express. There is no cascade fight to lose here — `Stack` spreads
-          `xstyle` LAST into its own `stylex.props`, so StyleX resolves the two
-          by property rather than by stylesheet order.
+          express. The row class and the `flex-col` utility set different
+          properties, so there is no cascade fight to lose.
 
           The `data-` marks are for tests: "every row on the panel stacks at
           the same width" is the invariant this layout is FOR, and it is only
           checkable by reading the computed direction off every line at once. */}
-      <Stack xstyle={row.line} data-settings-line>
+      <Stack className={row.line} data-settings-line>
         {/* `fill` means "take the width the control leaves", and carries the
             flex `min-width: 0` reset that lets the text wrap instead of
             widening the row. */}
@@ -707,7 +649,7 @@ function SettingsRow({
                 a hair from the thumb; the cap turns that surplus into the
                 gutter the layout reads by. Lifted once stacked — there is no
                 control beside the text, so no gutter to protect. */}
-            <VStack gap={0.5} xstyle={row.textColumn}>
+            <VStack gap={0.5} className={row.textColumn}>
               {titleAccessory == null ? (
                 <Text type="label">{title}</Text>
               ) : (
@@ -732,7 +674,7 @@ function SettingsRow({
           // has above the breakpoint — so the control column reads the same
           // either way, and a control with no width of its own (a switch, a
           // button) stays hugged to its own size.
-          <VStack data-settings-control xstyle={row.control}>
+          <VStack data-settings-control className={row.control}>
             {control}
           </VStack>
         )}
@@ -1155,10 +1097,14 @@ function ThemePreviewCanvas({mode}: {mode: 'light' | 'dark'}) {
     // selection ring, a frame around the preview, and another around its body.
     // These are decorative regions, not content containers, so flat token
     // surfaces are the weaker and correct grouping primitive.
-    <VStack padding={2} gap={1.5} height="100%" xstyle={preview.mutedSurface}>
+    <VStack
+      padding={2}
+      gap={1.5}
+      height="100%"
+      className={preview.mutedSurface}>
       <VStack gap={1} align="center">
-        <VStack xstyle={[preview.bar, preview.barWide]} />
-        <VStack xstyle={preview.bar} />
+        <VStack className={preview.barWide} />
+        <VStack className={preview.bar} />
       </VStack>
       <StackItem size="fill">
         <VStack
@@ -1166,9 +1112,9 @@ function ThemePreviewCanvas({mode}: {mode: 'light' | 'dark'}) {
           gap={1}
           justify="center"
           height="100%"
-          xstyle={preview.contentSurface}>
+          className={preview.contentSurface}>
           {[0, 1, 2].map(row => (
-            <VStack key={row} xstyle={preview.bar} />
+            <VStack key={row} className={preview.bar} />
           ))}
         </VStack>
       </StackItem>
@@ -1192,8 +1138,8 @@ function ThemePreviewMock({scheme}: {scheme: 'light' | 'dark' | 'system'}) {
     // One AspectRatio path for every option. System splits that same 3:2 frame
     // into two equal regions rather than drawing two full windows on top of one
     // another, so there are no absolute layers and no seams with stray borders.
-    <AspectRatio ratio={3 / 2} xstyle={preview.inert}>
-      <VStack aria-hidden="true" height="100%" xstyle={preview.clip}>
+    <AspectRatio ratio={3 / 2} className={preview.inert}>
+      <VStack aria-hidden="true" height="100%" className={preview.clip}>
         {scheme === 'system' ? (
           <HStack gap={0} height="100%">
             <StackItem size="fill">
@@ -2364,7 +2310,7 @@ function SettingsSearchResults({
               icon={ChevronRightIcon}
               size="sm"
               color="secondary"
-              xstyle={rtlStyles.mirror}
+              className="rtl:[transform:scaleX(-1)]"
             />
           }
           isSelected={index === activeIndex}
@@ -2432,7 +2378,7 @@ function SettingsSideNav({
   return (
     <SideNav
       aria-label="Settings sections"
-      xstyle={styles.sideNav}
+      className={styles.sideNav}
       // Hand-composed rather than `SideNavHeading`, whose `heading` is typed
       // `string` and pinned to the large text size — a step above heading-4,
       // with no prop to reach the heading scale. The inset and row height here
@@ -2460,7 +2406,7 @@ function SettingsSideNav({
           <SideNavSection
             key={group.label}
             title={group.label}
-            xstyle={styles.sideNavSection}>
+            className={styles.sideNavSection}>
             {group.panels.map(panel => (
               // Single-line by construction: `SideNavItem` has no description.
               // The same text is the content pane's subtitle, so nothing leaves
@@ -2517,8 +2463,8 @@ function SettingsContentPane({
           collapsed to the close button, so `justify="end"` had no space to
           traverse and the control landed over the panel title instead of the
           pane's top-right corner. */}
-      <HStack width="100%" justify="end" xstyle={styles.closeAnchor}>
-        <HStack xstyle={styles.closeBacking}>
+      <HStack width="100%" justify="end" className={styles.closeAnchor}>
+        <HStack className={styles.closeBacking}>
           <IconButton
             label="Close"
             variant="ghost"
@@ -2530,8 +2476,8 @@ function SettingsContentPane({
       </HStack>
       {/* The panel column: `@container`, so every row inside it stacks on the
           width the column actually got rather than on the viewport's — see
-          `ROW_STACK`. */}
-      <VStack gap={4} xstyle={row.panel}>
+          the 480px container breakpoint. */}
+      <VStack gap={4} className={row.panel}>
         <HStack gap={2} align="start">
           <StackItem size="fill">
             <SettingsPanelHeading panel={panel} />
@@ -2648,7 +2594,7 @@ function SettingsNarrowShell({
               padding={4}
               isScrollable
               height="100%"
-              xstyle={row.panel}>
+              className={row.panel}>
               <SettingsPanelHeading panel={activePanel} />
               <SettingsPanelBody
                 panel={activePanel}
@@ -2715,7 +2661,7 @@ export default function SettingsDialogTemplate() {
             Both are wrapped in the one height, so the frame is the same on
             every panel and it is the panel that scrolls, not the dialog that
             grows. */}
-        <VStack xstyle={styles.shell}>
+        <VStack className={styles.shell}>
           {isNarrow ? (
             <SettingsNarrowShell
               titleId={titleId}

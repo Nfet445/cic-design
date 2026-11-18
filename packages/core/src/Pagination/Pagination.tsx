@@ -6,7 +6,7 @@
  * @file Pagination.tsx
  * @input React, StyleX, Button, Icon, NumberInput, Selector, and Text. Button renders each
  *   control, as a link with getPageHref. useFocusAcrossSwap keeps focus on a control whose
- *   element Button replaces. rtlStyles.mirror mirrors the chevrons under RTL in CSS.
+ *   element Button replaces. RTL_MIRROR_CLASS mirrors the chevrons under RTL in CSS.
  * @output Exports Pagination, generatePageRange, PaginationProps, PaginationVariant, PaginationSize
  * @position Core implementation; consumed by index.ts, tested by Pagination.test.tsx
  *
@@ -18,16 +18,7 @@
  */
 
 import {useEffect, useOptimistic, useRef, useState, useTransition} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  fontWeightVars,
-  sizeVars,
-  spacingVars,
-  durationVars,
-  easeVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+import {sizeVarNames, spacingVarNames} from '../theme/tokenVars';
 import {Button} from '../Button';
 import {isModifiedClick} from '../DropdownMenu/menuItemRoles';
 import {Icon} from '../Icon';
@@ -40,11 +31,34 @@ import {useMergedRefs} from '../hooks/useMergedRefs';
 import {focusForLastInput} from '../utils/focusReturn';
 import {useFocusAcrossSwap} from '../utils/useFocusAcrossSwap';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import type {LinkComponentType} from '../Link/types';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  paginationActivePageClassName,
+  paginationCompactFirstClassName,
+  paginationCompactLastClassName,
+  paginationControlsClassName,
+  paginationDotActiveClassName,
+  paginationDotClassName,
+  paginationDotDisabledClassName,
+  paginationDotSmClassName,
+  paginationDotsContainerClassName,
+  paginationEllipsisClassName,
+  paginationEllipsisSmClassName,
+  paginationInfoTextClassName,
+  paginationInputGroupClassName,
+  paginationInputLabelClassName,
+  paginationInputLabelSmClassName,
+  paginationInputTotalClassName,
+  paginationInputTotalSmClassName,
+  paginationPageSizeSelectorClassName,
+  paginationRootClassName,
+} from './paginationClasses';
 import type {PaginationVariantMap} from './index';
 import {
   registerEnglishFallback,
@@ -200,120 +214,6 @@ export interface PaginationProps extends Omit<
 
 /** Width (px) of the page-size Selector field. */
 const PAGE_SIZE_SELECTOR_WIDTH = 80;
-
-const styles = stylex.create({
-  // Both rows wrap when their controls do not fit, as at a larger text size,
-  // so no control leaves the screen.
-  root: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-4'],
-  },
-  controls: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    // Lets the controls row narrow to the landmark's width, so it wraps
-    // instead of pushing past it.
-    minWidth: 0,
-  },
-  compactFirst: {
-    marginInlineEnd: `calc(-1 * ${spacingVars['--spacing-1']})`,
-  },
-  compactLast: {
-    marginInlineStart: `calc(-1 * ${spacingVars['--spacing-1']})`,
-  },
-  ellipsis: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: sizeVars['--size-element-md'],
-    minHeight: sizeVars['--size-element-md'],
-    color: colorVars['--color-text-secondary'],
-    fontSize: typeScaleVars['--text-label-size'],
-    userSelect: 'none',
-  },
-  ellipsisSm: {
-    minWidth: sizeVars['--size-element-sm'],
-    minHeight: sizeVars['--size-element-sm'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-  },
-  infoText: {
-    display: 'flex',
-    alignItems: 'center',
-    whiteSpace: 'nowrap',
-  },
-  dotsContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  dot: {
-    width: spacingVars['--spacing-2'],
-    height: spacingVars['--spacing-2'],
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    borderRadius: '50%',
-    backgroundColor: colorVars['--color-neutral'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    transitionProperty: 'background-color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  dotSm: {
-    width: spacingVars['--spacing-1-5'],
-    height: spacingVars['--spacing-1-5'],
-  },
-  dotActive: {
-    backgroundColor: colorVars['--color-accent'],
-  },
-  dotDisabled: {
-    cursor: 'default',
-    opacity: 0.5,
-  },
-  activePage: {
-    backgroundColor: colorVars['--color-neutral'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  inputGroup: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    whiteSpace: 'nowrap',
-  },
-  inputLabel: {
-    color: colorVars['--color-text-secondary'],
-    fontSize: typeScaleVars['--text-label-size'],
-    userSelect: 'none',
-  },
-  inputLabelSm: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-  },
-  inputTotal: {
-    color: colorVars['--color-text-secondary'],
-    fontSize: typeScaleVars['--text-label-size'],
-    userSelect: 'none',
-  },
-  inputTotalSm: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-  },
-  pageSizeSelector: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-  },
-  disabled: {
-    opacity: 0.5,
-    pointerEvents: 'none' as const,
-  },
-});
 
 // =============================================================================
 // Helpers
@@ -696,9 +596,9 @@ export function Pagination({
                   <span
                     key={`ellipsis-${previousPage}-${nextPage}`}
                     aria-hidden="true"
-                    {...stylex.props(
-                      styles.ellipsis,
-                      isSm && styles.ellipsisSm,
+                    className={tw(
+                      paginationEllipsisClassName,
+                      isSm && paginationEllipsisSmClassName,
                     )}>
                     …
                   </span>
@@ -717,7 +617,9 @@ export function Pagination({
                   {...controlProps(item, true)}
                   isDisabled={isDisabled}
                   aria-current={isActive ? 'page' : undefined}
-                  xstyle={isActive && styles.activePage}>
+                  className={
+                    isActive ? paginationActivePageClassName : undefined
+                  }>
                   {item}
                 </PaginationButton>
               );
@@ -731,7 +633,7 @@ export function Pagination({
           return null;
         }
         return (
-          <span {...stylex.props(styles.infoText)}>
+          <span className={paginationInfoTextClassName}>
             <Text type="body" size="sm" color="secondary">
               {t('@astryx.pagination.count', {
                 from: rangeStart,
@@ -748,7 +650,7 @@ export function Pagination({
           return null;
         }
         return (
-          <span {...stylex.props(styles.infoText)}>
+          <span className={paginationInfoTextClassName}>
             <Text type="body" size="sm" color="secondary">
               {t('@astryx.pagination.pageOfTotal', {
                 current: optimisticPage,
@@ -767,7 +669,7 @@ export function Pagination({
         return (
           <div
             ref={dotsRef}
-            {...stylex.props(styles.dotsContainer)}
+            className={paginationDotsContainerClassName}
             // The dots already behave as an APG radio group (one Tab stop,
             // arrows, Home/End, selection follows focus), so they expose its
             // roles: a reader announces "Page 3, 3 of 7".
@@ -806,11 +708,12 @@ export function Pagination({
                       active: isActive ? 'active' : null,
                       size,
                     }),
-                    focusOutlineProps.focusVisible(
-                      styles.dot,
-                      isSm && styles.dotSm,
-                      isActive && styles.dotActive,
-                      isDisabled && styles.dotDisabled,
+                    tw(
+                      paginationDotClassName,
+                      isSm && paginationDotSmClassName,
+                      isActive && paginationDotActiveClassName,
+                      isDisabled && paginationDotDisabledClassName,
+                      focusOutlineFocusVisibleClassName,
                     ),
                   )}
                 />
@@ -828,8 +731,8 @@ export function Pagination({
         const isInputDisabled = isDisabled || computedTotalPages == null;
 
         const pageBoxWidth = isSm
-          ? sizeVars['--size-element-sm']
-          : sizeVars['--size-element-md'];
+          ? sizeVarNames['--size-element-sm']
+          : sizeVarNames['--size-element-md'];
         const inputNode = (
           <NumberInput
             label={goToPageLabel}
@@ -847,7 +750,7 @@ export function Pagination({
             onEntryErrorChange={error => setIsPageEntryRejected(error != null)}
             width={
               isPageEntryRejected
-                ? `calc(${pageBoxWidth} + ${spacingVars['--spacing-10']})`
+                ? `calc(${pageBoxWidth} + ${spacingVarNames['--spacing-10']})`
                 : pageBoxWidth
             }
             isDisabled={isInputDisabled}
@@ -858,12 +761,15 @@ export function Pagination({
         // Label wording: "Page [ n ] / N". The leading noun comes from
         // `pageLabel`; the trailing "/ N" total is omitted when unknown.
         return (
-          <span {...stylex.props(styles.inputGroup)}>
+          <span className={paginationInputGroupClassName}>
             <span
               aria-hidden="true"
               {...mergeProps(
                 themeProps('pagination-input-label', {size}),
-                stylex.props(styles.inputLabel, isSm && styles.inputLabelSm),
+                tw(
+                  paginationInputLabelClassName,
+                  isSm && paginationInputLabelSmClassName,
+                ),
               )}>
               {inputLabelText}
             </span>
@@ -873,7 +779,10 @@ export function Pagination({
               <span
                 {...mergeProps(
                   themeProps('pagination-input-total', {size}),
-                  stylex.props(styles.inputTotal, isSm && styles.inputTotalSm),
+                  tw(
+                    paginationInputTotalClassName,
+                    isSm && paginationInputTotalSmClassName,
+                  ),
                 )}>
                 {t('@astryx.pagination.ofTotalPages', {
                   total: computedTotalPages,
@@ -895,15 +804,15 @@ export function Pagination({
       ref={ref}
       {...mergeProps(
         themeProps('pagination', {variant, size}),
-        stylex.props(styles.root, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(paginationRootClassName, className),
         style,
       )}
       {...rest}
       aria-label={label}
       data-testid={testId}>
       {hasPageSizeOptions && (
-        <div {...stylex.props(styles.pageSizeSelector)}>
+        <div className={paginationPageSizeSelectorClassName}>
           <Selector
             label={itemsPerPageLabel}
             isLabelHidden
@@ -920,7 +829,7 @@ export function Pagination({
         </div>
       )}
       <div
-        {...stylex.props(styles.controls)}
+        className={paginationControlsClassName}
         // A key or pointer press can arrive before that task. The click that
         // it starts counts from the current page too.
         onKeyDownCapture={countFromCurrentPage}
@@ -935,13 +844,17 @@ export function Pagination({
               <Icon
                 icon="chevronsLeft"
                 size={isSm ? 'sm' : 'md'}
-                xstyle={rtlStyles.mirror}
+                className={RTL_MIRROR_CLASS}
               />
             }
             {...controlProps(1, hasPrevious)}
             isDisabled={isDisabled || !hasPrevious}
             isIconOnly
-            xstyle={variant === 'compact' && styles.compactFirst}
+            className={
+              variant === 'compact'
+                ? paginationCompactFirstClassName
+                : undefined
+            }
           />
         )}
 
@@ -954,7 +867,7 @@ export function Pagination({
             <Icon
               icon="chevronLeft"
               size={isSm ? 'sm' : 'md'}
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           }
           {...controlProps(clampPage(linkPage - step), hasPrevious)}
@@ -973,7 +886,7 @@ export function Pagination({
             <Icon
               icon="chevronRight"
               size={isSm ? 'sm' : 'md'}
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           }
           {...controlProps(clampPage(linkPage + step), hasNext)}
@@ -991,13 +904,15 @@ export function Pagination({
               <Icon
                 icon="chevronsRight"
                 size={isSm ? 'sm' : 'md'}
-                xstyle={rtlStyles.mirror}
+                className={RTL_MIRROR_CLASS}
               />
             }
             {...controlProps(computedTotalPages ?? optimisticPage, hasNext)}
             isDisabled={isDisabled || !hasNext}
             isIconOnly
-            xstyle={variant === 'compact' && styles.compactLast}
+            className={
+              variant === 'compact' ? paginationCompactLastClassName : undefined
+            }
           />
         )}
       </div>

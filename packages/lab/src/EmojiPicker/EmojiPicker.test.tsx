@@ -21,6 +21,12 @@ vi.mock('./emojiData', () => ({
 
 import {DEFAULT_FREQUENT_EMOJIS, EmojiPicker} from './EmojiPicker';
 import type {EmojiCategory, EmojiOption} from './EmojiPicker';
+import {
+  emojiPickerCategoryLabelClassName,
+  emojiPickerCellClassName,
+  emojiPickerGridCellClassName,
+  emojiPickerRowClassName,
+} from './emojiPickerClasses';
 
 const CATEGORIES: readonly EmojiCategory[] = [
   {
@@ -253,6 +259,27 @@ describe('EmojiPicker', () => {
     expect(footerText('Dog face')).toBeTruthy();
     await user.unhover(screen.getByRole('button', {name: 'Dog face'}));
     expect(footerText('Reactions')).toBeTruthy();
+  });
+
+  it('carries the heading, row, cell and preview classes', () => {
+    render(
+      <EmojiPicker
+        categories={CATEGORIES}
+        frequentEmojis={[]}
+        onSelect={() => {}}
+      />,
+    );
+    const dogFace = screen.getByRole('button', {name: 'Dog face'});
+    expect(dogFace).toHaveClass(...emojiPickerCellClassName.split(' '));
+    expect(dogFace.closest('[role="gridcell"]')).toHaveClass(
+      ...emojiPickerGridCellClassName.split(' '),
+    );
+    expect(dogFace.closest('[role="row"]')).toHaveClass(
+      ...emojiPickerRowClassName.split(' '),
+    );
+    expect(
+      screen.getByText('Animals & nature').closest('.astryx-stack'),
+    ).toHaveClass(...emojiPickerCategoryLabelClassName.split(' '));
   });
 
   it('loads the bundled set when no categories are passed', async () => {

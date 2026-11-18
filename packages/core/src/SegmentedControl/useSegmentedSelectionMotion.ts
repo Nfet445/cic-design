@@ -42,7 +42,7 @@ import {observeResize} from '../utils/sharedResizeObserver';
 import {titleOfSegment} from '../privateAttributes/segmentTitle.stylex';
 import {mapProgress, mapRange} from '../motion/progress';
 import {easedProgress, readThemeTiming} from '../motion/themeTiming';
-import {shadowVars} from '../theme/tokens.stylex';
+import {shadowVarNames} from '../theme/tokenVars';
 import {useSegmentedTouchTracking} from './useSegmentedTouchTracking';
 
 /** The segments, in DOM order. */
@@ -106,7 +106,7 @@ export const LAYER_GEOMETRY: ReadonlyArray<string> = [
  * thumb. The lens copies the selected surface, which can match the page.
  * Without an edge, a lifted lens hides the track around it.
  */
-const LIFTED_SHADOW = shadowVars['--shadow-low'];
+const LIFTED_SHADOW = shadowVarNames['--shadow-low'];
 
 /** The custom property on the radiogroup that sets `property` of `layer`. */
 export function layerVariable(layer: Layer, property: string): string {

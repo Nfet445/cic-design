@@ -71,15 +71,16 @@ const WATCHES = new Set([
 /**
  * APIs that mean the component "bosses children around".
  */
-const COORDINATES = new Set([
-  'createContext',
-]);
+const COORDINATES = new Set(['createContext']);
 
 /**
  * Get the filename without path or extension.
  */
 function getFileStem(filename) {
-  return filename.split('/').pop().replace(/\.(tsx?|jsx?)$/, '');
+  return filename
+    .split('/')
+    .pop()
+    .replace(/\.(tsx?|jsx?)$/, '');
 }
 
 /**

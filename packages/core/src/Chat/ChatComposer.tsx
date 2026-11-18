@@ -34,19 +34,22 @@ import React, {
   type FocusEvent,
 } from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  shadowVars,
-  easeVars,
-  borderVars,
-  typeScaleVars,
-  typographyVars,
-} from '../theme/tokens.stylex';
-import {inputWrapperStyles} from '../Field/inputStyles.stylex';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
+import {tw} from '../utils/tw';
+import {
+  chatComposerBodyClassName,
+  chatComposerElevationClassName,
+  chatComposerFooterClassName,
+  chatComposerFooterLeftClassName,
+  chatComposerFooterRightClassName,
+  chatComposerHeaderClassName,
+  chatComposerHeaderLeftClassName,
+  chatComposerHeaderRightClassName,
+  chatComposerInputAreaClassName,
+  chatComposerRootClassName,
+  chatComposerStatusClassName,
+} from './chatClasses';
 import {Icon} from '../Icon';
 import {ChatComposerInput} from './ChatComposerInput';
 import {ChatComposerContext} from './ChatContext';
@@ -59,7 +62,7 @@ import {
 import {themeProps} from '../utils/themeProps';
 import {useAnnounceRenderedText} from '../hooks/useAnnounceRenderedText';
 import {useMergedRefs} from '../hooks/useMergedRefs';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineWithinClassName} from '../utils/focusOutlineClasses';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 import {
   registerEnglishFallback,
@@ -131,220 +134,6 @@ export interface ChatComposerProps extends Omit<
   /** Where to render the status. @default 'bottom' */
   statusPosition?: 'top' | 'bottom';
 }
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    position: 'relative',
-    zIndex: 0,
-    isolation: 'isolate',
-    display: 'flex',
-    flexDirection: 'column',
-    // Component CSS vars — themeable via defineTheme({ components: { 'chat-composer': { base: {...} } } })
-    // Uses the dedicated chat radius (28px) rather than --radius-page, so chat
-    // rounding is decoupled from page-level containers but unchanged today. #2072
-    '--_chat-composer-radius': radiusVars['--radius-chat'],
-    '--_chat-composer-padding': spacingVars['--spacing-3'],
-    // Concentric radius: buttons follow the outer shell's curvature.
-    // Sets --_button-radius (not --radius-element) so only buttons are
-    // affected — other components in slots keep their own radius.
-    // Default: 28px - 12px = 16px (fully rounds a 32px button).
-    '--_button-radius': `max(${radiusVars['--radius-element']}, calc(var(--_chat-composer-radius) - var(--_chat-composer-padding)))`,
-  },
-
-  rootDisabled: {
-    opacity: 0.6,
-    pointerEvents: 'none' as const,
-  },
-  body: {
-    position: 'relative',
-    zIndex: 2,
-    display: 'flex',
-    flexDirection: 'column',
-    padding: 'var(--_chat-composer-padding)',
-    gap: spacingVars['--spacing-2'],
-    borderRadius: 'var(--_chat-composer-radius)',
-    backgroundColor: colorVars['--color-background-popover'],
-    cursor: {
-      default: 'text',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    transitionProperty: 'box-shadow, border-color',
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    minHeight: '28px',
-  },
-  headerLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  headerRight: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    marginInlineStart: 'auto',
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-  },
-  inputArea: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  textarea: {
-    width: '100%',
-    resize: 'none' as const,
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    fontFamily: typographyVars['--font-family-body'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    caretColor: colorVars['--color-accent'],
-    overflowY: 'auto' as const,
-    maxHeight: '176px',
-    '::placeholder': {
-      color: colorVars['--color-text-disabled'],
-    },
-  },
-  footer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    // Footer buttons should use size="md" to match 32px send button height
-    minHeight: '32px',
-  },
-  footerLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  footerRight: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  interruptibleFooter: {
-    // The composer may disable editing while a response is streaming. Restore
-    // pointer hit-testing for the footer so its Stop action stays reachable.
-    pointerEvents: 'auto',
-  },
-  statusBar: {
-    position: 'relative',
-    zIndex: 0,
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-4'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontFamily: typographyVars['--font-family-body'],
-  },
-  statusTop: {
-    paddingBlockStart: 'var(--_chat-composer-padding)',
-    paddingBlockEnd:
-      'calc(var(--_chat-composer-padding) + var(--_chat-composer-radius))',
-    marginBlockEnd: 'calc(-1 * var(--_chat-composer-radius))',
-    borderStartStartRadius: 'var(--_chat-composer-radius)',
-    borderStartEndRadius: 'var(--_chat-composer-radius)',
-  },
-  statusBottom: {
-    paddingBlockStart:
-      'calc(var(--_chat-composer-padding) + var(--_chat-composer-radius))',
-    paddingBlockEnd: 'var(--_chat-composer-padding)',
-    marginBlockStart: 'calc(-1 * var(--_chat-composer-radius))',
-    borderEndStartRadius: 'var(--_chat-composer-radius)',
-    borderEndEndRadius: 'var(--_chat-composer-radius)',
-  },
-  statusError: {
-    backgroundColor: colorVars['--color-error-muted'],
-    color: colorVars['--color-on-error-muted'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible.
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-  statusWarning: {
-    backgroundColor: colorVars['--color-warning-muted'],
-    color: colorVars['--color-on-warning-muted'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible.
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-  compact: {
-    // Override the padding var (not the `padding` property) so both the base
-    // body padding and the border-inset calc in elevationStyles.none pick up
-    // the compact value. Scoped to the body element, so the status bar (which
-    // reads the var from root) keeps its own padding.
-    '--_chat-composer-padding': spacingVars['--spacing-2'],
-    gap: spacingVars['--spacing-1'],
-  },
-});
-
-// Resting elevation for the composer body, narrowed to two steps.
-// - `low` (default) preserves today's look: low at rest, bumping to med on
-//   hover / focus-within. The WCAG focus indicator is a separate shared ring,
-//   gated to keyboard focus in the editor; the shadow change remains depth.
-// - `none` is flat; depth comes from a border + inset rings instead. The
-//   border is drawn *inside* the padding — its width is subtracted from every
-//   side (like Card) so total inset (border + padding) equals the elevated
-//   case and content geometry is unchanged. Border color, hover, and focus
-//   states mirror TextInput (shared `inputWrapperStyles.base` treatment):
-//   emphasized border at rest → accent on focus-within, with the same inset
-//   shadow rings on hover and focus.
-const elevationStyles = stylex.create({
-  low: {
-    boxShadow: {
-      default: shadowVars['--shadow-low'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': shadowVars['--shadow-med'],
-      },
-    },
-    ':focus-within': {
-      boxShadow: shadowVars['--shadow-med'],
-    },
-  },
-  none: {
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: {
-      default: colorVars['--color-border-emphasized'],
-      ':focus-within': colorVars['--color-accent'],
-    },
-    // Draw the border *inside* the padding — subtract its width from the body
-    // padding (like Card's withBorder) so total inset (border + padding) equals
-    // the elevated case and content geometry is unchanged.
-    padding: `calc(var(--_chat-composer-padding) - ${borderVars['--border-width']})`,
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': `inset 0px 0px 0px 2px color-mix(in srgb, ${colorVars['--color-border-emphasized']} 30%, transparent)`,
-        },
-      ':focus-within': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-    },
-  },
-});
 
 function isComposerEditor(target: EventTarget | null): target is HTMLElement {
   return (
@@ -511,12 +300,7 @@ export function ChatComposer(props: ChatComposerProps) {
   const statusEl = status ? (
     <div
       ref={statusRef}
-      {...stylex.props(
-        styles.statusBar,
-        statusPosition === 'top' ? styles.statusTop : styles.statusBottom,
-        status.type === 'error' && styles.statusError,
-        status.type === 'warning' && styles.statusWarning,
-      )}>
+      className={chatComposerStatusClassName(statusPosition, status.type)}>
       <Icon
         icon={status.type === 'error' ? 'error' : 'warning'}
         size="md"
@@ -558,7 +342,7 @@ export function ChatComposer(props: ChatComposerProps) {
         ref={ref}
         {...mergeProps(
           themeProps('chat-composer', {density}),
-          stylex.props(styles.root, isDisabled && styles.rootDisabled),
+          chatComposerRootClassName(isDisabled),
           className,
           style,
         )}
@@ -572,31 +356,34 @@ export function ChatComposer(props: ChatComposerProps) {
           onPointerDownCapture={() => setHasKeyboardEditorFocus(false)}
           onFocusCapture={handleBodyFocusCapture}
           onBlurCapture={handleBodyBlurCapture}
-          {...stylex.props(
-            styles.body,
-            inputWrapperStyles.textField,
-            elevationStyles[elevation],
-            hasKeyboardEditorFocus && focusOutlineStyles.focusWithin,
-            density === 'compact' && styles.compact,
-            xstyle,
+          className={tw(
+            chatComposerBodyClassName(density),
+            chatComposerElevationClassName(elevation),
+            xstyleProps(xstyle).className,
+            hasKeyboardEditorFocus && focusOutlineWithinClassName,
           )}>
           {(headerActions || headerContext) && (
-            <div {...stylex.props(styles.header)}>
-              <div {...stylex.props(styles.headerLeft)}>{headerActions}</div>
-              <div {...stylex.props(styles.headerRight)}>{headerContext}</div>
+            <div className={chatComposerHeaderClassName}>
+              <div className={chatComposerHeaderLeftClassName}>
+                {headerActions}
+              </div>
+              <div className={chatComposerHeaderRightClassName}>
+                {headerContext}
+              </div>
             </div>
           )}
 
-          <div {...stylex.props(styles.inputArea)}>
+          <div className={chatComposerInputAreaClassName}>
             {input ?? <ChatComposerInput />}
           </div>
 
-          <div {...stylex.props(styles.footer)}>
-            <div {...stylex.props(styles.footerLeft)}>{footerActions}</div>
+          <div className={chatComposerFooterClassName}>
+            <div className={chatComposerFooterLeftClassName}>
+              {footerActions}
+            </div>
             <div
-              {...stylex.props(
-                styles.footerRight,
-                isDisabled && isStopShown && styles.interruptibleFooter,
+              className={chatComposerFooterRightClassName(
+                isDisabled && isStopShown,
               )}>
               {sendActions}
               {sendButton ?? <ChatSendButton />}

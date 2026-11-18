@@ -4,8 +4,8 @@
 
 /**
  * @file Dialog.tsx
- * @input Uses React, DialogHTMLAttributes, ReactNode, container (Layout), DialogContext, layerTextReset,
- *   layerStructureReset, modalOutlet, interactionModality, chainEventHandlers, holdEntranceInput
+ * @input Uses React, DialogHTMLAttributes, ReactNode, container (Layout), DialogContext, layerTextResetClassName,
+ *   layerStructureResetClassName, modalOutlet, interactionModality, chainEventHandlers, holdEntranceInput
  * @output Exports Dialog component, DialogProps, DialogVariant, DialogPurpose types
  * @position Core implementation; consumed by index.ts, tested by Dialog.test.tsx
  *
@@ -48,10 +48,24 @@ import {
 import {useIsHydrating} from '../hooks/useIsHydrating';
 import {useSettledOpen} from '../hooks/useSettledOpen';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {useScrollLock} from '../hooks/useScrollLock';
-import {layerTextReset} from '../Layer/layerTextReset.stylex';
-import {layerStructureReset} from '../Layer/layerStructureReset.stylex';
+import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
+import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
+import {
+  dialogInlineClassName,
+  dialogFullscreenSafeAreaClassName,
+  dialogInnerClassName,
+  dialogInsetBlockEndVar,
+  dialogInsetBlockStartVar,
+  dialogInsetInlineEndVar,
+  dialogInsetInlineStartVar,
+  dialogMaxHeightVar,
+  dialogMaxWidthVar,
+  dialogRootClassName,
+  dialogWidthVar,
+  type DialogEntrance,
+} from './dialogClasses';
+import {tw} from '../utils/tw';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
 import {layerClickBoundary} from '../Layer/layerClickBoundary';
 import {LayerDepthProvider} from '../Layer/LayerDepthContext';
@@ -60,33 +74,23 @@ import {useLayerDismissal} from '../Layer/useLayerDismissal';
 import {useBackdropPress} from '../Layer/useBackdropPress';
 import {useFocusRegionContainment} from '../hooks/useFocusTrap';
 import {useModalOutlet} from '../Layer/modalOutlet';
+import {spacingVarNames} from '../theme/tokenVars';
+import {container, containerVars} from '../Layout/containerClasses';
+import {containerCornerClassName} from '../Layout/containerCornersClasses';
+import type {SpacingToken} from '../Layout/containerClasses';
 import {
-  colorVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  shadowVars,
-  spacingVars,
-} from '../theme/tokens.stylex';
-import {container} from '../Layout/container.stylex';
-import {containerCornerStyles} from '../Layout/containerCorners.stylex';
-import type {SpacingToken} from '../Layout/container.stylex';
-import {
-  paddingStyles,
-  containerPaddingInlineVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingBlockEndVarStyles,
   spacingStepToToken,
   overlayPaddingReset,
 } from '../Layout/padding.stylex';
 import type {SpacingStep} from '../utils/types';
 import {mergeProps} from '../utils/mergeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
 import {createDevWarnings} from '../utils/devWarning';
 import {DialogContext} from './DialogContext';
 import {themeProps} from '../utils/themeProps';
 import type {DialogVariantMap} from './index';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 import {
   focusForLastInput,
@@ -156,190 +160,9 @@ export interface DialogPosition extends DialogBlockPosition {
   end?: number | string;
 }
 
-const enterDirectional = stylex.keyframes({
-  from: {
-    opacity: 0,
-    transform:
-      'translate(var(--dialog-dir-x, 0px), var(--dialog-dir-y, 16px)) scale(0.95)',
-  },
-  to: {opacity: 1, transform: 'translate(0, 0) scale(1)'},
-});
+export {dialogFullscreenSafeAreaPaddingContract} from './dialogClasses';
 
-const enterFullscreen = stylex.keyframes({
-  from: {opacity: 0},
-  to: {opacity: 1},
-});
-
-const dialogFullscreenSafeAreaBlockStartPadding = `var(--astryx-dialog-padding-block-start, var(--astryx-dialog-padding, max(${spacingVars['--spacing-4']}, env(safe-area-inset-top, 0px))))`;
-const dialogFullscreenSafeAreaBlockEndPadding = `var(--astryx-dialog-padding-block-end, var(--astryx-dialog-padding, max(${spacingVars['--spacing-4']}, env(safe-area-inset-bottom, 0px))))`;
-const dialogFullscreenSafeAreaInlineStartPaddingLtr = `var(--astryx-dialog-padding-inline-start, var(--astryx-dialog-padding-inline, var(--astryx-dialog-padding, max(${spacingVars['--spacing-4']}, env(safe-area-inset-left, 0px)))))`;
-const dialogFullscreenSafeAreaInlineStartPaddingRtl = `var(--astryx-dialog-padding-inline-start, var(--astryx-dialog-padding-inline, var(--astryx-dialog-padding, max(${spacingVars['--spacing-4']}, env(safe-area-inset-right, 0px)))))`;
-const dialogFullscreenSafeAreaInlineEndPaddingLtr = `var(--astryx-dialog-padding-inline-end, var(--astryx-dialog-padding-inline, var(--astryx-dialog-padding, max(${spacingVars['--spacing-4']}, env(safe-area-inset-right, 0px)))))`;
-const dialogFullscreenSafeAreaInlineEndPaddingRtl = `var(--astryx-dialog-padding-inline-end, var(--astryx-dialog-padding-inline, var(--astryx-dialog-padding, max(${spacingVars['--spacing-4']}, env(safe-area-inset-left, 0px)))))`;
-
-/** @internal Verified by Dialog.test.tsx; not re-exported from the package entry point. */
-export const dialogFullscreenSafeAreaPaddingContract = {
-  blockStart: dialogFullscreenSafeAreaBlockStartPadding,
-  blockEnd: dialogFullscreenSafeAreaBlockEndPadding,
-  inlineStart: {
-    ltr: dialogFullscreenSafeAreaInlineStartPaddingLtr,
-    rtl: dialogFullscreenSafeAreaInlineStartPaddingRtl,
-  },
-  inlineEnd: {
-    ltr: dialogFullscreenSafeAreaInlineEndPaddingLtr,
-    rtl: dialogFullscreenSafeAreaInlineEndPaddingRtl,
-  },
-} as const;
-
-/**
- * Dialog styles using native <dialog> element
- * Uses ::backdrop pseudo-element for overlay
- */
-const styles = stylex.create({
-  dialog: {
-    position: 'fixed',
-    margin: 'auto',
-    padding: 0,
-    // The backdrop does not blur the page. Forced colors override the
-    // backdrop's colour, so a 1px border keeps the modal separate from the
-    // page. It is a border, not an outline: the focus ring
-    // (focusOutlineProps) owns the outline longhands on this element.
-    borderWidth: {
-      default: 0,
-      '@media (forced-colors: active)': 1,
-    },
-    borderStyle: {
-      default: 'none',
-      '@media (forced-colors: active)': 'solid',
-    },
-    borderColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    backgroundColor: colorVars['--color-background-surface'],
-    '--_dialog-radius': radiusVars['--radius-container'],
-    borderRadius: 'var(--_dialog-radius)',
-    boxShadow: shadowVars['--shadow-high'],
-    display: 'none',
-    flexDirection: 'column',
-    height: 'fit-content',
-    overscrollBehavior: 'contain',
-    opacity: 0,
-    // Under reduced motion on a touch screen the entrance is the shared
-    // reduced-motion cross-fade, 200 ms on easeInOut whatever the theme's
-    // duration (design:reduced-motion DR2, DR4). Moves to
-    // reducedMotionFadeConsts once that is on main.
-    animationDuration: {
-      default: durationVars['--duration-medium-max'],
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)': '200ms',
-    },
-    animationTimingFunction: {
-      default: easeVars['--ease-standard'],
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-        'cubic-bezier(0.42, 0, 0.58, 1)',
-    },
-    animationFillMode: 'backwards' as const,
-  },
-  // Applied via isOpen prop — avoids :where([open]) attribute selectors
-  // which have zero specificity and can lose to default styles depending
-  // on CSS source order in the build output.
-  open: {
-    display: 'flex',
-    opacity: 1,
-    // Under `prefers-reduced-motion: reduce` the dialog never travels or
-    // scales in (design:reduced-motion DR1): on a touch screen it fades in
-    // where it lands (DR2), and with a mouse it appears at once (DR3).
-    animationName: {
-      default: enterDirectional,
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-        enterFullscreen,
-      '@media (prefers-reduced-motion: reduce) and (not (pointer: coarse))':
-        'none',
-    },
-  },
-  // A dialog present on page load opens where it rests (spec:AST-013 FR13).
-  openSettled: {
-    animationName: 'none',
-  },
-  // No backdrop-filter: a full-viewport blur is costly to repaint.
-  backdrop: {
-    '::backdrop': {
-      backgroundColor: colorVars['--color-overlay'],
-    },
-  },
-  fullscreen: {
-    width: '100dvw',
-    height: '100dvh',
-    maxWidth: '100dvw',
-    maxHeight: '100dvh',
-    '--_dialog-radius': '0px',
-    borderRadius: 0,
-    // Nothing of the page shows around a full-screen dialog: no edge.
-    borderWidth: 0,
-    margin: 0,
-    inset: 0,
-  },
-  fullscreenOpen: {
-    animationName: {
-      default: enterFullscreen,
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-        enterFullscreen,
-      '@media (prefers-reduced-motion: reduce) and (not (pointer: coarse))':
-        'none',
-    },
-  },
-  fullscreenSafeArea: {
-    paddingBlockStart: dialogFullscreenSafeAreaBlockStartPadding,
-    paddingBlockEnd: dialogFullscreenSafeAreaBlockEndPadding,
-    paddingInlineStart: {
-      default: dialogFullscreenSafeAreaInlineStartPaddingLtr,
-      ':is([dir="rtl"] *)': dialogFullscreenSafeAreaInlineStartPaddingRtl,
-    },
-    paddingInlineEnd: {
-      default: dialogFullscreenSafeAreaInlineEndPaddingLtr,
-      ':is([dir="rtl"] *)': dialogFullscreenSafeAreaInlineEndPaddingRtl,
-    },
-  },
-  inner: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: '1 1 auto',
-    minHeight: 0,
-    overflow: 'hidden',
-    borderRadius: 'inherit',
-  },
-  innerCorners: {
-    '--_container-corner-block-start': 'var(--_dialog-radius)',
-    '--_container-corner-block-end': 'var(--_dialog-radius)',
-  },
-  // Inline wrapper mirrors the dialog's visual styles without <dialog> behavior
-  inlineWrapper: {
-    padding: 0,
-    backgroundColor: colorVars['--color-background-surface'],
-    '--_dialog-radius': radiusVars['--radius-container'],
-    borderRadius: 'var(--_dialog-radius)',
-    boxShadow: shadowVars['--shadow-high'],
-    // Forced colors removes box-shadow, which is this surface's only edge.
-    borderWidth: {
-      default: 0,
-      '@media (forced-colors: active)': '1px',
-    },
-    borderStyle: {
-      default: 'none',
-      '@media (forced-colors: active)': 'solid',
-    },
-    borderColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    display: 'flex',
-    flexDirection: 'column',
-    height: 'fit-content',
-    overscrollBehavior: 'contain',
-  },
-});
-
-const STANDARD_DIALOG_VIEWPORT_GUTTER = spacingVars['--spacing-4'];
+const STANDARD_DIALOG_VIEWPORT_GUTTER = spacingVarNames['--spacing-4'];
 const STANDARD_DIALOG_VIEWPORT_MAX_WIDTH = `calc(100dvw - ${STANDARD_DIALOG_VIEWPORT_GUTTER} - ${STANDARD_DIALOG_VIEWPORT_GUTTER})`;
 const STANDARD_DIALOG_MAX_WIDTH = `min(100%, ${STANDARD_DIALOG_VIEWPORT_MAX_WIDTH})`;
 
@@ -357,30 +180,6 @@ function resolveDialogSizing(
     maxHeight: formatSizeValue(maxHeight),
   };
 }
-
-const dynamicStyles = stylex.create({
-  sizing: (width: string, maxWidth: string, maxHeight: string) => ({
-    width,
-    maxWidth,
-    maxHeight,
-  }),
-  position: (
-    top: string,
-    insetInlineStart: string,
-    insetInlineEnd: string,
-    bottom: string,
-  ) => ({
-    // Assigns pre-resolved offsets from resolveDialogPositionOffsets(). This
-    // literal has no logic — StyleX can't analyze a helper, so the values
-    // (logical start/end → inset-inline-*, physical left/right, `auto`
-    // fallbacks) are computed at the call site and passed in.
-    margin: 0,
-    top,
-    insetInlineStart,
-    insetInlineEnd,
-    bottom,
-  }),
-});
 
 /**
  * Format position value - numbers become pixels, strings pass through, undefined becomes null
@@ -667,11 +466,11 @@ export function Dialog({
       const trigger = triggerElementRef.current;
       if (trigger && trigger !== trigger.ownerDocument.body) {
         const dir = getDialogDirection(trigger);
-        dialog.style.setProperty('--dialog-dir-x', `${dir.x}px`);
-        dialog.style.setProperty('--dialog-dir-y', `${dir.y}px`);
+        dialog.style.setProperty('--astryx-dialog-dir-x', `${dir.x}px`);
+        dialog.style.setProperty('--astryx-dialog-dir-y', `${dir.y}px`);
       } else {
-        dialog.style.setProperty('--dialog-dir-x', '0px');
-        dialog.style.setProperty('--dialog-dir-y', '16px');
+        dialog.style.setProperty('--astryx-dialog-dir-x', '0px');
+        dialog.style.setProperty('--astryx-dialog-dir-y', '16px');
       }
 
       if (!dialog.open) {
@@ -822,38 +621,23 @@ export function Dialog({
   const innerContent = (
     <div
       ref={outletRef}
-      {...stylex.props(
-        styles.inner,
-        ...container(
-          useThemeDefault
-            ? {
-                useThemeDefault: 'dialog',
-                maxHeight: standardSizing?.maxHeight,
-              }
-            : {
-                paddingInnerX: paddingToken,
-                paddingInnerY: paddingToken,
-                paddingOuterX: paddingToken,
-                paddingOuterY: paddingToken,
-                maxHeight: standardSizing?.maxHeight,
-              },
+      {...mergeProps({
+        className: tw(
+          isFullscreen && useThemeDefault && dialogFullscreenSafeAreaClassName,
+          dialogInnerClassName,
+          containerCornerClassName,
+          container(
+            useThemeDefault
+              ? {useThemeDefault: 'dialog'}
+              : {
+                  paddingInnerX: paddingToken,
+                  paddingInnerY: paddingToken,
+                  paddingOuterX: paddingToken,
+                  paddingOuterY: paddingToken,
+                },
+          ),
         ),
-        !useThemeDefault &&
-          effectivePadding !== 4 &&
-          paddingStyles[effectivePadding],
-        !useThemeDefault &&
-          effectivePadding !== 4 &&
-          containerPaddingInlineVarStyles[effectivePadding],
-        !useThemeDefault &&
-          effectivePadding !== 4 &&
-          containerPaddingBlockStartVarStyles[effectivePadding],
-        !useThemeDefault &&
-          effectivePadding !== 4 &&
-          containerPaddingBlockEndVarStyles[effectivePadding],
-        isFullscreen && useThemeDefault && styles.fullscreenSafeArea,
-        styles.innerCorners,
-        containerCornerStyles.publish,
-      )}>
+      })}>
       <DialogContext value={dialogContextValue}>{children}</DialogContext>
     </div>
   );
@@ -862,6 +646,37 @@ export function Dialog({
   // Keep the consumer click handler separate so the modal path can compose it
   // with Dialog-owned behavior without changing the inline preview path.
   const hasPosition = position != null && !isFullscreen;
+  const entry: DialogEntrance =
+    !isOpen || opensSettled ? 'none' : isFullscreen ? 'fade' : 'slide';
+  const rootClassName = dialogRootClassName({
+    isFullscreen,
+    isPositioned: hasPosition,
+    entrance: entry,
+  });
+  const positionOffsets = hasPosition
+    ? resolveDialogPositionOffsets(position)
+    : undefined;
+  // A size and a position ride inline custom properties; the classes read them.
+  const layoutVariables: Record<`--${string}`, string> = {
+    ...(standardSizing
+      ? {
+          [dialogWidthVar]: standardSizing.width,
+          [dialogMaxWidthVar]: standardSizing.maxWidth,
+          [dialogMaxHeightVar]: standardSizing.maxHeight,
+          // The inner content area reads it: `layoutFillClassName` bounds a
+          // fill layout with it.
+          [containerVars.maxHeight]: standardSizing.maxHeight,
+        }
+      : undefined),
+    ...(positionOffsets
+      ? {
+          [dialogInsetBlockStartVar]: positionOffsets.top,
+          [dialogInsetBlockEndVar]: positionOffsets.bottom,
+          [dialogInsetInlineStartVar]: positionOffsets.insetInlineStart,
+          [dialogInsetInlineEndVar]: positionOffsets.insetInlineEnd,
+        }
+      : undefined),
+  };
   const {onClick: onClickProp, ...propsWithoutClick} = props;
   const {open: _open, ...safeProps} = propsWithoutClick as Record<
     string,
@@ -883,22 +698,15 @@ export function Dialog({
         {...inlineSafeProps}
         {...mergeProps(
           themeProps('dialog', {variant}),
-          stylex.props(
-            layerTextReset.reset,
-            layerStructureReset.reset,
-            styles.inlineWrapper,
+          xstyleProps(xstyle),
+          tw(
             overlayPaddingReset.reset,
-            standardSizing &&
-              dynamicStyles.sizing(
-                standardSizing.width,
-                standardSizing.maxWidth,
-                standardSizing.maxHeight,
-              ),
-            isFullscreen && styles.fullscreen,
-            xstyle,
+            dialogInlineClassName({isFullscreen}),
+            layerTextResetClassName,
+            layerStructureResetClassName,
+            className,
           ),
-          className,
-          style,
+          {...layoutVariables, ...style},
         )}
         data-testid={
           (props as Record<string, unknown>)['data-testid'] as
@@ -919,36 +727,16 @@ export function Dialog({
       {...safeProps}
       {...mergeProps(
         themeProps('dialog', {variant}),
-        focusOutlineProps.focusVisible(
-          layerTextReset.reset,
-          layerStructureReset.reset,
-          styles.dialog,
+        xstyleProps(xstyle),
+        tw(
           overlayPaddingReset.reset,
-          isOpen && styles.open,
-          styles.backdrop,
-          standardSizing &&
-            dynamicStyles.sizing(
-              standardSizing.width,
-              standardSizing.maxWidth,
-              standardSizing.maxHeight,
-            ),
-          hasPosition &&
-            (() => {
-              const o = resolveDialogPositionOffsets(position);
-              return dynamicStyles.position(
-                o.top,
-                o.insetInlineStart,
-                o.insetInlineEnd,
-                o.bottom,
-              );
-            })(),
-          isFullscreen && styles.fullscreen,
-          isFullscreen && isOpen && styles.fullscreenOpen,
-          opensSettled && styles.openSettled,
-          xstyle,
+          rootClassName,
+          layerTextResetClassName,
+          layerStructureResetClassName,
+          className,
+          focusOutlineFocusVisibleClassName,
         ),
-        className,
-        style,
+        {...layoutVariables, ...style},
       )}
       // Presses inside the dialog do not reach handlers around where it is
       // written.

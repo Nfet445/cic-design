@@ -17,8 +17,6 @@
  */
 
 import {useMemo, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../../../theme/tokens.stylex';
 import {Pagination} from '../../../Pagination';
 import type {PaginationProps} from '../../../Pagination';
 import type {TablePlugin} from '../../types';
@@ -27,33 +25,9 @@ import {
   useComponentTranslator,
 } from '../../../i18n/useComponentTranslator';
 import english from '../../../i18n/generated-english/Table/plugins/pagination/useTablePagination.generated';
+import {tablePaginationWrapperClassName} from './paginationClasses';
 
 registerEnglishFallback(english);
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  wrapper: {
-    display: 'flex',
-  },
-  marginTop: {
-    marginTop: spacingVars['--spacing-2'],
-  },
-  marginBottom: {
-    marginBottom: spacingVars['--spacing-2'],
-  },
-  alignStart: {
-    justifyContent: 'flex-start',
-  },
-  alignCenter: {
-    justifyContent: 'center',
-  },
-  alignEnd: {
-    justifyContent: 'flex-end',
-  },
-});
 
 // =============================================================================
 // Config Type
@@ -295,15 +269,12 @@ export function useTablePagination<T extends Record<string, unknown>>(
         }
 
         const makeWrapper = (side: 'above' | 'below') => (
+          // eslint-disable-next-line @astryx/no-style-only-wrapper -- the wrapper is the nav's flex box and carries the gap from the table; the rule reads StyleX objects, not class text.
           <div
-            {...stylex.props(
-              styles.wrapper,
-              side === 'below' && styles.marginTop,
-              side === 'above' && styles.marginBottom,
-              a === 'center' && styles.alignCenter,
-              a === 'end' && styles.alignEnd,
-              a === 'start' && styles.alignStart,
-            )}>
+            className={tablePaginationWrapperClassName({
+              side,
+              align: a,
+            })}>
             <Pagination
               {...props}
               // Two navs with the same name are indistinguishable landmarks;

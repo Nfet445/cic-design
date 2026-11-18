@@ -315,8 +315,10 @@ describe('touch presentation', () => {
     };
     walk(root);
     expect(drifted).toEqual([]);
-    // Core writes the touch key as a literal in many places.
-    expect(pointerLiterals).toBeGreaterThan(50);
+    // A floor, not a list: it catches a walk that stopped finding files. The
+    // number fell as the touch gates moved from quoted StyleX keys into
+    // `pointer-coarse:` class text, and only DEC-9 escapes still spell one.
+    expect(pointerLiterals).toBeGreaterThanOrEqual(30);
   });
 
   it('keeps every iOS gate in core spelled and nested as the resolver', () => {
@@ -344,6 +346,15 @@ describe('touch presentation', () => {
         ) {
           const lines = fs.readFileSync(full, 'utf8').split('\n');
           lines.forEach((line, index) => {
+            // A class map spells the same gate as a Tailwind variant, so it
+            // carries both queries in one bracket. Count those too, or the
+            // floor's move into a class map would read as "no gates at all".
+            const classGates = line.matchAll(
+              /pointer-coarse:\[@supports\(-webkit-touch-callout:none\)\]/g,
+            );
+            for (const _ of classGates) {
+              gates++;
+            }
             for (const match of line.matchAll(/'@supports ([^']*)'/g)) {
               const where = `${path.relative(root, full)}:${index + 1}`;
               if (match[1].includes('pointer')) {
@@ -375,7 +386,8 @@ describe('touch presentation', () => {
     };
     walk(root);
     expect(problems).toEqual([]);
-    // Core already gates its 16px input floor this way.
+    // Core already gates its 16px input floor this way, as a style key or as
+    // the `pointer-coarse:[@supports(-webkit-touch-callout:none)]` variant.
     expect(gates).toBeGreaterThan(0);
   });
 

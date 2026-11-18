@@ -12,14 +12,11 @@
 import {describe, it, expect, vi} from 'vitest';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
 import {Toolbar} from './Toolbar';
+import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
 import {Button} from '../Button/Button';
 import {MoreMenu} from '../MoreMenu';
-import {
-  paddingBlockStyles,
-  paddingInlineStyles,
-} from '../Layout/padding.stylex';
+import {containerPaddingByEdgeClassName} from '../Layout/paddingClasses';
 
 describe('Toolbar', () => {
   it('renders with toolbar role', () => {
@@ -155,19 +152,19 @@ describe('Toolbar', () => {
     (size, blockPadding) => {
       const {container} = render(<Toolbar label="Actions" size={size} />);
       const sectionInner = container.querySelector('.astryx-section');
-      const expectedBlockClasses = stylex
-        .props(paddingBlockStyles[blockPadding])
-        .className?.split(' ')
-        .filter(Boolean);
-      const compactInlineClasses = stylex
-        .props(paddingInlineStyles[1])
-        .className?.split(' ')
-        .filter(Boolean);
+      const expectedBlockClasses = containerPaddingByEdgeClassName({
+        paddingBlockStart: blockPadding,
+        paddingBlockEnd: blockPadding,
+      }).split(' ');
+      const compactInlineClasses = containerPaddingByEdgeClassName({
+        paddingInlineStart: 1,
+        paddingInlineEnd: 1,
+      }).split(' ');
 
       expect(sectionInner).toBeInTheDocument();
       expect(expectedBlockClasses).not.toHaveLength(0);
-      expect(sectionInner).toHaveClass(...(expectedBlockClasses ?? []));
-      expect(sectionInner).not.toHaveClass(...(compactInlineClasses ?? []));
+      expect(sectionInner).toHaveClass(...expectedBlockClasses);
+      expect(sectionInner).not.toHaveClass(...compactInlineClasses);
     },
   );
 
@@ -260,11 +257,41 @@ describe('Toolbar', () => {
       );
       // The center lane claims its content's minimum width when the row
       // decides where to wrap, so its text never spills over the lanes beside
-      // it; a row that does not fit wraps.
-      expect(getComputedStyle(slotOf('center')).flexBasis).toBe('min-content');
-      expect(getComputedStyle(screen.getByRole('toolbar')).flexWrap).toBe(
-        'wrap',
-      );
+      // it; a row that does not fit wraps. Read as classes: the declarations
+      // live in the precompiled sheet, not in this environment.
+      expectClassSet(slotOf('center'), {
+        includes: ['[flex-basis:min-content]'],
+      });
+      expectClassSet(screen.getByRole('toolbar'), {includes: ['flex-wrap']});
+    });
+  });
+
+  it('gives each side lane its own basis and the inset it reads', () => {
+    render(
+      <Toolbar
+        label="Actions"
+        startContent={<span>Start</span>}
+        centerContent={<span>Center</span>}
+        endContent={<span>End</span>}
+      />,
+    );
+    const lanes = screen.getByRole('toolbar').children;
+    const start = lanes[0] as HTMLElement;
+    expectClassSet(start, {
+      includes: [
+        'flex',
+        'flex-wrap',
+        '[flex-basis:0px]',
+        '[&:has(>_[data-astryx-edge-comp]:first-child)]:[flex-basis:var(--astryx-toolbar-lane-inset)]',
+      ],
+    });
+    expectVariable(
+      start,
+      '--astryx-toolbar-lane-inset',
+      'calc(var(--container-padding-inline-start, var(--spacing-4)) - var(--spacing-2))',
+    );
+    expectClassSet(screen.getByRole('toolbar'), {
+      includes: ['flex', 'flex-wrap', 'gap-1'],
     });
   });
 

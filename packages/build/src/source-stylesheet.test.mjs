@@ -71,6 +71,7 @@ describe('a source build against the prebuilt stylesheets', () => {
     const sheet = buildCss.composePackageStylesheet(
       '',
       processStylexRules(rules, false),
+      await buildCss.readExtraCss(TARGETS[name]),
     );
     // Everything after the banner: the layer order, then the rules.
     return sheet.slice(sheet.indexOf(buildCss.ASTRYX_LAYER_ORDER));
@@ -112,7 +113,10 @@ describe('a source build against the prebuilt stylesheets', () => {
   it('compiles a component in the Turbopack loader to classes astryx.css styles', async () => {
     const packages = sourcePackages(app);
     const core = packages.find(({name}) => name === '@astryxdesign/core');
-    const file = path.join(core.srcDir, 'Button/Button.tsx');
+    // Token still authors its styles with `stylex.create`. Button's are
+    // Tailwind classes now, so it has no StyleX rules for the loader to
+    // compile and proves nothing about the loader.
+    const file = path.join(core.srcDir, 'Token/Token.tsx');
     const code = await new Promise((resolve, reject) => {
       turbopackLoader.call(
         {

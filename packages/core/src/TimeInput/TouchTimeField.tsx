@@ -27,21 +27,19 @@ import {
   type KeyboardEvent,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {BottomSheet} from '../BottomSheet';
 import {Button} from '../Button';
 import {
   Field,
   InputClearButton,
-  inputWrapperStyles,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
 } from '../Field';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {useFieldInputStyling} from '../Field/fieldParts';
 import {joinAriaIDs} from '../utils/inputAria';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputStatusIcon} from '../hooks/useInputStatusIcon';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -49,13 +47,21 @@ import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {Icon} from '../Icon';
 import {useLocale} from '../i18n';
 import {formatLocaleTime} from '../utils/timeFormat';
-import {sizeVars, spacingVars} from '../theme/tokens.stylex';
 import {useSize} from '../SizeContext/SizeContext';
 import {Spinner} from '../Spinner';
 import {useTooltip} from '../Tooltip';
 import {Wheel, type WheelOption} from '../DateInput/Wheel';
 import {useTouchPresentation} from '../utils/touchPresentation';
-import {dateInputTouchGeometry} from '../DateInput/tokens.stylex';
+import {
+  touchTimeFieldFooterClassName,
+  touchTimeFieldIconButtonClassName,
+  touchTimeFieldInputClassName,
+  touchTimeFieldSheetBodyClassName,
+  touchTimeFieldSizeClassName,
+  touchTimeFieldWheelsClassName,
+  touchTimeFieldWheelsInlineStyle,
+} from './touchTimeFieldClasses';
+import {tw} from '../utils/tw';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {themeProps} from '../utils/themeProps';
 import {
@@ -68,6 +74,7 @@ import {
   type ISOTimeString,
 } from '../utils';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
+import {xstyleProps} from '../utils/xstyle';
 import type {TimeInputProps} from './TimeInput';
 import {TimeWheels} from '../DateInput/datePickerTouch';
 import {
@@ -86,72 +93,6 @@ import {
 import english from '../i18n/generated-english/TimeInput/TouchTimeField.generated';
 
 registerEnglishFallback(english);
-
-const sizeStyles = stylex.create({
-  sm: {height: sizeVars['--size-element-sm'], minWidth: 120},
-  md: {height: sizeVars['--size-element-md'], minWidth: 120},
-  lg: {height: sizeVars['--size-element-lg'], minWidth: 120},
-});
-
-const styles = stylex.create({
-  iconButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    flexShrink: 0,
-  },
-  input: {
-    display: 'block',
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    backgroundColor: 'transparent',
-    outline: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // Sheet chrome mirrors TouchDateTimeField: `touchSheetBody` insets (the
-  // BottomSheet handle floats over the panel, so the wrapper supplies the top
-  // clearance and the side/bottom insets) flattened with `touchPanel`'s column
-  // layout, which is the wheels' direct parent there and spaces the footer.
-  sheetBody: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    inlineSize: '100%',
-    minInlineSize: 0,
-    gap: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-4'],
-    // The sheet keeps the band under its grab bar.
-    paddingBlockStart: 0,
-    paddingBlockEnd: spacingVars['--spacing-4'],
-  },
-  wheels: {
-    display: 'flex',
-    inlineSize: '100%',
-    minInlineSize: 0,
-    blockSize: dateInputTouchGeometry.paneBlockSize,
-    gap: spacingVars['--spacing-2'],
-  },
-  footer: {
-    display: 'flex',
-    marginBlockStart: 'auto',
-    paddingBlockStart: spacingVars['--spacing-1'],
-  },
-});
 
 /**
  * The Astryx bottom-sheet time surface: a read-only closed field that opens
@@ -380,19 +321,14 @@ export function TouchTimeField({
           status: status?.type ?? null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
-          sizeStyles[size],
-          isDisabled && inputWrapperStyles.disabled,
-          isDisabled && inputDisabledFocusStyles.withinRing,
-          status && inputStatusBorderStyles[status.type],
-          status && !isDisabled && inputStatusHoverShadowStyles[status.type],
-          status && inputStatusFocusWithinStyles[status.type],
-          inputGroup && groupStyles.inGroup,
-          controlXstyle,
+        xstyleProps(controlXstyle),
+        tw(
+          inputGroup && inputGroupMemberClassName,
+          fieldInputWrapperClassName({status: status?.type}),
+          isDisabled && fieldInputWrapperDisabledClassName,
+          touchTimeFieldSizeClassName({size}),
+          controlClassName,
         ),
-        controlClassName,
         controlStyle,
       )}>
       <button
@@ -401,7 +337,12 @@ export function TouchTimeField({
         aria-disabled={isEffectivelyDisabled || undefined}
         aria-label={t('@astryx.timeInput.openPicker', {label})}
         tabIndex={-1}
-        {...stylex.props(focusOutlineStyles.focusVisible, styles.iconButton)}>
+        {...mergeProps(
+          stylex.props(focusOutlineStyles.focusVisible),
+          touchTimeFieldIconButtonClassName({
+            isDisabled: isEffectivelyDisabled,
+          }),
+        )}>
         <Icon icon="clock" size="sm" color="secondary" />
       </button>
       <input
@@ -440,7 +381,9 @@ export function TouchTimeField({
             ? joinAriaIDs(ariaLabelledBy ?? fieldLabelID, ariaLabelledByProp)
             : ariaLabelledBy
         }
-        {...stylex.props(styles.input)}
+        className={touchTimeFieldInputClassName({
+          isDisabled: isEffectivelyDisabled,
+        })}
       />
       {isBusy && <Spinner size="sm" aria-hidden="true" />}
       {hasClear && optimisticValue && !isEffectivelyDisabled && (
@@ -458,8 +401,10 @@ export function TouchTimeField({
         // sheetBody owns the inset; the sheet keeps the band under its grab
         // bar.
         padding={0}>
-        <div ref={sheetBodyRef} {...stylex.props(styles.sheetBody)}>
-          <div {...stylex.props(styles.wheels)}>
+        <div ref={sheetBodyRef} className={touchTimeFieldSheetBodyClassName}>
+          <div
+            className={touchTimeFieldWheelsClassName}
+            style={touchTimeFieldWheelsInlineStyle}>
             {isTouch ? (
               <TimeWheels
                 time={parsedWheelTime}
@@ -525,7 +470,7 @@ export function TouchTimeField({
               </>
             )}
           </div>
-          <div {...stylex.props(styles.footer)}>
+          <div className={touchTimeFieldFooterClassName}>
             <Button
               variant="primary"
               size="md"

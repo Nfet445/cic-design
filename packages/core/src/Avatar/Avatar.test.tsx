@@ -4,12 +4,10 @@ import {Profiler, useState} from 'react';
 import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest';
 import {act, render, screen, fireEvent} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import {Avatar} from './Avatar';
 import {AvatarStatusDot} from './AvatarStatusDot';
 import {AvatarGroup} from '../AvatarGroup';
-import {rulesDeclaredFor} from '../__tests__/pressState';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 
 /**
  * The initials an avatar draws: the plain CSS string in the fallback's private
@@ -95,48 +93,31 @@ describe('Avatar', () => {
 
   it('paints initials in primary text on the neutral tint, a pair that holds 4.5:1 in dark mode', () => {
     // Secondary text on the neutral tint falls below 4.5:1 in dark mode.
-    const probe = stylex.create({
-      tint: {backgroundColor: colorVars['--color-neutral']},
-      ink: {
-        color: {
-          default: colorVars['--color-text-primary'],
-          '@media (forced-colors: active)': 'currentColor',
-        },
-      },
-    });
     render(<Avatar name="Ada Lovelace" />);
-    const initials = initialsElement('AL');
-    const classesOf = (style: stylex.StyleXStyles) =>
-      (stylex.props(style).className ?? '')
-        .split(' ')
-        // Dev mode prepends a per-file `File__style.key` debug class that
-        // differs between the probe and the component.
-        .filter(cls => cls !== '' && !cls.includes('__'));
-    for (const cls of [...classesOf(probe.tint), ...classesOf(probe.ink)]) {
-      expect(initials.className).toContain(cls);
-    }
+    expectClassSet(initialsElement('AL'), {
+      includes: [
+        'bg-[var(--color-neutral)]',
+        'text-[color:var(--color-text-primary)]',
+        // A lone avatar's initials take the colour around them in forced
+        // colours, so a control that paints itself disabled carries them.
+        'forced-colors:text-[color:currentColor]',
+      ],
+    });
   });
 
   it('paints grouped initials in primary text too', () => {
-    // A grouped face skips the lone-avatar colour rule, so the fallback's own
-    // colour is the one it shows.
-    const probe = stylex.create({
-      ink: {color: colorVars['--color-text-primary']},
-    });
+    // A grouped face skips the lone-avatar colour rule: its ring's opaque fill
+    // is forced to Canvas, so only CanvasText is sure to read on it.
     render(
       <AvatarGroup>
         <Avatar name="Ada Lovelace" />
         <Avatar name="Grace Hopper" />
       </AvatarGroup>,
     );
-    const initials = initialsElement('AL');
-    const classes = (stylex.props(probe.ink).className ?? '')
-      .split(' ')
-      .filter(cls => cls !== '' && !cls.includes('__'));
-    expect(classes.length).toBeGreaterThan(0);
-    for (const cls of classes) {
-      expect(initials.className).toContain(cls);
-    }
+    expectClassSet(initialsElement('AL'), {
+      includes: ['text-[color:var(--color-text-primary)]'],
+      excludes: ['forced-colors:text-[color:currentColor]'],
+    });
   });
 
   it('puts the avatar box on the element that carries the theme target', () => {
@@ -224,59 +205,24 @@ describe('Avatar', () => {
       },
     );
 
-    it('draws the initials with empty alternative text from a private property', () => {
+    it('draws the initials as generated content from a private property', () => {
       render(<Avatar name="Ada Lovelace" onClick={() => {}} data-testid="a" />);
       const fallback = initialsElement('AL');
-      const rules = rulesDeclaredFor(fallback).filter(rule =>
-        rule.slice(0, rule.indexOf('{')).includes('::before'),
-      );
-      expect(rules.some(rule => /content: var\(--[\w-]+\)/.test(rule))).toBe(
-        true,
-      );
-      expect(fallback.getAttribute('style')).toMatch(
-        /--[\w-]+:\s*"AL"\s*\/\s*"";/,
-      );
+      expectClassSet(fallback, {
+        includes: ['before:content-[var(--astryx-avatar-initials)]'],
+      });
+      expect(fallback.getAttribute('style')).toMatch(/--[\w-]+:\s*"AL";/);
     });
 
-    it('draws the plain string where alternative text is unsupported, and the empty alternative where it is', () => {
+    it('gives the generated content empty alternative text where it is supported', () => {
+      // Older engines draw the plain string; the control's aria-label still
+      // names it, so only the supported arm carries the alternative.
       render(<Avatar name="Ada Lovelace" onClick={() => {}} />);
-      const fallback = initialsElement('AL');
-      const classes = fallback.className.split(/\s+/).filter(Boolean);
-      const selectsFallback = (selector: string) =>
-        selector.includes('::before') &&
-        classes.some(name => selector.includes(`.${name}`));
-      const plain: string[] = [];
-      const supported: string[] = [];
-      for (const sheet of Array.from(document.styleSheets)) {
-        for (const rule of Array.from(sheet.cssRules)) {
-          if (
-            rule instanceof CSSStyleRule &&
-            selectsFallback(rule.selectorText)
-          ) {
-            plain.push(rule.style.getPropertyValue('content'));
-          }
-          if (
-            rule instanceof CSSSupportsRule &&
-            rule.conditionText.includes('content')
-          ) {
-            for (const inner of Array.from(rule.cssRules)) {
-              if (
-                inner instanceof CSSStyleRule &&
-                selectsFallback(inner.selectorText)
-              ) {
-                supported.push(inner.style.getPropertyValue('content'));
-              }
-            }
-          }
-        }
-      }
-      // Older engines (no alternative text for generated content) use the
-      // plain string; the control's aria-label still names it.
-      expect(plain.some(value => /^var\(--[\w-]+\)$/.test(value))).toBe(true);
-      expect(supported.some(value => /^var\(--[\w-]+\)$/.test(value))).toBe(
-        true,
-      );
-      expect(fallback.getAttribute('style')).toMatch(/--[\w-]+:\s*"AL";/);
+      expectClassSet(initialsElement('AL'), {
+        includes: [
+          "supports-[content:'a'/'']:before:content-[var(--astryx-avatar-initials)_/_'']",
+        ],
+      });
     });
 
     it('renders no public attribute for the initials', () => {
@@ -654,13 +600,15 @@ describe('Avatar', () => {
     }
   });
 
-  it('applies shapeStyles to wrapper when rendered inside AvatarGroup', () => {
+  it('publishes the shape radius on the wrapper inside an AvatarGroup', () => {
     render(
-      <AvatarGroup>
-        <Avatar name="Alice" shape="rounded" data-testid="group-avatar" />
+      <AvatarGroup shape="rounded">
+        <Avatar name="Alice" data-testid="group-avatar" />
       </AvatarGroup>,
     );
-    expect(screen.getByTestId('group-avatar')).toBeInTheDocument();
+    expectClassSet(screen.getByTestId('group-avatar'), {
+      includes: ['[--_avatar-radius:var(--radius-element)]'],
+    });
   });
 
   it("an AvatarGroup's shape overrides an individual Avatar's own shape prop, matching how size already works", () => {

@@ -19,131 +19,48 @@
  */
 
 import React, {use, useId, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import type {StyleXStyles} from '@stylexjs/stylex';
+import type {AstryxXStyle} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {RadioListContext} from './RadioList';
 import {RadioListReasonContext} from './RadioListReasonContext';
 import {joinAriaIDs} from '../utils/inputAria';
 import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
-import {rtlStyles} from '../utils/rtlStyles';
-import {indicatorScope} from '../Indicator/indicator.markers.stylex';
+import {tw} from '../utils/tw';
+import {
+  rtlCenterInlineBlockOffsetClassName,
+  rtlCenterInlineClassName,
+} from '../utils/rtlClasses';
+import {indicatorScopeProps} from '../privateAttributes/indicatorScope.stylex';
 import {useIndicatorFocusRing} from '../hooks/useIndicatorFocusRing';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useTouchHitArea} from '../utils/touchHitArea';
 import {pressBoxProps} from '../privateAttributes/pressBox.stylex';
 import {registerBoxHold} from '../utils/boxHold';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {useIndicator} from '../Indicator/useIndicator';
 import {Item, type ItemAlign} from '../Item/Item';
 import {themeProps} from '../utils/themeProps';
 import {
-  indicatorPressPaintStyles,
   rowPressLayerStyles,
-  rowPressPaintStyles,
+  rowPressPaintRadioRowClassName,
 } from '../privateAttributes/press.stylex';
+import {indicatorPressImageClassName} from '../Indicator/indicatorClasses';
+import {
+  radioListItemIndicatorSlotClassName,
+  radioListItemInputClassName,
+  radioListItemPressOverlayClassName,
+  radioListItemRowClassName,
+  radioListItemWrapperClassName,
+} from './radioListItemClasses';
 
 // Registered here, not in the press controller, so a page with no box carries
 // none of its code.
 registerBoxHold();
-
-// The paint of a press the controller does not paint, declared on the row
-// (`rowPressPaintStyles.radioRow`) and inherited by the layer over the circle.
-// Internal: not a theme hook.
-const ROW_PRESS = '--_radio-row-press';
-
-const styles = stylex.create({
-  radioWrapper: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    isolation: 'isolate',
-  },
-  // The row remains the large press target. Nested controls keep their own
-  // action and do not make the radio look pressed. The row declares the paint
-  // of a press the controller does not paint (`rowPressPaintStyles.radioRow`),
-  // and this layer reads it. This owner-drawn layer also survives a theme
-  // replacing the indicator component.
-  // The press controller writes its press attribute on the row for every
-  // pointer: a finger, a mouse and a pen. Its image layer
-  // (`indicatorPressPaintStyles.image`) reads it off the same scope marker as
-  // the hover tint. The controller paints the innermost pressable.
-  // A press on a control nested in the row is that control's. The row's
-  // container rule (cancelNestedPress) ends the row's paint at once.
-  // `:active` paints only a press the controller does not paint, and under a
-  // coarse pointer it is dropped.
-  indicatorPressOverlay: {
-    '::after': {
-      content: '""',
-      position: 'absolute',
-      inset: 0,
-      // The radio's circle, as the indicator draws it.
-      borderRadius: '50%',
-      pointerEvents: 'none',
-      backgroundColor: `var(${ROW_PRESS}, transparent)`,
-    },
-  },
-  input: {
-    position: 'absolute',
-    top: '50%',
-    margin: 0,
-    padding: 0,
-    opacity: 0,
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    zIndex: 1,
-  },
-  inputCoarse: {
-    '@media (pointer: coarse)': {
-      minInlineSize: 24,
-      minBlockSize: 24,
-    },
-  },
-  inputDisabled: {
-    cursor: 'default',
-  },
-  // Holds only the indicator, so the focus ring has one unambiguous target.
-  indicatorSlot: {
-    display: 'contents',
-  },
-});
-
-const wrapperSizeStyles = stylex.create({
-  sm: {
-    width: 20,
-    height: 20,
-  },
-  md: {
-    width: 24,
-    height: 24,
-  },
-});
-
-const rowStyles = stylex.create({
-  // The row's default appearance is a bare surface: no density padding, no
-  // radius, and no full-row background — only the indicator tints on hover
-  // (via `indicatorScope`). Item paints padding/radius/hover as an interactive
-  // row, so this neutralizes them at the component level. A theme's
-  // `radio-list-item` overrides still win: they land in `@layer astryx-theme`,
-  // above the component's base StyleX layer, so themes opt back into row
-  // padding/radius/hover/selected styling. `minWidth: 0` preserves label
-  // truncation now that the Item is the row's flex child.
-  root: {
-    paddingBlock: 0,
-    paddingInline: 0,
-    borderRadius: 0,
-    minWidth: 0,
-    // Suppress Item's interactive hover/press background so the resting and
-    // hovered row look identical by default (a theme can restyle either).
-    backgroundColor: 'transparent',
-  },
-});
+// The paint of a press the controller does not paint is declared on the row
+// (`rowPressPaintRadioRowClassName`) and inherited by the layer over the circle
+// (`radioListItemPressOverlayClassName`). Internal: not a theme hook.
 
 export interface RadioListItemProps extends BaseProps<HTMLDivElement> {
   ref?: React.Ref<HTMLDivElement>;
@@ -296,11 +213,14 @@ export function RadioListItem({
       // click. The press controller holds the row's selection for a press on
       // the marked circle, and picks the option if no click comes.
       {...(isDisabled ? undefined : pressBoxProps)}
-      {...stylex.props(
-        styles.radioWrapper,
-        wrapperSizeStyles[size],
-        !isDisabled && styles.indicatorPressOverlay,
-        !isDisabled && indicatorPressPaintStyles.image,
+      {...mergeProps(
+        tw(
+          radioListItemWrapperClassName({size}),
+          !isDisabled && radioListItemPressOverlayClassName,
+          // The circle reads the controller's press off the row, as the
+          // checkbox's layer does.
+          !isDisabled && indicatorPressImageClassName,
+        ),
       )}
       {...focusProps}>
       <input
@@ -348,15 +268,14 @@ export function RadioListItem({
           hasDescription ? descriptionID : undefined,
           disabledReasonID,
         )}
-        {...stylex.props(
-          styles.input,
-          rtlStyles.centerInline('-50%'),
-          styles.inputCoarse,
-          wrapperSizeStyles[size],
-          isDisabled && styles.inputDisabled,
-        )}
+        {...mergeProps(radioListItemInputClassName({size}), {
+          className: tw(
+            rtlCenterInlineClassName,
+            rtlCenterInlineBlockOffsetClassName.half,
+          ),
+        })}
       />
-      <span ref={indicatorRef} {...stylex.props(styles.indicatorSlot)}>
+      <span ref={indicatorRef} className={radioListItemIndicatorSlotClassName}>
         <RadioControl
           state={isChecked ? 'checked' : 'unchecked'}
           size={size}
@@ -379,6 +298,7 @@ export function RadioListItem({
     <Item
       ref={mergedRowRef}
       {...(isDisabled ? undefined : pressable)}
+      {...(isDisabled ? undefined : indicatorScopeProps)}
       startContent={mediaContent}
       // Delegate row-surface clicks (label text, description, and the empty
       // hover area) to the radio input. The input stays the option's sole
@@ -395,23 +315,13 @@ export function RadioListItem({
       align={align}
       xstyle={
         [
-          // Hover reaches the radio visual through this ancestor marker rather
-          // than props, so hovering the row tints the control. The marker rides
-          // the painting row element (Item), the same element that carries the
-          // theme target, so a theme's hover styling stays in step with the tint.
-          !isDisabled && indicatorScope,
+          // Hover reaches the radio visual through the row's scope attribute
+          // rather than props, so hovering the row tints the control.
           // The row keeps no press paint of its own: the circle paints, and
           // reads the strength whose release the row keeps.
           rowPressLayerStyles.cellWithoutLayer,
-          // Restore the bare default look: zero Item's padding/radius and its
-          // interactive hover/press background. Applied after Item's own base
-          // styles so it wins within the base layer; a `radio-list-item` theme
-          // still overrides it from the higher `astryx-theme` layer.
-          rowStyles.root,
-          !isDisabled && rowPressPaintStyles.radioRow,
-          !isDisabled && touchHitAreaStyles.layer,
           xstyle,
-        ] as StyleXStyles
+        ] as AstryxXStyle
       }
       {...mergeProps(
         // One target for every row, carrying its size and runtime state so a
@@ -427,7 +337,22 @@ export function RadioListItem({
           selected: isChecked ? 'selected' : null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        {className, style},
+        {
+          className: tw(
+            // Restore the bare default look: zero Item's padding/radius and
+            // its interactive hover/press background. Each class names the row
+            // twice, so it wins within the base layer; a `radio-list-item`
+            // theme still overrides it from the higher `astryx-theme` layer.
+            radioListItemRowClassName,
+            !isDisabled && rowPressPaintRadioRowClassName,
+            // Under a finger the row takes taps past its own box. It lands
+            // here, not in `xstyle`: Item resolves a list carrying a StyleX
+            // value as StyleX alone, which drops a class.
+            !isDisabled && touchHitAreaLayerClassName,
+            className,
+          ),
+          style,
+        },
       )}
       {...rest}
     />

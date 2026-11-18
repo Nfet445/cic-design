@@ -2,7 +2,7 @@
 
 /**
  * @file Skeleton.tsx
- * @input Uses React, StyleX keyframes and tokens
+ * @input Uses React, StyleX (consumer `xstyle` only) and Tailwind classes
  * @output Exports Skeleton component, SkeletonProps, SkeletonRadius types
  * @position Core implementation of skeleton loading placeholder
  *
@@ -14,10 +14,17 @@
  */
 
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars, radiusVars, durationVars} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  skeletonAnimateClassName,
+  skeletonClassName,
+  skeletonDelayClassName,
+  skeletonDimensionsClassName,
+  skeletonRadiusClassName,
+} from './skeletonClasses';
 
 // =============================================================================
 // Animation Timing Constants
@@ -36,122 +43,10 @@ const DELAY_TIME = 1000;
 const STAGGER_TIME = 100;
 
 // =============================================================================
-// Animation Keyframes
-// =============================================================================
-
-/**
- * The pulse climbs from 0.25 to 0.925 opacity in ten equal steps, then plays
- * back down (`alternate`). The steps are written out as holds joined by
- * 0.01% ramps, with a linear timing function, rather than produced by a
- * `steps()` timing function: WebKit never runs a `steps()` animation on the
- * compositor, so Safari would repaint the pulse on the main thread and freeze
- * it whenever a script runs. These keyframes give the same values at the same
- * times, which every engine can animate off the main thread.
- */
-const skeletonFade = stylex.keyframes({
-  '0%': {opacity: 0.25},
-  '9.99%': {opacity: 0.25},
-  '10%': {opacity: 0.325},
-  '19.99%': {opacity: 0.325},
-  '20%': {opacity: 0.4},
-  '29.99%': {opacity: 0.4},
-  '30%': {opacity: 0.475},
-  '39.99%': {opacity: 0.475},
-  '40%': {opacity: 0.55},
-  '49.99%': {opacity: 0.55},
-  '50%': {opacity: 0.625},
-  '59.99%': {opacity: 0.625},
-  '60%': {opacity: 0.7},
-  '69.99%': {opacity: 0.7},
-  '70%': {opacity: 0.775},
-  '79.99%': {opacity: 0.775},
-  '80%': {opacity: 0.85},
-  '89.99%': {opacity: 0.85},
-  '90%': {opacity: 0.925},
-  '100%': {opacity: 0.925},
-});
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    backgroundColor: {
-      default: colorVars['--color-skeleton'],
-      '@media (prefers-contrast: more)': `color-mix(in srgb, ${colorVars['--color-skeleton']}, ${colorVars['--color-text-primary']} 30%)`,
-      // Forced colors (Windows High Contrast) strips painted backgrounds,
-      // which would make the placeholder invisible. GrayText is a system
-      // color, so it survives forcing and keeps the placeholder visible
-      // (WCAG 1.4.11). Listed after prefers-contrast so it wins when both
-      // media features are active.
-      '@media (forced-colors: active)': 'GrayText',
-    },
-    opacity: {
-      default: 0.25,
-      // The resting 0.25 opacity would render GrayText nearly invisible on
-      // Canvas; full opacity keeps the static placeholder perceivable (the
-      // fade animation still pulses when motion is allowed).
-      '@media (forced-colors: active)': 1,
-    },
-  },
-  animate: {
-    animationDirection: 'alternate',
-    // The loop reads the duration before a theme's tempo scales it
-    // (spec:AST-108 FR4).
-    animationDuration: `var(--_astryx-pre-tempo-duration-medium-max, ${durationVars['--duration-medium-max']})`,
-    animationIterationCount: 'infinite',
-    // Disable the pulse under reduced-motion; the static placeholder still
-    // reads as loading (complex-20).
-    animationName: {
-      default: skeletonFade,
-      '@media (prefers-reduced-motion: reduce)': 'none',
-    },
-    // Linear between the keyframes' holds; see skeletonFade.
-    animationTimingFunction: 'linear',
-  },
-});
-
-const radiusStyles = stylex.create({
-  // Numeric scale names (preferred)
-  none: {
-    borderRadius: 0,
-  },
-  0: {
-    borderRadius: radiusVars['--radius-none'],
-  },
-  1: {
-    borderRadius: radiusVars['--radius-inner'],
-  },
-  2: {
-    borderRadius: radiusVars['--radius-element'],
-  },
-  3: {
-    borderRadius: radiusVars['--radius-container'],
-  },
-  4: {
-    borderRadius: radiusVars['--radius-container'],
-  },
-  rounded: {
-    borderRadius: radiusVars['--radius-full'],
-  },
-});
-
-const dynamicStyles = stylex.create({
-  animationDelay: (index: number) => ({
-    animationDelay: `${DELAY_TIME + STAGGER_TIME * index}ms`,
-  }),
-  dimensions: (width: number | string, height: number | string) => ({
-    width: typeof width === 'number' ? `${width}px` : width,
-    height: typeof height === 'number' ? `${height}px` : height,
-  }),
-});
-
-// =============================================================================
 // Types
 // =============================================================================
 
-export type SkeletonRadius = keyof typeof radiusStyles;
+export type SkeletonRadius = keyof typeof skeletonRadiusClassName;
 
 // =============================================================================
 // Component
@@ -222,6 +117,8 @@ export function Skeleton({
   ref,
   ...props
 }: SkeletonProps) {
+  const cssLength = (value: number | string) =>
+    typeof value === 'number' ? `${value}px` : value;
   return (
     <div
       ref={ref}
@@ -233,16 +130,25 @@ export function Skeleton({
       data-testid={testId}
       {...mergeProps(
         themeProps('skeleton'),
-        stylex.props(
-          styles.root,
-          styles.animate,
-          radiusStyles[radiusProp],
-          dynamicStyles.dimensions(width, height),
-          dynamicStyles.animationDelay(index),
-          xstyle,
-        ),
+        {
+          className: tw(
+            skeletonClassName,
+            skeletonAnimateClassName,
+            skeletonRadiusClassName[radiusProp],
+            skeletonDimensionsClassName,
+            skeletonDelayClassName,
+            xstyleProps(xstyle).className,
+          ),
+        },
         className,
-        style,
+        // A value the props compute reaches the stylesheet as a variable, so
+        // every declaration stays in the class map above.
+        {
+          ['--_skeleton-width' as string]: cssLength(width),
+          ['--_skeleton-height' as string]: cssLength(height),
+          ['--_skeleton-delay' as string]: `${DELAY_TIME + STAGGER_TIME * index}ms`,
+          ...style,
+        },
       )}
       {...props}
     />

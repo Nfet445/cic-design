@@ -10,8 +10,7 @@
  * @position Internal view utility module; consumed by Monthly, Weekly, Day, and List views
  */
 
-import {type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
+import {type CSSProperties, type ReactNode} from 'react';
 import {useScrollableArea} from '@astryxdesign/core/hooks';
 import {getLocaleDirection, type Locale} from '@astryxdesign/core/i18n';
 import {
@@ -23,16 +22,7 @@ import {
   useCalendarSystem,
   type CalendarSystem,
 } from '@astryxdesign/core/internal/calendar-system';
-import {
-  borderVars,
-  colorVars,
-  focusVars,
-  fontWeightVars,
-  radiusVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
+import {borderVarNames, spacingVarNames} from '@astryxdesign/core/theme';
 import {Spinner} from '@astryxdesign/core/Spinner';
 import {HStack} from '@astryxdesign/core/Stack';
 import {Heading, Text} from '@astryxdesign/core/Text';
@@ -45,7 +35,68 @@ import {
 } from '@astryxdesign/core/utils';
 import {isDayEvent} from './dateMath';
 import {useScheduleContext} from './context';
-import {timeGridViewportScope} from './schedule.stylex';
+import {tw} from '../tw';
+import {
+  scheduleAllDayCellClassName,
+  scheduleEventButtonResetClassName,
+  scheduleEventDotBlueClassName,
+  scheduleEventDotCyanClassName,
+  scheduleEventDotGrayClassName,
+  scheduleEventDotGreenClassName,
+  scheduleEventDotOrangeClassName,
+  scheduleEventDotPinkClassName,
+  scheduleEventDotPurpleClassName,
+  scheduleEventDotRedClassName,
+  scheduleEventDotTealClassName,
+  scheduleEventDotYellowClassName,
+  scheduleEventPastSurfaceBlueClassName,
+  scheduleEventPastSurfaceCyanClassName,
+  scheduleEventPastSurfaceGrayClassName,
+  scheduleEventPastSurfaceGreenClassName,
+  scheduleEventPastSurfaceOrangeClassName,
+  scheduleEventPastSurfacePinkClassName,
+  scheduleEventPastSurfacePurpleClassName,
+  scheduleEventPastSurfaceRedClassName,
+  scheduleEventPastSurfaceTealClassName,
+  scheduleEventPastSurfaceYellowClassName,
+  scheduleEventPillClassName,
+  scheduleEventSurfaceBlueClassName,
+  scheduleEventSurfaceCyanClassName,
+  scheduleEventSurfaceGrayClassName,
+  scheduleEventSurfaceGreenClassName,
+  scheduleEventSurfaceOrangeClassName,
+  scheduleEventSurfacePinkClassName,
+  scheduleEventSurfacePurpleClassName,
+  scheduleEventSurfaceRedClassName,
+  scheduleEventSurfaceTealClassName,
+  scheduleEventSurfaceYellowClassName,
+  scheduleEventTimeClassName,
+  scheduleEventTitleClassName,
+  scheduleFrameClassName,
+  scheduleHeaderClassName,
+  scheduleHeaderControlsClassName,
+  scheduleHeaderStatusClassName,
+  scheduleHeaderTitleClassName,
+  scheduleHeaderTitleContentClassName,
+  scheduleListEventDotClassName,
+  scheduleListEventDotPastClassName,
+  scheduleListEventRowClassName,
+  scheduleListEventTimeClassName,
+  scheduleListEventTitleClassName,
+  scheduleListEventTitlePastClassName,
+  scheduleLoadingSpinnerClassName,
+  scheduleLoadingSpinnerHiddenClassName,
+  scheduleMoreEventsClassName,
+  scheduleTitleEmphasisClassName,
+  scheduleTitleFirstLineClassName,
+  scheduleTitleFirstTimeClassName,
+  scheduleTitleFirstTitleClassName,
+  scheduleVisuallyHiddenClassName,
+  scheduleWeekHeaderClassName,
+  scheduleWeekdayHeadingClassName,
+  scheduleWeekdayLabelClassName,
+  scheduleEventPopoverBodyClassName,
+} from './scheduleClasses';
 import type {
   CalendarEvent,
   CalendarInstantEvent,
@@ -86,13 +137,13 @@ export function ScheduleFrame({
   const initialHeader: ScheduleHeaderContent = {
     startContent: null,
     centerContent: (
-      <span {...stylex.props(styles.headerTitleContent)}>
+      <span className={tw(scheduleHeaderTitleContentClassName)}>
         <Heading level={2}>{title}</Heading>
         <span
           aria-hidden={!isLoading}
-          {...stylex.props(
-            styles.loadingSpinner,
-            !isLoading && styles.loadingSpinnerHidden,
+          className={tw(
+            scheduleLoadingSpinnerClassName,
+            !isLoading && scheduleLoadingSpinnerHiddenClassName,
           )}>
           <Spinner size="md" aria-label="Loading events" aria-hidden />
         </span>
@@ -111,19 +162,22 @@ export function ScheduleFrame({
   );
 
   return (
-    <section {...stylex.props(styles.frame)} aria-label={titleLabel}>
-      <div {...stylex.props(styles.header)}>
-        <HStack gap={8} align="center" xstyle={styles.headerControls}>
+    <section className={tw(scheduleFrameClassName)} aria-label={titleLabel}>
+      <div className={tw(scheduleHeaderClassName)}>
+        <HStack
+          gap={8}
+          align="center"
+          className={scheduleHeaderControlsClassName}>
           {header.startContent}
         </HStack>
-        <HStack gap={8} align="center" xstyle={styles.headerTitle}>
+        <HStack gap={8} align="center" className={scheduleHeaderTitleClassName}>
           {header.centerContent}
         </HStack>
         <HStack
           gap={8}
           align="center"
           justify="end"
-          xstyle={styles.headerStatus}>
+          className={scheduleHeaderStatusClassName}>
           {header.endContent}
         </HStack>
       </div>
@@ -167,7 +221,7 @@ function LocalizedMonthTitle({
 
   return parts.map((part, index) =>
     part.type === 'month' ? (
-      <span key={index} {...stylex.props(styles.titleEmphasis)}>
+      <span key={index} className={tw(scheduleTitleEmphasisClassName)}>
         {part.value}
       </span>
     ) : (
@@ -200,7 +254,7 @@ export function ScheduleRangeMonthTitle({
   );
   return isSameCalendarYear(start, end, locale, calendar) ? (
     <>
-      <span {...stylex.props(styles.titleEmphasis)}>{startMonth}</span> -{' '}
+      <span className={tw(scheduleTitleEmphasisClassName)}>{startMonth}</span> -{' '}
       {endMonthTitle}
     </>
   ) : (
@@ -243,7 +297,9 @@ export function SchedulePopoverBody({
   });
   return (
     <div
-      {...getViewportProps<HTMLDivElement>({xstyle: styles.eventPopoverBody})}>
+      {...getViewportProps<HTMLDivElement>({
+        className: scheduleEventPopoverBodyClassName,
+      })}>
       <div {...getContentProps<HTMLDivElement>()}>{children}</div>
     </div>
   );
@@ -268,14 +324,17 @@ export function EventPill({
       : null;
   return (
     <span
-      {...stylex.props(
-        styles.eventPill,
+      className={tw(
+        scheduleEventPillClassName,
         isPast
-          ? eventPastSurfaceColorStyle(category.color)
-          : eventSurfaceColorStyle(category.color),
+          ? eventPastSurfaceClassName(category.color)
+          : eventSurfaceClassName(category.color),
       )}>
       {timeLabel != null && (
-        <Text type="supporting" color="inherit" xstyle={styles.eventTime}>
+        <Text
+          type="supporting"
+          color="inherit"
+          className={scheduleEventTimeClassName}>
           <ScheduleTime>{timeLabel}</ScheduleTime>
         </Text>
       )}
@@ -283,7 +342,7 @@ export function EventPill({
         type="supporting"
         color="inherit"
         weight="bold"
-        xstyle={styles.eventTitle}>
+        className={scheduleEventTitleClassName}>
         {event.title}
       </Text>
     </span>
@@ -333,25 +392,25 @@ export function TitleFirstPill({
   const category = getEventCategory(event, categories);
   return (
     <span
-      {...stylex.props(
-        styles.eventPill,
+      className={tw(
+        scheduleEventPillClassName,
         isPast
-          ? eventPastSurfaceColorStyle(category.color)
-          : eventSurfaceColorStyle(category.color),
+          ? eventPastSurfaceClassName(category.color)
+          : eventSurfaceClassName(category.color),
       )}>
-      <span {...stylex.props(styles.titleFirstLine)}>
+      <span className={tw(scheduleTitleFirstLineClassName)}>
         <Text
           type="supporting"
           color="inherit"
           weight="bold"
-          xstyle={styles.titleFirstTitle}>
+          className={scheduleTitleFirstTitleClassName}>
           {event.title}
         </Text>
         {timeLabel != null && (
           <Text
             type="supporting"
             color="inherit"
-            xstyle={styles.titleFirstTime}>
+            className={scheduleTitleFirstTimeClassName}>
             <ScheduleTime>{timeLabel}</ScheduleTime>
           </Text>
         )}
@@ -372,16 +431,16 @@ export function ListEventRow({
   const {categories, locale} = useScheduleContext();
   const category = getEventCategory(event, categories);
   return (
-    <div {...stylex.props(styles.listEventRow)}>
+    <div className={tw(scheduleListEventRowClassName)}>
       <span
         aria-hidden
-        {...stylex.props(
-          styles.listEventDot,
-          eventDotColorStyle(category.color),
-          isPast && styles.listEventDotPast,
+        className={tw(
+          scheduleListEventDotClassName,
+          eventDotClassName(category.color),
+          isPast && scheduleListEventDotPastClassName,
         )}
       />
-      <span {...stylex.props(styles.listEventTime)}>
+      <span className={tw(scheduleListEventTimeClassName)}>
         <ScheduleTime>
           {isDayEvent(event)
             ? 'All day'
@@ -389,9 +448,9 @@ export function ListEventRow({
         </ScheduleTime>
       </span>
       <span
-        {...stylex.props(
-          styles.listEventTitle,
-          isPast && styles.listEventTitlePast,
+        className={tw(
+          scheduleListEventTitleClassName,
+          isPast && scheduleListEventTitlePastClassName,
         )}>
         {event.title}
       </span>
@@ -411,83 +470,83 @@ export function getEventCategory(
   );
 }
 
-export function eventDotColorStyle(color: ScheduleEventColor | undefined) {
+export function eventDotClassName(color: ScheduleEventColor | undefined) {
   switch (color) {
     case 'cyan':
-      return styles.eventDotCyan;
+      return scheduleEventDotCyanClassName;
     case 'gray':
-      return styles.eventDotGray;
+      return scheduleEventDotGrayClassName;
     case 'green':
-      return styles.eventDotGreen;
+      return scheduleEventDotGreenClassName;
     case 'orange':
-      return styles.eventDotOrange;
+      return scheduleEventDotOrangeClassName;
     case 'pink':
-      return styles.eventDotPink;
+      return scheduleEventDotPinkClassName;
     case 'purple':
-      return styles.eventDotPurple;
+      return scheduleEventDotPurpleClassName;
     case 'red':
-      return styles.eventDotRed;
+      return scheduleEventDotRedClassName;
     case 'teal':
-      return styles.eventDotTeal;
+      return scheduleEventDotTealClassName;
     case 'yellow':
-      return styles.eventDotYellow;
+      return scheduleEventDotYellowClassName;
     case 'blue':
     default:
-      return styles.eventDotBlue;
+      return scheduleEventDotBlueClassName;
   }
 }
 
-export function eventSurfaceColorStyle(color: ScheduleEventColor | undefined) {
+export function eventSurfaceClassName(color: ScheduleEventColor | undefined) {
   switch (color) {
     case 'cyan':
-      return styles.eventSurfaceCyan;
+      return scheduleEventSurfaceCyanClassName;
     case 'gray':
-      return styles.eventSurfaceGray;
+      return scheduleEventSurfaceGrayClassName;
     case 'green':
-      return styles.eventSurfaceGreen;
+      return scheduleEventSurfaceGreenClassName;
     case 'orange':
-      return styles.eventSurfaceOrange;
+      return scheduleEventSurfaceOrangeClassName;
     case 'pink':
-      return styles.eventSurfacePink;
+      return scheduleEventSurfacePinkClassName;
     case 'purple':
-      return styles.eventSurfacePurple;
+      return scheduleEventSurfacePurpleClassName;
     case 'red':
-      return styles.eventSurfaceRed;
+      return scheduleEventSurfaceRedClassName;
     case 'teal':
-      return styles.eventSurfaceTeal;
+      return scheduleEventSurfaceTealClassName;
     case 'yellow':
-      return styles.eventSurfaceYellow;
+      return scheduleEventSurfaceYellowClassName;
     case 'blue':
     default:
-      return styles.eventSurfaceBlue;
+      return scheduleEventSurfaceBlueClassName;
   }
 }
 
-export function eventPastSurfaceColorStyle(
+export function eventPastSurfaceClassName(
   color: ScheduleEventColor | undefined,
 ) {
   switch (color) {
     case 'cyan':
-      return styles.eventPastSurfaceCyan;
+      return scheduleEventPastSurfaceCyanClassName;
     case 'gray':
-      return styles.eventPastSurfaceGray;
+      return scheduleEventPastSurfaceGrayClassName;
     case 'green':
-      return styles.eventPastSurfaceGreen;
+      return scheduleEventPastSurfaceGreenClassName;
     case 'orange':
-      return styles.eventPastSurfaceOrange;
+      return scheduleEventPastSurfaceOrangeClassName;
     case 'pink':
-      return styles.eventPastSurfacePink;
+      return scheduleEventPastSurfacePinkClassName;
     case 'purple':
-      return styles.eventPastSurfacePurple;
+      return scheduleEventPastSurfacePurpleClassName;
     case 'red':
-      return styles.eventPastSurfaceRed;
+      return scheduleEventPastSurfaceRedClassName;
     case 'teal':
-      return styles.eventPastSurfaceTeal;
+      return scheduleEventPastSurfaceTealClassName;
     case 'yellow':
-      return styles.eventPastSurfaceYellow;
+      return scheduleEventPastSurfaceYellowClassName;
     case 'blue':
     default:
-      return styles.eventPastSurfaceBlue;
+      return scheduleEventPastSurfaceBlueClassName;
   }
 }
 
@@ -762,956 +821,96 @@ export function isEventInPast(
   return event.end <= currentTime;
 }
 
-const baseText = {
-  fontFamily: typographyVars['--font-family-body'],
-  color: colorVars['--color-text-primary'],
+/**
+ * A measured placement rides a private variable, so one class paints every chip,
+ * block, and label and the view only supplies the numbers.
+ */
+export type ScheduleInstanceStyle = CSSProperties & {
+  [key: `--astryx-schedule-${string}`]: string | number;
 };
 
-export const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-    minHeight: 0,
-  },
-  frame: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-    minHeight: 0,
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-    borderRadius: radiusVars['--radius-container'],
-    backgroundColor: colorVars['--color-background-card'],
-    overflow: 'hidden',
-  },
-  header: {
-    display: 'grid',
-    gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-3'],
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-    borderBottomWidth: borderVars['--border-width'],
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-  headerControls: {
-    justifySelf: 'start',
-  },
-  headerTitle: {
-    justifySelf: 'center',
-    textAlign: 'center',
-    minWidth: 0,
-  },
-  headerTitleContent: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-  },
-  loadingSpinner: {
-    display: 'inline-flex',
-  },
-  loadingSpinnerHidden: {
-    visibility: 'hidden',
-  },
-  headerStatus: {
-    justifySelf: 'end',
-    minWidth: 0,
-  },
-  titleEmphasis: {
-    fontWeight: fontWeightVars['--font-weight-bold'],
-  },
-  visuallyHidden: {
-    position: 'absolute',
-    width: '1px',
-    height: '1px',
-    padding: 0,
-    margin: '-1px',
-    overflow: 'hidden',
-    clip: 'rect(0 0 0 0)',
-    whiteSpace: 'nowrap',
-    borderWidth: 0,
-  },
-  weekHeader: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
-    borderBottomWidth: borderVars['--border-width'],
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-  weekdayLabel: {
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    textAlign: 'center',
-  },
-  weekdayHeading: {
-    textAlign: 'center',
-  },
-  monthGrid: {
-    overflowX: 'auto',
-  },
-  // The month surface isolates its paint order: chips rise above the cells
-  // and a focused "+N more" above the chips, and nothing outside the surface
-  // can see either value.
-  monthGridSurface: {
-    position: 'relative',
-    width: '100%',
-    minWidth: '784px',
-    isolation: 'isolate',
-  },
-  monthCellGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
-    gridAutoRows: '128px',
-  },
-  monthGridRow: {
-    display: 'contents',
-  },
-  monthCell: {
-    position: 'relative',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-1'],
-    minWidth: 0,
-    padding: 0,
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-    borderBlockEndWidth: borderVars['--border-width'],
-    borderBlockEndStyle: 'solid',
-    borderBlockEndColor: colorVars['--color-border'],
-    backgroundColor: colorVars['--color-background-card'],
-  },
-  // A day cell takes focus only when its "+N more" goes away while its
-  // popover is open. The shared ring sits inset, so the table's scroll edge
-  // never clips it, and the cell stays under the chips it holds.
-  monthCellFocus: {
-    outlineOffset: {
-      default: null,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-  },
-  monthCellLastColumn: {
-    borderInlineEndWidth: 0,
-  },
-  monthCellLastRow: {
-    borderBlockEndWidth: 0,
-  },
-  monthCellOutside: {
-    backgroundColor: colorVars['--color-background-muted'],
-  },
-  monthDayNumber: {
-    alignSelf: 'flex-start',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    width: '24px',
-    height: '24px',
-    margin: spacingVars['--spacing-0-5'],
-    paddingInlineStart: spacingVars['--spacing-1'],
-    paddingInlineEnd: 0,
-    borderRadius: radiusVars['--radius-full'],
-    color: colorVars['--color-text-secondary'],
-  },
-  currentDayPill: {
-    color: colorVars['--color-on-accent'],
-    backgroundColor: colorVars['--color-accent'],
-  },
-  monthEventStack: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-    minWidth: 0,
-  },
-  // A chip lives in the cell of its first day in the week and paints across
-  // its days from there, on its level: it starts a chip inset into that cell
-  // and ends a chip inset plus one border short of its last day's edge, so
-  // it clears each day's end border the way the cells do. It rises above the
-  // cells it crosses inside the isolated surface (component:Schedule FR15,
-  // FR19).
-  monthChip: (span: number, level: number) => ({
-    position: 'absolute',
-    insetInlineStart: spacingVars['--spacing-0-5'],
-    insetBlockStart: `${MONTH_CHIP_TOP + level * MONTH_LEVEL_PITCH}px`,
-    inlineSize: `calc(${span} * 100% + ${span - 1} * ${borderVars['--border-width']} - 2 * ${spacingVars['--spacing-0-5']})`,
-    minWidth: 0,
-    zIndex: 1,
-  }),
-  // The last column's cell has no end border, so the same chip is one border
-  // narrower than its padding box.
-  monthChipInLastColumn: {
-    inlineSize: `calc(100% - 2 * ${spacingVars['--spacing-0-5']} - ${borderVars['--border-width']})`,
-  },
-  // A chip button stays above the cells it crosses, like any chip, and a
-  // focused one keeps its whole ring above the chips around it.
-  monthChipFocus: {
-    zIndex: {
-      default: 1,
-      ':focus-visible': 2,
-    },
-  },
-  // A busy day's "+N more" takes the slot of the level it stands in for, with
-  // a chip's insets and height, and keeps its focus ring above the chips.
-  monthMoreButton: {
-    position: 'absolute',
-    insetInlineStart: spacingVars['--spacing-0-5'],
-    insetInlineEnd: `calc(${spacingVars['--spacing-0-5']} + ${borderVars['--border-width']})`,
-    display: 'flex',
-    alignItems: 'center',
-    minWidth: 0,
-    overflow: 'hidden',
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: 'transparent',
-    borderRadius: radiusVars['--radius-inner'],
-    paddingBlock: spacingVars['--spacing-0-5'],
-    paddingInline: spacingVars['--spacing-1-5'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-secondary'],
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    backgroundColor: {
-      default: 'transparent',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        default: null,
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    zIndex: {
-      default: null,
-      ':focus-visible': 2,
-    },
-  },
-  monthMoreButtonPosition: (level: number) => ({
-    insetBlockStart: `${MONTH_CHIP_TOP + level * MONTH_LEVEL_PITCH}px`,
-  }),
-  // The day popover lists rows that ellipsize their titles, so its content
-  // has a cap for the titles to fit within.
-  monthDayEvents: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-2'],
-    maxInlineSize: '360px',
-  },
-  // A row of a day's list that opens its event: the whole row is the
-  // button, with the list row's look and the shared focus ring.
-  monthDayEventButton: {
-    inlineSize: '100%',
-    borderRadius: radiusVars['--radius-inner'],
-    backgroundColor: {
-      default: 'transparent',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        default: null,
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-  },
-  monthDayEventList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-2'],
-    margin: 0,
-    padding: 0,
-    listStyle: 'none',
-  },
-  eventPill: {
-    ...baseText,
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    minWidth: 0,
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderRadius: radiusVars['--radius-inner'],
-    paddingBlock: spacingVars['--spacing-0-5'],
-    paddingInline: spacingVars['--spacing-1-5'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  eventTitle: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
-  },
-  eventTime: {
-    display: {
-      default: 'block',
-      '@container (max-width: 72px)': 'none',
-    },
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
-    opacity: 0.8,
-  },
-  // A chip that leads with its title is one line tall. Its title and time
-  // wrap as a flex row, so the time drops to a second, clipped line whenever
-  // the whole title and the time do not fit side by side: layout, not
-  // script, decides whether the time shows (component:Schedule FR18, PR5).
-  titleFirstLine: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'baseline',
-    columnGap: spacingVars['--spacing-1'],
-    flexGrow: 1,
-    minWidth: 0,
-    blockSize: `calc(${typeScaleVars['--text-supporting-size']} * ${typeScaleVars['--text-supporting-leading']})`,
-    overflow: 'hidden',
-  },
-  // Alone on the line, a long title shrinks and ellipsizes.
-  titleFirstTitle: {
-    minWidth: 0,
-    maxWidth: '100%',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  titleFirstTime: {
-    flexShrink: 0,
-    whiteSpace: 'nowrap',
-    opacity: 0.8,
-  },
-  moreEvents: {
-    ...baseText,
-    color: colorVars['--color-text-secondary'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-  },
-  // The time grid is one scroll viewport. Its day header, all-day row, hour
-  // gutter, and day columns are items of a single grid inside it, pinned with
-  // position: sticky, so a scrollbar, a zoom level, or an inline scroll cannot
-  // separate header tracks from body tracks. Local z-index values order the
-  // pinned parts inside the isolated viewport only.
-  // A 640px flex basis, not a height: inside the frame's indefinite-height
-  // column a `height` with `flex: 1` resolves to content size, so the grid
-  // would grow to its full hours and the page, not the viewport, would scroll.
-  // The basis gives a 640px scrolling viewport by default and still fills or
-  // shrinks to a root the caller sizes.
-  timeGridFrame: {
-    position: 'relative',
-    display: 'flex',
-    flexDirection: 'column',
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: '640px',
-    minHeight: 0,
-    minWidth: 0,
-  },
-  // The viewport paints no focus outline of its own: the frame clips outside
-  // its border box, and an inset outline is painted under the viewport's
-  // pinned header and gutter. The ring is the overlay below instead.
-  timeGridViewport: {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minHeight: 0,
-    minWidth: 0,
-    scrollbarGutter: 'stable',
-    isolation: 'isolate',
-    outlineStyle: 'none',
-  },
-  // The keyboard focus ring of the viewport: a pointer-transparent overlay
-  // laid over the whole viewport (scrollbar included) and painted after the
-  // viewport's stacking context, so every edge of the ring is visible above
-  // the pinned parts. It shows while the viewport before it has keyboard
-  // focus, drawn just inside the edge the frame clips at.
-  timeGridFocusRing: {
-    position: 'absolute',
-    inset: 0,
-    pointerEvents: 'none',
-    outlineWidth: {
-      default: 0,
-      [stylex.when.siblingBefore(':focus-visible', timeGridViewportScope)]:
-        focusVars['--focus-outline-width'],
-    },
-    outlineStyle: {
-      default: 'none',
-      [stylex.when.siblingBefore(':focus-visible', timeGridViewportScope)]:
-        focusVars['--focus-outline-style'],
-    },
-    outlineColor: {
-      default: 'transparent',
-      [stylex.when.siblingBefore(':focus-visible', timeGridViewportScope)]:
-        focusVars['--focus-outline-color'],
-    },
-    outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
-  },
-  // The minimum width keeps the grid box as wide as its tracks when the
-  // viewport is narrower, so the pinned gutter has the whole scrolled extent as
-  // its sticky containing block instead of only the first viewport width.
-  timeGridContent: (columnCount: number) => ({
-    display: 'grid',
-    gridTemplateColumns: `60px repeat(${Math.max(1, columnCount)}, minmax(140px, 1fr))`,
-    gridTemplateRows: '56px auto auto',
-    minWidth: `${60 + Math.max(1, columnCount) * 140}px`,
-  }),
-  dayColumnPlacement: (index: number) => ({
-    gridColumn: `${index + 2}`,
-  }),
-  timeGridCorner: {
-    gridColumn: 1,
-    gridRow: 1,
-    position: 'sticky',
-    insetBlockStart: 0,
-    insetInlineStart: 0,
-    zIndex: 3,
-    backgroundColor: colorVars['--color-background-card'],
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-    borderBottomWidth: borderVars['--border-width'],
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-  timeGridHeaderCell: {
-    gridRow: 1,
-    position: 'sticky',
-    insetBlockStart: 0,
-    zIndex: 2,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacingVars['--spacing-0-5'],
-    minWidth: 0,
-    backgroundColor: colorVars['--color-background-card'],
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-    borderBottomWidth: borderVars['--border-width'],
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-  timeGridHeaderCellLast: {
-    borderInlineEndWidth: 0,
-  },
-  timeGridHeaderHeading: {
-    textAlign: 'center',
-  },
-  timeGridHeaderHeadingContent: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  timeGridDayNumber: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radiusVars['--radius-full'],
-  },
-  timeGridCurrentDayPill: {
-    minWidth: '30px',
-    height: '30px',
-    lineHeight: '30px',
-    color: colorVars['--color-on-accent'],
-    backgroundColor: colorVars['--color-accent'],
-  },
-  allDayLabel: {
-    gridColumn: 1,
-    gridRow: 2,
-    position: 'sticky',
-    insetBlockStart: '56px',
-    insetInlineStart: 0,
-    zIndex: 3,
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    backgroundColor: colorVars['--color-background-card'],
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-    borderBottomWidth: borderVars['--border-width'],
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-  // A subgrid, so all-day cells and spans sit on the day columns' own tracks.
-  allDayRow: (levelCount: number) => ({
-    gridColumn: '2 / -1',
-    gridRow: 2,
-    display: 'grid',
-    gridTemplateColumns: 'subgrid',
-    position: 'sticky',
-    insetBlockStart: '56px',
-    zIndex: 2,
-    isolation: 'isolate',
-    minHeight: levelCount > 0 ? `${3 + levelCount * 27}px` : '26px',
-    minWidth: 0,
-    backgroundColor: colorVars['--color-background-card'],
-    borderBottomWidth: borderVars['--border-width'],
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  }),
-  allDaySubgridPlacement: (index: number) => ({
-    gridColumn: `${index + 1}`,
-  }),
-  allDayCell: {
-    gridRow: 1,
-    minWidth: 0,
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-  },
-  allDayCellLast: {
-    borderInlineEndWidth: 0,
-  },
-  allDayEventSpan: (columnStart: number, columnEnd: number, level: number) => ({
-    gridRow: 1,
-    gridColumn: `${columnStart + 1} / ${columnEnd + 2}`,
-    alignSelf: 'start',
-    minWidth: 0,
-    marginInlineStart: spacingVars['--spacing-0-5'],
-    marginInlineEnd: `calc(${spacingVars['--spacing-0-5']} + ${borderVars['--border-width']})`,
-    marginBlockStart: `${2 + level * 27}px`,
-  }),
-  timeLabels: {
-    gridColumn: 1,
-    gridRow: 3,
-    position: 'sticky',
-    insetInlineStart: 0,
-    zIndex: 2,
-    backgroundColor: colorVars['--color-background-card'],
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-  },
-  timeLabel: {
-    ...baseText,
-    position: 'absolute',
-    insetInline: 0,
-    transform: 'translateY(-50%)',
-    paddingInlineStart: spacingVars['--spacing-1'],
-    paddingInlineEnd: spacingVars['--spacing-1'],
-    color: colorVars['--color-text-secondary'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    textAlign: 'end',
-  },
-  timeLabelPosition: (index: number, hourHeight: number) => ({
-    top: `${index * hourHeight - 1}px`,
-  }),
-  // Each day column isolates its own paint order: blocks, the now-line, and a
-  // raised focused block never rank against anything outside the column.
-  timeColumn: {
-    gridRow: 3,
-    position: 'relative',
-    isolation: 'isolate',
-    display: 'grid',
-    minWidth: 0,
-    borderInlineEndWidth: borderVars['--border-width'],
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-  },
-  timeColumnRows: (hourHeight: number) => ({
-    gridAutoRows: `${hourHeight}px`,
-  }),
-  timeColumnLast: {
-    borderInlineEndWidth: 0,
-  },
-  hourSlot: {
-    borderBottomWidth: borderVars['--border-width'],
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-  hourSlotLast: {
-    borderBottomWidth: 0,
-  },
-  timedEvent: {
-    ...baseText,
-    position: 'absolute',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 0,
-    minHeight: '24px',
-    minWidth: 0,
-    overflow: 'hidden',
-    // The block is a container so a narrow track can drop its time line
-    // (eventTime below) while the title keeps its single ellipsized line.
-    containerType: 'inline-size',
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderRadius: radiusVars['--radius-inner'],
-    paddingBlockStart: spacingVars['--spacing-0-5'],
-    paddingBlockEnd: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-1'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  // An event that opens the popover is a native button that keeps the block's
-  // own paint: the reset removes only what the user agent adds to a button.
-  // Block display lets an all-day pill fill the days its button spans; a
-  // timed block's own flex display wins over it.
-  eventButtonReset: {
-    appearance: 'none',
-    display: 'block',
-    // A button grid item would otherwise size to its content.
-    justifySelf: 'stretch',
-    margin: 0,
-    padding: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    font: 'inherit',
-    textAlign: 'start',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // A focused block rises above its neighbours inside the isolated column so
-  // its ring is never clipped by a later sibling; nothing outside the column
-  // can see the value.
-  eventButtonFocus: {
-    zIndex: {
-      default: null,
-      ':focus-visible': 1,
-    },
-  },
-  // The popover keeps to the viewport the way the Popover component does: it
-  // never grows past the visible block size, minus the surface padding.
-  eventPopoverBody: {
-    maxBlockSize: stylex.firstThatWorks(
-      `calc(100dvb - 2 * ${spacingVars['--spacing-4']} - 2 * ${spacingVars['--spacing-3']})`,
-      `calc(100vh - 2 * ${spacingVars['--spacing-4']} - 2 * ${spacingVars['--spacing-3']})`,
-    ),
-  },
-  // Blocks in one overlap cluster split the column into equal tracks and never
-  // overlap, so they carry no z-index of their own; the 2px insets keep the
-  // same gutter a lone block has at the column's edges.
-  timedEventPosition: (
-    top: number,
-    height: number,
-    inlineStart: number,
-    inlineSize: number,
-  ) => ({
-    top: `calc(${top}% + 2px)`,
-    height: `calc(${height}% - 5px)`,
-    insetInlineStart: `calc(${inlineStart}% + ${spacingVars['--spacing-0-5']})`,
-    inlineSize: `calc(${inlineSize}% - ${spacingVars['--spacing-0-5']} * 2)`,
-  }),
-  currentTimeLine: (top: number) => ({
-    position: 'absolute',
-    insetInline: 0,
-    top: `calc(${top}% + 2px)`,
-    borderTopWidth: '2px',
-    borderTopStyle: 'solid',
-    borderTopColor: colorVars['--color-border-orange'],
-    // Local to the isolated day column: above its blocks, nothing else.
-    zIndex: 1,
-    pointerEvents: 'none',
-    '::before': {
-      content: '""',
-      position: 'absolute',
-      insetInlineStart: '-6px',
-      top: '-6px',
-      width: '10px',
-      height: '10px',
-      borderRadius: radiusVars['--radius-full'],
-      backgroundColor: colorVars['--color-border-orange'],
-    },
-  }),
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  listDay: {
-    display: 'grid',
-    gridTemplateColumns: '88px minmax(0, 1fr)',
-    alignItems: 'start',
-    columnGap: spacingVars['--spacing-3'],
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-3'],
-    borderBottomWidth: borderVars['--border-width'],
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-  listDayLast: {
-    borderBottomWidth: 0,
-  },
-  listDayHeading: {
-    gridColumn: '1',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    columnGap: spacingVars['--spacing-2'],
-    marginBlockStart: `calc(${spacingVars['--spacing-1']} * -1)`,
-    marginInlineStart: `calc(${spacingVars['--spacing-1']} * -1)`,
-  },
-  listDayNumber: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    width: '30px',
-    height: '30px',
-    borderRadius: radiusVars['--radius-full'],
-  },
-  listDayNumberText: {
-    fontWeight: fontWeightVars['--font-weight-bold'],
-  },
-  listDayNumberCurrent: {
-    justifyContent: 'center',
-    color: colorVars['--color-on-accent'],
-    backgroundColor: colorVars['--color-accent'],
-  },
-  listEvents: {
-    gridColumn: 2,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-2'],
-    minWidth: 0,
-  },
-  listNowRow: {
-    position: 'relative',
-    height: '10px',
-    marginBlock: spacingVars['--spacing-0-5'],
-    '::before': {
-      content: '""',
-      position: 'absolute',
-      insetInline: 0,
-      top: '4px',
-      borderTopWidth: '2px',
-      borderTopStyle: 'solid',
-      borderTopColor: colorVars['--color-border-orange'],
-    },
-    '::after': {
-      content: '""',
-      position: 'absolute',
-      insetInlineStart: '-1px',
-      top: 0,
-      width: '10px',
-      height: '10px',
-      borderRadius: radiusVars['--radius-full'],
-      backgroundColor: colorVars['--color-border-orange'],
-    },
-  },
-  listEventRow: {
-    display: 'grid',
-    gridTemplateColumns: '12px 144px minmax(0, 1fr)',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    minWidth: 0,
-  },
-  listEventDot: {
-    width: '10px',
-    height: '10px',
-    borderRadius: radiusVars['--radius-full'],
-  },
-  listEventTime: {
-    ...baseText,
-    color: colorVars['--color-text-secondary'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    whiteSpace: 'nowrap',
-  },
-  listEventTitle: {
-    ...baseText,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  // A past row is muted with the secondary text token, which the theme
-  // guarantees at AA. Fading the whole row with opacity instead pulled its
-  // text toward the surface behind it — 2.35:1 on the light theme.
-  listEventTitlePast: {
-    color: colorVars['--color-text-secondary'],
-  },
-  listEventDotPast: {
-    opacity: 0.5,
-  },
-  eventBlue: {
-    color: colorVars['--color-text-blue'],
-    backgroundColor: colorVars['--color-background-blue'],
-    borderColor: colorVars['--color-border-blue'],
-  },
-  eventDotBlue: {
-    backgroundColor: colorVars['--color-border-blue'],
-  },
-  eventSurfaceBlue: {
-    color: colorVars['--color-text-blue'],
-    borderColor: colorVars['--color-border-blue'],
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-blue']} 20%, ${colorVars['--color-background-card']})`,
-  },
-  eventPastSurfaceBlue: {
-    color: `color-mix(in srgb, ${colorVars['--color-text-blue']} 52%, ${colorVars['--color-text-secondary']})`,
-    borderColor: `color-mix(in srgb, ${colorVars['--color-border-blue']} 48%, ${colorVars['--color-border']})`,
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-blue']} 10%, ${colorVars['--color-background-card']})`,
-  },
-  eventCyan: {
-    color: colorVars['--color-text-cyan'],
-    backgroundColor: colorVars['--color-background-cyan'],
-    borderColor: colorVars['--color-border-cyan'],
-  },
-  eventDotCyan: {
-    backgroundColor: colorVars['--color-border-cyan'],
-  },
-  eventSurfaceCyan: {
-    color: colorVars['--color-text-cyan'],
-    borderColor: colorVars['--color-border-cyan'],
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-cyan']} 20%, ${colorVars['--color-background-card']})`,
-  },
-  eventPastSurfaceCyan: {
-    color: `color-mix(in srgb, ${colorVars['--color-text-cyan']} 52%, ${colorVars['--color-text-secondary']})`,
-    borderColor: `color-mix(in srgb, ${colorVars['--color-border-cyan']} 48%, ${colorVars['--color-border']})`,
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-cyan']} 10%, ${colorVars['--color-background-card']})`,
-  },
-  eventGray: {
-    color: colorVars['--color-text-gray'],
-    backgroundColor: colorVars['--color-background-gray'],
-    borderColor: colorVars['--color-border-gray'],
-  },
-  eventDotGray: {
-    backgroundColor: colorVars['--color-text-secondary'],
-  },
-  eventSurfaceGray: {
-    color: colorVars['--color-text-gray'],
-    borderColor: colorVars['--color-border-gray'],
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-gray']} 20%, ${colorVars['--color-background-card']})`,
-  },
-  eventPastSurfaceGray: {
-    color: colorVars['--color-text-secondary'],
-    borderColor: colorVars['--color-border'],
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-gray']} 10%, ${colorVars['--color-background-card']})`,
-  },
-  eventGreen: {
-    color: colorVars['--color-text-green'],
-    backgroundColor: colorVars['--color-background-green'],
-    borderColor: colorVars['--color-border-green'],
-  },
-  eventDotGreen: {
-    backgroundColor: colorVars['--color-border-green'],
-  },
-  eventSurfaceGreen: {
-    color: colorVars['--color-text-green'],
-    borderColor: colorVars['--color-border-green'],
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-green']} 20%, ${colorVars['--color-background-card']})`,
-  },
-  eventPastSurfaceGreen: {
-    color: `color-mix(in srgb, ${colorVars['--color-text-green']} 52%, ${colorVars['--color-text-secondary']})`,
-    borderColor: `color-mix(in srgb, ${colorVars['--color-border-green']} 48%, ${colorVars['--color-border']})`,
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-green']} 10%, ${colorVars['--color-background-card']})`,
-  },
-  eventOrange: {
-    color: colorVars['--color-text-orange'],
-    backgroundColor: colorVars['--color-background-orange'],
-    borderColor: colorVars['--color-border-orange'],
-  },
-  eventDotOrange: {
-    backgroundColor: colorVars['--color-border-orange'],
-  },
-  eventSurfaceOrange: {
-    color: colorVars['--color-text-orange'],
-    borderColor: colorVars['--color-border-orange'],
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-orange']} 20%, ${colorVars['--color-background-card']})`,
-  },
-  eventPastSurfaceOrange: {
-    color: `color-mix(in srgb, ${colorVars['--color-text-orange']} 52%, ${colorVars['--color-text-secondary']})`,
-    borderColor: `color-mix(in srgb, ${colorVars['--color-border-orange']} 48%, ${colorVars['--color-border']})`,
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-orange']} 10%, ${colorVars['--color-background-card']})`,
-  },
-  eventPink: {
-    color: colorVars['--color-text-pink'],
-    backgroundColor: colorVars['--color-background-pink'],
-    borderColor: colorVars['--color-border-pink'],
-  },
-  eventDotPink: {
-    backgroundColor: colorVars['--color-border-pink'],
-  },
-  eventSurfacePink: {
-    color: colorVars['--color-text-pink'],
-    borderColor: colorVars['--color-border-pink'],
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-pink']} 20%, ${colorVars['--color-background-card']})`,
-  },
-  eventPastSurfacePink: {
-    color: `color-mix(in srgb, ${colorVars['--color-text-pink']} 52%, ${colorVars['--color-text-secondary']})`,
-    borderColor: `color-mix(in srgb, ${colorVars['--color-border-pink']} 48%, ${colorVars['--color-border']})`,
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-pink']} 10%, ${colorVars['--color-background-card']})`,
-  },
-  eventPurple: {
-    color: colorVars['--color-text-purple'],
-    backgroundColor: colorVars['--color-background-purple'],
-    borderColor: colorVars['--color-border-purple'],
-  },
-  eventDotPurple: {
-    backgroundColor: colorVars['--color-border-purple'],
-  },
-  eventSurfacePurple: {
-    color: colorVars['--color-text-purple'],
-    borderColor: colorVars['--color-border-purple'],
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-purple']} 20%, ${colorVars['--color-background-card']})`,
-  },
-  eventPastSurfacePurple: {
-    color: `color-mix(in srgb, ${colorVars['--color-text-purple']} 52%, ${colorVars['--color-text-secondary']})`,
-    borderColor: `color-mix(in srgb, ${colorVars['--color-border-purple']} 48%, ${colorVars['--color-border']})`,
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-purple']} 10%, ${colorVars['--color-background-card']})`,
-  },
-  eventRed: {
-    color: colorVars['--color-text-red'],
-    backgroundColor: colorVars['--color-background-red'],
-    borderColor: colorVars['--color-border-red'],
-  },
-  eventDotRed: {
-    backgroundColor: colorVars['--color-border-red'],
-  },
-  eventSurfaceRed: {
-    color: colorVars['--color-text-red'],
-    borderColor: colorVars['--color-border-red'],
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-red']} 20%, ${colorVars['--color-background-card']})`,
-  },
-  eventPastSurfaceRed: {
-    color: `color-mix(in srgb, ${colorVars['--color-text-red']} 52%, ${colorVars['--color-text-secondary']})`,
-    borderColor: `color-mix(in srgb, ${colorVars['--color-border-red']} 48%, ${colorVars['--color-border']})`,
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-red']} 10%, ${colorVars['--color-background-card']})`,
-  },
-  eventTeal: {
-    color: colorVars['--color-text-teal'],
-    backgroundColor: colorVars['--color-background-teal'],
-    borderColor: colorVars['--color-border-teal'],
-  },
-  eventDotTeal: {
-    backgroundColor: colorVars['--color-border-teal'],
-  },
-  eventSurfaceTeal: {
-    color: colorVars['--color-text-teal'],
-    borderColor: colorVars['--color-border-teal'],
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-teal']} 20%, ${colorVars['--color-background-card']})`,
-  },
-  eventPastSurfaceTeal: {
-    color: `color-mix(in srgb, ${colorVars['--color-text-teal']} 52%, ${colorVars['--color-text-secondary']})`,
-    borderColor: `color-mix(in srgb, ${colorVars['--color-border-teal']} 48%, ${colorVars['--color-border']})`,
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-teal']} 10%, ${colorVars['--color-background-card']})`,
-  },
-  eventYellow: {
-    color: colorVars['--color-text-yellow'],
-    backgroundColor: colorVars['--color-background-yellow'],
-    borderColor: colorVars['--color-border-yellow'],
-  },
-  eventDotYellow: {
-    backgroundColor: colorVars['--color-border-yellow'],
-  },
-  eventSurfaceYellow: {
-    color: colorVars['--color-text-yellow'],
-    borderColor: colorVars['--color-border-yellow'],
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-yellow']} 20%, ${colorVars['--color-background-card']})`,
-  },
-  eventPastSurfaceYellow: {
-    color: `color-mix(in srgb, ${colorVars['--color-text-yellow']} 52%, ${colorVars['--color-text-secondary']})`,
-    borderColor: `color-mix(in srgb, ${colorVars['--color-border-yellow']} 48%, ${colorVars['--color-border']})`,
-    backgroundColor: `color-mix(in srgb, ${colorVars['--color-border-yellow']} 10%, ${colorVars['--color-background-card']})`,
-  },
-});
+export function monthChipVars(
+  span: number,
+  level: number,
+): ScheduleInstanceStyle {
+  return {
+    '--astryx-schedule-chip-block-start': `${MONTH_CHIP_TOP + level * MONTH_LEVEL_PITCH}px`,
+    // One chip crosses its days' shared borders, so a span of n days is n widths
+    // plus the borders it swallows, less the insets at both ends.
+    '--astryx-schedule-chip-inline-size': `calc(${span} * 100% + ${span - 1} * ${borderVarNames['--border-width']} - 2 * ${spacingVarNames['--spacing-0-5']})`,
+  };
+}
+
+export function monthMoreButtonPositionVars(
+  level: number,
+): ScheduleInstanceStyle {
+  return {
+    '--astryx-schedule-more-button-block-start': `${MONTH_CHIP_TOP + level * MONTH_LEVEL_PITCH}px`,
+  };
+}
+
+export function timeGridContentVars(
+  columnCount: number,
+): ScheduleInstanceStyle {
+  return {'--astryx-schedule-column-count': Math.max(1, columnCount)};
+}
+
+export function dayColumnPlacementVars(index: number): ScheduleInstanceStyle {
+  return {'--astryx-schedule-day-column': index + 2};
+}
+
+export function allDayRowVars(levelCount: number): ScheduleInstanceStyle {
+  return {
+    '--astryx-schedule-allday-min-height':
+      levelCount > 0 ? `${3 + levelCount * 27}px` : '26px',
+  };
+}
+
+export function allDaySubgridPlacementVars(
+  index: number,
+): ScheduleInstanceStyle {
+  return {'--astryx-schedule-subgrid-column': index + 1};
+}
+
+export function allDayEventSpanVars(
+  columnStart: number,
+  columnEnd: number,
+  level: number,
+): ScheduleInstanceStyle {
+  return {
+    '--astryx-schedule-span-column': `${columnStart + 1} / ${columnEnd + 2}`,
+    '--astryx-schedule-span-block-start': `${2 + level * 27}px`,
+  };
+}
+
+export function timeLabelPositionVars(
+  index: number,
+  hourHeight: number,
+): ScheduleInstanceStyle {
+  return {'--astryx-schedule-time-label-top': `${index * hourHeight - 1}px`};
+}
+
+export function timeColumnRowsVars(hourHeight: number): ScheduleInstanceStyle {
+  return {'--astryx-schedule-hour-height': `${hourHeight}px`};
+}
+
+// Blocks in one overlap cluster split the column into equal tracks and never
+// overlap, so they carry no z-index of their own; the 2px insets keep the same
+// gutter a lone block has at the column's edges.
+export function timedEventPositionVars(
+  top: number,
+  height: number,
+  inlineStart: number,
+  inlineSize: number,
+): ScheduleInstanceStyle {
+  return {
+    '--astryx-schedule-event-block-start': `${top}%`,
+    '--astryx-schedule-event-block-size': `${height}%`,
+    '--astryx-schedule-event-inline-start': `${inlineStart}%`,
+    '--astryx-schedule-event-inline-size': `${inlineSize}%`,
+  };
+}
+
+export function currentTimeLineVars(top: number): ScheduleInstanceStyle {
+  return {'--astryx-schedule-now-top': `calc(${top}% + 2px)`};
+}

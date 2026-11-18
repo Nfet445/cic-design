@@ -41,9 +41,39 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {useState} from 'react';
 import type {ISODateString} from '../utils';
+import {classesOf} from '../__tests__/classNameAssertions';
+import {dayButtonClassName} from '../Calendar/calendarClasses';
+import type {DayButtonState} from '../Calendar/calendarClasses';
 import {InputGroup} from '../InputGroup';
 import {InternationalizationProvider} from '../i18n';
 import {DateInput} from './DateInput';
+import {
+  dateInputPaneBlockSizeClassName,
+  monthDayDisabledClassName,
+  monthDayOutsideClassName,
+  monthPaneClassName,
+  monthScrollerClassName,
+  pickerWheelColumnClassName,
+  pickerWheelRowClassName,
+  scrollWheelBandClassName,
+  scrollWheelItemClassName,
+  scrollWheelItemFadeClassName,
+  scrollWheelItemInnerClassName,
+  scrollWheelItemInnerTipClassName,
+  scrollWheelScrollerClassName,
+  touchDateBodyClassName,
+  touchDateFooterClassName,
+  touchDateHeaderClassName,
+  touchDateHeaderResetClassName,
+  touchDateMonthArrowClassName,
+  touchDateMonthArrowIconClassName,
+  touchDateMonthArrowsClassName,
+  touchDatePanelBeneathClassName,
+  touchDatePanelOverlayClassName,
+  touchDateSheetBodyClassName,
+  touchDateTitleChevronClassName,
+  touchDateWeekdaysClassName,
+} from './dateInputClasses';
 import {
   toMonthIndex,
   monthIndexOf,
@@ -57,6 +87,7 @@ import {
   rowsIn,
   DEFAULT_MONTH_REACH,
 } from './monthGeometry';
+import {WEEKS_PER_PANE, dateInputTouchGeometry} from './dateInputGeometry';
 import {WHEEL_ROW_HEIGHT} from './wheelOptions';
 import {SWIPE_DISTANCE} from './useOwnScrollGesture';
 import {DRAG_SLOP} from './usePointerDragScroll';
@@ -1047,8 +1078,10 @@ describe('DateInput — calendar surface', () => {
       // Still mounted, so the header cannot reflow...
       expect(arrow(name)).toBeInTheDocument();
       expect(arrow(name)).toHaveAttribute('aria-disabled', 'true');
-      // ...but gone from the accessibility tree, and so unreachable.
-      expect(screen.queryByRole('button', {name})).toBeNull();
+      // ...but gone from the accessibility tree, and so unreachable. jsdom
+      // loads none of the sheet, so the class that hides it is the evidence;
+      // `visibility: hidden` is what takes the name away.
+      expect(classesOf(arrow(name)!)).toContain('invisible');
     }
   });
 
@@ -2070,12 +2103,14 @@ describe('DateInput — month/year wheels', () => {
     expect(header.lastElementChild).toHaveAttribute('data-action', 'reset');
 
     openWheels();
-    // The wheels choose a month; there is no date there to clear.
-    expect(screen.queryByRole('button', {name: 'Reset'})).toBeNull();
-    // Hidden, not unmounted, so the header cannot change height mid-swap.
-    expect(
-      document.querySelector('dialog[open] [data-action="reset"]'),
-    ).toHaveAttribute('inert');
+    // The wheels choose a month; there is no date there to clear. Hidden, not
+    // unmounted, so the header cannot change height mid-swap — read off the
+    // class, since jsdom loads none of the sheet.
+    const hiddenReset = document.querySelector(
+      'dialog[open] [data-action="reset"]',
+    );
+    expect(hiddenReset).toHaveAttribute('inert');
+    expect(classesOf(hiddenReset as HTMLElement)).toContain('invisible');
   });
 
   it('Save closes the whole picker; Done only leaves the wheels', () => {
@@ -2154,15 +2189,21 @@ describe('DateInput — month/year wheels', () => {
     // pass or fail on that nesting rather than on reachability.
     const isBlocked = (label: string) =>
       button(label)?.closest('[inert]') != null;
+    // The action sits inside the fading wrapper, and it is the wrapper that
+    // hides: jsdom loads none of the sheet, so the class is the evidence.
+    const isHidden = (label: string) =>
+      classesOf(button(label)!.parentElement!).includes('invisible');
 
     expect(isBlocked('Save')).toBe(false);
+    expect(isHidden('Save')).toBe(false);
     expect(isBlocked('Done')).toBe(true);
-    expect(screen.queryByRole('button', {name: 'Done'})).toBeNull();
+    expect(isHidden('Done')).toBe(true);
 
     openWheels();
     expect(isBlocked('Save')).toBe(true);
+    expect(isHidden('Save')).toBe(true);
     expect(isBlocked('Done')).toBe(false);
-    expect(screen.queryByRole('button', {name: 'Save'})).toBeNull();
+    expect(isHidden('Done')).toBe(false);
 
     // Both stay mounted throughout, which is what keeps the row's height
     // fixed across the swap.
@@ -2822,66 +2863,41 @@ describe('DateInput — scroll CSS (definition-level)', () => {
   const dir = path.dirname(fileURLToPath(import.meta.url));
   const read = (file: string) => readFileSync(path.join(dir, file), 'utf8');
 
-  /**
-   * The declarations inside one named style object, comments stripped and
-   * trailing commas removed.
-   *
-   * Crude on purpose — a nested value object contributes its own inner lines
-   * too. Every caller looks for a specific property prefix, so the noise is
-   * harmless, and a real parser here would be more machinery than the
-   * question deserves.
-   */
-  const declarations = (source: string, object: string) => {
-    const open = source.indexOf(`  ${object}: {`);
-    expect(open).toBeGreaterThan(-1);
-    return source
-      .slice(open, source.indexOf('\n  },', open))
-      .replace(/\/\/.*$/gm, '')
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.endsWith(','))
-      .map(line => line.slice(0, -1));
-  };
-
-  /** The same, scoped to one `export const <group> = stylex.create({...})`. */
-  const declarationsIn = (source: string, group: string, object: string) => {
-    const at = source.indexOf(`export const ${group}`);
-    expect(at).toBeGreaterThan(-1);
-    return declarations(source.slice(at), object);
+  /** A day button's classes, less the ones a plainer state already carries. */
+  const addedClasses = (state: DayButtonState, next: DayButtonState) => {
+    const plainer = dayButtonClassName(state).split(' ');
+    return dayButtonClassName(next)
+      .split(' ')
+      .filter(className => !plainer.includes(className));
   };
 
   it('pages the month scroller one whole pane at a time, horizontally', () => {
-    const source = read('MonthScroller.tsx');
-    expect(source).toContain("scrollSnapType: 'x mandatory'");
-    expect(source).toContain("scrollSnapAlign: 'start'");
+    expect(monthScrollerClassName).toContain('[scroll-snap-type:x_mandatory]');
+    expect(monthPaneClassName).toContain('[scroll-snap-align:start]');
     // pan-x is what splits the gesture by axis: horizontal pans stay with the
     // calendar, vertical ones reach the sheet as swipe-to-dismiss. Without it
     // the two would fight again, the way they did when this scrolled down.
-    expect(source).toContain("touchAction: 'pan-x'");
-    // The pane and the scrollport must come from the same expression, or a
-    // pane stops being exactly one screen and every snap offset drifts.
-    expect(
-      source.match(/blockSize: dateInputTouchGeometry\.paneBlockSize/g),
-    ).toHaveLength(2);
+    expect(monthScrollerClassName).toContain('[touch-action:pan-x]');
+    // The pane and the scrollport must read the same variable, or a pane stops
+    // being exactly one screen and every snap offset drifts.
+    expect(monthScrollerClassName).toContain(
+      '[block-size:var(--astryx-date-pane-block-size)]',
+    );
+    expect(monthPaneClassName).toContain(
+      '[block-size:var(--astryx-date-pane-block-size)]',
+    );
   });
 
   it('positions panes with logical properties, so RTL mirrors', () => {
-    const source = read('MonthScroller.tsx');
-    // Scoped to the style objects: `scrollTo({left})` is the DOM API and is
-    // supposed to say left — it is the CSS that must stay logical, because
-    // physical `left` would lay the months out identically in both directions
-    // while the scroll math mirrored, and the two would disagree under RTL.
-    const styles = source
-      .slice(
-        source.indexOf('const styles = stylex.create('),
-        source.indexOf('export interface MonthScrollerHandle'),
-      )
-      // Comments explain the rule ("insetInlineStart, not left") and would
-      // otherwise trip it.
-      .replace(/\/\/.*$/gm, '');
-    expect(styles).toContain('insetInlineStart');
-    expect(styles).not.toMatch(/\bleft:/);
-    expect(styles).not.toMatch(/\bright:/);
+    // The scroller's `scrollTo({left})` is the DOM API and is supposed to say
+    // left — it is the CSS that must stay logical, because physical `left`
+    // would lay the months out identically in both directions while the scroll
+    // math mirrored, and the two would disagree under RTL.
+    expect(monthPaneClassName).toContain(
+      '[inset-inline-start:var(--astryx-date-pane-inline-start)]',
+    );
+    expect(monthPaneClassName).not.toMatch(/(^|\s)-?left-/);
+    expect(monthPaneClassName).not.toMatch(/(^|\s)-?right-/);
   });
 
   /**
@@ -2900,20 +2916,26 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * with the tap that produced it.
    */
   it('mutes adjacent days exactly as the desktop calendar does', () => {
-    // The desktop's two halves, read out of its own source rather than
-    // restated here — so the check follows the desktop if its treatment
+    // The desktop's own class for the state, read from its class map rather
+    // than restated here — so the check follows the desktop if its treatment
     // moves, instead of freezing today's values into this file.
-    const desktop = read('../Calendar/styles.ts');
-    const structural = declarationsIn(desktop, 'dayCellStyles', 'dayOutside');
-    const theme = declarationsIn(desktop, 'dayCellTheme', 'dayOutside');
-    // Both halves must have found something, or the parity check below is
-    // `arrayContaining([])` and passes on anything at all.
-    expect(structural.length).toBeGreaterThan(0);
-    expect(theme.length).toBeGreaterThan(0);
+    const inMonth: DayButtonState = {
+      isOutside: false,
+      isTodayRing: false,
+      isTodayInRangeRing: false,
+      isSelected: false,
+      isDisabled: false,
+    };
+    const added = addedClasses(inMonth, {...inMonth, isOutside: true});
+    // Something must have changed, or the parity check below passes on
+    // anything at all.
+    expect(added.length).toBeGreaterThan(0);
 
-    // And the touch pane carries all of it, in its one object.
-    const touch = declarations(read('MonthScroller.tsx'), 'dayOutside');
-    expect(touch).toEqual(expect.arrayContaining([...structural, ...theme]));
+    // The touch pane encodes all of it, in its one class.
+    for (const className of added) {
+      expect(className).toMatch(/^(opacity-|text-\[color:)/);
+      expect(monthDayOutsideClassName).toContain(className);
+    }
   });
 
   /**
@@ -2930,22 +2952,25 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * ordering a calendar needs.
    */
   it('fades disabled days as the desktop does, rather than recolouring them', () => {
-    const desktop = read('../Calendar/styles.ts');
-    const theme = declarationsIn(desktop, 'dayCellTheme', 'dayDisabled');
-    const touch = declarations(read('MonthScroller.tsx'), 'dayDisabled');
+    // The desktop's disabled arm adds the fade and nothing else.
+    const enabled: DayButtonState = {
+      isOutside: false,
+      isTodayRing: false,
+      isTodayInRangeRing: false,
+      isSelected: false,
+      isDisabled: false,
+    };
+    const added = addedClasses(enabled, {...enabled, isDisabled: true});
+    expect(added).toHaveLength(1);
+    expect(added[0]).toMatch(/^opacity-/);
 
     // Whatever opacity the desktop fades to, this pane fades to the same one.
-    const fade = theme.find(d => d.startsWith('opacity:'));
-    expect(fade).toBeDefined();
-    expect(touch).toContain(fade);
+    expect(monthDayDisabledClassName).toContain(added[0]);
 
     // And no colour of its own: a colour would override the secondary one a
     // spilled day carries, collapsing "disabled" and "disabled and adjacent"
     // into a single shade.
-    expect(touch.some(d => d.startsWith('color:'))).toBe(false);
-    // Parity, not a rule of this pane's own — if the desktop ever starts
-    // recolouring a disabled day, this fires and says to follow it.
-    expect(theme.some(d => d.startsWith('color:'))).toBe(false);
+    expect(monthDayDisabledClassName).not.toMatch(/text-\[color:/);
   });
 
   /**
@@ -2956,8 +2981,10 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    */
   it('lets disabled win over outside on a spilled day past min/max', () => {
     const applied = read('MonthScroller.tsx');
-    const outside = applied.indexOf('day.isOutside && styles.dayOutside');
-    const disabled = applied.indexOf('isDisabled && styles.dayDisabled');
+    const outside = applied.indexOf(
+      'day.isOutside && monthDayOutsideClassName',
+    );
+    const disabled = applied.indexOf('isDisabled && monthDayDisabledClassName');
     expect(outside).toBeGreaterThan(-1);
     expect(outside).toBeLessThan(disabled);
   });
@@ -2965,104 +2992,122 @@ describe('DateInput — scroll CSS (definition-level)', () => {
   it('keeps the month scroller and the wheels on border-box', () => {
     // Load-bearing: clientHeight is the pane height, the snap offsets and the
     // virtualization all at once.
-    expect(read('MonthScroller.tsx')).toContain("boxSizing: 'border-box'");
-    expect(read('Wheel.tsx')).toContain("boxSizing: 'border-box'");
+    expect(monthScrollerClassName).toContain('box-border');
+    expect(scrollWheelScrollerClassName).toContain('box-border');
+  });
+
+  it('makes the sheet body exactly one pane tall', () => {
+    // Both panels share one cell one month pane high. The body spells the
+    // geometry out as a literal, because an interpolated class emits no rule;
+    // the scroller inside it reads the same number as a variable.
+    expect(dateInputTouchGeometry.paneBlockSize).toBe(
+      `calc(${WEEKS_PER_PANE} * 44px)`,
+    );
+    expect(touchDateBodyClassName).toContain('[block-size:264px]');
+    expect(touchDateBodyClassName).toContain('grid');
   });
 
   it('sizes the wheel row tighter than a day cell, with larger text', () => {
-    const tokens = read('tokens.stylex.ts');
+    const geometry = read('dateInputGeometry.ts');
     // Scroll-first rows: closer together than day cells and closer to the
-    // text they hold, the way a platform picker packs them.
-    expect(tokens).toContain("wheelItemSize: '28px'");
-    expect(read('Wheel.tsx')).toContain(
-      "fontSize: typeScaleVars['--text-large-size']",
+    // text they hold, the way a platform picker packs them. The row's class
+    // reads the token as a literal, so the two are checked together.
+    expect(geometry).toContain("wheelItemSize: '28px'");
+    expect(scrollWheelItemClassName).toContain('[block-size:28px]');
+    expect(scrollWheelItemClassName).toContain(
+      'text-[length:var(--text-large-size)]',
     );
   });
 
   it('centers wheel rows and pads both ends so either extreme can reach the band', () => {
-    const source = read('Wheel.tsx');
-    expect(source).toContain("scrollSnapType: 'y mandatory'");
-    expect(source).toContain("scrollSnapAlign: 'center'");
-    expect(source).toContain(
-      'paddingBlock: dateInputTouchGeometry.wheelEdgePadding',
+    // Six day rows of 44px, less one 28px option, halved.
+    expect(scrollWheelScrollerClassName).toContain('[block-size:264px]');
+    expect(scrollWheelScrollerClassName).toContain('[padding-block:118px]');
+    expect(scrollWheelScrollerClassName).toContain(
+      '[scroll-snap-type:y_mandatory]',
     );
+    expect(scrollWheelItemClassName).toContain('[scroll-snap-align:center]');
   });
 
   it('leaves a two-finger pinch to the page over the wheels', () => {
     // `pan-y` alone also refuses the browser's pinch-zoom over the wheel, so
     // the page could not be zoomed over an open picker. The real-engine proof
     // is WheelPinchZoom.a11y.chromium.spec.ts; jsdom computes no touch-action.
-    expect(declarations(read('Wheel.tsx'), 'scroller')).toContain(
-      "touchAction: 'pan-y pinch-zoom'",
+    expect(scrollWheelScrollerClassName).toContain(
+      '[touch-action:pan-y_pinch-zoom]',
     );
   });
 
   it('guards the scroll-driven falloff behind @supports', () => {
-    const source = read('Wheel.tsx');
     // Without the guard, a browser that does not understand animation-timeline
     // runs these keyframes once on the document timeline instead.
-    expect(source).toContain("'@supports (animation-timeline: view())'");
-    expect(source).toContain("animationTimeline: 'view(y)'");
-    expect(source).toContain("'@media (prefers-reduced-motion: reduce)'");
+    expect(scrollWheelItemInnerClassName).toContain(
+      '[animation-timeline:view(y)]',
+    );
+    for (const arm of [
+      scrollWheelItemInnerTipClassName({isDisabled: false}),
+      scrollWheelItemInnerTipClassName({isDisabled: true}),
+    ]) {
+      expect(arm).toContain('[@supports(animation-timeline:view())]');
+    }
+    expect(scrollWheelItemInnerTipClassName({isDisabled: true})).toContain(
+      'motion-reduce',
+    );
+    // The frames themselves live in the input stylesheet, because the build
+    // scans class maps only.
+    const sheet = read('../../tailwind/astryx.input.css');
+    for (const frame of [
+      'astryxWheelTip',
+      'astryxWheelTipAndDim',
+      'astryxWheelDim',
+      'astryxWheelFade',
+    ]) {
+      expect(sheet).toContain(`@keyframes ${frame} `);
+    }
   });
 
   it('keeps the falloff off the snap area itself', () => {
     // A transform moves the snap area, and the wheel then settles a few
     // pixels off the row it is showing.
-    const source = read('Wheel.tsx');
-    const itemInner = source.slice(source.indexOf('itemInner: {'));
-    expect(itemInner).toContain("animationTimeline: 'view(y)'");
-    const item = source.slice(
-      source.indexOf('  item: {'),
-      source.indexOf('itemInner: {'),
+    expect(scrollWheelItemInnerClassName).toContain(
+      '[animation-timeline:view(y)]',
     );
-    expect(item).not.toContain('animationTimeline');
-    expect(item).not.toContain("overflow: 'hidden'");
-  });
-
-  it('keeps the published tokens module to its released names', async () => {
-    // @astryxdesign/core/DateInput/tokens.stylex is a public subpath: the touch
-    // wheel's geometry lives in an unexported module beside it.
-    const tokens = await import('./tokens.stylex');
-    expect(Object.keys(tokens).sort()).toEqual([
-      'WEEKS_PER_PANE',
-      'dateInputTouchGeometry',
-      'dateInputTouchSizes',
-    ]);
+    expect(scrollWheelItemClassName).not.toContain('animation-timeline');
+    expect(scrollWheelItemClassName).not.toContain('overflow-hidden');
+    // The colour fade rides the row, which is not the snapped box's geometry.
+    expect(scrollWheelItemFadeClassName).toContain('[animation-timeline:view');
   });
 
   it('sizes the touch wheels as today’s column, with the large text of the theme', () => {
     // The wheel's row pitch is today's token, in numbers (`wheelItemSize`),
     // and its column is today's pane of six day rows.
-    const tokens = read('tokens.stylex.ts');
-    expect(tokens).toContain(`wheelItemSize: '${WHEEL_ROW_HEIGHT}px'`);
-    expect(tokens).toContain("daySize: '44px'");
-    expect(tokens).toContain('export const WEEKS_PER_PANE = 6;');
-    const source = read('PickerWheel.tsx');
-    expect(source).toContain('blockSize: dateInputTouchGeometry.paneBlockSize');
-    expect(source).toContain("fontSize: typeScaleVars['--text-large-size']");
+    const geometry = read('dateInputGeometry.ts');
+    expect(geometry).toContain(`wheelItemSize: '${WHEEL_ROW_HEIGHT}px'`);
+    expect(geometry).toContain("daySize: '44px'");
+    expect(geometry).toContain('export const WEEKS_PER_PANE = 6;');
+    // Read off the classes the column and the row apply, which is where the
+    // pitch and the text size now live.
+    expect(pickerWheelColumnClassName).toContain(
+      dateInputPaneBlockSizeClassName,
+    );
+    expect(pickerWheelRowClassName).toContain(
+      'text-[length:var(--text-large-size)]',
+    );
   });
 
   it('insets the sheet content equally on every edge', () => {
-    const source = read('TouchDateField.tsx');
     // One inset, and the header/footer must not add their own on top of it —
     // that is what put the title and Done 4px off the day grid's line.
-    expect(source).toContain("paddingInline: spacingVars['--spacing-4']");
-    expect(source).toContain("paddingBlockEnd: spacingVars['--spacing-4']");
+    expect(touchDateSheetBodyClassName).toContain('px-4');
+    expect(touchDateSheetBodyClassName).toContain(
+      '[padding-block-end:var(--spacing-4)]',
+    );
     // The block-start is the documented exception: BottomSheet keeps the band
     // under its grab bar (component:BottomSheet, Content area inset), so the
     // content wrapper adds nothing above.
-    expect(source).toContain('paddingBlockStart: 0,');
-    const header = source.slice(
-      source.indexOf('  header: {'),
-      source.indexOf('  title: {'),
-    );
-    expect(header).not.toContain('paddingInline');
-    const footer = source.slice(
-      source.indexOf('  footer: {'),
-      source.indexOf('  sheetBody: {'),
-    );
-    expect(footer).not.toContain('paddingInline');
+    expect(touchDateSheetBodyClassName).toContain('[padding-block-start:0]');
+    expect(touchDateHeaderClassName).not.toContain('px-');
+    expect(touchDateFooterClassName).not.toContain('px-');
   });
 
   it('sizes the closed field the same on both surfaces', () => {
@@ -3070,35 +3115,21 @@ describe('DateInput — scroll CSS (definition-level)', () => {
     // field that sizes itself differently on one of them changes height for
     // a reason the call site never asked about.
     //
-    // Compared with formatting normalized away: the two files write the same
-    // declarations differently, one entry per line against one per size.
-    const sizeMap = (file: string) => {
-      const source = read(file);
-      const start = source.indexOf('const sizeStyles = stylex.create(');
-      expect(start).toBeGreaterThan(-1);
-      return source
-        .slice(start, source.indexOf('});', start))
-        .replace(/\/\/.*$/gm, '')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/\s+/g, '')
-        .replace(/,(?=[}\]])/g, '');
-    };
-    expect(sizeMap('TouchDateField.tsx')).toEqual(
-      sizeMap('NativeDateField.tsx'),
-    );
+    // Both read the one size class, so they cannot drift apart.
+    for (const file of ['TouchDateField.tsx', 'NativeDateField.tsx']) {
+      expect(read(file)).toMatch(
+        /tw\(\s*(?:inputGroup && inputGroupMemberClassName,\s*)?fieldInputWrapperClassName\([^)]*\),\s*isDisabled && [A-Za-z]+,\s*dateInputSizeClassName\(\{size\}\)[\s\S]{0,120}?controlClassName/,
+      );
+    }
   });
 
   it('floors the month arrows too — Button tops out at 36px', () => {
-    const source = read('TouchDateField.tsx');
-    const arrow = source.slice(
-      source.indexOf('  monthArrow: {'),
-      source.indexOf('  monthArrowIcon: {'),
-    );
-    expect(arrow).toContain(
-      "minBlockSize: {default: null, '@media (pointer: coarse)': TOUCH_TARGET}",
-    );
-    expect(arrow).toContain(
-      "minInlineSize: {default: null, '@media (pointer: coarse)': TOUCH_TARGET}",
+    const arrow = touchDateMonthArrowClassName({isUnavailable: false});
+    expect(arrow).toContain('pointer-coarse:min-h-[44px]');
+    expect(arrow).toContain('pointer-coarse:min-w-[44px]');
+    // An arrow with nowhere to go keeps that box, so the pair does not move.
+    expect(touchDateMonthArrowClassName({isUnavailable: true})).toBe(
+      `${arrow} invisible`,
     );
   });
 
@@ -3108,11 +3139,7 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * own nav icons.
    */
   it('keeps the mirrored arrow glyph centred', () => {
-    const source = read('TouchDateField.tsx');
-    const icon = source.slice(source.indexOf('  monthArrowIcon: {'));
-    expect(icon.slice(0, icon.indexOf('}'))).toContain(
-      "display: 'inline-flex'",
-    );
+    expect(touchDateMonthArrowIconClassName).toBe('inline-flex');
   });
 
   /**
@@ -3136,38 +3163,36 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * background, the layer beneath gets visibility and nothing else.
    */
   it('fades the wheels in and out over a calendar that does not animate', () => {
-    const source = read('TouchDateField.tsx');
-    const overlay = declarations(source, 'panelOverlay');
-    const beneath = declarations(source, 'panelBeneath');
+    const overlay = touchDatePanelOverlayClassName({isHidden: false});
+    const beneath = touchDatePanelBeneathClassName({isHidden: false});
 
     // The layer fades, both directions — the transition is on the shown
     // state, so entering and leaving it both animate.
-    expect(overlay).toContain("transitionProperty: 'opacity, visibility'");
-    expect(overlay).toContain('transitionDuration: SWAP_DURATION');
-    expect(declarations(source, 'panelOverlayHidden')).toContain('opacity: 0');
+    expect(overlay).toContain('[transition-property:opacity,visibility]');
+    expect(overlay).toContain('[transition-duration:var(--duration-fast)]');
+    expect(touchDatePanelOverlayClassName({isHidden: true})).toContain(
+      'opacity-0',
+    );
 
     // And it is opaque while it does, in the token the sheet paints itself
     // with, so the fade is uniform across the band and the text alike.
-    expect(overlay).toContain(
-      "backgroundColor: colorVars['--color-background-surface']",
-    );
+    expect(overlay).toContain('bg-[color:var(--color-background-surface)]');
 
     // The layer beneath moves nothing that can be SEEN moving: visibility
     // only, no opacity, so it is covered and uncovered rather than faded.
-    expect(beneath).toContain("transitionProperty: 'visibility'");
-    expect(beneath.some(d => d.startsWith('opacity'))).toBe(false);
-    expect(
-      declarations(source, 'panelBeneathHidden').some(d =>
-        d.startsWith('opacity'),
-      ),
-    ).toBe(false);
+    expect(beneath).toContain('[transition-property:visibility]');
+    expect(beneath).not.toContain('opacity');
+    expect(touchDatePanelBeneathClassName({isHidden: true})).not.toContain(
+      'opacity',
+    );
 
     // Two of each, and never the same one twice: the calendar panel and the
     // calendar's footer actions are beneath, the wheels and their Done above.
+    const source = read('TouchDateField.tsx');
     const count = (name: string) =>
-      source.match(new RegExp(`styles\\.${name},`, 'g'))?.length ?? 0;
-    expect(count('panelBeneath')).toBe(2);
-    expect(count('panelOverlay')).toBe(2);
+      source.match(new RegExp(`${name}\\(\\{`, 'g'))?.length ?? 0;
+    expect(count('touchDatePanelBeneathClassName')).toBe(2);
+    expect(count('touchDatePanelOverlayClassName')).toBe(2);
   });
 
   /**
@@ -3184,8 +3209,8 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * exactly 1 — which is to say, whenever anyone is actually looking.
    */
   it('paints the layer as a unit, so the plate really covers', () => {
-    expect(declarations(read('TouchDateField.tsx'), 'panelOverlay')).toContain(
-      "isolation: 'isolate'",
+    expect(touchDatePanelOverlayClassName({isHidden: false})).toContain(
+      'isolate',
     );
   });
 
@@ -3197,12 +3222,18 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * grid being covered.
    */
   it('fades the uncovered chrome on the same timing as the layer', () => {
-    const source = read('TouchDateField.tsx');
-    for (const name of ['weekdays', 'monthArrows']) {
-      expect(declarations(source, name)).toContain(
-        'transitionDuration: SWAP_DURATION',
-      );
-      expect(declarations(source, `${name}Hidden`)).toContain('opacity: 0');
+    for (const [shown, hidden] of [
+      [
+        touchDateWeekdaysClassName({isHidden: false}),
+        touchDateWeekdaysClassName({isHidden: true}),
+      ],
+      [
+        touchDateMonthArrowsClassName({isHidden: false}),
+        touchDateMonthArrowsClassName({isHidden: true}),
+      ],
+    ]) {
+      expect(shown).toContain('[transition-duration:var(--duration-fast)]');
+      expect(hidden).toContain('opacity-0');
     }
   });
 
@@ -3227,12 +3258,10 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * sit under text.
    */
   it('gives the wheel band enough contrast for its fade to read', () => {
-    const source = read('Wheel.tsx');
-    const band = source.slice(
-      source.indexOf('  band: {'),
-      source.indexOf('});', source.indexOf('  band: {')),
+    expect(scrollWheelBandClassName).toContain(
+      'bg-[color:var(--color-neutral)]',
     );
-    expect(band).toContain("backgroundColor: colorVars['--color-neutral']");
+    expect(scrollWheelBandClassName).not.toContain('background-muted');
   });
 
   /**
@@ -3247,23 +3276,22 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * rotation is travel.
    */
   it('fades linearly, and eases only the thing that travels', () => {
-    const source = read('TouchDateField.tsx');
-    const styles = source.slice(
-      source.indexOf('const styles = stylex.create('),
-    );
-    const chevron = styles.slice(
-      styles.indexOf('  titleChevron: {'),
-      styles.indexOf('  titleChevronOpen: {'),
-    );
-    expect(chevron).toContain("transitionProperty: 'transform'");
+    const chevron = touchDateTitleChevronClassName({isOpen: false});
+    expect(chevron).toContain('[transition-property:transform]');
     expect(chevron).toContain(
-      "transitionTimingFunction: easeVars['--ease-standard']",
+      '[transition-timing-function:var(--ease-standard)]',
     );
     // The chevron is the only eased transition; every fade is linear.
-    expect(
-      styles.match(/transitionTimingFunction: easeVars\['--ease-standard'\]/g),
-    ).toHaveLength(1);
-    expect(styles.match(/transitionTimingFunction: 'linear'/g)).toHaveLength(4);
+    const fades = [
+      touchDateMonthArrowsClassName({isHidden: false}),
+      touchDateHeaderResetClassName({isHidden: false}),
+      touchDateWeekdaysClassName({isHidden: false}),
+      touchDatePanelOverlayClassName({isHidden: false}),
+    ];
+    for (const fade of fades) {
+      expect(fade).toContain('[transition-timing-function:linear]');
+    }
+    expect(chevron).not.toContain('[transition-timing-function:linear]');
   });
 
   /**
@@ -3277,18 +3305,24 @@ describe('DateInput — scroll CSS (definition-level)', () => {
    * 175ms, and the swap follows it without knowing.
    */
   it('runs the whole swap on one duration', () => {
-    const source = read('TouchDateField.tsx');
-    const styles = source.slice(
-      source.indexOf('const styles = stylex.create('),
-    );
-    // The arrows, Reset, the weekday row, the layer beneath, the layer
-    // above, and the chevron.
-    expect(styles.match(/transitionDuration: SWAP_DURATION/g)).toHaveLength(6);
-    // And no leftover hand-rolled timing beside them.
-    expect(styles).not.toContain('PANEL_FADE_MS');
-    expect(source).toContain(
-      "const SWAP_DURATION = durationVars['--duration-fast']",
-    );
+    // The arrows, Reset, the weekday row, the layer beneath, the layer above,
+    // and the chevron.
+    const arms = [
+      touchDateMonthArrowsClassName({isHidden: false}),
+      touchDateHeaderResetClassName({isHidden: false}),
+      touchDateWeekdaysClassName({isHidden: false}),
+      touchDatePanelBeneathClassName({isHidden: false}),
+      touchDatePanelOverlayClassName({isHidden: false}),
+      touchDateTitleChevronClassName({isOpen: false}),
+    ];
+    for (const arm of arms) {
+      // A token, not a literal: the Storybook theme resolves `--duration-fast`
+      // to 125ms, and the swap follows it without knowing.
+      expect(arm).toContain('[transition-duration:var(--duration-fast)]');
+      expect(arm).toContain('motion-reduce:[transition-duration:0.01s]');
+      // No leftover hand-rolled timing beside them.
+      expect(arm).not.toMatch(/\d+ms/);
+    }
   });
 
   it('keeps the virtual keyboard down on the touch field', () => {

@@ -42,14 +42,15 @@ import {
 import {createPortal} from 'react-dom';
 import type {BaseProps} from '../BaseProps';
 import type {SearchableItem, SearchSource} from '../Typeahead/types';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  typographyVars,
-} from '../theme/tokens.stylex';
 import {mergeProps, isImeKeyEvent} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
+import {tw} from '../utils/tw';
+import {
+  chatComposerInputEditableClassName,
+  chatComposerInputPlaceholderClassName,
+  chatComposerInputRootClassName,
+  chatComposerTokenSpanClassName,
+} from './chatClasses';
 import {useTriggerMenu} from './useTriggerMenu';
 import {useChatComposerTokens, isCustomToken} from './useChatComposerTokens';
 import {
@@ -269,68 +270,6 @@ export interface ChatComposerInputProps extends Omit<
 // =============================================================================
 
 const LINE_HEIGHT_PX = 22;
-
-const styles = stylex.create({
-  root: {
-    position: 'relative',
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: `${LINE_HEIGHT_PX}px`,
-  },
-  editable: {
-    // The editable is a flex item that scrolls, so its automatic minimum
-    // height is 0. An empty one can then lay out at 0px after a restyle,
-    // and a click on the input no longer reaches it.
-    minHeight: `${LINE_HEIGHT_PX}px`,
-    outline: 'none',
-    whiteSpace: 'pre-wrap',
-    wordBreak: 'break-word',
-    overflowY: 'auto',
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: `${LINE_HEIGHT_PX}px`,
-    fontFamily: typographyVars['--font-family-body'],
-    color: colorVars['--color-text-primary'],
-    caretColor: colorVars['--color-accent'],
-    paddingInline: spacingVars['--spacing-1'],
-  },
-  placeholder: {
-    position: 'absolute',
-    top: 0,
-    insetInlineStart: 0,
-    insetInlineEnd: 0,
-    pointerEvents: 'none',
-    color: colorVars['--color-text-secondary'],
-    // Same iOS-only floor as the editable region it stands in for.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: `${LINE_HEIGHT_PX}px`,
-    fontFamily: typographyVars['--font-family-body'],
-    userSelect: 'none',
-    paddingInline: spacingVars['--spacing-1'],
-  },
-  disabled: {
-    opacity: 0.5,
-    pointerEvents: 'none' as const,
-  },
-  tokenSpan: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    height: '1lh',
-    verticalAlign: 'top',
-  },
-});
 
 // =============================================================================
 // Helpers
@@ -918,13 +857,18 @@ export function ChatComposerInput(props: ChatComposerInputProps) {
       ref={ref}
       {...mergeProps(
         themeProps('chat-composer-input'),
-        stylex.props(styles.root, isDisabled && styles.disabled, xstyle),
+        tw(
+          chatComposerInputRootClassName(isDisabled),
+          xstyleProps(xstyle).className,
+        ),
         className,
         style,
       )}
       {...rootProps}>
       {isEmpty && (
-        <div {...stylex.props(styles.placeholder)} aria-hidden="true">
+        <div
+          className={chatComposerInputPlaceholderClassName}
+          aria-hidden="true">
           {placeholder}
         </div>
       )}
@@ -945,7 +889,7 @@ export function ChatComposerInput(props: ChatComposerInputProps) {
         onDrop={handleDrop}
         {...editorAriaProps}
         aria-disabled={isDisabled || undefined}
-        {...mergeProps(stylex.props(styles.editable), {
+        {...mergeProps(chatComposerInputEditableClassName, {
           style: {maxHeight: `${maxHeight}px`},
         })}
       />
@@ -990,7 +934,10 @@ export function ChatComposerTokenElement(props: ChatComposerTokenElementProps) {
   return (
     <span
       ref={ref}
-      {...mergeProps(stylex.props(styles.tokenSpan, xstyle), className, style)}
+      {...mergeProps(
+        tw(chatComposerTokenSpanClassName, xstyleProps(xstyle).className),
+        {className, style},
+      )}
       {...rest}
       data-astryx-token=""
       data-astryx-token-value={token.value}

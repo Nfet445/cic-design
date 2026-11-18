@@ -18,11 +18,17 @@
  * test file can contribute to.
  *
  * Listing sources instead of relying on detection also makes the build
- * reproducible: the same sources produce the same sheet.
+ * reproducible: the same sources produce the same sheet. The build keeps one
+ * cache entry per file a pattern matches, so a build reads only the class maps
+ * that changed since the last one.
  *
  * The layer statement matches the order `tailwind-theme.css` recommends, so a
  * page that imports this stylesheet before its own Tailwind keeps the
  * consumer's `utilities` above `astryx-base`, where FR5 expects them.
+ *
+ * Size gate: the built sheet may not exceed 1.15× the gzip size of the
+ * StyleX sheet built at `f35022021` (42 331 B). The constant and the check
+ * live in `src/Layout/tailwindStylesheet.source-build.test.mjs`.
  */
 @layer reset, astryx-base, astryx-theme;
 
@@ -45,6 +51,271 @@
 
 @source '../src/**/*Classes.ts';
 
+/*
+ * Layer resets. A layer root is promoted to the top layer, which does not stop
+ * DOM inheritance: content opened from inside a component inherits that
+ * component's text formatting and the structural values it scoped to its own
+ * descendants. Both classes name what they reset, because a structural channel
+ * stops at the boundary only once it is known; theme tokens and writing
+ * context keep inheriting (AST-038 FR2).
+ *
+ * The `reset` sublayer sits inside `astryx-base`, below the layer's own
+ * declarations, so a component style or a caller's className on the same
+ * element still wins. Keep both classes in step with `layerTextResetClasses.ts`
+ * and `layerStructureResetClasses.ts`.
+ *
+ * The box reset is the third: the UA gives `[popover]` a margin, and a
+ * consumer's reset may give the root padding, a border or a canvas background.
+ * Zeroing each one here lets the component's surface set it without
+ * cancelling a declaration first. Lives in `layerResetClasses.ts`.
+ */
+@layer reset {
+  .astryx-layer-reset {
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    border-style: none;
+    overflow: visible;
+    background-color: transparent;
+  }
+
+  .astryx-layer-text-reset {
+    font-family: var(--font-family-body);
+    font-size: var(--text-body-size);
+    font-weight: var(--text-body-weight);
+    line-height: var(--text-body-leading);
+    font-style: normal;
+    text-align: start;
+    text-align-last: auto;
+    text-indent: 0;
+    text-transform: none;
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-shadow: none;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: manual;
+  }
+
+  .astryx-layer-structure-reset {
+    /* A Stepper reads its connector gap from the nearest ancestor that sets
+       it, so a Stepper opened in a layer from one of its steps would inherit
+       the outer track's gap. `initial` hands the connector back its own 0px
+       fallback. */
+    --step-connector-gap: initial;
+    /* A container that wraps with `overflow-wrap: anywhere` passes it to the
+       Text inside it (Text and Heading FR3). `initial` makes the variable
+       invalid, so Text in the layer falls back to its own `break-word`. */
+    --_astryx-text-overflow-wrap: initial;
+  }
+}
+
+/*
+ * Layer entrance. Each keyframe travels one step: the spacing token, or the
+ * room to the trigger when the runtime writes less, both through
+ * `--_astryx-layer-enter-step` (set by the class in
+ * `src/Layer/layerAnimationsClasses.ts`). Each axis reads the step toward the
+ * trigger with its placement's own side as the fallback. The RTL arms mirror
+ * only the horizontal fallback. The scale origin stays a plain style, not a
+ * keyframe, so the entrance stays on the compositor.
+ */
+@keyframes astryxLayerEnterBelow {
+  from {
+    opacity: 0;
+    transform: translate(
+        calc(var(--_astryx-layer-enter-x, 0) * var(--_astryx-layer-enter-step)),
+        calc(var(--_astryx-layer-enter-y, -1) * var(--_astryx-layer-enter-step))
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes astryxLayerEnterAbove {
+  from {
+    opacity: 0;
+    transform: translate(
+        calc(var(--_astryx-layer-enter-x, 0) * var(--_astryx-layer-enter-step)),
+        calc(var(--_astryx-layer-enter-y, 1) * var(--_astryx-layer-enter-step))
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes astryxLayerEnterEnd {
+  from {
+    opacity: 0;
+    transform: translate(
+        calc(
+          var(--_astryx-layer-enter-x, -1) * var(--_astryx-layer-enter-step)
+        ),
+        calc(var(--_astryx-layer-enter-y, 0) * var(--_astryx-layer-enter-step))
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes astryxLayerEnterStart {
+  from {
+    opacity: 0;
+    transform: translate(
+        calc(var(--_astryx-layer-enter-x, 1) * var(--_astryx-layer-enter-step)),
+        calc(var(--_astryx-layer-enter-y, 0) * var(--_astryx-layer-enter-step))
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes astryxLayerEnterEndRtl {
+  from {
+    opacity: 0;
+    transform: translate(
+        calc(var(--_astryx-layer-enter-x, 1) * var(--_astryx-layer-enter-step)),
+        calc(var(--_astryx-layer-enter-y, 0) * var(--_astryx-layer-enter-step))
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes astryxLayerEnterStartRtl {
+  from {
+    opacity: 0;
+    transform: translate(
+        calc(
+          var(--_astryx-layer-enter-x, -1) * var(--_astryx-layer-enter-step)
+        ),
+        calc(var(--_astryx-layer-enter-y, 0) * var(--_astryx-layer-enter-step))
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* Reduce Motion under a finger: the entrance without its travel. The curve
+   rides in the first keyframe, so the class's timing function stays the
+   theme ease's. */
+@keyframes astryxLayerFadeIn {
+  from {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Dialog entrance: it travels from the trigger's side and settles at rest.
+   The runtime writes `--astryx-dialog-dir-x/-y` for the direction it picks, so
+   the keyframe reads variables instead of owning one direction. */
+@keyframes astryxDialogEnter {
+  from {
+    opacity: 0;
+    transform: translate(
+        var(--astryx-dialog-dir-x, 0px),
+        var(--astryx-dialog-dir-y, 16px)
+      )
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* A fullscreen dialog has no resting direction to travel from: it fades in
+   where it lands. */
+@keyframes astryxDialogEnterFullscreen {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Entry animations (useEntryAnimation): the entrance of a box that mounts after
+   the first paint. The presets differ by the direction the box travels and
+   whether it scales; the class map carries duration, easing and fill mode. The
+   frames live here because the build scans class maps only. */
+@keyframes astryxEntrySlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--spacing-2)));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes astryxEntrySlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(var(--spacing-2));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes astryxEntryFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes astryxEntryScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* StatusDot: the pulse a live status breathes with. A keyframe lives here, not
+   in a `.ts` file, because the build scans class maps only. */
+@keyframes astryxStatusDotPulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 /* Button loading: the spinner fade-in and the content hide share one delay so
    the button never shows an empty frame in between. */
 @keyframes astryxButtonSpinnerReveal {
@@ -62,5 +333,261 @@
   }
   to {
     color: transparent;
+  }
+}
+
+/* Spinner: the rotor's turn. One iteration holds 100 turns, so Chromium wakes
+   the main thread once in 100 turns instead of once a turn; each turn is 360
+   degrees, so the ring looks the same. A `transform` animation runs on the
+   compositor, so the ring keeps turning while a script runs. */
+@keyframes astryxSpinnerRotor {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(36000deg);
+  }
+}
+
+/* Skeleton pulse: ten equal steps up from 0.25 to 0.925, played back down by
+   `alternate`. The steps are holds joined by 0.01% ramps with a linear timing
+   function, not a `steps()` timing function: WebKit never composites a
+   `steps()` animation, so Safari would repaint the pulse on the main thread
+   and freeze it whenever a script runs. Same values at the same times, and
+   every engine can animate these off the main thread. */
+@keyframes astryxSkeletonFade {
+  0% {
+    opacity: 0.25;
+  }
+  9.99% {
+    opacity: 0.25;
+  }
+  10% {
+    opacity: 0.325;
+  }
+  19.99% {
+    opacity: 0.325;
+  }
+  20% {
+    opacity: 0.4;
+  }
+  29.99% {
+    opacity: 0.4;
+  }
+  30% {
+    opacity: 0.475;
+  }
+  39.99% {
+    opacity: 0.475;
+  }
+  40% {
+    opacity: 0.55;
+  }
+  49.99% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.625;
+  }
+  59.99% {
+    opacity: 0.625;
+  }
+  60% {
+    opacity: 0.7;
+  }
+  69.99% {
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 0.775;
+  }
+  79.99% {
+    opacity: 0.775;
+  }
+  80% {
+    opacity: 0.85;
+  }
+  89.99% {
+    opacity: 0.85;
+  }
+  90% {
+    opacity: 0.925;
+  }
+  100% {
+    opacity: 0.925;
+  }
+}
+
+/* Chat message metadata: the "sending" status breathes while the message is in
+   flight. The frames live here because the build scans class maps only. */
+@keyframes astryxChatStatusPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* CodeBlock: the collapsible title's leading chevron grows its own footprint
+   (width plus inline margin) from zero so the title slides into place instead
+   of snapping over. The frames live here because the build scans class maps
+   only. */
+@keyframes astryxChevronReveal {
+  from {
+    width: 0;
+    margin-inline-end: 0;
+    opacity: 0;
+  }
+  to {
+    width: 14px;
+    margin-inline-end: var(--spacing-1);
+    opacity: 1;
+  }
+}
+
+/* ProgressBar: the indeterminate segment travels the track, physically left to
+   right; the RTL frames mirror it so the bar moves along the reading flow. */
+@keyframes astryxProgressBarSlide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes astryxProgressBarSlideRtl {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-250%);
+  }
+}
+
+/* Reduce Motion: the segment stops travelling and pulses in place, from full
+   opacity down to the progress table's floor. The class alternates direction
+   on every pass. */
+@keyframes astryxProgressBarPulse {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: var(--_progress-bar-pulse-floor);
+  }
+}
+
+@utility astryx-switch-press-layer {
+  @media (forced-colors: none) and (not (pointer: coarse)) {
+    [data-astryx-switch-scope]:active & {
+      background-image: linear-gradient(
+        var(--color-overlay-pressed),
+        var(--color-overlay-pressed)
+      );
+    }
+  }
+
+  @media (pointer: coarse) {
+    [data-astryx-switch-scope][data-astryx-press] &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      @media (forced-colors: none) {
+        background-color: var(--color-overlay-pressed);
+      }
+    }
+
+    [data-astryx-switch-scope][data-astryx-press='fading'] &::before {
+      opacity: 0;
+      animation: astryxSwitchPressRelease var(--duration-exit) var(--ease-exit)
+        both;
+      @media (prefers-reduced-motion: reduce) {
+        animation-duration: min(var(--duration-exit), 200ms);
+      }
+    }
+  }
+}
+
+/* Switch: under a finger the press rides on a layer of the track and the thumb.
+   The row's press state starts the layer's release. */
+@keyframes astryxSwitchPressRelease {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* DateInput/ScrollWheel: a row tips away from the centre of the wheel. 0% is a
+   row entering at the bottom of the scrollport, 50% a row centred in it, 100%
+   a row leaving at the top — which is what a `view()` timeline over the
+   `cover` range means, and why this reads as a cylinder under the finger. */
+@keyframes astryxWheelTip {
+  0% {
+    transform: rotateX(52deg) scale(0.86);
+  }
+  50% {
+    transform: rotateX(0deg) scale(1);
+  }
+  100% {
+    transform: rotateX(-52deg) scale(0.86);
+  }
+}
+
+/* Colour keeps every row at WCAG AA, which an opacity fade does not. The ends
+   stop halfway to the secondary text colour, because that colour alone falls
+   below AA in two shipped themes. */
+@keyframes astryxWheelFade {
+  0% {
+    color: color-mix(
+      in oklab,
+      var(--color-text-primary),
+      var(--color-text-secondary)
+    );
+  }
+  50% {
+    color: var(--color-text-primary);
+  }
+  100% {
+    color: color-mix(
+      in oklab,
+      var(--color-text-primary),
+      var(--color-text-secondary)
+    );
+  }
+}
+
+/* A disabled row keeps its disabled colour and fades by opacity instead: WCAG
+   1.4.3 exempts inactive components from the contrast minimum. */
+@keyframes astryxWheelTipAndDim {
+  0% {
+    opacity: 0.3;
+    transform: rotateX(52deg) scale(0.86);
+  }
+  50% {
+    opacity: 1;
+    transform: rotateX(0deg) scale(1);
+  }
+  100% {
+    opacity: 0.3;
+    transform: rotateX(-52deg) scale(0.86);
+  }
+}
+
+/* Reduce Motion on a disabled row: the same dim, without the travel. */
+@keyframes astryxWheelDim {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
   }
 }

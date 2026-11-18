@@ -30,23 +30,12 @@ import React, {
   type AriaRole,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  borderVars,
-  colorVars,
-  durationVars,
-  easeVars,
-  focusVars,
-  radiusVars,
-  shadowVars,
-  sizeVars,
-  spacingVars,
-} from '../theme/tokens.stylex';
 import type {BaseProps} from '../BaseProps';
 import {TabListContext} from './TabListContext';
 import type {TabListSize} from './TabListContext';
 import {useSize} from '../SizeContext/SizeContext';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {useListFocus} from '../hooks/useListFocus';
 import {useKeyboardHint} from '../hooks/useKeyboardHint';
 import {useScrollOverflow} from '../hooks/useScrollOverflow';
@@ -56,7 +45,15 @@ import {EDGE_COMP_ATTR} from '../Layout/edgeCompensation.stylex';
 import {themeProps} from '../utils/themeProps';
 import {observeResize} from '../utils/sharedResizeObserver';
 import {createDevWarnings} from '../utils/devWarning';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {tw} from '../utils/tw';
+import {
+  tabListArrowClassName,
+  tabListNavClassName,
+  tabListStripClassName,
+  TAB_LIST_DIVIDER_CLASS,
+  TAB_LIST_FULL_BLEED_CLASS,
+} from './tabListClasses';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {
@@ -171,219 +168,6 @@ export interface TabListProps extends Omit<BaseProps<HTMLElement>, 'onChange'> {
    */
   children: ReactNode;
 }
-
-/**
- * A scroll container clips at its padding box, and two things a tab paints sit
- * outside its own box: the focus ring (offset + width) and the selected
- * indicator, which `--_tab-indicator-bottom` pushes further down when a
- * divider rail is reserved. The strip pads by that much and takes the padding
- * straight back off with a negative margin, so nothing is clipped and the tabs
- * stay exactly where they were.
- *
- * A bleed is not free, though. The padding is real geometry: the strip's
- * border box sticks out of the TabList's, and any ancestor that scrolls counts
- * that as something to scroll to. So the ring's share of the bleed is taken
- * only while a ring is actually drawn inside the strip -- the same
- * `:has(:focus-visible)` condition that draws it -- and at rest the strip is
- * exactly as wide and as tall as the TabList, as it was before the strip could
- * scroll. The indicator's share is always taken, because the indicator is
- * always drawn.
- *
- * Turning the bleed on moves nothing: padding and negative margin cancel, so
- * the border box grows outwards and the content stays put.
- */
-const RING_BLEED = `calc(${focusVars['--focus-outline-width']} + ${focusVars['--focus-outline-offset']})`;
-const BLEED_VAR = '--_tab-strip-bleed';
-const BLEED = `var(${BLEED_VAR})`;
-
-/**
- * A stop's own inline padding, restated here because a full-bleed strip has to
- * subtract it: the strip pads back in only the part of the container's padding
- * the stop does not already supply, so the edge label lands on the content
- * inset. Kept in step with `Tab`/`TabMenu`'s `paddingInline` by hand — the
- * import would be circular.
- */
-const STOP_INLINE_PADDING = spacingVars['--spacing-3'];
-const EDGE_PAD_START = `max(var(--container-padding-inline-start, 0px) - ${STOP_INLINE_PADDING}, 0px)`;
-const EDGE_PAD_END = `max(var(--container-padding-inline-end, 0px) - ${STOP_INLINE_PADDING}, 0px)`;
-const INDICATOR_BLEED = 'calc(-1 * var(--_tab-indicator-bottom, -1px))';
-const BLOCK_END_BLEED = `max(${BLEED}, ${INDICATOR_BLEED})`;
-
-/** How far the edge fade runs; wide enough to sit under an arrow. */
-const FADE_WIDTH = spacingVars['--spacing-8'];
-
-/**
- * Where the fade turns fully opaque, and — the same distance, for the same
- * reason — how far a revealed stop is kept clear of the edge. Declared as
- * scroll-padding so the browser's own focus scrolling uses it too, and read
- * back from the computed style so the arithmetic below has one source of
- * truth with the CSS.
- */
-const SCROLL_EDGE_INSET = `calc(${BLEED} + ${FADE_WIDTH})`;
-
-/**
- * The fade reaches transparent at the strip's *own* edge, not at the bleed
- * edge — otherwise the scroll container paints tabs past the TabList's box,
- * past a divider rail, and past the scroll arrow that caps that edge. Masking
- * the bleed costs nothing: only a faded edge is masked, and a stop at a faded
- * edge never holds focus, so the bleed is still there when the ring needs it.
- */
-const FADE_FROM_START = `linear-gradient(to right, transparent ${BLEED}, black ${SCROLL_EDGE_INSET})`;
-const FADE_FROM_END = `linear-gradient(to left, transparent ${BLEED}, black ${SCROLL_EDGE_INSET})`;
-
-const styles = stylex.create({
-  nav: {
-    display: 'flex',
-    alignItems: 'stretch',
-    gap: spacingVars['--spacing-0-5'],
-    maxWidth: '100%',
-    minWidth: 0,
-    position: 'relative',
-  },
-  fill: {
-    width: '100%',
-  },
-  divider: {
-    borderBottomWidth: borderVars['--border-width'],
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-    // Reserve a gap between the tabs and the divider rail so the hover pill
-    // (which fills the tab height) no longer touches the underline, and an
-    // adjacent same-size Button aligns to the tabs rather than butting the
-    // rail. The tabs keep their element-size height; this padding grows the
-    // strip. `--_tab-indicator-bottom` drops the selected indicator through
-    // the reserved gap (+ the 1px border) so it still sits on the rail.
-    paddingBlockEnd: spacingVars['--spacing-1'],
-    '--_tab-indicator-bottom': `calc(-1 * (${spacingVars['--spacing-1']} + ${borderVars['--border-width']}))`,
-  },
-  strip: {
-    display: 'flex',
-    alignItems: 'stretch',
-    // Inherited rather than restated so an `xstyle` gap override on the
-    // TabList still reaches the tabs.
-    gap: 'inherit',
-    flexGrow: 1,
-    flexShrink: 1,
-    minWidth: 0,
-    // Content-height, not stretched: the bleed padding below is inside the
-    // strip's own height, and a stretched height would push the tabs out of
-    // the scrollport.
-    alignSelf: 'flex-start',
-  },
-  stripScroll: {
-    overflowX: 'auto',
-    overflowY: 'hidden',
-    overscrollBehaviorX: 'contain',
-    scrollPaddingInline: SCROLL_EDGE_INSET,
-    scrollbarWidth: 'none',
-    scrollBehavior: {
-      default: 'smooth',
-      '@media (prefers-reduced-motion: reduce)': 'auto',
-    },
-    [BLEED_VAR]: {
-      default: '0px',
-      ':has(:focus-visible)': RING_BLEED,
-    },
-    paddingBlockStart: BLEED,
-    marginBlockStart: `calc(-1 * (${BLEED}))`,
-    paddingBlockEnd: BLOCK_END_BLEED,
-    marginBlockEnd: `calc(-1 * (${BLOCK_END_BLEED}))`,
-    paddingInline: BLEED,
-    marginInline: `calc(-1 * (${BLEED}))`,
-    maskImage: 'none',
-    transitionProperty: 'mask-image',
-    transitionDuration: {
-      default: durationVars['--duration-medium'],
-      '@media (prefers-reduced-motion: reduce)': '0ms',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  // Put back the part of the bleed a stop's own inline padding does not
-  // already supply, so the first and last label land on the container's
-  // content inset while their boxes still hang out over it. Applied after
-  // `stripScroll` because both write the strip's inline padding; the ring
-  // bleed is carried through so the negative margin there still cancels it.
-  fullBleedStrip: {
-    paddingInlineStart: `calc(var(${BLEED_VAR}, 0px) + ${EDGE_PAD_START})`,
-    paddingInlineEnd: `calc(var(${BLEED_VAR}, 0px) + ${EDGE_PAD_END})`,
-  },
-  fadeStart: {
-    maskImage: {
-      default: FADE_FROM_START,
-      ':is([dir="rtl"] *)': FADE_FROM_END,
-    },
-  },
-  fadeEnd: {
-    maskImage: {
-      default: FADE_FROM_END,
-      ':is([dir="rtl"] *)': FADE_FROM_START,
-    },
-  },
-  fadeBoth: {
-    maskImage: `linear-gradient(to right, transparent ${BLEED}, black ${SCROLL_EDGE_INSET}, black calc(100% - ${SCROLL_EDGE_INSET}), transparent calc(100% - ${BLEED}))`,
-  },
-  arrow: {
-    position: 'absolute',
-    insetBlockStart: 0,
-    // A pointer-only affordance: keyboard and assistive-technology users move
-    // through the strip with the arrow keys, which scrolls the focused tab
-    // into view on its own.
-    display: {
-      default: 'none',
-      '@media (hover: hover)': 'flex',
-    },
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    borderRadius: radiusVars['--radius-full'],
-    // Opaque, because it sits over the tabs it scrolls: the strip's edge fade
-    // thins the content underneath but does not clear it.
-    backgroundColor: colorVars['--color-background-popover'],
-    boxShadow: shadowVars['--shadow-low'],
-    color: {
-      default: colorVars['--color-text-secondary'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))':
-        colorVars['--color-text-primary'],
-    },
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  arrowStart: {
-    insetInlineStart: 0,
-  },
-  arrowEnd: {
-    insetInlineEnd: 0,
-  },
-  fullBleed: {
-    // Cancel the container's inline padding so the strip's box reaches its
-    // content edges. Same spelling as Divider's `isFullBleed`.
-    marginInlineStart: 'calc(-1 * var(--container-padding-inline-start, 0px))',
-    marginInlineEnd: 'calc(-1 * var(--container-padding-inline-end, 0px))',
-    // The `nav` base clamps to 100%, which would pull the widened box back.
-    maxWidth: 'none',
-    width:
-      'calc(100% + var(--container-padding-inline-start, 0px) + var(--container-padding-inline-end, 0px))',
-  },
-});
-
-const arrowSizeStyles = stylex.create({
-  sm: {
-    width: sizeVars['--size-element-sm'],
-    height: sizeVars['--size-element-sm'],
-  },
-  md: {
-    width: sizeVars['--size-element-md'],
-    height: sizeVars['--size-element-md'],
-  },
-  lg: {
-    width: sizeVars['--size-element-lg'],
-    height: sizeVars['--size-element-lg'],
-  },
-});
 
 /**
  * Tab navigation wrapper. Provides context for value/onChange/size
@@ -662,16 +446,6 @@ export function TabList({
     // without any prop this component could watch.
   });
 
-  const fadeStyle = !hasScroll
-    ? null
-    : overflowStart && overflowEnd
-      ? styles.fadeBoth
-      : overflowStart
-        ? styles.fadeStart
-        : overflowEnd
-          ? styles.fadeEnd
-          : null;
-
   // A tablist is not navigation, so the landmark element is only right under
   // the navigation pattern. The role is fixed by a prop rather than by what
   // the strip happens to hold, so this is settled once at the callsite.
@@ -691,14 +465,13 @@ export function TabList({
         {...{[EDGE_COMP_ATTR]: ''}}
         {...mergeProps(
           themeProps('tab-list', {size}),
-          stylex.props(
-            styles.nav,
-            layout === 'fill' && styles.fill,
-            hasDivider && styles.divider,
-            isFullBleed && styles.fullBleed,
-            xstyle,
+          xstyleProps(xstyle),
+          tw(
+            tabListNavClassName({isFill: layout === 'fill'}),
+            hasDivider && TAB_LIST_DIVIDER_CLASS,
+            isFullBleed && TAB_LIST_FULL_BLEED_CLASS,
+            className,
           ),
-          className,
           style,
         )}>
         <div
@@ -709,12 +482,12 @@ export function TabList({
           aria-labelledby={isTabList ? ariaLabelledBy : undefined}
           {...mergeProps(
             themeProps('tab-strip'),
-            stylex.props(
-              styles.strip,
-              hasScroll && styles.stripScroll,
-              isFullBleed && styles.fullBleedStrip,
-              fadeStyle,
-            ),
+            tabListStripClassName({
+              hasScroll,
+              isFullBleed,
+              fadesStart: hasScroll && overflowStart,
+              fadesEnd: hasScroll && overflowEnd,
+            }),
           )}>
           {children}
         </div>
@@ -729,17 +502,14 @@ export function TabList({
             onClick={scrollToStart}
             {...mergeProps(
               themeProps('tab-scroll-button'),
-              focusOutlineProps.focusVisible(
-                styles.arrow,
-                styles.arrowStart,
-                arrowSizeStyles[size],
-              ),
+              tabListArrowClassName({edge: 'start', size}),
+              focusOutlineFocusVisibleClassName,
             )}>
             <Icon
               icon="chevronLeft"
               size="sm"
               color="inherit"
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           </button>
         )}
@@ -752,17 +522,14 @@ export function TabList({
             onClick={scrollToEnd}
             {...mergeProps(
               themeProps('tab-scroll-button'),
-              focusOutlineProps.focusVisible(
-                styles.arrow,
-                styles.arrowEnd,
-                arrowSizeStyles[size],
-              ),
+              tabListArrowClassName({edge: 'end', size}),
+              focusOutlineFocusVisibleClassName,
             )}>
             <Icon
               icon="chevronRight"
               size="sm"
               color="inherit"
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           </button>
         )}

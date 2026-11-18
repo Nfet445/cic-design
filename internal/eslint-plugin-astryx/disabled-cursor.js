@@ -112,8 +112,7 @@ const rule = {
     type: 'problem',
     fixable: 'code',
     docs: {
-      description:
-        'A cursor must give way to default on a disabled element',
+      description: 'A cursor must give way to default on a disabled element',
       category: 'Accessibility',
       recommended: true,
     },

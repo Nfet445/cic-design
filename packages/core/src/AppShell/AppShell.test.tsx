@@ -40,6 +40,8 @@ import {TopNav, TopNavHeading, TopNavItem} from '../TopNav';
 import {TextInput} from '../TextInput';
 import {useAppShellMobile} from './AppShellMobileContext';
 import {Theme, defineTheme} from '../theme';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
+import {APP_SHELL_AREA_SURFACE_CLASS} from './appShellClasses';
 
 // jsdom doesn't implement showModal/close on <dialog>, so we mock them
 beforeAll(() => {
@@ -891,13 +893,14 @@ describe('AppShell', () => {
     // attached-status wrapper, so the Field root must own the boundary.
     const fieldRoot = inputWrapper.parentElement!;
     expect(inputWrapper).toBeTruthy();
-    expect(getComputedStyle(header).position).toBe('sticky');
     // The header stays at its normal local stacking level — no escalation.
-    expect(Number(getComputedStyle(header).zIndex)).toBe(1);
-    expect(getComputedStyle(inputWrapper).position).toBe('relative');
-    // Field's local layers cannot escape into page-level stacking: the root
-    // establishes an isolation boundary around the input wrapper's z-index.
-    expect(getComputedStyle(fieldRoot).isolation).toBe('isolate');
+    expectClassSet(header, {includes: ['sticky', 'z-[1]']});
+    // The wrapper's `position: relative` is a class in the field base module.
+    expect(classesOf(inputWrapper)).toContain('relative');
+    // Field's local layers cannot escape into page-level stacking: the root's
+    // `isolate` class is the isolation boundary around the input wrapper's
+    // z-index.
+    expectClassSet(fieldRoot, {includes: ['isolate']});
   });
 
   it('wraps header in sticky container in auto mode', () => {
@@ -927,18 +930,18 @@ describe('AppShell', () => {
       </AppShell>,
     );
 
-    expect(
-      getComputedStyle(screen.getByRole('banner')).backgroundColor,
-    ).not.toBe('rgba(0, 0, 0, 0)');
+    expectClassSet(screen.getByRole('banner'), {
+      includes: [APP_SHELL_AREA_SURFACE_CLASS],
+    });
 
     rerender(
       <AppShell height="fill" variant="section" topNav={<div>Nav</div>}>
         <div>Content</div>
       </AppShell>,
     );
-    expect(getComputedStyle(screen.getByRole('banner')).backgroundColor).toBe(
-      'rgba(0, 0, 0, 0)',
-    );
+    expectClassSet(screen.getByRole('banner'), {
+      excludes: [APP_SHELL_AREA_SURFACE_CLASS],
+    });
   });
 
   it('does not apply sticky wrapper in fill mode', () => {
@@ -1300,7 +1303,9 @@ describe('AppShell main keyboard access', () => {
       }),
     );
     vi.stubGlobal('cancelAnimationFrame', vi.fn());
-    // jsdom does not expand LayoutContent's `overflow` into its longhands.
+    // jsdom does not expand LayoutContent's `overflow` into its longhands,
+    // and it never loads the utility class that sets it. The class set is the
+    // declaration: `overflow-auto` is the scroll region LayoutContent makes.
     const nativeGetComputedStyle = window.getComputedStyle.bind(window);
     vi.spyOn(window, 'getComputedStyle').mockImplementation(
       (element, pseudo) => {
@@ -1309,7 +1314,12 @@ describe('AppShell main keyboard access', () => {
           // eslint-disable-next-line @typescript-eslint/promise-function-async -- Proxy traps must remain synchronous
           get(target, property) {
             if (property === 'overflowX' || property === 'overflowY') {
-              return target.overflow || 'visible';
+              return (
+                target.overflow ||
+                (element.classList.contains('overflow-auto')
+                  ? 'auto'
+                  : 'visible')
+              );
             }
             return Reflect.get(target, property, target);
           },
@@ -1522,34 +1532,31 @@ describe('AppShell layout root (FR18)', () => {
 
   it('stops the container padding, Layout values and height cap of a padded host at its root', () => {
     render(<Card padding={3}>{shell('shell')}</Card>);
-    const computed = getComputedStyle(screen.getByTestId('shell'));
-    for (const edge of [
-      'inline-start',
-      'inline-end',
-      'block-start',
-      'block-end',
-    ]) {
-      expect(
-        computed.getPropertyValue(`--container-padding-${edge}`),
-        edge,
-      ).toBe('0px');
-    }
-    for (const name of [
-      '--layout-padding-outer-x',
-      '--layout-padding-outer-y',
-      '--layout-padding-own-outer-x',
-      '--layout-padding-own-outer-y',
-      '--layout-padding-inner-x',
-      '--layout-padding-inner-y',
-      '--layout-content-width',
-      '--layout-alignment-width',
-      '--_layout-flush-block-start',
-      '--_layout-flush-block-end',
-      '--_section-padding-propagated',
-      '--container-max-height',
-    ]) {
-      expect(CLEARED_READBACK, name).toContain(computed.getPropertyValue(name));
-    }
+    const shellRoot = screen.getByTestId('shell');
+    expect(classesOf(shellRoot)).toEqual(
+      expect.arrayContaining([
+        '[--container-padding-inline-start:0px]',
+        '[--container-padding-inline-end:0px]',
+        '[--container-padding-block-start:0px]',
+        '[--container-padding-block-end:0px]',
+        '[--layout-padding-outer-x:initial]',
+        '[--layout-padding-outer-y:initial]',
+        '[--layout-padding-own-outer-x:initial]',
+        '[--layout-padding-own-outer-y:initial]',
+        '[--layout-padding-inner-x:initial]',
+        '[--layout-padding-inner-y:initial]',
+        '[--_section-padding-propagated:initial]',
+      ]),
+    );
+    expect(classesOf(shellRoot)).toEqual(
+      expect.arrayContaining([
+        '[--layout-content-width:initial]',
+        '[--layout-alignment-width:initial]',
+        '[--_layout-flush-block-start:initial]',
+        '[--_layout-flush-block-end:initial]',
+        '[--container-max-height:initial]',
+      ]),
+    );
   });
 
   it('renders the same shell inside a padded Card and inside a Layout as at the page root', () => {
@@ -1625,14 +1632,14 @@ describe('AppShell layout root (FR18)', () => {
         </AppShell>
       </Section>,
     );
-    const computed = getComputedStyle(screen.getByTestId('shell'));
+    const shell = screen.getByTestId('shell');
     // The Section's propagated padding stops at the root...
-    expect(CLEARED_READBACK).toContain(
-      computed.getPropertyValue('--_section-padding-propagated'),
+    expect(classesOf(shell)).toContain(
+      '[--_section-padding-propagated:initial]',
     );
     // ...and the caller's own style still applies after the reset (FR15).
-    expect(computed.getPropertyValue('--container-padding-inline-start')).toBe(
-      '8px',
-    );
+    expect(
+      shell.style.getPropertyValue('--container-padding-inline-start'),
+    ).toBe('8px');
   });
 });

@@ -29,20 +29,17 @@ import {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  sizeVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+import {textInputClassName, textInputHeightClassName} from './textInputClasses';
+import type {TextInputSize} from './textInputClasses';
+
+export type {TextInputSize} from './textInputClasses';
 import {Field} from '../Field/Field';
 import {InputClearButton} from '../Field/InputClearButton';
 import {
-  inputWrapperStyles,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
-} from '../Field/inputStyles.stylex';
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
+} from '../Field/fieldClasses';
 import type {InputStatus} from '../Field/types';
 import {renderIconSlot, type IconType} from '../Icon/Icon';
 import {isRenderable} from '../utils/isRenderable';
@@ -58,52 +55,8 @@ import {
 } from '../Field/textEntryTraits';
 import {joinAriaIDs} from '../utils/inputAria';
 
-const styles = stylex.create({
-  input: {
-    display: 'block',
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    outline: 'none',
-    '::placeholder': {
-      color: colorVars['--color-text-secondary'],
-    },
-  },
-  inputDisabled: {
-    cursor: 'default',
-  },
-});
-
-const sizeStyles = stylex.create({
-  sm: {
-    height: sizeVars['--size-element-sm'],
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
-  },
-});
-
-export type TextInputSize = keyof typeof sizeStyles;
-
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 
 // Re-export shared types for convenience
 
@@ -112,24 +65,24 @@ export type {
   InputStatusType as TextInputStatusType,
 } from '../Field';
 import {mergeProps} from '../utils/mergeProps';
+import {tw} from '../utils/tw';
 import {useSize} from '../SizeContext/SizeContext';
 import {useInputContainer} from '../hooks/useInputContainer';
 import {useInputStatusIcon} from '../hooks/useInputStatusIcon';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
-import type {BaseProps} from '../BaseProps';
 import {
   type FieldInputBaseProps,
   useFieldInputStyling,
 } from '../Field/fieldParts';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
 import {setInputValue} from '../utils/setInputValue';
+import {xstyleProps} from '../utils/xstyle';
 import type {FieldStatusPlacement} from '../Field/fieldStatusPlacement';
 import {
   registerEnglishFallback,
@@ -502,19 +455,15 @@ export function TextInput({
           disabled: isDisabled ? 'disabled' : null,
           readonly: isReadOnly ? 'readonly' : null,
         }),
-        stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
-          sizeStyles[size],
-          isDisabled && inputWrapperStyles.disabled,
-          isDisabled && inputDisabledFocusStyles.ring,
-          status && inputStatusBorderStyles[status.type],
-          status && !isDisabled && inputStatusHoverShadowStyles[status.type],
-          status && inputStatusFocusWithinStyles[status.type],
-          inputGroup && groupStyles.inGroup,
-          controlXstyle,
+        xstyleProps(controlXstyle),
+        tw(
+          inputGroup && inputGroupMemberClassName,
+          fieldInputWrapperClassName({status: status?.type}),
+          isDisabled && fieldInputWrapperDisabledClassName,
+          isDisabled && fieldInputWrapperFocusScopeClassName.direct,
+          textInputHeightClassName({size}),
+          controlClassName,
         ),
-        controlClassName,
         controlStyle,
       )}>
       {/* The shared presence check decides the slot
@@ -577,7 +526,7 @@ export function TextInput({
         aria-invalid={status?.type === 'error' ? 'true' : undefined}
         aria-busy={isBusy || undefined}
         aria-labelledby={inputLabelledBy}
-        {...stylex.props(styles.input, isDisabled && styles.inputDisabled)}
+        className={textInputClassName({isDisabled})}
       />
       {/* The Spinner comes first so it appears inward of the clear button
           and the button keeps its place when the field turns busy. */}

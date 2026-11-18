@@ -3,12 +3,12 @@
 
 /**
  * @file Behavior test for the draggable-box pan block.
- * @input The shipped PanDraggableBox block, rendered in jsdom with the pans,
- *   StyleX and the Astryx components stubbed. It shows one box with
- *   usePanGesture and one with createPanGesture.
- * @output Guards that each box follows its own drag through its StyleX drag
- *   style and springs back when it is let go. A person who reduces motion gets
- *   no spring. The createPanGesture pan comes down with the block.
+ * @input The shipped PanDraggableBox block, rendered in jsdom with the pans
+ *   and the Astryx components stubbed. It shows one box with usePanGesture and
+ *   one with createPanGesture.
+ * @output Guards that each box follows its own drag through its two variables
+ *   and springs back when it is let go. A person who reduces motion gets no
+ *   spring. The createPanGesture pan comes down with the block.
  * @position CLI template regression coverage; runs in the node test project,
  *   under jsdom for this file.
  */
@@ -30,32 +30,43 @@ const pan = vi.hoisted(() => ({
   factory: null as null | ((event: PanEvent) => void),
   destroyed: 0,
 }));
-// This project does not compile StyleX. The stub merges a style list into one
-// object on `data-style`, so a case reads the styles the block applies.
-const style = vi.hoisted(() => ({
-  attribute: (...styles: unknown[]) => ({
-    'data-style': JSON.stringify(
-      Object.assign({}, ...styles.flat(Infinity).filter(Boolean)),
-    ),
-  }),
-}));
-vi.mock('@stylexjs/stylex', () => ({
-  create: (styles: object) => styles,
-  props: style.attribute,
-}));
+/**
+ * Reads the box's pose off the class list and the two variables its
+ * `translate` consumes. jsdom loads no stylesheet, so the class is the only
+ * evidence the grab cursor and the spring back exist.
+ */
+function look(className: string, x: string | null, y: string | null): Styles {
+  return {
+    translate: `${x ?? ''} ${y ?? ''}`,
+    userSelect: className.includes('select-none') ? 'none' : undefined,
+    settling: className.includes('transition-[translate]'),
+  };
+}
 vi.mock('@astryxdesign/core/Card', () => ({
   Card: ({
-    xstyle,
+    className = '',
+    style = {},
     children,
     ref,
   }: {
-    xstyle: unknown;
+    className?: string;
+    style?: Record<string, string>;
     children: ReactNode;
     ref: unknown;
   }) =>
     createElement(
       'div',
-      {ref, role: 'group', ...style.attribute(xstyle)},
+      {
+        ref,
+        role: 'group',
+        'data-style': JSON.stringify(
+          look(
+            className,
+            style['--astryx-box-x'] ?? null,
+            style['--astryx-box-y'] ?? null,
+          ),
+        ),
+      },
       children,
     ),
 }));
@@ -66,12 +77,6 @@ vi.mock('@astryxdesign/core/Center', () => ({
 vi.mock('@astryxdesign/core/HStack', () => ({
   HStack: (props: {children: ReactNode}) =>
     createElement('div', null, props.children),
-}));
-vi.mock('@astryxdesign/core/theme/tokens.stylex', () => ({
-  colorVars: {},
-  durationVars: {'--duration-medium': 'var(--duration-medium)'},
-  easeVars: {'--ease-move': 'var(--ease-move)'},
-  radiusVars: {},
 }));
 vi.mock('@astryxdesign/core/hooks', () => ({
   usePanGesture: (_ref: unknown, options: {onPan: Listener}) => {
@@ -102,10 +107,7 @@ afterEach(() => {
 type Styles = {
   translate?: string;
   userSelect?: string;
-  transition?: {
-    default: string;
-    '@media (prefers-reduced-motion: reduce)': string;
-  };
+  settling?: boolean;
 };
 
 async function mount() {
@@ -162,7 +164,7 @@ describe('the draggable-box pan block', () => {
       expect(held.translate).toBe('30px 12px');
       // A mouse drag moves the box instead of selecting its text.
       expect(held.userSelect).toBe('none');
-      expect(held.transition).toBeUndefined();
+      expect(held.settling).toBe(false);
       // The other box stays where it is.
       expect(styles(1 - index).translate).toBe('0px 0px');
       await send(listener(), {
@@ -172,14 +174,8 @@ describe('the draggable-box pan block', () => {
       });
       const released = styles(index);
       expect(released.translate).toBe('0px 0px');
-      // At the theme's duration and easing for a move.
-      expect(released.transition?.default).toBe(
-        'translate var(--duration-medium) var(--ease-move)',
-      );
-      // A person who reduces motion sees it back at once.
-      expect(
-        released.transition?.['@media (prefers-reduced-motion: reduce)'],
-      ).toBe('none');
+      // The spring back class carries the settle, with its reduced-motion arm.
+      expect(released.settling).toBe(true);
       await act(async () => {
         root.unmount();
       });

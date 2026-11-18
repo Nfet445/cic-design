@@ -4,7 +4,7 @@
 
 /**
  * @file Kbd.tsx
- * @input Uses React, StyleX, theme tokens, shortcut key names, aliases, provider-bound translator
+ * @input Uses React, Tailwind classes, shortcut key names, aliases, provider-bound translator
  * @output Exports Kbd component and KbdProps with localized shortcut text
  * @position Core implementation; renders styled keyboard shortcut indicators
  *
@@ -14,20 +14,14 @@
  */
 
 import React, {useSyncExternalStore} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {kbdKeyClassName, kbdWrapperClassName} from './kbdClasses';
 import {isApplePlatform} from '../utils/isApplePlatform';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import type {TranslatorFn} from '../i18n';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  typographyVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -35,37 +29,6 @@ import {
 import english from '../i18n/generated-english/Kbd/Kbd.generated';
 
 registerEnglishFallback(english);
-
-const styles = stylex.create({
-  wrapper: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    flexShrink: 0,
-  },
-  kbd: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: spacingVars['--spacing-5'],
-    height: spacingVars['--spacing-5'],
-    // The theme height holds while one line of text fits. A taller line
-    // grows the badge.
-    minHeight: '1lh',
-    paddingInline: spacingVars['--spacing-1'],
-    borderRadius: radiusVars['--radius-inner'],
-    backgroundColor: colorVars['--color-neutral'],
-    borderBottomWidth: '2px',
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border-emphasized'],
-    color: colorVars['--color-text-primary'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    userSelect: 'none',
-  },
-});
 
 /** Symbols that every platform shows. Modifier text depends on the platform. */
 const KEY_DISPLAY = new Map<string, string>([
@@ -228,12 +191,12 @@ export function Kbd({keys, ref, xstyle, className, style, ...rest}: KbdProps) {
       aria-label={accessibleName}
       {...mergeProps(
         themeProps('kbd'),
-        stylex.props(styles.wrapper, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(kbdWrapperClassName, className),
         style,
       )}>
       {parts.map(({key, reactKey}) => (
-        <kbd key={reactKey} aria-hidden="true" {...stylex.props(styles.kbd)}>
+        <kbd key={reactKey} aria-hidden="true" className={kbdKeyClassName}>
           {getKeyDisplay(key, isMac, t)}
         </kbd>
       ))}

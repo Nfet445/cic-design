@@ -15,74 +15,24 @@
  */
 
 import {type ReactNode, createElement} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import type {BaseProps} from '../BaseProps';
 import {AnnounceRenderedText} from '../hooks/AnnounceRenderedText';
 import {isRenderable} from '../utils/isRenderable';
 import {mergeProps} from '../utils/mergeProps';
 import {themeProps} from '../utils/themeProps';
-
-const styles = stylex.create({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-    gap: spacingVars['--spacing-4'],
-    paddingBlock: spacingVars['--spacing-8'],
-    paddingInline: spacingVars['--spacing-6'],
-  },
-  containerCompact: {
-    gap: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-4'],
-    paddingInline: spacingVars['--spacing-4'],
-  },
-  title: {
-    margin: 0,
-    fontFamily: 'inherit',
-    fontSize: typeScaleVars['--text-large-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    lineHeight: typeScaleVars['--text-large-leading'],
-    color: colorVars['--color-text-primary'],
-  },
-  titleCompact: {
-    fontSize: typeScaleVars['--text-label-size'],
-  },
-  description: {
-    margin: 0,
-    fontFamily: 'inherit',
-    fontSize: typeScaleVars['--text-body-size'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-secondary'],
-  },
-  descriptionCompact: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-  },
-  textGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    maxWidth: '360px',
-  },
-  actions: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    marginTop: spacingVars['--spacing-1'],
-  },
-  actionsCompact: {
-    flexDirection: 'column',
-  },
-});
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  emptyStateActionsClassName,
+  emptyStateActionsCompactClassName,
+  emptyStateClassName,
+  emptyStateCompactClassName,
+  emptyStateDescriptionClassName,
+  emptyStateDescriptionCompactClassName,
+  emptyStateTextGroupClassName,
+  emptyStateTitleClassName,
+  emptyStateTitleCompactClassName,
+} from './emptyStateClasses';
 
 export interface EmptyStateProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element */
@@ -164,23 +114,30 @@ export function EmptyState({
       {...props}
       {...mergeProps(
         themeProps('empty-state', {variant: isCompact ? 'compact' : null}),
-        stylex.props(
-          styles.container,
-          isCompact && styles.containerCompact,
-          xstyle,
-        ),
+        {
+          className: tw(
+            emptyStateClassName,
+            isCompact && emptyStateCompactClassName,
+            xstyleProps(xstyle).className,
+          ),
+        },
         className,
         style,
       )}>
       {isRenderable(icon) && <div aria-hidden="true">{icon}</div>}
-      <AnnounceRenderedText {...stylex.props(styles.textGroup)}>
+      <AnnounceRenderedText className={emptyStateTextGroupClassName}>
         {createElement(
           HeadingTag,
           mergeProps(
             themeProps('empty-state-title', {
               variant: isCompact ? 'compact' : null,
             }),
-            stylex.props(styles.title, isCompact && styles.titleCompact),
+            {
+              className: tw(
+                emptyStateTitleClassName,
+                isCompact && emptyStateTitleCompactClassName,
+              ),
+            },
           ),
           title,
         )}
@@ -190,10 +147,12 @@ export function EmptyState({
               themeProps('empty-state-description', {
                 variant: isCompact ? 'compact' : null,
               }),
-              stylex.props(
-                styles.description,
-                isCompact && styles.descriptionCompact,
-              ),
+              {
+                className: tw(
+                  emptyStateDescriptionClassName,
+                  isCompact && emptyStateDescriptionCompactClassName,
+                ),
+              },
             )}>
             {description}
           </div>
@@ -201,7 +160,10 @@ export function EmptyState({
       </AnnounceRenderedText>
       {isRenderable(actions) && (
         <div
-          {...stylex.props(styles.actions, isCompact && styles.actionsCompact)}>
+          className={tw(
+            emptyStateActionsClassName,
+            isCompact && emptyStateActionsCompactClassName,
+          )}>
           {actions}
         </div>
       )}

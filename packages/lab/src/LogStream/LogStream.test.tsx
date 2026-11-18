@@ -4,6 +4,24 @@ import {describe, it, expect, vi} from 'vitest';
 import {render, screen, fireEvent} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {LogStream, type LogEntry} from './LogStream';
+import {
+  logStreamClassName,
+  logStreamColumnsFullClassName,
+  logStreamLevelClassName,
+  logStreamLevelErrorTerminalClassName,
+  logStreamLevelInfoClassName,
+  logStreamMessageClassName,
+  logStreamMessageErrorTerminalClassName,
+  logStreamMessageTerminalClassName,
+  logStreamRowButtonClassName,
+  logStreamRowButtonHoverClassName,
+  logStreamRowClassName,
+  logStreamRowErrorClassName,
+  logStreamRowTerminalClassName,
+  logStreamRowWarnClassName,
+  logStreamScrollerClassName,
+  logStreamTerminalClassName,
+} from './logStreamClasses';
 
 const ENTRIES: LogEntry[] = [
   {
@@ -36,6 +54,12 @@ const ENTRIES: LogEntry[] = [
     message: 'connection pool at 40%',
   },
 ];
+
+/** A map entry is a space-separated list, so every token has to be present. */
+function carries(element: Element | null | undefined, mapClassName: string) {
+  const classes = new Set(element?.classList);
+  return mapClassName.split(' ').every(className => classes.has(className));
+}
 
 /** jsdom has no layout: fake the scroll geometry on the log scroller. */
 function setScrollMetrics(
@@ -259,5 +283,73 @@ describe('LogStream', () => {
     expect(screen.getByText('CUSTOM c')).toBeInTheDocument();
     expect(screen.queryByText('request accepted')).not.toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('holds the class map on the frame, the scroller and the rows', () => {
+    const {container} = render(<LogStream entries={ENTRIES} maxHeight={320} />);
+    const scroller = screen.getByRole('log');
+    expect(carries(scroller.parentElement, logStreamClassName)).toBe(true);
+    expect(carries(scroller, logStreamScrollerClassName)).toBe(true);
+    expect(
+      scroller.style.getPropertyValue('--astryx-log-stream-max-height'),
+    ).toBe('320px');
+
+    // Timestamp, level, source and message are all visible, so the row uses
+    // the four-column template.
+    const rows = container.querySelectorAll('[data-level]');
+    expect(rows).toHaveLength(ENTRIES.length);
+    for (const row of rows) {
+      expect(carries(row, logStreamRowClassName)).toBe(true);
+      expect(carries(row, logStreamColumnsFullClassName)).toBe(true);
+    }
+  });
+
+  it('gives each level wash its own row class', () => {
+    const {container} = render(<LogStream entries={ENTRIES} />);
+    const warn = container.querySelector('[data-level="warn"]');
+    const error = container.querySelector('[data-level="error"]');
+    const info = container.querySelector('[data-level="info"]');
+    expect(carries(warn, logStreamRowWarnClassName)).toBe(true);
+    expect(carries(warn, logStreamRowErrorClassName)).toBe(false);
+    expect(carries(error, logStreamRowErrorClassName)).toBe(true);
+    expect(carries(info, logStreamRowErrorClassName)).toBe(false);
+    expect(carries(info, logStreamRowWarnClassName)).toBe(false);
+  });
+
+  it('carries the disclosure affordance on the expandable row only', () => {
+    const {container} = render(<LogStream entries={ENTRIES} />);
+    const row = screen.getByRole('button', {expanded: false});
+    expect(carries(row, logStreamRowButtonClassName)).toBe(true);
+    expect(carries(row, logStreamRowButtonHoverClassName)).toBe(true);
+    expect(
+      carries(
+        container.querySelector('[data-level="info"]'),
+        logStreamRowButtonClassName,
+      ),
+    ).toBe(false);
+  });
+
+  it('replaces the row and cell colours in the terminal variant', () => {
+    render(<LogStream entries={ENTRIES} variant="terminal" />);
+    const scroller = screen.getByRole('log');
+    expect(carries(scroller.parentElement, logStreamTerminalClassName)).toBe(
+      true,
+    );
+    // The terminal row is one complete class: it never stacks the plain row.
+    const row = screen.getByText('request accepted').closest('[data-level]');
+    expect(carries(row, logStreamRowTerminalClassName)).toBe(true);
+    expect(carries(row, logStreamRowClassName)).toBe(false);
+    // One colour class per cell: the level keeps its label class, and the
+    // error message takes the error colour instead of the plain one.
+    const level = screen.getByText('error');
+    expect(carries(level, logStreamLevelClassName)).toBe(true);
+    expect(carries(level, logStreamLevelErrorTerminalClassName)).toBe(true);
+    const message = screen.getByText('upstream call failed');
+    expect(carries(message, logStreamMessageClassName)).toBe(true);
+    expect(carries(message, logStreamMessageErrorTerminalClassName)).toBe(true);
+    expect(carries(message, logStreamMessageTerminalClassName)).toBe(false);
+    expect(carries(screen.getByText('info'), logStreamLevelInfoClassName)).toBe(
+      false,
+    );
   });
 });

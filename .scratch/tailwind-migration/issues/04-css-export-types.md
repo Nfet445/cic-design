@@ -1,6 +1,6 @@
 # css export types
 
-Status: ready-for-agent
+Status: done
 Blocked by: —
 Wave: 0
 Ticket: 04

@@ -43,8 +43,15 @@ import {
 import {Token} from '../Token/Token';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {__resetDevWarnings} from '../utils/devWarning';
-import {colorVars, sizeVars, spacingVars} from '../theme/tokens.stylex';
-import {inputWrapperStyles} from '../Field/inputStyles.stylex';
+import {colorVars} from '../theme/tokens.stylex';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {
+  tokenizerSheetFieldDisabledClassName,
+  tokenizerSheetTokenDisabledClassName,
+  tokenizerSheetTriggerPlaceholderClassName,
+  tokenizerSheetTriggerPlaceholderDisabledClassName,
+} from './tokenizerClasses';
+import {fieldInputWrapperClassName} from '../Field/fieldClasses';
 import type {SearchSource, SearchableItem} from '../Typeahead/types';
 
 import {COMPACT_TOUCH_PRESENTATION_QUERY as COMPACT_TOUCH_QUERY} from '../hooks/useAdaptivePresentation';
@@ -2155,51 +2162,28 @@ describe('Tokenizer sheet presentation (single-sheet touch flow)', () => {
     expect(spy).toHaveBeenLastCalledWith([], {item: ITEMS[0], type: 'remove'});
   });
 
-  it('paints a disabled trigger, its placeholder, and its tokens GrayText in forced colors (AST-085 FR6)', () => {
-    const atoms = (style: stylex.StyleXStyles) =>
-      stylex
-        .props(style)
-        .className!.split(' ')
-        .filter(name => !name.includes('__'));
-    const forced = stylex.create({
-      trigger: {
-        borderColor: {
-          default: colorVars['--color-border-emphasized'],
-          '@media (forced-colors: active)': 'GrayText',
-        },
-        color: {default: null, '@media (forced-colors: active)': 'GrayText'},
-      },
-      token: {
-        color: {
-          default: colorVars['--color-text-primary'],
-          '@media (forced-colors: active)': 'GrayText',
-        },
-      },
-      placeholder: {
-        color: {
-          default: colorVars['--color-text-secondary'],
-          '@media (forced-colors: active)': 'GrayText',
-        },
-      },
-    });
+  it('paints a disabled field, its placeholder, and its tokens GrayText in forced colors (AST-085 FR6)', () => {
     const {unmount} = render(<Harness isDisabled />);
     const field = sheetField();
-    for (const name of atoms(forced.trigger)) {
-      expect(field).toHaveClass(name);
-    }
+    expectClassSet(field, {
+      includes: tokenizerSheetFieldDisabledClassName.split(/\s+/),
+    });
     const tokens = field.querySelectorAll('.astryx-token');
     expect(tokens).toHaveLength(2);
     for (const token of tokens) {
-      for (const name of atoms(forced.token)) {
-        expect(token).toHaveClass(name);
-      }
+      expectClassSet(token, {
+        includes: tokenizerSheetTokenDisabledClassName.split(/\s+/),
+      });
     }
     unmount();
     render(<Harness isDisabled initial={[]} />);
     const placeholder = screen.getByText('Add tags');
-    for (const name of atoms(forced.placeholder)) {
-      expect(placeholder).toHaveClass(name);
-    }
+    expectClassSet(placeholder, {
+      includes:
+        `${tokenizerSheetTriggerPlaceholderClassName} ${tokenizerSheetTriggerPlaceholderDisabledClassName}`.split(
+          /\s+/,
+        ),
+    });
   });
 
   it('renders a row without its action and warns once in development (FR19; AST-058 FR9)', async () => {
@@ -3258,29 +3242,18 @@ describe('Tokenizer sheet draft, Save and dismissal (FR18, FR23, FR24, FR26, FR2
   it('draws the search field as the shared input box at the lg input height above the 44px rows — the input border with its forced-colors branch, accent on focus, element radius, surface — unlike the borderless panel field the dropdowns share (FR18)', () => {
     const atoms = (className: string | undefined) =>
       (className ?? '').split(' ').filter(name => !name.includes('__'));
-    // The same shared box the inline field composes, then the sheet's own
-    // height and padding on top (later wins per property, as in the sheet).
-    const own = stylex.create({
-      field: {
-        minHeight: sizeVars['--size-element-lg'],
-        paddingBlock: spacingVars['--spacing-1'],
-      },
-      touch: {minHeight: 44},
-    });
+    const touchHeight = stylex.create({touch: {minHeight: 44}});
     render(<Harness />);
     fireEvent.click(openTrigger());
     const input = screen.getByLabelText('Search Tags');
     const field = input.parentElement!;
-    for (const name of atoms(
-      stylex.props(
-        inputWrapperStyles.base,
-        inputWrapperStyles.textField,
-        own.field,
-      ).className,
-    )) {
+    // The same shared box the inline field composes, then the sheet's own
+    // control classes on top.
+    for (const name of atoms(fieldInputWrapperClassName())) {
       expect(field).toHaveClass(name);
     }
-    for (const name of atoms(stylex.props(own.touch).className)) {
+    expect(field).toHaveClass('w-full');
+    for (const name of atoms(stylex.props(touchHeight.touch).className)) {
       expect(field).not.toHaveClass(name);
     }
   });

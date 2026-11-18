@@ -20,11 +20,7 @@
  */
 
 import {useState, useCallback, useMemo, type ReactNode} from 'react';
-import {
-  Lightbox,
-  type LightboxProps,
-  type LightboxMedia,
-} from './Lightbox';
+import {Lightbox, type LightboxProps, type LightboxMedia} from './Lightbox';
 
 type LightboxOptions = Omit<
   LightboxProps,
@@ -87,9 +83,7 @@ export interface UseLightboxReturn {
  * {lightbox.element}
  * ```
  */
-export function useLightbox(
-  options: UseLightboxOptions,
-): UseLightboxReturn {
+export function useLightbox(options: UseLightboxOptions): UseLightboxReturn {
   const {media, ...lightboxProps} = options;
   const [isOpen, setIsOpen] = useState(false);
   const [index, setIndex] = useState(0);

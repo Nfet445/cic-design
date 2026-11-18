@@ -3,7 +3,7 @@
 /**
  * @file TypeaheadItem.test.tsx
  * @input Uses vitest, @testing-library/react, TypeaheadItem, the shared
- *   declaredValue StyleX read-back helper
+ *   the shared class-set read-back helper
  * @output Unit tests for TypeaheadItem
  * @position Testing; validates TypeaheadItem.tsx implementation — pass-through
  *   props, the label/icon/description layout, disabled dimming, ref forwarding,
@@ -15,7 +15,8 @@ import {createRef, type ReactElement} from 'react';
 import {render, screen} from '@testing-library/react';
 import {TypeaheadItem} from './TypeaheadItem';
 import type {SearchableItem} from './types';
-import {declaredValue} from '../__tests__/stylexDeclarations';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {TYPEAHEAD_ITEM_DISABLED_CLASS} from './typeaheadClasses';
 
 const item: SearchableItem = {id: '1', label: 'Alice'};
 
@@ -88,12 +89,13 @@ describe('TypeaheadItem', () => {
 
   it('dims the row when isDisabled is set', () => {
     const root = renderItem(<TypeaheadItem item={item} isDisabled />);
-    expect(declaredValue(root, 'opacity')).toBe('0.5');
+    // The dimming is a class now, so the class set is what the test reads.
+    expectClassSet(root, {includes: [TYPEAHEAD_ITEM_DISABLED_CLASS]});
   });
 
   it('does not dim the row by default', () => {
     const root = renderItem(<TypeaheadItem item={item} />);
-    expect(declaredValue(root, 'opacity')).toBeNull();
+    expectClassSet(root, {excludes: [TYPEAHEAD_ITEM_DISABLED_CLASS]});
   });
 
   it('forwards ref to the row element', () => {

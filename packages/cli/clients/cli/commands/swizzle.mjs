@@ -5,12 +5,12 @@
  *
  * Copies a component's source into the consumer project for customization,
  * with the internal modules it needs. All logic — owner resolution, the copy,
- * StyleX detection, maintainer feedback — lives in api/swizzle; this file only
- * parses flags, prints, and prefixes commands for the caller's package manager.
+ * the stylesheet it needs, maintainer feedback — lives in api/swizzle; this file
+ * only parses flags, prints, and prefixes commands for the caller's package manager.
  */
 
 import {jsonOut} from '../../../foundation/response/json.mjs';
-import {emit, section, list, text, WARN, record} from '../formatters/index.mjs';
+import {emit, section, list, text, record} from '../formatters/index.mjs';
 import {cliError, rejectEmptyArgument} from '../lib/cli-error.mjs';
 import {getCliInvocation} from '../../../foundation/env/package-manager.mjs';
 import {swizzle as swizzleApi} from '../../../api/swizzle/swizzle.mjs';
@@ -76,7 +76,7 @@ export function registerSwizzle(program) {
         return answered;
       }
 
-      const {package: ownerPackage, outputDir, filesCopied, usesStyleX, feedback} =
+      const {package: ownerPackage, outputDir, filesCopied, stylesheet, feedback} =
         result.data;
 
       /** @type {import('../formatters/index.mjs').Block[]} */
@@ -125,23 +125,16 @@ export function registerSwizzle(program) {
         );
       }
 
-      // StyleX build requirement — swizzled StyleX source throws on import
-      // ("Unexpected 'stylex.create' call at runtime") unless the consumer's
-      // build runs a StyleX compiler, so the page does not render at all.
-      if (usesStyleX) {
-        out.push(
-          text(
-            [
-              `${WARN} These components use StyleX and require a StyleX compiler in your build.`,
-              `  Without one, importing them throws "Unexpected 'stylex.create' call at runtime"`,
-              '  and the page does not render. See setup per framework:',
-              `  ${run} docs styling`,
-              '  Next.js note: the StyleX Babel plugin disables SWC and breaks next/font -',
-              '  use an SWC-based StyleX transform instead (covered in the guide).',
-            ].join('\n'),
-          ),
-        );
-      }
+      // The copy paints with class maps, whose rules live in Core's utility
+      // sheet, so name the one import that makes the copy render.
+      out.push(
+        text(
+          [
+            `Its class maps need ${stylesheet}; import it once in your app:`,
+            `  import '${stylesheet}';`,
+          ].join('\n'),
+        ),
+      );
 
       // Maintainer feedback note (skipped when the owner ships no issues URL).
       if (feedback) {

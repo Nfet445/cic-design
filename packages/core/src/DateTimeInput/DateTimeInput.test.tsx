@@ -20,9 +20,8 @@ import {
   within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import {getButton, queryButton} from '../__tests__/fastRoleQueries';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {DateTimeInput, type DateTimeInputProps} from './DateTimeInput';
 import type {ISODateTimeString} from './DateTimeInput';
 import type {DateInputEntryError} from './DateTimeInput';
@@ -31,6 +30,7 @@ import {defineTheme} from '../theme/defineTheme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {InternationalizationProvider} from '../i18n';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
+import {nativePickerSegmentInvalidClassName} from './nativePickerSegmentClasses';
 
 function politeRegion(): HTMLElement | null {
   return document.querySelector('[data-astryx-live-region="polite"]');
@@ -45,30 +45,10 @@ function generateThemeTestCSS(theme: Parameters<typeof generateThemeCSS>[0]) {
   return [prose, component].filter(Boolean).join('\n\n');
 }
 
-// jsdom does not perform flex layout, so these probe classes verify the
-// declarations that switch between horizontal and stacked intrinsic layouts.
-const responsiveLayoutProbe = stylex.create({
-  responsiveRow: {
-    flexWrap: 'wrap',
-  },
-  responsiveSegment: {
-    flexBasis: 196,
-    minWidth: 0,
-  },
-});
-
-function expectResponsiveProbeClasses(
-  element: HTMLElement,
-  style: (typeof responsiveLayoutProbe)[keyof typeof responsiveLayoutProbe],
-): void {
-  const classes = (stylex.props(style).className ?? '')
-    .split(' ')
-    .filter(className => className !== '' && !className.includes('__'));
-  expect(classes.length).toBeGreaterThan(0);
-  for (const className of classes) {
-    expect(element).toHaveClass(className);
-  }
-}
+const FIELD_FOCUS_RING_CLASSES = [
+  'focus-within:border-[color:var(--color-accent)]',
+  'focus-within:shadow-[inset_0_0_0_2px_var(--color-accent-muted)]',
+];
 
 describe('DateTimeInput', () => {
   it('Enter on a busy field does not submit the form', async () => {
@@ -223,7 +203,10 @@ describe('DateTimeInput', () => {
       '.astryx-date-time-input',
     ) as HTMLElement;
     expect(row).not.toBeNull();
-    expectResponsiveProbeClasses(row, responsiveLayoutProbe.responsiveRow);
+    // jsdom performs no flex layout, so the class set is the evidence: the row
+    // wraps, and each segment carries the 196px basis that makes wrapping
+    // reachable at 400px.
+    expectClassSet(row, {includes: ['flex', 'flex-wrap', 'gap-2']});
   });
 
   it('gives both segments the intrinsic wrap threshold and allows them to shrink', () => {
@@ -236,14 +219,11 @@ describe('DateTimeInput', () => {
     const timeSegment = container.querySelector(
       '.astryx-date-time-input-time-segment',
     ) as HTMLElement;
-    expectResponsiveProbeClasses(
-      dateSegment,
-      responsiveLayoutProbe.responsiveSegment,
-    );
-    expectResponsiveProbeClasses(
-      timeSegment,
-      responsiveLayoutProbe.responsiveSegment,
-    );
+    for (const segment of [dateSegment, timeSegment]) {
+      expectClassSet(segment, {
+        includes: ['flex-1', '[flex-basis:196px]', '[min-inline-size:0]'],
+      });
+    }
   });
 
   it('does not commit the date on a composing Enter (IME)', () => {
@@ -395,26 +375,7 @@ describe('DateTimeInput', () => {
     }
   });
 
-  it('restores the focus ring on a focused disabled field (AST-085 FR6)', () => {
-    // The same declarations as the field's ring style compile to the same
-    // atomic classes; the shared disabled style alone drops them.
-    const ringClasses = stylex
-      .props(
-        stylex.create({
-          ring: {
-            borderColor: {
-              default: colorVars['--color-border-emphasized'],
-              ':focus-within': colorVars['--color-accent'],
-            },
-            boxShadow: {
-              default: 'none',
-              ':focus-within': `inset 0px 0px 0px 2px ${colorVars['--color-accent-muted']}`,
-            },
-          },
-        }).ring,
-      )
-      .className!.split(' ')
-      .filter(name => !name.includes('__'));
+  it('restores the focus ring on a focused disabled field (spec:AST-085 FR6)', () => {
     render(<DateTimeInput label="Meeting" isDisabled onChange={() => {}} />);
     for (const input of [
       screen.getByRole('combobox'),
@@ -423,9 +384,9 @@ describe('DateTimeInput', () => {
       const wrapper = input.closest(
         '.astryx-date-time-input-date-segment, .astryx-date-time-input-time-segment',
       )!;
-      for (const name of ringClasses) {
-        expect(wrapper).toHaveClass(name);
-      }
+      // The box paints the ring for any focus inside it; the disabled state
+      // adds no class that turns it off.
+      expectClassSet(wrapper, {includes: FIELD_FOCUS_RING_CLASSES});
     }
   });
 
@@ -3961,7 +3922,12 @@ describe('DateTimeInput entryErrorBehavior', () => {
       status:
         container.querySelector('.astryx-field-status')?.textContent ?? '',
       isInvalid: input.getAttribute('aria-invalid') === 'true',
-      isStyledInvalid: /\.inputInvalid\b/.test(input.className),
+      // The native segment renders its invalid style as a class. The Astryx
+      // text field still renders its own through StyleX, so both spellings
+      // count until that map moves.
+      isStyledInvalid:
+        classesOf(input).includes(nativePickerSegmentInvalidClassName) ||
+        /\.inputInvalid\b/.test(input.className),
     };
   }
 

@@ -12,7 +12,7 @@
  */
 
 import type React from 'react';
-import type {StyleXStyles} from '@stylexjs/stylex';
+import type {AstryxXStyle} from './utils/xstyle';
 
 /**
  * Base props shared by all Astryx components.
@@ -78,16 +78,18 @@ export interface BaseProps<T extends HTMLElement = HTMLElement> extends Omit<
   | 'defaultValue'
 > {
   /**
-   * StyleX styles created via `stylex.create()`. Merged with the component's
-   * base styles inside a single `stylex.props()` call for optimal deduplication.
+   * The consumer's own override, applied after the component's classes and
+   * before `style`. A class is the consumer's CSS, which is unlayered, so it
+   * wins over the component's paint. An object is inline style, which wins over
+   * both.
    *
    * @example
    * ```
-   * const overrides = stylex.create({ root: { marginBottom: 8 } });
-   * <Component xstyle={overrides.root} />
+   * <Component xstyle="my-app-field" />
+   * <Component xstyle={{'--field-width': '12rem'}} />
    * ```
    */
-  xstyle?: StyleXStyles;
+  xstyle?: AstryxXStyle;
 
   /** Allow data-* attributes for telemetry, testing, integration hooks, and
    * Astryx component prop/state reflection (for example data-variant/data-size). */

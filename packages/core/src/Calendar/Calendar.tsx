@@ -34,11 +34,41 @@ import {useAnnounce, useGridFocus} from '../hooks';
 import {useCalendarConstraints, type CalendarDay} from './hooks';
 import {useCalendarDays} from './hooks/useCalendarDays';
 import {
-  calendarStyles,
-  monthGridStyles,
-  dayCellStyles,
-  dayCellTheme,
-} from './styles';
+  calendarClassName,
+  calendarHeaderClassName,
+  calendarMonthYearLabelClassName,
+  calendarMonthsContainerClassName,
+  calendarMonthsPendingClassName,
+  calendarNavIconClassName,
+  dayButtonClassName,
+  dayCellClassName,
+  dayCellPlaceholderClassName,
+  dayCellPreviewBgClassName,
+  dayCellPreviewBgRoundEndClassName,
+  dayCellPreviewBgRoundStartClassName,
+  dayCellPreviewEndClassName,
+  dayCellPreviewStartClassName,
+  dayCellRangeBgClassName,
+  dayCellRangeBgRoundEndClassName,
+  dayCellRangeBgRoundStartClassName,
+  dayCellRangeInsetEndClassName,
+  dayCellRangeInsetStartClassName,
+  monthGridClassName,
+  monthGridDayNameClassName,
+  monthGridDaysGridClassName,
+  monthGridDaysGridWithNumbersClassName,
+  monthGridWeekNumberClassName,
+  monthGridWeekNumberHeaderClassName,
+  monthGridWeekRowClassName,
+} from './calendarClasses';
+import {tw} from '../utils/tw';
+import {RTL_MIRROR_CLASS} from '../utils/rtlClasses';
+
+/**
+ * The RTL mirror the nav chevrons need: a `scaleX(-1)` inside `dir="rtl"`.
+ * It sits on its own wrapper span because Icon's string mode replaces a
+ * caller's className.
+ */
 import {
   type PlainDate,
   plainDateFromISO,
@@ -67,9 +97,10 @@ import {
   formatCalendarMonthLabel,
   isInCalendarMonth,
 } from '../utils/calendarSystem';
-import {mergeProps, composeEventHandlers, rtlStyles} from '../utils';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {mergeProps, composeEventHandlers} from '../utils';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {useToday} from '../hooks/useToday';
 import {getInitialFocusDate} from './getInitialFocusDate';
@@ -101,6 +132,7 @@ import type {
 } from '../utils/dateTypes';
 import {normalizeDayOfWeek} from '../utils/dateTypes';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {useLocale} from '../i18n';
 import {useCalendarSystem} from '../i18n/useCalendarSystem';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -749,13 +781,13 @@ export function Calendar({ref, ...props}: CalendarProps) {
       onBlur={composeEventHandlers(rest.onBlur, handleRootBlur)}
       {...mergeProps(
         themeProps('calendar', {mode}),
-        stylex.props(calendarStyles.calendar, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(calendarClassName, className),
         style,
       )}
       onKeyDown={composeEventHandlers(onKeyDown, handleCalendarKeyDown)}>
       {/* Header with navigation */}
-      <div {...stylex.props(calendarStyles.header)}>
+      <div className={calendarHeaderClassName}>
         <Button
           {...themeProps('calendar-nav', {
             nav: 'prev',
@@ -767,7 +799,7 @@ export function Calendar({ref, ...props}: CalendarProps) {
             // Wrapper span (not Icon props): Icon's string mode clobbers
             // caller classNames, so the RTL mirror must live on its own
             // element.
-            <span {...stylex.props(calendarStyles.navIcon, rtlStyles.mirror)}>
+            <span className={tw(calendarNavIconClassName, RTL_MIRROR_CLASS)}>
               <Icon icon="chevronLeft" size="sm" color="inherit" />
             </span>
           }
@@ -776,7 +808,7 @@ export function Calendar({ref, ...props}: CalendarProps) {
           isIconOnly
         />
 
-        <span {...stylex.props(calendarStyles.monthYearLabel)}>
+        <span className={calendarMonthYearLabelClassName}>
           {monthYearLabel}
         </span>
 
@@ -788,7 +820,7 @@ export function Calendar({ref, ...props}: CalendarProps) {
           label={t('@astryx.calendar.nextMonth')}
           variant="ghost"
           icon={
-            <span {...stylex.props(calendarStyles.navIcon, rtlStyles.mirror)}>
+            <span className={tw(calendarNavIconClassName, RTL_MIRROR_CLASS)}>
               <Icon icon="chevronRight" size="sm" color="inherit" />
             </span>
           }
@@ -804,9 +836,9 @@ export function Calendar({ref, ...props}: CalendarProps) {
       <div
         aria-hidden={isMonthKnown ? undefined : true}
         inert={!isMonthKnown}
-        {...stylex.props(
-          calendarStyles.monthsContainer,
-          !isMonthKnown && calendarStyles.monthsPending,
+        className={tw(
+          calendarMonthsContainerClassName,
+          !isMonthKnown && calendarMonthsPendingClassName,
         )}>
         {visibleMonths.map(month => (
           <MonthGrid
@@ -1173,7 +1205,7 @@ function MonthGrid({
   }, [calendar, month, locale]);
 
   return (
-    <div {...stylex.props(monthGridStyles.monthGrid)}>
+    <div className={monthGridClassName}>
       {/* Days grid (APG grid: header row of columnheaders + week rows) */}
       <div
         ref={gridRef}
@@ -1184,13 +1216,13 @@ function MonthGrid({
         aria-multiselectable={mode === 'range' ? true : undefined}
         onKeyDown={handleGridKeyDown}
         onFocus={handleGridFocus}
-        {...stylex.props(
-          monthGridStyles.daysGrid,
-          hasWeekNumbers && monthGridStyles.daysGridWithNumbers,
+        className={tw(
+          monthGridDaysGridClassName,
+          hasWeekNumbers && monthGridDaysGridWithNumbersClassName,
         )}>
         {/* Day names header row (columnheaders live inside the grid). Uses the
             same display:contents row so its cells align to the grid columns. */}
-        <div role="row" {...stylex.props(monthGridStyles.weekRow)}>
+        <div role="row" className={monthGridWeekRowClassName}>
           {hasWeekNumbers && (
             // The corner above the week-number column is a header cell like
             // the weekday names beside it (APG grid: every cell in a row is a
@@ -1199,9 +1231,9 @@ function MonthGrid({
             // column stays blank and the header is not empty to axe.
             <div
               role="columnheader"
-              {...stylex.props(
-                monthGridStyles.dayName,
-                monthGridStyles.weekNumberHeader,
+              className={tw(
+                monthGridDayNameClassName,
+                monthGridWeekNumberHeaderClassName,
               )}>
               <VisuallyHidden>{plainDateWeekFieldName(locale)}</VisuallyHidden>
             </div>
@@ -1210,7 +1242,7 @@ function MonthGrid({
             <div
               key={dayOfWeek}
               role="columnheader"
-              {...stylex.props(monthGridStyles.dayName)}>
+              className={monthGridDayNameClassName}>
               {name}
             </div>
           ))}
@@ -1224,11 +1256,9 @@ function MonthGrid({
             <div
               key={plainDateToISO(weekDate)}
               role="row"
-              {...stylex.props(monthGridStyles.weekRow)}>
+              className={monthGridWeekRowClassName}>
               {hasWeekNumbers && (
-                <div
-                  role="rowheader"
-                  {...stylex.props(monthGridStyles.weekNumber)}>
+                <div role="rowheader" className={monthGridWeekNumberClassName}>
                   {plainDateFormatDayNumber(weekNum, locale)}
                 </div>
               )}
@@ -1346,7 +1376,7 @@ function DayCell({
   if (isOutside && !hasOutsideDays) {
     // Empty placeholder cell — still a gridcell so the grid geometry stays a
     // clean 7-per-row set for keyboard navigation.
-    return <div role="gridcell" {...stylex.props(dayCellStyles.cell)} />;
+    return <div role="gridcell" className={dayCellPlaceholderClassName} />;
   }
 
   const state = computeDayCellState({
@@ -1414,23 +1444,19 @@ function DayCell({
     <div
       role="gridcell"
       aria-selected={state.isSelected || state.isInRange || undefined}
-      {...stylex.props(dayCellStyles.cell)}>
+      className={dayCellClassName}>
       {/* Range background */}
       {state.isInRange && (
         <div
-          {...stylex.props(
-            dayCellStyles.rangeBg,
-            dayCellTheme.rangeBg,
-            rangeRounding.roundStart && dayCellStyles.rangeBgRadiusStart,
-            rangeRounding.roundEnd && dayCellStyles.rangeBgRadiusEnd,
-            state.isRangeStart && dayCellStyles.rangeInsetStart,
+          className={tw(
+            dayCellRangeBgClassName,
+            rangeRounding.roundStart && dayCellRangeBgRoundStartClassName,
+            rangeRounding.roundEnd && dayCellRangeBgRoundEndClassName,
+            state.isRangeStart && dayCellRangeInsetStartClassName,
             state.isRangeStart &&
               rangeRounding.roundEnd &&
-              dayCellStyles.rangeInsetEnd,
-            state.isRangeEnd && dayCellStyles.rangeInsetEnd,
-            state.isRangeStart &&
-              rangeRounding.roundStart &&
-              dayCellStyles.rangeInsetStart,
+              dayCellRangeInsetEndClassName,
+            state.isRangeEnd && dayCellRangeInsetEndClassName,
           )}
         />
       )}
@@ -1438,13 +1464,12 @@ function DayCell({
       {/* Preview range background */}
       {state.isInPreview && (
         <div
-          {...stylex.props(
-            dayCellStyles.previewBg,
-            dayCellTheme.previewBg,
-            previewRounding.roundStart && dayCellStyles.previewBgRadiusStart,
-            previewRounding.roundEnd && dayCellStyles.previewBgRadiusEnd,
-            state.isPreviewStart && dayCellStyles.previewStart,
-            state.isPreviewEnd && dayCellStyles.previewEnd,
+          className={tw(
+            dayCellPreviewBgClassName,
+            previewRounding.roundStart && dayCellPreviewBgRoundStartClassName,
+            previewRounding.roundEnd && dayCellPreviewBgRoundEndClassName,
+            state.isPreviewStart && dayCellPreviewStartClassName,
+            state.isPreviewEnd && dayCellPreviewEndClassName,
           )}
         />
       )}
@@ -1478,26 +1503,22 @@ function DayCell({
             // key. It is null unless a ring is shown:
             //   'today-only'     → today, not single-selected, not in a range
             //   'today-in-range' → today, not single-selected, inside a range
-            // `isSelected` here is single-select only (see computeDayCellState),
-            // so a today range endpoint still shows the today-in-range ring —
-            // `marker` mirrors the StyleX conditions below exactly, preserving
-            // the default rendering.
             marker: markerState,
           }),
-          focusOutlineProps.focusVisible(
-            dayCellStyles.day,
-            dayCellTheme.day,
-            interactionOverlayStyles.backgroundImage,
-            isOutside && dayCellStyles.dayOutside,
-            isOutside && dayCellTheme.dayOutside,
-            showsTodayRing && dayCellStyles.dayToday,
-            showsTodayRing && dayCellTheme.dayToday,
-            showsTodayInRangeRing && dayCellStyles.dayTodayInRange,
-            showsTodayInRangeRing && dayCellTheme.dayTodayInRange,
-            endpoint && dayCellStyles.daySelected,
-            endpoint && dayCellTheme.daySelected,
-            state.effectivelyDisabled && dayCellStyles.dayDisabled,
-            state.effectivelyDisabled && dayCellTheme.dayDisabled,
+          stylex.props(
+            // The strength and the release; the paint is a class below.
+            interactionOverlayStyles.pressedAlpha,
+          ),
+          tw(
+            interactionOverlayBackgroundImageClassName,
+            dayButtonClassName({
+              isOutside,
+              isTodayRing: showsTodayRing,
+              isTodayInRangeRing: showsTodayInRangeRing,
+              isSelected: endpoint,
+              isDisabled: state.effectivelyDisabled,
+            }),
+            focusOutlineFocusVisibleClassName,
           ),
         )}>
         {plainDateFormatDayNumber(dayNumber, locale)}

@@ -28,7 +28,7 @@
 
 import type {ReactNode} from 'react';
 import {defaultIcons} from './defaultIcons';
-import type {IconSize} from './IconSize.stylex';
+import type {IconSize} from './IconSize';
 import type {
   ComponentIconRequest,
   ComponentIconSlotMap,

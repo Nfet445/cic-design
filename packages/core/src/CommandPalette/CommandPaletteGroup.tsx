@@ -2,7 +2,7 @@
 
 /**
  * @file CommandPaletteGroup.tsx
- * @input Uses React, StyleX
+ * @input Uses React, the class map
  * @output Exports CommandPaletteGroup component
  * @position Sub-component; visual grouping with heading
  *
@@ -13,34 +13,15 @@
 'use client';
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  typographyVars,
-} from '../theme/tokens.stylex';
-
-const styles = stylex.create({
-  group: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-    paddingBlock: spacingVars['--spacing-1'],
-  },
-  heading: {
-    paddingInline: spacingVars['--spacing-3'],
-    paddingBlock: spacingVars['--spacing-1'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    userSelect: 'none',
-  },
-});
+  commandPaletteGroupClassName,
+  commandPaletteGroupHeadingClassName,
+} from './commandPaletteGroupClasses';
 
 export interface CommandPaletteGroupProps extends BaseProps<HTMLDivElement> {
   /** Ref forwarded to the root element. */
@@ -85,8 +66,8 @@ export function CommandPaletteGroup({
       aria-label={heading}
       {...mergeProps(
         themeProps('command-palette-group'),
-        stylex.props(styles.group, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(commandPaletteGroupClassName, className),
         style,
       )}
       {...props}>
@@ -100,7 +81,7 @@ export function CommandPaletteGroup({
           // so `defineTheme` can scope overrides (e.g. heading typography) to
           // the heading alone.
           themeProps('command-palette-group-heading'),
-          stylex.props(styles.heading),
+          {className: commandPaletteGroupHeadingClassName},
         )}>
         {heading}
       </div>

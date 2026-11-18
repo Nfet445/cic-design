@@ -20,25 +20,41 @@
 
 import React, {useState, useCallback, useId, type ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  typographyVars,
-  fontWeightVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  focusVars,
-} from '../theme/tokens.stylex';
 import {getKey, mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
+import {tw} from '../utils/tw';
+import {
+  chatFocusRingInsetClassName,
+  chatToolCallsChevronClassName,
+  chatToolCallsChevronOpenClassName,
+  chatToolCallsCountClassName,
+  chatToolCallsDetailChevronClassName,
+  chatToolCallsDetailContentClassName,
+  chatToolCallsDurationClassName,
+  chatToolCallsGroupContentClassName,
+  chatToolCallsGroupContentInnerClassName,
+  chatToolCallsGroupHeaderClassName,
+  chatToolCallsGroupIconClassName,
+  chatToolCallsGroupLabelClassName,
+  chatToolCallsListClassName,
+  chatToolCallsNameClassName,
+  chatToolCallsNodePillClassName,
+  chatToolCallsRootClassName,
+  chatToolCallsRowClassName,
+  chatToolCallsRowClickableClassName,
+  chatToolCallsStatsAdditionsClassName,
+  chatToolCallsStatsClassName,
+  chatToolCallsStatsDeletionsClassName,
+  chatToolCallsStatusClassName,
+  chatToolCallsStatusIconClassName,
+  chatToolCallsTargetClassName,
+} from './chatClasses';
 import {Badge} from '../Badge';
 import {Icon, type IconName} from '../Icon';
 import {Spinner} from '../Spinner';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -103,250 +119,6 @@ export interface ChatToolCallsProps extends BaseProps<HTMLDivElement> {
 // Styles
 // =============================================================================
 
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    marginBlockStart: spacingVars['--spacing-2'],
-  },
-  groupHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1-5'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    userSelect: 'none',
-    minHeight: '24px',
-    paddingBlock: spacingVars['--spacing-0-5'],
-  },
-  groupIcon: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: '16px',
-    height: '16px',
-    color: colorVars['--color-text-secondary'],
-  },
-  groupLabel: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-secondary'],
-  },
-  chevron: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: '14px',
-    height: '14px',
-    color: colorVars['--color-text-secondary'],
-  },
-  // Rides on the chevron <Icon> (via `xstyle`), next to the rotation it
-  // animates, so one element carries both the transform and the theme target.
-  chevronTransition: {
-    transition: {
-      default: `transform ${durationVars['--duration-fast']} ${easeVars['--ease-standard']}`,
-      '@media (prefers-reduced-motion: reduce)': 'none',
-    },
-  },
-  chevronExpanded: {
-    transform: 'rotate(180deg)',
-  },
-  groupContent: {
-    display: 'grid',
-    gridTemplateRows: '0fr',
-    transition: {
-      default: `grid-template-rows ${durationVars['--duration-medium']} ${easeVars['--ease-standard']}`,
-      '@media (prefers-reduced-motion: reduce)': 'none',
-    },
-  },
-  groupContentExpanded: {
-    gridTemplateRows: '1fr',
-  },
-  groupContentInner: {
-    overflow: 'hidden',
-    minHeight: 0,
-    // `list` (and, within it, each `callRowClickable` row) overhangs its own
-    // content box by `--spacing-1` on each inline edge via a negative margin,
-    // so its hover background can extend past the text column without
-    // widening the layout — `list`'s own matching paddingInline absorbs the
-    // row-level overhang, but `list`'s negative margin then overhangs *this*
-    // element's box by the same amount, and this is the clip boundary the
-    // grid height animation needs `overflow: hidden` for. Mirror the same
-    // padding/negative-margin pair here so that overhang is absorbed too,
-    // instead of clipped — matching the ungrouped single-call row, which has
-    // no such wrapper to clip it.
-    paddingInline: spacingVars['--spacing-1'],
-    marginInline: `calc(-1 * ${spacingVars['--spacing-1']})`,
-  },
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    paddingInline: spacingVars['--spacing-1'],
-    marginInline: `calc(-1 * ${spacingVars['--spacing-1']})`,
-  },
-  listIndented: {
-    paddingInlineStart: 0,
-  },
-
-  // Individual call row
-  callRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1-5'],
-    minHeight: '24px',
-    paddingBlock: spacingVars['--spacing-0-5'],
-  },
-  callRowFocusInset: {
-    outlineOffset: {
-      default: null,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-  },
-  callRowClickable: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-    paddingInline: spacingVars['--spacing-1'],
-    marginInline: `calc(-1 * ${spacingVars['--spacing-1']})`,
-    '@media (hover: hover)': {
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        backgroundColor: colorVars['--color-overlay-hover'],
-      },
-    },
-  },
-  callRowToggle: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  statusIcon: {
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: '16px',
-    height: '16px',
-    borderRadius: radiusVars['--radius-full'],
-  },
-  callName: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontFamily: typographyVars['--font-family-code'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-secondary'],
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    flexShrink: 1,
-    minWidth: '4ch',
-  },
-  callLabel: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontFamily: typographyVars['--font-family-body'],
-    color: colorVars['--color-text-secondary'],
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    flexShrink: 10,
-    minWidth: 0,
-  },
-  callDuration: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontFamily: typographyVars['--font-family-body'],
-    color: colorVars['--color-text-secondary'],
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
-  },
-  nodePill: {
-    flexShrink: 0,
-  },
-  stats: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontFamily: typographyVars['--font-family-body'],
-    color: colorVars['--color-text-secondary'],
-    flexShrink: 0,
-  },
-  statsAdditions: {
-    color: colorVars['--color-text-success'],
-  },
-  statsDeletions: {
-    color: colorVars['--color-text-error'],
-  },
-  errorText: {
-    color: colorVars['--color-text-error'],
-  },
-
-  // Inline result detail
-  callDetailChevron: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: '14px',
-    height: '14px',
-    color: colorVars['--color-text-secondary'],
-    marginInlineStart: 'auto',
-  },
-  callDetailContent: {
-    paddingInlineStart: `calc(16px + ${spacingVars['--spacing-1-5']})`,
-    paddingBlockEnd: spacingVars['--spacing-2'],
-  },
-  callCount: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-0-5'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontFamily: typographyVars['--font-family-body'],
-    color: colorVars['--color-text-secondary'],
-    flexShrink: 0,
-  },
-
-  // Pile effect for grouped tool calls
-  pileWrapper: {
-    position: 'relative',
-  },
-  pileCard: {
-    position: 'absolute',
-    insetInline: 0,
-    top: 0,
-    height: '100%',
-    borderRadius: radiusVars['--radius-element'],
-    backgroundColor: colorVars['--color-background-muted'],
-    opacity: 0.5,
-  },
-  pileCard1: {
-    transform: 'translateY(-3px) scale(0.985)',
-    opacity: 0.3,
-  },
-  pileCard2: {
-    transform: 'translateY(-6px) scale(0.97)',
-    opacity: 0.15,
-  },
-
-  // Status colors
-  colorPending: {color: colorVars['--color-text-disabled']},
-  colorRunning: {color: colorVars['--color-accent']},
-  colorComplete: {color: colorVars['--color-icon-success']},
-  colorError: {color: colorVars['--color-icon-error']},
-});
-
 // =============================================================================
 // Status Icons
 // =============================================================================
@@ -358,15 +130,7 @@ const STATUS_ICON_NAMES: Record<ChatToolCallStatus, IconName | null> = {
   error: 'error',
 };
 
-const STATUS_STYLES: Record<
-  ChatToolCallStatus,
-  ReturnType<typeof stylex.create>[string]
-> = {
-  pending: styles.colorPending,
-  running: styles.colorRunning,
-  complete: styles.colorComplete,
-  error: styles.colorError,
-};
+const STATUS_STYLES = chatToolCallsStatusClassName;
 
 function getStatusAnnouncement(
   t: ReturnType<typeof useComponentTranslator>,
@@ -446,14 +210,17 @@ function CallRow({
             }
           : undefined
       }
-      {...focusOutlineProps.focusVisible(
-        styles.callRow,
-        hasDetail && styles.callRowClickable,
-        hasDetail && hasClippedFocusRing && styles.callRowFocusInset,
+      {...mergeProps(
+        tw(
+          chatToolCallsRowClassName,
+          hasDetail && chatToolCallsRowClickableClassName,
+          hasDetail && hasClippedFocusRing && chatFocusRingInsetClassName,
+          focusOutlineFocusVisibleClassName,
+        ),
       )}>
       <span
         title={status === 'error' ? call.errorMessage : undefined}
-        {...stylex.props(styles.statusIcon, STATUS_STYLES[status])}>
+        className={tw(chatToolCallsStatusIconClassName, STATUS_STYLES[status])}>
         {status === 'running' ? (
           <Spinner size="sm" shade="subtle" aria-hidden="true" />
         ) : status === 'pending' ? (
@@ -467,27 +234,31 @@ function CallRow({
         )}
         <VisuallyHidden>{statusAnnouncement}</VisuallyHidden>
       </span>
-      <span {...stylex.props(styles.callName)}>{call.name}</span>
+      <span className={chatToolCallsNameClassName}>{call.name}</span>
       {call.node != null && (
-        <Badge label={call.node} variant="neutral" xstyle={styles.nodePill} />
+        <Badge
+          label={call.node}
+          variant="neutral"
+          className={chatToolCallsNodePillClassName}
+        />
       )}
       {/* eslint-disable-next-line @astryx/no-nullish-jsx-guard -- `target` is a string field: an empty string still marks a target */}
       {call.target != null && (
-        <span {...stylex.props(styles.callLabel)}>{call.target}</span>
+        <span className={chatToolCallsTargetClassName}>{call.target}</span>
       )}
       {(call.additions != null ||
         call.deletions != null ||
         call.stats != null) && (
-        <span {...stylex.props(styles.stats)}>
+        <span className={chatToolCallsStatsClassName}>
           {/* eslint-disable-next-line @astryx/no-nullish-jsx-guard -- `additions` is a count: 0 renders "+0" */}
           {call.additions != null && (
-            <span {...stylex.props(styles.statsAdditions)}>
+            <span className={chatToolCallsStatsAdditionsClassName}>
               +{call.additions}
             </span>
           )}
           {/* eslint-disable-next-line @astryx/no-nullish-jsx-guard -- `deletions` is a count: 0 renders "-0" */}
           {call.deletions != null && (
-            <span {...stylex.props(styles.statsDeletions)}>
+            <span className={chatToolCallsStatsDeletionsClassName}>
               -{call.deletions}
             </span>
           )}
@@ -496,18 +267,19 @@ function CallRow({
       )}
       {/* eslint-disable-next-line @astryx/no-nullish-jsx-guard -- `duration` is a string field, not a slot */}
       {call.duration != null && status === 'complete' && (
-        <span {...stylex.props(styles.callDuration)}>{call.duration}</span>
+        <span className={chatToolCallsDurationClassName}>{call.duration}</span>
       )}
       {hasDetail && (
-        <span {...stylex.props(styles.callDetailChevron)}>
+        // eslint-disable-next-line @astryx/no-style-only-wrapper -- the wrapper is the glyph's box; the rule reads StyleX objects, not class text.
+        <span className={chatToolCallsDetailChevronClassName}>
           <Icon
             icon="chevronDown"
             size="xsm"
             color="inherit"
-            xstyle={[
-              styles.chevronTransition,
-              isDetailOpen && styles.chevronExpanded,
-            ]}
+            className={tw(
+              chatToolCallsChevronClassName,
+              isDetailOpen && chatToolCallsChevronOpenClassName,
+            )}
           />
         </span>
       )}
@@ -522,7 +294,7 @@ function CallRow({
     <div>
       {row}
       {isDetailOpen && (
-        <div id={detailId} {...stylex.props(styles.callDetailContent)}>
+        <div id={detailId} className={chatToolCallsDetailContentClassName}>
           {call.resultDetail}
         </div>
       )}
@@ -593,7 +365,7 @@ export function ChatToolCalls(props: ChatToolCallsProps) {
         ref={ref}
         {...mergeProps(
           themeProps('chat-tool-calls'),
-          stylex.props(styles.root, xstyle),
+          tw(chatToolCallsRootClassName, xstyleProps(xstyle).className),
           className,
           style,
         )}
@@ -617,7 +389,7 @@ export function ChatToolCalls(props: ChatToolCallsProps) {
       ref={ref}
       {...mergeProps(
         themeProps('chat-tool-calls'),
-        stylex.props(styles.root, xstyle),
+        tw(chatToolCallsRootClassName, xstyleProps(xstyle).className),
         className,
         style,
       )}
@@ -635,16 +407,19 @@ export function ChatToolCalls(props: ChatToolCallsProps) {
             toggle();
           }
         }}
-        {...focusOutlineProps.focusVisible(
-          styles.callRow,
-          styles.callRowToggle,
+        {...mergeProps(
+          tw(
+            chatToolCallsGroupHeaderClassName,
+            focusOutlineFocusVisibleClassName,
+          ),
         )}>
         {isExpanded ? (
           <>
-            <span {...stylex.props(styles.groupIcon)}>
+            {/* eslint-disable-next-line @astryx/no-style-only-wrapper -- the wrapper is the glyph's box; the rule reads StyleX objects, not class text. */}
+            <span className={chatToolCallsGroupIconClassName}>
               <Icon icon="wrench" size="sm" color="inherit" />
             </span>
-            <span {...stylex.props(styles.groupLabel)}>
+            <span className={chatToolCallsGroupLabelClassName}>
               {customLabel ??
                 t('@astryx.chatToolCalls.groupLabel', {count: calls.length})}
             </span>
@@ -652,7 +427,10 @@ export function ChatToolCalls(props: ChatToolCallsProps) {
         ) : (
           <>
             <span
-              {...stylex.props(styles.statusIcon, STATUS_STYLES[latestStatus])}>
+              className={tw(
+                chatToolCallsStatusIconClassName,
+                STATUS_STYLES[latestStatus],
+              )}>
               {latestStatus === 'running' ? (
                 <Spinner size="sm" shade="subtle" aria-hidden="true" />
               ) : latestStatus === 'pending' ? (
@@ -666,16 +444,18 @@ export function ChatToolCalls(props: ChatToolCallsProps) {
               )}
               <VisuallyHidden>{latestStatusAnnouncement}</VisuallyHidden>
             </span>
-            <span {...stylex.props(styles.callName)}>{latestCall.name}</span>
+            <span className={chatToolCallsNameClassName}>
+              {latestCall.name}
+            </span>
             {/* eslint-disable-next-line @astryx/no-nullish-jsx-guard -- `target` is a string field: an empty string still marks a target */}
             {latestCall.target != null && (
-              <span {...stylex.props(styles.callLabel)}>
+              <span className={chatToolCallsTargetClassName}>
                 {latestCall.target}
               </span>
             )}
           </>
         )}
-        <span {...stylex.props(styles.callCount)}>
+        <span className={chatToolCallsCountClassName}>
           {!isExpanded && (
             <>
               <Icon icon="wrench" size="xsm" color="inherit" />
@@ -683,15 +463,15 @@ export function ChatToolCalls(props: ChatToolCallsProps) {
             </>
           )}
         </span>
-        <span {...stylex.props(styles.chevron)}>
+        {/* eslint-disable-next-line @astryx/no-style-only-wrapper -- the wrapper is the glyph's box; the rule reads StyleX objects, not class text. */}
+        <span className={chatToolCallsChevronClassName}>
           <Icon
             icon="chevronDown"
             size="xsm"
             color="inherit"
-            xstyle={[
-              styles.chevronTransition,
-              isExpanded && styles.chevronExpanded,
-            ]}
+            className={
+              isExpanded ? chatToolCallsChevronOpenClassName : undefined
+            }
           />
         </span>
       </div>
@@ -700,12 +480,9 @@ export function ChatToolCalls(props: ChatToolCallsProps) {
       <div
         id={contentId}
         inert={isExpanded ? undefined : true}
-        {...stylex.props(
-          styles.groupContent,
-          isExpanded && styles.groupContentExpanded,
-        )}>
-        <div {...stylex.props(styles.groupContentInner)}>
-          <div {...stylex.props(styles.list)}>
+        className={chatToolCallsGroupContentClassName(isExpanded)}>
+        <div className={chatToolCallsGroupContentInnerClassName}>
+          <div className={chatToolCallsListClassName}>
             {calls.map(call => (
               <CallRow
                 key={getToolCallKey(call)}

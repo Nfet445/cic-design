@@ -6,16 +6,15 @@ export const docs = {
   name: 'ToggleButtonGroup',
   subComponentOf: 'ToggleButton',
   displayName: 'Toggle Button Group',
-  keywords: [
-    'togglegroup',
-    'buttontogglegroup',
-  ],
-  description: 'Groups toggle buttons for exclusive (single) or multi-select behavior. Uses discriminated union on type for type-safe value/onChange. Under the touch presentation a press tracks like a menu: press a toggle and slide across the others, and the highlight follows. Only the toggle you lift on toggles, and lifting outside the group toggles nothing. With a finger, each toggle\'s target grows toward 44 px, up to half the gap to a neighbour, without the toggles growing.',
+  keywords: ['togglegroup', 'buttontogglegroup'],
+  description:
+    "Groups toggle buttons for exclusive (single) or multi-select behavior. Uses discriminated union on type for type-safe value/onChange. Under the touch presentation a press tracks like a menu: press a toggle and slide across the others, and the highlight follows. Only the toggle you lift on toggles, and lifting outside the group toggles nothing. With a finger, each toggle's target grows toward 44 px, up to half the gap to a neighbour, without the toggles growing.",
   props: [
     {
       name: 'children',
       type: 'ReactNode',
-      description: 'ToggleButton children. Give each member a value; the group owns its pressed state and ignores its isPressed, onPressedChange, and pressedChangeAction props. Member activation calls the group’s onChange without starting a member Action transition.',
+      description:
+        'ToggleButton children. Give each member a value; the group owns its pressed state and ignores its isPressed, onPressedChange, and pressedChangeAction props. Member activation calls the group’s onChange without starting a member Action transition.',
       required: true,
       slotElements: [
         {
@@ -36,13 +35,15 @@ export const docs = {
     {
       name: 'type',
       type: "'single' | 'multiple'",
-      description: 'Selection mode. Single allows one active button, multiple allows many.',
+      description:
+        'Selection mode. Single allows one active button, multiple allows many.',
       default: "'single'",
     },
     {
       name: 'value',
       type: 'string | null | string[]',
-      description: 'Currently selected value(s). Type depends on selection mode.',
+      description:
+        'Currently selected value(s). Type depends on selection mode.',
       required: true,
     },
     {
@@ -60,7 +61,8 @@ export const docs = {
     {
       name: 'size',
       type: "'sm' | 'md' | 'lg'",
-      description: 'Default size for buttons in the group. Individual buttons can override.',
+      description:
+        'Default size for buttons in the group. Individual buttons can override.',
       default: "'md'",
     },
     {
@@ -72,7 +74,8 @@ export const docs = {
     {
       name: 'xstyle',
       type: 'StyleXStyles',
-      description: 'StyleX styles for layout customization (margins, positioning, sizing). Must be a stylex.create() value.',
+      description:
+        'StyleX styles for layout customization (margins, positioning, sizing). Must be a stylex.create() value.',
     },
     {
       name: 'data-testid',
@@ -85,9 +88,11 @@ export const docs = {
 export const docsZh = {
   name: 'ToggleButtonGroup',
   displayName: 'Toggle Button Group',
-  description: '将切换按钮分组，支持单选或多选行为。通过 type 判别联合类型实现类型安全。在触摸呈现下（主要指针为粗指针时），按下时分组像菜单一样跟踪按压：按下一个切换按钮并滑过其他按钮，高亮随之移动。只有松开时所在的按钮会切换，在分组外松开则不切换任何按钮。使用手指时，每个按钮的触控目标向 44 px 扩展，最多到与相邻按钮间距的一半，按钮本身不变大。',
+  description:
+    '将切换按钮分组，支持单选或多选行为。通过 type 判别联合类型实现类型安全。在触摸呈现下（主要指针为粗指针时），按下时分组像菜单一样跟踪按压：按下一个切换按钮并滑过其他按钮，高亮随之移动。只有松开时所在的按钮会切换，在分组外松开则不切换任何按钮。使用手指时，每个按钮的触控目标向 44 px 扩展，最多到与相邻按钮间距的一半，按钮本身不变大。',
   propDescriptions: {
-    children: 'ToggleButton 子元素；每个成员都需要 value。分组控制按下状态，并忽略成员的 isPressed、onPressedChange 和 pressedChangeAction。激活成员只调用分组的 onChange，不启动成员的 Action 过渡。',
+    children:
+      'ToggleButton 子元素；每个成员都需要 value。分组控制按下状态，并忽略成员的 isPressed、onPressedChange 和 pressedChangeAction。激活成员只调用分组的 onChange，不启动成员的 Action 过渡。',
     label: '分组的无障碍标签 (aria-label)。',
     type: '选择模式。single 允许单个激活，multiple 允许多个。',
     value: '当前选中的值。类型取决于选择模式。',
@@ -96,16 +101,18 @@ export const docsZh = {
     size: '分组内按钮的默认尺寸。单个按钮可覆盖。',
     isDisabled: '分组内所有按钮是否禁用。',
     xstyle: 'StyleX 样式，用于布局自定义。必须是 stylex.create() 的值。',
-    "data-testid": '自动化测试的选择器。',
+    'data-testid': '自动化测试的选择器。',
   },
 };
 
 export const docsDense = {
   name: 'ToggleButtonGroup',
   displayName: 'Toggle Button Group',
-  description: 'groups toggle btns for exclusive/multi-select; discriminated union on type; on touch a press slides across toggles like a menu and only the one lifted on toggles; a mouse press stays native; finger targets grow toward 44 px, up to half the gap to a neighbour',
+  description:
+    'groups toggle btns for exclusive/multi-select; discriminated union on type; on touch a press slides across toggles like a menu and only the one lifted on toggles; a mouse press stays native; finger targets grow toward 44 px, up to half the gap to a neighbour',
   propDescriptions: {
-    children: 'ToggleButton children; each member needs a value. Group owns pressed state; member isPressed/onPressedChange/pressedChangeAction are ignored. Selection uses group onChange, with no member Action transition.',
+    children:
+      'ToggleButton children; each member needs a value. Group owns pressed state; member isPressed/onPressedChange/pressedChangeAction are ignored. Selection uses group onChange, with no member Action transition.',
     label: 'a11y label (aria-label)',
     type: 'selection mode: single or multiple',
     value: 'selected value(s); type depends on mode',
@@ -114,6 +121,6 @@ export const docsDense = {
     size: 'default btn size; individual btns override',
     isDisabled: 'all btns disabled',
     xstyle: 'StyleX layout styles; must be stylex.create() value',
-    "data-testid": 'test selector',
+    'data-testid': 'test selector',
   },
 };

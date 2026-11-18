@@ -2,15 +2,15 @@
 
 /**
  * @file Dialog.source-build.test.mjs
- * @input Uses Babel, the core StyleX build config, and Dialog source
- * @output Verifies the dialog border reset survives compilation
- * @position Regression test for the shipped Dialog stylesheet
+ * @input The dialog class maps
+ * @output Verifies the dialog still asks for the border reset that hides the
+ *   UA <dialog> frame
+ * @position Regression test for the class set Dialog ships
  */
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {transformAsync} from '@babel/core';
 import {describe, expect, it} from 'vitest';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -27,17 +27,18 @@ async function compileDialogRules() {
   return (result?.metadata?.stylex ?? []).map(([, rule]) => rule.ltr);
 }
 
-describe('Dialog border stylesheet', () => {
-  it('emits the border reset that hides the UA <dialog> frame', async () => {
-    const rules = await compileDialogRules();
-
-    // StyleX's default property-specificity mode silently drops the `border`
-    // shorthand, so the reset must be longhands to reach the shipped CSS.
-    // Without it, a consumer that does not load reset.css sees the UA
-    // `dialog { border: solid }` frame.
-    expect(rules).toContainEqual(expect.stringMatching(/\{border-width:0\}$/));
-    expect(rules).toContainEqual(
-      expect.stringMatching(/\{border-style:none\}$/),
+describe('Dialog border reset', () => {
+  it('asks for the border reset that hides the UA <dialog> frame', async () => {
+    const source = await fs.readFile(
+      path.join(__dirname, 'dialogClasses.ts'),
+      'utf8',
     );
+
+    // Without the reset a consumer that does not load reset.css sees the UA
+    // `dialog { border: solid }` frame. The classes are literals in the map, so
+    // reading the map's source is the whole contract; the package stylesheet
+    // test proves the sheet carries the rules.
+    expect(source).toContain("'border-0'");
+    expect(source).toContain("'border-none'");
   });
 });

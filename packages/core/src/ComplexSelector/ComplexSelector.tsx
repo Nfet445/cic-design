@@ -27,7 +27,6 @@ import React, {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import {
   useFieldInputStyling,
   type FieldInputBaseProps,
@@ -38,7 +37,11 @@ import {mergeRefs} from '../utils/mergeRefs';
 import {isFocusLost} from '../utils/focusReturn';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
-import {Field, inputWrapperStyles} from '../Field';
+import {Field} from '../Field';
+import {
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
+} from '../Field/fieldClasses';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {Spinner} from '../Spinner';
 import {useTooltip} from '../Tooltip/useTooltip';
@@ -47,24 +50,28 @@ import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
 import {usePopover} from '../Popover/usePopover';
 import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {useInputStatusIcon} from '../hooks/useInputStatusIcon';
-import {
-  colorVars,
-  durationVars,
-  easeVars,
-  fontWeightVars,
-  radiusVars,
-  sizeVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineWithinComboboxClassName} from '../utils/focusOutlineClasses';
 import {isRenderable, mergeProps} from '../utils';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
+import {
+  COMPLEX_SELECTOR_CONTENT_CLASS,
+  COMPLEX_SELECTOR_STATUS_TIP_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_ICON_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+  COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS,
+  complexSelectorHeightClassName,
+  complexSelectorPopoverClassName,
+  complexSelectorTriggerClassName,
+} from './complexSelectorClasses';
+import {tw} from '../utils/tw';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps, type AstryxXStyle} from '../utils/xstyle';
 import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import type {FieldStatusPlacement} from '../Field/fieldStatusPlacement';
 import {
@@ -78,201 +85,6 @@ registerEnglishFallback(english);
 // The popup content's own block-size cap; the viewport cap is the layer
 // runtime's.
 const CONTENT_BLOCK_CAP = '480px';
-
-/**
- * The trigger's own list is open. A press does not scale the box then, so the
- * list anchors to the box at rest.
- */
-const LAYER_OPEN: string = ':has([aria-expanded="true"])';
-
-const styles = stylex.create({
-  // The status glyph or info-tip keeps its size when the trigger text is long.
-  statusTip: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  triggerContainer: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-label-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-label-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-label-leading'],
-    color: colorVars['--color-text-primary'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  trigger: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minWidth: 0,
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-    color: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    outline: 'none',
-    borderRadius: radiusVars['--radius-element'],
-  },
-  triggerText: {
-    flexGrow: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    textAlign: 'start',
-  },
-  placeholder: {
-    color: colorVars['--color-text-secondary'],
-  },
-  triggerGhost: {
-    width: 'auto',
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': 'none',
-        },
-      ':focus-within': 'none',
-    },
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the list opens.
-      [LAYER_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transform: {
-      default: 'scale(1)',
-      // A mouse press; under a coarse pointer the touch press model writes
-      // `data-astryx-press` instead (see interactionOverlay.stylex.ts).
-      [`:active:not(${LAYER_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-      },
-      [`[data-astryx-press="on"]:not(${LAYER_OPEN})`]: 'scale(0.98)',
-    },
-  },
-  // Keep the input-family width contract while reusing ghost's borderless paint
-  // and the neutral resting fill used by secondary buttons.
-  triggerSecondary: {
-    borderWidth: 0,
-    backgroundColor: colorVars['--color-neutral'],
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': 'none',
-        },
-      ':focus-within': 'none',
-    },
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the list opens.
-      [LAYER_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transform: {
-      default: 'scale(1)',
-      [`:active:not(${LAYER_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-      },
-      [`[data-astryx-press="on"]:not(${LAYER_OPEN})`]: 'scale(0.98)',
-    },
-  },
-  triggerGhostDisabled: {
-    backgroundImage: 'none',
-    transform: {
-      default: 'none',
-      ':active': 'none',
-      '[data-astryx-press="on"]': 'none',
-    },
-  },
-  // Only what Icon does not already provide: `sm` gives the 16px box and
-  // `color="secondary"` the color, but the glyph still must not shrink inside
-  // the flex trigger.
-  triggerIcon: {
-    flexShrink: 0,
-  },
-  // Rotation lives on the chevron glyph itself (passed through `xstyle`), not
-  // on the layout wrapper above, so the icon's
-  // `complex-selector-indicator-icon` theme target and the open/closed
-  // transform sit on one element — a theme can restyle the mark and its
-  // rotation through a single selector. The wrapper keeps only layout.
-  triggerIconRotation: {
-    transitionProperty: 'transform',
-    // Under reduced motion the chevron turns at once: an in-place state
-    // change moves nothing (design:reduced-motion DR1–DR3).
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-    transformOrigin: 'center',
-  },
-  triggerIconOpen: {
-    transform: 'rotate(180deg)',
-  },
-  popover: {
-    minWidth: 'anchor-size(width)',
-  },
-  content: {
-    boxSizing: 'border-box',
-    // The content's own cap, under the layer runtime's viewport cap: the
-    // viewport minus its gutters and any bar the app declares through
-    // LayerProvider's `inset` (spec:AST-059 FR2, FR6), so the last rows never
-    // paint under that bar.
-    maxHeight: stylex.firstThatWorks(
-      `min(${CONTENT_BLOCK_CAP}, ${layerViewportInset.maxBlockSize})`,
-      `min(${CONTENT_BLOCK_CAP}, ${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-    overflow: 'auto',
-    padding: spacingVars['--spacing-3'],
-  },
-  sm: {
-    height: sizeVars['--size-element-sm'],
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
-  },
-  disabled: {
-    cursor: 'default',
-  },
-});
 
 export type ComplexSelectorVariant = 'input' | 'secondary' | 'ghost';
 
@@ -525,7 +337,14 @@ export interface ComplexSelectorProps<Value> extends Omit<
    */
   onOpenChange?: (isOpen: boolean) => void;
   /** StyleX styles for the popup content container. */
-  contentXstyle?: StyleXStyles;
+  contentXstyle?: AstryxXStyle;
+  /**
+   * Class name for the popup content container. A width the content computes
+   * for itself reaches the box as `contentStyle` beside this class.
+   */
+  contentClassName?: string;
+  /** Inline styles for the popup content container. */
+  contentStyle?: React.CSSProperties;
   /** Test ID for the trigger button. */
   'data-testid'?: string;
 }
@@ -590,6 +409,8 @@ export function ComplexSelector<Value>({
   renderTrigger,
   onOpenChange,
   contentXstyle,
+  contentClassName,
+  contentStyle,
   containerXstyle,
   containerClassName,
   containerStyle,
@@ -709,7 +530,7 @@ export function ComplexSelector<Value>({
     onHide: handlePopoverHide,
     // The entrance runs on the surface: an anchored layer lays out again on
     // each frame its own style animates.
-    xstyle: layerAnimations[placement],
+    className: layerAnimations[placement],
   });
   popupContentRef.current = popover.contentRef.current;
 
@@ -843,7 +664,14 @@ export function ComplexSelector<Value>({
   });
 
   const content = (
-    <div id={contentId} {...stylex.props(styles.content, contentXstyle)}>
+    <div
+      id={contentId}
+      {...mergeProps(
+        COMPLEX_SELECTOR_CONTENT_CLASS,
+        xstyleProps(contentXstyle),
+        contentClassName,
+        contentStyle,
+      )}>
       {children(optimisticValue, commitValue, close, {
         isOpen,
         isBusy,
@@ -856,8 +684,8 @@ export function ComplexSelector<Value>({
   const popup = popover.render(content, {
     placement,
     alignment,
-    offset: spacingVars['--spacing-1'],
-    xstyle: styles.popover,
+    offset: 'var(--spacing-1)',
+    className: complexSelectorPopoverClassName,
   });
 
   if (renderTrigger != null) {
@@ -938,27 +766,31 @@ export function ComplexSelector<Value>({
             status: status?.type ?? null,
           }),
           stylex.props(
-            inputWrapperStyles.base,
-            styles.triggerContainer,
-            styles[size],
+            variant !== 'input' && interactionOverlayStyles.pressedAlpha,
+          ),
+          tw(
+            complexSelectorTriggerClassName({
+              variant,
+              hasValue: triggerLabel != null,
+              isInert: variant !== 'input' && isDisabled,
+            }),
+            fieldInputWrapperClassName(),
+            isDisabled && fieldInputWrapperDisabledClassName,
+            complexSelectorHeightClassName({size}),
             // The ring belongs to the wrapper (the focusable `<button>` sits
             // inside it), but it must still be a KEYBOARD ring: `:focus-within`
             // matched a mouse click on the trigger and drew the outline for
             // pointer users too. It keys off the trigger alone, so the status
             // info-tip beside it rings itself and the box does not ring too
             // (architecture:interaction-modality INV3).
-            focusOutlineStyles.focusWithinCombobox,
-            variant === 'secondary' && styles.triggerSecondary,
-            variant === 'ghost' && styles.triggerGhost,
-            variant !== 'input' && interactionOverlayStyles.backgroundImage,
-            isDisabled && inputWrapperStyles.disabled,
-            variant !== 'input' && isDisabled && styles.triggerGhostDisabled,
-            isDisabled && styles.disabled,
-            triggerLabel == null && styles.placeholder,
-            controlXstyle,
+            focusOutlineWithinComboboxClassName,
+            controlClassName,
+            // The hover and press paint; its strength and release stay the
+            // StyleX arm above.
+            variant !== 'input' && interactionOverlayBackgroundImageClassName,
+            xstyleProps(controlXstyle).className,
           ),
-          controlClassName,
-          controlStyle,
+          {...xstyleProps(controlXstyle).style, ...controlStyle},
         )}>
         {isRenderable(startIconSlot) && startIconSlot}
         <button
@@ -994,8 +826,10 @@ export function ComplexSelector<Value>({
           {...(isDisabled ? {'aria-disabled': 'true' as const} : null)}
           onClick={isDisabled ? swallowDisabledPress : handleTriggerButtonClick}
           onKeyDown={handleTriggerButtonKeyDown}
-          {...stylex.props(styles.trigger)}>
-          <span {...stylex.props(styles.triggerText)}>{triggerContent}</span>
+          className={COMPLEX_SELECTOR_TRIGGER_CLASS}>
+          <span className={COMPLEX_SELECTOR_TRIGGER_TEXT_CLASS}>
+            {triggerContent}
+          </span>
         </button>
         {isBusy && <Spinner size="sm" aria-hidden="true" />}
         {isRenderable(statusTip) &&
@@ -1004,13 +838,17 @@ export function ComplexSelector<Value>({
             // message bubble (portaled, so outside this span in the DOM but
             // inside it in React), shows the message without opening the
             // popup.
-            <span onClick={stopPropagation} {...stylex.props(styles.statusTip)}>
+            <span
+              onClick={stopPropagation}
+              className={COMPLEX_SELECTOR_STATUS_TIP_CLASS}>
               {statusTip}
             </span>
           ) : (
             // The plain icon is part of the field: a press on it opens the
             // popup, as a press on the trigger does.
-            <span {...stylex.props(styles.statusTip)}>{statusTip}</span>
+            <span className={COMPLEX_SELECTOR_STATUS_TIP_CLASS}>
+              {statusTip}
+            </span>
           ))}
         {/* A status icon or info-tip takes the chevron's place, as in
             Selector. */}
@@ -1023,14 +861,18 @@ export function ComplexSelector<Value>({
             // and the secondary icon color the wrapper used to set, so the glyph
             // IS the trigger's icon element — one node carrying the box, the
             // color, the rotation, and the theme target.
-            xstyle={[
-              styles.triggerIcon,
-              styles.triggerIconRotation,
-              isOpen && styles.triggerIconOpen,
-            ]}
-            {...themeProps('complex-selector-indicator-icon', {
-              state: isOpen ? 'expanded' : 'collapsed',
-            })}
+            // The theme target and the rotation classes must both land on the
+            // glyph: a later `className` prop would drop the spread's own.
+            {...mergeProps(
+              themeProps('complex-selector-indicator-icon', {
+                state: isOpen ? 'expanded' : 'collapsed',
+              }),
+              tw(
+                COMPLEX_SELECTOR_TRIGGER_ICON_CLASS,
+                COMPLEX_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+                isOpen && COMPLEX_SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+              ),
+            )}
           />
         )}
       </div>

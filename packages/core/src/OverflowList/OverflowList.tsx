@@ -4,7 +4,7 @@
 
 /**
  * @file OverflowList.tsx
- * @input Uses React, StyleX, useOverflow hook
+ * @input Uses React, the class map, useOverflow hook
  * @output Exports OverflowList component and OverflowListProps type
  * @position Core implementation; consumed by index.ts
  *
@@ -19,6 +19,7 @@
  */
 
 import {
+  type CSSProperties,
   type ReactNode,
   type ReactElement,
   Children,
@@ -28,67 +29,38 @@ import {
 import type {BaseProps} from '../BaseProps';
 import {isRenderable} from '../utils/isRenderable';
 import type {SpacingStep} from '../utils/types';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import {useOverflowInternal} from '../hooks/useOverflow';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
-import {spacingVars} from '../theme/tokens.stylex';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  OVERFLOW_LIST_MAX_HEIGHT_VAR,
+  overflowListContainerClassName,
+  overflowListFillParentClassName,
+  overflowListGapClassName,
+  overflowListMaxHeightClassName,
+  overflowListMeasureContainerClassName,
+  overflowListMeasureIndicatorClassName,
+} from './overflowListClasses';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
-const styles = stylex.create({
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
-  },
-  containerMultiRow: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignContent: 'flex-start',
-    overflow: 'hidden',
-    whiteSpace: 'normal',
-    minWidth: 0,
-  },
-  fillParent: {
-    width: '100%',
-  },
-  measureContainer: {
-    position: 'absolute',
-    visibility: 'hidden',
-    height: 0,
-    overflow: 'hidden',
-    display: 'flex',
-    alignItems: 'center',
-    whiteSpace: 'nowrap',
-    pointerEvents: 'none',
-  },
-  measureIndicator: {
-    display: 'inline-flex',
-  },
-});
 
-const multiRowHeight = stylex.create({
-  height: (maxRows: number, rowHeight: number, gapPx: number) => ({
-    maxHeight: `calc(${rowHeight}px * ${maxRows} + ${gapPx}px * ${maxRows - 1})`,
-  }),
-});
-
-const gapStyles = stylex.create({
-  0: {gap: spacingVars['--spacing-0']},
-  0.5: {gap: spacingVars['--spacing-0-5']},
-  1: {gap: spacingVars['--spacing-1']},
-  1.5: {gap: spacingVars['--spacing-1-5']},
-  2: {gap: spacingVars['--spacing-2']},
-  3: {gap: spacingVars['--spacing-3']},
-  4: {gap: spacingVars['--spacing-4']},
-  5: {gap: spacingVars['--spacing-5']},
-  6: {gap: spacingVars['--spacing-6']},
-  8: {gap: spacingVars['--spacing-8']},
-  10: {gap: spacingVars['--spacing-10']},
-});
+/**
+ * The rows' block cap travels in a private variable the class reads: an inline
+ * `max-height` would beat every rule a theme or a consumer writes.
+ */
+function rowsMaxHeightStyle(
+  maxRows: number,
+  rowHeight: number,
+  gapPx: number,
+): CSSProperties {
+  const style: Record<`--${string}`, string> = {
+    [OVERFLOW_LIST_MAX_HEIGHT_VAR]: `calc(${rowHeight}px * ${maxRows} + ${gapPx}px * ${maxRows - 1})`,
+  };
+  return style;
+}
 
 /**
  * Maps spacing token steps to pixel values for overflow calculations.
@@ -385,10 +357,13 @@ export function OverflowList({
         ref={measureRef}
         aria-hidden="true"
         inert
-        {...stylex.props(styles.measureContainer, gapStyles[gap])}>
+        className={tw(
+          overflowListMeasureContainerClassName,
+          overflowListGapClassName[gap],
+        )}>
         {childArray}
         {isRenderable(measureIndicator) && (
-          <div {...stylex.props(styles.measureIndicator)}>
+          <div className={overflowListMeasureIndicatorClassName}>
             {measureIndicator}
           </div>
         )}
@@ -399,18 +374,22 @@ export function OverflowList({
         ref={useMergedRefs(ref, containerRef)}
         {...mergeProps(
           themeProps('overflow-list'),
-          stylex.props(
-            isMultiRow ? styles.containerMultiRow : styles.container,
-            gapStyles[gap],
-            isMultiRow &&
-              rowHeight > 0 &&
-              maxRows != null &&
-              multiRowHeight.height(maxRows, rowHeight, gapPx),
-            observeParent && hasOverflow && styles.fillParent,
-            xstyle,
-          ),
-          className,
-          style,
+          {
+            className: tw(
+              overflowListContainerClassName(isMultiRow),
+              overflowListGapClassName[gap],
+              observeParent && hasOverflow && overflowListFillParentClassName,
+              isMultiRow &&
+                rowHeight > 0 &&
+                maxRows != null &&
+                overflowListMaxHeightClassName,
+              className,
+              xstyleProps(xstyle).className,
+            ),
+          },
+          isMultiRow && rowHeight > 0 && maxRows != null
+            ? {...rowsMaxHeightStyle(maxRows, rowHeight, gapPx), ...style}
+            : style,
         )}
         {...props}>
         {collapseFrom === 'start' &&

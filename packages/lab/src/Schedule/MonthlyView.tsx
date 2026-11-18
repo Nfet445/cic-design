@@ -14,10 +14,10 @@
  */
 
 import {useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {spacingVarNames} from '@astryxdesign/core/theme';
 import {
-  focusOutlineStyles,
+  focusOutlineFocusVisibleClassName,
+  mergeProps,
   plainDateAddDays,
   plainDateAddMonths,
   plainDateIsAfter,
@@ -43,26 +43,53 @@ import {
   type MonthChipPlacement,
 } from './monthLayout';
 import {
-  formatDayNumber,
-  formatEventAccessibilityLabel,
-  formatEventTimeRange,
-  formatFullDate,
-  formatWeekday,
-  formatWeekRange,
-  formatWeekTitle,
-  getEventCategory,
-  isEventInPast,
   ListEventRow,
   MonthEventPill,
   ScheduleFrame,
   SchedulePopoverBody,
   ScheduleRangeMonthTitle,
-  styles,
+  formatDayNumber,
+  formatEventAccessibilityLabel,
+  formatEventTimeRange,
+  formatFullDate,
+  formatWeekRange,
+  formatWeekTitle,
+  formatWeekday,
+  getEventCategory,
+  isEventInPast,
+  monthChipVars,
+  monthMoreButtonPositionVars,
   useScheduleCalendar,
 } from './shared';
 import {useCurrentTime} from './useCurrentTime';
 import {useScheduleViewPopover} from './useScheduleViewPopover';
 import {scheduleRangeToZonedDateTimeRange} from './zonedDateTime';
+import {tw} from '../tw';
+import {
+  scheduleCurrentDayPillClassName,
+  scheduleEventButtonResetClassName,
+  scheduleMonthCellClassName,
+  scheduleMonthCellGridClassName,
+  scheduleMonthCellLastColumnClassName,
+  scheduleMonthCellLastRowClassName,
+  scheduleMonthCellOutsideClassName,
+  scheduleMonthChipClassName,
+  scheduleMonthChipFocusClassName,
+  scheduleMonthChipInLastColumnClassName,
+  scheduleMonthDayEventButtonClassName,
+  scheduleMonthDayEventListClassName,
+  scheduleMonthDayEventsClassName,
+  scheduleMonthDayNumberClassName,
+  scheduleMonthGridClassName,
+  scheduleMonthGridRowClassName,
+  scheduleMonthGridSurfaceClassName,
+  scheduleMonthMoreButtonClassName,
+  scheduleMonthMoreButtonPositionClassName,
+  scheduleVisuallyHiddenClassName,
+  scheduleWeekHeaderClassName,
+  scheduleWeekdayHeadingClassName,
+  scheduleWeekdayLabelClassName,
+} from './scheduleClasses';
 import type {Locale} from '@astryxdesign/core/i18n';
 import type {CalendarSystem} from '@astryxdesign/core/internal/calendar-system';
 import type {
@@ -275,12 +302,12 @@ function ScheduleMonthlyView({
         aria-label={monthTitle}
         tabIndex={0}
         {...monthPopover.containerProps}
-        {...stylex.props(styles.monthGrid)}>
-        <div role="row" {...stylex.props(styles.weekHeader)}>
+        className={tw(scheduleMonthGridClassName)}>
+        <div role="row" className={tw(scheduleWeekHeaderClassName)}>
           <div
             role="columnheader"
             aria-colindex={1}
-            {...stylex.props(styles.visuallyHidden)}>
+            className={tw(scheduleVisuallyHiddenClassName)}>
             Week
           </div>
           {days.slice(0, 7).map((day, index) => (
@@ -289,28 +316,28 @@ function ScheduleMonthlyView({
               role="columnheader"
               aria-label={formatWeekday(day, 'long', locale, calendar)}
               aria-colindex={index + 2}
-              {...stylex.props(styles.weekdayLabel)}>
+              className={tw(scheduleWeekdayLabelClassName)}>
               <Heading
                 level={headingLevel}
                 color="secondary"
                 display="block"
-                xstyle={styles.weekdayHeading}>
+                className={scheduleWeekdayHeadingClassName}>
                 {formatWeekday(day, 'short', locale, calendar)}
               </Heading>
             </div>
           ))}
         </div>
-        <div {...stylex.props(styles.monthGridSurface)}>
-          <div {...stylex.props(styles.monthCellGrid)}>
+        <div className={tw(scheduleMonthGridSurfaceClassName)}>
+          <div className={tw(scheduleMonthCellGridClassName)}>
             {weeks.map((week, weekIndex) => (
               <div
                 key={plainDateToISO(week[0])}
                 role="row"
-                {...stylex.props(styles.monthGridRow)}>
+                className={tw(scheduleMonthGridRowClassName)}>
                 <div
                   role="rowheader"
                   aria-colindex={1}
-                  {...stylex.props(styles.visuallyHidden)}>
+                  className={tw(scheduleVisuallyHiddenClassName)}>
                   {formatWeekRange(
                     week[0],
                     week[week.length - 1],
@@ -339,19 +366,19 @@ function ScheduleMonthlyView({
                           ? 'date'
                           : undefined
                       }
-                      {...stylex.props(
-                        styles.monthCell,
-                        index % 7 === 6 && styles.monthCellLastColumn,
-                        index >= days.length - 7 && styles.monthCellLastRow,
-                        isOutsideMonth && styles.monthCellOutside,
-                        focusOutlineStyles.focusVisible,
-                        styles.monthCellFocus,
+                      className={tw(
+                        focusOutlineFocusVisibleClassName,
+                        scheduleMonthCellClassName,
+                        index % 7 === 6 && scheduleMonthCellLastColumnClassName,
+                        index >= days.length - 7 &&
+                          scheduleMonthCellLastRowClassName,
+                        isOutsideMonth && scheduleMonthCellOutsideClassName,
                       )}>
                       <div
-                        {...stylex.props(
-                          styles.monthDayNumber,
+                        className={tw(
+                          scheduleMonthDayNumberClassName,
                           plainDateIsEqual(day, highlightedDate) &&
-                            styles.currentDayPill,
+                            scheduleCurrentDayPillClassName,
                         )}>
                         <Text
                           type="supporting"
@@ -369,7 +396,7 @@ function ScheduleMonthlyView({
                           return hasPopover && startDay != null ? (
                             <span
                               key={key}
-                              {...stylex.props(styles.visuallyHidden)}>
+                              className={tw(scheduleVisuallyHiddenClassName)}>
                               {formatMonthEventName(
                                 chip.event,
                                 `since ${formatFullDate(startDay, locale, calendar)}`,
@@ -401,7 +428,7 @@ function ScheduleMonthlyView({
                           accessible events, so the hidden list would repeat
                           them (component:Schedule FR19). */}
                       {!hasPopover && dayEvents.length > 0 && (
-                        <ul {...stylex.props(styles.visuallyHidden)}>
+                        <ul className={tw(scheduleVisuallyHiddenClassName)}>
                           {dayEvents.map(event => (
                             <li key={event.id}>
                               {formatEventAccessibilityLabel(
@@ -437,13 +464,18 @@ function ScheduleMonthlyView({
                               );
                             },
                           )}
-                          {...stylex.props(
-                            styles.eventButtonReset,
-                            styles.monthMoreButton,
-                            styles.monthMoreButtonPosition(
-                              MONTH_VISIBLE_LEVELS - 1,
+                          {...mergeProps(
+                            tw(
+                              focusOutlineFocusVisibleClassName,
+                              scheduleEventButtonResetClassName,
+                              scheduleMonthMoreButtonClassName,
+                              scheduleMonthMoreButtonPositionClassName,
                             ),
-                            focusOutlineStyles.focusVisible,
+                            {
+                              style: monthMoreButtonPositionVars(
+                                MONTH_VISIBLE_LEVELS - 1,
+                              ),
+                            },
                           )}>
                           {/* Isolated, so the count reads "+3 more" in either
                               direction. */}
@@ -461,7 +493,7 @@ function ScheduleMonthlyView({
       {monthPopover.popover.render(openContent, {
         placement: 'below',
         alignment: 'start',
-        offset: spacingVars['--spacing-1'],
+        offset: spacingVarNames['--spacing-1'],
       })}
     </ScheduleFrame>
   );
@@ -489,10 +521,14 @@ function MonthChip({
 }) {
   const {categories, timezoneID, locale} = useScheduleContext();
   const calendar = useScheduleCalendar();
-  const placement = [
-    styles.monthChip(chip.columnEnd - chip.columnStart + 1, chip.level),
-    isLastColumn && styles.monthChipInLastColumn,
-  ];
+  const chipClassName = tw(
+    scheduleMonthChipClassName,
+    isLastColumn && scheduleMonthChipInLastColumnClassName,
+  );
+  const chipVars = monthChipVars(
+    chip.columnEnd - chip.columnStart + 1,
+    chip.level,
+  );
   const pill = (
     <MonthEventPill
       event={chip.event}
@@ -502,7 +538,11 @@ function MonthChip({
   );
   if (renderPopover == null) {
     return (
-      <div aria-hidden data-schedule-month-chip="" {...stylex.props(placement)}>
+      <div
+        aria-hidden
+        data-schedule-month-chip=""
+        className={chipClassName}
+        style={chipVars}>
         {pill}
       </div>
     );
@@ -516,8 +556,11 @@ function MonthChip({
   );
   if (renderPopover(chip.event) == null) {
     return (
-      <div data-schedule-month-chip="" {...stylex.props(placement)}>
-        <span {...stylex.props(styles.visuallyHidden)}>{name}</span>
+      <div
+        data-schedule-month-chip=""
+        className={chipClassName}
+        style={chipVars}>
+        <span className={tw(scheduleVisuallyHiddenClassName)}>{name}</span>
         <span aria-hidden>{pill}</span>
       </div>
     );
@@ -528,11 +571,11 @@ function MonthChip({
       aria-label={name}
       data-schedule-month-chip=""
       {...popover.getTriggerProps(popoverKey)}
-      {...stylex.props(
-        styles.eventButtonReset,
-        placement,
-        styles.monthChipFocus,
-        focusOutlineStyles.focusVisible,
+      className={tw(
+        focusOutlineFocusVisibleClassName,
+        scheduleEventButtonResetClassName,
+        chipClassName,
+        scheduleMonthChipFocusClassName,
       )}>
       {pill}
     </button>
@@ -560,11 +603,11 @@ function MonthDayEvents({
   const currentTime = useCurrentTime();
   const fullDate = formatFullDate(day, locale, calendar);
   return (
-    <div {...stylex.props(styles.monthDayEvents)}>
+    <div className={tw(scheduleMonthDayEventsClassName)}>
       <Text type="supporting" weight="bold" color="secondary">
         {fullDate}
       </Text>
-      <ul {...stylex.props(styles.monthDayEventList)}>
+      <ul className={tw(scheduleMonthDayEventListClassName)}>
         {events.map(event => {
           const row = (
             <ListEventRow
@@ -588,10 +631,10 @@ function MonthDayEvents({
                     locale,
                   )}
                   onClick={() => onOpenEvent(event)}
-                  {...stylex.props(
-                    styles.eventButtonReset,
-                    styles.monthDayEventButton,
-                    focusOutlineStyles.focusVisible,
+                  className={tw(
+                    focusOutlineFocusVisibleClassName,
+                    scheduleEventButtonResetClassName,
+                    scheduleMonthDayEventButtonClassName,
                   )}>
                   {row}
                 </button>

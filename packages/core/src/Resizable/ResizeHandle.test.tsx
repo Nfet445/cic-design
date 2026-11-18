@@ -21,6 +21,8 @@ import {render, screen, fireEvent, act, waitFor} from '@testing-library/react';
 import {hydrateRoot} from 'react-dom/client';
 import {renderToString} from 'react-dom/server';
 import {ResizeHandle} from './ResizeHandle';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {rtlCenterInlineClassName} from '../utils/rtlClasses';
 import type {ResizeHandleProps} from './ResizeHandle';
 import {createResizable} from './createResizable';
 import {useResizable} from './useResizable';
@@ -1195,19 +1197,16 @@ describe('ResizeHandle', () => {
   // --- Hit-area geometry (the grab zone stays on the Handle) ---
 
   // `pillPlacement` places only the pill: the grab zone sits centred on the
-  // Handle, through the direction-symmetric rtlStyles.centerInline helper on
-  // the inline axis (component:Resizable FR1). The browser proof
+  // Handle, through the direction-symmetric `rtlCenterInlineClassName` on the
+  // inline axis (component:Resizable FR1). The browser proof
   // (grabZone.interaction.browser.spec.ts) measures the geometry.
   it.each(['auto', 'start', 'center', 'end'] as const)(
     'centres the grab zone on the Handle with pillPlacement="%s"',
     pillPlacement => {
       render(<Harness handleProps={{pillPlacement}} />);
       const hitArea = getSeparator().firstElementChild as HTMLElement;
-      expect(hitArea.className).toContain('centerInline');
-      // centerInline's own centring, and no offset toward the pill.
-      expect(hitArea.getAttribute('style') ?? '').toContain(
-        'translate(-50%, 0px)',
-      );
+      // The centring, and no offset toward the pill.
+      expectClassSet(hitArea, {includes: rtlCenterInlineClassName.split(' ')});
       expect(hitArea.getAttribute('style') ?? '').not.toContain('6.5px');
     },
   );
@@ -1222,7 +1221,8 @@ describe('ResizeHandle', () => {
         />,
       );
       const hitArea = getSeparator().firstElementChild as HTMLElement;
-      expect(hitArea.className).toContain('hitAreaCenteredY');
+      // The block-axis centring is a class pair, and no offset toward the pill.
+      expectClassSet(hitArea, {includes: ['top-1/2', '-translate-y-1/2']});
       expect(hitArea.getAttribute('style') ?? '').not.toContain('translate');
     },
   );

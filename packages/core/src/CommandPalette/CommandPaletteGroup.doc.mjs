@@ -7,7 +7,8 @@ export const docs = {
   subComponentOf: 'CommandPalette',
   displayName: 'Command Palette Group',
   isHiddenFromOverview: true,
-  description: 'Visual grouping with a heading label. Place inside CommandPaletteList.',
+  description:
+    'Visual grouping with a heading label. Place inside CommandPaletteList.',
   props: [
     {
       name: 'heading',
@@ -24,16 +25,29 @@ export const docs = {
     {
       name: 'xstyle',
       type: 'StyleXStyles',
-      description: 'StyleX styles for layout customization. Must be a stylex.create() value.',
+      description:
+        'StyleX styles for layout customization. Must be a stylex.create() value.',
     },
   ],
   playground: {
     defaults: {
       heading: 'Navigation',
       children: [
-        {__element: 'CommandPaletteItem', props: {value: 'home', onSelect: undefined}, children: 'Go Home'},
-        {__element: 'CommandPaletteItem', props: {value: 'settings', onSelect: undefined}, children: 'Open Settings'},
-        {__element: 'CommandPaletteItem', props: {value: 'profile', onSelect: undefined}, children: 'View Profile'},
+        {
+          __element: 'CommandPaletteItem',
+          props: {value: 'home', onSelect: undefined},
+          children: 'Go Home',
+        },
+        {
+          __element: 'CommandPaletteItem',
+          props: {value: 'settings', onSelect: undefined},
+          children: 'Open Settings',
+        },
+        {
+          __element: 'CommandPaletteItem',
+          props: {value: 'profile', onSelect: undefined},
+          children: 'View Profile',
+        },
       ],
     },
   },

@@ -21,6 +21,7 @@ import {IconButton} from '../IconButton';
 import {DropdownMenu} from '../DropdownMenu';
 import {Tooltip} from '../Tooltip';
 import {HoverCard} from '../HoverCard';
+import {classesOf} from '../__tests__/classNameAssertions';
 
 describe('ButtonGroup', () => {
   it('renders a group with aria-label', () => {
@@ -265,9 +266,6 @@ describe('ButtonGroup', () => {
 
     type Corner = keyof typeof CORNER_TOKEN;
     type Orientation = keyof typeof TRAILING_CORNERS;
-
-    const classesOf = (el: Element): string[] =>
-      el.className.split(/\s+/).filter(Boolean);
 
     /** The classes that round `corners` on the group's trailing edge. */
     const trailingRoundingClasses = (
@@ -544,9 +542,7 @@ describe('ButtonGroup', () => {
             <Button label="Two" />
           </ButtonGroup>,
         );
-        const classes = [
-          ...container.querySelector('[role="group"]')!.classList,
-        ];
+        const classes = classesOf(container.querySelector('[role="group"]')!);
         unmount();
         return classes;
       };
@@ -584,8 +580,8 @@ describe('ButtonGroup', () => {
           <Button label="One" />
         </ButtonGroup>,
       );
-      expect(def.querySelector('[role="group"]')!.className).toBe(
-        none.querySelector('[role="group"]')!.className,
+      expect(classesOf(def.querySelector('[role="group"]')!)).toEqual(
+        classesOf(none.querySelector('[role="group"]')!),
       );
     });
 

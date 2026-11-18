@@ -4,7 +4,8 @@
 
 /**
  * @file ChatDictationButton.tsx
- * @input Uses React, StyleX, Button, Icon, useChatDictation return
+ * @input Uses React, Tailwind classes from chatClasses, Button, Icon, the
+ *   useChatDictation return
  * @output Exports ChatDictationButton for voice input in chat composer
  * @position UI component — renders in sendActions slot of ChatComposer
  *
@@ -21,11 +22,11 @@
 
 import React from 'react';
 import type {UseSpeechRecognitionReturn} from './useSpeechRecognition';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars, radiusVars} from '../theme/tokens.stylex';
 import {Button} from '../Button';
 import {Icon} from '../Icon';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
+import {tw} from '../utils/tw';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {
@@ -33,6 +34,12 @@ import {
   useComponentTranslator,
 } from '../i18n/useComponentTranslator';
 import english from '../i18n/generated-english/Chat/ChatDictationButton.generated';
+import {
+  chatDictationBarClassName,
+  chatDictationBarsClassName,
+  chatDictationBarVars,
+  chatDictationWrapperClassName,
+} from './chatClasses';
 
 registerEnglishFallback(english);
 
@@ -53,35 +60,17 @@ export interface ChatDictationButtonProps extends BaseProps<HTMLSpanElement> {
 }
 
 // =============================================================================
-// Styles
+// Types
 // =============================================================================
 
-const styles = stylex.create({
-  wrapper: {
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  barsContainer: {
-    position: 'absolute',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    pointerEvents: 'none',
-    zIndex: 1,
-  },
-  bar: {
-    borderRadius: radiusVars['--radius-full'],
-    transformOrigin: 'center',
-    transitionProperty: 'transform, background-color',
-    transitionDuration: {
-      default: '0.06s',
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: 'ease-out',
-  },
-});
+/** The inline custom properties the bar classes read. */
+type ChatDictationBarStyle = React.CSSProperties &
+  Partial<
+    Record<
+      (typeof chatDictationBarVars)[keyof typeof chatDictationBarVars],
+      string
+    >
+  >;
 
 // =============================================================================
 // Constants
@@ -140,41 +129,42 @@ export function ChatDictationButton({
   const clippingStrength = Math.min((rawVolume - 0.2) / 0.1, 1) * 100;
 
   const barColor = isClipping
-    ? `color-mix(in srgb, ${colorVars['--color-accent']}, ${colorVars['--color-error']} ${clippingStrength}%)`
-    : colorVars['--color-accent'];
+    ? `color-mix(in srgb, var(--color-accent), var(--color-error) ${clippingStrength}%)`
+    : 'var(--color-accent)';
 
-  const {barWidth, barGap, barMaxHeight} = SIZE_CONFIG[size];
+  const {barGap, barMaxHeight} = SIZE_CONFIG[size];
+  const barsStyle: ChatDictationBarStyle = {
+    [chatDictationBarVars.gap]: `${barGap}px`,
+    [chatDictationBarVars.height]: `${barMaxHeight}px`,
+  };
 
   return (
     <span
       ref={ref}
       {...mergeProps(
         themeProps('chat-dictation-button'),
-        stylex.props(styles.wrapper, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(chatDictationWrapperClassName, className),
         style,
       )}
       {...rest}>
       {isListening && (
         <span
           aria-hidden
-          {...mergeProps(stylex.props(styles.barsContainer), {
-            style: {gap: barGap, height: barMaxHeight},
-          })}>
+          className={chatDictationBarsClassName}
+          style={barsStyle}>
           {boostedBands.slice(0, BAR_COUNT).map((level, i) => {
             const scale = BAR_MIN_SCALE + level * (1 - BAR_MIN_SCALE);
+            const barStyle: ChatDictationBarStyle = {
+              [chatDictationBarVars.color]: barColor,
+              [chatDictationBarVars.scale]: `${scale}`,
+            };
             return (
               <span
                 // eslint-disable-next-line @eslint-react/no-array-index-key -- equalizer bars are fixed positional slots
                 key={i}
-                {...mergeProps(stylex.props(styles.bar), {
-                  style: {
-                    width: barWidth,
-                    height: '100%',
-                    backgroundColor: barColor,
-                    transform: `scaleY(${scale})`,
-                  },
-                })}
+                className={chatDictationBarClassName(size)}
+                style={barStyle}
               />
             );
           })}

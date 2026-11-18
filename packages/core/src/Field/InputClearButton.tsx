@@ -17,13 +17,15 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
+import type {AstryxXStyle} from '../utils/xstyle';
 import {Button} from '../Button/Button';
 import {BUTTON_HIT_AREA, ButtonHitAreaContext} from '../Button/buttonHitArea';
 import {clampedHitInsets, type HitInsets, type HitRect} from '../utils/hitArea';
 import type {TouchHitAreaOptions} from '../utils/touchHitArea';
 import {Icon} from '../Icon/Icon';
 import {pickDataAttributes, themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {inputClearButtonClassName} from './inputClearButtonClasses';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -83,13 +85,6 @@ const CLEAR_BUTTON_HIT_AREA: TouchHitAreaOptions = {
   growth: clearButtonGrowth,
 };
 
-const styles = stylex.create({
-  button: {
-    height: '20px',
-    flexShrink: 0,
-  },
-});
-
 export interface InputClearButtonProps {
   /**
    * Contextual accessible name for the button, such as "Clear Search". The
@@ -97,7 +92,7 @@ export interface InputClearButtonProps {
    */
   label: string;
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  xstyle?: stylex.StyleXStyles;
+  xstyle?: AstryxXStyle;
   /** Extra class names merged onto the clear glyph beside its canonical target. */
   iconClassName?: string;
 }
@@ -136,7 +131,7 @@ function renderInputClearButton({
         // contextual label stays the accessible name, which still contains
         // the visible word (WCAG 2.5.3, label in name).
         tooltip={tooltip}
-        className={buttonTargetClassName}
+        className={tw(buttonTargetClassName, inputClearButtonClassName)}
         icon={
           <Icon
             icon="close"
@@ -161,7 +156,7 @@ function renderInputClearButton({
         onClick={onClick}
         onClickCapture={onClickCapture}
         isIconOnly
-        xstyle={[styles.button, xstyle]}
+        xstyle={xstyle}
       />
     </ButtonHitAreaContext>
   );

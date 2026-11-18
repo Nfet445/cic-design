@@ -3,7 +3,6 @@
 'use client';
 
 import {useRef, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {BaseTypeahead, createStaticSource} from '@astryxdesign/core/Typeahead';
 import type {
   BaseTypeaheadHandle,
@@ -15,13 +14,6 @@ import {Icon} from '@astryxdesign/core/Icon';
 import {HStack, VStack} from '@astryxdesign/core/Layout';
 import {RadioList, RadioListItem} from '@astryxdesign/core/RadioList';
 import {Text} from '@astryxdesign/core/Text';
-import {
-  borderVars,
-  colorVars,
-  focusVars,
-  radiusVars,
-  spacingVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import {FunnelIcon} from '@heroicons/react/24/outline';
 
 type Field = SearchableItem & {values: string[]};
@@ -36,41 +28,17 @@ const source = createStaticSource<Field>(fields);
 
 type Filter = {field: Field; value: string};
 
-const styles = stylex.create({
-  root: {
-    width: '100%',
-    maxWidth: 420,
-  },
+const styles = {
+  root: 'w-full max-w-[420px]',
   // The ring follows the field's own input; the menu's dialog renders inside
-  // this box and holds inputs of its own.
-  field: {
-    backgroundColor: colorVars['--color-background-surface'],
-    borderColor: colorVars['--color-border'],
-    borderRadius: radiusVars['--radius-element'],
-    borderStyle: 'solid',
-    borderWidth: borderVars['--border-width'],
-    paddingBlock: spacingVars['--spacing-1-5'],
-    paddingInline: spacingVars['--spacing-2'],
-    outlineColor: {
-      default: 'transparent',
-      ':has(> input:focus-visible)': focusVars['--focus-outline-color'],
-    },
-    outlineOffset: focusVars['--focus-outline-offset'],
-    outlineStyle: 'solid',
-    outlineWidth: {
-      default: '0',
-      ':has(> input:focus-visible)': focusVars['--focus-outline-width'],
-    },
-  },
-  menuNote: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-3'],
-  },
-  editor: {
-    padding: spacingVars['--spacing-3'],
-    minWidth: 260,
-  },
-});
+  // this box and holds inputs of its own, so the child combinator keeps them
+  // from lighting it.
+  field:
+    'bg-[var(--color-background-surface)] border-solid [border-width:var(--border-width)] border-[var(--color-border)] rounded-[var(--radius-element)] [padding-block:var(--spacing-5)] [padding-inline:var(--spacing-2)] outline-solid [outline-color:transparent] [outline-offset:var(--focus-outline-offset)] [outline-width:0] [&:has(>input:focus-visible)]:[outline-color:var(--focus-outline-color)] [&:has(>input:focus-visible)]:[outline-width:var(--focus-outline-width)]',
+  menuNote:
+    '[padding-block:var(--spacing-1)] [padding-inline:var(--spacing-3)]',
+  editor: 'p-3 min-w-[260px]',
+} as const;
 
 /**
  * A filter field built on BaseTypeahead's `menu`. Typing lists the fields
@@ -100,14 +68,14 @@ export default function BaseTypeaheadMenu() {
               <Text
                 type="supporting"
                 color="secondary"
-                xstyle={styles.menuNote}>
+                className={styles.menuNote}>
                 {query === '' ? 'Filter by' : `Fields matching “${query}”`}
               </Text>
               {listbox}
               <Text
                 type="supporting"
                 color="secondary"
-                xstyle={styles.menuNote}>
+                className={styles.menuNote}>
                 Arrow keys move, Enter picks
               </Text>
             </>
@@ -117,7 +85,7 @@ export default function BaseTypeaheadMenu() {
           role: 'dialog',
           label: `${editing.field.label} filter`,
           render: ({close}) => (
-            <VStack gap={3} xstyle={styles.editor}>
+            <VStack gap={3} className={styles.editor}>
               <RadioList
                 label={editing.field.label}
                 value={draft}
@@ -146,8 +114,8 @@ export default function BaseTypeaheadMenu() {
         };
 
   return (
-    <VStack gap={3} xstyle={styles.root}>
-      <HStack ref={fieldRef} gap={2} vAlign="center" xstyle={styles.field}>
+    <VStack gap={3} className={styles.root}>
+      <HStack ref={fieldRef} gap={2} vAlign="center" className={styles.field}>
         <Icon icon={FunnelIcon} size="sm" color="secondary" />
         <BaseTypeahead<Field>
           aria-label="Add a filter"

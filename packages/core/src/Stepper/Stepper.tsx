@@ -24,14 +24,20 @@
  */
 
 import {useCallback, useMemo, useRef, useState, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 
-import {spacingVars} from '../theme/tokens.stylex';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
+import {tw} from '../utils/tw';
+import {
+  stepperFrameClassName,
+  stepperRootClassName,
+  stepperSummaryBodyClassName,
+  stepperSummaryClassName,
+} from './stepperClasses';
 import {observeResize} from '../utils/sharedResizeObserver';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {Icon} from '../Icon';
 import {IconButton} from '../IconButton';
 import {
@@ -141,72 +147,6 @@ export interface StepperProps extends BaseProps<HTMLOListElement> {
    */
   horizontalOptions?: StepperHorizontalOptions;
 }
-
-const styles = stylex.create({
-  root: {
-    // Horizontal consumer styles live on the frame. Explicit inheritance keeps
-    // the public variable discoverable on this theme target without masking a
-    // frame value; the connector use site supplies the 0px default.
-    '--step-connector-gap': 'inherit',
-    display: 'flex',
-    width: '100%',
-    listStyleType: 'none',
-    margin: 0,
-    padding: 0,
-  },
-  // The gap between steps is the break between connector segments, so it is
-  // sized to match the connector's own thickness (BAR_WIDTH, the same token).
-  // That keeps the track reading as one dashed line rather than as bars with
-  // an arbitrary space between them, and holds at any theme scale.
-  horizontal: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacingVars['--spacing-1'],
-  },
-  vertical: {
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-1'],
-  },
-  // On-track: steps must abut so their connector segments form one continuous
-  // line, so the inter-step gap collapses to zero.
-  horizontalOnTrack: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 0,
-  },
-  verticalOnTrack: {
-    flexDirection: 'column',
-    gap: 0,
-  },
-  // The horizontal component's public layout box: consumer styling sizes and
-  // places the track and compact summary together. The list fills this frame,
-  // so observing its width still measures the complete component constraint.
-  frame: {
-    '--step-connector-gap': '0px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 0,
-    width: '100%',
-  },
-  // Laid out as a row so the controls can bracket the step: they belong at the
-  // edges the flow moves between, and the name reads between them.
-  summary: {
-    alignItems: 'center',
-    display: 'flex',
-    gap: spacingVars['--spacing-2'],
-    justifyContent: 'space-between',
-    minWidth: 0,
-  },
-  // Centred, so the name sits under the middle of the track rather than
-  // drifting toward whichever control happens to be enabled.
-  summaryBody: {
-    display: 'flex',
-    flexDirection: 'column',
-    flexGrow: 1,
-    minWidth: 0,
-    textAlign: 'center',
-  },
-});
 
 /**
  * A stepper component for multi-step workflows. Displays numbered steps
@@ -425,14 +365,6 @@ export function Stepper({
   );
 
   const isOnTrack = indicatorPosition === 'on-track';
-  const orientationStyle =
-    orientation === 'horizontal'
-      ? isOnTrack
-        ? styles.horizontalOnTrack
-        : styles.horizontal
-      : isOnTrack
-        ? styles.verticalOnTrack
-        : styles.vertical;
 
   // Horizontal Stepper has two roots with separate contracts: the frame owns
   // public layout styling because it contains the complete visual component,
@@ -448,8 +380,8 @@ export function Stepper({
       {...rest}
       {...mergeProps(
         themeProps('stepper', {orientation, indicatorPosition}),
-        stylex.props(styles.root, orientationStyle, listXstyle),
-        listClassName,
+        xstyleProps(listXstyle),
+        tw(stepperRootClassName({orientation, isOnTrack}), listClassName),
         listStyle,
       )}>
       {/* Each step renders its own progress bar segment; no child
@@ -526,7 +458,7 @@ export function Stepper({
         icon={
           <Icon
             icon={delta === -1 ? 'chevronLeft' : 'chevronRight'}
-            xstyle={rtlStyles.mirror}
+            className={RTL_MIRROR_CLASS}
           />
         }
         isDisabled={targetAtRender == null}
@@ -549,8 +481,8 @@ export function Stepper({
         <div
           {...mergeProps(
             themeProps('stepper-frame'),
-            stylex.props(styles.frame, xstyle),
-            className,
+            xstyleProps(xstyle),
+            tw(stepperFrameClassName, className),
             style,
           )}>
           {list}
@@ -558,7 +490,7 @@ export function Stepper({
             <div
               {...mergeProps(
                 themeProps('stepper-summary'),
-                stylex.props(styles.summary),
+                stepperSummaryClassName,
               )}>
               {control(-1)}
               {/* The list above still carries every step's name and status, so
@@ -568,7 +500,7 @@ export function Stepper({
               <div
                 ref={setSummarySlot}
                 aria-hidden="true"
-                {...stylex.props(styles.summaryBody)}
+                className={stepperSummaryBodyClassName}
               />
               {control(1)}
             </div>

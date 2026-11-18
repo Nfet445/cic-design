@@ -55,7 +55,6 @@ import {
   DEFAULT_COMPACT_DEFINITION,
 } from '../theme/themeAdaptations';
 import {useThemeDefinition} from '../theme/useTheme';
-import * as stylex from '@stylexjs/stylex';
 import {devWarn} from '../utils/devWarning';
 import {matchesMediaQuery, watchMediaQuery} from '../utils/coarsePointer';
 import type {BaseProps} from '../BaseProps';
@@ -71,9 +70,21 @@ import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
 import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import {clampInlineSize, isIntrinsicInlineSize} from '../Layer/clampInlineSize';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {InteractiveRoleContext} from '../InteractiveRoleContext/InteractiveRoleContext';
 import type {SpacingStep} from '../utils/types';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  popoverAnchorWrapperClassName,
+  popoverExplicitWidthClassName,
+  popoverMatchTriggerClassName,
+  popoverMaxBlockSizeVar,
+  popoverMaxInlineSizeVar,
+  popoverSheetFallbackCloseClassName,
+  popoverViewportFitClassName,
+  popoverWidthVar,
+} from './popoverClasses';
 import {BottomSheetEscapeContext} from '../BottomSheet/bottomSheetEscape';
 import {
   PopoverBottomSheet,
@@ -387,89 +398,6 @@ export interface PopoverProps extends Pick<
   'data-testid'?: string;
 }
 
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  // Stable anchor wrapper — uses inline-flex to generate a box for CSS
-  // anchor positioning without affecting layout. The trigger element (e.g.
-  // Button) renders inside this wrapper. Because the wrapper itself is
-  // the anchor, pressed-state transforms on the child (e.g. :active scale)
-  // don't shift the anchor position and cause popover jitter.
-  anchorWrapper: {
-    display: 'inline-flex',
-  },
-  // The sheet's fallback close control: hidden until it is reached, as the
-  // anchored surface's is, on the Button itself rather than a wrapper
-  // (architecture:component-style-authoring INV7). Taken out of flow and
-  // clipped at rest, it rejoins the flow when focused, set below the content
-  // with room for its focus ring.
-  sheetFallbackClose: {
-    position: {
-      default: 'absolute',
-      ':focus': 'relative',
-    },
-    clipPath: {
-      default: 'inset(50%)',
-      ':focus': 'none',
-    },
-    marginBlockStart: {
-      default: 0,
-      ':focus': spacingVars['--spacing-3'],
-    },
-    // Block-level when revealed, so it starts its own line below inline
-    // content rather than sitting on its last line.
-    display: {
-      default: null,
-      ':focus': 'flex',
-    },
-    width: {
-      default: null,
-      ':focus': 'fit-content',
-    },
-  },
-  // The painted surface is capped to the viewport with the layer runtime's
-  // one definition (spec:AST-059 FR2, FR3): the layer box above it caps the
-  // block axis itself and leaves the inline axis to the surface, so a flip is
-  // still chosen when the surface does not fit beside the trigger.
-  surfaceViewportFit: {
-    boxSizing: 'border-box',
-    maxInlineSize: stylex.firstThatWorks(
-      `calc(${layerViewportInset.maxInlineSize})`,
-      `calc(${layerViewportInset.maxInlineSizeFallback})`,
-    ),
-    maxBlockSize: stylex.firstThatWorks(
-      `calc(${layerViewportInset.maxBlockSize})`,
-      `calc(${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-    // A scroll container from the commit in which the software keyboard caps
-    // the layer, a frame before the overflow measure sees the shorter box.
-    // Otherwise `visible`. The type names the two values the property takes.
-    // SYNC: LAYER_KEYBOARD_OVERFLOW_PROPERTY (Layer/useLayerKeyboardClearance.ts).
-    overflow: 'var(--_layer-keyboard-overflow, visible)' as 'auto' | 'visible',
-  },
-  surfaceScrollable: {
-    overflow: 'auto',
-    overscrollBehavior: 'contain',
-  },
-  // An explicit width renders at its size up to the viewport cap, never
-  // shrunk to the room beside the trigger (spec:AST-059 FR2). Keywords cannot
-  // sit inside min(); the surface cap above bounds them.
-  customWidth: (width: string) => ({
-    width,
-  }),
-  // Without a width the surface prefers the trigger's minimum width, clamped
-  // by the runtime's cap because a CSS minimum beats a maximum (FR7).
-  matchTrigger: {
-    minWidth: stylex.firstThatWorks(
-      `min(anchor-size(width), ${layerViewportInset.maxInlineSize})`,
-      `min(anchor-size(width), ${layerViewportInset.maxInlineSizeFallback})`,
-      'anchor-size(width)',
-    ),
-  },
-});
-
 /**
  * The window that holds `element`: the page's own, or a second document's (a
  * same-origin iframe, a Document Picture-in-Picture window) when the Popover
@@ -585,16 +513,16 @@ export function Popover({
     // Surface padding is a usePopover option so it lands on that same box,
     // where a theme's `padding` replaces it instead of nesting inside it.
     padding,
-    xstyle: [
-      styles.surfaceViewportFit,
-      hasOverflow && styles.surfaceScrollable,
-      // The entrance runs on the surface: an anchored layer lays out again on
-      // each frame its own style animates.
+    // The viewport fit travels as a class, and the entrance runs on the
+    // surface: an anchored layer lays out again on each frame its own style
+    // animates.
+    className: tw(
       layerAnimations[placement],
-      xstyle,
-    ],
-    className,
-    style,
+      popoverViewportFitClassName({isScrollable: hasOverflow}),
+      className,
+      xstyleProps(xstyle).className,
+    ),
+    style: {...xstyleProps(xstyle).style, ...style},
     onShow: handlePopoverShow,
     onHide: handlePopoverHide,
     onCloseStart: surfaceMotion.closeStart,
@@ -1050,14 +978,17 @@ export function Popover({
   }, [isOpen, isControlled, popover, controlledSurface]);
 
   // Popover's one sizing fact: an explicit width wins over trigger matching.
-  // Fit against the viewport is the layer runtime's (spec:AST-059).
-  const popoverSizeXstyle = !width
-    ? styles.matchTrigger
-    : styles.customWidth(
-        typeof width === 'string' && isIntrinsicInlineSize(width)
-          ? width.trim()
-          : clampInlineSize(width, layerViewportInset.maxInlineSizeFallback),
-      );
+  // Fit against the viewport is the layer runtime's.
+  const explicitWidth = !width
+    ? null
+    : typeof width === 'string' && isIntrinsicInlineSize(width)
+      ? width.trim()
+      : clampInlineSize(width, layerViewportInset.maxInlineSizeFallback);
+  const surfaceSizeVariables: Record<string, string> = {
+    [popoverMaxInlineSizeVar]: layerViewportInset.maxInlineSize,
+    [popoverMaxBlockSizeVar]: layerViewportInset.maxBlockSize,
+    ...(explicitWidth == null ? {} : {[popoverWidthVar]: explicitWidth}),
+  };
 
   // One instance of the content at a time: the sheet holds it while it is
   // mounted, the anchored layer otherwise.
@@ -1093,7 +1024,8 @@ export function Popover({
             variant="secondary"
             label={closeButtonLabel ?? t('@astryx.popover.close')}
             onClick={() => setSheetOpen(false)}
-            xstyle={styles.sheetFallbackClose}
+            xstyle={xstyle}
+            className={popoverSheetFallbackCloseClassName}
           />
         ) : null}
       </PopoverBottomSheet>
@@ -1101,13 +1033,21 @@ export function Popover({
   ) : null;
 
   // The anchored layer, unless the sheet is the presentation that is mounted.
+  // The caps derive from the layer runtime's constants, so they reach the
+  // surface's classes as variables on the layer box the surface fills.
   const anchoredLayer = isSheetMounted
     ? null
     : popover.render(anchoredContent, {
         placement,
         alignment,
-        offset: spacingVars['--spacing-1'],
-        xstyle: popoverSizeXstyle,
+        offset: spacingVarNames['--spacing-1'],
+        className: tw(
+          explicitWidth == null
+            ? popoverMatchTriggerClassName
+            : popoverExplicitWidthClassName,
+          xstyleProps(xstyle).className,
+        ),
+        style: {...xstyleProps(xstyle).style, ...surfaceSizeVariables},
       });
 
   // Sibling mode: render only the popover (no wrapper needed)
@@ -1146,7 +1086,7 @@ export function Popover({
   return (
     <>
       <InteractiveRoleContext value="button">
-        <div ref={wrapperRef} {...stylex.props(styles.anchorWrapper)}>
+        <div ref={wrapperRef} className={popoverAnchorWrapperClassName}>
           {children}
         </div>
       </InteractiveRoleContext>

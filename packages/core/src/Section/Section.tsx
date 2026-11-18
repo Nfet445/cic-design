@@ -14,30 +14,27 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../theme/tokens.stylex';
 import type {BaseProps} from '../BaseProps';
-import {container} from '../Layout/container.stylex';
-import type {SpacingToken} from '../Layout/container.stylex';
 import {
-  paddingStyles,
-  paddingInlineStyles,
-  paddingInlineStartStyles,
-  paddingInlineEndStyles,
-  paddingBlockStyles,
-  paddingBlockStartStyles,
-  paddingBlockEndStyles,
-  containerPaddingInlineVarStyles,
-  containerPaddingInlineStartVarStyles,
-  containerPaddingInlineEndVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingBlockEndVarStyles,
-  sectionPaddingPropagationStyles,
-  spacingStepToToken,
-} from '../Layout/padding.stylex';
+  containerBaseClassName,
+  containerThemeDefaultPaddingClassName,
+} from '../Layout/containerClasses';
+import {
+  containerPaddingByEdgeClassName,
+  containerVariableClassName,
+  sectionPaddingClassName,
+} from '../Layout/paddingClasses';
+import type {ContainerVariable} from '../Layout/paddingClasses';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  sectionInnerClassName,
+  sectionOuterClassName,
+  sectionSizeVars,
+} from './sectionClasses';
 import type {SectionVariantMap} from './index';
 
 /**
@@ -46,84 +43,43 @@ import type {SectionVariantMap} from './index';
  */
 export type SectionVariant = keyof SectionVariantMap;
 
-const variantStyles = stylex.create({
-  section: {
-    backgroundColor: colorVars['--color-background-surface'],
-  },
-  transparent: {
-    backgroundColor: 'transparent',
-  },
-  muted: {
-    backgroundColor: colorVars['--color-background-muted'],
-  },
-});
+/** The inline sizing custom properties the sizing classes read. */
+type SectionSizingStyle = React.CSSProperties &
+  Partial<
+    Record<(typeof sectionSizeVars)[keyof typeof sectionSizeVars], string>
+  >;
 
-// Styles for escaping parent container padding when nested
-const nestedStyles = stylex.create({
-  // Outer wrapper escapes parent's container padding
-  outer: {
-    // Escape horizontal padding using directional vars with shorthand fallback
-    marginInlineStart: 'calc(-1 * var(--container-padding-inline-start, 0px))',
-    marginInlineEnd: 'calc(-1 * var(--container-padding-inline-end, 0px))',
-    // Escape top padding only if first child
-    marginTop: {
-      default: null,
-      ':first-child': 'calc(-1 * var(--container-padding-block-start, 0px))',
-    },
-    // Escape bottom padding only if last child
-    marginBottom: {
-      default: null,
-      ':last-child': 'calc(-1 * var(--container-padding-block-end, 0px))',
-    },
-  },
-  // Inner wrapper resets container padding for descendants
-  inner: {
-    '--container-padding-inline-start': '0px',
-    '--container-padding-inline-end': '0px',
-    '--container-padding-block-start': '0px',
-    '--container-padding-block-end': '0px',
-    height: '100%',
-  },
-});
-
-// Divider styles for each side
-const dividerStyles = stylex.create({
-  top: {
-    borderTopWidth: 1,
-    borderTopStyle: 'solid',
-    borderTopColor: colorVars['--color-border'],
-  },
-  bottom: {
-    borderBottomWidth: 1,
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-  start: {
-    borderInlineStartWidth: 1,
-    borderInlineStartStyle: 'solid',
-    borderInlineStartColor: colorVars['--color-border'],
-  },
-  end: {
-    borderInlineEndWidth: 1,
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-  },
-});
-
-// Dynamic styles for sizing props
-const dynamicStyles = stylex.create({
-  sizing: (
-    width: SizeValue | null,
-    height: SizeValue | null,
-    maxWidth: SizeValue | null,
-    minHeight: SizeValue | null,
-  ) => ({
-    width,
-    height,
-    maxWidth,
-    minHeight,
-  }),
-});
+/** A size prop as the inline value its class reads; a number is pixels. */
+function sectionSizeStyle({
+  height,
+  maxWidth,
+  minHeight,
+  width,
+}: {
+  height?: SizeValue;
+  maxWidth?: SizeValue;
+  minHeight?: SizeValue;
+  width?: SizeValue;
+}): SectionSizingStyle {
+  const style: SectionSizingStyle = {};
+  if (width != null) {
+    style[sectionSizeVars.width] =
+      typeof width === 'number' ? `${width}px` : width;
+  }
+  if (height != null) {
+    style[sectionSizeVars.height] =
+      typeof height === 'number' ? `${height}px` : height;
+  }
+  if (maxWidth != null) {
+    style[sectionSizeVars.maxWidth] =
+      typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth;
+  }
+  if (minHeight != null) {
+    style[sectionSizeVars.minHeight] =
+      typeof minHeight === 'number' ? `${minHeight}px` : minHeight;
+  }
+  return style;
+}
 
 export interface SectionProps extends BaseProps<HTMLElement> {
   ref?: React.Ref<HTMLElement>;
@@ -268,94 +224,95 @@ export function Section({
   // When no explicit padding prop, use theme default (set via container tokens)
   const useThemeDefault = padding == null;
   const effectivePadding = padding ?? 4;
-  const paddingToken = spacingStepToToken[effectivePadding] as SpacingToken;
-  const outerStylex = stylex.props(
-    nestedStyles.outer,
-    dynamicStyles.sizing(
-      width ?? null,
-      height ?? null,
-      maxWidth ?? null,
-      minHeight ?? null,
-    ),
-    xstyle,
-  );
+  // One value per edge: an axis prop covers its two edges, a per-edge prop
+  // wins over it, and `padding` covers what none of them set.
+  const paddingEdges = {
+    paddingBlockEnd:
+      paddingBlockEnd ??
+      paddingBlock ??
+      (useThemeDefault ? undefined : effectivePadding),
+    paddingBlockStart:
+      paddingBlockStart ??
+      paddingBlock ??
+      (useThemeDefault ? undefined : effectivePadding),
+    paddingInlineEnd:
+      paddingInlineEnd ??
+      paddingInline ??
+      (useThemeDefault ? undefined : effectivePadding),
+    paddingInlineStart:
+      paddingInlineStart ??
+      paddingInline ??
+      (useThemeDefault ? undefined : effectivePadding),
+  };
+  // One class decides each variable: an edge a prop names takes that step, and
+  // an edge none names keeps the theme's chain. `paddingEdges` has already
+  // resolved which edges the props cover.
+  const themeDefaultPadding = containerThemeDefaultPaddingClassName.section;
+  const edgePaddingClassName = (
+    variable: ContainerVariable,
+    step: SpacingStep | undefined,
+  ) =>
+    step == null
+      ? themeDefaultPadding[variable]
+      : containerVariableClassName(variable, step);
+  const containerPadding = useThemeDefault
+    ? tw(
+        edgePaddingClassName(
+          'containerPaddingInlineStart',
+          paddingEdges.paddingInlineStart,
+        ),
+        edgePaddingClassName(
+          'containerPaddingInlineEnd',
+          paddingEdges.paddingInlineEnd,
+        ),
+        edgePaddingClassName(
+          'containerPaddingBlockStart',
+          paddingEdges.paddingBlockStart,
+        ),
+        edgePaddingClassName(
+          'containerPaddingBlockEnd',
+          paddingEdges.paddingBlockEnd,
+        ),
+        themeDefaultPadding.layoutPaddingOuterX,
+        themeDefaultPadding.layoutPaddingOuterY,
+        themeDefaultPadding.layoutPaddingInnerX,
+        themeDefaultPadding.layoutPaddingInnerY,
+      )
+    : tw(
+        containerPaddingByEdgeClassName(paddingEdges),
+        containerVariableClassName('layoutPaddingOuterX', effectivePadding),
+        containerVariableClassName('layoutPaddingOuterY', effectivePadding),
+        containerVariableClassName('layoutPaddingInnerX', effectivePadding),
+        containerVariableClassName('layoutPaddingInnerY', effectivePadding),
+      );
+
+  const xStyle = xstyleProps(xstyle);
+  const outerInlineStyle: React.CSSProperties = {
+    ...xStyle.style,
+    ...sectionSizeStyle({height, maxWidth, minHeight, width}),
+  };
 
   return (
     <div
       ref={ref as React.Ref<HTMLDivElement>}
       className={
-        [outerStylex.className, className].filter(Boolean).join(' ') ||
-        undefined
+        tw(
+          sectionOuterClassName({height, maxWidth, minHeight, width}),
+          xStyle.className,
+          className,
+        ) || undefined
       }
-      style={
-        style && outerStylex.style
-          ? {...outerStylex.style, ...style}
-          : style || outerStylex.style
-      }
+      style={style ? {...outerInlineStyle, ...style} : outerInlineStyle}
       {...props}>
       <div
-        {...mergeProps(
-          themeProps('section', {variant}),
-          stylex.props(
-            nestedStyles.inner,
-            ...container(
-              useThemeDefault
-                ? {useThemeDefault: 'section'}
-                : {
-                    paddingInnerX: paddingToken,
-                    paddingInnerY: paddingToken,
-                    paddingOuterX: paddingToken,
-                    paddingOuterY: paddingToken,
-                  },
-            ),
-            !useThemeDefault &&
-              effectivePadding !== 4 &&
-              paddingStyles[effectivePadding],
-            !useThemeDefault &&
-              effectivePadding !== 4 &&
-              containerPaddingInlineVarStyles[effectivePadding],
-            !useThemeDefault &&
-              effectivePadding !== 4 &&
-              containerPaddingBlockStartVarStyles[effectivePadding],
-            !useThemeDefault &&
-              effectivePadding !== 4 &&
-              containerPaddingBlockEndVarStyles[effectivePadding],
-            !useThemeDefault &&
-              sectionPaddingPropagationStyles[effectivePadding],
-            paddingInline != null && paddingInlineStyles[paddingInline],
-            paddingInline != null &&
-              containerPaddingInlineVarStyles[paddingInline],
-            paddingBlock != null && paddingBlockStyles[paddingBlock],
-            paddingBlock != null &&
-              containerPaddingBlockStartVarStyles[paddingBlock],
-            paddingBlock != null &&
-              containerPaddingBlockEndVarStyles[paddingBlock],
-            // Per-edge overrides come last so they win over `paddingBlock`
-            // and `padding` on their own edge. The matching container var is
-            // updated alongside so bleed children (Table, Divider, nested
-            // Section) compensate against the padding actually applied.
-            paddingBlockStart != null &&
-              paddingBlockStartStyles[paddingBlockStart],
-            paddingBlockStart != null &&
-              containerPaddingBlockStartVarStyles[paddingBlockStart],
-            paddingBlockEnd != null && paddingBlockEndStyles[paddingBlockEnd],
-            paddingBlockEnd != null &&
-              containerPaddingBlockEndVarStyles[paddingBlockEnd],
-            paddingInlineStart != null &&
-              paddingInlineStartStyles[paddingInlineStart],
-            paddingInlineStart != null &&
-              containerPaddingInlineStartVarStyles[paddingInlineStart],
-            paddingInlineEnd != null &&
-              paddingInlineEndStyles[paddingInlineEnd],
-            paddingInlineEnd != null &&
-              containerPaddingInlineEndVarStyles[paddingInlineEnd],
-            variantStyles[variant],
-            dividers?.includes('top') && dividerStyles.top,
-            dividers?.includes('bottom') && dividerStyles.bottom,
-            dividers?.includes('start') && dividerStyles.start,
-            dividers?.includes('end') && dividerStyles.end,
+        {...mergeProps(themeProps('section', {variant}), {
+          className: tw(
+            sectionInnerClassName({dividers, variant}),
+            containerBaseClassName,
+            !useThemeDefault && sectionPaddingClassName(effectivePadding),
+            containerPadding,
           ),
-        )}>
+        })}>
         {children}
       </div>
     </div>

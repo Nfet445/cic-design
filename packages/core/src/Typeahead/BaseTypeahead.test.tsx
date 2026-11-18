@@ -90,6 +90,43 @@ const testStyles = stylex.create({
 });
 
 describe('BaseTypeahead', () => {
+  it('composes inputXStyle with xstyle and style on the input', () => {
+    const base = {
+      searchSource: emptySource,
+      value: null,
+      onChange: () => {},
+      'aria-label': 'Search',
+    };
+    const {rerender} = render(
+      <BaseTypeahead
+        {...base}
+        inputXStyle="consumer-input"
+        xstyle="consumer-root"
+      />,
+    );
+    const input = screen.getByRole('combobox', {name: 'Search'});
+    expect(input).toHaveClass('consumer-input', 'consumer-root');
+    rerender(
+      <BaseTypeahead
+        {...base}
+        inputXStyle={{backgroundColor: 'red', color: 'blue'}}
+        xstyle={{color: 'purple'}}
+        style={{color: 'green'}}
+      />,
+    );
+    expect(input.style.backgroundColor).toBe('red');
+    expect(input.style.color).toBe('green');
+    rerender(
+      <BaseTypeahead
+        {...base}
+        inputXStyle={[testStyles.input, 'mixed-input']}
+        xstyle={[testStyles.input, 'mixed-root', {color: 'red'}]}
+      />,
+    );
+    expect(input).toHaveClass('mixed-input', 'mixed-root');
+    expect(input.style.color).toBe('red');
+  });
+
   it('marks only the active option highlighted on its typeahead-option row', async () => {
     const user = userEvent.setup();
     const source: SearchSource<SearchableItem> = {
@@ -795,10 +832,13 @@ describe('BaseTypeahead', () => {
       const input = screen.getByRole('combobox');
 
       await user.click(input);
+      // jsdom can expose options while their popover is still closed.
       await waitFor(() => {
-        expect(
-          screen.getByRole('option', {name: 'Second', hidden: true}),
-        ).toBeInTheDocument();
+        expect(input).toHaveAttribute('aria-expanded', 'true');
+        expect(input).toHaveAttribute(
+          'aria-activedescendant',
+          screen.getByRole('option', {name: 'First', hidden: true}).id,
+        );
       });
       await user.keyboard('{ArrowDown}');
       const second = screen.getByRole('option', {name: 'Second', hidden: true});

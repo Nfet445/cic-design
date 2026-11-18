@@ -24,7 +24,8 @@
  */
 
 import {useCallback, useEffect, useRef, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
+import {tw} from '../utils/tw';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import type {
   FieldInputBaseProps,
   FieldPartStyleProps,
@@ -39,14 +40,23 @@ import {formatLocaleTime} from '../utils/timeFormat';
 import type {ThemeProps} from '../utils/themeProps';
 import {VisuallyHidden} from '../VisuallyHidden';
 import {
-  focusOutlineStyles,
   formatISOTime,
   isTimeInRange,
   parseISOTime,
   type ISOTimeString,
 } from '../utils';
 import {chainEventHandlers} from '../utils/chainEventHandlers';
-import {nativePickerSegmentStyles as styles} from './nativePickerSegmentStyles';
+import {
+  nativePickerSegmentDisabledClassName,
+  nativePickerSegmentIconButtonClassName,
+  nativePickerSegmentInputClassName,
+  nativePickerSegmentInputHiddenClassName,
+  nativePickerSegmentInvalidClassName,
+  nativePickerSegmentOverlayClassName,
+  nativePickerSegmentOverlayPlaceholderClassName,
+  nativePickerSegmentOverlayValueClassName,
+  nativePickerSegmentSlotClassName,
+} from './nativePickerSegmentClasses';
 
 const FRACTIONAL_SECONDS = /\.\d+$/;
 
@@ -326,14 +336,14 @@ export function NativeTimeSegment({
         aria-disabled={isEffectivelyDisabled || undefined}
         aria-label={openPickerLabel}
         tabIndex={-1}
-        {...stylex.props(
-          focusOutlineStyles.focusVisible,
-          styles.iconButton,
-          isEffectivelyDisabled && styles.iconButtonDisabled,
+        className={tw(
+          nativePickerSegmentIconButtonClassName,
+          isEffectivelyDisabled && nativePickerSegmentDisabledClassName,
+          focusOutlineFocusVisibleClassName,
         )}>
         <Icon icon="clock" size="sm" color="secondary" {...iconThemeProps} />
       </button>
-      <span {...stylex.props(styles.slot)}>
+      <span className={nativePickerSegmentSlotClassName}>
         <input
           {...inputProps}
           ref={mergedInputRef}
@@ -369,21 +379,25 @@ export function NativeTimeSegment({
             statusType === 'error' || !isInputValid ? 'true' : undefined
           }
           aria-busy={isBusy || undefined}
-          {...stylex.props(
-            styles.input,
-            showsOverlay && styles.inputTextHidden,
-            isEffectivelyDisabled && styles.inputDisabled,
-            !isInputValid && styles.inputInvalid,
+          className={tw(
+            nativePickerSegmentInputClassName,
+            showsOverlay && nativePickerSegmentInputHiddenClassName,
+            isEffectivelyDisabled && nativePickerSegmentDisabledClassName,
+            !isInputValid && nativePickerSegmentInvalidClassName,
           )}
         />
         {showsOverlay && (
           <span
             aria-hidden="true"
-            {...stylex.props(
-              styles.overlay,
-              nativeValue ? styles.overlayValue : styles.overlayPlaceholder,
-              isEffectivelyDisabled && styles.inputDisabled,
-              !isInputValid && !!nativeValue && styles.inputInvalid,
+            className={tw(
+              nativePickerSegmentOverlayClassName,
+              nativeValue
+                ? nativePickerSegmentOverlayValueClassName
+                : nativePickerSegmentOverlayPlaceholderClassName,
+              isEffectivelyDisabled && nativePickerSegmentDisabledClassName,
+              !isInputValid &&
+                !!nativeValue &&
+                nativePickerSegmentInvalidClassName,
             )}>
             {overlayText}
           </span>

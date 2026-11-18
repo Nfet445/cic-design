@@ -31,23 +31,31 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
   type Ref,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
+import {sharedEditorTheme} from './editorThemeClasses';
+import {tw} from './tw';
 import {
-  colorVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
-import {sharedEditorTheme} from './editorTheme';
+  RICH_TEXT_BODY_MIN_HEIGHT_VARIABLE,
+  richTextEditorBodyClassName,
+  richTextEditorBodySizeClassName,
+  richTextEditorBodyWithStatusClassName,
+  richTextEditorBodyWithToolbarClassName,
+  richTextEditorContentEditableClassName,
+  richTextEditorCounterClassName,
+  richTextEditorCounterErrorClassName,
+  richTextEditorDisabledClassName,
+  richTextEditorPlaceholderClassName,
+  richTextEditorRootClassName,
+  richTextEditorStatusIconClassName,
+  richTextEditorWrapperClassName,
+} from './richTextEditorClasses';
 import {
   Field,
-  inputWrapperStyles,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
   type FieldStatusVariant,
 } from '@astryxdesign/core/Field';
 import type {BaseProps} from '@astryxdesign/core';
@@ -58,6 +66,7 @@ import {
   isRenderable,
   mergeProps,
   themeProps,
+  xstyleProps,
   type SizeValue,
 } from '@astryxdesign/core/utils';
 import {useSize} from '@astryxdesign/core/SizeContext';
@@ -144,116 +153,6 @@ const EMPTY_EDITOR_STATE_JSON = JSON.stringify({
     indent: 0,
     type: 'root',
     version: 1,
-  },
-});
-
-const styles = stylex.create({
-  wrapper: {
-    // Establish a new container boundary so Toolbar's Section does not escape
-    // padding inherited from an ancestor Section outside the editor field.
-    '--container-padding-inline-start': '0px',
-    '--container-padding-inline-end': '0px',
-    '--container-padding-block-start': '0px',
-    '--container-padding-block-end': '0px',
-    flexDirection: 'column',
-    alignItems: 'stretch',
-    gap: spacingVars['--spacing-0'],
-    paddingBlock: spacingVars['--spacing-0'],
-    paddingInline: spacingVars['--spacing-0'],
-    minHeight: 'auto',
-  },
-  editorBody: {
-    position: 'relative',
-    boxSizing: 'border-box',
-    width: '100%',
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  editorBodyWithToolbar: {
-    borderTopWidth: 1,
-    borderTopStyle: 'solid',
-    borderTopColor: colorVars['--color-border'],
-  },
-  editorBodyWithStatus: {
-    // Reserve the same trailing space as TextArea: the normal text inset plus
-    // room for the 20px status icon and its gap.
-    paddingInlineEnd: `calc(${spacingVars['--spacing-2']} + ${spacingVars['--spacing-6']})`,
-  },
-  contentEditable: {
-    display: 'block',
-    width: '100%',
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    outline: 'none',
-    color: colorVars['--color-text-primary'],
-  },
-  placeholder: {
-    position: 'absolute',
-    top: spacingVars['--spacing-0'],
-    insetInlineStart: 0,
-    pointerEvents: 'none',
-    userSelect: 'none',
-    color: colorVars['--color-text-secondary'],
-  },
-  editorRoot: {
-    position: 'relative',
-    width: '100%',
-    // ContentEditable and Lexical's sibling placeholder inherit one shared
-    // text style. This keeps their leading and coarse-pointer sizing identical
-    // to TextInput/TextArea without duplicating placeholder typography. The
-    // 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-  },
-  statusIcon: {
-    position: 'absolute',
-    top: spacingVars['--spacing-2'],
-    insetInlineEnd: spacingVars['--spacing-2'],
-    zIndex: 1,
-    display: 'flex',
-    alignItems: 'center',
-  },
-  disabled: {
-    // Per #5335: `default`, not `not-allowed`. A disabled control already
-    // carries its own visual treatment, and `not-allowed` is unpaintable on
-    // the part of the library sealed behind `pointer-events: none`, so the
-    // library cannot promise it consistently.
-    cursor: {
-      default: 'default',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  counter: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    marginTop: spacingVars['--spacing-1'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    color: colorVars['--color-text-secondary'],
-  },
-  counterError: {
-    color: colorVars['--color-text-error'],
-  },
-});
-
-const dynamicStyles = stylex.create({
-  contentEditableMinHeight: (minHeight: SizeValue) => ({minHeight}),
-});
-
-const editorBodySizeStyles = stylex.create({
-  // Only `lg` adds block padding; `sm` and `md` take the base body spacing.
-  // An empty entry each would read as deliberate size-specific styling.
-  lg: {
-    paddingBlock: spacingVars['--spacing-2'],
   },
 });
 
@@ -668,21 +567,16 @@ export const RichTextEditor = function RichTextEditor({
             size,
             status: status?.type ?? null,
           }),
-          stylex.props(
-            inputWrapperStyles.base,
-            inputWrapperStyles.textField,
-            styles.wrapper,
-            // Only disabled is dimmed, matching TextArea: a read-only editor
-            // keeps full-opacity text and stays keyboard-reachable.
-            isDisabled && inputWrapperStyles.disabled,
-            isDisabled && styles.disabled,
-            status && inputStatusBorderStyles[status.type],
-            status &&
-              !isDisabled &&
-              !isReadOnly &&
-              inputStatusHoverShadowStyles[status.type],
-            status && inputStatusFocusWithinStyles[status.type],
-            xstyle,
+          mergeProps(
+            {
+              className: tw(
+                fieldInputWrapperClassName({status: status?.type}),
+                isDisabled && fieldInputWrapperDisabledClassName,
+                richTextEditorWrapperClassName,
+                isDisabled && richTextEditorDisabledClassName,
+              ),
+            },
+            xstyleProps(xstyle),
           ),
           className,
           style,
@@ -692,13 +586,13 @@ export const RichTextEditor = function RichTextEditor({
           contentEditable={null}>
           {hasToolbar ? toolbar : null}
           <div
-            {...stylex.props(
-              styles.editorBody,
-              hasToolbar && styles.editorBodyWithToolbar,
-              !!statusIcon && styles.editorBodyWithStatus,
-              size === 'lg' && editorBodySizeStyles.lg,
+            className={tw(
+              richTextEditorBodyClassName,
+              hasToolbar && richTextEditorBodyWithToolbarClassName,
+              !!statusIcon && richTextEditorBodyWithStatusClassName,
+              size === 'lg' && richTextEditorBodySizeClassName.lg,
             )}>
-            <div {...stylex.props(styles.editorRoot)} dir={rest.dir}>
+            <div className={richTextEditorRootClassName} dir={rest.dir}>
               <RichTextPlugin
                 contentEditable={
                   <EditorContentEditable
@@ -780,7 +674,9 @@ export const RichTextEditor = function RichTextEditor({
               )}
             </div>
             {statusIcon && (
-              <div {...stylex.props(styles.statusIcon)}>{statusIcon}</div>
+              <div className={richTextEditorStatusIconClassName}>
+                {statusIcon}
+              </div>
             )}
           </div>
         </LexicalExtensionComposer>
@@ -792,9 +688,9 @@ export const RichTextEditor = function RichTextEditor({
       {maxLength != null && (
         <div
           id={counterID}
-          {...stylex.props(
-            styles.counter,
-            charCount > maxLength && styles.counterError,
+          className={tw(
+            richTextEditorCounterClassName,
+            charCount > maxLength && richTextEditorCounterErrorClassName,
           )}>
           {charCount}/{maxLength}
           <VisuallyHidden aria-live="polite">
@@ -1081,10 +977,11 @@ function EditorContentEditable({
       : isReadOnly
         ? {tabIndex: 0, 'aria-readonly': 'true' as const}
         : null),
-    ...stylex.props(
-      styles.contentEditable,
-      dynamicStyles.contentEditableMinHeight(minHeight),
-    ),
+    className: richTextEditorContentEditableClassName,
+    style: {
+      [RICH_TEXT_BODY_MIN_HEIGHT_VARIABLE]:
+        typeof minHeight === 'number' ? `${minHeight}px` : minHeight,
+    } as CSSProperties,
     ...rest,
     // Lexical reconciles this DOM, so Layer keeps corrective portals out.
     ...rendererManagedRootProps,
@@ -1098,7 +995,7 @@ function EditorContentEditable({
           <div
             id={placeholderID}
             aria-hidden="true"
-            {...stylex.props(styles.placeholder)}>
+            className={richTextEditorPlaceholderClassName}>
             {placeholderText}
           </div>
         )}

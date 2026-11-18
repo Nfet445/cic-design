@@ -17,82 +17,36 @@
  */
 
 import {useRef, type ReactNode} from 'react';
-import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import type {BaseProps} from '../BaseProps';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {useTopNavRenderMode} from './TopNavRenderContext';
-import {navItemStyles, type NavItemSize} from '../NavItem/navItemStyles.stylex';
+import {
+  navItemClassName,
+  navItemDisabledClassName,
+  navItemSelectedClassName,
+  navItemSizeClassName,
+  type NavItemSize,
+} from '../NavItem/navItemClasses';
 import {mergeProps} from '../utils';
 import {useCloseMobileDrawerOnActivate} from '../AppShell/useCloseMobileDrawerOnActivate';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
   disabledInteractionProps,
   withholdCallerHandlers,
 } from '../utils/disabledInteraction';
-
-/**
- * NavItem styles with hover/selected states
- */
-const styles = stylex.create({
-  base: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-1-5'],
-    paddingInline: spacingVars['--spacing-3'],
-    borderRadius: radiusVars['--radius-element'],
-    fontSize: typeScaleVars['--text-label-size'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-secondary'],
-    textDecoration: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    transitionProperty: 'background-color, color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  selected: {
-    color: colorVars['--color-text-primary'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    backgroundColor: {
-      default: colorVars['--color-neutral'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': colorVars['--color-neutral'],
-      },
-      ':active': colorVars['--color-neutral'],
-      // The touch press model writes these instead of `:active`; the selected
-      // item keeps its fill under a finger the way it does under a mouse, and
-      // paints no overlay at any phase of the press.
-      '[data-astryx-press="on"]': colorVars['--color-neutral'],
-      '[data-astryx-press="fading"]': colorVars['--color-neutral'],
-    },
-    backgroundImage: {
-      default: null,
-      '[data-astryx-press="on"]': 'none',
-      '[data-astryx-press="fading"]': 'none',
-    },
-  },
-  iconOnly: {
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  // Drawer mode — focus outline (base item + selected come from navItemStyles)
-});
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  topNavItemClassName,
+  topNavItemIconOnlyClassName,
+  topNavItemSelectedClassName,
+} from './topNavItemClasses';
 
 export interface TopNavItemProps extends BaseProps<HTMLAnchorElement> {
   /** Ref forwarded to the root element */
@@ -304,16 +258,21 @@ export function TopNavItem({
             mode: 'drawer',
             selected: isSelected ? 'selected' : null,
           }),
-          focusOutlineProps.focusVisible(
-            navItemStyles.item,
-            interactionOverlayStyles.backgroundColor,
-            navItemStyles[size],
-            isSelected && navItemStyles.selected,
-            isDisabled && navItemStyles.disabled,
-            xstyle,
+          stylex.props(
+            // The strength and the release; the colour is a class below.
+            interactionOverlayStyles.pressedAlpha,
           ),
-          className,
-          style,
+          tw(
+            navItemClassName(),
+            navItemSizeClassName(size),
+            isSelected && navItemSelectedClassName(),
+            isDisabled && navItemDisabledClassName(),
+            className,
+            interactionOverlayBackgroundColorClassName,
+            focusOutlineFocusVisibleClassName,
+            xstyleProps(xstyle).className,
+          ),
+          {...xstyleProps(xstyle).style, ...style},
         )}
         {...callerProps}
         {...(isDisabled && !isAction ? disabledInteractionProps() : null)}
@@ -346,16 +305,21 @@ export function TopNavItem({
         themeProps('top-nav-item', {
           selected: isSelected ? 'selected' : null,
         }),
-        focusOutlineProps.focusVisible(
-          styles.base,
-          interactionOverlayStyles.backgroundColor,
-          isSelected && styles.selected,
-          isDisabled && navItemStyles.disabled,
-          isIconOnly && styles.iconOnly,
-          xstyle,
+        stylex.props(
+          // The strength and the release; the colour is a class below.
+          interactionOverlayStyles.pressedAlpha,
         ),
-        className,
-        style,
+        tw(
+          isDisabled && navItemDisabledClassName(),
+          topNavItemClassName(),
+          isSelected && topNavItemSelectedClassName(),
+          isIconOnly && topNavItemIconOnlyClassName(),
+          className,
+          interactionOverlayBackgroundColorClassName,
+          focusOutlineFocusVisibleClassName,
+          xstyleProps(xstyle).className,
+        ),
+        {...xstyleProps(xstyle).style, ...style},
       )}
       {...callerProps}
       {...(isDisabled && !isAction ? disabledInteractionProps() : null)}

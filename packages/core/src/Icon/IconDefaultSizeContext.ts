@@ -11,7 +11,7 @@
 
 import {use} from 'react';
 import {createLayerScopedContext} from '../Layer/layerScopedContext';
-import type {IconSize} from './IconSize.stylex';
+import type {IconSize} from './IconSize';
 
 const IconDefaultSizeContext = createLayerScopedContext<IconSize | null>(
   'IconDefaultSizeContext',

@@ -3,13 +3,23 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {render, screen, fireEvent, act} from '@testing-library/react';
 import {useState} from 'react';
+import * as stylex from '@stylexjs/stylex';
 import {Table} from '../../Table';
-import type {TableColumn} from '../../types';
+import type {TableColumn, TablePlugin} from '../../types';
 import {useTableRowExpansion} from './useTableRowExpansion';
+import {rowExpansionOverride} from './rowExpansionOverride.stylex';
+import {
+  ROW_EXPANSION_CLICKABLE_ROW_CLASS,
+  ROW_EXPANSION_GLYPH_STATE_CLASS,
+  ROW_EXPANSION_PANEL_MUTED_CLASS,
+  rowExpansionPanelIndentClassName,
+} from './rowExpansionClasses';
+import {expectClassSet} from '../../../__tests__/classNameAssertions';
 import {InternationalizationProvider} from '../../../i18n';
 import type {ComponentIconMap} from '../../../Icon/index';
 import {defineTheme} from '../../../theme/defineTheme';
 import {Theme} from '../../../theme/Theme';
+import {buildAstryxTailwindCss} from '../../../../scripts/build-css-tailwind.mjs';
 
 // popover mock for context-menu tests
 beforeEach(() => {
@@ -68,6 +78,7 @@ function Harness({
   dividers,
   isStriped,
   getRowLabel,
+  precedingPlugin,
 }: {
   initialExpanded?: Set<string>;
   isItemExpandable?: (item: Row) => boolean;
@@ -79,6 +90,7 @@ function Harness({
   dividers?: 'rows' | 'columns' | 'grid' | 'none';
   isStriped?: boolean;
   getRowLabel?: (item: Row) => string;
+  precedingPlugin?: TablePlugin<Row>;
 }) {
   const [expandedKeys, setExpandedKeys] = useState(initialExpanded);
   const expansion = useTableRowExpansion<Row>({
@@ -108,7 +120,7 @@ function Harness({
       density={density}
       dividers={dividers}
       isStriped={isStriped}
-      plugins={{expansion}}
+      plugins={precedingPlugin ? {precedingPlugin, expansion} : {expansion}}
     />
   );
 }
@@ -359,8 +371,9 @@ describe('useTableRowExpansion (detail panel)', () => {
     // The glyph's box, the button's first child, turns with the glyph in it.
     const glyph = button.querySelector<HTMLElement>(':scope > *');
     expect(glyph?.querySelector('svg')).not.toBeNull();
-    expect(glyph).toHaveStyle({transform: 'rotate(90deg)'});
-    expect(button).not.toHaveStyle({transform: 'rotate(90deg)'});
+    const expandedGlyph = ROW_EXPANSION_GLYPH_STATE_CLASS.expanded.split(' ');
+    expectClassSet(glyph!, {includes: expandedGlyph});
+    expectClassSet(button, {excludes: expandedGlyph});
   });
 
   it('starts the panel at the first column, not at the row edge', () => {
@@ -368,15 +381,15 @@ describe('useTableRowExpansion (detail panel)', () => {
     // of every label it describes. It should start where the first column's
     // content does: the chevron column's width plus a cell's own padding.
     render(<Harness initialExpanded={new Set(['a'])} />);
-    expect(screen.getByTestId('panel').closest('td')).toHaveStyle({
-      paddingInlineStart: 'calc(40px + var(--spacing-3))',
+    expectClassSet(screen.getByTestId('panel').closest('td')!, {
+      includes: rowExpansionPanelIndentClassName('balanced').split(' '),
     });
   });
 
   it('tracks the table density it is rendered at', () => {
     render(<Harness initialExpanded={new Set(['a'])} density="spacious" />);
-    expect(screen.getByTestId('panel').closest('td')).toHaveStyle({
-      paddingInlineStart: 'calc(40px + var(--spacing-4))',
+    expectClassSet(screen.getByTestId('panel').closest('td')!, {
+      includes: rowExpansionPanelIndentClassName('spacious').split(' '),
     });
   });
 
@@ -388,12 +401,11 @@ describe('useTableRowExpansion (detail panel)', () => {
     render(<Harness initialExpanded={new Set(['a'])} />);
     const chevronHeader = screen.getAllByRole('columnheader')[0];
     const columnWidth = getComputedStyle(chevronHeader).width;
-    const panelCell = screen
-      .getByTestId('panel')
-      .closest('td') as HTMLTableCellElement;
     expect(columnWidth).toBe('40px');
-    expect(getComputedStyle(panelCell).paddingInlineStart).toMatch(
-      new RegExp(`^calc\\(${columnWidth} \\+ `),
+    // The indent class spells the same pixels, in a `calc` the spacing scale
+    // still finishes.
+    expect(rowExpansionPanelIndentClassName('balanced')).toContain(
+      `calc(${columnWidth}`,
     );
   });
 
@@ -404,15 +416,47 @@ describe('useTableRowExpansion (detail panel)', () => {
     // itself; the browser spec measures that), and the header cell drops both.
     render(<Harness initialExpanded={new Set(['a'])} />);
     const button = screen.getAllByRole('button', {name: /collapse row/i})[0];
-    expect(
-      getComputedStyle(button.closest('td') as HTMLTableCellElement)
-        .paddingInlineStart,
-    ).toMatch(/^0(px)?$/);
-    // The header cell holds only a hidden label; its insets alone would
-    // outgrow the 40px column at a large root font size.
-    const header = getComputedStyle(screen.getAllByRole('columnheader')[0]);
-    expect(header.paddingInlineStart).toMatch(/^0(px)?$/);
-    expect(header.paddingInlineEnd).toMatch(/^0(px)?$/);
+    expect(button.closest('td')).toHaveClass('[&&&]:ps-0');
+    expect(screen.getAllByRole('columnheader')[0]).toHaveClass(
+      '[&&&]:ps-0',
+      '[&&&]:pe-0',
+    );
+  });
+
+  it('suppresses preceding plugin insets on the expansion column', () => {
+    const custom = stylex.create({
+      insets: {paddingInlineStart: 9, paddingInlineEnd: 9},
+    });
+    const precedingPlugin: TablePlugin<Row> = {
+      transformHeaderCell: props => ({
+        ...props,
+        xstyle: [...props.xstyle, custom.insets],
+      }),
+      transformBodyCell: props => ({
+        ...props,
+        xstyle: [...props.xstyle, custom.insets],
+      }),
+    };
+    render(
+      <Harness
+        initialExpanded={new Set(['a'])}
+        precedingPlugin={precedingPlugin}
+      />,
+    );
+    const firstHeader = screen.getAllByRole('columnheader')[0];
+    const firstBodyCell = screen
+      .getAllByRole('button', {name: /collapse row/i})[0]
+      .closest('td')!;
+    const resolvedHeader = stylex.props(
+      custom.insets,
+      rowExpansionOverride.chevronHeaderCell,
+    ).className!;
+    const resolvedBody = stylex.props(
+      custom.insets,
+      rowExpansionOverride.chevronCell,
+    ).className!;
+    expect(firstHeader).toHaveClass(resolvedHeader);
+    expect(firstBodyCell).toHaveClass(resolvedBody);
   });
 
   describe('row divider placement', () => {
@@ -428,25 +472,57 @@ describe('useTableRowExpansion (detail panel)', () => {
       // into the next row — the wrong way round on both counts.
       render(<Harness initialExpanded={new Set(['a'])} />);
       for (const cell of cellsOf('Ada')) {
-        expect(cell).toHaveStyle({borderBottomWidth: '0'});
+        expect(cell).toHaveClass(
+          stylex.props(rowExpansionOverride.expandedCell).className!,
+          '[&&]:border-b-0',
+          '[&&]:[--_table-row-divider-width:0px]',
+        );
       }
       // The token width, unless the row hands down its own.
-      expect(getComputedStyle(panelCell()).borderBottomWidth).toMatch(
-        /var\(--_table-panel-divider-width,\s*var\(--border-width\)\)/,
+      expect(panelCell()).toHaveClass(
+        '[border-bottom-width:var(--_table-panel-divider-width,var(--border-width))]',
+        '[[data-expansion-panel]:last-child_>_&]:border-b-0',
       );
+    });
+
+    it('suppresses a preceding plugin’s StyleX divider on expanded rows', () => {
+      const custom = stylex.create({divider: {borderBottomWidth: 3}});
+      const precedingPlugin: TablePlugin<Row> = {
+        transformBodyCell: props => ({
+          ...props,
+          xstyle: [...props.xstyle, custom.divider],
+        }),
+      };
+      render(
+        <Harness
+          initialExpanded={new Set(['a'])}
+          precedingPlugin={precedingPlugin}
+        />,
+      );
+      const dividerClass = stylex.props(custom.divider).className!;
+      for (const cell of cellsOf('Ada')) {
+        expect(cell).not.toHaveClass(dividerClass);
+      }
+      for (const cell of cellsOf('Bo')) {
+        expect(cell).toHaveClass(dividerClass);
+      }
     });
 
     it('leaves collapsed rows keeping their own divider', () => {
       render(<Harness initialExpanded={new Set(['a'])} />);
       for (const cell of cellsOf('Bo')) {
-        expect(cell).not.toHaveStyle({borderBottomWidth: '0'});
+        expect(cell).not.toHaveClass(
+          stylex.props(rowExpansionOverride.expandedCell).className!,
+        );
+        expect(cell).not.toHaveClass('[&&]:border-b-0');
+        expect(cell).not.toHaveClass('[&&]:[--_table-row-divider-width:0px]');
       }
     });
 
     it('draws no panel divider on a table without row dividers', () => {
       render(<Harness initialExpanded={new Set(['a'])} dividers="none" />);
-      expect(getComputedStyle(panelCell()).borderBottomWidth).not.toMatch(
-        /--border-width/,
+      expect(panelCell()).not.toHaveClass(
+        '[border-bottom-width:var(--_table-panel-divider-width,var(--border-width))]',
       );
     });
 
@@ -533,8 +609,9 @@ describe('useTableRowExpansion (detail panel)', () => {
     it('draws the panel divider under grid dividers too', () => {
       render(<Harness initialExpanded={new Set(['a'])} dividers="grid" />);
       // The token width, unless the row hands down its own.
-      expect(getComputedStyle(panelCell()).borderBottomWidth).toMatch(
-        /var\(--_table-panel-divider-width,\s*var\(--border-width\)\)/,
+      expect(panelCell()).toHaveClass(
+        '[border-bottom-width:var(--_table-panel-divider-width,var(--border-width))]',
+        '[[data-expansion-panel]:last-child_>_&]:border-b-0',
       );
     });
   });
@@ -544,22 +621,25 @@ describe('useTableRowExpansion (detail panel)', () => {
       screen.getByTestId('panel').closest('tr') as HTMLTableRowElement;
     const panelCell = () =>
       screen.getByTestId('panel').closest('td') as HTMLTableCellElement;
-    const wash = {backgroundColor: 'var(--color-background-muted)'};
 
     it('leaves the panel on the surface behind the table by default', () => {
       // The panel is the row's continuation, not a surface of its own: it
       // takes whatever the table sits on, the way the row does.
       render(<Harness initialExpanded={new Set(['a'])} />);
-      expect(panelRow()).not.toHaveStyle(wash);
-      expect(panelCell()).not.toHaveStyle(wash);
+      expectClassSet(panelRow(), {excludes: [ROW_EXPANSION_PANEL_MUTED_CLASS]});
+      expectClassSet(panelCell(), {
+        excludes: [ROW_EXPANSION_PANEL_MUTED_CLASS],
+      });
     });
 
     it('washes the panel cell, not its row, when muted is asked for', () => {
       // A row that paints its own box keeps a moving clip as the panel plays
       // in. The cell slides in with the content instead.
       render(<Harness initialExpanded={new Set(['a'])} panelVariant="muted" />);
-      expect(panelCell()).toHaveStyle(wash);
-      expect(panelRow()).not.toHaveStyle(wash);
+      expectClassSet(panelCell(), {
+        includes: [ROW_EXPANSION_PANEL_MUTED_CLASS],
+      });
+      expectClassSet(panelRow(), {excludes: [ROW_EXPANSION_PANEL_MUTED_CLASS]});
     });
   });
 
@@ -568,33 +648,31 @@ describe('useTableRowExpansion (detail panel)', () => {
      * jsdom's selector engine does not implement `:nth-child(… of S)` — it
      * matches nothing and reports no error — so the paint itself cannot be
      * asserted here; the browser-side check is the visual regression suite.
-     * What this can pin is the two halves of the contract: the panel is a
-     * sibling row in the same tbody (which is what makes an exclusion
-     * necessary at all), and every stripe rule counts only rows that are not
-     * panels.
+     * The stripe is a class rule in the built sheet, not a rule StyleX injects
+     * into the document, so the selector is read from the built sheet. What
+     * this can pin is the two halves of the contract: the panel is a sibling
+     * row in the same tbody (which is what makes an exclusion necessary at
+     * all), and every stripe rule counts only rows that are not panels.
      *
      * Both cases render without row dividers. The panel's divider carry reads
      * the striped row's computed style, and jsdom resolves it in about 2,000
      * nested passes, which takes seconds. Striping does not depend on
      * dividers.
      */
-    const stripeRules = () => {
+    const stripeRules = async () => {
+      const css = await buildAstryxTailwindCss();
       const out: string[] = [];
-      for (const sheet of Array.from(document.styleSheets)) {
-        try {
-          for (const rule of Array.from(sheet.cssRules)) {
-            if (rule.cssText.includes(':nth-child(even')) {
-              out.push(rule.cssText);
-            }
-          }
-        } catch {
-          // cross-origin sheet; nothing of ours lives there
-        }
+      for (
+        let at = css.indexOf('nth-child(even');
+        at >= 0;
+        at = css.indexOf('nth-child(even', at + 1)
+      ) {
+        out.push(css.slice(at, css.indexOf('{', at) + 1));
       }
       return out;
     };
 
-    it('counts stripes over data rows only, so an open panel cannot flip them', () => {
+    it('counts stripes over data rows only, so an open panel cannot flip them', async () => {
       render(
         <Harness isStriped dividers="none" initialExpanded={new Set(['a'])} />,
       );
@@ -607,7 +685,7 @@ describe('useTableRowExpansion (detail panel)', () => {
       expect(bodyRows).toHaveLength(4);
       expect(bodyRows[1]).toHaveAttribute('data-expansion-panel');
 
-      const rules = stripeRules();
+      const rules = await stripeRules();
       expect(rules.length).toBeGreaterThan(0);
       for (const rule of rules) {
         expect(rule).toContain('of :not([data-expansion-panel])');
@@ -803,10 +881,11 @@ describe('useTableRowExpansion (detail panel)', () => {
 
     it('marks the row as interactive only when the click is wired up', () => {
       const {unmount} = render(<Harness hasRowClickExpansion />);
-      expect(rowFor('Ada')).toHaveStyle({cursor: 'pointer'});
+      const clickable = ROW_EXPANSION_CLICKABLE_ROW_CLASS.split(' ');
+      expectClassSet(rowFor('Ada'), {includes: clickable});
       unmount();
       render(<Harness />);
-      expect(rowFor('Ada')).not.toHaveStyle({cursor: 'pointer'});
+      expectClassSet(rowFor('Ada'), {excludes: clickable});
     });
   });
 

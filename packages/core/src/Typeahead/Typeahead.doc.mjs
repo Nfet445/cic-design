@@ -331,6 +331,22 @@ export const docs = {
       },
       {className: 'astryx-typeahead-item'},
     ],
+    vars: [
+      {
+        name: '--astryx-typeahead-held-block-size',
+        description:
+          'Block size the open list was measured at, so holding it through a filter keeps the layer from jumping',
+        default: 'min(300px, 100dvb)',
+        private: true,
+      },
+      {
+        name: '--astryx-typeahead-menu-width',
+        description:
+          'Inline size the menu takes, copied from the trigger so the list lines up with the field',
+        default: 'auto',
+        private: true,
+      },
+    ],
   },
   usage: {
     anatomy,

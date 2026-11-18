@@ -2,12 +2,18 @@
 
 /**
  * @file build-css.mjs
- * Post-build script that extracts StyleX CSS from compiled source files
- * and outputs a combined stylesheet wrapped in @layer astryx-base.
+ * Post-build script that writes a package's prebuilt stylesheet: the Astryx
+ * layer order, the package's compiled StyleX rules when it has any, then its
+ * generated token sheets, all inside @layer astryx-base.
  *
  * Usage:
  *   node scripts/build-css.mjs                 # core  → packages/core/dist/astryx.css
  *   node scripts/build-css.mjs --package lab   # lab   → packages/lab/dist/lab.css
+ *   node scripts/build-css.mjs --package charts --allow-empty
+ *                                              # a package with no StyleX rule
+ *                                              # and no generated sheet writes
+ *                                              # an empty stylesheet instead of
+ *                                              # failing
  *
  * This script:
  * 1. Walks component sources and explicit distribution entries through StyleX imports
@@ -15,7 +21,11 @@
  * 3. Fails when the stylesheet reads a StyleX-generated variable that nothing
  *    declares (see undefinedStyleXVariables)
  * 4. Outputs a combined stylesheet that registers the Astryx layer order and
- *    places all rules in @layer astryx-base
+ *    places the rules and the generated token sheets in @layer astryx-base
+ *
+ * The StyleX pass is optional. A package that moved every style to Tailwind
+ * keeps no rule to collect and still ships the layer order and its token
+ * sheets, so a page that loads only its stylesheet keeps every default.
  *
  * Dist consumers import the full stylesheet, e.g.:
  *   import '@astryxdesign/core/astryx.css';
@@ -63,6 +73,12 @@ export const TARGETS = {
     // Dist consumers cannot retain its defineVars call, so astryx.css provides
     // this group even without a Core component import (spec:AST-066 FR3).
     stylexEntries: STYLEX_ENTRIES['@astryxdesign/core'],
+    // The token defaults used to reach this sheet as StyleX defineVars
+    // declarations. They now live in generated sheets, and this sheet still
+    // carries them so a page that loads only astryx.css keeps every default.
+    extraCss: ['theme/tokens.css', 'theme/dataTokens.css'].map(file =>
+      path.resolve(CORE_SRC, file),
+    ),
   },
   lab: {
     src: path.resolve(ROOT, 'packages/lab/src'),
@@ -118,6 +134,7 @@ function parseTarget() {
     name,
     ...target,
     provider: target.provider ? TARGETS[target.provider] : undefined,
+    allowEmpty: process.argv.includes('--allow-empty'),
   };
 }
 
@@ -167,8 +184,26 @@ export const ASTRYX_LAYER_ORDER = LAYER_ORDER;
  * Wrap a package's compiled StyleX rules as its prebuilt stylesheet: a banner,
  * the layer-order registration, then every rule inside `@layer astryx-base`.
  */
-export function composePackageStylesheet(banner, css) {
-  return `/* ${banner} */\n/* Auto-generated. Do not edit manually. */\n\n${layerBlock(css)}`;
+export function composePackageStylesheet(banner, css, extraCss = '') {
+  const body = extraCss === '' ? css : `${css}\n\n${extraCss}`;
+  return `/* ${banner} */\n/* Auto-generated. Do not edit manually. */\n\n${layerBlock(body)}`;
+}
+
+/**
+ * A target's generated sheets, joined without their banners, in print order.
+ * Empty for a target that carries none.
+ */
+export async function readExtraCss(target) {
+  const files = target.extraCss ?? [];
+  const sheets = await Promise.all(
+    files.map(async file => withoutBanner(await fs.readFile(file, 'utf8'))),
+  );
+  return sheets.join('\n\n');
+}
+
+/** A generated sheet without its banner, ready to join another rule block. */
+function withoutBanner(css) {
+  return css.replace(/^(?:\/\*[^*]*\*\/[ \t]*\n)+/, '').trim();
 }
 
 /**
@@ -227,53 +262,70 @@ async function readProviderCss(provider) {
   }
 }
 
-async function main() {
-  const target = parseTarget();
+/**
+ * Build and write one target's stylesheet, and return the text it wrote.
+ *
+ * shortcut: the StyleX pass still runs for the packages that keep
+ * `stylex.create`; ticket 64 lands the last of those and ticket 36 deletes the
+ * pass.
+ */
+export async function writePackageStylesheet(target) {
   const allRules = await collectStyleXCSS(target);
+  // The generated sheets belong to the package, not to its StyleX pass.
+  const extraCss = await readExtraCss(target);
 
   if (allRules.length === 0) {
-    console.error('No StyleX rules found!');
-    process.exit(1);
+    // A package with neither a rule nor a sheet would write an empty
+    // stylesheet, which is a lost rules collection and not a migration, so the
+    // default stays strict.
+    if (extraCss === '' && !target.allowEmpty) {
+      console.error('No StyleX rules found!');
+      process.exit(1);
+    }
+    console.warn(
+      'No StyleX rules found, so the stylesheet holds its layer order' +
+        (extraCss === '' ? '.' : ' and its generated token sheets.'),
+    );
   }
 
-  await fs.mkdir(target.dist, {recursive: true});
+  const combinedCSS = allRules.length === 0 ? '' : processRules(allRules);
 
-  const combinedCSS = processRules(allRules);
-
-  const providerCss = target.provider
-    ? await readProviderCss(target.provider)
-    : '';
-  if (providerCss === null) {
-    console.warn(
-      `${target.provider.outFile} is not built yet, so StyleX variables ${target.outFile} reads are not checked.`,
-    );
-  } else {
-    const missing = undefinedStyleXVariables(combinedCSS, providerCss);
-    if (missing.length > 0) {
-      const detail = missing
-        .flatMap(name => rulesReading(combinedCSS, name))
-        .map(rule => `  ${rule}`)
-        .join('\n');
-      console.error(
-        `${target.outFile} reads StyleX variables nothing declares: ${missing.join(', ')}.\n` +
-          `A style reads, from a .stylex.ts module, a value StyleX cannot inline there:\n` +
-          `a plain exported object or string (compose defineVars tokens instead), or a\n` +
-          `defineConsts member passed to firstThatWorks on its own (wrap it in calc()).\n` +
-          detail,
+  if (combinedCSS !== '') {
+    const providerCss = target.provider
+      ? await readProviderCss(target.provider)
+      : '';
+    if (providerCss === null) {
+      console.warn(
+        `${target.provider.outFile} is not built yet, so StyleX variables ${target.outFile} reads are not checked.`,
       );
-      process.exit(1);
+    } else {
+      const missing = undefinedStyleXVariables(combinedCSS, providerCss);
+      if (missing.length > 0) {
+        const detail = missing
+          .flatMap(name => rulesReading(combinedCSS, name))
+          .map(rule => `  ${rule}`)
+          .join('\n');
+        console.error(
+          `${target.outFile} reads StyleX variables nothing declares: ${missing.join(', ')}.\n` +
+            `A style reads, from a .stylex.ts module, a value StyleX cannot inline there:\n` +
+            `a plain exported object or string (compose defineVars tokens instead), or a\n` +
+            `defineConsts member passed to firstThatWorks on its own (wrap it in calc()).\n` +
+            detail,
+        );
+        process.exit(1);
+      }
     }
   }
 
-  const outPath = path.resolve(target.dist, target.outFile);
-  await fs.writeFile(
-    outPath,
-    composePackageStylesheet(target.banner, combinedCSS),
-    'utf8',
-  );
-  console.log(
-    `${target.outFile}: ${(combinedCSS.length / 1024).toFixed(1)} KB`,
-  );
+  const css = composePackageStylesheet(target.banner, combinedCSS, extraCss);
+  await fs.mkdir(target.dist, {recursive: true});
+  await fs.writeFile(path.resolve(target.dist, target.outFile), css, 'utf8');
+  console.log(`${target.outFile}: ${(css.length / 1024).toFixed(1)} KB`);
+  return css;
+}
+
+async function main() {
+  await writePackageStylesheet(parseTarget());
 }
 
 if (fileURLToPath(import.meta.url) === process.argv[1]) {

@@ -13,12 +13,15 @@ import {Text} from './Text';
 import '../Tooltip/Tooltip';
 import type {TextType} from './Text';
 import type {TextColor} from '../theme/types';
+import {
+  classesOf,
+  expectClassSet,
+  expectVariable,
+} from '../__tests__/classNameAssertions';
 
-// jsdom does not resolve var(); the browser spec checks the resolved value.
 // Untruncated text reads the private container override, else break-word.
-const DEFAULT_WRAP = 'var(--_astryx-text-overflow-wrap,break-word)';
-const wrapOf = (element: Element) =>
-  getComputedStyle(element).overflowWrap.replace(/\s/g, '');
+const OVERFLOW_WRAP_CLASS =
+  '[overflow-wrap:var(--_astryx-text-overflow-wrap,break-word)]';
 
 describe('Text', () => {
   describe('rendering', () => {
@@ -246,17 +249,154 @@ describe('Text', () => {
           <Text display="block">{`${token}/block`}</Text>
         </>,
       );
-      expect(wrapOf(screen.getByText(token))).toBe(DEFAULT_WRAP);
-      expect(wrapOf(screen.getByText(`${token}/block`))).toBe(DEFAULT_WRAP);
+      expectClassSet(screen.getByText(token), {
+        includes: ['inline', OVERFLOW_WRAP_CLASS],
+      });
+      expectClassSet(screen.getByText(`${token}/block`), {
+        includes: ['block', OVERFLOW_WRAP_CLASS],
+      });
     });
 
     it('leaves single-line truncation clipping on one line', () => {
       render(<Text maxLines={1}>{token}</Text>);
-      const style = getComputedStyle(screen.getByText(token));
-      expect(style.whiteSpace).toBe('nowrap');
-      expect(style.textOverflow).toBe('ellipsis');
-      expect(style.wordBreak).toBe('break-all');
-      expect(style.overflowWrap).not.toBe('break-word');
+      expectClassSet(screen.getByText(token), {
+        includes: [
+          'block',
+          'overflow-hidden',
+          'text-ellipsis',
+          'whitespace-nowrap',
+          '[word-break:break-all]',
+        ],
+        // Clipping owns the wrap, so the untruncated rule stays off.
+        excludes: [OVERFLOW_WRAP_CLASS],
+      });
+    });
+  });
+
+  // The class set names the token variable each axis reads; the package
+  // stylesheet test asserts the declaration behind each class.
+  describe('class map', () => {
+    it('names the type scale classes of the default body type', () => {
+      render(<Text>Body</Text>);
+      expectClassSet(screen.getByText('Body'), {
+        includes: [
+          'text-[color:var(--color-text-primary)]',
+          'text-[length:var(--text-body-size)]',
+          '[line-height:var(--text-body-leading)]',
+          '[font-weight:var(--text-body-weight)]',
+        ],
+        // Start alignment is the initial value, so it needs no class.
+        excludes: ['text-start'],
+      });
+    });
+
+    it('replaces the type font size when size is set', () => {
+      render(<Text size="lg">Sized</Text>);
+      expectClassSet(screen.getByText('Sized'), {
+        includes: [
+          'text-[length:var(--font-size-lg)]',
+          '[line-height:var(--text-body-leading)]',
+        ],
+        excludes: ['text-[length:var(--text-body-size)]'],
+      });
+    });
+
+    it('replaces the type weight when weight is set', () => {
+      render(<Text weight="semibold">Weighted</Text>);
+      expectClassSet(screen.getByText('Weighted'), {
+        includes: ['[font-weight:var(--font-weight-semibold)]'],
+        excludes: ['[font-weight:var(--text-body-weight)]'],
+      });
+    });
+
+    it('gives the code type the code family and leading', () => {
+      render(<Text type="code">const x = 1;</Text>);
+      expectClassSet(screen.getByText('const x = 1;'), {
+        includes: [
+          'font-mono',
+          'text-[length:var(--text-code-size)]',
+          '[line-height:var(--text-code-leading)]',
+        ],
+      });
+    });
+
+    it('names the color, alignment and decoration classes', () => {
+      render(
+        <Text
+          color="accent"
+          justify="center"
+          hasStrikethrough
+          hasTabularNumbers>
+          Decorated
+        </Text>,
+      );
+      expectClassSet(screen.getByText('Decorated'), {
+        includes: [
+          'text-[color:var(--color-text-accent)]',
+          'text-center',
+          'line-through',
+          '[font-variant-numeric:tabular-nums]',
+        ],
+      });
+    });
+
+    it('names the wrap utility of textWrap', () => {
+      render(<Text textWrap="balance">Balanced</Text>);
+      expectClassSet(screen.getByText('Balanced'), {
+        includes: ['text-balance'],
+      });
+    });
+
+    it('forces a capsize text into a trimmed block', () => {
+      render(<Text hasCapsize>Capsize</Text>);
+      expectClassSet(screen.getByText('Capsize'), {
+        includes: [
+          'block',
+          '[text-box-edge:cap_alphabetic]',
+          '[text-box-trim:trim-both]',
+        ],
+        excludes: ['inline'],
+      });
+    });
+
+    it('keeps a clamp on a capsize text without its box', () => {
+      render(
+        <Text hasCapsize maxLines={3}>
+          Capsize clamp
+        </Text>,
+      );
+      const element = screen.getByText('Capsize clamp');
+      expectVariable(element, '--astryx-text-line-clamp', '3');
+      expectClassSet(element, {
+        includes: [
+          'block',
+          '[-webkit-line-clamp:var(--astryx-text-line-clamp)]',
+        ],
+        excludes: ['[display:-webkit-box]'],
+      });
+    });
+
+    it('publishes a multi-line clamp as a custom property', () => {
+      render(<Text maxLines={3}>Clamped</Text>);
+      const element = screen.getByText('Clamped');
+      expectVariable(element, '--astryx-text-line-clamp', '3');
+      expectClassSet(element, {
+        includes: [
+          'overflow-hidden',
+          '[display:-webkit-box]',
+          '[-webkit-box-orient:vertical]',
+          '[-webkit-line-clamp:var(--astryx-text-line-clamp)]',
+        ],
+      });
+    });
+
+    it('publishes no clamp property without a multi-line clamp', () => {
+      render(<Text maxLines={1}>Single</Text>);
+      expectVariable(
+        screen.getByText('Single'),
+        '--astryx-text-line-clamp',
+        '',
+      );
     });
   });
 
@@ -322,15 +462,12 @@ describe('Text custom colors', () => {
     );
     const custom = screen.getByText('Custom');
     const builtin = screen.getByText('Builtin');
-    // Neither throws, and the custom color reuses primary's baseline StyleX
-    // class (the real color comes from theme CSS via `data-color="brand"`).
-    const primaryAtomic = builtin.className
-      .split(/\s+/)
-      .filter(c => c.startsWith('x'));
-    expect(primaryAtomic.length).toBeGreaterThan(0);
-    for (const cls of primaryAtomic) {
-      expect(custom.className).toContain(cls);
-    }
+    // Neither throws, and the custom color reuses primary's baseline class
+    // (the real color comes from theme CSS via `data-color="brand"`).
+    expectClassSet(builtin, {
+      includes: ['text-[color:var(--color-text-primary)]'],
+    });
+    expect(classesOf(custom)).toEqual(classesOf(builtin));
   });
 
   it('still applies built-in colors directly', () => {

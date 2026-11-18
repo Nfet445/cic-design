@@ -49,8 +49,8 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars} from '../../../theme/tokens.stylex';
+import {colorVarNames} from '../../../theme/tokenVars';
+import {SELECTION_CELL_CLASS} from './selectionClasses';
 import {CheckboxInput} from '../../../CheckboxInput';
 import {mergeRefs} from '../../../utils';
 import type {TablePlugin, TableColumn, BodyRowRenderProps} from '../../types';
@@ -348,7 +348,7 @@ function SelectionCellContentInner<T extends Record<string, unknown>>({
 // Styles
 // =============================================================================
 
-const selectedBgColor = colorVars['--color-accent-muted'];
+const selectedBgColor = colorVarNames['--color-accent-muted'];
 
 /**
  * The row's current fill, republished for pinned cells to read. Declared as a
@@ -356,14 +356,6 @@ const selectedBgColor = colorVars['--color-accent-muted'];
  * key on the reading side, so there is no one constant both ends can share.
  */
 const ROW_OVERLAY_VAR = '--table-row-overlay';
-
-const selectionColumnStyles = stylex.create({
-  center: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
 
 /** Selection column key — prefixed to avoid collisions with user columns. */
 const SELECTION_COLUMN_KEY = '__xds_selection';
@@ -400,14 +392,14 @@ export function useTableSelection<T extends Record<string, unknown>>(
     (): TableColumn<T> => ({
       key: SELECTION_COLUMN_KEY,
       header: (
-        <div {...stylex.props(selectionColumnStyles.center)}>
+        <div className={SELECTION_CELL_CLASS}>
           <SelectAllCheckbox />
         </div>
       ),
       width: SELECTION_COLUMN_WIDTH,
       resizable: false,
       renderCell: (item: T) => (
-        <div {...stylex.props(selectionColumnStyles.center)}>
+        <div className={SELECTION_CELL_CLASS}>
           <SelectionCellContent item={item} />
         </div>
       ),

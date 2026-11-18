@@ -14,10 +14,7 @@ import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {Button} from './Button';
 import {ButtonGroup} from '../ButtonGroup';
-
-function classesOf(el: Element): string[] {
-  return el.className.split(/\s+/).filter(Boolean);
-}
+import {classesOf} from '../__tests__/classNameAssertions';
 
 function colorClasses(el: Element): string[] {
   return classesOf(el).filter(c => /forced-colors:border-.*\[color:/.test(c));

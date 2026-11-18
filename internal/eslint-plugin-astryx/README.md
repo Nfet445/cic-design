@@ -752,7 +752,7 @@ import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 stylex.props(focusOutlineStyles.focusVisible);
 ````
 
-**Scope:** `outline` and its longhands only, and only where the ring is drawn — suppressing one on a broader selector (`outline: {':focus': 'none'}`) is legitimate and is not flagged. A field's `:focus-within` border and inset box-shadow (`Field/inputStyles.stylex.ts`) are a different treatment — "you are typing here" — and are deliberately not policed by this rule.
+**Scope:** `outline` and its longhands only, and only where the ring is drawn — suppressing one on a broader selector (`outline: {':focus': 'none'}`) is legitimate and is not flagged. A field's `:focus-within` border and inset box-shadow (`Field/fieldClasses.ts`) are a different treatment — "you are typing here" — and are deliberately not policed by this rule.
 
 Ships as an **error in both tiers**: core is clean, and this keeps it that way.
 

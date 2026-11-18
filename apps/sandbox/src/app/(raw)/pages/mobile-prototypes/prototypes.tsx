@@ -14,6 +14,7 @@
 
 import {useRef, useState, useEffect, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
+import {mergeProps} from '@astryxdesign/core/utils';
 import {Text, Heading} from '@astryxdesign/core/Text';
 import {Button} from '@astryxdesign/core/Button';
 import {IconButton} from '@astryxdesign/core/IconButton';
@@ -32,7 +33,7 @@ import {TextInput} from '@astryxdesign/core/TextInput';
 import type {ISODateString, DateRange} from '@astryxdesign/core/Calendar';
 import {Pagination} from '@astryxdesign/core/Pagination';
 import {Card} from '@astryxdesign/core/Card';
-import {Field, inputWrapperStyles} from '@astryxdesign/core/Field';
+import {Field, fieldInputWrapperClassName} from '@astryxdesign/core/Field';
 import {CheckboxList, CheckboxListItem} from '@astryxdesign/core/CheckboxList';
 import {List, ListItem} from '@astryxdesign/core/List';
 import {MetadataList, MetadataListItem} from '@astryxdesign/core/MetadataList';
@@ -1208,7 +1209,10 @@ function PowerSearchDemo() {
           <div
             id="ps-field"
             onClick={() => setOpen(true)}
-            {...stylex.props(inputWrapperStyles.base, s.psBox)}>
+            {...mergeProps(
+              stylex.props(s.psBox),
+              fieldInputWrapperClassName(),
+            )}>
             <SearchIcon
               width={16}
               height={16}
@@ -1982,7 +1986,10 @@ function TokenizerDemo() {
         <Field label="Skills" inputID="tok-field" width="100%">
           <div
             id="tok-field"
-            {...stylex.props(inputWrapperStyles.base, s.tokRow)}>
+            {...mergeProps(
+              stylex.props(s.tokRow),
+              fieldInputWrapperClassName(),
+            )}>
             {tokens.map(t => (
               <Token
                 key={t}

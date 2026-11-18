@@ -19,13 +19,21 @@
 import type {AriaRole, ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import {use, useCallback, useRef, useState, useSyncExternalStore} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars, spacingVars} from '../theme/tokens.stylex';
+import {
+  layoutPanelClassName,
+  layoutPanelCollapseEndClassName,
+  layoutPanelCollapseStartClassName,
+  layoutPanelDividerEndClassName,
+  layoutPanelDividerStartClassName,
+  layoutPanelWidthClassName,
+} from './layoutClasses';
+import type {LayoutInstanceStyle} from './layoutClasses';
 import {LayoutAreaContext} from './LayoutAreaContext';
 import {LayoutSlotsContext} from './LayoutSlotsContext';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useScrollRegionProps} from '../hooks/useScrollRegionProps';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {
   resizablePropsOf,
@@ -42,95 +50,9 @@ import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {moveFocusLeftBehind, noteFocusWithin} from '../utils/focusReturn';
 import {useFocusLeavingChange} from '../utils/useFocusLeavingChange';
 import {themeProps} from '../utils/themeProps';
-import {
-  paddingStyles,
-  containerPaddingInlineVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingBlockEndVarStyles,
-} from './padding.stylex';
-
-const styles = stylex.create({
-  panel: {
-    boxSizing: 'border-box',
-    flexShrink: 0,
-    overflow: 'clip',
-    paddingInlineStart: `var(--layout-padding-inner-x, ${spacingVars['--spacing-4']})`,
-    paddingInlineEnd: `var(--layout-padding-inner-x, ${spacingVars['--spacing-4']})`,
-    paddingBlockStart: `var(--layout-padding-inner-y, ${spacingVars['--spacing-4']})`,
-    paddingBlockEnd: `var(--layout-padding-inner-y, ${spacingVars['--spacing-4']})`,
-    '--container-padding-inline-start': `var(--layout-padding-inner-x, ${spacingVars['--spacing-4']})`,
-    '--container-padding-inline-end': `var(--layout-padding-inner-x, ${spacingVars['--spacing-4']})`,
-    '--container-padding-block-start': `var(--layout-padding-inner-y, ${spacingVars['--spacing-4']})`,
-    '--container-padding-block-end': `var(--layout-padding-inner-y, ${spacingVars['--spacing-4']})`,
-  },
-  // An edge on the Layout's boundary takes the Layout-edge inset. Each edge
-  // publishes the padding it applies, so full-bleed children line up with it.
-  startPanel: {
-    paddingInlineStart: `var(--layout-padding-own-outer-x, var(--layout-padding-outer-x, ${spacingVars['--spacing-4']}))`,
-    '--container-padding-inline-start': `var(--layout-padding-own-outer-x, var(--layout-padding-outer-x, ${spacingVars['--spacing-4']}))`,
-  },
-  endPanel: {
-    paddingInlineEnd: `var(--layout-padding-own-outer-x, var(--layout-padding-outer-x, ${spacingVars['--spacing-4']}))`,
-    '--container-padding-inline-end': `var(--layout-padding-own-outer-x, var(--layout-padding-outer-x, ${spacingVars['--spacing-4']}))`,
-  },
-  noHeader: {
-    paddingBlockStart: `var(--layout-padding-own-outer-y, var(--layout-padding-outer-y, ${spacingVars['--spacing-4']}))`,
-    '--container-padding-block-start': `var(--layout-padding-own-outer-y, var(--layout-padding-outer-y, ${spacingVars['--spacing-4']}))`,
-  },
-  noFooter: {
-    paddingBlockEnd: `var(--layout-padding-own-outer-y, var(--layout-padding-outer-y, ${spacingVars['--spacing-4']}))`,
-    '--container-padding-block-end': `var(--layout-padding-own-outer-y, var(--layout-padding-outer-y, ${spacingVars['--spacing-4']}))`,
-  },
-  fullBleed: {
-    paddingInlineStart: 0,
-    paddingInlineEnd: 0,
-    paddingBlockStart: 0,
-    paddingBlockEnd: 0,
-    '--container-padding-inline-start': '0px',
-    '--container-padding-inline-end': '0px',
-    '--container-padding-block-start': '0px',
-    '--container-padding-block-end': '0px',
-  },
-  scrollable: {
-    overflow: 'auto',
-  },
-  // At width 0 the padding box is 0 too, so the clip hides every child.
-  zeroWidth: {
-    paddingInlineStart: 0,
-    paddingInlineEnd: 0,
-    overflow: 'clip',
-  },
-  // For start panel: divider on end edge
-  dividerEnd: {
-    borderInlineEndWidth: 1,
-    borderInlineEndStyle: 'solid',
-    borderInlineEndColor: colorVars['--color-border'],
-  },
-  // For end panel: divider on start edge
-  dividerStart: {
-    borderInlineStartWidth: 1,
-    borderInlineStartStyle: 'solid',
-    borderInlineStartColor: colorVars['--color-border'],
-  },
-  // When no divider, collapse spacing on the side facing content
-  // Start panel: collapse end (right in LTR) to merge with content
-  // End panel: collapse start (left in LTR) to merge with content
-  collapseStart: {
-    marginInlineStart: `calc(-1 * var(--layout-padding-inner-x, ${spacingVars['--spacing-4']}))`,
-  },
-  collapseEnd: {
-    marginInlineEnd: `calc(-1 * var(--layout-padding-inner-x, ${spacingVars['--spacing-4']}))`,
-  },
-});
+import {xstyleProps} from '../utils/xstyle';
 
 const returnFalse = () => false;
-
-// Dynamic styles for sizing props
-const dynamicStyles = stylex.create({
-  sizing: (width: SizeValue | null) => ({
-    width,
-  }),
-});
 
 export interface LayoutPanelProps extends BaseProps<HTMLDivElement> {
   ref?: React.Ref<HTMLDivElement>;
@@ -355,19 +277,28 @@ export function LayoutPanel({
   });
   const mergedRef = useMergedRefs(ref, region.ref, elementRef);
 
-  // Select divider style based on position
-  const dividerStyle = isStartPanel
-    ? styles.dividerEnd
+  // The divider and the collapse inset sit on the content-facing edge.
+  const dividerClassName = isStartPanel
+    ? layoutPanelDividerEndClassName
     : isEndPanel
-      ? styles.dividerStart
+      ? layoutPanelDividerStartClassName
       : null;
-
-  // Select collapse style based on position (collapse the side where divider would be)
-  const collapseStyle = isStartPanel
-    ? styles.collapseEnd
+  const collapseClassName = isStartPanel
+    ? layoutPanelCollapseEndClassName
     : isEndPanel
-      ? styles.collapseStart
+      ? layoutPanelCollapseStartClassName
       : null;
+  // A panel's own width is a value, not a variant: the class reads it from a
+  // variable this element writes, so a consumer `xstyle` still overrides it.
+  const widthStyle: LayoutInstanceStyle | undefined =
+    effectiveWidth != null
+      ? {
+          '--astryx-layout-panel-width':
+            typeof effectiveWidth === 'number'
+              ? `${effectiveWidth}px`
+              : effectiveWidth,
+        }
+      : undefined;
 
   return (
     <div
@@ -375,31 +306,25 @@ export function LayoutPanel({
       role={region.role}
       aria-label={region['aria-label']}
       {...mergeProps(
-        themeProps('layout-panel'),
-        stylex.props(
-          styles.panel,
-          dynamicStyles.sizing(effectiveWidth ?? null),
-          // Outer padding on container edges (unless component is full bleed)
-          isStartPanel &&
-            !isZeroPadding &&
-            padding == null &&
-            styles.startPanel,
-          isEndPanel && !isZeroPadding && padding == null && styles.endPanel,
-          !hasHeader && !isZeroPadding && padding == null && styles.noHeader,
-          !hasFooter && !isZeroPadding && padding == null && styles.noFooter,
-          isScrollable && styles.scrollable,
-          isZeroPadding && styles.fullBleed,
-          padding != null && paddingStyles[padding],
-          padding != null && containerPaddingInlineVarStyles[padding],
-          padding != null && containerPaddingBlockStartVarStyles[padding],
-          padding != null && containerPaddingBlockEndVarStyles[padding],
-          hasDivider && dividerStyle,
-          shouldCollapseSpacing && collapseStyle,
-          isZeroWidth && styles.zeroWidth,
-          xstyle,
-        ),
+        mergeProps(themeProps('layout-panel'), {
+          className: tw(
+            layoutPanelClassName({
+              hasFooter,
+              hasHeader,
+              isStart: isStartPanel,
+              isEnd: isEndPanel,
+              isScrollable: isScrollable && !isZeroWidth,
+              isZeroWidth,
+              padding,
+            }),
+            effectiveWidth != null && layoutPanelWidthClassName,
+            hasDivider && dividerClassName,
+            shouldCollapseSpacing && collapseClassName,
+          ),
+        }),
+        xstyleProps(xstyle),
         className,
-        style,
+        {...style, ...widthStyle},
       )}
       {...props}
       {...(isConcealed ? {inert: true, 'aria-hidden': true} : {})}>

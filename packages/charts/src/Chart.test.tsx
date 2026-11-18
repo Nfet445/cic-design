@@ -68,6 +68,34 @@ function reportWidth(width: number) {
   });
 }
 
+describe('Chart xstyle', () => {
+  it('preserves consumer styles before and after measurement', () => {
+    const {container, rerender} = render(
+      <Chart
+        data={data}
+        xKey="month"
+        series={[bar('revenue')]}
+        xstyle="consumer-override"
+      />,
+    );
+    expect(container.firstElementChild).toHaveClass('consumer-override');
+    reportWidth(600);
+    expect(container.firstElementChild).toHaveClass('consumer-override');
+    rerender(
+      <Chart
+        data={data}
+        xKey="month"
+        series={[bar('revenue')]}
+        xstyle={{backgroundColor: 'red', color: 'blue'}}
+        style={{color: 'green'}}
+      />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.style.backgroundColor).toBe('red');
+    expect(root.style.color).toBe('green');
+  });
+});
+
 describe('Chart accessible name', () => {
   it('exposes the svg as a named image with a default label', () => {
     render(

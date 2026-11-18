@@ -37,21 +37,23 @@ import {
 import {flushSync} from 'react-dom';
 import * as stylex from '@stylexjs/stylex';
 import {
-  colorVars,
-  sizeVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-  borderVars,
-} from '../theme/tokens.stylex';
+  NUMBER_INPUT_DECREMENT_CLASS,
+  NUMBER_INPUT_INCREMENT_ICON_CLASS,
+  NUMBER_INPUT_STEPPER_COLUMN_CLASS,
+  NUMBER_INPUT_UNITS_CLASS,
+  numberInputEntryClassName,
+  numberInputHeightClassName,
+  numberInputWrapperClassName,
+  numberInputStepperButtonClassName,
+} from './numberInputClasses';
+import {tw} from '../utils/tw';
 import {
   Field,
   InputClearButton,
   type InputStatus,
-  inputWrapperStyles,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputStatusFocusWithinStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
 } from '../Field';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -60,9 +62,9 @@ import {getInputARIA} from '../utils';
 import {joinAriaIDs} from '../utils/inputAria';
 import {withholdCallerHandlers} from '../utils/disabledInteraction';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {lockSelection, locksSelectionFor} from '../utils/selectionLock';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useSize} from '../SizeContext/SizeContext';
 import {useInputContainer} from '../hooks/useInputContainer';
 import {useInputStatusIcon} from '../hooks/useInputStatusIcon';
@@ -70,159 +72,10 @@ import {useResolvedRequired} from '../hooks/useResolvedRequired';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
 
-// Public padding tokens for the `number-input` theme target. A theme writes an
-// ordinary `padding` (in ANY spelling — the shorthand, `paddingBlock`, or a
-// single `paddingBlockStart`) and the pipeline's `container` expansion parses
-// it and emits these normalized per-side tokens; the wrapper and the stepper
-// column both read them, so the column tracks whatever the theme sets instead
-// of assuming the default. Routing through the shared expansion rather than a
-// hand-rolled property→var mapping is what makes every spelling work: a
-// mapping only fires for the exact property name it names.
-//
-// Read order per level: `var(--astryx-…, <next level>)`, terminating at the
-// shared field defaults (NOT the container default --spacing-4, which is a
-// layout metric and would resize every themed field). Built as chained const
-// strings — no function calls — so StyleX can statically analyze them; same
-// shape as the card/section/dialog chains in Layout/container.stylex.ts.
-const FIELD_PAD_BLOCK = spacingVars['--spacing-1'];
-const FIELD_PAD_INLINE = spacingVars['--spacing-2'];
-const padBlockAll = `var(--astryx-number-input-padding, ${FIELD_PAD_BLOCK})`;
-const padInlineAll = `var(--astryx-number-input-padding, ${FIELD_PAD_INLINE})`;
-const padInline = `var(--astryx-number-input-padding-inline, ${padInlineAll})`;
-const padInlineStart = `var(--astryx-number-input-padding-inline-start, ${padInline})`;
-const padInlineEnd = `var(--astryx-number-input-padding-inline-end, ${padInline})`;
-const padBlockStart = `var(--astryx-number-input-padding-block-start, ${padBlockAll})`;
-const padBlockEnd = `var(--astryx-number-input-padding-block-end, ${padBlockAll})`;
+export type NumberInputSize = 'sm' | 'md' | 'lg';
 
-const styles = stylex.create({
-  wrapper: {
-    zIndex: 1,
-    // Applied per side rather than through the shared field base's
-    // `paddingBlock`/`paddingInline` shorthands, because the stepper column
-    // has to cancel the block padding edge by edge — an asymmetric
-    // `paddingBlock: 4px 12px` needs two different negative margins.
-    paddingBlockStart: padBlockStart,
-    paddingBlockEnd: padBlockEnd,
-    paddingInlineStart: padInlineStart,
-    paddingInlineEnd: padInlineEnd,
-  },
-  wrapperWithNumberSteppers: {
-    paddingInlineEnd: {
-      default: 0,
-      '@media (pointer: coarse)': padInlineEnd,
-    },
-  },
-  input: {
-    display: 'block',
-    flex: 1,
-    minWidth: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    padding: 0,
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-body-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-body-size']})`,
-      },
-    },
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    outline: 'none',
-    '::placeholder': {
-      color: colorVars['--color-text-secondary'],
-    },
-  },
-  inputDisabled: {
-    cursor: 'default',
-  },
-  inputInvalid: {
-    color: colorVars['--color-text-secondary'],
-  },
-  units: {
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    color: colorVars['--color-text-secondary'],
-    flexShrink: 0,
-  },
-  numberSteppers: {
-    alignSelf: 'stretch',
-    // These compact buttons are a fine-pointer affordance. Touch users can
-    // enter a value directly; keyboard stepping remains available.
-    display: {
-      default: 'flex',
-      '@media (pointer: coarse)': 'none',
-    },
-    flexDirection: 'column',
-    flexShrink: 0,
-    width: spacingVars['--spacing-4'],
-    // Cancel the wrapper's block padding edge by edge so the column spans the
-    // field's full height. Reading the same tokens the wrapper applies is what
-    // keeps it flush under a themed padding — including an asymmetric one,
-    // where a single `marginBlock` would be wrong at one end.
-    marginBlockStart: `calc(-1 * ${padBlockStart})`,
-    marginBlockEnd: `calc(-1 * ${padBlockEnd})`,
-    borderInlineStartWidth: borderVars['--border-width'],
-    borderInlineStartStyle: 'solid',
-    borderInlineStartColor: colorVars['--color-border-emphasized'],
-    overflow: 'hidden',
-    borderStartEndRadius: 'var(--_field-radius)',
-    borderEndEndRadius: 'var(--_field-radius)',
-  },
-  numberStepperButton: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    minHeight: 0,
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    color: colorVars['--color-icon-secondary'],
-    backgroundColor: colorVars['--color-background-surface'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    outline: 'none',
-  },
-  numberStepperButtonDisabled: {
-    color: colorVars['--color-icon-disabled'],
-    cursor: 'default',
-    backgroundImage: 'none',
-  },
-  decrementButton: {
-    borderBlockStartWidth: borderVars['--border-width'],
-    borderBlockStartStyle: 'solid',
-    borderBlockStartColor: colorVars['--color-border-emphasized'],
-  },
-  incrementIcon: {
-    transform: 'rotate(180deg)',
-  },
-});
-
-const sizeStyles = stylex.create({
-  sm: {
-    height: sizeVars['--size-element-sm'],
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
-  },
-});
-
-export type NumberInputSize = keyof typeof sizeStyles;
-
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 
 // Re-export shared types for convenience
 
@@ -240,6 +93,7 @@ import {
 } from '../Field/fieldParts';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {useLocale} from '../i18n';
 import {formatEditableNumber} from './numberParser';
 import {
@@ -1384,23 +1238,16 @@ export function NumberInput({
           disabled: isDisabled ? 'disabled' : null,
           readonly: isReadOnly ? 'readonly' : null,
         }),
-        stylex.props(
-          inputWrapperStyles.base,
-          inputWrapperStyles.textField,
-          styles.wrapper,
-          hasNumberSteppers && styles.wrapperWithNumberSteppers,
-          sizeStyles[size],
-          isDisabled && inputWrapperStyles.disabled,
-          isDisabled && inputDisabledFocusStyles.ring,
-          fieldStatus && inputStatusBorderStyles[fieldStatus.type],
-          fieldStatus &&
-            !isDisabled &&
-            inputStatusHoverShadowStyles[fieldStatus.type],
-          fieldStatus && inputStatusFocusWithinStyles[fieldStatus.type],
-          inputGroup && groupStyles.inGroup,
-          controlXstyle,
+        xstyleProps(fieldStatus && !isDisabled ? controlXstyle : undefined),
+        tw(
+          inputGroup && inputGroupMemberClassName,
+          fieldInputWrapperClassName({status: fieldStatus?.type}),
+          numberInputWrapperClassName({hasNumberSteppers}),
+          isDisabled && fieldInputWrapperDisabledClassName,
+          isDisabled && fieldInputWrapperFocusScopeClassName.direct,
+          numberInputHeightClassName({size}),
+          controlClassName,
         ),
-        controlClassName,
         controlStyle,
       )}>
       {startIcon && renderIconSlot(startIcon, {size: 'sm', color: 'secondary'})}
@@ -1448,17 +1295,16 @@ export function NumberInput({
             : undefined
         }
         aria-labelledby={inputLabelledBy}
-        {...stylex.props(
-          styles.input,
-          isDisabled && styles.inputDisabled,
-          shownEntryError != null && styles.inputInvalid,
-        )}
+        className={numberInputEntryClassName({
+          isDisabled,
+          isInvalid: shownEntryError != null,
+        })}
       />
       {htmlName && !isDisabled && (formatValue || isDraftKeptAtBlur) && (
         <input type="hidden" name={htmlName} value={hiddenFormValue} />
       )}
       {units && (
-        <span id={unitsID} {...stylex.props(styles.units)}>
+        <span id={unitsID} className={NUMBER_INPUT_UNITS_CLASS}>
           {units}
         </span>
       )}
@@ -1477,7 +1323,9 @@ export function NumberInput({
       )}
       {statusIcon}
       {hasNumberSteppers && (
-        <div ref={stepperColumnRef} {...stylex.props(styles.numberSteppers)}>
+        <div
+          ref={stepperColumnRef}
+          className={NUMBER_INPUT_STEPPER_COLUMN_CLASS}>
           <button
             type="button"
             tabIndex={-1}
@@ -1513,17 +1361,22 @@ export function NumberInput({
               inputRef.current?.focus();
               stepValue(1);
             }}
-            {...stylex.props(
-              styles.numberStepperButton,
-              interactionOverlayStyles.backgroundImage,
-              (isDisabled || isReadOnly || !canIncrement) &&
-                styles.numberStepperButtonDisabled,
+            {...mergeProps(
+              tw(
+                numberInputStepperButtonClassName({
+                  isDisabled: isDisabled || isReadOnly || !canIncrement,
+                }),
+                // The hover and press paint; its strength and release stay the
+                // StyleX arm in the next slot.
+                interactionOverlayBackgroundImageClassName,
+              ),
+              stylex.props(interactionOverlayStyles.pressedAlpha),
             )}>
             <Icon
               icon="numberInput:stepperDown"
               size="xsm"
               color="inherit"
-              xstyle={styles.incrementIcon}
+              className={NUMBER_INPUT_INCREMENT_ICON_CLASS}
             />
           </button>
           <button
@@ -1561,12 +1414,17 @@ export function NumberInput({
               inputRef.current?.focus();
               stepValue(-1);
             }}
-            {...stylex.props(
-              styles.numberStepperButton,
-              interactionOverlayStyles.backgroundImage,
-              styles.decrementButton,
-              (isDisabled || isReadOnly || !canDecrement) &&
-                styles.numberStepperButtonDisabled,
+            {...mergeProps(
+              tw(
+                numberInputStepperButtonClassName({
+                  isDisabled: isDisabled || isReadOnly || !canDecrement,
+                }),
+                NUMBER_INPUT_DECREMENT_CLASS,
+                // The hover and press paint; its strength and release stay the
+                // StyleX arm in the next slot.
+                interactionOverlayBackgroundImageClassName,
+              ),
+              stylex.props(interactionOverlayStyles.pressedAlpha),
             )}>
             <Icon icon="numberInput:stepperDown" size="xsm" color="inherit" />
           </button>

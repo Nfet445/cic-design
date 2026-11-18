@@ -17,7 +17,6 @@
  */
 
 import {use, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {
   TextType,
   BuiltinTextType,
@@ -31,21 +30,12 @@ import type {
   TextWrap,
 } from '../theme/types';
 import {
-  colorStyles,
-  defaultWeightByTypeStyles,
-  sizeStyles,
-  sizeByTypeStyles,
-  weightStyles,
-  displayStyles,
-  justifyStyles,
-  truncationStyles,
-  wordBreakStyles,
-  textWrapStyles,
-  capsizeStyles,
-  decorationStyles,
-  tabularNumbersStyle,
-  truncationTooltipStyles,
-} from './text.stylex';
+  isBuiltinTextColor,
+  isBuiltinTextType,
+  textClassName,
+  textLineClampVars,
+  truncationTooltipContentClassName,
+} from './textClasses';
 import {useTruncation} from './useTruncation';
 import {
   TruncationTooltip,
@@ -57,6 +47,7 @@ import {mergeProps} from '../utils/mergeProps';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {TextClampContext} from './textClampContext';
 
 export type {TextType, TextSize};
@@ -177,13 +168,19 @@ const defaultColorByType: Record<string, TextColor> = {
   inherit: 'inherit',
 };
 
+/** The inline style that carries a multi-line clamp's line count. */
+type ClampStyle = React.CSSProperties &
+  Partial<
+    Record<(typeof textLineClampVars)[keyof typeof textLineClampVars], string>
+  >;
+
 /**
- * Resolve the StyleX style key for a text type.
- * Custom (theme-defined) types fall back to 'body' for baseline StyleX styles;
+ * Resolve the class-map key for a text type.
+ * Custom (theme-defined) types fall back to 'body' for baseline classes;
  * their visual treatment comes from theme CSS overrides (.astryx-text.<type>).
  */
 function resolveStyleType(type: TextType): BuiltinTextType {
-  if (type in sizeByTypeStyles) {
+  if (isBuiltinTextType(type)) {
     return type;
   }
   return 'body';
@@ -198,10 +195,10 @@ function resolveStyleType(type: TextType): BuiltinTextType {
  * Exported so Heading applies the same custom-color fallback as Text.
  */
 export function resolveStyleColor(color: TextColor): BuiltinTextColor {
-  // The `in` guard is a runtime check for consumer-augmented custom colors
-  // (which widen `TextColor` beyond the built-ins via TextColorMap); within
-  // core the two types coincide, so no cast is needed.
-  if (color in colorStyles) {
+  // The guard is a runtime check for consumer-augmented custom colors (which
+  // widen `TextColor` beyond the built-ins via TextColorMap); within core the
+  // check is always true.
+  if (isBuiltinTextColor(color)) {
     return color;
   }
   return 'primary';
@@ -247,10 +244,10 @@ export function Text({
   // Resolve color with type-based default
   const resolvedColor = color ?? defaultColorByType[type] ?? 'primary';
 
-  // Resolve style type — custom types fall back to 'body' for StyleX baseline
+  // Resolve style type — custom types fall back to 'body' for the baseline
   const styleType = resolveStyleType(type);
 
-  // Resolve style color — custom colors fall back to 'primary' for StyleX
+  // Resolve style color — custom colors fall back to 'primary' for the
   // baseline; the real color comes from theme CSS via the rendered `color`
   // class (see themeProps below).
   const styleColor = resolveStyleColor(resolvedColor);
@@ -286,43 +283,37 @@ export function Text({
   // A capsize block removes a multi-line clamp.
   const isClamped = maxLines === 1 || (maxLines > 1 && !hasCapsize);
 
-  // Build inline style for -webkit-line-clamp (dynamic value)
-  const inlineStyle = maxLines > 1 ? {WebkitLineClamp: maxLines} : undefined;
+  // A multi-line clamp is the one per-instance value a class cannot name, so
+  // the element publishes it and the truncation class reads it.
+  const clampStyle: ClampStyle | undefined =
+    maxLines > 1
+      ? {[textLineClampVars.lineClamp]: String(maxLines)}
+      : undefined;
 
   return (
     <>
       <Component
         ref={mergedRef}
         {...mergeProps(
-          themeProps('text', {type, size, color: resolvedColor}),
-          stylex.props(
-            colorStyles[styleColor],
-            sizeByTypeStyles[styleType],
-            size && sizeStyles[size],
-            defaultWeightByTypeStyles[styleType],
-            weight && weightStyles[weight],
-            // Display: use truncation styles when maxLines > 0
-            maxLines === 1
-              ? truncationStyles.singleLine
-              : maxLines > 1
-                ? truncationStyles.multiLine
-                : displayStyles[resolvedDisplay],
-            // Word break when truncating
-            maxLines > 0 && wordBreakStyles[resolvedWordBreak],
-            // Text wrap
-            textWrap && textWrapStyles[textWrap],
-            // Justify (text alignment)
-            justify !== 'start' && justifyStyles[justify],
-            // Capsize
-            hasCapsize && capsizeStyles.enabled,
-            // Decorations
-            hasStrikethrough && decorationStyles.strikethrough,
-            hasTabularNumbers && tabularNumbersStyle.enabled,
-            // User xstyle
-            xstyle,
-          ),
+          mergeProps(themeProps('text', {type, size, color: resolvedColor}), {
+            className: textClassName({
+              type: styleType,
+              color: styleColor,
+              display: resolvedDisplay,
+              justify,
+              maxLines,
+              wordBreak: resolvedWordBreak,
+              size,
+              weight,
+              textWrap,
+              hasCapsize,
+              hasStrikethrough,
+              hasTabularNumbers,
+            }),
+          }),
+          xstyleProps(xstyle),
           className,
-          {...style, ...inlineStyle},
+          {...style, ...clampStyle},
         )}
         {...props}
         onPointerEnter={composeEventHandlers(
@@ -348,7 +339,7 @@ export function Text({
         <TruncationTooltip
           anchorRef={textRef}
           content={
-            <span {...stylex.props(truncationTooltipStyles.content)}>
+            <span className={truncationTooltipContentClassName}>
               {truncation.fullText}
             </span>
           }

@@ -4,7 +4,7 @@
 
 /**
  * @file LayoutFooter.tsx
- * @input Uses React StyleX
+ * @input Uses React, StyleX padding styles, layout class map
  * @output Exports LayoutFooter component and LayoutFooterProps
  * @position Bottom bar / footer area for Layout. Use for action bars,
  *   pagination, status bars, or any fixed-height content at the bottom of a layout.
@@ -18,64 +18,19 @@
 import type {AriaRole, ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import {use} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {layoutFooterMarker} from './layoutEdges.stylex';
 import {LayoutDividerContext} from './LayoutDividerContext';
-import {colorVars, spacingVars} from '../theme/tokens.stylex';
+import {
+  layoutFooterDividerClassName,
+  layoutFooterInnerClassName,
+  layoutRegionHeightClassName,
+} from './layoutClasses';
+import type {LayoutInstanceStyle} from './layoutClasses';
 import {mergeProps} from '../utils/mergeProps';
+import {tw} from '../utils/tw';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
-import {
-  paddingStyles,
-  containerPaddingInlineVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingBlockEndVarStyles,
-} from './padding.stylex';
-
-const styles = stylex.create({
-  // Outer shell: owns border/divider and sizing. No padding — that lives on inner.
-  footer: {
-    flexShrink: 0,
-  },
-  // Inner wrapper: owns padding and optional content-width constraint.
-  // When --layout-content-width is not set, maxWidth defaults to 'none' (inert).
-  inner: {
-    boxSizing: 'border-box',
-    maxWidth: 'var(--layout-content-width, none)',
-    marginInline: 'auto',
-    // Default: outer padding on edges that touch container, inner on interior edges
-    paddingInlineStart: `var(--layout-padding-own-outer-x, var(--layout-padding-outer-x, ${spacingVars['--spacing-4']}))`,
-    paddingInlineEnd: `var(--layout-padding-own-outer-x, var(--layout-padding-outer-x, ${spacingVars['--spacing-4']}))`,
-    paddingBlockStart: `var(--layout-padding-inner-y, ${spacingVars['--spacing-4']})`,
-    paddingBlockEnd: `var(--layout-padding-own-outer-y, var(--layout-padding-outer-y, ${spacingVars['--spacing-4']}))`,
-    '--container-padding-inline-start': `var(--layout-padding-own-outer-x, var(--layout-padding-outer-x, ${spacingVars['--spacing-4']}))`,
-    '--container-padding-inline-end': `var(--layout-padding-own-outer-x, var(--layout-padding-outer-x, ${spacingVars['--spacing-4']}))`,
-    '--container-padding-block-start': `var(--layout-padding-inner-y, ${spacingVars['--spacing-4']})`,
-    '--container-padding-block-end': `var(--layout-padding-own-outer-y, var(--layout-padding-outer-y, ${spacingVars['--spacing-4']}))`,
-  },
-  fullBleed: {
-    paddingInlineStart: 0,
-    paddingInlineEnd: 0,
-    paddingBlockStart: 0,
-    paddingBlockEnd: 0,
-    '--container-padding-inline-start': '0px',
-    '--container-padding-inline-end': '0px',
-    '--container-padding-block-start': '0px',
-    '--container-padding-block-end': '0px',
-  },
-  divider: {
-    borderBlockStartWidth: 1,
-    borderBlockStartStyle: 'solid',
-    borderBlockStartColor: colorVars['--color-border'],
-  },
-});
-
-// Dynamic styles for sizing props
-const dynamicStyles = stylex.create({
-  sizing: (height: SizeValue | null) => ({
-    height,
-  }),
-});
+import {xstyleProps} from '../utils/xstyle';
+import {containerPaddingByEdgeClassName} from './paddingClasses';
 
 export interface LayoutFooterProps extends BaseProps<HTMLDivElement> {
   ref?: React.Ref<HTMLDivElement>;
@@ -151,7 +106,15 @@ export function LayoutFooter({
   const dividerCtx = use(LayoutDividerContext);
   const resolvedHasDivider =
     hasDivider ?? dividerCtx?.defaultHasDividers ?? false;
-  const isZeroPadding = padding === 0;
+  // A region's own height is a value, not a variant: the class reads it from a
+  // variable this element writes, so a consumer `xstyle` still overrides it.
+  const sizingStyle: LayoutInstanceStyle | undefined =
+    height != null
+      ? {
+          '--astryx-layout-region-height':
+            typeof height === 'number' ? `${height}px` : height,
+        }
+      : undefined;
 
   return (
     <div
@@ -159,28 +122,29 @@ export function LayoutFooter({
       role={role}
       aria-label={label}
       {...mergeProps(
-        themeProps('layout-footer'),
-        stylex.props(
-          layoutFooterMarker,
-          styles.footer,
-          dynamicStyles.sizing(height ?? null),
-
-          resolvedHasDivider && styles.divider,
-          xstyle,
-        ),
+        mergeProps(themeProps('layout-footer'), {
+          className: tw(
+            'shrink-0',
+            height != null && layoutRegionHeightClassName,
+            resolvedHasDivider && layoutFooterDividerClassName,
+          ),
+        }),
+        xstyleProps(xstyle),
         className,
-        style,
+        {...style, ...sizingStyle},
       )}
       {...props}
       data-divider={resolvedHasDivider || undefined}>
       <div
-        {...stylex.props(
-          styles.inner,
-          isZeroPadding && styles.fullBleed,
-          padding != null && paddingStyles[padding],
-          padding != null && containerPaddingInlineVarStyles[padding],
-          padding != null && containerPaddingBlockStartVarStyles[padding],
-          padding != null && containerPaddingBlockEndVarStyles[padding],
+        className={tw(
+          layoutFooterInnerClassName,
+          padding != null &&
+            containerPaddingByEdgeClassName({
+              paddingBlockEnd: padding,
+              paddingBlockStart: padding,
+              paddingInlineEnd: padding,
+              paddingInlineStart: padding,
+            }),
         )}>
         {children}
       </div>

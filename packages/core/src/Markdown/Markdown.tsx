@@ -16,19 +16,6 @@
 import {Suspense, useMemo, useRef, useState} from 'react';
 import type React from 'react';
 import {Fragment} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import type {StyleXStyles} from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  typeScaleVars,
-  typographyVars,
-  fontWeightVars,
-  borderVars,
-  durationVars,
-  easeVars,
-} from '../theme/tokens.stylex';
 import type {TextDisplay} from '../theme/types';
 import {CodeBlock, Code} from '../CodeBlock';
 import {parseFenceLanguage} from '../CodeBlock/tokenizer';
@@ -47,6 +34,34 @@ import {TableHeaderCell} from '../Table/TableHeaderCell';
 import {TableHeader} from '../Table/TableHeader';
 import {TableBody} from '../Table/TableBody';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {
+  markdownBlockIndentClassName,
+  markdownBlockSpacingClassName,
+  markdownBlockWidthClassName,
+  markdownBlockWidthStyle,
+  markdownBoldClassName,
+  markdownCellMinWidthStyle,
+  markdownCenterAlignClassName,
+  markdownCodeBlockWidthClassName,
+  markdownCodeBlockWrapperClassName,
+  markdownFadeInClassName,
+  markdownHeadingClassName,
+  markdownHeadingLevelClassName,
+  markdownHeadingLinksTextClassName,
+  markdownHrClassName,
+  markdownImageClassName,
+  markdownInlineRootClassName,
+  markdownLinkClassName,
+  markdownMarkerGutterClassName,
+  markdownProseWidthClassName,
+  markdownProseWidthStyle,
+  markdownRootClassName,
+  markdownStrikethroughClassName,
+  markdownTablePartClassName,
+  markdownTableWrapperClassName,
+  type MarkdownBlockKind,
+} from './markdownClasses';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {useStreamingText} from '../hooks/useStreamingText';
 import {computeBoundaries, computeSegments} from './streaming';
@@ -98,11 +113,9 @@ import {
   projectMarkdownHeadings,
   type MarkdownHeadingProjection,
 } from './headingProjection';
-import {
-  HeadingLinksRenderer,
-  headingLinksHeadingStyle,
-} from './plugins/HeadingLinksRenderer';
+import {HeadingLinksRenderer} from './plugins/HeadingLinksRenderer';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import type {TranslatorFn} from '../i18n';
 import {
   registerEnglishFallback,
@@ -370,312 +383,14 @@ export interface MarkdownProps<
   codeLanguages?: ReadonlyArray<CodeLanguage>;
 }
 
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
-const ALIGN_MARGIN: Record<string, string> = {
-  start: '0',
-  center: 'auto',
-};
-
-const BLOCK_ALIGN_MARGIN: Record<string, string | null> = {
-  start: null,
-  center: 'auto',
-};
-
-const dynamicStyles = stylex.create({
-  proseWidth: (maxWidth: string) => ({
-    maxWidth,
-  }),
-  proseAlign: (marginInline: string) => ({
-    marginInline,
-  }),
-  blockWidth: (minWidth: string) => ({
-    minWidth: `min(${minWidth}, 100%)`,
-  }),
-  blockAlign: (marginInline: string) => ({
-    marginInline,
-  }),
-  cellMinWidth: (minWidth: string) => ({
-    minWidth,
-  }),
-});
-
-const cellAlignStyles = stylex.create({
-  start: {textAlign: 'start'},
-  center: {textAlign: 'center'},
-  end: {textAlign: 'end'},
-});
-
-/**
- * Cell sizing for Markdown's own default Table part, layered over Table's
- * wrap-mode defaults.
- *
- * Table sizes wrap-mode cells with `max-width: 0` + `word-break: break-word`,
- * and its header cell also applies nowrap + ellipsis. Those defaults zero every
- * column's min-content contribution, so automatic layout divides the container
- * equally: a six-column Markdown table squashes to a few characters per cell,
- * identifiers split mid-word, header labels ellipsize, and nothing ever
- * overflows into the Scroll region that exists to take the width.
- *
- * Here the cell reports an honest min-content, the header wraps instead of
- * truncating, and `box-sizing: content-box` makes the per-column `ch` floor a
- * floor on the text box rather than on the padded border box — so the floor
- * means the same number of characters at every density, with no padding
- * arithmetic to keep in sync with Table's own tokens.
- *
- * Data-driven `Table` keeps its released wrap mode; only Markdown's part is
- * restyled.
- */
-const markdownTableCellStyles = stylex.create({
-  cell: {
-    boxSizing: 'content-box',
-    maxWidth: 'none',
-    overflow: 'visible',
-    overflowWrap: 'break-word',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
-    wordBreak: 'normal',
-  },
-  headerCell: {
-    boxSizing: 'content-box',
-    maxWidth: 'none',
-    overflow: 'visible',
-    overflowWrap: 'break-word',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
-    textOverflow: 'clip',
-    whiteSpace: 'normal',
-    wordBreak: 'normal',
-  },
-  // Inline Code sets `word-break: break-word` so a long token cannot widen a
-  // paragraph. Inside a table cell that same rule zeroes the token's
-  // min-content and splits an identifier across lines; the cell keeps it whole
-  // and lets the column carry the width instead.
-  code: {
-    wordBreak: 'normal',
-  },
-  // A cell that reads against its table draws the column rule on the table's
-  // inline-end side, which is the cell's own inline-start.
-  ruleOnTableEnd: {
-    borderInlineEndWidth: 0,
-    borderInlineStartWidth: {
-      default: borderVars['--border-width'],
-      ':last-child': '0',
-    },
-    borderInlineStartStyle: 'solid',
-    borderInlineStartColor: colorVars['--color-border'],
-  },
-  // The grid's outer edge. `dividers="grid"` draws the lines *between* cells
-  // and stops at the table's rim, so without this the top, bottom, and sides
-  // stay open and the grid reads as unfinished. On the table element, not the
-  // wrapper, so `border-collapse: collapse` merges it with the cell lines
-  // into one 1px rule rather than doubling up at the edge.
-  tableOuterEdge: {
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-  },
-});
-
 /**
  * Default inline-code renderer inside Markdown table cells. Used only when the
  * consumer supplies no `components.inlineCode`; a custom renderer owns its own
  * wrapping rules.
  */
 function MarkdownTableCellCode({children}: {children: string}) {
-  return <Code xstyle={markdownTableCellStyles.code}>{children}</Code>;
+  return <Code className={markdownTablePartClassName.code}>{children}</Code>;
 }
-
-const styles = stylex.create({
-  root: {
-    fontFamily: typographyVars['--font-family-body'],
-    color: colorVars['--color-text-primary'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-    fontSize: typeScaleVars['--text-body-size'],
-    width: '100%',
-    maxWidth: '100%',
-    minWidth: 0,
-    overflowWrap: 'break-word',
-  },
-  inlineRoot: {
-    display: 'inline',
-    width: 'auto',
-    maxWidth: 'none',
-    fontFamily: 'inherit',
-    color: 'inherit',
-    lineHeight: 'inherit',
-    fontSize: 'inherit',
-  },
-  // Headings
-  headingBase: {
-    fontFamily: typographyVars['--font-family-heading'],
-    color: colorVars['--color-text-primary'],
-  },
-  h1: {
-    fontSize: typeScaleVars['--text-heading-1-size'],
-    fontWeight: typeScaleVars['--text-heading-1-weight'],
-    lineHeight: typeScaleVars['--text-heading-1-leading'],
-  },
-  h2: {
-    fontSize: typeScaleVars['--text-heading-2-size'],
-    fontWeight: typeScaleVars['--text-heading-2-weight'],
-    lineHeight: typeScaleVars['--text-heading-2-leading'],
-  },
-  h3: {
-    fontSize: typeScaleVars['--text-heading-3-size'],
-    fontWeight: typeScaleVars['--text-heading-3-weight'],
-    lineHeight: typeScaleVars['--text-heading-3-leading'],
-  },
-  h4: {
-    fontSize: typeScaleVars['--text-heading-4-size'],
-    fontWeight: typeScaleVars['--text-heading-4-weight'],
-    lineHeight: typeScaleVars['--text-heading-4-leading'],
-  },
-  h5: {
-    fontSize: typeScaleVars['--text-heading-5-size'],
-    fontWeight: typeScaleVars['--text-heading-5-weight'],
-    lineHeight: typeScaleVars['--text-heading-5-leading'],
-  },
-  h6: {
-    fontSize: typeScaleVars['--text-heading-6-size'],
-    fontWeight: typeScaleVars['--text-heading-6-weight'],
-    lineHeight: typeScaleVars['--text-heading-6-leading'],
-  },
-  // Block spacing — per element type, default density
-  spacingHeadingMajorDefault: {
-    marginBlockStart: spacingVars['--spacing-6'],
-    marginBlockEnd: spacingVars['--spacing-3'],
-  },
-  spacingHeadingMinorDefault: {
-    marginBlockStart: spacingVars['--spacing-4'],
-    marginBlockEnd: spacingVars['--spacing-2'],
-  },
-  spacingParagraphDefault: {
-    marginBlockStart: spacingVars['--spacing-3'],
-    marginBlockEnd: spacingVars['--spacing-3'],
-  },
-  spacingCodeblockDefault: {
-    marginBlockStart: spacingVars['--spacing-4'],
-    marginBlockEnd: spacingVars['--spacing-4'],
-  },
-  spacingBlockquoteDefault: {
-    marginBlockStart: spacingVars['--spacing-4'],
-    marginBlockEnd: spacingVars['--spacing-4'],
-  },
-  spacingListDefault: {
-    marginBlockStart: spacingVars['--spacing-3'],
-    marginBlockEnd: spacingVars['--spacing-3'],
-  },
-  spacingTableDefault: {
-    marginBlockStart: spacingVars['--spacing-4'],
-    marginBlockEnd: spacingVars['--spacing-4'],
-  },
-  spacingHrDefault: {
-    marginBlockStart: spacingVars['--spacing-6'],
-    marginBlockEnd: spacingVars['--spacing-6'],
-  },
-  spacingImageDefault: {
-    marginBlockStart: spacingVars['--spacing-3'],
-    marginBlockEnd: spacingVars['--spacing-3'],
-  },
-  // Block spacing — per element type, compact density
-  spacingHeadingMajorCompact: {
-    marginBlockStart: spacingVars['--spacing-4'],
-    marginBlockEnd: spacingVars['--spacing-2'],
-  },
-  spacingHeadingMinorCompact: {
-    marginBlockStart: spacingVars['--spacing-3'],
-    marginBlockEnd: spacingVars['--spacing-1'],
-  },
-  spacingParagraphCompact: {
-    marginBlockStart: spacingVars['--spacing-1'],
-    marginBlockEnd: spacingVars['--spacing-1'],
-  },
-  spacingCodeblockCompact: {
-    marginBlockStart: spacingVars['--spacing-2'],
-    marginBlockEnd: spacingVars['--spacing-2'],
-  },
-  spacingBlockquoteCompact: {
-    marginBlockStart: spacingVars['--spacing-2'],
-    marginBlockEnd: spacingVars['--spacing-2'],
-  },
-  spacingListCompact: {
-    marginBlockStart: spacingVars['--spacing-1'],
-    marginBlockEnd: spacingVars['--spacing-1'],
-  },
-  spacingTableCompact: {
-    marginBlockStart: spacingVars['--spacing-2'],
-    marginBlockEnd: spacingVars['--spacing-2'],
-  },
-  spacingHrCompact: {
-    marginBlockStart: spacingVars['--spacing-3'],
-    marginBlockEnd: spacingVars['--spacing-3'],
-  },
-  spacingImageCompact: {
-    marginBlockStart: spacingVars['--spacing-2'],
-    marginBlockEnd: spacingVars['--spacing-2'],
-  },
-  noMarginBlockStart: {
-    marginBlockStart: 0,
-  },
-  noMarginBlockEnd: {
-    marginBlockEnd: 0,
-  },
-  // Table
-  codeBlockWrapper: {
-    maxWidth: '100%',
-  },
-  tableWrapper: {
-    // No `overflow-x` here: Table's own Scroll region (`table-scroll-wrapper`)
-    // is the table's scroller, and this block is exactly as wide as it, so a
-    // second scroll container would only add a dead focus stop.
-    maxWidth: '100%',
-    '--container-padding-inline-start': '0px',
-    '--container-padding-inline-end': '0px',
-    '--container-padding-block-start': '0px',
-    '--container-padding-block-end': '0px',
-  },
-  // Static Markdown lists never host swipe actions. Let outside counter ink
-  // paint through both ordered and unordered ancestors; general List and
-  // swipe-capable rows retain their own inline clip (component:List FR9).
-  blockIndent: {
-    marginInline: `calc(-1 * ${spacingVars['--spacing-2']})`,
-    overflowInline: 'visible',
-  },
-  // Numbered document lists keep their ordinary text inset regardless of
-  // counter width, matching RichText's native outside markers (AST-061 FR11).
-  // These rows have no swipe actions: unlike general List, their outside ink
-  // may paint past the gutter instead of being clipped at a finite threshold.
-  markerGutter: {
-    marginInlineStart: `calc(-1 * (${spacingVars['--spacing-2']} + ${spacingVars['--spacing-4']}))`,
-    paddingInlineStart: spacingVars['--spacing-4'],
-  },
-  // HR
-  hr: {
-    borderWidth: 0,
-    borderTopWidth: borderVars['--border-width'],
-    borderTopStyle: 'solid',
-    borderTopColor: colorVars['--color-border'],
-  },
-  // Image
-  image: {
-    maxWidth: '100%',
-    borderRadius: radiusVars['--radius-element'],
-  },
-  // Inline
-  bold: {
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  strikethrough: {
-    color: colorVars['--color-text-secondary'],
-  },
-  link: {
-    color: colorVars['--color-text-accent'],
-    textDecoration: 'underline',
-  },
-});
 
 // ---------------------------------------------------------------------------
 // Streaming fade-in animation
@@ -692,27 +407,6 @@ function parseDuration(value: string): number | null {
   }
   return null;
 }
-
-// ---------------------------------------------------------------------------
-
-const streamingStyles = stylex.create({
-  fadeIn: {
-    opacity: 1,
-    transitionProperty: 'opacity',
-    // Collapse the entry fade to an instant swap under reduced motion. The
-    // 0s duration makes the @starting-style opacity jump non-animated (the
-    // media query can't nest inside @starting-style), mirroring the
-    // conditional-duration form in Spinner (Spinner.tsx).
-    transitionDuration: {
-      default: durationVars['--duration-medium'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-    '@starting-style': {
-      opacity: 0,
-    },
-  },
-});
 
 /**
  * Mutable cursor threaded through the render tree during streaming.
@@ -815,15 +509,6 @@ function countBlockTextLength(nodes: ReadonlyArray<RenderBlockNode>): number {
   }
   return len;
 }
-
-const headingStyles = {
-  1: styles.h1,
-  2: styles.h2,
-  3: styles.h3,
-  4: styles.h4,
-  5: styles.h5,
-  6: styles.h6,
-} as const;
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -992,7 +677,7 @@ function wrapTextWithFade(
 
   const nodes = segments.map(seg =>
     seg.fading ? (
-      <span key={seg.key} {...stylex.props(streamingStyles.fadeIn)}>
+      <span key={seg.key} className={markdownFadeInClassName}>
         {seg.text}
       </span>
     ) : (
@@ -1064,7 +749,7 @@ function renderInline(
     }
     case 'strong':
       return (
-        <strong key={index} {...stylex.props(styles.bold)}>
+        <strong key={index} className={markdownBoldClassName}>
           {node.children.map((c, i) =>
             renderInline(
               c,
@@ -1100,7 +785,7 @@ function renderInline(
       );
     case 'delete':
       return (
-        <del key={index} {...stylex.props(styles.strikethrough)}>
+        <del key={index} className={markdownStrikethroughClassName}>
           {node.children.map((c, i) =>
             renderInline(
               c,
@@ -1200,7 +885,7 @@ function renderInline(
           {...(isExternal
             ? {target: '_blank', rel: 'noopener noreferrer'}
             : {})}
-          {...stylex.props(styles.link)}>
+          className={markdownLinkClassName}>
           {node.children.map((c, i) =>
             renderInline(
               c,
@@ -1231,7 +916,7 @@ function renderInline(
           key={index}
           src={safeSrc}
           alt={node.alt}
-          {...stylex.props(styles.image)}
+          className={markdownImageClassName}
         />
       );
     }
@@ -1286,45 +971,26 @@ function renderInline(
 // Block spacing helper
 // ---------------------------------------------------------------------------
 
-function getElementSpacing(
-  node: RenderBlockNode,
-  density: 'default' | 'compact',
-): StyleXStyles {
-  const compact = density === 'compact';
+function getBlockKind(node: RenderBlockNode): MarkdownBlockKind {
   switch (node.type) {
     case 'heading':
-      return node.depth <= 3
-        ? compact
-          ? styles.spacingHeadingMajorCompact
-          : styles.spacingHeadingMajorDefault
-        : compact
-          ? styles.spacingHeadingMinorCompact
-          : styles.spacingHeadingMinorDefault;
+      return node.depth <= 3 ? 'headingMajor' : 'headingMinor';
     case 'paragraph':
-      return compact
-        ? styles.spacingParagraphCompact
-        : styles.spacingParagraphDefault;
+    case 'extension':
+      return 'paragraph';
     case 'code':
     case 'math':
-      return compact
-        ? styles.spacingCodeblockCompact
-        : styles.spacingCodeblockDefault;
+      return 'codeblock';
     case 'blockquote':
-      return compact
-        ? styles.spacingBlockquoteCompact
-        : styles.spacingBlockquoteDefault;
+      return 'blockquote';
     case 'list':
-      return compact ? styles.spacingListCompact : styles.spacingListDefault;
+      return 'list';
     case 'table':
-      return compact ? styles.spacingTableCompact : styles.spacingTableDefault;
-    case 'extension':
-      return compact
-        ? styles.spacingParagraphCompact
-        : styles.spacingParagraphDefault;
+      return 'table';
     case 'thematicBreak':
-      return compact ? styles.spacingHrCompact : styles.spacingHrDefault;
+      return 'hr';
     case 'image':
-      return compact ? styles.spacingImageCompact : styles.spacingImageDefault;
+      return 'image';
   }
 }
 
@@ -1335,7 +1001,7 @@ function getElementSpacing(
 /**
  * Content-derived width floors for a Markdown table's columns, in `ch`.
  *
- * Once the cells stop clamping themselves (see `markdownTableCellStyles`),
+ * Once the cells stop clamping themselves (see `markdownTablePartClassName`),
  * automatic table layout already gives every column its min-content — the
  * longest unbreakable token — so no identifier can split mid-word. That floor
  * is honest but not readable: a prose column's longest word is short, so six
@@ -1387,20 +1053,22 @@ function computeTableColumnMinWidths(node: RenderTable): number[] {
 }
 
 /**
- * The alignment and column-rule styles for a Markdown table cell. For a cell
+ * The alignment and column-rule classes for a Markdown table cell. For a cell
  * that reads against its table, the table's start is the cell's end, so an
  * explicit alignment and the rule swap logical sides.
  */
-function tableCellSideStyles(
+function tableCellSideClassNames(
   align: MarkdownAstTableAlignment | undefined,
   isAgainstTable: boolean,
-): ReadonlyArray<StyleXStyles | false> {
+): ReadonlyArray<string | false> {
   return [
-    align === 'center' && cellAlignStyles.center,
+    align === 'center' && markdownTablePartClassName.alignCenter,
     align === 'right' &&
-      (isAgainstTable ? cellAlignStyles.start : cellAlignStyles.end),
-    align === 'left' && isAgainstTable && cellAlignStyles.end,
-    isAgainstTable && markdownTableCellStyles.ruleOnTableEnd,
+      (isAgainstTable
+        ? markdownTablePartClassName.alignStart
+        : markdownTablePartClassName.alignEnd),
+    align === 'left' && isAgainstTable && markdownTablePartClassName.alignEnd,
+    isAgainstTable && markdownTablePartClassName.ruleOnTableEnd,
   ];
 }
 
@@ -1427,14 +1095,10 @@ function renderBlock(
   listDepth = 0,
   directionScope?: BlockDirectionScope,
 ): SyncReactNode {
-  const blockAlignMargin = BLOCK_ALIGN_MARGIN[contentAlign];
-  const blockAlignStyle =
-    blockAlignMargin != null
-      ? dynamicStyles.blockAlign(blockAlignMargin)
-      : null;
-  const spacing = getElementSpacing(node, density);
-  const isFirst = index === 0;
-  const isLast = index === blockCount - 1;
+  const spacing = markdownBlockSpacingClassName(getBlockKind(node), density, {
+    isFirst: index === 0,
+    isLast: index === blockCount - 1,
+  });
   // Source lines exist only while the source-lines plugin is installed
   // (module:Markdown/sourceLines); otherwise no block reads them.
   const recordsSourceLines = preparedPlugins?.sourceLines === true;
@@ -1477,22 +1141,19 @@ function renderBlock(
             key={index}
             id={headingId}
             dir={blockDirection(node, directionScope)}
-            {...mergeProps(
-              themeProps('markdown-heading', {density, level}),
-              stylex.props(
-                styles.headingBase,
-                headingStyles[level],
+            {...mergeProps(themeProps('markdown-heading', {density, level}), {
+              className: tw(
+                markdownHeadingClassName,
+                markdownHeadingLevelClassName[level],
                 spacing,
-                contentWidthValue != null
-                  ? dynamicStyles.proseWidth(contentWidthValue)
-                  : null,
-                contentAlign !== 'start'
-                  ? dynamicStyles.proseAlign(ALIGN_MARGIN[contentAlign])
-                  : null,
-                isFirst && styles.noMarginBlockStart,
-                isLast && styles.noMarginBlockEnd,
+                contentWidthValue != null && markdownProseWidthClassName,
+                contentAlign === 'center' && markdownCenterAlignClassName,
               ),
-            )}
+              style:
+                contentWidthValue != null
+                  ? markdownProseWidthStyle(contentWidthValue)
+                  : undefined,
+            })}
             {...lineStamps}>
             {headingChildren}
           </Tag>
@@ -1507,22 +1168,20 @@ function renderBlock(
           permalinkUrl={permalinkUrl}
           contentWidth={contentWidthValue}
           contentAlign={contentAlign}
-          headingTextStyle={[styles.headingBase, headingStyles[level]]}
-          blockSpacingStyle={[
-            spacing,
-            isFirst && styles.noMarginBlockStart,
-            isLast && styles.noMarginBlockEnd,
-          ]}>
+          headingTextClassName={tw(
+            markdownHeadingClassName,
+            markdownHeadingLevelClassName[level],
+          )}
+          blockSpacingClassName={spacing}>
           <Tag
             id={headingId}
-            {...mergeProps(
-              themeProps('markdown-heading', {density, level}),
-              stylex.props(
-                styles.headingBase,
-                headingLinksHeadingStyle,
-                headingStyles[level],
+            {...mergeProps(themeProps('markdown-heading', {density, level}), {
+              className: tw(
+                markdownHeadingClassName,
+                markdownHeadingLevelClassName[level],
+                markdownHeadingLinksTextClassName,
               ),
-            )}
+            })}
             {...lineStamps}>
             {headingChildren}
           </Tag>
@@ -1554,7 +1213,7 @@ function renderBlock(
       // Markdown paragraphs render as <div>, not <p>: inline content can
       // include block-level nodes (images, custom inline components), and a
       // <p> would reparent them, desyncing SSR markup from the hydrated DOM.
-      // Block spacing comes from token-based StyleX margins, so the rendered
+      // Block spacing comes from token-based margins, so the rendered
       // appearance is unchanged. role="paragraph" re-exposes the paragraph
       // role in the accessibility tree (a pure ARIA hint — it does not trigger
       // the parser's block-child reparenting) so prose semantics are preserved
@@ -1565,20 +1224,17 @@ function renderBlock(
           key={index}
           role="paragraph"
           dir={blockDirection(node, directionScope)}
-          {...mergeProps(
-            themeProps('markdown-paragraph', {density}),
-            stylex.props(
+          {...mergeProps(themeProps('markdown-paragraph', {density}), {
+            className: tw(
               spacing,
-              contentWidthValue != null
-                ? dynamicStyles.proseWidth(contentWidthValue)
-                : null,
-              contentAlign !== 'start'
-                ? dynamicStyles.proseAlign(ALIGN_MARGIN[contentAlign])
-                : null,
-              isFirst && styles.noMarginBlockStart,
-              isLast && styles.noMarginBlockEnd,
+              contentWidthValue != null && markdownProseWidthClassName,
+              contentAlign === 'center' && markdownCenterAlignClassName,
             ),
-          )}
+            style:
+              contentWidthValue != null
+                ? markdownProseWidthStyle(contentWidthValue)
+                : undefined,
+          })}
           {...lineStamps}>
           {paraChildren}
         </div>
@@ -1622,15 +1278,9 @@ function renderBlock(
       ) : (
         <div
           key={index}
-          {...mergeProps(
-            themeProps('markdown-codeblock', {density}),
-            stylex.props(
-              spacing,
-              styles.codeBlockWrapper,
-              isFirst && styles.noMarginBlockStart,
-              isLast && styles.noMarginBlockEnd,
-            ),
-          )}
+          {...mergeProps(themeProps('markdown-codeblock', {density}), {
+            className: tw(spacing, markdownCodeBlockWrapperClassName),
+          })}
           {...lineStamps}>
           <CodeBlock
             code={node.value}
@@ -1641,12 +1291,15 @@ function renderBlock(
             // RichText, so a reader sees whole lines and the read/edit switch
             // moves no block (spec:AST-061 FR5, DEC-9).
             isWrapped
-            xstyle={[
+            className={tw(
+              contentWidthValue != null && markdownCodeBlockWidthClassName,
+              contentAlign === 'center' && markdownCenterAlignClassName,
+            )}
+            style={
               contentWidthValue != null
-                ? dynamicStyles.blockWidth(contentWidthValue)
-                : undefined,
-              blockAlignStyle,
-            ]}
+                ? markdownBlockWidthStyle(contentWidthValue)
+                : undefined
+            }
           />
         </div>
       );
@@ -1737,19 +1390,18 @@ function renderBlock(
         <Blockquote
           key={index}
           dir={blockDirection(node, directionScope)}
-          {...themeProps('markdown-blockquote', {density})}
-          {...lineStamps}
-          xstyle={[
-            spacing,
-            contentWidthValue != null
-              ? dynamicStyles.proseWidth(contentWidthValue)
-              : undefined,
-            contentAlign !== 'start'
-              ? dynamicStyles.proseAlign(ALIGN_MARGIN[contentAlign])
-              : undefined,
-            isFirst && styles.noMarginBlockStart,
-            isLast && styles.noMarginBlockEnd,
-          ]}>
+          {...mergeProps(themeProps('markdown-blockquote', {density}), {
+            className: tw(
+              spacing,
+              contentWidthValue != null && markdownProseWidthClassName,
+              contentAlign === 'center' && markdownCenterAlignClassName,
+            ),
+            style:
+              contentWidthValue != null
+                ? markdownProseWidthStyle(contentWidthValue)
+                : undefined,
+          })}
+          {...lineStamps}>
           {node.children.map((c, i) =>
             renderBlock(
               c,
@@ -1798,25 +1450,22 @@ function renderBlock(
         return (
           <div
             key={index}
-            {...mergeProps(
-              themeProps('markdown-list', {density}),
-              stylex.props(
+            {...mergeProps(themeProps('markdown-list', {density}), {
+              className: tw(
                 spacing,
-                contentWidthValue != null
-                  ? dynamicStyles.proseWidth(contentWidthValue)
-                  : null,
-                contentAlign !== 'start'
-                  ? dynamicStyles.proseAlign(ALIGN_MARGIN[contentAlign])
-                  : null,
-                isFirst && styles.noMarginBlockStart,
-                isLast && styles.noMarginBlockEnd,
+                contentWidthValue != null && markdownProseWidthClassName,
+                contentAlign === 'center' && markdownCenterAlignClassName,
               ),
-            )}>
+              style:
+                contentWidthValue != null
+                  ? markdownProseWidthStyle(contentWidthValue)
+                  : undefined,
+            })}>
             <CheckboxList
               label={t('@astryx.markdown.taskList')}
               isLabelHidden
               value={checkedValues}
-              containerXstyle={styles.blockIndent}
+              containerClassName={markdownBlockIndentClassName}
               isReadOnly
               density="compact">
               {node.children.map((item, i) => {
@@ -1890,25 +1539,25 @@ function renderBlock(
       return (
         <div
           key={index}
-          {...mergeProps(
-            themeProps('markdown-list', {density}),
-            stylex.props(
+          {...mergeProps(themeProps('markdown-list', {density}), {
+            className: tw(
               spacing,
-              contentWidthValue != null
-                ? dynamicStyles.proseWidth(contentWidthValue)
-                : null,
-              contentAlign !== 'start'
-                ? dynamicStyles.proseAlign(ALIGN_MARGIN[contentAlign])
-                : null,
-              isFirst && styles.noMarginBlockStart,
-              isLast && styles.noMarginBlockEnd,
+              contentWidthValue != null && markdownProseWidthClassName,
+              contentAlign === 'center' && markdownCenterAlignClassName,
             ),
-          )}>
+            style:
+              contentWidthValue != null
+                ? markdownProseWidthStyle(contentWidthValue)
+                : undefined,
+          })}>
           <List
             listStyle={node.ordered ? 'decimal' : 'disc'}
             density="compact"
             start={node.ordered ? node.start : undefined}
-            xstyle={[styles.blockIndent, node.ordered && styles.markerGutter]}>
+            className={tw(
+              markdownBlockIndentClassName,
+              node.ordered && markdownMarkerGutterClassName,
+            )}>
             {node.children.map((item, i) => {
               const firstChild = item.children[0];
               const isInline =
@@ -2052,26 +1701,23 @@ function renderBlock(
           // table's horizontal overflow, its accessible name, and its
           // conditional keyboard focusability. This block only carries
           // spacing, sizing, and alignment.
-          {...mergeProps(
-            themeProps('markdown-table', {density}),
-            stylex.props(
-              styles.tableWrapper,
+          {...mergeProps(themeProps('markdown-table', {density}), {
+            className: tw(
+              markdownTableWrapperClassName,
               spacing,
-              contentWidthValue != null
-                ? dynamicStyles.blockWidth(contentWidthValue)
-                : null,
-              BLOCK_ALIGN_MARGIN[contentAlign] != null
-                ? dynamicStyles.blockAlign(BLOCK_ALIGN_MARGIN[contentAlign])
-                : null,
-              isFirst && styles.noMarginBlockStart,
-              isLast && styles.noMarginBlockEnd,
+              contentWidthValue != null && markdownBlockWidthClassName,
+              contentAlign === 'center' && markdownCenterAlignClassName,
             ),
-          )}
+            style:
+              contentWidthValue != null
+                ? markdownBlockWidthStyle(contentWidthValue)
+                : undefined,
+          })}
           {...lineStamps}>
           <Table
             dividers="grid"
             textOverflow="wrap"
-            xstyle={markdownTableCellStyles.tableOuterEdge}>
+            className={markdownTablePartClassName.tableOuterEdge}>
             <TableHeader>
               <TableRow>
                 {header?.children.map((h, i) => (
@@ -2079,14 +1725,15 @@ function renderBlock(
                     // eslint-disable-next-line @eslint-react/no-array-index-key -- markdown table columns are positional by definition
                     key={i}
                     dir={blockDirection(h, directionScope)}
-                    xstyle={[
-                      markdownTableCellStyles.headerCell,
-                      dynamicStyles.cellMinWidth(`${colMinWidths[i]}ch`),
-                      ...tableCellSideStyles(
+                    className={tw(
+                      markdownTablePartClassName.headerCell,
+                      markdownTablePartClassName.cellMinWidth,
+                      ...tableCellSideClassNames(
                         node.align[i],
                         readsAgainstTable(h),
                       ),
-                    ]}>
+                    )}
+                    style={markdownCellMinWidthStyle(`${colMinWidths[i]}ch`)}>
                     {h.children.map((c, j) =>
                       renderInline(
                         c,
@@ -2111,13 +1758,13 @@ function renderBlock(
                     // eslint-disable-next-line @eslint-react/no-array-index-key -- markdown table cells are positional by row and column
                     key={j}
                     dir={blockDirection(cell, directionScope)}
-                    xstyle={[
-                      markdownTableCellStyles.cell,
-                      ...tableCellSideStyles(
+                    className={tw(
+                      markdownTablePartClassName.cell,
+                      ...tableCellSideClassNames(
                         node.align[j],
                         readsAgainstTable(cell),
                       ),
-                    ]}>
+                    )}>
                     {cell.children.map((c, k) =>
                       renderInline(
                         c,
@@ -2159,17 +1806,16 @@ function renderBlock(
       return (
         <div
           key={index}
-          {...stylex.props(
+          className={tw(
             spacing,
+            contentWidthValue != null && markdownProseWidthClassName,
+            contentAlign === 'center' && markdownCenterAlignClassName,
+          )}
+          style={
             contentWidthValue != null
-              ? dynamicStyles.proseWidth(contentWidthValue)
-              : null,
-            contentAlign !== 'start'
-              ? dynamicStyles.proseAlign(ALIGN_MARGIN[contentAlign])
-              : null,
-            isFirst && styles.noMarginBlockStart,
-            isLast && styles.noMarginBlockEnd,
-          )}>
+              ? markdownProseWidthStyle(contentWidthValue)
+              : undefined
+          }>
           {content}
         </div>
       );
@@ -2182,15 +1828,9 @@ function renderBlock(
       return (
         <hr
           key={index}
-          {...mergeProps(
-            themeProps('markdown-hr', {density}),
-            stylex.props(
-              styles.hr,
-              spacing,
-              isFirst && styles.noMarginBlockStart,
-              isLast && styles.noMarginBlockEnd,
-            ),
-          )}
+          {...mergeProps(themeProps('markdown-hr', {density}), {
+            className: tw(markdownHrClassName, spacing),
+          })}
           {...lineStamps}
         />
       );
@@ -2201,14 +1841,9 @@ function renderBlock(
         return (
           <div
             key={index}
-            {...mergeProps(
-              themeProps('markdown-image', {density}),
-              stylex.props(
-                spacing,
-                isFirst && styles.noMarginBlockStart,
-                isLast && styles.noMarginBlockEnd,
-              ),
-            )}
+            {...mergeProps(themeProps('markdown-image', {density}), {
+              className: spacing,
+            })}
             {...lineStamps}>
             [{node.alt}]
           </div>
@@ -2223,16 +1858,15 @@ function renderBlock(
       return (
         <div
           key={index}
-          {...mergeProps(
-            themeProps('markdown-image', {density}),
-            stylex.props(
-              spacing,
-              isFirst && styles.noMarginBlockStart,
-              isLast && styles.noMarginBlockEnd,
-            ),
-          )}
+          {...mergeProps(themeProps('markdown-image', {density}), {
+            className: spacing,
+          })}
           {...lineStamps}>
-          <img src={safeSrc} alt={node.alt} {...stylex.props(styles.image)} />
+          <img
+            src={safeSrc}
+            alt={node.alt}
+            className={markdownImageClassName}
+          />
         </div>
       );
     }
@@ -2606,8 +2240,10 @@ export function Markdown<
         id={rootId}
         data-testid={testId}
         {...mergeProps(
-          themeProps('markdown', {density}),
-          stylex.props(styles.root, styles.inlineRoot, xstyle),
+          mergeProps(themeProps('markdown', {density}), {
+            className: tw(markdownRootClassName, markdownInlineRootClassName),
+          }),
+          xstyleProps(xstyle),
           className,
           style,
         )}>
@@ -2645,8 +2281,10 @@ export function Markdown<
       role="document"
       data-testid={testId}
       {...mergeProps(
-        themeProps('markdown', {density}),
-        stylex.props(styles.root, xstyle),
+        mergeProps(themeProps('markdown', {density}), {
+          className: markdownRootClassName,
+        }),
+        xstyleProps(xstyle),
         className,
         style,
       )}>

@@ -3,7 +3,7 @@
 'use client';
 /**
  * @file CodeBlock.tsx
- * @input Uses React, StyleX, theme tokens, CSS Custom Highlight API, SyntaxTheme
+ * @input Uses React, StyleX, the CSS Custom Highlight API, SyntaxTheme
  *   provider, and the theme's `code-block-copy` icon slot
  * @output Exports CodeBlock component and CodeBlockProps
  * @position Core implementation; read-only syntax-highlighted code display
@@ -21,20 +21,40 @@ import {
 } from 'react';
 import * as React from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
+import {isRenderable, mergeProps, RTL_MIRROR_CLASS} from '../utils';
+import {tw} from '../utils/tw';
 import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  typographyVars,
-  fontWeightVars,
-  typeScaleVars,
-  borderVars,
-  durationVars,
-  easeVars,
-  focusVars,
-} from '../theme/tokens.stylex';
-import {isRenderable, mergeProps, rtlStyles} from '../utils';
+  codeBlockChevronClassName,
+  codeBlockChevronExpandedClassName,
+  codeBlockChevronIconClassName,
+  codeBlockCodeClassName,
+  codeBlockCodeNumberedClassName,
+  codeBlockCodeWrapperClassName,
+  codeBlockCodeWrapperCompactClassName,
+  codeBlockCollapseGridClassName,
+  codeBlockCollapseGridCollapsedClassName,
+  codeBlockCollapseInnerClassName,
+  codeBlockContainerClassName,
+  codeBlockCopyButtonClassName,
+  codeBlockCornerClusterClassName,
+  codeBlockCornerClusterHeightClassName,
+  codeBlockDiffMarkerClassName,
+  codeBlockHeaderClassName,
+  codeBlockHeaderCollapsibleClassName,
+  codeBlockHeaderControlsClassName,
+  codeBlockHeaderRowClassName,
+  codeBlockHeaderTitleClassName,
+  codeBlockLineChunkClassName,
+  codeBlockLineClassName,
+  codeBlockLineContentClassName,
+  codeBlockLineTintClassName,
+  codeBlockRootClassName,
+  codeBlockRootCornerClassName,
+  codeBlockRootFitWidthClassName,
+  codeBlockRootWidthClassName,
+  codeBlockSizeClassName,
+  codeBlockViewportClassName,
+} from './codeBlockClasses';
 import {useClipboardCopy} from '../hooks/useClipboard';
 import {useScrollableArea} from '../hooks/useScrollableArea';
 import {Icon} from '../Icon';
@@ -59,7 +79,8 @@ import {
 import {ensureHighlightStyles} from './highlightStyles';
 import {applyHighlightRangesChunked} from './highlightRanges';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {SyntaxTheme, type SyntaxThemeDefinition} from '../theme/syntax';
 import {
   registerEnglishFallback,
@@ -69,390 +90,13 @@ import english from '../i18n/generated-english/CodeBlock/CodeBlock.generated';
 
 registerEnglishFallback(english);
 
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
+type InsetRingStyle = CSSProperties & {'--focus-outline-offset'?: string};
 
-const containerStyles = stylex.create({
-  card: {
-    borderRadius: radiusVars['--radius-element'],
-    borderWidth: borderVars['--border-width'],
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-  },
-  section: {
-    borderRadius: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    borderColor: 'transparent',
-    // Transparent background so the block blends into the surface it's
-    // embedded in (a card or panel) instead of painting its own muted layer,
-    // which would compound with a muted parent into a darker grey. Override
-    // the syntax-background var so both the root and the sticky header inherit
-    // it. Consumers can still set an explicit background via xstyle.
-    '--color-syntax-background': 'transparent',
-  },
-});
-
-const dynamicStyles = stylex.create({
-  width: (value: string) => ({
-    width: value,
-    minWidth: value === 'fit-content' ? 'min(100%, 400px)' : null,
-    maxWidth: value === 'fit-content' ? '100%' : null,
-  }),
-  // Width of the line-number column, sized to the widest number. `ch` is the
-  // advance of "0" in the (monospace) code font, so N digits => N ch. Set on
-  // <code>; `--_codeblock-gutter-width` is unregistered so it inherits (with its var()
-  // substituted) down to the line divs that read it for their grid track.
-  gutterWidth: (digits: number) => ({
-    '--_codeblock-gutter-width': `${digits}ch`,
-  }),
-});
-
-// Light reveal so the leading chevron eases into view instead of popping in.
-// Growing the chevron's own footprint (width + inline margin) from zero slides
-// the title into place instead of snapping it over, and clipping keeps the
-// glyph from spilling while it's mid-reveal.
-const chevronReveal = stylex.keyframes({
-  from: {
-    width: 0,
-    marginInlineEnd: 0,
-    opacity: 0,
-  },
-  to: {
-    width: '14px',
-    marginInlineEnd: spacingVars['--spacing-1'],
-    opacity: 1,
-  },
-});
-
-const styles = stylex.create({
-  root: {
-    position: 'relative',
-    isolation: 'isolate',
-    display: 'flex',
-    flexDirection: 'column',
-    margin: 0,
-    backgroundColor: 'var(--color-syntax-background)',
-    overflow: 'hidden',
-  },
-  // The viewport is a flex item of the column root. Its implied min-height
-  // would be its content while it fits (the shared capability keeps it
-  // `overflow: clip` then), so a root sized from outside could never make it
-  // shrink and scroll; 0 lets the root's bound reach it.
-  viewport: {
-    minHeight: 0,
-  },
-  // The root clips (overflow: hidden, for its corners), so the viewport's
-  // keyboard ring sits inside its own box instead of around it.
-  viewportFocusRingInset: {
-    outlineOffset: {
-      default: null,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-  },
-  // With no header, Copy sits in its own inline-end column beside the code
-  // viewport rather than over it, so no line, scrolled or wrapped, runs under
-  // the button. The column is as wide as its content; the single row still
-  // lets a root sized from outside bound the viewport.
-  rootCorner: {
-    display: 'grid',
-    gridTemplateColumns: 'minmax(0, 1fr) auto',
-    gridTemplateRows: 'minmax(0, 1fr)',
-  },
-  headerRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingInline: spacingVars['--spacing-4'],
-    backgroundColor: 'var(--color-syntax-background)',
-    position: 'sticky',
-    top: 0,
-    zIndex: 1,
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    flex: 1,
-    minWidth: 0,
-    // Reset default <button> appearance for the collapsible title control.
-    padding: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    font: 'inherit',
-    textAlign: 'start',
-  },
-  headerWithDivider: {
-    paddingBlock: spacingVars['--spacing-2'],
-    borderBottomWidth: borderVars['--border-width'],
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-  headerCompact: {
-    paddingBlock: spacingVars['--spacing-2'],
-  },
-  headerTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontFamily: typographyVars['--font-family-code'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: 'var(--color-syntax-comment)',
-    margin: 0,
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-  },
-  codeWrapper: {
-    display: 'flex',
-    minWidth: 'fit-content',
-  },
-  codeWrapperCompact: {
-    marginBlockStart: `calc(-1 * ${spacingVars['--spacing-2']})`,
-  },
-  collapseGrid: {
-    display: 'grid',
-    gridTemplateRows: '1fr',
-    transitionProperty: 'grid-template-rows',
-    transitionDuration: durationVars['--duration-medium'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  collapseGridCollapsed: {
-    gridTemplateRows: '0fr',
-  },
-  collapseInner: {
-    overflow: 'hidden',
-    minHeight: 0,
-  },
-  collapseChevron: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    width: '14px',
-    height: '14px',
-    marginInlineEnd: spacingVars['--spacing-1'],
-    overflow: 'hidden',
-    color: 'var(--color-syntax-comment)',
-    animationName: {
-      default: chevronReveal,
-      '@media (prefers-reduced-motion: reduce)': 'none',
-    },
-    animationDuration: durationVars['--duration-medium'],
-    animationTimingFunction: easeVars['--ease-standard'],
-  },
-  // Applied to the chevron <Icon> (via `xstyle`): the glyph is the element that
-  // rotates and the element a theme targets, so one selector reaches both.
-  collapseChevronIcon: {
-    transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  collapseChevronExpanded: {
-    // Leading disclosure convention (matches TreeList/Table): the resting
-    // chevronRight points right (>) when collapsed; rotate it down (v) when
-    // expanded.
-    transform: 'rotate(90deg)',
-  },
-  headerCollapsible: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    userSelect: 'none',
-    // Restore a keyboard-only focus ring with the standard token/offset so this
-    // disclosure control matches the rest of the system (Collapsible, TabMenu);
-    // otherwise it falls back to the inconsistent UA default outline.
-  },
-  code: {
-    display: 'block',
-    flex: 1,
-    // The block grows to its longest line, so a row's paint (diff tint,
-    // highlightLines) spans the full scroll width instead of stopping at the
-    // viewport edge when the reader scrolls a long line.
-    minWidth: 'max-content',
-    paddingBlock: spacingVars['--spacing-3'],
-    paddingInline: spacingVars['--spacing-4'],
-    margin: 0,
-    fontFamily: typographyVars['--font-family-code'],
-    color: 'var(--color-syntax-variable)',
-    tabSize: 2,
-    whiteSpace: 'pre',
-    wordBreak: 'normal',
-    overflowWrap: 'normal',
-  },
-  codeWrapped: {
-    // Wrapped lines never overflow, and max-content would stop them wrapping.
-    minWidth: 'auto',
-    whiteSpace: 'pre-wrap',
-    wordBreak: 'break-all',
-    overflowWrap: 'break-word',
-  },
-  // With line numbers on, the <code> element hosts the full-height divider
-  // between the number gutter and the code. It spans the code's block padding
-  // too (inset-block: 0), so the rule reaches the top and bottom edges the way
-  // the old separate gutter column did. The numbers themselves are drawn per
-  // line (see `lineNumbered`) — a separate column can't track wrap height.
-  codeNumbered: {
-    position: 'relative',
-    '::after': {
-      content: '""',
-      position: 'absolute',
-      insetBlock: 0,
-      insetInlineStart: `calc(${spacingVars['--spacing-4']} + var(--_codeblock-gutter-width) + ${spacingVars['--spacing-3']})`,
-      width: 0,
-      borderInlineStartWidth: borderVars['--border-width'],
-      borderInlineStartStyle: 'solid',
-      borderInlineStartColor: colorVars['--color-border'],
-      pointerEvents: 'none',
-    },
-  },
-  line: {
-    lineHeight: typeScaleVars['--text-code-leading'],
-  },
-  // Per-line number gutter: a two-column grid ([number] [code]). The number is
-  // a ::before generated from the data-line attribute. Because the number and
-  // its code occupy one grid row, the row grows to fit wrapped code while the
-  // number stays pinned to the row's first visual line (alignSelf: start) —
-  // this is what keeps numbers aligned when isWrapped wraps a line.
-  lineNumbered: {
-    display: 'grid',
-    gridTemplateColumns: 'var(--_codeblock-gutter-width) 1fr',
-    columnGap: `calc(${spacingVars['--spacing-3']} + ${borderVars['--border-width']} + ${spacingVars['--spacing-4']})`,
-    '::before': {
-      content: 'attr(data-line)',
-      gridColumn: '1',
-      alignSelf: 'start',
-      textAlign: 'end',
-      color: 'var(--color-syntax-punctuation)',
-      userSelect: 'none',
-      fontFamily: typographyVars['--font-family-code'],
-    },
-  },
-  // In span mode the tokens are wrapped in this element so they form a single
-  // grid item in column 2 (otherwise each token span would flow into its own
-  // grid cell). minWidth:0 lets it shrink so long lines wrap within the track.
-  lineContent: {
-    minWidth: 0,
-  },
-  lineChunk: {
-    contentVisibility: 'auto',
-  },
-  lineHighlighted: {
-    backgroundColor: colorVars['--color-accent-muted'],
-    marginInline: `calc(-1 * ${spacingVars['--spacing-4']})`,
-    paddingInline: spacingVars['--spacing-4'],
-  },
-  // Diff change rows: the whole row is tinted so added and removed lines read
-  // at a glance; the text keeps its ordinary colour, which stays readable on
-  // the tint where the semantic text colours would not, and the leading +/-
-  // glyph stays in the text as the cue that needs no colour. A caller's
-  // highlightLines row is declared after these and keeps its background.
-  // A changed row's margin reads the change: the tint runs under the gutter
-  // cell too (the row spans the full width), and the line number and the
-  // glyph take the row's marker slot. The code — tokens and plain runs alike
-  // — keeps the syntax theme's colours, so an identifier looks the same on a
-  // changed row as on a context row.
-  lineAdded: {
-    backgroundColor: 'var(--color-syntax-added)',
-    marginInline: `calc(-1 * ${spacingVars['--spacing-4']})`,
-    paddingInline: spacingVars['--spacing-4'],
-    '::before': {color: 'var(--color-syntax-added-marker)'},
-  },
-  lineRemoved: {
-    backgroundColor: 'var(--color-syntax-removed)',
-    marginInline: `calc(-1 * ${spacingVars['--spacing-4']})`,
-    paddingInline: spacingVars['--spacing-4'],
-    '::before': {color: 'var(--color-syntax-removed-marker)'},
-  },
-  // Hunk and file headers stay visible but quiet: a muted row with secondary
-  // text, never change paint.
-  lineDiffHeader: {
-    backgroundColor: 'var(--color-syntax-diff-header)',
-    // The syntax theme's own secondary colour: text-secondary in the default
-    // theme, the theme's punctuation colour in a defined one.
-    color: 'var(--color-syntax-punctuation)',
-    marginInline: `calc(-1 * ${spacingVars['--spacing-4']})`,
-    paddingInline: spacingVars['--spacing-4'],
-  },
-  // The glyph column: the +, - or space of every line sits in its own track
-  // before the code, so the code column starts at the same inline offset on
-  // every line and the content's indentation reads exactly as written. The
-  // glyph is laid out as text but not selectable; the copy button still
-  // copies the original source with its glyphs.
-  lineDiff: {
-    display: 'grid',
-    gridTemplateColumns: '1ch 1fr',
-    columnGap: spacingVars['--spacing-2'],
-  },
-  // With line numbers the gutter's gap (which the full-height divider sits
-  // in) has to stay between the number and the marker, so the grid has no
-  // gap of its own and the marker carries both gaps as margins.
-  lineDiffNumbered: {
-    // `auto`, not `1ch`: the marker's gap margins have to widen its track.
-    gridTemplateColumns: 'var(--_codeblock-gutter-width) auto 1fr',
-    columnGap: 0,
-  },
-  // The glyph is the source's own text: read by assistive technology, kept
-  // out of a drag selection (copy returns the exact source anyway).
-  diffMarker: {
-    color: colorVars['--color-text-secondary'],
-    userSelect: 'none',
-    whiteSpace: 'pre',
-  },
-  diffMarkerNumbered: {
-    marginInlineStart: `calc(${spacingVars['--spacing-3']} + ${borderVars['--border-width']} + ${spacingVars['--spacing-4']})`,
-    marginInlineEnd: spacingVars['--spacing-2'],
-  },
-  // On a tinted row the glyph is the cue a reader without colour depends on,
-  // so it takes the row's marker slot like the line number does.
-  diffMarkerAdded: {
-    color: 'var(--color-syntax-added-marker)',
-  },
-  diffMarkerRemoved: {
-    color: 'var(--color-syntax-removed-marker)',
-  },
-  sizeSm: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-  },
-  sizeMd: {
-    fontSize: typeScaleVars['--text-code-size'],
-  },
-  copyButton: {
-    // The copy control is a ghost IconButton (Button owns its own padding,
-    // radius, and hover surface); this only tints the resting glyph to the
-    // muted syntax-comment colour so it blends into the header/corner. A theme
-    // reaches it via the `code-block-copy-button` target on the Button.
-    color: 'var(--color-syntax-comment)',
-  },
-  // The controls of a headerless block: caller controls, then Copy, in the
-  // second column (cornerClusterMd/Sm give its height).
-  cornerCluster: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    alignSelf: 'start',
-    marginInline: spacingVars['--spacing-2'],
-  },
-  // The header's controls: caller controls, then Copy.
-  headerControls: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    flexShrink: 0,
-  },
-  // The cluster is exactly as tall as the first line's row (its block padding
-  // on both sides plus its line box), and centres its controls in it, so any
-  // control height sits on the first line: a one-line block reads as one row
-  // with even space above and below, and a block that grows keeps its
-  // controls where they were.
-  cornerClusterMd: {
-    blockSize: `calc(2 * ${spacingVars['--spacing-3']} + ${typeScaleVars['--text-code-size']} * ${typeScaleVars['--text-code-leading']})`,
-  },
-  cornerClusterSm: {
-    blockSize: `calc(2 * ${spacingVars['--spacing-3']} + ${typeScaleVars['--text-supporting-size']} * ${typeScaleVars['--text-code-leading']})`,
-  },
-});
+// The viewport clips its own scrolling content, so its ring has to sit inside
+// its edge. The shared ring class reads the offset from this variable.
+const VIEWPORT_INSET_RING_STYLE: InsetRingStyle = {
+  '--focus-outline-offset': 'calc(-1 * var(--focus-outline-width))',
+};
 
 // ---------------------------------------------------------------------------
 // Line rendering
@@ -487,23 +131,18 @@ const CodeChunk = React.memo(function CodeChunk({
         const i = startIndex + j;
         const lineNumber = startLineNumber + i;
         const diffKind = diffKinds?.[i];
+        const isHighlighted = highlightSet?.has(lineNumber) ?? false;
         return (
           <div
             key={i}
             data-line={lineNumber}
             data-diff={diffKind === 'context' ? undefined : diffKind}
-            {...stylex.props(
-              styles.line,
-              lineNumbers && styles.lineNumbered,
-              diffKinds != null && styles.lineDiff,
-              diffKinds != null && lineNumbers && styles.lineDiffNumbered,
-              diffKind === 'added' && styles.lineAdded,
-              diffKind === 'removed' && styles.lineRemoved,
-              diffKind === 'header' && styles.lineDiffHeader,
-              // Last on purpose: a highlight replaces a diff tint rather than
-              // stacking on it, so tokens keep their single-paint contrast.
-              (highlightSet?.has(lineNumber) ?? false) &&
-                styles.lineHighlighted,
+            className={tw(
+              codeBlockLineClassName({
+                hasLineNumbers: lineNumbers,
+                hasDiff: diffKinds != null,
+              }),
+              codeBlockLineTintClassName({diffKind, isHighlighted}),
             )}>
             {renderLineContent(line, i)}
           </div>
@@ -547,9 +186,8 @@ function renderLines(
     chunks.push(
       <div
         key={start}
-        {...mergeProps(stylex.props(styles.lineChunk), {
-          style: {containIntrinsicBlockSize: `auto ${estimatedHeight}`},
-        })}>
+        className={codeBlockLineChunkClassName}
+        style={{['--_codeblock-chunk-height' as string]: estimatedHeight}}>
         <CodeChunk
           lines={chunkLines}
           startIndex={start}
@@ -822,7 +460,7 @@ function SpanCodeContent({
   diffKinds,
   diff,
   isWrapped,
-  sizeStyle,
+  sizeClassName,
   hasLineNumbers,
   maxDigits,
   startLineNumber,
@@ -833,7 +471,7 @@ function SpanCodeContent({
   diffKinds: ReadonlyArray<DiffLineKind> | null;
   diff: ReturnType<typeof splitDiffLines> | null;
   isWrapped: boolean;
-  sizeStyle: stylex.StyleXStyles;
+  sizeClassName: string;
   hasLineNumbers: boolean;
   maxDigits: number;
   startLineNumber: number;
@@ -856,15 +494,13 @@ function SpanCodeContent({
           <>
             <span
               data-diff-marker=""
-              {...stylex.props(
-                styles.diffMarker,
-                hasLineNumbers && styles.diffMarkerNumbered,
-                kind === 'added' && styles.diffMarkerAdded,
-                kind === 'removed' && styles.diffMarkerRemoved,
-              )}>
+              className={codeBlockDiffMarkerClassName({
+                hasLineNumbers,
+                diffKind: kind,
+              })}>
               {diff.glyphs[lineIndex] || ' '}
             </span>
-            <span {...stylex.props(styles.lineContent)}>
+            <span className={codeBlockLineContentClassName}>
               {kind === 'header'
                 ? content || '\u200b'
                 : buildSpanLine(content, tokens)}
@@ -875,7 +511,7 @@ function SpanCodeContent({
       // Wrap tokens in a single element so they occupy one grid cell when line
       // numbers are on (see `lineNumbered`); an inline span is a no-op when off.
       return (
-        <span {...stylex.props(styles.lineContent)}>
+        <span className={codeBlockLineContentClassName}>
           {buildSpanLine(line, tokens)}
         </span>
       );
@@ -885,13 +521,16 @@ function SpanCodeContent({
 
   return (
     <code
-      {...stylex.props(
-        styles.code,
-        sizeStyle,
-        isWrapped && styles.codeWrapped,
-        hasLineNumbers && styles.codeNumbered,
-        hasLineNumbers && dynamicStyles.gutterWidth(maxDigits),
-      )}>
+      className={tw(
+        codeBlockCodeClassName(isWrapped),
+        sizeClassName,
+        hasLineNumbers && codeBlockCodeNumberedClassName,
+      )}
+      style={
+        hasLineNumbers
+          ? {['--_codeblock-gutter-width' as string]: `${maxDigits}ch`}
+          : undefined
+      }>
       {renderLines(
         lines,
         highlightSet,
@@ -914,7 +553,7 @@ function RangeCodeContent({
   highlightSet,
   diffKinds,
   isWrapped,
-  sizeStyle,
+  sizeClassName,
   hasLineNumbers,
   maxDigits,
   startLineNumber,
@@ -924,7 +563,7 @@ function RangeCodeContent({
   highlightSet: Set<number> | null;
   diffKinds: ReadonlyArray<DiffLineKind> | null;
   isWrapped: boolean;
-  sizeStyle: stylex.StyleXStyles;
+  sizeClassName: string;
   hasLineNumbers: boolean;
   maxDigits: number;
   startLineNumber: number;
@@ -968,13 +607,16 @@ function RangeCodeContent({
   return (
     <code
       ref={codeRef}
-      {...stylex.props(
-        styles.code,
-        sizeStyle,
-        isWrapped && styles.codeWrapped,
-        hasLineNumbers && styles.codeNumbered,
-        hasLineNumbers && dynamicStyles.gutterWidth(maxDigits),
-      )}>
+      className={tw(
+        codeBlockCodeClassName(isWrapped),
+        sizeClassName,
+        hasLineNumbers && codeBlockCodeNumberedClassName,
+      )}
+      style={
+        hasLineNumbers
+          ? {['--_codeblock-gutter-width' as string]: `${maxDigits}ch`}
+          : undefined
+      }>
       {renderLines(
         lines,
         highlightSet,
@@ -1091,7 +733,7 @@ export function CodeBlock({
     }
   }, [code, copy, onCopy]);
 
-  const sizeStyle = size === 'sm' ? styles.sizeSm : styles.sizeMd;
+  const sizeClassName = codeBlockSizeClassName(size);
   // Digits in the largest visible line number — sizes the gutter column width.
   const maxLineDigits = String(
     effectiveStartLineNumber + lines.length - 1,
@@ -1203,8 +845,9 @@ export function CodeBlock({
         e.stopPropagation();
         void handleCopy();
       }}
-      xstyle={styles.copyButton}
-      {...themeProps('code-block-copy-button')}
+      {...mergeProps(themeProps('code-block-copy-button'), {
+        className: codeBlockCopyButtonClassName,
+      })}
     />
   ) : null;
 
@@ -1216,10 +859,9 @@ export function CodeBlock({
           language: languageAttr,
           container,
         }),
-        stylex.props(
-          styles.headerRow,
-          hasLineNumbers ? styles.headerWithDivider : styles.headerCompact,
-        ),
+        {
+          className: codeBlockHeaderRowClassName(hasLineNumbers),
+        },
       )}>
       <div
         role={canCollapse ? 'button' : undefined}
@@ -1242,29 +884,32 @@ export function CodeBlock({
               }
             : undefined
         }
-        {...focusOutlineProps.focusVisible(
-          styles.header,
-          canCollapse && styles.headerCollapsible,
+        {...mergeProps(
+          tw(
+            codeBlockHeaderClassName,
+            canCollapse && codeBlockHeaderCollapsibleClassName,
+            focusOutlineFocusVisibleClassName,
+          ),
         )}>
         <span
           {...mergeProps(
             themeProps('code-block-title', {size, language: languageAttr}),
-            stylex.props(styles.headerTitle),
+            {className: codeBlockHeaderTitleClassName},
           )}>
           {canCollapse && (
             // The collapsed chevron points toward the inline end, so it mirrors
             // in RTL (design:bidirectionality DR4). The mirror sits on this box
             // so the glyph's own rotation still eases: rotated down when
             // expanded, a mirrored glyph still points down.
-            <span {...stylex.props(styles.collapseChevron, rtlStyles.mirror)}>
+            <span className={tw(codeBlockChevronClassName, RTL_MIRROR_CLASS)}>
               <Icon
                 icon="chevronRight"
                 size="xsm"
                 color="inherit"
-                xstyle={[
-                  styles.collapseChevronIcon,
-                  !isCollapsed && styles.collapseChevronExpanded,
-                ]}
+                className={tw(
+                  codeBlockChevronIconClassName,
+                  !isCollapsed && codeBlockChevronExpandedClassName,
+                )}
               />
             </span>
           )}
@@ -1274,7 +919,7 @@ export function CodeBlock({
         </span>
       </div>
       {hasControls ? (
-        <div {...stylex.props(styles.headerControls)}>
+        <div className={codeBlockHeaderControlsClassName}>
           {hasEndContent ? endContent : null}
           {copyButtonEl}
         </div>
@@ -1287,19 +932,21 @@ export function CodeBlock({
       {...getViewportProps<HTMLDivElement>({
         // A tab stop while the code overflows: the shared ring, which a theme
         // restyles through the focus-outline tokens.
-        ...focusOutlineProps.focusVisible(
-          styles.viewport,
-          styles.viewportFocusRingInset,
+        className: tw(
+          codeBlockViewportClassName,
+          focusOutlineFocusVisibleClassName,
         ),
-        style: scrollStyle,
+        style: {...scrollStyle, ...VIEWPORT_INSET_RING_STYLE},
       })}>
       <div
-        {...getContentProps<HTMLDivElement>(
-          stylex.props(
-            styles.codeWrapper,
-            showHeader && !hasLineNumbers && styles.codeWrapperCompact,
+        {...getContentProps<HTMLDivElement>({
+          className: tw(
+            codeBlockCodeWrapperClassName,
+            showHeader &&
+              !hasLineNumbers &&
+              codeBlockCodeWrapperCompactClassName,
           ),
-        )}>
+        })}>
         {useSpans ? (
           <SpanCodeContent
             lines={lines}
@@ -1308,7 +955,7 @@ export function CodeBlock({
             diffKinds={diffKinds}
             diff={diff}
             isWrapped={isWrapped}
-            sizeStyle={sizeStyle}
+            sizeClassName={sizeClassName}
             hasLineNumbers={hasLineNumbers}
             maxDigits={maxLineDigits}
             startLineNumber={effectiveStartLineNumber}
@@ -1320,7 +967,7 @@ export function CodeBlock({
             highlightSet={highlightSet}
             diffKinds={diffKinds}
             isWrapped={isWrapped}
-            sizeStyle={sizeStyle}
+            sizeClassName={sizeClassName}
             hasLineNumbers={hasLineNumbers}
             maxDigits={maxLineDigits}
             startLineNumber={effectiveStartLineNumber}
@@ -1334,14 +981,20 @@ export function CodeBlock({
     <pre
       ref={ref}
       {...mergeProps(
-        themeProps('code-block', {size, language: languageAttr, container}),
-        stylex.props(
-          styles.root,
-          hasControls && !showHeader && styles.rootCorner,
-          dynamicStyles.width(widthProp),
-          containerStyles[container],
-          xstyle,
+        mergeProps(
+          themeProps('code-block', {size, language: languageAttr, container}),
+          {
+            className: tw(
+              codeBlockRootClassName,
+              hasControls && !showHeader && codeBlockRootCornerClassName,
+              codeBlockRootWidthClassName,
+              widthProp === 'fit-content' && codeBlockRootFitWidthClassName,
+              codeBlockContainerClassName[container],
+            ),
+            style: {['--_codeblock-width' as string]: widthProp},
+          },
         ),
+        xstyleProps(xstyle),
         className,
         style,
       )}
@@ -1356,20 +1009,20 @@ export function CodeBlock({
           // container (a tab stop while it overflows). aria-controls pointing at an inert
           // element remains a valid, resolvable reference.
           inert={isCollapsed ? true : undefined}
-          {...stylex.props(
-            styles.collapseGrid,
-            isCollapsed && styles.collapseGridCollapsed,
+          className={tw(
+            codeBlockCollapseGridClassName,
+            isCollapsed && codeBlockCollapseGridCollapsedClassName,
           )}>
-          <div {...stylex.props(styles.collapseInner)}>{codeBody}</div>
+          <div className={codeBlockCollapseInnerClassName}>{codeBody}</div>
         </div>
       ) : (
         codeBody
       )}
       {hasControls && !showHeader ? (
         <div
-          {...stylex.props(
-            styles.cornerCluster,
-            size === 'sm' ? styles.cornerClusterSm : styles.cornerClusterMd,
+          className={tw(
+            codeBlockCornerClusterClassName,
+            codeBlockCornerClusterHeightClassName(size),
           )}>
           {hasEndContent ? endContent : null}
           {copyButtonEl}

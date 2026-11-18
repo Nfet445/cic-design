@@ -21,14 +21,13 @@ import {
   type ReactNode,
   type UIEvent,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {Locale} from '@astryxdesign/core/i18n';
 import type {CalendarSystem} from '@astryxdesign/core/internal/calendar-system';
 import {layerAnimations} from '@astryxdesign/core/Layer';
 import {usePopover} from '@astryxdesign/core/Popover';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
+import {spacingVarNames} from '@astryxdesign/core/theme';
 import {
-  focusOutlineStyles,
+  focusOutlineFocusVisibleClassName,
   plainDateAddDays,
   plainDateFromInstant,
   plainDateIsAfter,
@@ -40,14 +39,52 @@ import {
 } from '@astryxdesign/core/utils';
 import {useScrollableArea} from '@astryxdesign/core/hooks';
 import {Heading, Text} from '@astryxdesign/core/Text';
+import {tw} from '../tw';
 import {useScheduleContext} from './context';
-import {eventOccursOnDate, isAllDaySpan, isDayEvent} from './dateMath';
-import {timeGridViewportScope} from './schedule.stylex';
 import {
-  clamp,
+  scheduleAllDayCellClassName,
+  scheduleAllDayCellLastClassName,
+  scheduleAllDayEventSpanClassName,
+  scheduleAllDayLabelClassName,
+  scheduleEventButtonFocusClassName,
+  scheduleEventButtonResetClassName,
+  scheduleEventTimeClassName,
+  scheduleEventTitleClassName,
+  scheduleHourSlotClassName,
+  scheduleHourSlotLastClassName,
+  scheduleTimeColumnClassName,
+  scheduleTimeColumnLastClassName,
+  scheduleTimeGridContentClassName,
+  scheduleTimeGridCornerClassName,
+  scheduleTimeGridCurrentDayPillClassName,
+  scheduleTimeGridDayNumberClassName,
+  scheduleTimeGridFrameClassName,
+  scheduleTimeGridHeaderCellClassName,
+  scheduleTimeGridHeaderCellLastClassName,
+  scheduleTimeGridHeaderHeadingClassName,
+  scheduleTimeGridHeaderHeadingContentClassName,
+  scheduleTimeGridFocusRingClassName,
+  scheduleTimeGridViewportClassName,
+  scheduleTimeLabelClassName,
+  scheduleTimeLabelsClassName,
+  scheduleTimedEventClassName,
+  scheduleTimedEventPositionClassName,
+  scheduleVisuallyHiddenClassName,
+} from './scheduleClasses';
+import {eventOccursOnDate, isAllDaySpan, isDayEvent} from './dateMath';
+import {
   EventPill,
-  eventPastSurfaceColorStyle,
-  eventSurfaceColorStyle,
+  SchedulePopoverBody,
+  ScheduleTime,
+  TitleFirstPill,
+  allDayEventSpanVars,
+  allDayRowVars,
+  allDaySubgridPlacementVars,
+  clamp,
+  currentTimeLineVars,
+  dayColumnPlacementVars,
+  eventPastSurfaceClassName,
+  eventSurfaceClassName,
   formatDayNumber,
   formatEventDateTimeRange,
   formatEventTime,
@@ -59,11 +96,12 @@ import {
   getEventCategory,
   getMinutesSinceStartOfDay,
   isEventInPast,
-  SchedulePopoverBody,
-  ScheduleTime,
-  styles,
-  TitleFirstPill,
+  timeColumnRowsVars,
+  timeGridContentVars,
+  timeLabelPositionVars,
+  timedEventPositionVars,
   useScheduleCalendar,
+  type ScheduleInstanceStyle,
 } from './shared';
 import {layoutTimedEvents, type TimedEventPlacement} from './timeGridLayout';
 import {
@@ -255,7 +293,7 @@ export function TimeGridView({
     surfaceTarget: 'popover',
     // The entrance runs on the surface: an anchored layer lays out again on
     // each frame its own style animates.
-    xstyle: layerAnimations.below,
+    className: layerAnimations.below,
     onHide: useCallback(() => {
       setOpenBlock(null);
     }, []),
@@ -296,11 +334,12 @@ export function TimeGridView({
   const viewportProps = getViewportProps<HTMLDivElement>({
     ref: viewportRef,
     onScroll: rememberScroll,
-    ...stylex.props(styles.timeGridViewport, timeGridViewportScope),
+    className: scheduleTimeGridViewportClassName,
   });
-  const contentProps = getContentProps<HTMLDivElement>(
-    stylex.props(styles.timeGridContent(days.length)),
-  );
+  const contentProps = getContentProps<HTMLDivElement>({
+    className: scheduleTimeGridContentClassName,
+    style: timeGridContentVars(days.length),
+  });
 
   // Read-only: everything painted is decoration for sighted users and the
   // hidden grid is what assistive technology reads. With renderPopover the
@@ -325,31 +364,35 @@ export function TimeGridView({
           timezoneLabel={timezoneLabel}
         />
       )}
-      <div {...stylex.props(styles.timeGridFrame)}>
+      <div className={tw(scheduleTimeGridFrameClassName)}>
         <div {...viewportProps}>
           <div {...contentProps}>
-            <div aria-hidden {...stylex.props(styles.timeGridCorner)} />
+            <div aria-hidden className={tw(scheduleTimeGridCornerClassName)} />
             {days.map((day, index) => (
               <div
                 key={plainDateToISO(day)}
                 aria-hidden
-                {...stylex.props(
-                  styles.timeGridHeaderCell,
-                  styles.dayColumnPlacement(index),
-                  index === days.length - 1 && styles.timeGridHeaderCellLast,
-                )}>
+                className={tw(
+                  scheduleTimeGridHeaderCellClassName,
+                  index === days.length - 1 &&
+                    scheduleTimeGridHeaderCellLastClassName,
+                )}
+                style={dayColumnPlacementVars(index)}>
                 <Heading
                   level={headingLevel}
                   color="secondary"
                   display="block"
-                  xstyle={styles.timeGridHeaderHeading}>
-                  <span {...stylex.props(styles.timeGridHeaderHeadingContent)}>
+                  className={scheduleTimeGridHeaderHeadingClassName}>
+                  <span
+                    className={tw(
+                      scheduleTimeGridHeaderHeadingContentClassName,
+                    )}>
                     {formatWeekday(day, 'short', locale, calendar)}
                     <span
-                      {...stylex.props(
-                        styles.timeGridDayNumber,
+                      className={tw(
+                        scheduleTimeGridDayNumberClassName,
                         plainDateIsEqual(day, focusDate) &&
-                          styles.timeGridCurrentDayPill,
+                          scheduleTimeGridCurrentDayPillClassName,
                       )}>
                       {formatDayNumber(day, locale, calendar)}
                     </span>
@@ -357,7 +400,7 @@ export function TimeGridView({
                 </Heading>
               </div>
             ))}
-            <div aria-hidden {...stylex.props(styles.allDayLabel)}>
+            <div aria-hidden className={tw(scheduleAllDayLabelClassName)}>
               <Text type="supporting" color="secondary" weight="bold">
                 {timezoneLabel}
               </Text>
@@ -366,16 +409,18 @@ export function TimeGridView({
               {...(hasPopover
                 ? {role: 'group', 'aria-label': 'All-day events'}
                 : {'aria-hidden': true})}
-              {...stylex.props(styles.allDayRow(allDayLevelCount))}>
+
+              style={allDayRowVars(allDayLevelCount)}>
               {days.map((day, index) => (
                 <div
                   key={plainDateToISO(day)}
                   aria-hidden
-                  {...stylex.props(
-                    styles.allDayCell,
-                    styles.allDaySubgridPlacement(index),
-                    index === days.length - 1 && styles.allDayCellLast,
+                  className={tw(
+                    scheduleAllDayCellClassName,
+                    index === days.length - 1 &&
+                      scheduleAllDayCellLastClassName,
                   )}
+                  style={allDaySubgridPlacementVars(index)}
                 />
               ))}
               {allDaySegments.map(segment => {
@@ -403,7 +448,8 @@ export function TimeGridView({
                     isPast={isSegmentPast}
                   />
                 );
-                const placement = styles.allDayEventSpan(
+                const placementClassName = scheduleAllDayEventSpanClassName;
+                const placementVars = allDayEventSpanVars(
                   segment.columnStart,
                   segment.columnEnd,
                   segment.level,
@@ -411,7 +457,10 @@ export function TimeGridView({
                 const content = renderPopover?.(segment.event);
                 if (!hasPopover) {
                   return (
-                    <div key={key} {...stylex.props(placement)}>
+                    <div
+                      key={key}
+                      className={placementClassName}
+                      style={placementVars}>
                       {pill}
                     </div>
                   );
@@ -428,7 +477,8 @@ export function TimeGridView({
                         locale,
                         calendar,
                       )}
-                      {...stylex.props(placement)}>
+                      className={placementClassName}
+                      style={placementVars}>
                       {pill}
                     </div>
                   );
@@ -458,25 +508,24 @@ export function TimeGridView({
                     onClick={domEvent =>
                       toggleBlock(segment.event, dayISO, domEvent.currentTarget)
                     }
-                    {...stylex.props(
-                      styles.eventButtonReset,
-                      placement,
-                      styles.eventButtonFocus,
-                      focusOutlineStyles.focusVisible,
-                    )}>
+                    className={tw(
+                      focusOutlineFocusVisibleClassName,
+                      scheduleEventButtonResetClassName,
+                      placementClassName,
+                      scheduleEventButtonFocusClassName,
+                    )}
+                    style={placementVars}>
                     {pill}
                   </button>
                 );
               })}
             </div>
-            <div aria-hidden {...stylex.props(styles.timeLabels)}>
+            <div aria-hidden className={tw(scheduleTimeLabelsClassName)}>
               {hours.slice(1).map((hour, index) => (
                 <div
                   key={hour}
-                  {...stylex.props(
-                    styles.timeLabel,
-                    styles.timeLabelPosition(index + 1, hourHeight),
-                  )}>
+                  className={tw(scheduleTimeLabelClassName)}
+                  style={timeLabelPositionVars(index + 1, hourHeight)}>
                   <ScheduleTime>{formatHour(hour, locale)}</ScheduleTime>
                 </div>
               ))}
@@ -498,19 +547,25 @@ export function TimeGridView({
                         'aria-label': formatFullDate(day, locale, calendar),
                       }
                     : {'aria-hidden': true})}
-                  {...stylex.props(
-                    styles.timeColumn,
-                    styles.dayColumnPlacement(index),
-                    styles.timeColumnRows(hourHeight),
-                    index === days.length - 1 && styles.timeColumnLast,
-                  )}>
+                  className={tw(
+                    scheduleTimeColumnClassName,
+                    index === days.length - 1 &&
+                      scheduleTimeColumnLastClassName,
+                  )}
+                  style={
+                    {
+                      ...dayColumnPlacementVars(index),
+                      ...timeColumnRowsVars(hourHeight),
+                    } as ScheduleInstanceStyle
+                  }>
                   {hours.map((hour, hourIndex) => (
                     <div
                       key={hour}
                       aria-hidden
-                      {...stylex.props(
-                        styles.hourSlot,
-                        hourIndex === hours.length - 1 && styles.hourSlotLast,
+                      className={tw(
+                        scheduleHourSlotClassName,
+                        hourIndex === hours.length - 1 &&
+                          scheduleHourSlotLastClassName,
                       )}
                     />
                   ))}
@@ -538,38 +593,42 @@ export function TimeGridView({
                         locale,
                       );
                       const category = getEventCategory(event, categories);
-                      const blockStyles = [
-                        styles.timedEvent,
-                        styles.timedEventPosition(
-                          clamp(top, 0, 100),
-                          clamp(height, 4, 100),
-                          (columnStart / columnCount) * 100,
-                          (columnSpan / columnCount) * 100,
-                        ),
+                      const blockClassName = tw(
+                        scheduleTimedEventClassName,
+                        scheduleTimedEventPositionClassName,
                         isEventInPast(event, currentTime, timezoneID)
-                          ? eventPastSurfaceColorStyle(category.color)
-                          : eventSurfaceColorStyle(category.color),
-                      ];
+                          ? eventPastSurfaceClassName(category.color)
+                          : eventSurfaceClassName(category.color),
+                      );
+                      const blockVars = timedEventPositionVars(
+                        clamp(top, 0, 100),
+                        clamp(height, 4, 100),
+                        (columnStart / columnCount) * 100,
+                        (columnSpan / columnCount) * 100,
+                      );
                       const blockContent = (
                         <>
                           <Text
                             type="supporting"
                             color="inherit"
                             weight="bold"
-                            xstyle={styles.eventTitle}>
+                            className={scheduleEventTitleClassName}>
                             {event.title}
                           </Text>
                           <Text
                             type="supporting"
                             color="inherit"
-                            xstyle={styles.eventTime}>
+                            className={scheduleEventTimeClassName}>
                             <ScheduleTime>{timeLabel}</ScheduleTime>
                           </Text>
                         </>
                       );
                       if (!hasPopover) {
                         return (
-                          <div key={event.id} {...stylex.props(...blockStyles)}>
+                          <div
+                            key={event.id}
+                            className={blockClassName}
+                            style={blockVars}>
                             {blockContent}
                           </div>
                         );
@@ -588,7 +647,8 @@ export function TimeGridView({
                           <div
                             key={event.id}
                             aria-label={buttonLabel}
-                            {...stylex.props(...blockStyles)}>
+                            className={blockClassName}
+                            style={blockVars}>
                             {blockContent}
                           </div>
                         );
@@ -613,12 +673,13 @@ export function TimeGridView({
                           onClick={domEvent =>
                             toggleBlock(event, dayISO, domEvent.currentTarget)
                           }
-                          {...stylex.props(
-                            styles.eventButtonReset,
-                            ...blockStyles,
-                            styles.eventButtonFocus,
-                            focusOutlineStyles.focusVisible,
-                          )}>
+                          className={tw(
+                            focusOutlineFocusVisibleClassName,
+                            scheduleEventButtonResetClassName,
+                            blockClassName,
+                            scheduleEventButtonFocusClassName,
+                          )}
+                          style={blockVars}>
                           {blockContent}
                         </button>
                       );
@@ -628,9 +689,8 @@ export function TimeGridView({
                     currentTimeTop != null && (
                       <div
                         aria-hidden
-                        {...stylex.props(
-                          styles.currentTimeLine(currentTimeTop),
-                        )}
+
+                        style={currentTimeLineVars(currentTimeTop)}
                       />
                     )}
                 </div>
@@ -638,7 +698,7 @@ export function TimeGridView({
             })}
           </div>
         </div>
-        <div aria-hidden {...stylex.props(styles.timeGridFocusRing)} />
+        <div aria-hidden className={scheduleTimeGridFocusRingClassName} />
       </div>
       {hasPopover &&
         popover.render(
@@ -650,7 +710,7 @@ export function TimeGridView({
           {
             placement: 'below',
             alignment: 'start',
-            offset: spacingVars['--spacing-1'],
+            offset: spacingVarNames['--spacing-1'],
           },
         )}
     </>
@@ -685,7 +745,7 @@ function TimeGridAccessibilityGrid({
       role="grid"
       aria-label="Schedule time grid"
       aria-readonly
-      {...stylex.props(styles.visuallyHidden)}>
+      className={tw(scheduleVisuallyHiddenClassName)}>
       <div role="row">
         <div role="columnheader" aria-colindex={1}>
           Time

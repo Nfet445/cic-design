@@ -4,8 +4,8 @@
 
 /**
  * @file InfoTip.tsx
- * @input Uses React, StyleX, useTooltip, Icon, useComponentTranslator, the
- *   shared touch hit area, color/spacing/radius/duration/ease tokens
+ * @input Uses React, Tailwind classes, useTooltip, Icon, useComponentTranslator,
+ *   the shared focus ring and touch hit area
  * @output Exports InfoTip component, InfoTipProps, InfoTipSize types
  * @position Core implementation; consumed by index.ts, tested by
  *   InfoTip.test.tsx; `@astryxdesign/lab` re-exports it, deprecated
@@ -38,18 +38,14 @@ import {
   useComponentTranslator,
 } from '../i18n/useComponentTranslator';
 import english from '../i18n/generated-english/InfoTip/InfoTip.generated';
-import {
-  colorVars,
-  durationVars,
-  easeVars,
-  radiusVars,
-  spacingVars,
-} from '../theme/tokens.stylex';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {mergeProps} from '../utils/mergeProps';
 import {useTouchHitArea} from '../utils/touchHitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
+import {infoTipTriggerClassName} from './infoTipClasses';
 import {pickDataAttributes} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
+import {tw} from '../utils/tw';
 
 registerEnglishFallback(english);
 
@@ -81,35 +77,6 @@ export interface InfoTipProps extends Pick<
    */
   size?: InfoTipSize;
 }
-
-const styles = stylex.create({
-  trigger: {
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    verticalAlign: 'middle',
-    padding: spacingVars['--spacing-0-5'],
-    margin: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    borderRadius: radiusVars['--radius-full'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    color: {
-      default: colorVars['--color-icon-secondary'],
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        default: null,
-        '@media (hover: hover)': colorVars['--color-icon-primary'],
-      },
-    },
-    transitionProperty: 'color',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-});
 
 /**
  * An info icon that reveals help: a small "i" button. Hover and keyboard
@@ -205,14 +172,10 @@ export function InfoTip({
         onPointerDownCapture={handlePointerDownCapture}
         onClick={handleClick}
         {...mergeProps(
-          stylex.props(
-            focusOutlineStyles.focusVisible,
-            styles.trigger,
-            touchHitAreaStyles.layer,
-            xstyle,
-          ),
-          className,
-          style,
+          {className: tw(infoTipTriggerClassName, touchHitAreaLayerClassName)},
+          stylex.props(focusOutlineStyles.focusVisible),
+          tw(className, xstyleProps(xstyle).className),
+          {...xstyleProps(xstyle).style, ...style},
         )}>
         <Icon icon="info" size={size} />
       </button>

@@ -16,6 +16,12 @@ import userEvent from '@testing-library/user-event';
 import {Profiler, useRef, useState} from 'react';
 import {Tour} from './Tour';
 import {TourStep} from './TourStep';
+import {
+  tourStepCalloutGapClassNames,
+  tourStepCutoutClassName,
+  tourStepOverlayInteractiveClassName,
+  tourStepSurfaceClassName,
+} from './tourStepClasses';
 import {useTour} from './useTour';
 
 // A small harness: two targets + a two-step tour, isActive controlled locally
@@ -126,6 +132,23 @@ describe('Tour', () => {
     rerender(<TwoStepTour hasBackdrop />);
     expect(screen.getByTestId('tour-highlight')).toBeInTheDocument();
     expect(screen.getByTestId('tour-backdrop')).toBeInTheDocument();
+  });
+
+  it('carries the overlay, cutout, surface and gap classes', () => {
+    render(<TwoStepTour hasBackdrop />);
+    const backdrop = screen.getByTestId('tour-backdrop');
+    expect(backdrop).toHaveClass(
+      ...tourStepOverlayInteractiveClassName.split(' '),
+    );
+    expect(screen.getByTestId('tour-highlight')).toHaveClass(
+      ...tourStepCutoutClassName.split(' '),
+    );
+
+    const callout = screen.getByText('First').closest('section');
+    expect(callout).toHaveClass(...tourStepSurfaceClassName.split(' '));
+    expect(callout?.parentElement).toHaveClass(
+      tourStepCalloutGapClassNames.below,
+    );
   });
 
   it('dismisses with "backdrop" when the backdrop is clicked', () => {

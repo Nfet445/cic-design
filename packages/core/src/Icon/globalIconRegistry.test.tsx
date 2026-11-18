@@ -28,7 +28,7 @@ import {
   type IconRequest,
 } from './globalIconRegistry';
 import {Icon} from './Icon';
-import type {IconSize} from './IconSize.stylex';
+import type {IconSize} from './IconSize';
 import type {IconVariant, IconVariantMap} from './index';
 import {useIcon} from './useIcon';
 

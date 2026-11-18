@@ -6,25 +6,37 @@
 /**
  * @file privateAttributes/press.stylex.ts
  * @input StyleX, the overlay color tokens, the touch press strength
- *   (`pressVars`), the theme's exit motion tokens and the indicator scope
- *   marker
- * @output Ready-made press styles for list rows, Button and the layer over a
- *   selection control's box. No package entry exports them.
+ *   (`pressVars`), the theme's exit motion tokens and the press attributes
+ * @output `rowPressLayerStyles`, the ready-made press layer a list row
+ *   composes. No package entry exports it.
  * @position Owner module of the private press attribute: the press controller
  *   (utils/pressFeedback.ts) writes it, and this file reads it.
  *   utils/interactionOverlay.cell.test.ts tests the row layer.
+ *
+ * The row layer is the one press map that stays StyleX. Its `::before` art
+ * needs a coarse-pointer arm crossed with two press states and the enabled
+ * arm on one element, one variant per combination — the case a class map
+ * cannot hold. It also sets the same properties as the overlay utility
+ * (utils/interactionOverlay.stylex.ts) on the same element, and StyleX wins
+ * over a class on a property both set (privateAttributes/travellingClasses.ts
+ * relies on that). The two rules that name the survivor: this `cell`'s
+ * `animation-name`/`animation-duration` under `[data-astryx-press="fading"]`
+ * against `interactionOverlayStyles.pressedAlpha`'s own, and its `background-*`
+ * arms against `interactionOverlayStyles.backgroundImage`. privateAttributes/
+ * pressClasses.ts holds the rest, including the RadioList row's own mouse press
+ * paint.
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {
-  borderVars,
-  colorVars,
-  durationVars,
-  easeVars,
-} from '../theme/tokens.stylex';
 import {reducedMotionFadeConsts} from '../motion/reducedMotion.stylex';
 import {pressVars} from '../utils/interactionOverlay.stylex';
-import {indicatorScope} from '../Indicator/indicator.markers.stylex';
+
+export {
+  controlPressHeldClassName,
+  indicatorPressPaintHandDownClassName,
+  rowPressPaintCheckboxRowClassName,
+  rowPressPaintRadioRowClassName,
+} from './pressClasses';
 
 // The overlay's arm selectors (interactionOverlay.stylex.ts), restated here:
 // StyleX resolves a style's keys within its own file.
@@ -39,41 +51,11 @@ const PRESSED_FADING = '[data-astryx-press="fading"]';
  */
 const PRESSED_ANY =
   ':is([data-astryx-press="on"],[data-astryx-press="fading"])';
-/** The element is pressed, and the press controller does not paint the press. */
-const ACTIVE_UNPAINTED = `:active:not(${PRESSED_ON},${PRESSED_FADING})`;
-
-/**
- * The nested controls that keep their own press, each at `:active`. It is
- * INTERACTIVE_SELECTORS (hooks/useClickableContainer.ts), which StyleX cannot
- * import, less the read-only ones. A RadioList row's own radio is the row's
- * action, so its press is the row's. CSS cannot tell it from a nested radio
- * input, so a nested one presses the circle too.
- * RadioListItem.press.source-build.test.mjs keeps the two lists equal.
- */
-const NESTED_CONTROL_ACTIVE =
-  'button:not([aria-readonly="true"]):active,' +
-  'a:not([aria-readonly="true"]):active,' +
-  'input:not([type="radio"],[aria-readonly="true"]):active,' +
-  'select:not([aria-readonly="true"]):active,' +
-  'textarea:not([aria-readonly="true"]):active,' +
-  '[role="button"]:not([aria-readonly="true"]):active,' +
-  '[role="link"]:not([aria-readonly="true"]):active,' +
-  '[role="checkbox"]:not([aria-readonly="true"]):active,' +
-  '[role="radio"]:not([aria-readonly="true"]):active,' +
-  '[role="switch"]:not([aria-readonly="true"]):active,' +
-  '[role="tab"]:not([aria-readonly="true"]):active,' +
-  '[role="menuitem"]:not([aria-readonly="true"]):active,' +
-  '[role="option"]:not([aria-readonly="true"]):active,' +
-  '[role="combobox"]:not([aria-readonly="true"]):active,' +
-  '[role="listbox"]:not([aria-readonly="true"]):active,' +
-  '[role="slider"]:not([aria-readonly="true"]):active,' +
-  '[role="spinbutton"]:not([aria-readonly="true"]):active,' +
-  '[data-pressable-container]:not([aria-readonly="true"]):active';
 
 const PRESS_ALPHA = pressVars['--astryx-press-alpha'];
 
-const hoverImage = `linear-gradient(${colorVars['--color-overlay-hover']}, ${colorVars['--color-overlay-hover']})`;
-const pressedImage = `linear-gradient(${colorVars['--color-overlay-pressed']}, ${colorVars['--color-overlay-pressed']})`;
+const hoverImage = `linear-gradient(var(--color-overlay-hover), var(--color-overlay-hover))`;
+const pressedImage = `linear-gradient(var(--color-overlay-pressed), var(--color-overlay-pressed))`;
 /** The overlay's paint, read back off the element (its gradient layer). */
 const pressedOverlayImage = 'var(--_press-paint-image)';
 
@@ -90,9 +72,9 @@ const pressRelease = stylex.keyframes({
  * A press layer's clock as CSS: the strength release's clock, the theme's
  * exit duration, so the layer and the strength land together.
  */
-const CELL_RELEASE = durationVars['--duration-exit'];
+const CELL_RELEASE = 'var(--duration-exit)';
 /** The same clock under Reduce Motion, no longer than the Reduce Motion fade. */
-const CELL_RELEASE_REDUCED = `min(${durationVars['--duration-exit']}, ${reducedMotionFadeConsts.duration})`;
+const CELL_RELEASE_REDUCED = `min(var(--duration-exit), ${reducedMotionFadeConsts.duration})`;
 const REDUCED_MOTION = '@media (prefers-reduced-motion: reduce)';
 
 /** Opacity 1 → 0: the row layer leaves; its fading arm runs it. */
@@ -102,10 +84,10 @@ const cellRelease = stylex.keyframes({
 });
 
 /** The release's curve: the theme's exit easing, as the strength's. */
-const RELEASE_EASE = easeVars['--ease-exit'];
+const RELEASE_EASE = 'var(--ease-exit)';
 
 /** A List divider's width (ListItem's bottom border). */
-const DIVIDER_WIDTH = borderVars['--border-width'];
+const DIVIDER_WIDTH = 'var(--border-width)';
 /** How far a highlighted row's tint reaches past its edge: one divider. */
 const PAST_DIVIDER = `calc(-1 * ${DIVIDER_WIDTH})`;
 /**
@@ -207,7 +189,7 @@ export const rowPressLayerStyles = stylex.create({
         default: null,
         [COARSE]: {
           default: null,
-          [PRESSED_ANY]: colorVars['--color-overlay-pressed'],
+          [PRESSED_ANY]: 'var(--color-overlay-pressed)',
         },
       },
       // On at once while the press is believed; nothing transitions it.
@@ -262,13 +244,13 @@ export const rowPressLayerStyles = stylex.create({
         ':not(:first-child)': {
           default: null,
           ':active': {
-            default: tintAbove(colorVars['--color-overlay-pressed']),
+            default: tintAbove('var(--color-overlay-pressed)'),
             [COARSE]: TRAVELLING_SURFACE,
           },
           [HOVER_HOVER]: {
             default: null,
-            ':hover': tintAbove(colorVars['--color-overlay-hover']),
-            ':active': tintAbove(colorVars['--color-overlay-pressed']),
+            ':hover': tintAbove('var(--color-overlay-hover)'),
+            ':active': tintAbove('var(--color-overlay-pressed)'),
           },
           // A press the controller paints. Under a coarse pointer, the press
           // layer covers the divider above. Elsewhere the strip takes the
@@ -366,109 +348,6 @@ export const rowPressLayerStyles = stylex.create({
         },
         [PRESSED_ON]: {default: pressedOverlayImage, [COARSE]: 'none'},
         [PRESSED_FADING]: {default: pressedOverlayImage, [COARSE]: 'none'},
-      },
-    },
-  },
-});
-
-export const controlPressLayerStyles = stylex.create({
-  /**
-   * A control whose press lives on its own surface: Button (and the
-   * IconButton and ToggleButton built on it), composed after
-   * `rowPressLayerStyles.cell` and `cellOnImage`, which give it the row's
-   * compositor press layer under a coarse primary pointer. Button's press
-   * scale runs as a transition: the browser makes a layer for it and drops
-   * that layer at its end, which repaints the button. Under a coarse primary
-   * pointer, a layer kept from the touch to the end of the release keeps the
-   * release free of Paint. With any other pointer nothing here applies.
-   */
-  control: {
-    willChange: {
-      default: null,
-      [COARSE]: {default: null, [PRESSED_ANY]: 'transform'},
-    },
-  },
-});
-
-export const rowPressPaintStyles = stylex.create({
-  // A box reads its nearest row's value, so a list in a row's content keeps
-  // its own rows' paint.
-  checkboxRow: {
-    '--_checkbox-row-press-paint': {
-      default: 'none',
-      ':is([data-astryx-press="on"])': 'var(--_press-paint-image)',
-      ':is([data-astryx-press="fading"])': 'var(--_press-paint-image)',
-    },
-  },
-  // A RadioList row declares the paint of a press the controller does not
-  // paint. A press through a nested control is that control's, as the row's
-  // container rule decides for the controller. The `:has()` is on the row
-  // itself and reaches no descendant selector, so a change inside the row
-  // re-checks the row alone. The circle's layer reads the paint through
-  // inheritance.
-  radioRow: {
-    '--_radio-row-press': {
-      default: null,
-      [`${ACTIVE_UNPAINTED}:not(:has(${NESTED_CONTROL_ACTIVE}))`]: {
-        default: colorVars['--color-overlay-pressed'],
-        [COARSE]: 'transparent',
-      },
-    },
-  },
-});
-
-/**
- * Ready-made press paint for a selection control. `handDown` goes on
- * CheckboxInput's row. `activeFill` and `image` go on the layer over the box
- * or a RadioList option's circle. They read the press attribute off the
- * indicator scope marker, as the hover tint does.
- */
-export const indicatorPressPaintStyles = stylex.create({
-  // A row hands its press image down to an indicator that paints its own
-  // press, but only in the row's own press states. A pressed outer row hands
-  // down nothing, as for the built-in box. The property has no default: a
-  // layered stylesheet ranks a default above the arms. Only CheckboxInput's
-  // row declares it. A menu item paints its own press, so a mapped indicator
-  // there paints none.
-  handDown: {
-    '--_indicator-press-image': {
-      default: null,
-      [PRESSED_ON]: pressedOverlayImage,
-      [PRESSED_FADING]: pressedOverlayImage,
-    },
-    // While the controller paints the press, the indicator's `:active` fill
-    // stays off, so a mouse's press paints once.
-    '--_indicator-active-press': {
-      default: null,
-      [PRESSED_ON]: 'transparent',
-      [PRESSED_FADING]: 'transparent',
-    },
-  },
-  // The `:active` fill, only for a press the controller does not paint. Under
-  // a coarse pointer it is dropped.
-  activeFill: {
-    '::after': {
-      backgroundColor: {
-        default: 'transparent',
-        [stylex.when.ancestor(ACTIVE_UNPAINTED, indicatorScope)]: {
-          default: colorVars['--color-overlay-pressed'],
-          [COARSE]: 'transparent',
-        },
-      },
-    },
-  },
-  // The controller's press paints as an image layer over the colour. An image
-  // change is discrete, so no transition can delay the onset. Only the
-  // strength moves: the row's `pressedAlpha` arms set it to 1 while on, and
-  // 1 → 0 over the release. This holds for every pointer, because the
-  // controller writes the attribute only for a press it paints.
-  image: {
-    '::after': {
-      backgroundImage: {
-        default: null,
-        [stylex.when.ancestor(PRESSED_ON, indicatorScope)]: pressedOverlayImage,
-        [stylex.when.ancestor(PRESSED_FADING, indicatorScope)]:
-          pressedOverlayImage,
       },
     },
   },

@@ -10,7 +10,7 @@ import {
 import type {BreadcrumbMenuOption} from '@astryxdesign/core/Breadcrumbs';
 import {Icon} from '@astryxdesign/core/Icon';
 import {VStack} from '@astryxdesign/core/Layout';
-import {rtlStyles} from '@astryxdesign/core/utils';
+import {RTL_MIRROR_CLASS} from '@astryxdesign/core/utils';
 import {HomeIcon, Cog6ToothIcon, FolderIcon} from '@heroicons/react/24/outline';
 
 const meta: Meta<typeof Breadcrumbs> = {
@@ -82,7 +82,7 @@ export const CustomSeparator: Story = {
       </Breadcrumbs>
       <Breadcrumbs
         label="Explicitly mirrored separator"
-        separator={<span {...stylex.props(rtlStyles.mirror)}>→</span>}>
+        separator={<span className={RTL_MIRROR_CLASS}>→</span>}>
         <BreadcrumbItem href="/">Home</BreadcrumbItem>
         <BreadcrumbItem href="/docs">Docs</BreadcrumbItem>
         <BreadcrumbItem isCurrent>API Reference</BreadcrumbItem>
@@ -250,7 +250,7 @@ export const MenuCrumbComposed: Story = {
 /**
  * An icon separator is an SVG, so the bidi algorithm never mirrors it the way it
  * mirrors an angle-quote glyph such as `›`. A directional icon therefore needs
- * `rtlStyles.mirror` through `xstyle`, or it points against the reading
+ * `RTL_MIRROR_CLASS` through `xstyle`, or it points against the reading
  * direction in an RTL locale.
  */
 export const MirroredIconSeparator: Story = {
@@ -262,7 +262,7 @@ export const MirroredIconSeparator: Story = {
           icon="chevronRight"
           size="xsm"
           color="secondary"
-          xstyle={rtlStyles.mirror}
+          className={RTL_MIRROR_CLASS}
         />
       }>
       <BreadcrumbItem href="/">Home</BreadcrumbItem>

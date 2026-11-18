@@ -71,7 +71,6 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {useCommittedRef} from '../hooks/useCommittedRef';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {
@@ -88,9 +87,11 @@ import english from '../i18n/generated-english/List/listReorderEngine.generated'
 import {useLayer} from '../Layer/useLayer';
 import {useLayerDismissal} from '../Layer/useLayerDismissal';
 import {Kbd} from '../Kbd/Kbd';
-import {anchoredHintStyles, renderAnchoredHint} from '../hooks/anchoredHint';
-import {spacingVars} from '../theme/tokens.stylex';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {renderAnchoredHint} from '../hooks/anchoredHint';
+import {anchoredHintKeysClassName} from '../hooks/anchoredHintClasses';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {tw} from '../utils/tw';
+import {mergeProps} from '../utils/mergeProps';
 import type {LongPressGestureRecognizer} from '../gestures/LongPressGestureRecognizer';
 import {VelocityTracker} from '../gestures/VelocityTracker';
 import {inertClone, paintedBackground} from '../motion/inertClone';
@@ -107,7 +108,7 @@ import {subscribeInput} from '../utils/inputStream';
 import {nearestScroller} from '../utils/scrollingAncestor';
 import {useTouchPresentation} from '../utils/touchPresentation';
 import {useTouchHitArea} from '../utils/touchHitArea';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerClassName} from '../internal/touchHitAreaClasses';
 import {createDevWarnings, devWarn} from '../utils/devWarning';
 import {observeMutations} from '../utils/sharedMutationObserver';
 import {isLeaving, markLeaving} from '../privateAttributes/leaving.stylex';
@@ -122,6 +123,7 @@ import {
 import {markReorderPreview} from '../privateAttributes/reorderPreview.stylex';
 import {
   hideReorderLine,
+  reorderLineClassName,
   showReorderLine,
 } from '../privateAttributes/reorderLine.stylex';
 import {
@@ -134,10 +136,11 @@ import {
   ListReorderHandle,
   ListReorderRowName,
   UNREAD_HANDLE_NAME,
-  reorderListStyle,
   reorderRowStyle,
 } from './ListReorderHandle';
 import {attachTouchHold, touchMotion} from './ListReorderTouch';
+import {listReorderHintButtonClassName} from './listReorderHintClasses';
+import {listReorderLineClassName} from './listReorderHandleClasses';
 import type {
   ListReorderContextValue,
   ListReorderEngine,
@@ -413,7 +416,7 @@ function previewSpanOf(row: HTMLElement, list: HTMLElement): LineSpan {
 }
 
 /**
- * Shows the list's insertion line (its pseudo-element, reorderListStyle)
+ * Shows the list's insertion line (its pseudo-element, reorderListClassName)
  * across `span`, centred on `center` in list coordinates. It only writes, so
  * a crossing lays nothing out.
  */
@@ -705,7 +708,7 @@ export class ListReorderController implements ListReorderSession {
   readonly Handle = ListReorderHandle;
   readonly RowName = ListReorderRowName;
   readonly rowStyle = reorderRowStyle;
-  readonly listStyle = reorderListStyle;
+  readonly listClassName = tw(listReorderLineClassName, reorderLineClassName);
   options: ListReorderOptions | null = null;
   announce: AnnounceFn = () => {};
   messages: ReorderMessages | null = null;
@@ -2450,34 +2453,6 @@ function ListReorderHost({reorder}: {reorder: ListReorderContextValue}) {
   );
 }
 
-const hintStyles = stylex.create({
-  // A glyph or Done: the hint's text, with nothing of a button's own, the
-  // same size under every pointer. A finger's 44 px target is the shared
-  // touch hit layer, which stops short of a neighbouring target.
-  button: {
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: 0,
-    padding: 0,
-    borderWidth: 0,
-    borderRadius: 4,
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  done: {
-    paddingInline: spacingVars['--spacing-1'],
-  },
-});
-
 /**
  * One of the hint's buttons: it never takes the focus from the handle (a
  * press does not move it), and does what its key does.
@@ -2505,11 +2480,11 @@ function HintButton({
       onPointerDown={event => event.preventDefault()}
       onMouseDown={event => event.preventDefault()}
       onClick={onPress}
-      {...focusOutlineProps.focusVisible([
-        hintStyles.button,
-        isText && hintStyles.done,
-        touchHitAreaStyles.layer,
-      ])}>
+      className={tw(
+        listReorderHintButtonClassName({isText}),
+        focusOutlineFocusVisibleClassName,
+        touchHitAreaLayerClassName,
+      )}>
       {children}
     </button>
   );
@@ -2571,7 +2546,7 @@ function ListReorderModeHint({
           hintRef.current = element;
           controller.setHintElement(element);
         }}
-        {...stylex.props(anchoredHintStyles.keys)}>
+        className={anchoredHintKeysClassName}>
         <HintButton
           label={t('@astryx.list.reorderMoveUp')}
           onPress={() => controller.step(target, -1)}>

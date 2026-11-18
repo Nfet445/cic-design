@@ -2,39 +2,22 @@
 
 /**
  * @file AppShellSafeArea.test.tsx
- * @input vitest (jsdom), React Testing Library, AppShell, and the CSS rules
- *   that StyleX injects.
+ * @input vitest (jsdom), React Testing Library, AppShell.
  * @output Checks the safe-area declarations. The header and the sidenav-only
  *   top bar pad their items by the top and side insets. Under a banner, the
  *   top bar takes only the sides. Main's block end is `contentPadding` plus
  *   the bottom inset.
  * @position Testing for AppShell.tsx. jsdom drops `env()` values, so the test
- *   reads the rules that StyleX passes to `insertRule`.
+ *   reads the class text that states them.
  */
 
 import {render, screen} from '@testing-library/react';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-
-/** Every rule StyleX inserted, as the raw text it handed to `insertRule`. */
-const rawRules: string[] = [];
-
-const insertRule = CSSStyleSheet.prototype.insertRule;
-CSSStyleSheet.prototype.insertRule = function (
-  this: CSSStyleSheet,
-  rule: string,
-  index?: number,
-) {
-  rawRules.push(rule);
-  return insertRule.call(this, rule, index);
-};
-// StyleX injects when the styles are created: load AppShell after the
-// recorder is in place. The file loads them before any test runs, so no
-// hook's time limit covers the load.
-vi.resetModules();
-const {AppShell} = await import('./AppShell');
-const {SideNav} = await import('../SideNav/SideNav');
-const {SideNavItem} = await import('../SideNav/SideNavItem');
-const {SideNavSection} = await import('../SideNav/SideNavSection');
+import {AppShell} from './AppShell';
+import {SideNav} from '../SideNav/SideNav';
+import {SideNavItem} from '../SideNav/SideNavItem';
+import {SideNavSection} from '../SideNav/SideNavSection';
 
 function stubMatchMedia(matches: boolean) {
   vi.stubGlobal(
@@ -56,32 +39,6 @@ beforeEach(() => {
   stubMatchMedia(false);
 });
 
-/** The declarations `el`'s classes make, from the raw rules, by property. */
-function rawDeclarations(el: Element, pseudo = ''): Map<string, string> {
-  const declarations = new Map<string, string>();
-  for (const className of Array.from(el.classList)) {
-    for (const rule of rawRules) {
-      const match = new RegExp(
-        `^\\.${className}(?::not\\(#\\\\#\\))*${pseudo}\\{([^}]*)\\}$`,
-      ).exec(rule);
-      if (match == null) {
-        continue;
-      }
-      for (const declaration of match[1].split(';')) {
-        const colon = declaration.indexOf(':');
-        if (colon > 0) {
-          // StyleX minifies values: compare without whitespace.
-          declarations.set(
-            declaration.slice(0, colon).trim(),
-            declaration.slice(colon + 1).replace(/\s+/g, ''),
-          );
-        }
-      }
-    }
-  }
-  return declarations;
-}
-
 describe('AppShell safe area', () => {
   it('pads the header by the top and side insets', () => {
     render(
@@ -89,17 +46,11 @@ describe('AppShell safe area', () => {
         <div>Content</div>
       </AppShell>,
     );
-    const declarations = rawDeclarations(screen.getByRole('banner'));
-    expect(declarations.get('padding-top')).toBe(
-      'env(safe-area-inset-top,0px)',
-    );
+    const classes = classesOf(screen.getByRole('banner'));
+    expect(classes).toContain('pt-[env(safe-area-inset-top,0px)]');
     // Left-to-right here; a right-to-left context swaps the sides.
-    expect(declarations.get('padding-inline-start')).toBe(
-      'env(safe-area-inset-left,0px)',
-    );
-    expect(declarations.get('padding-inline-end')).toBe(
-      'env(safe-area-inset-right,0px)',
-    );
+    expect(classes).toContain('ps-[env(safe-area-inset-left,0px)]');
+    expect(classes).toContain('pe-[env(safe-area-inset-right,0px)]');
   });
 
   it('pads the sidenav-only phone top bar the same way', () => {
@@ -117,9 +68,7 @@ describe('AppShell safe area', () => {
       </AppShell>,
     );
     const bar = screen.getByRole('banner');
-    expect(rawDeclarations(bar).get('padding-top')).toBe(
-      'env(safe-area-inset-top,0px)',
-    );
+    expect(classesOf(bar)).toContain('pt-[env(safe-area-inset-top,0px)]');
   });
 
   it('pads a sidenav-only phone top bar under a banner by the sides only', () => {
@@ -140,19 +89,15 @@ describe('AppShell safe area', () => {
     // The banner's wrapper pads the top inset once; the top bar below it
     // would otherwise add a second band of the same height.
     const banner = screen.getByRole('banner');
-    expect(rawDeclarations(banner).get('padding-top')).toBe(
-      'env(safe-area-inset-top,0px)',
-    );
+    expect(classesOf(banner)).toContain('pt-[env(safe-area-inset-top,0px)]');
     const topBar = screen
       .getAllByRole('navigation')
       .map(nav => nav.closest('.astryx-app-shell-header'))
       .find(el => el != null && el !== banner) as HTMLElement;
     expect(topBar).toBeTruthy();
-    const declarations = rawDeclarations(topBar);
-    expect(declarations.has('padding-top')).toBe(false);
-    expect(declarations.get('padding-inline-start')).toBe(
-      'env(safe-area-inset-left,0px)',
-    );
+    const topBarClasses = classesOf(topBar);
+    expect(topBarClasses).not.toContain('pt-[env(safe-area-inset-top,0px)]');
+    expect(topBarClasses).toContain('ps-[env(safe-area-inset-left,0px)]');
   });
 
   it('sticks a phone top bar under a banner below the top inset in auto', () => {
@@ -175,10 +120,8 @@ describe('AppShell safe area', () => {
       .map(nav => nav.closest('.astryx-app-shell-header'))
       .find(el => el != null && el !== banner) as HTMLElement;
     expect(topBar).toBeTruthy();
-    expect(rawDeclarations(topBar).get('position')).toBe('sticky');
-    expect(rawDeclarations(topBar).get('top')).toBe(
-      'env(safe-area-inset-top,0px)',
-    );
+    expect(classesOf(topBar)).toContain('sticky');
+    expect(classesOf(topBar)).toContain('top-[env(safe-area-inset-top,0px)]');
     withBanner.unmount();
     // With no banner, the top bar is the header itself. It pads the top inset
     // and sticks at the top edge.
@@ -187,13 +130,9 @@ describe('AppShell safe area', () => {
         <div>Content</div>
       </AppShell>,
     );
-    const bar = screen.getByRole('banner');
-    expect(rawDeclarations(bar).get('padding-top')).toBe(
-      'env(safe-area-inset-top,0px)',
-    );
-    const top = rawDeclarations(bar).get('top');
-    expect(top).toBeDefined();
-    expect(top).not.toContain('env(');
+    const barClasses = classesOf(screen.getByRole('banner'));
+    expect(barClasses).toContain('pt-[env(safe-area-inset-top,0px)]');
+    expect(barClasses.some(name => name.startsWith('top-[env('))).toBe(false);
   });
 
   // Main's block-end padding: the inset it publishes for `contentPadding`
@@ -207,19 +146,14 @@ describe('AppShell safe area', () => {
         <div>Content</div>
       </AppShell>,
     );
-    const main = screen.getByRole('main');
-    const declarations = rawDeclarations(main);
-    // No content padding: the published inset is the block-start padding's
-    // zero, so the block-end padding is the bottom inset alone.
-    const published = declarations.get('--container-padding-block-end');
-    expect(published).toBeTruthy();
-    expect(published).toBe(declarations.get('padding-top'));
-    expect(published).not.toContain('env(');
-    expect(declarations.get('padding-bottom')).toBe(MAIN_END);
-    // Padding, not a spacer: main is border-box, so a child that fills it
-    // ends above the inset instead of overflowing it.
-    expect(declarations.get('box-sizing')).toBe('border-box');
-    expect(rawDeclarations(main, '::after').has('height')).toBe(false);
+    const mainClasses = classesOf(screen.getByRole('main'));
+    // The padding reads the inset main publishes for `contentPadding`, so a
+    // bleed child subtracts only the content padding, and adds the bottom
+    // safe-area inset itself. The self-qualifier repeats LayoutContent's own
+    // theme class, so this padding wins by specificity, not sheet order.
+    expect(mainClasses).toContain(
+      `[&.astryx-layout-content]:[padding-block-end:${MAIN_END}]`,
+    );
   });
 
   it('adds the bottom inset to the content padding, and publishes the content padding alone', () => {
@@ -228,13 +162,16 @@ describe('AppShell safe area', () => {
         <div>Content</div>
       </AppShell>,
     );
-    const declarations = rawDeclarations(screen.getByRole('main'));
-    expect(declarations.get('padding-bottom')).toBe(MAIN_END);
-    // The published inset is `contentPadding` alone, the block-start
-    // padding's value, so a bleed child subtracts only `contentPadding`.
-    const published = declarations.get('--container-padding-block-end');
-    expect(published).toBeTruthy();
-    expect(published).toBe(declarations.get('padding-top'));
-    expect(published).not.toContain('env(');
+    const mainClasses = classesOf(screen.getByRole('main'));
+    expect(mainClasses).toContain(
+      `[&.astryx-layout-content]:[padding-block-end:${MAIN_END}]`,
+    );
+    // `contentPadding` reaches main as LayoutContent's own padding classes.
+    expect(
+      mainClasses.some(
+        name =>
+          name.startsWith('pb-6') || name.includes('padding-block-end:var('),
+      ),
+    ).toBe(true);
   });
 });

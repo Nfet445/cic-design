@@ -134,17 +134,19 @@ function mockOwnedComputedStyle(
   writingMode: () => string = () => 'horizontal-tb',
 ) {
   vi.mocked(window.getComputedStyle).mockImplementation(element => {
-    const owned = (axis: 'X' | 'Y') =>
+    const owned = (axis: 'x' | 'y') =>
       element
         .getAttribute('style')
-        ?.match(new RegExp(`--x-overflow${axis}:\\s*(\\w+)`))?.[1] ?? 'visible';
+        ?.match(
+          new RegExp(`--astryx-scrollable-overflow-${axis}:\\s*(\\w+)`),
+        )?.[1] ?? 'visible';
     return new Proxy({} as CSSStyleDeclaration, {
       get(_target, property) {
         if (property === 'overflowX') {
-          return owned('X');
+          return owned('x');
         }
         if (property === 'overflowY') {
-          return owned('Y');
+          return owned('y');
         }
         if (property === 'writingMode') {
           return writingMode();
@@ -311,7 +313,9 @@ describe('useScrollableArea', () => {
     const viewport = screen.getByTestId('viewport');
 
     // No animation frame has run.
-    expect(viewport.getAttribute('style')).toContain('--x-overflowY: auto');
+    expect(viewport.getAttribute('style')).toContain(
+      '--astryx-scrollable-overflow-y: auto',
+    );
     expect(viewport).toHaveAttribute('tabindex', '0');
     expect(state().block.isScrollable).toBe(true);
   });
@@ -321,7 +325,9 @@ describe('useScrollableArea', () => {
     // Under `clip` the content is 105 tall and overflows; under `auto` its
     // scrollbar narrows it and it fits (a 16:9 child at full width).
     const viewportOverflowY = (element: HTMLElement) =>
-      element.getAttribute('style')?.match(/--x-overflowY:\s*(\w+)/)?.[1];
+      element
+        .getAttribute('style')
+        ?.match(/--astryx-scrollable-overflow-y:\s*(\w+)/)?.[1];
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
     vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(100);
     vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(100);
@@ -460,7 +466,9 @@ describe('useScrollableArea', () => {
       viewport.parentElement!.setAttribute('dir', 'ltr');
     });
     flushFrame();
-    expect(viewport.getAttribute('style')).toContain('--x-overflowX: auto');
+    expect(viewport.getAttribute('style')).toContain(
+      '--astryx-scrollable-overflow-x: auto',
+    );
     expect(viewport).toHaveAttribute('tabindex', '0');
   });
 
@@ -470,8 +478,12 @@ describe('useScrollableArea', () => {
     expect(viewport.getAttribute('style')).toContain('clip');
 
     rerender(<Fixture stickyContainment="always" />);
-    expect(viewport.getAttribute('style')).toContain('--x-overflowX: auto');
-    expect(viewport.getAttribute('style')).toContain('--x-overflowY: hidden');
+    expect(viewport.getAttribute('style')).toContain(
+      '--astryx-scrollable-overflow-x: auto',
+    );
+    expect(viewport.getAttribute('style')).toContain(
+      '--astryx-scrollable-overflow-y: hidden',
+    );
   });
 
   it('activates only the overflowing physical axis when both are requested', () => {
@@ -482,8 +494,12 @@ describe('useScrollableArea', () => {
 
     void act(() => viewport.dispatchEvent(new Event('scroll')));
     flushFrame();
-    expect(viewport.getAttribute('style')).toContain('--x-overflowX: auto');
-    expect(viewport.getAttribute('style')).toContain('--x-overflowY: hidden');
+    expect(viewport.getAttribute('style')).toContain(
+      '--astryx-scrollable-overflow-x: auto',
+    );
+    expect(viewport.getAttribute('style')).toContain(
+      '--astryx-scrollable-overflow-y: hidden',
+    );
   });
 
   it('keeps the named viewport available while content eligibility changes', () => {

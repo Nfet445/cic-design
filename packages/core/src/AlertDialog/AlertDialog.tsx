@@ -4,7 +4,7 @@
 
 /**
  * @file AlertDialog.tsx
- * @input Uses React, StyleX, Dialog, Layout, Heading, Text, Button, the
+ * @input Uses React, Dialog, Layout, Heading, Text, Button, the
  *   action-group tracking (hooks/useActionGroupTracking), the press-group
  *   context (hooks/pressGroupContext), the group pointers
  *   (hooks/useGroupPressTracking) and the touch motion (useAlertMotion)
@@ -22,7 +22,6 @@
  */
 
 import React, {useId, useCallback, useRef} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Dialog} from '../Dialog/Dialog';
 import {Layout} from '../Layout/Layout';
 import {LayoutContent} from '../Layout/LayoutContent';
@@ -34,6 +33,7 @@ import {Button} from '../Button/Button';
 import type {ButtonVariant} from '../Button';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils/mergeProps';
+import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
 import {useMediaQuery} from '../hooks/useMediaQuery';
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -48,6 +48,11 @@ import {PressGroupContext} from '../hooks/pressGroupContext';
 import {GROUP_PRESS_POINTERS} from '../hooks/useGroupPressTracking';
 import {alertController} from '../motion/uikit/alert';
 import {useAlertMotion} from './useAlertMotion';
+import {
+  alertDialogActionsRowClassName,
+  alertDialogStackedActionClassName,
+  alertDialogTouchMotionClassName,
+} from './alertDialogClasses';
 
 registerEnglishFallback(english);
 
@@ -55,32 +60,6 @@ const SMALL_SCREEN_QUERY = '(max-width: 640px)';
 
 /** iOS's alert is 320 px wide on a phone, in every theme. */
 const PHONE_WIDTH = 320;
-
-const styles = stylex.create({
-  // The browser may pinch-zoom on the actions but never pans there. Chrome on
-  // Android cancels a pointer it pans, which would cancel the group's press.
-  // The gesture host keeps an author's narrower touch-action.
-  trackingRow: {
-    touchAction: 'pinch-zoom',
-  },
-  // The touch motion drives the dialog, so the theme's entrance keyframes do
-  // not play. The animator promotes the dimming through this custom property
-  // on the dialog. Without it, Mobile Safari keeps an unlayered backdrop's
-  // animation on the main thread at its first commit.
-  touchMotion: {
-    animationName: 'none',
-    '::backdrop': {
-      willChange: 'var(--astryx-motion-will-change-backdrop, auto)',
-    },
-  },
-  action: {
-    maxWidth: '100%',
-    minWidth: 0,
-  },
-  stackedAction: {
-    width: '100%',
-  },
-});
 
 export interface AlertDialogProps extends BaseProps<HTMLDialogElement> {
   ref?: React.Ref<HTMLDialogElement>;
@@ -247,17 +226,16 @@ export function AlertDialog({
     isEnabled: isTracking,
   });
 
-  const buttonActionStyle = [
-    styles.action,
-    isSmallScreen && styles.stackedAction,
-  ];
+  const buttonActionClassName = isSmallScreen
+    ? alertDialogStackedActionClassName
+    : undefined;
   const cancelButton = (
     <Button
       key="cancel"
       variant="ghost"
       label={cancelLabel}
       onClick={handleCancel}
-      xstyle={buttonActionStyle}
+      className={buttonActionClassName}
       // Dialog focuses [data-autofocus] itself after showModal(), because
       // React's autoFocus runs during commit while the dialog is invisible.
       // Cancel is least destructive, so it remains the autofocus target even
@@ -272,7 +250,7 @@ export function AlertDialog({
       label={actionLabel}
       onClick={onAction}
       isLoading={isActionLoading}
-      xstyle={buttonActionStyle}
+      className={buttonActionClassName}
     />
   );
 
@@ -293,8 +271,14 @@ export function AlertDialog({
       role={isInline ? 'group' : 'alertdialog'}
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
-      {...mergeProps(themeProps('alert-dialog'), {className, style})}
-      xstyle={[motion.isDriving && styles.touchMotion, xstyle]}
+      {...mergeProps(themeProps('alert-dialog'), {
+        className: tw(
+          className,
+          motion.isDriving && alertDialogTouchMotionClassName,
+        ),
+        style,
+      })}
+      xstyle={xstyle}
       data-testid={testId}>
       <Layout
         content={
@@ -315,7 +299,9 @@ export function AlertDialog({
                 actions have component-specific meaning here. */}
             <Stack
               ref={actionsRef}
-              xstyle={isTracking && styles.trackingRow}
+              className={
+                isTracking ? alertDialogActionsRowClassName : undefined
+              }
               direction={isSmallScreen ? 'vertical' : 'horizontal'}
               gap={2}
               hAlign={isSmallScreen ? 'stretch' : 'end'}

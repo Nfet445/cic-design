@@ -136,7 +136,10 @@ function drawnRows(name: string): {row: HTMLElement; place: number}[] {
     container == null ? [] : (Array.from(container.children) as HTMLElement[])
   ).map(row => ({
     row,
-    place: Number.parseFloat(row.style.insetBlockStart) / WHEEL_ROW_HEIGHT,
+    place:
+      Number.parseFloat(
+        row.style.getPropertyValue('--astryx-date-wheel-row-offset'),
+      ) / WHEEL_ROW_HEIGHT,
   }));
   return [...own, ...copies];
 }
@@ -355,7 +358,9 @@ describe('TimeWheels — the minute column loops, and its seam keeps the hour, a
       '59',
     ]);
     for (const {row} of above) {
-      expect(row.className.includes('rowDisabled')).toBe(true);
+      expect(row.style.getPropertyValue('--astryx-date-wheel-row-color')).toBe(
+        'var(--color-text-disabled)',
+      );
     }
   });
 });

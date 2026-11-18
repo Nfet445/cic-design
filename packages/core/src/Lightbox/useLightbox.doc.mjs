@@ -137,8 +137,7 @@ export const docsDense = {
     isOpen: 'whether the lightbox is currently open.',
     index: 'current gallery index.',
     element: 'pre-wired Lightbox element to render in JSX tree.',
-    triggerProps:
-      'trigger attributes to spread onto a single trigger element.',
+    triggerProps: 'trigger attributes to spread onto a single trigger element.',
     getTriggerProps:
       '(index) => props: returns trigger attributes for opening at index on click, Enter, or Space.',
   },
@@ -164,4 +163,3 @@ export const docsDense = {
     ],
   },
 };
-

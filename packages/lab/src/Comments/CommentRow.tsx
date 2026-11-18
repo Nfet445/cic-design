@@ -4,7 +4,7 @@
 
 /**
  * @file CommentRow.tsx
- * @input Uses React, StyleX, Astryx Card/Section/Link/Timestamp/Badge,
+ * @input Uses React, Astryx Card/Section/Link/Timestamp/Badge,
  *   useContainerReveal, useClickableContainer, ChatMessageMetadata,
  *   ChatTypingIndicator, and the Comments family's context and parts
  * @output Exports CommentRow: a thread (its first comment, render-derived open
@@ -20,7 +20,6 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Badge} from '@astryxdesign/core/Badge';
 import {Card} from '@astryxdesign/core/Card';
 import {ChatMessageMetadata} from '@astryxdesign/core/Chat';
@@ -36,12 +35,7 @@ import {Text} from '@astryxdesign/core/Text';
 import {Timestamp} from '@astryxdesign/core/Timestamp';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
-import {
-  borderVars,
-  colorVars,
-  focusVars,
-  spacingVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
+import {spacingVarNames} from '@astryxdesign/core/theme';
 import {
   CommentActions,
   ReactionSummary,
@@ -65,8 +59,28 @@ import {
   ResolvedLabel,
   ThreadRailSegment,
   UnreadBadge,
-  partStyles,
 } from './CommentParts';
+import {tw} from '../tw';
+import {
+  commentRowActionsRevealClassName,
+  commentRowAgentBadgeClassName,
+  commentRowAuthorNameClassName,
+  commentRowControlRowBleedClassName,
+  commentRowFocusRingClassName,
+  commentRowHeaderClassName,
+  commentRowMetadataBesideActionsClassName,
+  commentRowMetadataClassName,
+  commentRowSelectedFillClassName,
+  commentRowSelectedForcedColorsClassName,
+  commentRowSurfaceClassName,
+  commentRowThreadRowsClassName,
+  commentRowTypingIndicatorClassName,
+} from './commentRowClasses';
+import {
+  commentPartsNoWrapClassName,
+  commentPartsRailRowClassName,
+  commentPartsSectionDividerOverlapClassName,
+} from './commentPartsClasses';
 import {useCommentsContext} from './CommentsContext';
 import {CommentIcon} from './icons';
 import {
@@ -85,96 +99,12 @@ import type {
 export type ThreadDivider = 'top' | 'bottom';
 
 /** The 28px avatar column (StyleX resolves only same-file constants). */
-const AVATAR_SIZE = `calc(${spacingVars['--spacing-6']} + ${spacingVars['--spacing-1']})`;
+const AVATAR_SIZE = `calc(${spacingVarNames['--spacing-6']} + ${spacingVarNames['--spacing-1']})`;
 const TYPING_INDICATOR_STYLE: CSSProperties &
   Record<'--astryx-chat-typing-indicator-dots-column-width', string> = {
   '--astryx-chat-typing-indicator-dots-column-width': AVATAR_SIZE,
 };
 export const THREAD_DIVIDERS: readonly ThreadDivider[] = ['top', 'bottom'];
-
-const styles = stylex.create({
-  threadRows: {
-    position: 'relative',
-    isolation: 'isolate',
-  },
-  // The header row is exactly one avatar tall, so revealing its icon buttons
-  // on hover never changes the comment's height.
-  header: {
-    height: AVATAR_SIZE,
-    minHeight: AVATAR_SIZE,
-  },
-  // The header's actions take whatever room the name and time leave.
-  metadata: {
-    flexGrow: 0,
-    flexShrink: 1,
-    flexBasis: 'auto',
-    minWidth: 0,
-  },
-  // Leaves the more menu its button however long the name.
-  metadataBesideActions: {
-    maxWidth: `calc(100% - ${spacingVars['--spacing-6']} - ${spacingVars['--spacing-1']})`,
-  },
-  // The name gives way when the header is short, so the time, an agent's
-  // badge and the actions keep their room.
-  authorName: {
-    flexShrink: 1,
-    minWidth: 0,
-  },
-  agentBadge: {
-    flexShrink: 0,
-  },
-  actionsReveal: {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minWidth: 0,
-  },
-  typingIndicator: {
-    width: '100%',
-  },
-  // Row controls carry one spacing step of inline padding. Pulling the row
-  // back by that step puts their glyphs on the body text line, so only their
-  // hover and pressed fills cross it.
-  controlRowBleed: {
-    marginInlineStart: `calc(-1 * ${spacingVars['--spacing-2']})`,
-  },
-  surface: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // The hidden toggle that names the thread has focus: the surface takes the
-  // system focus ring.
-  surfaceFocused: {
-    outlineStyle: focusVars['--focus-outline-style'],
-    outlineWidth: focusVars['--focus-outline-width'],
-    outlineColor: focusVars['--focus-outline-color'],
-    outlineOffset: focusVars['--focus-outline-offset'],
-  },
-  // Only Card's default variant draws a border, so a selected Card keeps that
-  // variant and takes the muted fill rather than switching variants.
-  selectedCardFill: {
-    backgroundColor: colorVars['--color-background-muted'],
-  },
-  // Forced colors replace the muted fill with the system background, so a
-  // selected thread keeps a visible outline there.
-  selectedForcedColors: {
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineWidth: {
-      default: null,
-      '@media (forced-colors: active)': `calc(${borderVars['--border-width']} * 2)`,
-    },
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'Highlight',
-    },
-    outlineOffset: {
-      default: null,
-      '@media (forced-colors: active)': `calc(${borderVars['--border-width']} * -2)`,
-    },
-  },
-});
 
 // The header actions reveal instantly, with no fade or dwell.
 const INSTANT_REVEAL_STYLE = {transition: 'none'} as const;
@@ -237,11 +167,11 @@ function ThreadSurface({
     </VisuallyHidden>
   ) : null;
   const interactionProps = isSelectable ? {onClick, onMouseUp} : {};
-  const sharedXstyle = [
-    isSelectable && styles.surface,
-    isSelectable && isFocused && styles.surfaceFocused,
-    isFilled && styles.selectedForcedColors,
-  ];
+  const sharedClassName = tw(
+    isSelectable && commentRowSurfaceClassName,
+    isSelectable && isFocused && commentRowFocusRingClassName,
+    isFilled && commentRowSelectedForcedColorsClassName,
+  );
 
   if (surface === 'section') {
     return (
@@ -251,8 +181,11 @@ function ThreadSurface({
         dividers={[...dividers]}
         padding={3}
         width="100%"
-        xstyle={[partStyles.sectionDividerOverlap, ...sharedXstyle]}
-        className={revealProps.className}
+        className={tw(
+          commentPartsSectionDividerOverlapClassName,
+          sharedClassName,
+          revealProps.className,
+        )}
         style={revealProps.style}
         data-thread-id={threadId}
         data-thread-surface="section"
@@ -271,8 +204,12 @@ function ThreadSurface({
       elevation="none"
       padding={3}
       width="100%"
-      xstyle={[isFilled && styles.selectedCardFill, ...sharedXstyle]}
-      className={revealProps.className}
+      className={tw(
+        commentPartsSectionDividerOverlapClassName,
+        sharedClassName,
+        isFilled && commentRowSelectedFillClassName,
+        revealProps.className,
+      )}
       style={revealProps.style}
       data-thread-id={threadId}
       data-thread-surface="card"
@@ -515,7 +452,9 @@ export function CommentRow({
           <HStack
             gap={1}
             align="center"
-            xstyle={isReady ? styles.controlRowBleed : undefined}>
+            className={
+              isReady ? commentRowControlRowBleedClassName : undefined
+            }>
             {metadataStatus != null && (
               <ChatMessageMetadata status={metadataStatus} />
             )}
@@ -561,7 +500,9 @@ export function CommentRow({
       <VStack
         gap={2}
         width="100%"
-        xstyle={replies.length > 0 ? styles.threadRows : undefined}>
+        className={
+          replies.length > 0 ? commentRowThreadRowsClassName : undefined
+        }>
         {visibleReplies.length === 0 && replies.length > 0 && (
           <CollapsedThreadRail />
         )}
@@ -572,7 +513,9 @@ export function CommentRow({
           tabIndex={-1}
           aria-labelledby={authorNameId}
           width="100%"
-          xstyle={visibleReplies.length > 0 ? partStyles.railRow : undefined}
+          className={
+            visibleReplies.length > 0 ? commentPartsRailRowClassName : undefined
+          }
           data-comment-id={comment.id}
           data-comment-depth={String(depth)}
           data-author-kind={comment.author.kind ?? 'person'}
@@ -591,22 +534,25 @@ export function CommentRow({
                   gap={1}
                   align="center"
                   width="100%"
-                  xstyle={styles.header}>
+                  className={commentRowHeaderClassName}>
                   <HStack
                     gap={1}
                     align="center"
-                    xstyle={[
-                      styles.metadata,
-                      showHeaderActions && styles.metadataBesideActions,
-                    ]}
+                    className={tw(
+                      commentRowMetadataClassName,
+                      showHeaderActions &&
+                        commentRowMetadataBesideActionsClassName,
+                    )}
                     style={isMuted ? RESOLVED_TEXT_STYLE : undefined}>
                     <AuthorName
                       author={comment.author}
                       id={authorNameId}
-                      xstyle={styles.authorName}
+                      className={commentRowAuthorNameClassName}
                     />
                     {comment.author.kind === 'agent' && (
-                      <HStack align="center" xstyle={styles.agentBadge}>
+                      <HStack
+                        align="center"
+                        className={commentRowAgentBadgeClassName}>
                         <Badge
                           variant="neutral"
                           label={t('@astryx.comments.agentBadge')}
@@ -636,7 +582,7 @@ export function CommentRow({
                           <Text
                             type="body"
                             color="secondary"
-                            xstyle={partStyles.noWrap}>
+                            className={commentPartsNoWrapClassName}>
                             {t('@astryx.comments.edited')}
                           </Text>
                         )}
@@ -749,7 +695,9 @@ export function CommentRow({
                 align="center"
                 width="100%"
                 xstyle={
-                  visibleReplies.length > 0 ? partStyles.railRow : undefined
+                  visibleReplies.length > 0
+                    ? commentPartsRailRowClassName
+                    : undefined
                 }>
                 {visibleReplies.length > 0 && (
                   <ThreadRailSegment from="row" to="avatar" />
@@ -758,7 +706,7 @@ export function CommentRow({
                 <Link
                   type="body"
                   color="secondary"
-                  xstyle={partStyles.noWrap}
+                  className={commentPartsNoWrapClassName}
                   aria-expanded={areRepliesVisible}
                   aria-controls={repliesRegionId}
                   aria-disabled={isReplyDisclosureBusy || undefined}
@@ -781,10 +729,10 @@ export function CommentRow({
                 key={reply.id}
                 gap={2}
                 width="100%"
-                xstyle={
+                className={
                   index === visibleReplies.length - 1
                     ? undefined
-                    : partStyles.railRow
+                    : commentPartsRailRowClassName
                 }>
                 {index < visibleReplies.length - 1 && (
                   <ThreadRailSegment from="avatar" to="avatar" />
@@ -804,7 +752,7 @@ export function CommentRow({
           <HStack width="100%" data-thread-typing-indicator="true">
             <ChatTypingIndicator
               names={typingUsers.map(user => user.name)}
-              xstyle={styles.typingIndicator}
+              className={commentRowTypingIndicatorClassName}
               style={TYPING_INDICATOR_STYLE}
             />
           </HStack>
@@ -907,8 +855,7 @@ function RevealedActions({
   return (
     <HStack
       align="center"
-      xstyle={styles.actionsReveal}
-      className={revealProps.className}
+      className={tw(commentRowActionsRevealClassName, revealProps.className)}
       style={{...revealProps.style, ...INSTANT_REVEAL_STYLE}}
       data-comment-actions-reveal="hover-focus">
       {children}

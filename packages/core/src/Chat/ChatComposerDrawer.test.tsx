@@ -5,6 +5,25 @@ import {render, screen, fireEvent} from '@testing-library/react';
 import {ChatComposerDrawer} from './ChatComposerDrawer';
 
 describe('ChatComposerDrawer', () => {
+  it('applies consumer xstyle and lets style override it', () => {
+    const {container, rerender} = render(
+      <ChatComposerDrawer xstyle="consumer-override">
+        Content
+      </ChatComposerDrawer>,
+    );
+    expect(container.firstElementChild).toHaveClass('consumer-override');
+    rerender(
+      <ChatComposerDrawer
+        xstyle={{backgroundColor: 'red', color: 'blue'}}
+        style={{color: 'green'}}>
+        Content
+      </ChatComposerDrawer>,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root.style.backgroundColor).toBe('red');
+    expect(root.style.color).toBe('green');
+  });
+
   it('links the toggle to the drawer content via aria-controls', () => {
     render(
       <ChatComposerDrawer count={2} label="Attachments">

@@ -5,7 +5,7 @@
 /**
  * @file BreadcrumbItem.tsx
  * @input Uses React use/useRef/useEffect, stylex, theme tokens, BreadcrumbContext,
- *   rtlStyles for the contextual default slash, and (for the menu trigger)
+ *   RTL_MIRROR_CLASS for the contextual default slash, and (for the menu trigger)
  *   usePopover + the shared DropdownMenu item API (renderDropdownItems,
  *   DropdownMenuContext, MENU_ITEM_SELECTOR, useListFocus), and
  *   the AppShell mobile drawer helpers
@@ -34,31 +34,40 @@ import React, {
   type ReactNode,
   type MouseEvent,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  typeScaleVars,
-  radiusVars,
-  fontWeightVars,
-} from '../theme/tokens.stylex';
 import {BreadcrumbContext, type BreadcrumbsVariant} from './Breadcrumbs';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
-import {mergeProps, rtlStyles} from '../utils';
+import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
+import {tw} from '../utils/tw';
+import {
+  breadcrumbButtonResetClassName,
+  breadcrumbChevronClassName,
+  breadcrumbCurrentClassName,
+  breadcrumbCurrentColorClassName,
+  breadcrumbItemClassName,
+  breadcrumbLinkClassName,
+  breadcrumbLinkColorClassName,
+  breadcrumbMenuLayerClassName,
+  breadcrumbSeparatorClassName,
+  breadcrumbSizeClassName,
+  breadcrumbStartIconClassName,
+} from './breadcrumbItemClasses';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {Icon} from '../Icon';
 import {usePopoverInternal} from '../Popover/usePopover';
 import {useListFocus} from '../hooks/useListFocus';
 import {useMenuPress} from '../hooks/useMenuPress';
 import {pressOnItemsOnly} from '../hooks/menuPressOnItems';
-import {menuTouchActionStyles} from '../DropdownMenu/menuTouchAction.stylex';
 import {useMenuOverflow} from '../DropdownMenu/useMenuOverflow';
+import {
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
+import {breadcrumbMenuClassName} from './breadcrumbsClasses';
 import {useTypeahead} from '../hooks/useTypeahead';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
-import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import {renderDropdownItems} from '../DropdownMenu/renderDropdownItems';
 import {
   DropdownMenuContext,
@@ -80,6 +89,7 @@ import {
 } from '../AppShell/useCloseMobileDrawerOnActivate';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 import {isRenderable} from '../utils/isRenderable';
+import {xstyleProps} from '../utils/xstyle';
 
 // Bundlers replace this value at build time. The declaration lets a product
 // without Node's types type-check this file.
@@ -149,134 +159,17 @@ export interface BreadcrumbItemProps extends Omit<
 // Styles
 // =============================================================================
 
-const itemStyles = stylex.create({
-  root: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    margin: 0,
-    '--separator-display': {
-      default: 'flex',
-      ':first-child': 'none',
-    },
-  },
-  defaultSize: {
-    fontSize: typeScaleVars['--text-body-size'],
-    lineHeight: typeScaleVars['--text-body-leading'],
-  },
-  supportingSize: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-  },
-  contentWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  link: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    paddingBlock: spacingVars['--spacing-1'],
-    textDecoration: {
-      default: 'none',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': 'underline',
-      },
-    },
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // Reset native button styles so onClick-only items match link appearance.
-  // paddingInline rather than padding: a blanket `padding` also overrides the
-  // paddingBlock `link` sets above, which shrank the button crumbs to 20px
-  // against their sibling links' 28px.
-  buttonReset: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    paddingInline: 0,
-    margin: 0,
-    font: 'inherit',
-  },
-  defaultLink: {
-    color: colorVars['--color-text-secondary'],
-  },
-  supportingLink: {
-    color: colorVars['--color-text-secondary'],
-  },
-  current: {
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  defaultCurrent: {
-    color: colorVars['--color-text-primary'],
-  },
-  supportingCurrent: {
-    color: colorVars['--color-text-secondary'],
-  },
-  icon: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  chevron: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-    // Sized off supporting text (12px) — exactly Icon's `xsm` box at the
-    // default type scale. Width/height stay on the token so the box and the
-    // glyph keep matching if a theme retunes the supporting step.
-    width: typeScaleVars['--text-supporting-size'],
-    height: typeScaleVars['--text-supporting-size'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-  },
-  separator: {
-    display: 'var(--separator-display)',
-    alignItems: 'center',
-    color: colorVars['--color-text-secondary'],
-    paddingBlock: spacingVars['--spacing-1'],
-    userSelect: 'none',
-  },
-});
-
 function BreadcrumbSeparator({separator}: {separator: ReactNode}) {
   return (
-    <span aria-hidden="true" {...stylex.props(itemStyles.separator)}>
+    <span aria-hidden="true" className={breadcrumbSeparatorClassName}>
       {separator === '/' ? (
-        <span {...stylex.props(rtlStyles.mirror)}>/</span>
+        <span className={RTL_MIRROR_CLASS}>/</span>
       ) : (
         separator
       )}
     </span>
   );
 }
-
-const menuStyles = stylex.create({
-  menu: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-0-5'],
-    // 300 px, and no taller than its layer's block-size cap, which folds in
-    // the software keyboard's.
-    maxHeight: stylex.firstThatWorks(
-      `min(300px, ${layerViewportInset.maxBlockSize})`,
-      `min(300px, ${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-    overflowY: 'auto',
-    '--_dropdown-menu-radius': radiusVars['--radius-container'],
-    '--_dropdown-menu-padding': spacingVars['--spacing-1'],
-    padding: spacingVars['--spacing-1'],
-    borderRadius: 'var(--_dropdown-menu-radius)',
-    userSelect: 'none',
-  },
-  popover: {
-    minWidth: '160px',
-    marginBlock: spacingVars['--spacing-1'],
-  },
-});
 
 // =============================================================================
 // Component
@@ -395,7 +288,7 @@ export function BreadcrumbItem({
   const content = (
     <>
       {isRenderable(startIcon) && (
-        <span {...stylex.props(itemStyles.icon)}>{startIcon}</span>
+        <span className={breadcrumbStartIconClassName}>{startIcon}</span>
       )}
       {children}
     </>
@@ -407,12 +300,12 @@ export function BreadcrumbItem({
         ref={mergedItemRef}
         {...mergeProps(
           themeProps('breadcrumb-item', {variant: ctx.variant}),
-          stylex.props(
-            itemStyles.root,
-            isSupporting ? itemStyles.supportingSize : itemStyles.defaultSize,
-            xstyle,
+          xstyleProps(xstyle),
+          tw(
+            breadcrumbItemClassName,
+            breadcrumbSizeClassName[isSupporting ? 'supporting' : 'default'],
+            className,
           ),
-          className,
           style,
         )}
         data-testid={testId}
@@ -431,12 +324,11 @@ export function BreadcrumbItem({
           </BreadcrumbMenuTrigger>
         ) : (
           <span
-            {...stylex.props(
-              itemStyles.contentWrapper,
-              itemStyles.current,
-              isSupporting
-                ? itemStyles.supportingCurrent
-                : itemStyles.defaultCurrent,
+            className={tw(
+              breadcrumbCurrentClassName,
+              breadcrumbCurrentColorClassName[
+                isSupporting ? 'supporting' : 'default'
+              ],
             )}
             aria-current="page">
             {content}
@@ -453,12 +345,12 @@ export function BreadcrumbItem({
       ref={mergedItemRef}
       {...mergeProps(
         themeProps('breadcrumb-item', {variant: ctx.variant}),
-        stylex.props(
-          itemStyles.root,
-          isSupporting ? itemStyles.supportingSize : itemStyles.defaultSize,
-          xstyle,
+        xstyleProps(xstyle),
+        tw(
+          breadcrumbItemClassName,
+          breadcrumbSizeClassName[isSupporting ? 'supporting' : 'default'],
+          className,
         ),
-        className,
         style,
       )}
       data-testid={testId}
@@ -477,9 +369,10 @@ export function BreadcrumbItem({
           ref={contentRef}
           href={href}
           onClick={handleActivate}
-          {...focusOutlineProps.focusVisible(
-            itemStyles.link,
-            isSupporting ? itemStyles.supportingLink : itemStyles.defaultLink,
+          className={tw(
+            breadcrumbLinkClassName,
+            breadcrumbLinkColorClassName,
+            focusOutlineFocusVisibleClassName,
           )}>
           {content}
         </LinkComponent>
@@ -488,22 +381,22 @@ export function BreadcrumbItem({
           ref={contentRef as React.RefObject<HTMLButtonElement | null>}
           type="button"
           onClick={handleActivate}
-          {...focusOutlineProps.focusVisible(
-            itemStyles.link,
-            itemStyles.buttonReset,
-            isSupporting ? itemStyles.supportingLink : itemStyles.defaultLink,
+          className={tw(
+            breadcrumbLinkClassName,
+            breadcrumbButtonResetClassName,
+            breadcrumbLinkColorClassName,
+            focusOutlineFocusVisibleClassName,
           )}>
           {content}
         </button>
       ) : (
         <span
           ref={contentRef}
-          {...stylex.props(
-            itemStyles.contentWrapper,
-            itemStyles.current,
-            isSupporting
-              ? itemStyles.supportingCurrent
-              : itemStyles.defaultCurrent,
+          className={tw(
+            breadcrumbCurrentClassName,
+            breadcrumbCurrentColorClassName[
+              isSupporting ? 'supporting' : 'default'
+            ],
           )}>
           {content}
         </span>
@@ -546,7 +439,6 @@ function BreadcrumbMenuTrigger({
   const menuId = useId();
   const triggerId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const isSupporting = variant === 'supporting';
   // The menu's rows move focus with the last input
   // (`architecture:interaction-modality` INV1); this menu has no press model
   // to activate the tracking they read, so it activates it itself.
@@ -563,7 +455,7 @@ function BreadcrumbMenuTrigger({
     role: 'none',
     // The entrance runs on the surface: an anchored layer lays out again on
     // each frame its own style animates.
-    xstyle: layerAnimations.below,
+    className: layerAnimations.below,
   });
 
   const closeMenu = useCallback(() => {
@@ -696,22 +588,23 @@ function BreadcrumbMenuTrigger({
           // spread replaces the className themeProps() built, which is how the
           // documented breadcrumb-item-menu-trigger target came to render on
           // nothing.
-          focusOutlineProps.focusVisible(
-            itemStyles.link,
-            itemStyles.buttonReset,
-            isSupporting ? itemStyles.supportingLink : itemStyles.defaultLink,
+          tw(
+            breadcrumbLinkClassName,
+            breadcrumbButtonResetClassName,
+            breadcrumbLinkColorClassName,
+            focusOutlineFocusVisibleClassName,
           ),
         )}>
         {children}
         <Icon
           icon="chevronDown"
           // 0.75rem — the 12px supporting-text box the bare glyph already
-          // rendered at; `itemStyles.chevron` keeps that box on the token.
+          // rendered at; the chevron class keeps that box on the token.
           size="xsm"
           // The chevron reads as part of the link label, so it takes the
           // trigger's link color rather than an icon color.
           color="inherit"
-          xstyle={itemStyles.chevron}
+          className={breadcrumbChevronClassName}
         />
       </button>
 
@@ -729,11 +622,11 @@ function BreadcrumbMenuTrigger({
           onKeyDown={listKeyDown}
           {...mergeProps(
             themeProps('breadcrumb-menu'),
-            stylex.props(
-              menuStyles.menu,
+            tw(
+              breadcrumbMenuClassName,
               hasOverflow
-                ? menuTouchActionStyles.scrolls
-                : menuTouchActionStyles.fits,
+                ? dropdownMenuSubMenuTouchClassName
+                : dropdownMenuSubMenuTouchPinchClassName,
             ),
           )}>
           <DropdownMenuContext value={contextValue}>
@@ -745,7 +638,7 @@ function BreadcrumbMenuTrigger({
         {
           placement: 'below',
           alignment: 'start',
-          xstyle: menuStyles.popover,
+          className: breadcrumbMenuLayerClassName,
         },
       )}
     </>

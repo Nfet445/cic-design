@@ -18,12 +18,10 @@
  */
 
 import React, {use, useCallback, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {durationVars, easeVars} from '../theme/tokens.stylex';
 import {Icon} from '../Icon';
 import {Button} from '../Button';
 import type {BaseProps} from '../BaseProps';
-import {composeEventHandlers, rtlStyles} from '../utils';
+import {composeEventHandlers, RTL_MIRROR_CLASS} from '../utils';
 import {
   useSideNavCollapse,
   type SideNavCollapseState,
@@ -32,6 +30,8 @@ import {
 } from './SideNavCollapseContext';
 import {useAppShellMobile} from '../AppShell/AppShellMobileContext';
 import {useMergedRefs} from '../hooks/useMergedRefs';
+import {tw} from '../utils/tw';
+import {sideNavCollapseButtonClassName} from './sideNavCollapseButtonClasses';
 import {SideNavFocusTargetsContext} from './SideNavFocusTargetsContext';
 import type {ElementSize} from '../SizeContext/SizeContext';
 import {
@@ -41,34 +41,6 @@ import {
 import english from '../i18n/generated-english/SideNav/SideNavCollapseButton.generated';
 
 registerEnglishFallback(english);
-
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  // A flex container, so the glyph is a flex item. Left to blockify as a flex
-  // item of Button's icon slot, this span gets a line box and seats the
-  // chevron on its text baseline — 2.42px above the button's centre.
-  chevronMirror: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chevron: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    transitionProperty: 'transform',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  chevronCollapsed: {
-    transform: 'rotate(180deg)',
-  },
-});
 
 // =============================================================================
 // Types
@@ -192,8 +164,13 @@ export function SideNavCollapseButton({
           // The RTL mirror stays on its own element, wrapping (not merged
           // into) the state rotation: both are `transform`, so on a single
           // element one would overwrite the other and the chevron would stop
-          // mirroring under RTL. See utils/rtlStyles.ts.
-          <span {...stylex.props(styles.chevronMirror, rtlStyles.mirror)}>
+          // mirroring under RTL. See utils/rtlClasses.ts.
+          // eslint-disable-next-line @astryx/no-style-only-wrapper -- the wrapper holds the RTL mirror, which must stay on its own element: it and the state rotation both write `transform`. The rule reads StyleX objects, not class text.
+          <span
+            className={tw(
+              sideNavCollapseButtonClassName.chevronMirror,
+              RTL_MIRROR_CLASS,
+            )}>
             {/* `sm` (1rem) matches what this glyph already renders at: Button's
                 icon slot pins its wrapper to 16px, and the registry SVG is
                 1em, so the chevron is 16px today. */}
@@ -201,7 +178,10 @@ export function SideNavCollapseButton({
               icon="chevronLeft"
               size="sm"
               color="inherit"
-              xstyle={[styles.chevron, isCollapsed && styles.chevronCollapsed]}
+              className={tw(
+                sideNavCollapseButtonClassName.chevron,
+                isCollapsed && sideNavCollapseButtonClassName.chevronCollapsed,
+              )}
             />
           </span>
         )

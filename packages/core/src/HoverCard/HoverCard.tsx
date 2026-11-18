@@ -26,16 +26,20 @@ import {
 import {isRenderable} from '../utils/isRenderable';
 import {observeMutations} from '../utils/sharedMutationObserver';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
-import * as stylex from '@stylexjs/stylex';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   useHoverCard,
   type HoverCardFocusTrigger,
   type HoverCardTouchTrigger,
 } from './useHoverCard';
 import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  hoverCardHoverIndicationClassName,
+  hoverCardWrapperClassName,
+} from './hoverCardClasses';
 import type {BaseProps} from '../BaseProps';
-import {colorVars, spacingVars} from '../theme/tokens.stylex';
 
 export type {
   HoverCardFocusTrigger,
@@ -48,21 +52,6 @@ import {
   labelledTriggerAttributes,
   popupTriggerSupport,
 } from './popupTrigger';
-
-const styles = stylex.create({
-  wrapperContents: {
-    display: 'contents',
-  },
-  wrapperInline: {
-    display: 'inline',
-  },
-  hoverIndication: {
-    textDecorationLine: 'underline',
-    textDecorationStyle: 'dashed',
-    textDecorationColor: colorVars['--color-border-emphasized'],
-    textUnderlineOffset: spacingVars['--spacing-0-5'],
-  },
-});
 
 export interface HoverCardProps extends Pick<
   BaseProps,
@@ -374,13 +363,14 @@ export function HoverCard({
   // final layer inline when the parent is safe or portal it outside a <p>,
   // link, or other ancestor that cannot contain it safely.
   const renderedHoverCard = hoverCard.renderHoverCard(content, {
-    xstyle,
-    className,
-    style,
+    className: tw(className, xstyleProps(xstyle).className),
+    style: {...xstyleProps(xstyle).style, ...style},
   });
 
   // For text-only children: use inline span with ref on wrapper
   if (textOnly) {
+    // The span is a tab stop Astryx adds: it draws the shared ring, which a
+    // theme restyles through the focus-outline tokens.
     return (
       <>
         <span
@@ -398,9 +388,10 @@ export function HoverCard({
           aria-describedby={label ? undefined : hoverCard.describedBy}
           // The span is a tab stop Astryx adds: it draws the shared ring,
           // which a theme restyles through the focus-outline tokens.
-          {...focusOutlineProps.focusVisible(
-            styles.wrapperInline,
-            showHoverIndication && styles.hoverIndication,
+          className={tw(
+            focusOutlineFocusVisibleClassName,
+            hoverCardWrapperClassName.inline,
+            showHoverIndication && hoverCardHoverIndicationClassName,
           )}>
           {children}
         </span>
@@ -412,7 +403,7 @@ export function HoverCard({
   // For element children: use inline-safe display:contents, ref on first child
   return (
     <>
-      <span ref={wrapperRef} {...stylex.props(styles.wrapperContents)}>
+      <span ref={wrapperRef} className={hoverCardWrapperClassName.contents}>
         {children}
       </span>
       {renderedHoverCard}

@@ -4,8 +4,9 @@
 
 /**
  * @file NavigationStack.tsx
- * @input React and StyleX. Core's compositor animator and UIKit tables come
- *   from Core's internal touch entry and navigationMotion.ts. The math is in
+ * @input React, StyleX and the stack's Tailwind classes. Core's compositor
+ *   animator and UIKit tables come from Core's internal touch entry and
+ *   navigationMotion.ts. The math is in
  *   navigationTransition.ts, and the back swipes in NavigationStackTouch.ts.
  *   Each screen scrolls through Core's useScrollableArea, under Lab's scroll
  *   edge effect (internal/useScrollEdgeEffect.ts).
@@ -19,7 +20,8 @@
  *
  * SYNC: When modified, update NavigationStack.doc.mjs,
  * NavigationStack.test.tsx and
- * __tests__/NavigationStack.interaction.browser.spec.ts.
+ * __tests__/NavigationStack.interaction.browser.spec.ts. The bar's and the
+ * cards' shapes live in navigationStackClasses.ts.
  */
 
 import {
@@ -30,11 +32,11 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactElement,
   type ReactNode,
   type SyntheticEvent,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   focusForLastInput,
   isCoarsePointer,
@@ -50,16 +52,8 @@ import {
 } from '@astryxdesign/core/internal/touch';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {useScrollableArea} from '@astryxdesign/core/hooks';
-import {focusOutlineStyles} from '@astryxdesign/core/utils';
+import {focusOutlineFocusVisibleClassName} from '@astryxdesign/core/utils';
 import {Icon} from '@astryxdesign/core/Icon';
-import {
-  colorVars,
-  focusVars,
-  fontWeightVars,
-  spacingVars,
-  textSizeVars,
-  typeScaleVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import {
   layerVelocities,
   layersAt,
@@ -70,6 +64,33 @@ import {useBackSwipes, type BackSwipeStack} from './NavigationStackTouch';
 import {bars, navigation, springs} from './navigationMotion';
 import {useMotionEngine} from '../internal/useMotionEngine';
 import {useScrollEdgeEffect} from '../internal/useScrollEdgeEffect';
+import {tw} from '../tw';
+import {
+  navigationStackBackClassName,
+  navigationStackBackControlClassName,
+  navigationStackBackIconClassName,
+  navigationStackBarBackgroundClassName,
+  navigationStackBarClassName,
+  navigationStackBarClipClassName,
+  navigationStackBarDimClassName,
+  navigationStackBarEndClassName,
+  navigationStackBarLayerBackgroundClassName,
+  navigationStackBarLayerClassName,
+  navigationStackBarLayerCoveredClassName,
+  navigationStackBarRowClassName,
+  navigationStackBarStartClassName,
+  navigationStackBarTitleClassName,
+  navigationStackCardClassName,
+  navigationStackCardHiddenClassName,
+  navigationStackCardsClassName,
+  navigationStackClassName,
+  navigationStackDimClassName,
+  navigationStackDimColorClassName,
+  navigationStackEdgeSentinelAfterLargeTitleClassName,
+  navigationStackEdgeSentinelStaticClassName,
+  navigationStackLargeTitleClassName,
+  navigationStackScrollerClassName,
+} from './navigationStackClasses';
 
 // =============================================================================
 // Types
@@ -155,222 +176,15 @@ export function useNavigationStack<T = unknown>(): NavigationStackApi<T> {
 
 const BAR_HEIGHT = 44;
 
-const styles = stylex.create({
-  stack: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: colorVars['--color-background-body'],
-  },
-  // The bar overlays the screens, which scroll under it, as UIKit's content
-  // extends under its bar.
-  bar: {
-    position: 'absolute',
-    top: 0,
-    insetInline: 0,
-    isolation: 'isolate',
-    height: BAR_HEIGHT,
-    zIndex: 1,
-  },
-  // The bar's own background and hairline, under every screen's bar layer,
-  // which paints its own background over it. iOS 26.2's bar paints neither:
-  // under a finger the content shows through until the screen's scroll edge
-  // effect veils it. The literal coarse-pointer key is the resolver's touch
-  // constant. A mouse keeps both.
-  barBackground: {
-    position: 'absolute',
-    inset: 0,
-    zIndex: -2,
-    backgroundColor: {
-      default: colorVars['--color-background-surface'],
-      '@media (pointer: coarse)': 'transparent',
-    },
-    borderBottomWidth: {
-      default: 1,
-      '@media (pointer: coarse)': 0,
-    },
-    borderBottomStyle: 'solid',
-    borderBottomColor: colorVars['--color-border'],
-  },
-  // Each screen's bar moves with its screen, as UIKit's per-screen bar copy
-  // does. Under a mouse it has an opaque background of its own
-  // (barLayerBackground), so the incoming one covers the outgoing title.
-  // Under a finger the bars are clear, so barClip cuts the covered bar at the
-  // top card's leading edge.
-  barLayer: {
-    position: 'absolute',
-    inset: 0,
-    // Below the back button: WebKit does not promote the static siblings a
-    // moving layer crosses, so the moving one goes underneath.
-    zIndex: -1,
-  },
-  // The box that cuts the bar, moved by the stack. The row inside it moves
-  // back by as much, so only the cut moves.
-  barClip: {
-    position: 'absolute',
-    inset: 0,
-    overflow: 'hidden',
-  },
-  barRow: {
-    position: 'absolute',
-    inset: 0,
-    display: 'grid',
-    gridTemplateColumns: '1fr auto 1fr',
-    alignItems: 'center',
-    paddingInline: spacingVars['--spacing-4'],
-  },
-  // A layer's background, above the bar's hairline. It is clear under a
-  // finger, as the bar's own background.
-  barLayerBackground: {
-    position: 'absolute',
-    insetInline: 0,
-    top: 0,
-    bottom: 1,
-    zIndex: -1,
-    backgroundColor: {
-      default: colorVars['--color-background-surface'],
-      '@media (pointer: coarse)': 'transparent',
-    },
-  },
-  // The one back button: it stays put while the bars move under it.
-  backControl: {
-    position: 'absolute',
-    insetInlineStart: spacingVars['--spacing-4'],
-    top: 0,
-    bottom: 0,
-    display: 'flex',
-    alignItems: 'center',
-  },
-  barLayerCovered: {
-    pointerEvents: 'none',
-  },
-  barStart: {
-    display: 'flex',
-    justifyContent: 'flex-start',
-    minWidth: 0,
-  },
-  barTitle: {
-    margin: 0,
-    minWidth: 0,
-    fontSize: textSizeVars['--font-size-lg'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  largeTitle: {
-    margin: 0,
-    paddingInline: spacingVars['--spacing-4'],
-    paddingTop: spacingVars['--spacing-1'],
-    paddingBottom: spacingVars['--spacing-2'],
-    fontSize: textSizeVars['--font-size-4xl'],
-    fontWeight: fontWeightVars['--font-weight-bold'],
-    lineHeight: typeScaleVars['--text-display-2-leading'],
-    // The scroller clips the sides: the ring draws inside the title.
-    outlineOffset: {
-      default: 0,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-  },
-  barEnd: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    minWidth: 0,
-  },
-  // iOS 26: a 44 pt circle holding only the chevron; the previous title
-  // is its accessible name, not a label.
-  back: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 44,
-    height: 44,
-    padding: 0,
-    borderRadius: '50%',
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
-    backgroundColor: colorVars['--color-background-surface'],
-    color: colorVars['--color-text-accent'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  backIcon: {
-    transform: {
-      default: null,
-      ':is([dir="rtl"] *)': 'scaleX(-1)',
-    },
-  },
-  cards: {
-    position: 'absolute',
-    inset: 0,
-  },
-  card: {
-    position: 'absolute',
-    inset: 0,
-    overflow: 'hidden',
-    backgroundColor: colorVars['--color-background-body'],
-  },
-  scroller: {
-    position: 'absolute',
-    inset: 0,
-    boxSizing: 'border-box',
-    paddingTop: BAR_HEIGHT,
-    scrollPaddingTop: BAR_HEIGHT,
-    // The screen scrolls vertically; a sideways drag is the back swipe's. A
-    // horizontal scroller inside the content is its own scroll container
-    // and keeps its native sideways scrolling.
-    touchAction: 'pan-y pinch-zoom',
-    // The card clips anything outside the scroller: the ring draws inside it.
-    outlineOffset: {
-      default: 0,
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-  },
-  cardHidden: {
-    contentVisibility: 'hidden',
-  },
-  // The scroll edge sentinel stays at its static position, just above the
-  // content. The scroller is its containing block, so it scrolls with the
-  // content with no positioned wrapper. On an inline screen it sits outside
-  // the content, so the screen's first element keeps :first-child.
-  edgeSentinelStatic: {
-    insetBlockStart: 'auto',
-    insetInlineStart: 'auto',
-  },
-  // On a large-title screen the sentinel follows the large title in the
-  // content and ends where the title ends. So the veil comes on as the bar's
-  // title takes over. iOS's veil leaves out an expanded large title. The
-  // margin is the sentinel's 10px height.
-  edgeSentinelAfterLargeTitle: {
-    insetBlockStart: 'auto',
-    insetInlineStart: 'auto',
-    marginBlockStart: -10,
-  },
-  dim: {
-    position: 'absolute',
-    inset: 0,
-    opacity: 0,
-    pointerEvents: 'none',
-  },
-  // A bar's dimming ends above the bar's hairline, as its background does:
-  // the covered bar would otherwise darken the hairline under it.
-  barDim: {
-    bottom: 1,
-  },
-});
-
-// The dimming's black is the UIKit table's alpha, a runtime value StyleX
-// cannot read at compile time.
-const dynamicStyles = stylex.create({
-  dimColor: (alpha: number) => ({
-    // eslint-disable-next-line @astryx/no-raw-color -- UIKit's parallax dimming is black at the table's measured alpha in every appearance; it is not a theme colour
-    backgroundColor: `rgba(0, 0, 0, ${alpha})`,
-  }),
-});
+/**
+ * The dim's black is UIKit's table alpha, a runtime value: the class reads it
+ * as a property, so it travels inline.
+ */
+function dimAlphaStyle(
+  alpha: number,
+): CSSProperties & Record<'--_navigation-dim-alpha', number> {
+  return {'--_navigation-dim-alpha': alpha};
+}
 
 // =============================================================================
 // Layers
@@ -480,9 +294,9 @@ function CardLayer({
     root: scrollerRef,
     rootInset: BAR_HEIGHT,
     edge: `${BAR_HEIGHT}px`,
-    sentinelXstyle: isLarge
-      ? styles.edgeSentinelAfterLargeTitle
-      : styles.edgeSentinelStatic,
+    sentinelClassName: isLarge
+      ? navigationStackEdgeSentinelAfterLargeTitleClassName
+      : navigationStackEdgeSentinelStaticClassName,
     springs: bars.scrollEdgeEffect,
   });
   // A forward Tab into the scroller moves on to its first plain link or
@@ -511,11 +325,17 @@ function CardLayer({
       data-navigation-screen={model.key}
       data-navigation-top={isTop || undefined}
       inert={isCovered || undefined}
-      {...stylex.props(styles.card, isHidden && styles.cardHidden)}>
+      className={tw(
+        navigationStackCardClassName,
+        isHidden && navigationStackCardHiddenClassName,
+      )}>
       <div
         {...getViewportProps<HTMLDivElement>({
           ref: scrollerRef,
-          xstyle: [focusOutlineStyles.focusVisible, styles.scroller],
+          className: tw(
+            focusOutlineFocusVisibleClassName,
+            navigationStackScrollerClassName,
+          ),
         })}>
         {isLarge ? null : (
           <div {...edge.sentinelProps} data-navigation-scroll-edge-sentinel />
@@ -526,9 +346,9 @@ function CardLayer({
               <h1
                 ref={largeTitleCallback}
                 tabIndex={-1}
-                {...stylex.props(
-                  focusOutlineStyles.focusVisible,
-                  styles.largeTitle,
+                className={tw(
+                  focusOutlineFocusVisibleClassName,
+                  navigationStackLargeTitleClassName,
                 )}>
                 {props.title}
               </h1>
@@ -545,10 +365,11 @@ function CardLayer({
       <div
         ref={dim.ref}
         aria-hidden
-        {...stylex.props(
-          styles.dim,
-          dynamicStyles.dimColor(navigation.dimmingAlpha),
+        className={tw(
+          navigationStackDimClassName,
+          navigationStackDimColorClassName,
         )}
+        style={dimAlphaStyle(navigation.dimmingAlpha)}
       />
     </div>
   );
@@ -628,32 +449,41 @@ function BarLayer({
       ref={barRef}
       data-navigation-bar={model.key}
       inert={isCovered || undefined}
-      {...stylex.props(styles.barLayer, isCovered && styles.barLayerCovered)}>
-      <div ref={clip.ref} {...stylex.props(styles.barClip)}>
-        <div ref={clipContent.ref} {...stylex.props(styles.barRow)}>
+      className={tw(
+        navigationStackBarLayerClassName,
+        isCovered && navigationStackBarLayerCoveredClassName,
+      )}>
+      <div ref={clip.ref} className={navigationStackBarClipClassName}>
+        <div ref={clipContent.ref} className={navigationStackBarRowClassName}>
           <div
             aria-hidden
             data-navigation-bar-background
-            {...stylex.props(styles.barLayerBackground)}
+            className={navigationStackBarLayerBackgroundClassName}
           />
-          <div {...stylex.props(styles.barStart)} />
+          <div className={navigationStackBarStartClassName} />
           <h2
             ref={titleRefs}
             tabIndex={-1}
             aria-hidden={isLargeTitleShown || undefined}
-            {...stylex.props(styles.barTitle, focusOutlineStyles.focusVisible)}>
+            className={tw(
+              focusOutlineFocusVisibleClassName,
+              navigationStackBarTitleClassName,
+            )}>
             {props.title}
           </h2>
-          <div {...stylex.props(styles.barEnd)}>{props.endContent}</div>
+          <div className={navigationStackBarEndClassName}>
+            {props.endContent}
+          </div>
           <div
             ref={barDim.ref}
             aria-hidden
             data-navigation-bar-dim
-            {...stylex.props(
-              styles.dim,
-              styles.barDim,
-              dynamicStyles.dimColor(navigation.dimmingAlpha),
+            className={tw(
+              navigationStackDimClassName,
+              navigationStackBarDimClassName,
+              navigationStackDimColorClassName,
             )}
+            style={dimAlphaStyle(navigation.dimmingAlpha)}
           />
         </div>
       </div>
@@ -693,15 +523,19 @@ function BackControl({
     <div
       ref={control}
       inert={isInert || undefined}
-      {...stylex.props(styles.backControl)}>
+      className={navigationStackBackControlClassName}>
       <button
         ref={buttonRef}
         type="button"
         onClick={onBack}
         aria-label={label}
         data-navigation-back
-        {...stylex.props(styles.back)}>
-        <Icon icon="chevronLeft" color="inherit" xstyle={styles.backIcon} />
+        className={navigationStackBackClassName}>
+        <Icon
+          icon="chevronLeft"
+          color="inherit"
+          className={navigationStackBackIconClassName}
+        />
       </button>
     </div>
   );
@@ -1700,9 +1534,9 @@ export function NavigationStack<T>({
         data-testid={testId}
         onClickCapture={rememberActivation}
         onKeyDownCapture={rememberActivation}
-        {...stylex.props(styles.stack)}>
-        <div {...stylex.props(styles.bar)}>
-          <div aria-hidden {...stylex.props(styles.barBackground)} />
+        className={navigationStackClassName}>
+        <div className={navigationStackBarClassName}>
+          <div aria-hidden className={navigationStackBarBackgroundClassName} />
           {rendered.map(model =>
             model.key === topKey || model.key === underKey ? (
               <BarLayer
@@ -1727,7 +1561,7 @@ export function NavigationStack<T>({
             />
           ) : null}
         </div>
-        <div ref={cardsRef} {...stylex.props(styles.cards)}>
+        <div ref={cardsRef} className={navigationStackCardsClassName}>
           {rendered.map(model => (
             <CardLayer
               key={model.key}

@@ -68,8 +68,9 @@ export const docs = {
     },
     {
       name: 'xstyle',
-      type: 'StyleXStyles',
-      description: 'StyleX styles for the view root.',
+      type: 'AstryxXStyle',
+      description:
+        'A class name, inline style object, StyleX value, or list of these for the view root.',
     },
   ],
   usage: {

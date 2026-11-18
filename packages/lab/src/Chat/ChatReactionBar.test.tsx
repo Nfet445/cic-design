@@ -2,7 +2,15 @@
 
 import {describe, it, expect, vi, beforeAll, afterAll} from 'vitest';
 import {render, screen, fireEvent} from '@testing-library/react';
+import {classesOf} from '../../../core/src/__tests__/classNameAssertions';
 import {ChatReactionBar} from './ChatReactionBar';
+import {
+  chatReactionBarCountClassName,
+  chatReactionBarCountSelectedClassName,
+  chatReactionBarPillClassName,
+  chatReactionBarPillSelectedClassName,
+  chatReactionBarRootClassName,
+} from './chatReactionBarClasses';
 
 // Store original matches to restore later
 const originalMatches = HTMLElement.prototype.matches;
@@ -113,6 +121,39 @@ describe('ChatReactionBar', () => {
       screen.getByRole('button', {name: 'React with fire', hidden: true}),
     );
     expect(onAdd).toHaveBeenCalledWith('🔥');
+  });
+
+  it('carries the row and pill classes, and the selected pill set', () => {
+    render(<ChatReactionBar reactions={REACTIONS} data-testid="bar" />);
+    expect(classesOf(screen.getByTestId('bar'))).toEqual(
+      expect.arrayContaining(chatReactionBarRootClassName.split(' ')),
+    );
+    const selected = screen.getByRole('button', {
+      name: 'You and Dana reacted with 🎉',
+    });
+    const unselected = screen.getByRole('button', {
+      name: '2 reactions with 👀',
+    });
+    expect(classesOf(selected)).toEqual(
+      expect.arrayContaining(chatReactionBarPillSelectedClassName.split(' ')),
+    );
+    expect(classesOf(unselected)).toEqual(
+      expect.arrayContaining(chatReactionBarPillClassName.split(' ')),
+    );
+    // A selected pill replaces the muted colours rather than adding to them.
+    expect(classesOf(selected)).not.toContain(
+      'bg-[color:var(--color-background-muted)]',
+    );
+  });
+
+  it('swaps the count colour and weight when selected', () => {
+    render(<ChatReactionBar reactions={REACTIONS} />);
+    expect(classesOf(screen.getByText('4'))).toEqual(
+      expect.arrayContaining(chatReactionBarCountSelectedClassName.split(' ')),
+    );
+    expect(classesOf(screen.getByText('2'))).toEqual(
+      expect.arrayContaining(chatReactionBarCountClassName.split(' ')),
+    );
   });
 
   it('applies the stable class name', () => {

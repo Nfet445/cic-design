@@ -2,7 +2,8 @@
 
 /**
  * @file Badge.tsx
- * @input Uses React, HTMLAttributes
+ * @input Uses React, HTMLAttributes, the badge class map, and the xstyle
+ *   adapter for the consumer's `xstyle`
  * @output Exports Badge component, BadgeProps, BadgeVariant types
  * @position Core implementation; consumed by index.ts
  *
@@ -16,170 +17,19 @@
 
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+  badgeClassName,
+  badgeGrowsClassName,
+  badgeLabelClassName,
+  badgeVariantClassName,
+} from './badgeClasses';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
 import {isRenderable} from '../utils/isRenderable';
 import {textDirectionProps} from '../utils/textDirection';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import type {BadgeVariantMap} from './index';
-
-/**
- * Base badge styles
- */
-const styles = stylex.create({
-  base: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacingVars['--spacing-1'],
-    height: spacingVars['--spacing-5'],
-    paddingBlock: 0,
-    paddingInline: spacingVars['--spacing-2'],
-    borderRadius: radiusVars['--radius-full'],
-    fontFamily: 'inherit',
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    whiteSpace: 'nowrap',
-    // A badge is one line by construction — one line tall, `nowrap` — so a
-    // label wider than the space available has to go somewhere. Without these
-    // it went *outside* its container: `nowrap` with nothing to clip it
-    // neither wraps nor truncates, it just escapes, and lands on whatever sits
-    // beside it. `minWidth: 0` matters as much as the max: as a flex item the
-    // automatic minimum size would otherwise hold the badge at its full text
-    // width and push the clamp back out again.
-    maxWidth: '100%',
-    minWidth: 0,
-  },
-  // Never shorter than one line of its label: when the text grows (a larger
-  // text size), the pill grows with the label instead of the label spilling
-  // out of it. A minimum rather than a new height, so
-  // the theme's height (`--spacing-5`, or a theme's own, such as Butter's
-  // 30px) holds at the default size, where the line fits. Only with a label:
-  // a color-only badge has no text to hold and keeps the component:Badge FR1
-  // geometry at every text size.
-  grows: {
-    minHeight: '1lh',
-  },
-  // The ellipsis goes on the label rather than the badge itself, because
-  // `text-overflow` needs a block container and taking the root off
-  // `inline-flex` to get one would cost the icon its centring. The label is a
-  // flex item, so it needs its own `minWidth: 0` for the same reason as above.
-  label: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    minWidth: 0,
-    unicodeBidi: 'isolate',
-  },
-});
-
-/**
- * Variant styles for different badge appearances.
- * Semantic variants use solid backgrounds; non-semantic use tinted backgrounds.
- */
-const variants = stylex.create({
-  // Semantic variants
-  neutral: {
-    backgroundColor: colorVars['--color-neutral'],
-    color: colorVars['--color-text-primary'],
-  },
-  info: {
-    backgroundColor: colorVars['--color-info'],
-    color: colorVars['--color-on-info'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible (architecture:theme-tokens INV11).
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-  success: {
-    backgroundColor: colorVars['--color-success'],
-    color: colorVars['--color-on-success'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible (architecture:theme-tokens INV11).
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-  warning: {
-    backgroundColor: colorVars['--color-warning'],
-    color: colorVars['--color-on-warning'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible (architecture:theme-tokens INV11).
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-  error: {
-    backgroundColor: colorVars['--color-error'],
-    color: colorVars['--color-on-error'],
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible (architecture:theme-tokens INV11).
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-  },
-  // Non-semantic color variants — tinted backgrounds with colored text
-  blue: {
-    backgroundColor: colorVars['--color-background-blue'],
-    color: colorVars['--color-text-blue'],
-  },
-  cyan: {
-    backgroundColor: colorVars['--color-background-cyan'],
-    color: colorVars['--color-text-cyan'],
-  },
-  green: {
-    backgroundColor: colorVars['--color-background-green'],
-    color: colorVars['--color-text-green'],
-  },
-  orange: {
-    backgroundColor: colorVars['--color-background-orange'],
-    color: colorVars['--color-text-orange'],
-  },
-  pink: {
-    backgroundColor: colorVars['--color-background-pink'],
-    color: colorVars['--color-text-pink'],
-  },
-  purple: {
-    backgroundColor: colorVars['--color-background-purple'],
-    color: colorVars['--color-text-purple'],
-  },
-  red: {
-    backgroundColor: colorVars['--color-background-red'],
-    color: colorVars['--color-text-red'],
-  },
-  teal: {
-    backgroundColor: colorVars['--color-background-teal'],
-    color: colorVars['--color-text-teal'],
-  },
-  yellow: {
-    backgroundColor: colorVars['--color-background-yellow'],
-    color: colorVars['--color-text-yellow'],
-  },
-});
 
 /**
  * Badge variant type derived from BadgeVariantMap.
@@ -209,7 +59,7 @@ export interface BadgeProps extends BaseProps<HTMLSpanElement> {
 /**
  * A badge component for displaying status indicators, counts, or labels.
  *
- * Styles use Astryx theme tokens via StyleX.
+ * Styles are Tailwind utilities over Astryx theme tokens.
  * Wrap your app in <Theme> to apply a theme.
  *
  * @example
@@ -259,19 +109,21 @@ export function Badge({
       ref={ref}
       {...mergeProps(
         themeProps('badge', {variant}),
-        stylex.props(
-          styles.base,
-          hasLabel && styles.grows,
-          variants[variant],
-          xstyle,
-        ),
+        {
+          className: tw(
+            badgeClassName,
+            hasLabel && badgeGrowsClassName,
+            badgeVariantClassName[variant],
+            xstyleProps(xstyle).className,
+          ),
+        },
         className,
         style,
       )}
       title={labelTitle}
       {...props}>
       {icon}
-      <span {...textDirectionProps(label)} {...stylex.props(styles.label)}>
+      <span {...textDirectionProps(label)} className={badgeLabelClassName}>
         {label}
       </span>
     </span>

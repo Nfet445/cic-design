@@ -15,16 +15,29 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {
-  hasReleaseFade,
-  readsPressStrength,
-  rulesDeclaredFor,
-  rulesWithSelector,
-} from '../__tests__/pressState';
+import {hasReleaseFade, readsPressStrength} from '../__tests__/pressState';
 import {RadioList} from './RadioList';
 import {RadioListItem} from './RadioListItem';
-import {getForcedColorsRules} from '../__tests__/forcedColors';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
+import {
+  rtlCenterInlineBlockOffsetClassName,
+  rtlCenterInlineClassName,
+} from '../utils/rtlClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
+import {indicatorPressImageClassName} from '../Indicator/indicatorClasses';
+import {rowPressPaintRadioRowClassName} from '../privateAttributes/pressClasses';
+import {radioListItemRowClassName} from './radioListItemClasses';
+
+// A disabled row blocks pointers with a class, and jsdom has no sheet to
+// compute it from; find the row that carries the block instead.
+function pointerBlockingRow(control: HTMLElement): HTMLElement | null {
+  for (let node = control.parentElement; node; node = node.parentElement) {
+    if (classesOf(node).includes('pointer-events-none')) {
+      return node;
+    }
+  }
+  return null;
+}
 
 // Mock showPopover/hidePopover (not implemented in jsdom) so the tooltip layer
 // reflects its open state via a `popover-open` attribute the tests can assert.
@@ -214,13 +227,12 @@ describe('RadioList', () => {
       </RadioList>,
     );
 
-    // userEvent honors `pointer-events: none`, so clicking the disabled row's
-    // delegate surface is genuinely blocked (it refuses and throws) rather than
-    // merely ignored by the handler — the guarantee this PR's delegation relies
-    // on.
-    await expect(user.click(screen.getByLabelText('Option A'))).rejects.toThrow(
-      /pointer-events/i,
-    );
+    // The block is a class now, so jsdom cannot compute `pointer-events` for
+    // user-event to honour. Assert the class on the row and that a click still
+    // reaches no handler.
+    const control = screen.getByLabelText('Option A');
+    expect(pointerBlockingRow(control)).not.toBeNull();
+    await user.click(control);
     expect(handleChange).not.toHaveBeenCalled();
   });
 
@@ -233,13 +245,9 @@ describe('RadioList', () => {
       </RadioList>,
     );
 
-    // userEvent honors `pointer-events: none`, so clicking the disabled row's
-    // delegate surface is genuinely blocked (it refuses and throws) rather than
-    // merely ignored by the handler — the guarantee this PR's delegation relies
-    // on.
-    await expect(user.click(screen.getByLabelText('Option A'))).rejects.toThrow(
-      /pointer-events/i,
-    );
+    const control = screen.getByLabelText('Option A');
+    expect(pointerBlockingRow(control)).not.toBeNull();
+    await user.click(control);
     expect(handleChange).not.toHaveBeenCalled();
   });
 
@@ -1035,71 +1043,35 @@ describe('RadioList', () => {
       // change the DEFAULT look. The painting row zeroes Item's density
       // padding, its radius, and its interactive hover/press background, so an
       // unthemed RadioList renders as a flat surface (only the indicator tints
-      // on hover via `indicatorScope`). This matches the appearance before the
-      // target moved onto Item; a theme's `radio-list-item` overrides still win
-      // from the higher `astryx-theme` layer.
+      // on hover via `indicatorScope`). A theme's `radio-list-item` overrides
+      // still win from the higher `astryx-theme` layer.
       render(
         <RadioList label="Preference" value="a" onChange={() => {}}>
           <RadioListItem label="Selected" value="a" data-testid="selected" />
           <RadioListItem label="Plain" value="b" data-testid="plain" />
         </RadioList>,
       );
-      const cssFor = (className: string): string => {
-        const rules: string[] = [];
-        const walk = (list: CSSRuleList) => {
-          for (const rule of Array.from(list)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const anyRule = rule as any;
-            if (anyRule.cssRules) {
-              walk(anyRule.cssRules);
-            }
-            if (
-              typeof anyRule.cssText === 'string' &&
-              anyRule.cssText.includes(`.${className}`)
-            ) {
-              rules.push(anyRule.cssText);
-            }
-          }
-        };
-        for (const sheet of Array.from(document.styleSheets)) {
-          try {
-            walk(sheet.cssRules);
-          } catch {
-            // cross-origin/inaccessible sheet — skip
-          }
-        }
-        return rules.join('\n');
-      };
 
-      const plain = screen.getByTestId('plain');
-      const atoms = plain.className
-        .split(/\s+/)
-        .filter(c => /^x[a-z0-9]+$/i.test(c));
-      const declarations = atoms.map(cssFor).join('\n');
-
-      // The bare-look declarations land on the painting row.
-      expect(declarations).toMatch(/padding-block:\s*0/);
-      expect(declarations).toMatch(/padding-inline:\s*0/);
-      expect(declarations).toMatch(/border-radius:\s*0/);
-      expect(declarations).toMatch(/background-color:\s*transparent/);
-
-      // No default full-row hover highlight: the flat transparent background
-      // replaces Item's interactive `:hover` overlay, so no hover rule paints
-      // the row's own background. (The indicator still tints via its scope.)
-      expect(declarations).not.toMatch(
-        /:hover[^{]*\{[^}]*background-color:\s*var\(--color-overlay-hover\)/,
-      );
+      const rowClasses = classesOf(screen.getByTestId('plain'));
+      expectClassSet(screen.getByTestId('plain'), {
+        includes: radioListItemRowClassName.split(' '),
+      });
+      // Each declaration names the row class a second time, which is what
+      // outranks Item's own padding, radius and fill utilities in the same
+      // layer. A class that named it once would tie and lose on sheet order.
+      for (const className of radioListItemRowClassName.split(' ')) {
+        expect(className).toContain('.astryx-radio-list-item');
+      }
 
       // No default selected-row background: the selected row differs from the
       // plain row only by state markers, not by a painted background class.
-      const selected = screen.getByTestId('selected');
-      const selectedAtoms = selected.className
-        .split(/\s+/)
-        .filter(c => /^x[a-z0-9]+$/i.test(c));
-      const selectedDecls = selectedAtoms.map(cssFor).join('\n');
-      expect(selectedDecls).not.toMatch(
-        /background-color:\s*var\(--color-accent-muted\)/,
-      );
+      const selectedClasses = classesOf(screen.getByTestId('selected'));
+      expect(selectedClasses).toEqual(rowClasses);
+      expect(
+        selectedClasses.filter(className =>
+          className.includes('--color-accent-muted'),
+        ),
+      ).toEqual([]);
     });
   });
 
@@ -1109,24 +1081,26 @@ describe('RadioList', () => {
       ['sm', 'rtl'],
       ['md', 'ltr'],
       ['md', 'rtl'],
-    ] as const)(
-      'applies centerInline styling to native input (size: %s, dir: %s)',
-      (size, dir) => {
-        const {container} = render(
-          <div dir={dir}>
-            <RadioList size={size} label="Choice" value="" onChange={() => {}}>
-              <RadioListItem label="Option A" value="a" />
-            </RadioList>
-          </div>,
-        );
+    ] as const)('centers the native input (size: %s, dir: %s)', (size, dir) => {
+      const {container} = render(
+        <div dir={dir}>
+          <RadioList size={size} label="Choice" value="" onChange={() => {}}>
+            <RadioListItem label="Option A" value="a" />
+          </RadioList>
+        </div>,
+      );
 
-        const input = container.querySelector(
-          'input[type="radio"]',
-        ) as HTMLInputElement;
-        expect(input).toBeInTheDocument();
-        expect(input.className).toContain('centerInline');
-      },
-    );
+      const input = container.querySelector(
+        'input[type="radio"]',
+      ) as HTMLInputElement;
+      expect(input).toBeInTheDocument();
+      expectClassSet(input, {
+        includes: [
+          ...rtlCenterInlineClassName.split(' '),
+          rtlCenterInlineBlockOffsetClassName.half,
+        ],
+      });
+    });
   });
 });
 
@@ -1134,22 +1108,28 @@ describe('RadioList', () => {
 // compiled output includes the forced-colors rule; visual behavior needs
 // manual verification under Windows High Contrast.
 describe('forced colors (WCAG 1.4.11)', () => {
-  it('compiles a forced-colors fill so the selected dot survives Windows High Contrast', () => {
-    render(
+  it('carries a forced-colors fill so the selected dot survives Windows High Contrast', () => {
+    const {container} = render(
       <RadioList label="Preference" value="a" onChange={() => {}}>
         <RadioListItem label="Option A" value="a" />
       </RadioList>,
     );
     // The painted inner dot would be stripped to Canvas (invisible), making
-    // checked and unchecked radios identical; CanvasText keeps it perceivable.
-    expect(getForcedColorsRules()).toContain('background-color: canvastext;');
+    // checked and unchecked radios identical; the indicator's class map moves
+    // it to CanvasText there.
+    expectClassSet(
+      container.querySelector('.astryx-radio-indicator-dot') as Element,
+      {includes: ['forced-colors:bg-[color:CanvasText]']},
+    );
   });
 });
 
 /** Does the element's own CSS paint the row's mouse press (`--_radio-row-press`)? */
+// The layer reads the row's press paint through a class, and jsdom has no
+// sheet to resolve it; the class token is the assertion.
 function readsRowPress(el: Element): boolean {
-  return rulesDeclaredFor(el).some(rule =>
-    rule.includes('var(--_radio-row-press'),
+  return classesOf(el).some(className =>
+    className.includes('var(--_radio-row-press'),
   );
 }
 
@@ -1158,12 +1138,10 @@ function readsRowPress(el: Element): boolean {
  * nested control is the pressed one?
  */
 function declaresRowPress(el: Element): boolean {
-  return rulesWithSelector(el, ':active').some(
-    rule =>
-      rule.includes('--_radio-row-press:') &&
-      rule.includes('var(--color-overlay-pressed)') &&
-      rule.includes(':not(:has(button:not([aria-readonly="true"]):active'),
-  );
+  const classes = classesOf(el);
+  return rowPressPaintRadioRowClassName
+    .split(' ')
+    .every(className => classes.includes(className));
 }
 
 describe('pressed state', () => {
@@ -1219,8 +1197,14 @@ describe('pressed state', () => {
     // release, and the owner-drawn layer over the circle paints the pressed
     // token at that strength on both touch arms.
     expect(hasReleaseFade(row)).toBe(true);
-    expect(readsPressStrength(wrapper, '[data-astryx-press="on"]')).toBe(true);
-    expect(readsPressStrength(wrapper)).toBe(true);
+    // The image arm names both press states of the row, so the layer paints
+    // through the whole release at the strength the row runs.
+    for (const name of indicatorPressImageClassName.split(' ')) {
+      expect(wrapper.classList.contains(name)).toBe(true);
+    }
+    expect(indicatorPressImageClassName).toContain(
+      '[data-astryx-press=fading]',
+    );
     // The row itself paints nothing under a finger, as under a mouse: only
     // the circle answers.
     expect(readsPressStrength(row, '[data-astryx-press="on"]')).toBe(false);

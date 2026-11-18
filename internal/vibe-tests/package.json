@@ -37,13 +37,16 @@
     "fixtures:refresh": "node scripts/fixture-suite.mjs refresh",
     "fixtures:build": "node scripts/fixture-suite.mjs build",
     "fixtures:contrast": "node scripts/fixture-browser.mjs contrast",
-    "fixtures:screenshots": "node scripts/fixture-browser.mjs screenshots"
+    "fixtures:screenshots": "node scripts/fixture-browser.mjs screenshots",
+    "pages:render": "tsx src/render-pages.ts",
+    "pages:check": "tsx src/render-pages.ts --check"
   },
   "dependencies": {
     "@astryxdesign/cli": "*",
     "commander": "^12.1.0"
   },
   "devDependencies": {
+    "@astryxdesign/core": "workspace:*",
     "@radix-ui/react-avatar": "^1.2.0",
     "@radix-ui/react-checkbox": "^1.3.5",
     "@radix-ui/react-dialog": "^1.1.17",

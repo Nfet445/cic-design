@@ -5,6 +5,16 @@
  * @input Uses StyleX and theme color tokens
  * @output Exports shared focus-outline prop builders
  * @position Internal utility for consistent keyboard focus outlines across core components
+ * @deprecated Internal seam: it is not a public API. The class faces of all
+ *   seven arms already exist in utils/focusOutlineClasses.ts, and the modules
+ *   below are why the ring itself has not moved: each states the same outline
+ *   longhands on the same element as the ring, inside one `stylex.props` call,
+ *   and they are still StyleX. The ring keeps one tier with them until they
+ *   move — `menuRowState.stylex.ts` (the row's inset offset),
+ *   `lightboxOverrides.stylex.ts` (the zoom button's), 
+ *   `codeBlockViewportFocusRing.stylex.ts` (the viewport's) and
+ *   `selectorPresentation.stylex.ts` (`outline-width: 0` on a pointer-restored
+ *   focus, which must erase the ring it is composed with).
  */
 
 // Every ring in core and lab comes from here, except Switch's: its condition

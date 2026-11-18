@@ -21,6 +21,19 @@ function isSwizzledSource(filePath: string, memo: Map<string, boolean>) {
   return markerReader.isSwizzledSource(filePath, memo);
 }
 
+/**
+ * The generated declaration sheets a package's block carries, read from the
+ * CommonJS module the other integrations share, so one copy of the sheet paths
+ * serves them all.
+ */
+let sheetReader: {generatedSheetsFor(file: string): string} | undefined;
+function generatedSheetsFor(file: string): string {
+  sheetReader ??= createRequire(import.meta.url)(
+    path.resolve(__dirname, 'source-stylesheet.js'),
+  ) as typeof sheetReader;
+  return sheetReader!.generatedSheetsFor(file);
+}
+
 const LIBRARY_PATTERN = 'node_modules/@astryxdesign/';
 const STYLEX_CSS_PATH = '/virtual:stylex.css';
 
@@ -352,6 +365,8 @@ function renderSplitLayers(
     classNamePrefixes: readonly string[];
   },
 ): string {
+  // shortcut: the StyleX pass runs while a package keeps `stylex.create`;
+  // ticket 64 lands the last of those and ticket 36 deletes this pass.
   if (!rulesById || rulesById.size === 0) return '';
 
   const libraryRules: unknown[] = [];
@@ -367,12 +382,13 @@ function renderSplitLayers(
 
   // A swizzled copy is Astryx source too: its rules go in the library layer.
   const markerMemo = new Map<string, boolean>();
+  const libraryFiles: string[] = [];
   for (const [filePath, rules] of rulesById.entries()) {
-    const own =
+    const library =
       filePath.includes(options.libraryPattern) ||
-      isSwizzledSource(filePath, markerMemo)
-        ? libraryRules
-        : productRules;
+      isSwizzledSource(filePath, markerMemo);
+    if (library) libraryFiles.push(filePath);
+    const own = library ? libraryRules : productRules;
     for (const rule of rules) {
       if (isConstantRule(rule)) {
         collectedConstants.push(rule);
@@ -386,13 +402,26 @@ function renderSplitLayers(
     collectedConstants,
     options.classNamePrefixes,
   );
-  const render = (rules: unknown[], layer: string) =>
-    rules.length
-      ? `@layer ${layer} {\n${stylexBabelPlugin.processStylexRules([...constantRules, ...rules] as never, {useLayers: true})}\n}`
+  // A package's token defaults are generated sheets, not rules, so its block
+  // carries them after its rules as its prebuilt stylesheet does. Without them
+  // the library layer reads `var(--color-…)` that nothing in the build
+  // declares, and every rule using one paints nothing.
+  const librarySheets = [
+    ...new Set(libraryFiles.map(generatedSheetsFor).filter(Boolean)),
+  ].join('\n\n');
+  const render = (rules: unknown[], layer: string, sheets = '') => {
+    const css = rules.length
+      ? stylexBabelPlugin.processStylexRules(
+          [...constantRules, ...rules] as never,
+          {useLayers: true},
+        )
       : '';
+    const body = [css, sheets].filter(Boolean).join('\n\n');
+    return body === '' ? '' : `@layer ${layer} {\n${body}\n}`;
+  };
 
   return [
-    render(libraryRules, options.libraryLayer),
+    render(libraryRules, options.libraryLayer, librarySheets),
     render(productRules, options.productLayer),
   ]
     .filter(Boolean)

@@ -10,7 +10,7 @@ import {
 import {Button} from '@astryxdesign/core/Button';
 import {List, ListItem} from '@astryxdesign/core/List';
 import {Icon} from '@astryxdesign/core/Icon';
-import {rtlStyles} from '@astryxdesign/core/utils';
+import {RTL_MIRROR_CLASS} from '@astryxdesign/core/utils';
 
 // =============================================================================
 // Meta
@@ -52,7 +52,7 @@ function Rows({title}: {title: string}) {
             <Icon
               icon="chevronRight"
               color="secondary"
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           }
           onClick={() => nav.push(row)}
@@ -328,7 +328,7 @@ function MessageRows() {
             <Icon
               icon="chevronRight"
               color="secondary"
-              xstyle={rtlStyles.mirror}
+              className={RTL_MIRROR_CLASS}
             />
           }
           onClick={() => nav.push(message)}

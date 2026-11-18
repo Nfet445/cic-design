@@ -12,18 +12,18 @@
  * descendant of it. Every overlay root therefore has to stop those values (see
  * #5208: a Section in a 640px sheet rendered 672px wide).
  *
- * jsdom does no layout, so these assert on the custom properties themselves —
- * the definitions the layout is computed from. The widths they stand in for are
- * verified in a browser; see the PR description.
+ * jsdom resolves no cascade, so these assert on the class text the reset
+ * carries — the declarations the layout is computed from. The widths they stand
+ * in for are verified in a browser; see the PR description.
  *
  * SYNC: When an overlay is added, add it to OVERLAYS below.
  */
 
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
-import {readFileSync} from 'node:fs';
-import {join} from 'node:path';
 import {render, screen} from '@testing-library/react';
 import type {ReactNode} from 'react';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {overlayPaddingReset} from './overlayPaddingReset.stylex';
 import {Dialog} from '../Dialog';
 import {BottomSheet} from '../BottomSheet';
 import {MobileNav} from '../MobileNav';
@@ -89,8 +89,8 @@ const CLEARED = [
   '--_section-padding-propagated',
 ];
 
-/** What a cleared custom property reads back as. See the assertion below. */
-const CLEARED_READBACK = ['', 'initial'];
+/** The reset's declaration of one property, as its class text spells it. */
+const declaration = (name: string, value: string) => `[${name}:${value}]`;
 
 /** Each overlay, rendered open inside a page Section that leaks 40px. */
 const OVERLAYS: {
@@ -152,27 +152,30 @@ const OVERLAYS: {
 
 describe('overlayPaddingReset', () => {
   describe.each(OVERLAYS)('$name', ({render: renderOverlay, root}) => {
-    it('zeroes the values descendants subtract', () => {
+    it('carries the reset on its root', () => {
       render(<Section padding={10}>{renderOverlay(<div>c</div>)}</Section>);
-      const computed = getComputedStyle(root());
-      for (const name of SUBTRACTED) {
-        expect(computed.getPropertyValue(name), name).toBe('0px');
-      }
+      expectClassSet(root(), {
+        includes: overlayPaddingReset.reset.split(' '),
+      });
     });
+  });
 
-    it('clears the values descendants add, so they fall to their default', () => {
-      render(<Section padding={10}>{renderOverlay(<div>c</div>)}</Section>);
-      const computed = getComputedStyle(root());
-      for (const name of CLEARED) {
-        // A browser resolves `initial` on a custom property to the
-        // guaranteed-invalid value and reports '' here; jsdom does not
-        // implement that and echoes the keyword. Either proves the
-        // declaration landed — and neither is the leaked '40px'.
-        expect(CLEARED_READBACK, name).toContain(
-          computed.getPropertyValue(name),
-        );
-      }
-    });
+  it('zeroes the values descendants subtract', () => {
+    for (const name of SUBTRACTED) {
+      expect(overlayPaddingReset.reset, name).toContain(
+        declaration(name, '0px'),
+      );
+    }
+  });
+
+  it('clears the values descendants add, so they fall to their default', () => {
+    for (const name of CLEARED) {
+      // `initial` makes the custom property guaranteed-invalid, so a reader
+      // falls through to its own default instead of reading the leaked '40px'.
+      expect(overlayPaddingReset.reset, name).toContain(
+        declaration(name, 'initial'),
+      );
+    }
   });
 
   it('does not clear the public theme token', () => {
@@ -187,14 +190,10 @@ describe('overlayPaddingReset', () => {
     // this; assert it where it is decided instead. (Verified in a browser: a
     // theme's 20px still reaches a Section inside a Dialog nested under a
     // 40px page Section.)
-    const source = readFileSync(
-      join(__dirname, 'overlayPaddingReset.stylex.ts'),
-      'utf8',
+    const reset = overlayPaddingReset.reset;
+    expect(reset).toContain(
+      declaration('--_section-padding-propagated', 'initial'),
     );
-    const reset = source.slice(
-      source.indexOf('export const overlayPaddingReset'),
-    );
-    expect(reset).toContain("'--_section-padding-propagated': 'initial'");
     expect(reset).not.toContain('--astryx-section-padding');
   });
 
@@ -209,19 +208,18 @@ describe('overlayPaddingReset', () => {
         </Dialog>
       </Section>,
     );
-    const dialog = screen.getByRole('dialog');
-    expect(CLEARED_READBACK).toContain(
-      getComputedStyle(dialog).getPropertyValue(
-        '--_section-padding-propagated',
-      ),
-    );
+    expectClassSet(screen.getByRole('dialog'), {
+      includes: [declaration('--_section-padding-propagated', 'initial')],
+    });
     // ...while the page Section outside the overlay still propagates it.
     // (jsdom does not resolve the token reference to its 40px value.)
-    const pageSection = document.querySelector<HTMLElement>('.astryx-section');
-    expect(
-      getComputedStyle(pageSection as HTMLElement).getPropertyValue(
-        '--_section-padding-propagated',
-      ),
-    ).toBe('var(--spacing-10)');
+    expectClassSet(
+      document.querySelector<HTMLElement>('.astryx-section') as HTMLElement,
+      {
+        includes: [
+          declaration('--_section-padding-propagated', 'var(--spacing-10)'),
+        ],
+      },
+    );
   });
 });

@@ -10,7 +10,6 @@
  *   __tests__/ButtonGroupTracking.interaction.browser.spec.ts
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {act, render} from '@testing-library/react';
 import {useLayoutEffect, useState} from 'react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
@@ -19,7 +18,7 @@ import {
   pointerQuery,
 } from '../gestures/__tests__/pointerQuery';
 import {isPressGroupItem} from '../privateAttributes/pressGroupItem.stylex';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerBelowChildrenClassName} from '../internal/touchHitAreaClasses';
 import {Button} from '../Button/Button';
 import {DropdownMenu} from '../DropdownMenu/DropdownMenu';
 import {ButtonGroup} from './ButtonGroup';
@@ -119,9 +118,7 @@ const centerOf = (box: typeof A): Point => ({
 });
 
 const paintOf = (element: Element) => element.getAttribute('data-astryx-press');
-const hitLayer = (
-  stylex.props(touchHitAreaStyles.layerBelowChildren).className ?? ''
-)
+const hitLayer = touchHitAreaLayerBelowChildrenClassName
   .split(' ')
   .filter(Boolean);
 /** The hit layer's atomic classes that `group` carries. */

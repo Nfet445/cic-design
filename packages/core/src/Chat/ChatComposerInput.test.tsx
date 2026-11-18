@@ -13,6 +13,7 @@ import type {
 } from './ChatComposerInput';
 import {placeCaretAtEnd, insertTextAtCursor} from './chatComposerSelection';
 import {createStaticSource} from '../Typeahead/createStaticSource';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import type {SearchableItem, SearchSource} from '../Typeahead/types';
 
 const announce = vi.hoisted(() => vi.fn());
@@ -2491,6 +2492,6 @@ describe('ChatComposerInput empty line', () => {
   it('gives the editable itself one line of height, so an empty input stays clickable', () => {
     render(<ChatComposerInput label="Chat input" />);
     const editable = screen.getByRole('textbox', {name: 'Chat input'});
-    expect(editable).toHaveStyle({minHeight: '22px'});
+    expectClassSet(editable, {includes: ['min-h-[22px]']});
   });
 });

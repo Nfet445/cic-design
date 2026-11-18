@@ -23,22 +23,23 @@
 
 import type {ReactNode} from 'react';
 import {useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  typographyVars,
-  typeScaleVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import type {BaseProps} from '@astryxdesign/core';
-import {focusOutlineStyles, mergeProps} from '@astryxdesign/core/utils';
+import {
+  focusOutlineFocusVisibleClassName,
+  mergeProps,
+  xstyleProps,
+} from '@astryxdesign/core/utils';
 import {themeProps} from '@astryxdesign/core/utils';
 import {Popover} from '@astryxdesign/core/Popover';
 import {TextInput} from '@astryxdesign/core/TextInput';
 import {useGridFocus} from '@astryxdesign/core/hooks';
+import {
+  chatEmojiPickerCellClassName,
+  chatEmojiPickerEmptyClassName,
+  chatEmojiPickerGridClassName,
+  chatEmojiPickerPanelClassName,
+} from './chatEmojiPickerClasses';
+import {tw} from '../tw';
 
 export interface ChatEmojiOption {
   /** The emoji character, e.g. "🎉". */
@@ -116,60 +117,6 @@ export interface ChatEmojiPickerProps extends Omit<
 // Styles
 // =============================================================================
 
-const styles = stylex.create({
-  panel: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-2'],
-    width: GRID_COLUMNS * 34 + 8,
-    boxSizing: 'border-box',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: `repeat(${GRID_COLUMNS}, 1fr)`,
-    gap: spacingVars['--spacing-0-5'],
-  },
-  cell: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 32,
-    height: 32,
-    borderRadius: radiusVars['--radius-inner'],
-    borderStyle: 'none',
-    padding: 0,
-    backgroundColor: {
-      default: 'transparent',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        default: 'transparent',
-        '@media (hover: hover)': colorVars['--color-overlay-hover'],
-      },
-    },
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    fontSize: 18,
-    lineHeight: typeScaleVars['--text-body-leading'],
-    // Inset, not the shared offset: the cells sit in a tight 8-across grid, so
-    // an outset ring would overlap its neighbors.
-    outlineOffset: {default: '0', ':focus-visible': -2},
-    transitionProperty: 'background-color',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce)': '0s',
-    },
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  empty: {
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-1'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    color: colorVars['--color-text-secondary'],
-  },
-});
-
 // =============================================================================
 // Component
 // =============================================================================
@@ -241,8 +188,8 @@ export function ChatEmojiPicker({
           ref={ref}
           {...mergeProps(
             themeProps('chat-emoji-picker'),
-            stylex.props(styles.panel, xstyle),
-            className,
+            xstyleProps(xstyle),
+            tw(chatEmojiPickerPanelClassName, className),
             styleProp,
           )}>
           <TextInput
@@ -255,7 +202,7 @@ export function ChatEmojiPicker({
             hasClear
           />
           {visible.length === 0 ? (
-            <div {...stylex.props(styles.empty)}>
+            <div className={chatEmojiPickerEmptyClassName}>
               No emoji match “{query.trim()}”.
             </div>
           ) : (
@@ -264,7 +211,7 @@ export function ChatEmojiPicker({
               role="group"
               aria-label="Emoji"
               onKeyDown={handleKeyDown}
-              {...stylex.props(styles.grid)}>
+              className={chatEmojiPickerGridClassName}>
               {visible.map(option => (
                 <button
                   key={option.emoji}
@@ -272,9 +219,9 @@ export function ChatEmojiPicker({
                   data-emoji={option.emoji}
                   aria-label={`React with ${option.name}`}
                   onClick={() => handleSelect(option.emoji)}
-                  {...stylex.props(
-                    focusOutlineStyles.focusVisible,
-                    styles.cell,
+                  className={tw(
+                    focusOutlineFocusVisibleClassName,
+                    chatEmojiPickerCellClassName,
                   )}>
                   <span aria-hidden="true">{option.emoji}</span>
                 </button>

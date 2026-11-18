@@ -21,7 +21,7 @@ import {Badge} from '@astryxdesign/core/Badge';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {Icon} from '@astryxdesign/core/Icon';
 import {List, ListItem} from '@astryxdesign/core/List';
-import {rtlStyles} from '@astryxdesign/core/utils';
+import {RTL_MIRROR_CLASS} from '@astryxdesign/core/utils';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
 import {
   badgedName,
@@ -84,7 +84,7 @@ export function TabBarMoreList({
                 <Badge variant="error" label={item.badge} aria-hidden />
               ) : null}
               {/* Right to left it points left, as Core's disclosure rows' do. */}
-              <Icon icon="chevronRight" xstyle={rtlStyles.mirror} />
+              <Icon icon="chevronRight" className={RTL_MIRROR_CLASS} />
             </>
           }
           isSelected={item.value === value}

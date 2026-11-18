@@ -26,7 +26,6 @@ import React, {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 import {Field} from '../Field/Field';
 import type {InputStatus} from '../Field/types';
 import {useTooltip} from '../Tooltip/useTooltip';
@@ -40,6 +39,9 @@ import {
 } from '../Field/fieldParts';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {radioListClassName} from './radioListClasses';
 
 /**
  * Size of the radio controls, matching CheckboxInput sizes.
@@ -70,20 +72,6 @@ export const RadioListContext =
     null,
   );
 RadioListContext.displayName = 'RadioListContext';
-
-const styles = stylex.create({
-  radiogroup: {
-    display: 'flex',
-  },
-  vertical: {
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-2'],
-  },
-  horizontal: {
-    flexDirection: 'row',
-    gap: spacingVars['--spacing-5'],
-  },
-});
 
 export interface RadioListProps extends Omit<
   FieldInputBaseProps<HTMLDivElement>,
@@ -428,12 +416,8 @@ export function RadioList({
         aria-required={isEffectivelyRequired || undefined}
         {...mergeProps(
           themeProps('radio-list', {orientation, size}),
-          stylex.props(
-            styles.radiogroup,
-            orientation === 'vertical' ? styles.vertical : styles.horizontal,
-            controlXstyle,
-          ),
-          controlClassName,
+          xstyleProps(controlXstyle),
+          tw(radioListClassName({orientation}), controlClassName),
           controlStyle,
         )}>
         <RadioListContext value={contextValue}>

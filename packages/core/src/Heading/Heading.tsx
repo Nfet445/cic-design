@@ -20,7 +20,6 @@
  */
 
 import {useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {
   TextColor,
   TextDisplay,
@@ -30,26 +29,16 @@ import type {
   TextWeight,
 } from '../theme/types';
 import {
-  colorStyles,
-  sizeByLevelStyles,
-  sizeByTypeStyles,
-  defaultWeightByTypeStyles,
-  weightStyles,
-  displayStyles,
-  justifyStyles,
-  truncationStyles,
-  wordBreakStyles,
-  textWrapStyles,
-  capsizeStyles,
-  decorationStyles,
-  truncationTooltipStyles,
-} from '../Text/text.stylex';
+  headingClassName,
+  truncationTooltipContentClassName,
+} from '../Text/textClasses';
 import {useTruncation} from '../Text/useTruncation';
 import {
   TruncationTooltip,
   useTruncationTooltipInterest,
 } from '../Text/TruncationTooltip';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
+import {xstyleProps} from '../utils/xstyle';
 import {resolveStyleColor} from '../Text/Text';
 import type {LayerPlacement} from '../Layer';
 import {mergeProps} from '../utils/mergeProps';
@@ -285,38 +274,30 @@ export function Heading({
       <Component
         ref={mergedRef}
         {...mergeProps(
-          themeProps('heading', {
-            level,
-            color,
-            type,
-            weight,
-          }),
-          stylex.props(
-            colorStyles[resolveStyleColor(color)],
-            builtinType
-              ? sizeByTypeStyles[builtinType]
-              : sizeByLevelStyles[level],
-            builtinType && defaultWeightByTypeStyles[builtinType],
-            weight && weightStyles[weight],
-            // Display: use truncation styles when maxLines > 0
-            maxLines === 1
-              ? truncationStyles.singleLine
-              : maxLines > 1
-                ? truncationStyles.multiLine
-                : displayStyles[resolvedDisplay],
-            // Word break when truncating
-            maxLines > 0 && wordBreakStyles[resolvedWordBreak],
-            // Text wrap
-            textWrap && textWrapStyles[textWrap],
-            // Justify (text alignment)
-            justify !== 'start' && justifyStyles[justify],
-            // Capsize
-            hasCapsize && capsizeStyles.enabled,
-            // Decorations
-            hasStrikethrough && decorationStyles.strikethrough,
-            // User xstyle
-            xstyle,
+          mergeProps(
+            themeProps('heading', {
+              level,
+              color,
+              type,
+              weight,
+            }),
+            {
+              className: headingClassName({
+                level,
+                type: builtinType,
+                color: resolveStyleColor(color),
+                display: resolvedDisplay,
+                justify,
+                maxLines,
+                wordBreak: resolvedWordBreak,
+                weight,
+                textWrap,
+                hasCapsize,
+                hasStrikethrough,
+              }),
+            },
           ),
+          xstyleProps(xstyle),
           className,
           {...style, ...inlineStyle},
         )}
@@ -342,7 +323,7 @@ export function Heading({
         <TruncationTooltip
           anchorRef={headingRef}
           content={
-            <span {...stylex.props(truncationTooltipStyles.content)}>
+            <span className={truncationTooltipContentClassName}>
               {truncation.fullText}
             </span>
           }

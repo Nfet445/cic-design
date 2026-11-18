@@ -12,19 +12,9 @@
  *   inline column, centred, with `--spacing-2` between)
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {Spinner, type SpinnerSize} from '@astryxdesign/core/Spinner';
 import {Text} from '@astryxdesign/core/Text';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
-
-const styles = stylex.create({
-  column: {
-    display: 'inline-flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-  },
-});
+import {loadingMessageClassName} from './loadingMessageClasses';
 
 export function LoadingMessage({
   label,
@@ -34,7 +24,7 @@ export function LoadingMessage({
   size?: SpinnerSize;
 }) {
   return (
-    <span {...stylex.props(styles.column)}>
+    <span className={loadingMessageClassName}>
       <Spinner size={size} aria-hidden />
       <Text type="body" weight="bold">
         {label}

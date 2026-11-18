@@ -23,12 +23,12 @@
  *   holding the caret, and in the view they are read-only.
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {useEffect, useId, useState, type JSX} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$isListItemNode, $isListNode, type ListItemNode} from '@lexical/list';
 import {$getNodeByKey, $getRoot, type LexicalNode} from 'lexical';
 import {CheckboxInput} from '@astryxdesign/core/CheckboxInput';
+import {taskCheckboxClassName} from '../taskCheckboxClasses';
 import {
   $getTaskState,
   $setTaskState,
@@ -45,21 +45,10 @@ interface TaskPlacement {
   readonly left: number;
 }
 
-const styles = stylex.create({
-  checkbox: {
-    position: 'absolute',
-  },
-  placement: (top: number, left: number) => ({
-    top,
-    // eslint-disable-next-line @astryx/no-physical-properties -- intentional: `left` is a measured viewport coordinate, already resolved for direction above (`isRightToLeft ? box.right - CHECKBOX_SIZE : box.left`). `insetInlineStart` would flip the anchor edge again in RTL and double-correct the offset.
-    left,
-  }),
-});
-
 /** The width of core CheckboxInput's small control. */
 const CHECKBOX_SIZE = 20;
 
-/** Marks a task item for the theme (editorTheme.ts). */
+/** Marks a task item for the theme (editorThemeClasses.ts). */
 export const TASK_ATTRIBUTE = 'data-richtext-task';
 
 /**
@@ -214,10 +203,9 @@ export function TaskCheckboxPlugin({
           key={placement.key}
           id={`${idPrefix}-task-${placement.key}`}
           data-richtext-task-checkbox=""
-          {...stylex.props(
-            styles.checkbox,
-            styles.placement(placement.top, placement.left),
-          )}>
+          className={taskCheckboxClassName}
+
+          style={{top: placement.top, left: placement.left}}>
           <CheckboxInput
             ref={(input: HTMLInputElement | null) => {
               // No tab stop after the document; see the file header.

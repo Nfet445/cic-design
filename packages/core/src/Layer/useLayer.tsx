@@ -26,8 +26,6 @@ import React, {
   type RefCallback,
 } from 'react';
 import {useCommittedRef, useCommittedRefInto} from '../hooks/useCommittedRef';
-import * as stylex from '@stylexjs/stylex';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import {createPortal} from 'react-dom';
 import {LayerContentBoundary} from './layerScopedContext';
 import {layerClickBoundary} from './layerClickBoundary';
@@ -40,15 +38,36 @@ import {
   isReleaseInFlight,
 } from './gestureCounter';
 import {resolveLayerPortalTarget} from './layerHost';
-import {layerTextReset} from './layerTextReset.stylex';
-import {layerStructureReset} from './layerStructureReset.stylex';
-import {layerViewportInset} from './layerViewportInset.stylex';
+import {layerTextResetClassName} from './layerTextResetClasses';
+import {layerStructureResetClassName} from './layerStructureResetClasses';
+import {layerResetClassName} from './layerResetClasses';
+import {
+  layerFixedClassName,
+  layerGutterBlockEndClassName,
+  layerGutterBlockStartClassName,
+  layerGutterInlineEndClassName,
+  layerGutterInlineStartClassName,
+  layerGutterVariablesClassName,
+  layerKeyboardDefaultsClassName,
+  layerPlacementBlockEndClassName,
+  layerPlacementBlockStartClassName,
+  layerPlacementInlineEndClassName,
+  layerPlacementInlineStartClassName,
+  layerScrollsOnOverflowClassName,
+  layerViewportFitClassName,
+} from './layerClasses';
+import {tw} from '../utils/tw';
 import {keyboardLiftStyle, useLayerKeyboardClearance} from './LayerTouch';
 import {
   layerEntranceSide,
   readLayerEntranceSide,
   writeLayerEntranceSide,
 } from './layerEntranceSide';
+import {
+  LAYER_KEYBOARD_CAP_PROPERTY,
+  LAYER_KEYBOARD_INSET_PROPERTY,
+  LAYER_KEYBOARD_OVERFLOW_PROPERTY,
+} from './useLayerKeyboardClearance';
 import {LAYER_ANCHORED_ATTRIBUTE} from './layerKeyboardClearance';
 import {settledBox} from './settledBox';
 import {layerInsetProperties} from './layerInset';
@@ -75,135 +94,7 @@ import {observeMutations} from '../utils/sharedMutationObserver';
 import {containsAlongFlatTree, parentAcrossShadow} from '../utils/flatTree';
 import {isDialogShown, isShadowRoot, isShownAsPopover} from '../utils/nodeType';
 import {subscribeInput} from '../utils/inputStream';
-
-const styles = stylex.create({
-  // The software keyboard's block-size cap, on the layer's own element. Every
-  // layer sets it, an uncapped one to a limit no viewport cap reaches. So a
-  // layer nested in a capped one does not inherit the outer cap. The surfaces
-  // inside a layer read it through `layerViewportInset.maxBlockSize`. The cap
-  // also writes the overflow a capped surface takes. Popover's surface reads
-  // it, so it scrolls from the commit that caps it. Beside them, the
-  // keyboard's inset from the viewport's bottom lets a layer that places
-  // itself slide above the keyboard. The inset keeps its largest value until
-  // the layer closes, so that layer stays put as the keyboard goes. Every
-  // layer sets it, `initial` until a keyboard is up, so a nested layer does
-  // not inherit it. All three are private runtime state, never set by an app
-  // or a theme.
-  // SYNC: the properties are LAYER_KEYBOARD_CAP_PROPERTY,
-  // LAYER_KEYBOARD_OVERFLOW_PROPERTY and LAYER_KEYBOARD_INSET_PROPERTY
-  // (useLayerKeyboardClearance.ts).
-  keyboardCap: (cap: string, overflow: 'auto' | 'visible', inset: string) => ({
-    '--_layer-keyboard-max-block-size': cap,
-    '--_layer-keyboard-overflow': overflow,
-    '--_layer-keyboard-inset-block-end': inset,
-  }),
-  // A layer that keeps its anchor clear scrolls only once its content
-  // overflows the box it was given. A layer that fits has no scroll range, so
-  // a wheel over it scrolls the page. Nothing contains the scroll, so a tall
-  // layer chains to the page at its end.
-  scrollsOnOverflow: {
-    overflowY: 'auto',
-  },
-  // Base reset for all layers
-  base: {
-    marginBlockStart: 0,
-    marginBlockEnd: 0,
-    marginInlineStart: 0,
-    marginInlineEnd: 0,
-    paddingBlockStart: 0,
-    paddingBlockEnd: 0,
-    paddingInlineStart: 0,
-    paddingInlineEnd: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    overflow: 'visible',
-    // Override browser default [popover] background (canvas color)
-    backgroundColor: 'transparent',
-  },
-  // Fixed positioning mode
-  fixed: {
-    position: 'fixed',
-  },
-  // Margins on the placement axis: the anchor clearance on the edge facing
-  // the anchor, the viewport gutter on the far edge (spec:AST-059 FR1, FR6).
-  // The margin box is what must fit a position option and what the browser's
-  // overflow shift keeps inside the viewport, so a layer that would end
-  // inside the gutter — or under a declared bar — does not fit there and the
-  // next option is tried. A flip tactic swaps the two values with the area,
-  // so the clearance stays on the anchor side and the gutter on the far side
-  // (#4803); for the same reason the gutter is one value for both edges, the
-  // larger of the two block gutters.
-  placementBelow: (offset: string) => ({
-    marginBlockStart: offset,
-    marginBlockEnd: layerViewportInset.gutterBlock,
-  }),
-  placementAbove: (offset: string) => ({
-    marginBlockStart: layerViewportInset.gutterBlock,
-    marginBlockEnd: offset,
-  }),
-  placementEnd: (offset: string) => ({
-    marginInlineStart: offset,
-    marginInlineEnd: layerViewportInset.gutterInline,
-  }),
-  placementStart: (offset: string) => ({
-    marginInlineStart: layerViewportInset.gutterInline,
-    marginInlineEnd: offset,
-  }),
-  // Flush against the anchor (no offset): only the far-edge gutter.
-  farBelow: {marginBlockEnd: layerViewportInset.gutterBlock},
-  farAbove: {marginBlockStart: layerViewportInset.gutterBlock},
-  farEnd: {marginInlineEnd: layerViewportInset.gutterInline},
-  farStart: {marginInlineStart: layerViewportInset.gutterInline},
-  // The viewport inset (spec:AST-059 FR1–FR3). Every anchor-mode layer is
-  // capped to the viewport minus both gutters on both axes and keeps the
-  // runtime's gutter from the far viewport edge of its alignment axis as a
-  // margin (the placement-axis gutter rides the placement margins above).
-  // The cap is on the layer box itself: content wider than the viewport
-  // overflows inside the layer, where the composing component decides
-  // whether it scrolls or clips; the box never leaves the viewport.
-  // Each constant is wrapped in `calc()` so both declarations ship (see
-  // layerViewportInset).
-  viewportFit: {
-    boxSizing: 'border-box',
-    maxInlineSize: stylex.firstThatWorks(
-      `calc(${layerViewportInset.maxInlineSize})`,
-      `calc(${layerViewportInset.maxInlineSizeFallback})`,
-    ),
-    maxBlockSize: stylex.firstThatWorks(
-      `calc(${layerViewportInset.maxBlockSize})`,
-      `calc(${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-  },
-  // Alignment-axis gutter (spec:AST-059 FR1): a margin on the far viewport
-  // edge of the alignment axis — one on the anchor-facing edge would push an
-  // aligned layer off its anchor — or both edges for a centered layer. The
-  // flip tactic mirrors it with the area. The slide options carry both
-  // (see layerSlideRules.ts).
-  gutterInlineEnd: {
-    marginInlineEnd: stylex.firstThatWorks(
-      `calc(${layerViewportInset.gutterInline})`,
-      `calc(${layerViewportInset.gutterInlineFallback})`,
-    ),
-  },
-  gutterInlineStart: {
-    marginInlineStart: stylex.firstThatWorks(
-      `calc(${layerViewportInset.gutterInline})`,
-      `calc(${layerViewportInset.gutterInlineFallback})`,
-    ),
-  },
-  gutterBlockEnd: {
-    marginBlockEnd: stylex.firstThatWorks(
-      `calc(${layerViewportInset.gutterBlock})`,
-      `calc(${layerViewportInset.gutterBlockFallback})`,
-    ),
-  },
-  gutterBlockStart: {
-    marginBlockStart: stylex.firstThatWorks(
-      `calc(${layerViewportInset.gutterBlock})`,
-      `calc(${layerViewportInset.gutterBlockFallback})`,
-    ),
-  },
-});
+import {xstyleProps, type AstryxXStyle} from '../utils/xstyle';
 
 /**
  * Props for a control that sits on the trigger but must not dismiss the layer.
@@ -286,9 +177,9 @@ export interface ContextRenderProps {
    */
   'aria-label'?: string;
   /**
-   * StyleX styles for the popover container.
+   * Consumer styles for the popover container.
    */
-  xstyle?: StyleXStyles;
+  xstyle?: AstryxXStyle;
   /**
    * Additional CSS class name(s) for the popover container.
    * Use with themeProps() for theme targeting when reflecting visual props.
@@ -330,9 +221,9 @@ export interface FixedRenderProps {
   x: number;
   y: number;
   /**
-   * StyleX styles for the popover container.
+   * Consumer styles for the popover container.
    */
-  xstyle?: StyleXStyles;
+  xstyle?: AstryxXStyle;
   /**
    * Additional CSS class name(s) for the popover container.
    * Use with themeProps() for theme targeting when reflecting visual props.
@@ -1087,7 +978,7 @@ function readPortalWritingContext(
  * direction-neutral but must come from the same keyword family — mixing
  * physical `top` with `self-inline-*` produces an invalid position-area
  * (computes to `none`, which pins the popover to the viewport corner because
- * styles.base zeroes the UA margins).
+ * the layer reset zeroes the UA margins).
  *
  * Note the plain logical family (`inline-start`, no `self-`) is NOT a
  * substitute: it resolves against the containing block — the page root for
@@ -1189,29 +1080,56 @@ export function getSelfAlignment(
 }
 
 /**
+ * The software keyboard's measurement, as the private custom properties the
+ * layer box and its surfaces read. A layer the keyboard does not cap writes
+ * nothing and keeps the defaults class, so a layer nested in a capped one does
+ * not inherit the outer cap. The overflow follows the cap: a capped surface
+ * scrolls from the commit that caps it.
+ */
+function keyboardCapProperties(
+  keyboardCap: number | null,
+  keyboardInset: number | null,
+): React.CSSProperties {
+  if (keyboardCap == null && keyboardInset == null) {
+    return {};
+  }
+  return {
+    ...(keyboardCap == null
+      ? {}
+      : {
+          [LAYER_KEYBOARD_CAP_PROPERTY]: `${keyboardCap}px`,
+          [LAYER_KEYBOARD_OVERFLOW_PROPERTY]: 'auto',
+        }),
+    ...(keyboardInset == null
+      ? {}
+      : {[LAYER_KEYBOARD_INSET_PROPERTY]: `${keyboardInset}px`}),
+  } as React.CSSProperties;
+}
+
+/**
  * The gutter styles for a placement/alignment pair: the far viewport edge of
  * the alignment axis, or both edges when centered (spec:AST-059 FR1).
  */
 function getGutterStyles(
   placement: LayerPlacement,
   alignment: LayerAlignment,
-): ReadonlyArray<StyleXStyles> {
+): ReadonlyArray<string> {
   if (placement === 'above' || placement === 'below') {
     if (alignment === 'start') {
-      return [styles.gutterInlineEnd];
+      return [layerGutterInlineEndClassName];
     }
     if (alignment === 'end') {
-      return [styles.gutterInlineStart];
+      return [layerGutterInlineStartClassName];
     }
-    return [styles.gutterInlineStart, styles.gutterInlineEnd];
+    return [layerGutterInlineStartClassName, layerGutterInlineEndClassName];
   }
   if (alignment === 'start') {
-    return [styles.gutterBlockEnd];
+    return [layerGutterBlockEndClassName];
   }
   if (alignment === 'end') {
-    return [styles.gutterBlockStart];
+    return [layerGutterBlockStartClassName];
   }
-  return [styles.gutterBlockStart, styles.gutterBlockEnd];
+  return [layerGutterBlockStartClassName, layerGutterBlockEndClassName];
 }
 
 /**
@@ -2484,48 +2402,53 @@ function useLayerImplementation(
         positioning === 'anchor' && clearance != null
           ? {[LAYER_CLEARANCE_PROPERTY]: clearance}
           : {};
-      const offsetStyle =
+      // A placement puts the clearance on the anchor-facing edge and the
+      // viewport gutter on the far one; without a clearance only the gutter
+      // stays (spec:AST-059 FR1, FR6).
+      const placementGutterClassName =
         positioning !== 'anchor'
           ? null
-          : clearance == null
-            ? placement === 'above'
-              ? styles.farAbove
-              : placement === 'below'
-                ? styles.farBelow
-                : placement === 'start'
-                  ? styles.farStart
-                  : styles.farEnd
-            : placement === 'above'
-              ? styles.placementAbove(clearance)
-              : placement === 'below'
-                ? styles.placementBelow(clearance)
-                : placement === 'start'
-                  ? styles.placementStart(clearance)
-                  : styles.placementEnd(clearance);
+          : placement === 'above'
+            ? layerGutterBlockStartClassName
+            : placement === 'below'
+              ? layerGutterBlockEndClassName
+              : placement === 'start'
+                ? layerGutterInlineStartClassName
+                : layerGutterInlineEndClassName;
+      const placementClearanceClassName =
+        positioning !== 'anchor' || clearance == null
+          ? null
+          : placement === 'above'
+            ? layerPlacementBlockEndClassName
+            : placement === 'below'
+              ? layerPlacementBlockStartClassName
+              : placement === 'start'
+                ? layerPlacementInlineEndClassName
+                : layerPlacementInlineStartClassName;
 
-      const viewportStyles =
+      const viewportClassNames =
         positioning === 'anchor'
-          ? [styles.viewportFit, ...getGutterStyles(placement, alignment)]
+          ? [
+              layerViewportFitClassName,
+              ...getGutterStyles(placement, alignment),
+            ]
           : null;
 
-      const stylexResult = stylex.props(
-        layerTextReset.reset,
-        layerStructureReset.reset,
-        styles.base,
+      const xstyleResult = xstyleProps(xstyle);
+      const combinedClassName = tw(
         overlayPaddingReset.reset,
-        styles.keyboardCap(
-          keyboardCap == null ? '100vh' : `${keyboardCap}px`,
-          keyboardCap == null ? 'visible' : 'auto',
-          keyboardInset == null ? 'initial' : `${keyboardInset}px`,
-        ),
-        keepsAnchorClear && styles.scrollsOnOverflow,
-        viewportStyles,
-        offsetStyle,
-        xstyle,
+        layerResetClassName,
+        layerTextResetClassName,
+        layerStructureResetClassName,
+        layerKeyboardDefaultsClassName,
+        positioning === 'anchor' && layerGutterVariablesClassName,
+        ...(viewportClassNames ?? []),
+        placementGutterClassName,
+        placementClearanceClassName,
+        keepsAnchorClear && layerScrollsOnOverflowClassName,
+        extraClassName,
+        xstyleResult.className,
       );
-      const combinedClassName = extraClassName
-        ? `${extraClassName} ${stylexResult.className ?? ''}`
-        : stylexResult.className;
 
       // The marker gives us the actual JSX parent without mounting arbitrary
       // children there. Safe positions preserve the existing DOM order and
@@ -2546,7 +2469,8 @@ function useLayerImplementation(
           popover={lightDismiss ? 'auto' : 'manual'}
           className={combinedClassName}
           style={{
-            ...stylexResult.style,
+            ...xstyleResult.style,
+            ...keyboardCapProperties(keyboardCap, keyboardInset),
             ...anchorStyle,
             ...keyboardLiftStyle(keyboardLift),
             ...clearanceProperty,
@@ -2604,20 +2528,18 @@ function useLayerImplementation(
         left: x,
       };
 
-      const stylexResult = stylex.props(
-        layerTextReset.reset,
-        layerStructureReset.reset,
-        styles.base,
-        overlayPaddingReset.reset,
+      const xstyleResult = xstyleProps(xstyle);
+      const combinedClassName = tw(
+        layerResetClassName,
+        layerTextResetClassName,
+        layerStructureResetClassName,
         // A fixed layer is never capped; it still sets its own limit so it is
         // not clamped by a capped layer it sits in.
-        styles.keyboardCap('100vh', 'visible', 'initial'),
-        styles.fixed,
-        xstyle,
+        layerKeyboardDefaultsClassName,
+        layerFixedClassName,
+        extraClassName,
+        xstyleResult.className,
       );
-      const combinedClassName = extraClassName
-        ? `${extraClassName} ${stylexResult.className ?? ''}`
-        : stylexResult.className;
 
       return (
         <div
@@ -2625,7 +2547,7 @@ function useLayerImplementation(
           id={id}
           popover={lightDismiss ? 'auto' : 'manual'}
           className={combinedClassName}
-          style={{...stylexResult.style, ...positionStyle, ...extraStyle}}
+          style={{...xstyleResult.style, ...positionStyle, ...extraStyle}}
           // Presses inside the layer do not reach handlers around where it
           // is written.
           {...layerClickBoundary()}>

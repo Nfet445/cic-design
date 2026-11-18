@@ -13,11 +13,10 @@
  */
 
 import {useMemo, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {colorVars, typeScaleVars} from '../../../theme/tokens.stylex';
 
 import {registerFixedHeightColumn} from '../../tableColumnAdmission';
 import type {TableColumn, TablePlugin} from '../../types';
+import {TABLE_ROW_INDEX_CLASS} from './rowIndexClasses';
 
 /**
  * Configuration for {@link useTableRowIndex}.
@@ -46,15 +45,6 @@ export interface UseTableRowIndexConfig<T extends Record<string, unknown>> {
 
 const INDEX_COLUMN_KEY = '__rowIndex';
 const INDEX_COLUMN_WIDTH = {type: 'pixel' as const, value: 48};
-
-const styles = stylex.create({
-  index: {
-    fontFamily: 'var(--font-family-code)',
-    fontSize: typeScaleVars['--text-supporting-size'],
-    fontVariantNumeric: 'tabular-nums',
-    color: colorVars['--color-text-secondary'],
-  },
-});
 
 function createRowIndexLookup<T>(data: T[], getRowKey?: (item: T) => string) {
   let map: Map<unknown, number> | undefined;
@@ -105,11 +95,11 @@ export function useTableRowIndex<T extends Record<string, unknown>>(
         if (idx == null) {
           return null;
         }
-        return <span {...stylex.props(styles.index)}>{idx + startFrom}</span>;
+        return <span className={TABLE_ROW_INDEX_CLASS}>{idx + startFrom}</span>;
       },
     };
     registerFixedHeightColumn(indexColumn, startFrom === 1, logicalIndex => (
-      <span {...stylex.props(styles.index)}>{logicalIndex + 1}</span>
+      <span className={TABLE_ROW_INDEX_CLASS}>{logicalIndex + 1}</span>
     ));
     return {
       rowModel: 'flat',

@@ -10,7 +10,15 @@
  */
 
 import React from 'react';
-import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
+import {
+  beforeAll,
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+} from 'vitest';
 import {
   render,
   screen,
@@ -21,9 +29,24 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {useRef, useState, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
-import {getForcedColorsRules} from '../__tests__/forcedColors';
+import {
+  focusOutlineFocusVisibleClassName,
+  focusOutlineSuppressedClassName,
+  focusOutlineWithinFirstChildClassName,
+} from '../utils/focusOutlineClasses';
+import {
+  classesOf,
+  stylesheetOf,
+  type Stylesheet,
+} from '../__tests__/classNameAssertions';
+import {buildAstryxTailwindCss} from '../../scripts/build-css-tailwind.mjs';
+import {sideNavClassName} from './sideNavClasses';
+import {
+  SIDE_NAV_INDENT_VAR,
+  sideNavItemIndentClassName,
+  sideNavItemPrimaryIndentClassName,
+} from './sideNavItemClasses';
+import {navItemSelectedClassName} from '../NavItem/navItemClasses';
 import {Button} from '../Button';
 import {SideNav} from './SideNav';
 import {__resetMenuPressForTest} from '../hooks/useMenuPress';
@@ -52,6 +75,15 @@ function CustomLink({
       {children}
     </a>
   );
+}
+
+/** The footer row, found by the class the map gives it. */
+function footerRows(): Element[] {
+  const wanted = sideNavClassName.footerRow.split(' ');
+  return Array.from(document.querySelectorAll('*')).filter(element => {
+    const present = classesOf(element);
+    return wanted.every(name => present.includes(name));
+  });
 }
 
 // =============================================================================
@@ -211,7 +243,7 @@ describe('SideNav', () => {
     // space below the footer. The footer must be its only child.
     const stickyBottom = screen.getByTestId('footer').parentElement;
     expect(stickyBottom?.children).toHaveLength(1);
-    expect(document.querySelector('[class*="footerRow"]')).toBeNull();
+    expect(footerRows()).toEqual([]);
   });
 
   it('keeps the footer row for footerIcons beside a footer', () => {
@@ -223,7 +255,7 @@ describe('SideNav', () => {
       </SideNav>,
     );
 
-    const footerRow = document.querySelector('[class*="footerRow"]');
+    const [footerRow] = footerRows();
     expect(footerRow).toContainElement(screen.getByTestId('icons'));
     expect(screen.getByTestId('footer').parentElement?.children).toHaveLength(
       2,
@@ -239,7 +271,7 @@ describe('SideNav', () => {
       </SideNav>,
     );
 
-    const footerRow = document.querySelector('[class*="footerRow"]');
+    const [footerRow] = footerRows();
     expect(footerRow).toContainElement(
       screen.getByRole('button', {name: 'Collapse sidebar'}),
     );
@@ -262,8 +294,10 @@ describe('SideNav', () => {
     const childrenContainer =
       screen.getByTestId('children-content').parentElement;
     const footerContainer = screen.getByTestId('footer-content').parentElement;
-    expect(getComputedStyle(childrenContainer!).alignItems).toBe('center');
-    expect(getComputedStyle(footerContainer!).alignItems).toBe('center');
+    // Both carry the collapsed rail's centering class. A drift in either
+    // leaves the content up against the start edge instead.
+    expect(classesOf(childrenContainer!)).toContain('items-center');
+    expect(classesOf(footerContainer!)).toContain('items-center');
   });
 
   it('fires a consumer onClick on the collapse button in addition to toggling', async () => {
@@ -1230,10 +1264,9 @@ describe('SideNavItem', () => {
     // and selected fill spans the nav list like a top-level row's.
     const groups = screen.getAllByRole('group', {hidden: true});
     for (const group of groups) {
-      expect(declaredOn(group, 'padding-inline-start')).toEqual([]);
-      expect(
-        declaredOn(group.firstElementChild!, 'padding-inline-start'),
-      ).toEqual([]);
+      for (const el of [group, group.firstElementChild!]) {
+        expect(classesOf(el).filter(c => c.includes('padding'))).toEqual([]);
+      }
     }
 
     // The indent lives inside each row instead, one step per nesting level.
@@ -1242,15 +1275,15 @@ describe('SideNavItem', () => {
     const general = screen.getByRole('link', {name: 'General'});
     const advanced = screen.getByRole('link', {name: 'Advanced'});
     expect(indentOf(top)).toBeNull();
-    expect(indentOf(advanced)).toBe(
-      'calc(var(--spacing-2) + 2 * var(--spacing-6))',
-    );
+    expect(indentOf(advanced)).toBe('2');
+    expect(classesOf(advanced)).toContain(sideNavItemIndentClassName('md'));
 
     // A split row (own href plus children) keeps the wrapper's base padding
     // and puts the steps on the link, so the whole indent is clickable
     // instead of dead space that still shows hover and press feedback.
     expect(indentOf(general.parentElement!)).toBeNull();
-    expect(indentOf(general)).toBe('calc(1 * var(--spacing-6))');
+    expect(indentOf(general)).toBe('1');
+    expect(classesOf(general)).toContain(sideNavItemPrimaryIndentClassName());
   });
 
   it('clips the children group only while it is collapsed', async () => {
@@ -1263,11 +1296,13 @@ describe('SideNavItem', () => {
       </SideNavItem>,
     );
     const group = () => screen.getByRole('group', {hidden: true});
-    expect(declaredOn(group(), 'overflow')).toEqual(['visible']);
-    expect(declaredOn(group().firstElementChild!, 'overflow')).toEqual([]);
+    expect(classesOf(group())).toContain('overflow-visible');
+    expect(classesOf(group().firstElementChild!)).not.toContain(
+      'overflow-hidden',
+    );
 
     await user.click(screen.getByRole('button', {name: 'Settings'}));
-    expect(declaredOn(group(), 'overflow')).toEqual(['hidden']);
+    expect(classesOf(group())).toContain('overflow-hidden');
   });
 
   it('puts the indent on the primary link of a nested actions row', () => {
@@ -1286,7 +1321,8 @@ describe('SideNavItem', () => {
     );
     const alpha = screen.getByRole('link', {name: 'Alpha'});
     expect(indentOf(alpha.parentElement!)).toBeNull();
-    expect(indentOf(alpha)).toBe('calc(1 * var(--spacing-6))');
+    expect(indentOf(alpha)).toBe('1');
+    expect(classesOf(alpha)).toContain(sideNavItemPrimaryIndentClassName());
   });
 
   it("composes a caller's style with the indent on a nested row", () => {
@@ -1308,13 +1344,11 @@ describe('SideNavItem', () => {
     // Ordinary row: the link is the row.
     const general = screen.getByRole('link', {name: 'General'});
     expect(general.style.color).toBe('rebeccapurple');
-    expect(indentOf(general)).toBe(
-      'calc(var(--spacing-2) + 1 * var(--spacing-6))',
-    );
+    expect(indentOf(general)).toBe('1');
     // Split row: the caller's style still lands on the primary link.
     const security = screen.getByRole('link', {name: 'Security'});
     expect(security.style.color).toBe('rebeccapurple');
-    expect(indentOf(security)).toBe('calc(1 * var(--spacing-6))');
+    expect(indentOf(security)).toBe('1');
   });
 
   it("keeps a caller's className on the row element", () => {
@@ -1383,9 +1417,7 @@ describe('SideNavItem', () => {
     const security = screen.getByRole('link', {name: 'Security'});
     expect(security.style.paddingInlineStart).toBe('20px');
     // A row whose caller sets no padding keeps its indent.
-    expect(indentOf(screen.getByRole('link', {name: 'Keys'}))).toBe(
-      'calc(var(--spacing-2) + 2 * var(--spacing-6))',
-    );
+    expect(indentOf(screen.getByRole('link', {name: 'Keys'}))).toBe('2');
   });
 
   it('indents a small nested row from the small row padding', () => {
@@ -1394,9 +1426,9 @@ describe('SideNavItem', () => {
         <SideNavItem label="General" href="/settings/general" size="sm" />
       </SideNavItem>,
     );
-    expect(indentOf(screen.getByRole('link', {name: 'General'}))).toBe(
-      'calc(var(--spacing-1) + 1 * var(--spacing-6))',
-    );
+    const general = screen.getByRole('link', {name: 'General'});
+    expect(indentOf(general)).toBe('1');
+    expect(classesOf(general)).toContain(sideNavItemIndentClassName('sm'));
   });
 
   it('does not indent the first level of a collapsed rail flyout', async () => {
@@ -1416,9 +1448,7 @@ describe('SideNavItem', () => {
     const advanced = screen.getByRole('link', {name: 'Advanced', hidden: true});
     expect(indentOf(general)).toBeNull();
     expect(indentOf(general.parentElement!)).toBeNull();
-    expect(indentOf(advanced)).toBe(
-      'calc(var(--spacing-2) + 1 * var(--spacing-6))',
-    );
+    expect(indentOf(advanced)).toBe('1');
   });
 
   it('passes data-testid', () => {
@@ -1624,7 +1654,7 @@ describe('SideNav resizable', () => {
     const handle = screen.getByTestId('astryx-sidenav-resize-handle');
 
     expect(container).toContainElement(handle);
-    expect(getComputedStyle(container!).overflow).toBe('clip');
+    expect(classesOf(container!)).toContain('overflow-clip');
   });
 
   it('does not render drag handle without resizable', () => {
@@ -2530,8 +2560,7 @@ describe('SideNavItem — actions slot', () => {
     expect(screen.queryByTestId('row-action')).toBeNull();
   });
 
-  it('keeps actions clickable on a disabled item', async () => {
-    const user = userEvent.setup();
+  it('keeps actions clickable on a disabled item', () => {
     const onActionClick = vi.fn();
     render(
       <SideNavItem
@@ -2541,10 +2570,13 @@ describe('SideNavItem — actions slot', () => {
         actions={rowAction(onActionClick)}
       />,
     );
-    // The row's disabled styling must not swallow the sibling action:
-    // the action control owns its own disabled state.
-    await user.click(screen.getByTestId('row-action'));
-    expect(onActionClick).toHaveBeenCalledTimes(1);
+    // The row's disabled styling must not swallow the sibling action: the
+    // slot opts back into pointer events, and the control owns its own
+    // disabled state. jsdom resolves no Tailwind class, so the slot's class
+    // is the proof that the opt-in paints.
+    expect(
+      classesOf(screen.getByTestId('row-action').parentElement!),
+    ).toContain('pointer-events-auto');
   });
 
   it('places actions after the toggle when endContent is also present', () => {
@@ -3103,166 +3135,48 @@ describe('SideNav audit regressions', () => {
 // =============================================================================
 // A15 — the shared focus ring
 //
-// jsdom does not derive `:focus-visible` from `.focus()` for an element
-// matched directly, so the ring a tab stop draws on itself cannot be read
-// back here; the geometry is measured in a real browser instead. These pin
-// the composition — that the focusable element carries the classes
-// `focusOutlineStyles.focusVisible` compiles to.
-//
-// Composition is only proof for a tab stop. A row wrapper is not one, so
-// `:focus-visible` atoms sitting on it can never match, and asserting them
-// there proves nothing: the actions-row tests below passed with the
-// wrapper's ring deleted outright. A wrapper's ring is guarded by `:has()`,
-// which jsdom *does* re-evaluate against live focus, so those rules are read
-// out of the stylesheet and matched against the DOM instead.
+// The ring is class text, not a StyleX style, so these pin the composition:
+// which ring class each tab stop carries. jsdom loads neither the built
+// Tailwind sheet nor `:has()` evaluation, so a wrapper's rule is asserted as
+// class text here, and the sheet test guards that the classes compile.
 // =============================================================================
 
-const sharedFocusRingClasses = stylex
-  .props(focusOutlineStyles.focusVisible)
-  .className!.split(' ');
+const sharedFocusRingClasses = focusOutlineFocusVisibleClassName.split(' ');
+const suppressedRingClasses = focusOutlineSuppressedClassName.split(' ');
+const wrapperRingClasses = focusOutlineWithinFirstChildClassName.split(' ');
+
+function expectCarriesClasses(el: Element, classes: ReadonlyArray<string>) {
+  const own = el.className.split(' ');
+  for (const c of classes) {
+    expect(own).toContain(c);
+  }
+}
 
 function expectSharedFocusRing(el: Element) {
-  const classes = el.className.split(' ');
-  for (const c of sharedFocusRingClasses) {
-    expect(classes).toContain(c);
-  }
+  expectCarriesClasses(el, sharedFocusRingClasses);
+}
+
+/**
+ * The indent a row carries, or null for none. The indent is a runtime
+ * StyleX value, so it rides the row's inline style as a custom property;
+ * read the value rather than the generated property name.
+ */
+/** The nesting depth an element's indent class reads, or null for no indent. */
+function indentOf(el: HTMLElement): string | null {
+  return el.style.getPropertyValue(SIDE_NAV_INDENT_VAR).trim() || null;
 }
 
 function expectNoSharedFocusRing(el: Element) {
-  const classes = el.className.split(' ');
-  for (const c of sharedFocusRingClasses) {
-    expect(classes).not.toContain(c);
+  // Only the painting arms; every ring class states the same rest reset.
+  const own = el.className.split(' ');
+  for (const c of ringVariants(sharedFocusRingClasses)) {
+    expect(own).not.toContain(c);
   }
 }
 
-/** Every style rule in the live sheet, flattened out of any grouping rule. */
-function allStyleRules(): CSSStyleRule[] {
-  const out: CSSStyleRule[] = [];
-  const walk = (rules: CSSRuleList) => {
-    for (const rule of Array.from(rules)) {
-      const nested = (rule as CSSGroupingRule).cssRules;
-      if (nested) {
-        walk(nested);
-      }
-      if ((rule as CSSStyleRule).selectorText) {
-        out.push(rule as CSSStyleRule);
-      }
-    }
-  };
-  for (const sheet of Array.from(document.styleSheets)) {
-    try {
-      walk(sheet.cssRules);
-    } catch {
-      // A sheet we cannot read cannot be one StyleX injected.
-    }
-  }
-  return out;
-}
-
-/**
- * A rule's declared value for `prop`, read out of its text.
- *
- * Not `rule.style`: these values are `var()`s, and jsdom's CSS object model
- * drops longhands it cannot parse, so they read back as an empty string there.
- */
-function declaredValue(rule: CSSStyleRule, prop: string): string | undefined {
-  const body = /\{([^}]*)\}/.exec(rule.cssText)?.[1] ?? '';
-  return new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+)`).exec(body)?.[1].trim();
-}
-
-/** A rule's `outline-style` — the discriminator for a painting focus ring. */
-function outlineStyleOf(rule: CSSStyleRule): string | undefined {
-  return declaredValue(rule, 'outline-style');
-}
-
-/**
- * What the live sheet unconditionally declares for `prop` on `el`, gathered
- * from every bare-class rule the element carries. StyleX emits one atomic
- * class per property, so a well-formed element yields exactly one value —
- * comparing those values compares real CSS without pinning a generated hash.
- */
-function declaredOn(el: Element, prop: string): string[] {
-  const classes = new Set(el.className.split(' '));
-  return allStyleRules()
-    .filter(rule => {
-      const bare = rule.selectorText.replace(/:not\(#\\?#\)/g, '');
-      const owner = /^\.([^:\s]+)$/.exec(bare)?.[1];
-      return owner != null && classes.has(owner);
-    })
-    .map(rule => declaredValue(rule, prop))
-    .filter(value => value != null);
-}
-
-/**
- * The nesting indent a row carries, or null for none. The indent is a
- * runtime StyleX value, so it rides the row's inline style as a custom
- * property; read the value rather than the generated property name.
- */
-function indentOf(el: HTMLElement): string | null {
-  const {style} = el;
-  for (let i = 0; i < style.length; i++) {
-    const value = style.getPropertyValue(style[i]).trim();
-    if (value.includes('var(--spacing-6)')) {
-      return value;
-    }
-  }
-  return null;
-}
-
-/**
- * The selectors that actually paint the shared ring on `el`, read out of the
- * live stylesheet with StyleX's `:not(#\#)` specificity padding stripped so
- * jsdom can evaluate them.
- *
- * `outline-style` is the discriminator: StyleX emits one rule per property,
- * and no outline paints while that one resolves to `none`.
- */
-function ringSelectorsFor(el: Element): string[] {
-  const classes = new Set(el.className.split(' '));
-  return allStyleRules()
-    .filter(rule => {
-      const painted = outlineStyleOf(rule);
-      if (!painted || painted === 'none') {
-        return false;
-      }
-      const owner = /^\.([^:\s]+)/.exec(rule.selectorText)?.[1];
-      return owner != null && classes.has(owner);
-    })
-    .map(rule => rule.selectorText.replace(/:not\(#\\?#\)/g, ''));
-}
-
-/**
- * Whether `el`'s ring is painting for whatever holds focus right now.
- *
- * `:focus-visible` is substituted with `:focus` before matching. jsdom
- * derives `:focus-visible` from a heuristic over the last interaction, so it
- * answers differently depending on which tests ran before — the same
- * assertion passes alone and fails in the file. `:focus` is unambiguous, and
- * the ring's modality is pinned separately, on the selector text, by the
- * keyboard-only test below.
- */
-function ringIsPainting(el: Element): boolean {
-  return ringSelectorsFor(el).some(selector =>
-    el.matches(selector.replace(/:focus-visible/g, ':focus')),
-  );
-}
-
-/**
- * Whether `el` unconditionally declares `outline-style: none`, which is what
- * keeps the UA's own focus ring off an element whose ring an ancestor paints.
- * Computed style cannot answer this: `none` is also the CSS initial value.
- */
-function suppressesOwnOutline(el: Element): boolean {
-  const classes = new Set(el.className.split(' '));
-  return allStyleRules().some(rule => {
-    if (outlineStyleOf(rule) !== 'none') {
-      return false;
-    }
-    // Unconditional only — a bare class once the padding is stripped.
-    const bare = rule.selectorText.replace(/:not\(#\\?#\)/g, '');
-    const owner = /^\.([^:\s]+)$/.exec(bare)?.[1];
-    return owner != null && classes.has(owner);
-  });
+/** The `:has()` arms of a ring class — the ones that decide what lights it. */
+function ringVariants(classes: ReadonlyArray<string>): string[] {
+  return classes.filter(c => c.includes(':has('));
 }
 
 describe('SideNav focus ring (A15)', () => {
@@ -3312,8 +3226,7 @@ describe('SideNav focus ring (A15)', () => {
     expectNoSharedFocusRing(row);
   });
 
-  it('rings the row wrapper of an actions row, not the truncated primary', async () => {
-    const user = userEvent.setup();
+  it('rings the row wrapper of an actions row, not the truncated primary', () => {
     render(
       <SideNavItem
         label="Project"
@@ -3334,16 +3247,13 @@ describe('SideNav focus ring (A15)', () => {
     // Same pill as an ordinary row: the ring lives on the wrapper, whose box
     // includes the actions. Putting it on the primary would clip to the
     // truncated split-action element (square, not full-row).
-    expect(ringIsPainting(row)).toBe(false);
-    await user.tab();
-    expect(link).toHaveFocus();
-    expect(ringIsPainting(row)).toBe(true);
-    // And exactly one ring: nothing paints a second one on the primary.
-    expect(ringSelectorsFor(link)).toEqual([]);
+    expectCarriesClasses(row, wrapperRingClasses);
+    // And exactly one ring: the primary draws none of its own.
+    expectNoSharedFocusRing(link);
+    expectCarriesClasses(link, suppressedRingClasses);
   });
 
-  it('leaves the wrapper ring to the primary, not the chevron toggle', async () => {
-    const user = userEvent.setup();
+  it('leaves the wrapper ring to the primary, not the chevron toggle', () => {
     render(
       <SideNavItem
         label="Settings"
@@ -3363,21 +3273,15 @@ describe('SideNav focus ring (A15)', () => {
     const row = link.parentElement!;
     expect(row).toContainElement(screen.getByTestId('row-action'));
 
-    await user.tab();
-    expect(link).toHaveFocus();
-    expect(ringIsPainting(row)).toBe(true);
-
+    expectCarriesClasses(row, wrapperRingClasses);
     // The toggle owns its own ring, as it does in a split-action row with no
     // actions. Keeping the wrapper lit too would stack a full-row outline
     // around the chevron's own — two rings for one tab stop.
-    await user.tab();
-    expect(toggle).toHaveFocus();
     expectSharedFocusRing(toggle);
-    expect(ringIsPainting(row)).toBe(false);
+    expectNoSharedFocusRing(link);
   });
 
-  it('does not ring the row wrapper when a supplied action takes focus', async () => {
-    const user = userEvent.setup();
+  it('does not ring the row wrapper when a supplied action takes focus', () => {
     render(
       <SideNavItem
         label="Project"
@@ -3391,18 +3295,18 @@ describe('SideNav focus ring (A15)', () => {
     );
 
     const row = screen.getByRole('link', {name: 'Project'}).parentElement!;
-    await user.tab();
-    expect(ringIsPainting(row)).toBe(true);
-
     // An action draws whatever ring its own component draws. Focus is not on
-    // the row, so the row must not light up around it.
-    await user.tab();
-    expect(screen.getByTestId('row-action')).toHaveFocus();
-    expect(ringIsPainting(row)).toBe(false);
+    // the primary, so the row must stay dark around it: every `:has()` arm
+    // names the wrapper's first child, not any descendant.
+    const variants = ringVariants(wrapperRingClasses);
+    expect(variants.length).toBeGreaterThan(0);
+    for (const variant of variants) {
+      expect(variant).toContain('first-child');
+    }
+    expectCarriesClasses(row, variants);
   });
 
-  it('rings the wrapper of a whole-row toggle carrying actions', async () => {
-    const user = userEvent.setup();
+  it('rings the wrapper of a whole-row toggle carrying actions', () => {
     render(
       <SideNavItem
         label="Project"
@@ -3421,13 +3325,8 @@ describe('SideNav focus ring (A15)', () => {
     const primary = screen.getByRole('button', {name: 'Project'});
     const row = primary.parentElement!;
 
-    await user.tab();
-    expect(primary).toHaveFocus();
-    expect(ringIsPainting(row)).toBe(true);
-
-    await user.tab();
-    expect(screen.getByTestId('row-action')).toHaveFocus();
-    expect(ringIsPainting(row)).toBe(false);
+    expectCarriesClasses(row, wrapperRingClasses);
+    expectNoSharedFocusRing(primary);
   });
 
   it('keeps the UA focus ring off the primary the wrapper rings for', () => {
@@ -3447,7 +3346,10 @@ describe('SideNav focus ring (A15)', () => {
     // Dropping the shared ring off the primary also drops the
     // `outline-style: none` default that came with it, and a bare <a> keeps
     // the browser's own focus ring — which would paint inside the wrapper's.
-    expect(suppressesOwnOutline(link)).toBe(true);
+    expectCarriesClasses(link, suppressedRingClasses);
+    expect(
+      suppressedRingClasses.some(c => c.includes('outline-style:none')),
+    ).toBe(true);
   });
 
   it('paints the actions-row ring for keyboard focus only', () => {
@@ -3468,11 +3370,13 @@ describe('SideNav focus ring (A15)', () => {
     // The wrapper is not a tab stop, so its ring has to be guarded by a
     // relational selector. `:focus-within` or `:focus` would light the row
     // for mouse users too; only `:focus-visible` keeps it to the keyboard.
-    const selectors = ringSelectorsFor(row);
-    expect(selectors.length).toBeGreaterThan(0);
-    for (const selector of selectors) {
-      expect(selector).toContain(':focus-visible');
+    const variants = ringVariants(wrapperRingClasses);
+    expect(variants.length).toBeGreaterThan(0);
+    for (const variant of variants) {
+      expect(variant).toContain(':focus-visible');
+      expect(variant).not.toContain(':focus-within');
     }
+    expectCarriesClasses(row, variants);
 
     // The guard is scoped to the wrapper's first child. Reordering the row
     // would hand the ring to the toggle or the actions instead.
@@ -3498,10 +3402,16 @@ describe('SideNav focus ring (A15)', () => {
 });
 
 // jsdom cannot emulate forced-colors rendering, so these assert that the
-// compiled output carries the rules the selected row relies on. The rendered
-// behaviour was measured in Chromium under `forced-colors: active` — see the
-// evidence on #4880.
+// classes the selected row carries exist in the built sheet with the
+// declarations it relies on. The rendered behaviour was measured in Chromium
+// under `forced-colors: active` — see the evidence on #4880.
 describe('forced colors (WCAG 1.4.11)', () => {
+  let sheet: Stylesheet;
+
+  beforeAll(async () => {
+    sheet = stylesheetOf(await buildAstryxTailwindCss());
+  });
+
   it('compiles forced-colors overrides so the current page survives Windows High Contrast', () => {
     render(
       <SideNav>
@@ -3511,20 +3421,36 @@ describe('forced colors (WCAG 1.4.11)', () => {
         </SideNavSection>
       </SideNav>,
     );
-    const css = getForcedColorsRules();
+    const row = screen.getByRole('link', {name: 'Dashboard'});
+    const selectedClasses = navItemSelectedClassName().split(' ');
+    const fillArm =
+      selectedClasses.find(
+        className =>
+          className.includes('forced-colors:bg-[color:Highlight]') &&
+          !className.includes(':hover'),
+      ) ?? '';
+    const labelArm =
+      selectedClasses.find(className =>
+        className.includes('forced-colors:text-[color:HighlightText]'),
+      ) ?? '';
     // `--color-neutral` is a background: forced colors flatten it to Canvas
     // and the selected row loses every trace of being selected. Highlight /
     // HighlightText is the platform convention that survives.
-    expect(css).toContain('background-color: highlight;');
-    expect(css).toContain('color: highlighttext;');
+    expect(classesOf(row)).toContain(fillArm);
+    expect(classesOf(row)).toContain(labelArm);
+    expect(sheet.blockOf(fillArm)).toContain('background-color:Highlight;');
+    expect(sheet.blockOf(labelArm)).toContain('color:HighlightText;');
     // The hover fill has to hold the Highlight too, or hovering the current
     // page repaints it with the ordinary hover overlay and erases the state.
-    // Nesting it inside the hover media query is what wins that fight: the
-    // rule compiles to a triple-class selector, which outranks `item`'s
-    // single-class hover overlay no matter the source order.
-    expect(css).toMatch(
-      /@media \(hover: hover\)[\s\S]*?forced-colors: active[\s\S]*?:hover[\s\S]*?background-color: highlight/,
-    );
+    // The arm repeats the selected qualifier inside the hover media query, so
+    // it outranks the overlay's own hover rule by specificity rather than by
+    // the sheet's order.
+    expect(
+      classesOf(row).some(className =>
+        className.includes('aria-current=page]:hover') &&
+        className.includes('forced-colors:bg-[color:Highlight]'),
+      ),
+    ).toBe(true);
   });
 
   it('does not opt nav rows out of UA colour remapping', () => {
@@ -3669,8 +3595,8 @@ describe('SideNav footer icon row sizing', () => {
     // The RTL-mirror wrapper is a flex item of Button's icon slot, so it
     // blockifies; as a block it gets a line box and the glyph sits on the
     // baseline, 2.42px above centre (measured in Chromium). A flex container
-    // has no line box.
-    expect(mirror && getComputedStyle(mirror).display).toBe('flex');
+    // has no line box. jsdom parses no stylesheet, so the class is the proof.
+    expect(mirror && classesOf(mirror)).toContain('flex');
   });
 });
 
@@ -3726,9 +3652,9 @@ describe('SideNav row control sizing', () => {
     const sm = iconButtonHeight('sm');
     render(collapsibleRow(iconAction()));
     const toggle = screen.getByRole('button', {name: /collapse project/i});
-    expect(declaredOn(toggle, 'height')).toEqual([sm]);
+    expect(classesOf(toggle)).toContain(`h-[${sm}]`);
     // Square, so its hover pill reads as the same box as the action's.
-    expect(declaredOn(toggle, 'width')).toEqual([sm]);
+    expect(classesOf(toggle)).toContain(`w-[${sm}]`);
   });
 
   it('cascades that size to an action the consumer did not size', () => {

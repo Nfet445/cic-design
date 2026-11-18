@@ -16,22 +16,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type * as stylex from '@stylexjs/stylex';
 import {describe, expect, expectTypeOf, it} from 'vitest';
-import * as dateInputTokens from '@astryxdesign/core/DateInput/tokens.stylex';
 import * as iconSize from '@astryxdesign/core/Icon/IconSize.stylex';
-import * as indicatorMarkers from '@astryxdesign/core/Indicator/indicator.markers.stylex';
 import * as layerAnimations from '@astryxdesign/core/Layer/layerAnimations.stylex';
 import * as layerTextReset from '@astryxdesign/core/Layer/layerTextReset.stylex';
 import * as layerViewportInset from '@astryxdesign/core/Layer/layerViewportInset.stylex';
 import * as container from '@astryxdesign/core/Layout/container.stylex';
 import * as edgeCompensation from '@astryxdesign/core/Layout/edgeCompensation.stylex';
 import * as padding from '@astryxdesign/core/Layout/padding.stylex';
-import * as navItemStyles from '@astryxdesign/core/NavItem/navItemStyles.stylex';
 import * as selectorPresentation from '@astryxdesign/core/Selector/selectorPresentation.stylex';
 import * as stack from '@astryxdesign/core/Stack/stack.stylex';
 import * as stackItem from '@astryxdesign/core/Stack/stackItem.stylex';
 import * as text from '@astryxdesign/core/Text/text.stylex';
-import * as indicatorPress from '@astryxdesign/core/internal/indicatorPress.stylex';
-import * as touchHitArea from '@astryxdesign/core/internal/touchHitArea.stylex';
 import * as dataTokens from '@astryxdesign/core/theme/dataTokens.stylex';
 import * as tokens from '@astryxdesign/core/theme/tokens.stylex';
 import * as focusOutline from '@astryxdesign/core/utils/focusOutline.stylex';
@@ -39,34 +34,8 @@ import * as interactionOverlay from '@astryxdesign/core/utils/interactionOverlay
 
 /** The style namespaces that a component's `xstyle` accepts. */
 type XstyleNamespaces = {
-  iconBoxSizeStyles: typeof iconSize.iconBoxSizeStyles;
   iconSizeStyles: typeof iconSize.iconSizeStyles;
-  layerAnimations: typeof layerAnimations.layerAnimations;
-  layerTextReset: typeof layerTextReset.layerTextReset;
-  edgeCompSlot: typeof edgeCompensation.edgeCompSlot;
-  paddingBlockEndStyles: typeof padding.paddingBlockEndStyles;
-  paddingBlockStartStyles: typeof padding.paddingBlockStartStyles;
-  paddingBlockStyles: typeof padding.paddingBlockStyles;
-  paddingInlineEndStyles: typeof padding.paddingInlineEndStyles;
-  paddingInlineStartStyles: typeof padding.paddingInlineStartStyles;
-  paddingInlineStyles: typeof padding.paddingInlineStyles;
-  paddingStyles: typeof padding.paddingStyles;
-  navItemStyles: typeof navItemStyles.navItemStyles;
   selectorPresentationStyles: typeof selectorPresentation.selectorPresentationStyles;
-  capsizeStyles: typeof text.capsizeStyles;
-  colorStyles: typeof text.colorStyles;
-  decorationStyles: typeof text.decorationStyles;
-  defaultWeightByTypeStyles: typeof text.defaultWeightByTypeStyles;
-  justifyStyles: typeof text.justifyStyles;
-  sizeByLevelStyles: typeof text.sizeByLevelStyles;
-  sizeByTypeStyles: typeof text.sizeByTypeStyles;
-  sizeStyles: typeof text.sizeStyles;
-  tabularNumbersStyle: typeof text.tabularNumbersStyle;
-  textWrapStyles: typeof text.textWrapStyles;
-  truncationStyles: typeof text.truncationStyles;
-  truncationTooltipStyles: typeof text.truncationTooltipStyles;
-  weightStyles: typeof text.weightStyles;
-  wordBreakStyles: typeof text.wordBreakStyles;
   focusOutlineStyles: typeof focusOutline.focusOutlineStyles;
   interactionOverlayStyles: typeof interactionOverlay.interactionOverlayStyles;
 };
@@ -74,22 +43,10 @@ type XstyleNamespaces = {
 /**
  * The style namespaces that go through `stylex.props`, not `xstyle`. A style
  * that sets only custom properties shares no property with the `xstyle` type,
- * `displayStyles` sets `overflowWrap` to a `var()`, which StyleX's
- * `overflowWrap` type does not list, and `touchHitAreaStyles` styles only a
- * pseudo-element.
+ * and `displayStyles` sets `overflowWrap` to a `var()`, which StyleX's
+ * `overflowWrap` type does not list.
  */
 type PropsOnlyNamespaces = {
-  containerPaddingBlockEndVarStyles: typeof padding.containerPaddingBlockEndVarStyles;
-  containerPaddingBlockStartVarStyles: typeof padding.containerPaddingBlockStartVarStyles;
-  containerPaddingInlineEndVarStyles: typeof padding.containerPaddingInlineEndVarStyles;
-  containerPaddingInlineStartVarStyles: typeof padding.containerPaddingInlineStartVarStyles;
-  containerPaddingInlineVarStyles: typeof padding.containerPaddingInlineVarStyles;
-  layoutPaddingOuterXVarStyles: typeof padding.layoutPaddingOuterXVarStyles;
-  layoutPaddingOuterYVarStyles: typeof padding.layoutPaddingOuterYVarStyles;
-  overlayPaddingReset: typeof padding.overlayPaddingReset;
-  sectionPaddingPropagationStyles: typeof padding.sectionPaddingPropagationStyles;
-  displayStyles: typeof text.displayStyles;
-  touchHitAreaStyles: typeof touchHitArea.touchHitAreaStyles;
   focusOutlineStylesPublishedVars: Pick<
     typeof focusOutline.focusOutlineStyles,
     'publishFocusVisibleVars'
@@ -145,55 +102,17 @@ type NoKeys<Namespaces> = {[Name in keyof Namespaces]: never};
  * a marker or style builders.
  */
 const styleNamespacesBySubpath = {
-  './DateInput/tokens.stylex': [],
-  './Icon/IconSize.stylex': ['iconBoxSizeStyles', 'iconSizeStyles'],
-  './Indicator/indicator.markers.stylex': [],
-  './Layer/layerAnimations.stylex': ['layerAnimations'],
-  './Layer/layerTextReset.stylex': ['layerTextReset'],
+  './Icon/IconSize.stylex': ['iconSizeStyles'],
+  './Layer/layerAnimations.stylex': [],
+  './Layer/layerTextReset.stylex': [],
   './Layer/layerViewportInset.stylex': [],
   './Layout/container.stylex': [],
-  './Layout/edgeCompensation.stylex': ['edgeCompSlot'],
-  './Layout/padding.stylex': [
-    'containerPaddingBlockEndVarStyles',
-    'containerPaddingBlockStartVarStyles',
-    'containerPaddingInlineEndVarStyles',
-    'containerPaddingInlineStartVarStyles',
-    'containerPaddingInlineVarStyles',
-    'layoutPaddingOuterXVarStyles',
-    'layoutPaddingOuterYVarStyles',
-    'overlayPaddingReset',
-    'paddingBlockEndStyles',
-    'paddingBlockStartStyles',
-    'paddingBlockStyles',
-    'paddingInlineEndStyles',
-    'paddingInlineStartStyles',
-    'paddingInlineStyles',
-    'paddingStyles',
-    'sectionPaddingPropagationStyles',
-  ],
-  './NavItem/navItemStyles.stylex': ['navItemStyles'],
+  './Layout/edgeCompensation.stylex': [],
+  './Layout/padding.stylex': [],
   './Selector/selectorPresentation.stylex': ['selectorPresentationStyles'],
   './Stack/stack.stylex': [],
   './Stack/stackItem.stylex': [],
-  './Text/text.stylex': [
-    'capsizeStyles',
-    'colorStyles',
-    'decorationStyles',
-    'defaultWeightByTypeStyles',
-    'displayStyles',
-    'justifyStyles',
-    'sizeByLevelStyles',
-    'sizeByTypeStyles',
-    'sizeStyles',
-    'tabularNumbersStyle',
-    'textWrapStyles',
-    'truncationStyles',
-    'truncationTooltipStyles',
-    'weightStyles',
-    'wordBreakStyles',
-  ],
-  './internal/indicatorPress.stylex': [],
-  './internal/touchHitArea.stylex': ['touchHitAreaStyles'],
+  './Text/text.stylex': [],
   './theme/dataTokens.stylex': [],
   './theme/tokens.stylex': [],
   './utils/focusOutline.stylex': ['focusOutlineStyles'],
@@ -203,22 +122,17 @@ const styleNamespacesBySubpath = {
 const modulesBySubpath: Readonly<
   Record<keyof typeof styleNamespacesBySubpath, object>
 > = {
-  './DateInput/tokens.stylex': dateInputTokens,
   './Icon/IconSize.stylex': iconSize,
-  './Indicator/indicator.markers.stylex': indicatorMarkers,
   './Layer/layerAnimations.stylex': layerAnimations,
   './Layer/layerTextReset.stylex': layerTextReset,
   './Layer/layerViewportInset.stylex': layerViewportInset,
   './Layout/container.stylex': container,
   './Layout/edgeCompensation.stylex': edgeCompensation,
   './Layout/padding.stylex': padding,
-  './NavItem/navItemStyles.stylex': navItemStyles,
   './Selector/selectorPresentation.stylex': selectorPresentation,
   './Stack/stack.stylex': stack,
   './Stack/stackItem.stylex': stackItem,
   './Text/text.stylex': text,
-  './internal/indicatorPress.stylex': indicatorPress,
-  './internal/touchHitArea.stylex': touchHitArea,
   './theme/dataTokens.stylex': dataTokens,
   './theme/tokens.stylex': tokens,
   './utils/focusOutline.stylex': focusOutline,
@@ -316,18 +230,15 @@ describe('public StyleX namespaces', () => {
   });
 
   it('build styles that fit their use', () => {
+    // Moved ahead of StyleX: these build class names now.
     expectTypeOf<
-      ReturnType<typeof container.container> extends StylexPropsArgument
-        ? true
-        : false
+      ReturnType<typeof container.container> extends string ? true : false
     >().toEqualTypeOf<true>();
     expectTypeOf<
-      ReturnType<typeof stack.stack> extends stylex.StyleXStyles ? true : false
+      ReturnType<typeof stack.stack> extends string ? true : false
     >().toEqualTypeOf<true>();
     expectTypeOf<
-      ReturnType<typeof stackItem.stackItem> extends stylex.StyleXStyles
-        ? true
-        : false
+      ReturnType<typeof stackItem.stackItem> extends string ? true : false
     >().toEqualTypeOf<true>();
   });
 });

@@ -4,7 +4,8 @@
 
 /**
  * @file Breadcrumbs.tsx
- * @input Uses React, layer-scoped context, stylex, theme tokens
+ * @input Uses React, layer-scoped context, the xstyle adapter, class maps,
+ *   and theme tokens
  * @output Exports Breadcrumbs component, BreadcrumbsProps, BreadcrumbContext
  * @position Core container component; consumed by index.ts
  *
@@ -18,11 +19,15 @@
 
 import {useMemo, type ReactNode} from 'react';
 import {createLayerScopedContext} from '../Layer/layerScopedContext';
-import * as stylex from '@stylexjs/stylex';
-import {spacingVars} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {
+  breadcrumbsListClassName,
+  breadcrumbsNavClassName,
+} from './breadcrumbsClasses';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import type {BreadcrumbsVariantMap} from './index';
 import {
   registerEnglishFallback,
@@ -96,24 +101,6 @@ export interface BreadcrumbsProps extends BaseProps<HTMLElement> {
 // Styles
 // =============================================================================
 
-const navStyles = stylex.create({
-  root: {
-    display: 'block',
-  },
-});
-
-const listStyles = stylex.create({
-  root: {
-    display: 'flex',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    listStyle: 'none',
-    margin: 0,
-    padding: 0,
-    gap: spacingVars['--spacing-1'],
-  },
-});
-
 // =============================================================================
 // Component
 // =============================================================================
@@ -160,12 +147,12 @@ export function Breadcrumbs({
         aria-label={label}
         {...mergeProps(
           themeProps('breadcrumbs', {variant}),
-          stylex.props(navStyles.root, xstyle),
-          className,
+          xstyleProps(xstyle),
+          tw(breadcrumbsNavClassName, className),
           style,
         )}
         {...rest}>
-        <ol {...stylex.props(listStyles.root)}>{children}</ol>
+        <ol className={breadcrumbsListClassName}>{children}</ol>
       </nav>
     </BreadcrumbContext>
   );

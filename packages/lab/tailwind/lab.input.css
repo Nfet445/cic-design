@@ -1,0 +1,141 @@
+/* Copyright (c) Meta Platforms, Inc. and affiliates. */
+
+/*
+ * Build input for `dist/lab-tailwind.css`. Consumers import the built
+ * stylesheet (`@astryxdesign/lab/lab-tailwind.css`), never this file.
+ *
+ * The build wraps the compiled utilities in `astryx-base` — the same cascade
+ * layer the prebuilt StyleX stylesheet (`lab.css`) uses — so a consumer loads
+ * one stylesheet or the other in the same slot. The import line cannot name
+ * the layer itself: with `source(none)` beside it, Tailwind 4.3.2 prints
+ * `@media layer(astryx-base)`.
+ *
+ * `source(none)` turns off automatic source detection, so the scanned set is
+ * exactly the class-map modules named below and no test or comment can
+ * contribute a utility nobody uses.
+ *
+ * The theme bridge is imported by relative path, not by package name: the
+ * build keys its cache on the stylesheets it reaches through `@import`, and a
+ * bare specifier is not a path this package's cache can name.
+ */
+@layer reset, astryx-base, astryx-theme;
+
+/*
+ * Then the slots a page needs around those three: Tailwind's own `theme` and
+ * `base` below `astryx-base`, and `components` and `utilities` above
+ * `astryx-theme`, where a consumer's utilities outrank an Astryx rule.
+ */
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/utilities.css' source(none);
+
+/*
+ * Utilities resolve against Astryx tokens, not Tailwind's defaults: without a
+ * theme, every token-dependent utility (`gap-2`, `h-10`) silently disappears
+ * from the output. The bridge is `@theme reference inline`, so it declares no
+ * variable of its own; the consumer's theme owns every value.
+ */
+@import '../../core/src/tailwind-theme.css';
+
+@source '../src/**/*Classes.ts';
+
+/*
+ * Keyframes the class maps name. The build scans `*Classes.ts` for class
+ * names only, so an animation written there has no rule unless this file
+ * declares it. Each name starts with `astryx` for the same reason core's do.
+ */
+@keyframes astryxChatTypingIndicatorBounce {
+  0% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+}
+
+@keyframes astryxCommentProgressShimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+@keyframes astryxChatReasoningShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Holds for five seconds, then fades over the slow motion token. The badge
+   removes itself when the animation ends so header actions reclaim the
+   trailing edge; the last frame keeps it out of the accessibility tree. */
+@keyframes astryxCommentUnreadBadgeFade {
+  from {
+    opacity: 1;
+    visibility: visible;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@utility astryx-tab-feedback {
+  outline-style: none;
+
+  [data-tab-bar-value]:focus-visible > & {
+    outline-style: var(--focus-outline-style);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: var(--color-overlay-pressed);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--duration-exit) var(--ease-exit);
+    @media (prefers-reduced-motion: reduce) {
+      transition-duration: min(var(--duration-exit), 200ms);
+    }
+  }
+
+  [data-tab-bar-value][data-tab-bar-pressed] > &::before {
+    opacity: 1;
+    transition-duration: 0s;
+  }
+}
+
+@utility astryx-schedule-focus-ring {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  outline: none;
+  outline-offset: calc(-1 * var(--focus-outline-width));
+
+  [data-scroll-axis]:focus-visible + & {
+    outline: var(--focus-outline-width) var(--focus-outline-style)
+      var(--focus-outline-color);
+  }
+}
+
+@utility astryx-schedule-popover-size {
+  max-block-size: calc(100vh - 2 * var(--spacing-4) - 2 * var(--spacing-3));
+  max-block-size: calc(100dvb - 2 * var(--spacing-4) - 2 * var(--spacing-3));
+}

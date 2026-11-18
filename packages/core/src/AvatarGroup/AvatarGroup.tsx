@@ -28,11 +28,16 @@
 import {useId, useMemo, useState, type ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import {resolveSize, type AvatarShape, type AvatarSize} from '../Avatar';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
 import {composeEventHandlers} from '../utils/composeEventHandlers';
 import {AvatarGroupContext} from './AvatarGroupContext';
+import {
+  AVATAR_GROUP_OVERLAP_VAR,
+  avatarGroupClassName,
+} from './avatarGroupClasses';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {useListFocus} from '../hooks/useListFocus';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -74,27 +79,6 @@ export interface AvatarGroupProps extends BaseProps<HTMLDivElement> {
    */
   'data-testid'?: string;
 }
-
-const styles = stylex.create({
-  root: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    // Every avatar (and the overflow indicator) takes the negative overlap
-    // margin, including the first one, so the overlap survives wrappers such
-    // as HoverCard and Tooltip. This padding gives the first child that space
-    // back, keeping the row inside the group's box.
-    paddingInlineStart: {
-      default: 'calc(-1 * var(--_avatar-group-overlap))',
-      ':empty': 0,
-    },
-  },
-});
-
-const dynamicStyles = stylex.create({
-  overlap: (offset: number) => ({
-    '--_avatar-group-overlap': `${offset}px`,
-  }),
-});
 
 /**
  * Stacked avatar display showing multiple avatars overlapping with an
@@ -182,9 +166,11 @@ export function AvatarGroup({
         onFocus={composeEventHandlers(onFocus, handleFocus)}
         {...mergeProps(
           themeProps('avatar-group', {size, shape}),
-          stylex.props(styles.root, dynamicStyles.overlap(-overlap), xstyle),
-          className,
-          style,
+          xstyleProps(xstyle),
+          tw(avatarGroupClassName, className),
+          // The overlap is the group's own measure, so it reaches the children
+          // as an inline property their classes read.
+          {[AVATAR_GROUP_OVERLAP_VAR as string]: `${-overlap}px`, ...style},
         )}>
         {children}
         {hasInteractiveItems && (

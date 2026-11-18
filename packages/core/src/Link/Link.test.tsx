@@ -12,7 +12,8 @@
 import {describe, it, expect, vi} from 'vitest';
 import {fireEvent, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {hasPressedArm} from '../__tests__/pressState';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {interactionOverlayPressedBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import type {ReactNode} from 'react';
 import {InteractiveRoleContext} from '../InteractiveRoleContext/InteractiveRoleContext';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
@@ -469,14 +470,16 @@ describe('Link', () => {
 describe('pressed state', () => {
   it('paints the pressed overlay behind a link while it is pressed', () => {
     render(<Link href="/docs">Docs</Link>);
-    expect(hasPressedArm(screen.getByRole('link', {name: 'Docs'}))).toBe(true);
+    expectClassSet(screen.getByRole('link', {name: 'Docs'}), {
+      includes: interactionOverlayPressedBackgroundColorClassName.split(' '),
+    });
   });
 
   it('paints it on the button form too', () => {
     render(<Link onClick={() => {}}>Open</Link>);
-    expect(hasPressedArm(screen.getByRole('button', {name: 'Open'}))).toBe(
-      true,
-    );
+    expectClassSet(screen.getByRole('button', {name: 'Open'}), {
+      includes: interactionOverlayPressedBackgroundColorClassName.split(' '),
+    });
   });
 
   it('does not press a disabled link', () => {
@@ -485,7 +488,9 @@ describe('pressed state', () => {
         Docs
       </Link>,
     );
-    expect(hasPressedArm(screen.getByText('Docs').closest('a')!)).toBe(false);
+    expectClassSet(screen.getByText('Docs').closest('a')!, {
+      excludes: interactionOverlayPressedBackgroundColorClassName.split(' '),
+    });
   });
 });
 
@@ -495,74 +500,10 @@ describe('pressed state', () => {
 // Link never reads its children to decide (Link AV1).
 // =============================================================================
 
-/**
- * Extracts class-name tokens from a CSS selector (e.g. the selectorText of
- * a CSSStyleRule), so callers can match against an element's classList by
- * exact token rather than by substring. Handles compound selectors
- * (`.a.b:hover`) and comma-separated selector lists (`.a, .b`).
- */
-function classTokensFromSelector(selectorText: string): string[] {
-  const tokens: string[] = [];
-  const classRegex = /\.([-_a-zA-Z0-9]+)/g;
-  let match: RegExpExecArray | null;
-  while ((match = classRegex.exec(selectorText)) !== null) {
-    tokens.push(match[1]);
-  }
-  return tokens;
-}
-
-/**
- * Recursively collects every CSSStyleRule from a rule list, descending into
- * grouping rules (e.g. `@media`) so declarations nested in a condition are
- * not missed.
- */
-function collectStyleRules(rules: CSSRuleList, out: CSSStyleRule[]): void {
-  for (const rule of Array.from(rules)) {
-    if (rule instanceof CSSStyleRule) {
-      out.push(rule);
-    } else if ('cssRules' in rule && rule.cssRules) {
-      collectStyleRules((rule as CSSGroupingRule).cssRules, out);
-    }
-  }
-}
-
-/**
- * Returns the `display` value of every injected CSS rule that targets `el`,
- * matched via the CSSOM (real selector tokens + real class list) rather than
- * substring checks on raw selector/body text — a hashed atomic class like
- * `x1a` can be a substring of an unrelated class like `x1a2b3c4`, so
- * string-based matching can both false-positive and false-negative.
- */
-function displayDeclarationsFor(el: Element): string[] {
-  const classes = new Set(Array.from(el.classList));
-  const styleRules: CSSStyleRule[] = [];
-  for (const sheet of Array.from(document.styleSheets)) {
-    let rules: CSSRuleList;
-    try {
-      rules = sheet.cssRules;
-    } catch {
-      continue;
-    }
-    collectStyleRules(rules, styleRules);
-  }
-
-  const declarations: string[] = [];
-  for (const rule of styleRules) {
-    const matchesElement = classTokensFromSelector(rule.selectorText).some(
-      token => classes.has(token),
-    );
-    if (!matchesElement) {
-      continue;
-    }
-    const display = rule.style.getPropertyValue('display');
-    if (display) {
-      declarations.push(display.trim());
-    }
-  }
-  return declarations;
-}
-
 describe('Link display', () => {
+  // The box is a utility class on the root: a string literal a consumer's
+  // stylesheet carries, not a StyleX declaration a test has to read back out
+  // of an injected sheet.
   const inClamp = (link: ReactNode) => (
     <Text maxLines={2} hasTruncateTooltip={false}>
       Lead text {link} tail text
@@ -571,9 +512,10 @@ describe('Link display', () => {
 
   it('keeps its inline-flex box outside a clamped Text', () => {
     const {container} = render(<Link href="/docs">Documentation</Link>);
-    expect(displayDeclarationsFor(container.querySelector('a')!)).toContain(
-      'inline-flex',
-    );
+    expectClassSet(container.querySelector('a')!, {
+      includes: ['inline-flex'],
+      excludes: ['inline'],
+    });
   });
 
   it('keeps its inline-flex box inside a Text that does not clamp', () => {
@@ -582,17 +524,20 @@ describe('Link display', () => {
         <Link href="/docs">Documentation</Link>
       </Text>,
     );
-    expect(displayDeclarationsFor(container.querySelector('a')!)).toContain(
-      'inline-flex',
-    );
+    expectClassSet(container.querySelector('a')!, {
+      includes: ['inline-flex'],
+      excludes: ['inline'],
+    });
   });
 
   it('is inline inside a clamped Text, so the clamp can truncate it', () => {
     const {container} = render(
       inClamp(<Link href="/docs">Documentation</Link>),
     );
-    const anchor = container.querySelector('a')!;
-    expect(displayDeclarationsFor(anchor)).toContain('inline');
+    expectClassSet(container.querySelector('a')!, {
+      includes: ['inline'],
+      excludes: ['inline-flex'],
+    });
   });
 
   it('decides from the clamp, not the children: composed content is inline too', () => {
@@ -603,9 +548,10 @@ describe('Link display', () => {
         </Link>,
       ),
     );
-    expect(displayDeclarationsFor(container.querySelector('a')!)).toContain(
-      'inline',
-    );
+    expectClassSet(container.querySelector('a')!, {
+      includes: ['inline'],
+      excludes: ['inline-flex'],
+    });
   });
 
   it('is inline inside a clamped Text for the external-link form', () => {
@@ -616,9 +562,10 @@ describe('Link display', () => {
         </Link>,
       ),
     );
-    expect(displayDeclarationsFor(container.querySelector('a')!)).toContain(
-      'inline',
-    );
+    expectClassSet(container.querySelector('a')!, {
+      includes: ['inline'],
+      excludes: ['inline-flex'],
+    });
   });
 
   it('keeps its own box inside a clamped Text when it sets display or maxLines', () => {
@@ -635,7 +582,7 @@ describe('Link display', () => {
       ),
     );
     for (const anchor of Array.from(container.querySelectorAll('a'))) {
-      expect(displayDeclarationsFor(anchor)).not.toContain('inline');
+      expectClassSet(anchor, {excludes: ['inline']});
     }
   });
 
@@ -647,9 +594,9 @@ describe('Link display', () => {
         </Link>,
       ),
     );
-    expect(
-      displayDeclarationsFor(container.querySelector('button')!),
-    ).not.toContain('inline');
+    expectClassSet(container.querySelector('button')!, {
+      excludes: ['inline'],
+    });
   });
 
   it('keeps its own box in a layer opened inside a clamped Text', () => {
@@ -660,9 +607,7 @@ describe('Link display', () => {
         </LayerContentBoundary>,
       ),
     );
-    expect(displayDeclarationsFor(container.querySelector('a')!)).not.toContain(
-      'inline',
-    );
+    expectClassSet(container.querySelector('a')!, {excludes: ['inline']});
   });
 });
 

@@ -35,16 +35,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  radiusVars,
-  fontWeightVars,
-  typeScaleVars,
-  spacingVars,
-  durationVars,
-} from '../theme/tokens.stylex';
-import {focusOutlineStyles} from '../utils';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {tw} from '../utils/tw';
 import {
   playReducedMotionDip,
   reducedMotionFade,
@@ -52,7 +44,16 @@ import {
 } from '../motion/reducedMotion';
 import {useTouchPresentation} from '../utils/touchPresentation';
 import {PickerWheel} from './PickerWheel';
-import {dateInputTouchSizes, dateInputTouchGeometry} from './tokens.stylex';
+import {
+  scrollWheelBandClassName,
+  scrollWheelColumnClassName,
+  scrollWheelItemActiveClassName,
+  scrollWheelItemClassName,
+  scrollWheelItemFadeClassName,
+  scrollWheelItemInnerClassName,
+  scrollWheelItemInnerTipClassName,
+  scrollWheelScrollerClassName,
+} from './dateInputClasses';
 import {useOwnScrollGesture} from './useOwnScrollGesture';
 import {usePointerDragScroll} from './usePointerDragScroll';
 import {useScrollSettle, useScrollSteer} from './useScrollSettle';
@@ -71,200 +72,6 @@ export {
   type WheelOption,
   type WheelProps,
 } from './wheelOptions';
-
-const ITEM_BLOCK_SIZE = dateInputTouchSizes.wheelItemSize;
-
-/**
- * Rows tip away from the centre of the wheel. 0% is a row just entering at the
- * bottom of the scrollport, 50% is a row centred in it, 100% is a row leaving
- * at the top — which is what a `view()` timeline over the `cover` range means,
- * and why this reads as a cylinder rotating under the finger.
- */
-const tip = stylex.keyframes({
-  '0%': {transform: 'rotateX(52deg) scale(0.86)'},
-  '50%': {transform: 'rotateX(0deg) scale(1)'},
-  '100%': {transform: 'rotateX(-52deg) scale(0.86)'},
-});
-
-/**
- * Colour keeps every row at WCAG AA, which an opacity fade does not. The ends
- * stop halfway to the secondary text colour, because that colour alone falls
- * below AA in two shipped themes.
- */
-const fade = stylex.keyframes({
-  '0%': {
-    color: `color-mix(in oklab, ${colorVars['--color-text-primary']}, ${colorVars['--color-text-secondary']})`,
-  },
-  '50%': {color: colorVars['--color-text-primary']},
-  '100%': {
-    color: `color-mix(in oklab, ${colorVars['--color-text-primary']}, ${colorVars['--color-text-secondary']})`,
-  },
-});
-
-/**
- * A disabled row keeps its disabled colour and fades by opacity instead: WCAG
- * 1.4.3 exempts inactive components from the contrast minimum.
- */
-const tipAndDim = stylex.keyframes({
-  '0%': {opacity: 0.3, transform: 'rotateX(52deg) scale(0.86)'},
-  '50%': {opacity: 1, transform: 'rotateX(0deg) scale(1)'},
-  '100%': {opacity: 0.3, transform: 'rotateX(-52deg) scale(0.86)'},
-});
-
-const dim = stylex.keyframes({
-  '0%': {opacity: 0.3},
-  '50%': {opacity: 1},
-  '100%': {opacity: 0.3},
-});
-
-const styles = stylex.create({
-  column: {
-    position: 'relative',
-    flex: '1 1 0',
-    minWidth: 0,
-  },
-  scroller: {
-    blockSize: dateInputTouchGeometry.paneBlockSize,
-    // Load-bearing, and stated rather than inherited from the reset (whose
-    // rule is zero-specificity `:where`): with content-box the end padding
-    // below would be added to the scrollport instead of sitting inside it,
-    // and every snap position would be wrong.
-    boxSizing: 'border-box',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    // Snap every row to the middle of the scrollport, where the selection band
-    // sits. `mandatory` (not `proximity`) because a wheel has no valid resting
-    // position between two options.
-    scrollSnapType: 'y mandatory',
-    overscrollBehavior: 'contain',
-    // Room for row 0 and row n-1 to reach the centre.
-    paddingBlock: dateInputTouchGeometry.wheelEdgePadding,
-    // Gives the rotateX tip somewhere to recede to.
-    perspective: '520px',
-    transformStyle: 'preserve-3d',
-    scrollbarWidth: 'none',
-    outline: 'none',
-    // Vertical pans scroll the wheel; a two-finger pinch stays the page's, so
-    // the page can still zoom over an open picker (WCAG 1.4.4), as it does
-    // over the menus and listboxes (`module:DropdownMenu/useMenuPress` FR4).
-    touchAction: 'pan-y pinch-zoom',
-  },
-  item: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    blockSize: ITEM_BLOCK_SIZE,
-    paddingInline: spacingVars['--spacing-2'],
-    scrollSnapAlign: 'center',
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    // Larger than body text, and larger than the calendar's day numbers: on
-    // a wheel the value under the band is the whole interface, and the rows
-    // above and below are read at a glance while moving.
-    fontSize: typeScaleVars['--text-large-size'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    color: colorVars['--color-text-primary'],
-    whiteSpace: 'nowrap',
-    // NO `overflow: hidden` here. It would make the row itself a scroll
-    // container, and `view()` binds to the subject's nearest ancestor scroll
-    // container — the tip would measure the row against itself and sit
-    // frozen at 50% forever. Clipping belongs on the inner element.
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    userSelect: 'none',
-    transitionProperty: 'color, font-weight',
-    transitionDuration: durationVars['--duration-fast'],
-  },
-  /**
-   * The tip rides an inner element, never the row itself.
-   *
-   * A snap area is the element's TRANSFORMED border box, so animating the row
-   * would move the very positions the scroller is snapping to — the wheel
-   * settles a few pixels off, and the offset feeds back into the animation.
-   * Transforming a child leaves the row's box, and every snap offset, exact.
-   */
-  itemInner: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    inlineSize: '100%',
-    blockSize: '100%',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    // The wheel look. Held behind @supports so browsers without scroll-driven
-    // animations get a plain list instead of these keyframes playing
-    // themselves out once on the document timeline. Under reduced motion, the
-    // colour fade on the row keeps the depth cue.
-    animationName: {
-      default: null,
-      '@supports (animation-timeline: view())': {
-        default: tip,
-        '@media (prefers-reduced-motion: reduce)': 'none',
-      },
-    },
-    animationTimeline: 'view(y)',
-    animationRange: 'cover 0% cover 100%',
-    animationFillMode: 'both',
-    animationDuration: 'auto',
-    animationTimingFunction: 'linear',
-    backfaceVisibility: 'hidden',
-  },
-  itemInnerDisabled: {
-    animationName: {
-      default: null,
-      '@supports (animation-timeline: view())': {
-        default: tipAndDim,
-        '@media (prefers-reduced-motion: reduce)': dim,
-      },
-    },
-  },
-  /**
-   * The colour fade, on the row and not the tipped inner element: colour does
-   * not move a snap area. An animated colour outranks the selected and
-   * disabled colours, so those rows do not take this fade.
-   */
-  itemFade: {
-    animationName: {
-      default: null,
-      '@supports (animation-timeline: view())': fade,
-    },
-    animationTimeline: 'view(y)',
-    animationRange: 'cover 0% cover 100%',
-    animationFillMode: 'both',
-    animationDuration: 'auto',
-    animationTimingFunction: 'linear',
-  },
-  itemActive: {
-    color: colorVars['--color-text-accent'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  itemDisabled: {
-    color: colorVars['--color-text-disabled'],
-    cursor: 'default',
-  },
-  /**
-   * The selection band: a single centred row-height plate behind the options.
-   * Purely decorative — the committed value is announced by `aria-selected`.
-   */
-  band: {
-    position: 'absolute',
-    insetInline: 0,
-    insetBlockStart: `calc(50% - (${ITEM_BLOCK_SIZE} / 2))`,
-    blockSize: ITEM_BLOCK_SIZE,
-    borderRadius: radiusVars['--radius-element'],
-    // `--color-neutral`, not `--color-background-muted`. Muted is 4.7% alpha,
-    // which puts the whole plate 17 units of colour away from the sheet
-    // behind it — so when the wheels fade in, the band's animation has 17
-    // units to happen in while the text beside it travels 412. It did not
-    // read as fading, it read as appearing. Neutral is 10%, which doubles the
-    // range to 36 and is still quiet enough to sit under text.
-    backgroundColor: colorVars['--color-neutral'],
-    pointerEvents: 'none',
-  },
-});
 
 /**
  * One picker column: UIPickerView's motion with flat rows under a finger, the
@@ -666,8 +473,8 @@ export function ScrollWheel({
   });
 
   return (
-    <div {...stylex.props(styles.column)}>
-      <div aria-hidden="true" {...stylex.props(styles.band)} />
+    <div className={scrollWheelColumnClassName}>
+      <div aria-hidden="true" className={scrollWheelBandClassName} />
       <div
         ref={scrollerRef}
         {...listboxProps}
@@ -681,21 +488,27 @@ export function ScrollWheel({
         onWheel={() => {
           lastPointerRef.current = 'wheel';
         }}
-        {...stylex.props(styles.scroller, focusOutlineStyles.focusVisible)}>
+        className={tw(
+          scrollWheelScrollerClassName,
+          focusOutlineFocusVisibleClassName,
+        )}>
         {options.map((option, index) => (
           <div
             key={option.value}
             {...optionProps(option, index)}
-            {...stylex.props(
-              styles.item,
-              index !== activeIndex && !option.isDisabled && styles.itemFade,
-              index === activeIndex && styles.itemActive,
-              option.isDisabled && styles.itemDisabled,
+            className={tw(
+              scrollWheelItemClassName,
+              index !== activeIndex &&
+                !option.isDisabled &&
+                scrollWheelItemFadeClassName,
+              index === activeIndex && scrollWheelItemActiveClassName,
             )}>
             <span
-              {...stylex.props(
-                styles.itemInner,
-                option.isDisabled && styles.itemInnerDisabled,
+              className={tw(
+                scrollWheelItemInnerClassName,
+                scrollWheelItemInnerTipClassName({
+                  isDisabled: option.isDisabled === true,
+                }),
               )}>
               {option.label}
             </span>

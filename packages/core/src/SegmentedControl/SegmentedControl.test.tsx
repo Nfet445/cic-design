@@ -23,14 +23,11 @@ import {
   waitFor,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {hasPressedArm} from '../__tests__/pressState';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
 import {SegmentedControl} from './SegmentedControl';
 import {SegmentedControlItem} from './SegmentedControlItem';
-import {
-  getAllInjectedCss,
-  getForcedColorsRules,
-} from '../__tests__/forcedColors';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 
 // Mock showPopover/hidePopover (not implemented in jsdom) so the tooltip layer
 // reflects its open state via a `popover-open` attribute the tests can assert.
@@ -213,9 +210,9 @@ describe('SegmentedControl', () => {
       </div>,
     );
 
-    expect(getComputedStyle(screen.getByRole('radiogroup')).width).toBe(
-      'fit-content',
-    );
+    expectClassSet(screen.getByRole('radiogroup'), {
+      includes: ['inline-flex', 'w-fit'],
+    });
   });
 
   it('fill layout overrides the intrinsic control width', () => {
@@ -230,7 +227,10 @@ describe('SegmentedControl', () => {
       </SegmentedControl>,
     );
 
-    expect(getComputedStyle(screen.getByRole('radiogroup')).width).toBe('100%');
+    expectClassSet(screen.getByRole('radiogroup'), {
+      includes: ['flex', 'w-full'],
+      excludes: ['w-fit'],
+    });
   });
 
   it('fill items can shrink and truncate long labels', () => {
@@ -254,14 +254,13 @@ describe('SegmentedControl', () => {
       'A very long segment label that should truncate',
     );
 
-    // The button (flex child) must allow shrinking below content size
-    const buttonStyle = getComputedStyle(button);
-    expect(buttonStyle.minWidth).toBe('0');
+    // The button (flex child) must allow shrinking below content size.
+    expectClassSet(button, {includes: ['min-w-0', 'flex-1']});
 
-    // The label span must set up text truncation
-    const labelStyle = getComputedStyle(label);
-    expect(labelStyle.overflow).toBe('hidden');
-    expect(labelStyle.textOverflow).toBe('ellipsis');
+    // The label span must set up text truncation.
+    expectClassSet(label, {
+      includes: ['overflow-hidden', 'text-ellipsis', 'min-w-0'],
+    });
   });
 
   it('caps the hug layout at its container and lets segments truncate', () => {
@@ -281,18 +280,20 @@ describe('SegmentedControl', () => {
       </SegmentedControl>,
     );
 
-    const group = getComputedStyle(screen.getByRole('radiogroup'));
-    expect(group.width).toBe('fit-content');
-    expect(group.maxWidth).toBe('100%');
-    expect(group.minWidth).toBe('0');
+    expectClassSet(screen.getByRole('radiogroup'), {
+      includes: [
+        'w-fit',
+        '[&:has([role=radio]:not([aria-label]))]:[max-width:100%]',
+        '[&:has([role=radio]:not([aria-label]))]:[min-width:0]',
+      ],
+    });
 
     const segment = screen.getByRole('radio', {name: /very long/});
-    expect(getComputedStyle(segment).minWidth).toBe('0');
-    expect(getComputedStyle(segment).flexShrink).not.toBe('0');
+    expectClassSet(segment, {includes: ['min-w-0'], excludes: ['shrink-0']});
 
     // Icon-only segments have nothing to truncate and keep their size.
     const iconOnly = screen.getByRole('radio', {name: 'Icon'});
-    expect(getComputedStyle(iconOnly).flexShrink).toBe('0');
+    expectClassSet(iconOnly, {includes: ['shrink-0']});
   });
 
   it('keeps the content-sized hug layout from #6643 while adding the cap', () => {
@@ -307,10 +308,14 @@ describe('SegmentedControl', () => {
         </SegmentedControl>
       </div>,
     );
-    const group = getComputedStyle(screen.getByRole('radiogroup'));
-    expect(group.width).toBe('fit-content');
-    expect(group.maxWidth).toBe('100%');
-    expect(group.display).toBe('inline-flex');
+    expectClassSet(screen.getByRole('radiogroup'), {
+      includes: [
+        'inline-flex',
+        'w-fit',
+        '[&:has([role=radio]:not([aria-label]))]:[max-width:100%]',
+      ],
+      excludes: ['w-full'],
+    });
   });
 
   it('lets a fill control yield to a narrow row too', () => {
@@ -324,10 +329,14 @@ describe('SegmentedControl', () => {
         <SegmentedControlItem value="list" label="List" />
       </SegmentedControl>,
     );
-    const group = getComputedStyle(screen.getByRole('radiogroup'));
-    expect(group.width).toBe('100%');
-    expect(group.minWidth).toBe('0');
-    expect(group.maxWidth).toBe('100%');
+    expectClassSet(screen.getByRole('radiogroup'), {
+      includes: [
+        'w-full',
+        '[&:has([role=radio]:not([aria-label]))]:[min-width:0]',
+        '[&:has([role=radio]:not([aria-label]))]:[max-width:100%]',
+      ],
+      excludes: ['w-fit'],
+    });
   });
 
   it('truncates the label of an icon-and-label segment but keeps its icon', () => {
@@ -342,13 +351,12 @@ describe('SegmentedControl', () => {
       </SegmentedControl>,
     );
     const segment = screen.getByRole('radio', {name: /Grid with/});
-    expect(getComputedStyle(segment).minWidth).toBe('0');
+    expectClassSet(segment, {includes: ['min-w-0'], excludes: ['shrink-0']});
     // Icon + label is not icon-only: the segment itself still shrinks.
-    expect(getComputedStyle(segment).flexShrink).not.toBe('0');
     const iconWrapper = screen.getByTestId('grid-icon').parentElement!;
-    expect(getComputedStyle(iconWrapper).flexShrink).toBe('0');
+    expectClassSet(iconWrapper, {includes: ['shrink-0']});
     const label = screen.getByText('Grid with thumbnails and captions');
-    expect(getComputedStyle(label).textOverflow).toBe('ellipsis');
+    expectClassSet(label, {includes: ['text-ellipsis']});
   });
 
   it('does not cap a control whose segments are all icon-only', () => {
@@ -370,13 +378,14 @@ describe('SegmentedControl', () => {
         />
       </SegmentedControl>,
     );
-    const group = getComputedStyle(screen.getByRole('radiogroup'));
-    expect(group.width).toBe('fit-content');
-    expect(group.maxWidth).toBe('none');
+    // Both arms are always in the class set: the cap keys off a labelled
+    // radio, which this track has none of, so only the base width applies.
+    expectClassSet(screen.getByRole('radiogroup'), {
+      includes: ['w-fit', '[max-width:none]', '[min-width:auto]'],
+    });
     // No min-size reset either, so a flex row cannot squeeze it.
-    expect(group.minWidth).toBe('auto');
     for (const radio of screen.getAllByRole('radio')) {
-      expect(getComputedStyle(radio).flexShrink).toBe('0');
+      expectClassSet(radio, {includes: ['shrink-0']});
     }
   });
 
@@ -1139,27 +1148,58 @@ describe('SegmentedControl container handler forwarding', () => {
   });
 });
 
-// jsdom cannot emulate forced-colors rendering, so these assert that the
-// compiled output includes the forced-colors rules; visual behavior needs
-// manual verification under Windows High Contrast.
+// jsdom cannot emulate forced-colors rendering, so these assert the class set
+// the stylesheet's forced-colors arms hang off; visual behavior needs manual
+// verification under Windows High Contrast.
 describe('forced colors (WCAG 1.4.11)', () => {
-  it('compiles forced-colors overrides so the selected segment survives Windows High Contrast', () => {
+  it('marks the selected segment with the forced-colors classes', () => {
     render(
       <SegmentedControl value="grid" onChange={() => {}} label="View mode">
         <SegmentedControlItem value="grid" label="Grid" />
         <SegmentedControlItem value="list" label="List" />
       </SegmentedControl>,
     );
-    const css = getForcedColorsRules();
     // The painted surface fill and shadow are stripped; Highlight/
     // HighlightText marks the selected segment.
-    expect(css).toContain('background-color: highlight;');
-    expect(css).toContain('color: highlighttext;');
-    // The segment is a <button>; without opting out of UA remapping it keeps
-    // the native ButtonFace surface and ignores the Highlight fill, leaving
-    // HighlightText text on a white surface. forced-color-adjust: none makes
-    // both render as authored.
-    expect(getAllInjectedCss()).toContain('forced-color-adjust: none;');
+    expectClassSet(screen.getByRole('radio', {name: 'Grid'}), {
+      includes: [
+        'aria-checked:forced-colors:bg-[color:Highlight]',
+        'aria-checked:forced-colors:text-[color:HighlightText]',
+        // The segment is a <button>; without opting out of UA remapping it
+        // keeps the native ButtonFace surface and ignores the Highlight
+        // fill, leaving HighlightText text on a white surface.
+        '[forced-color-adjust:none]',
+      ],
+    });
+    // An unselected segment paints no surface of its own to replace.
+    expect(
+      classesOf(screen.getByRole('radio', {name: 'List'})).filter(className =>
+        className.includes('forced-colors'),
+      ),
+    ).toEqual([]);
+  });
+
+  it('leaves a disabled selected segment out of the forced-colors palette', () => {
+    // A Highlight fill under a disabled colour would read as an active
+    // selection, so the disabled colour arm keeps the last word instead.
+    render(
+      <SegmentedControl
+        value="grid"
+        onChange={() => {}}
+        label="View mode"
+        isDisabled>
+        <SegmentedControlItem value="grid" label="Grid" />
+        <SegmentedControlItem value="list" label="List" />
+      </SegmentedControl>,
+    );
+    expectClassSet(screen.getByRole('radio', {name: 'Grid'}), {
+      includes: ['text-[color:var(--color-text-disabled)]'],
+      excludes: [
+        'aria-checked:forced-colors:bg-[color:Highlight]',
+        'aria-checked:forced-colors:text-[color:HighlightText]',
+        '[forced-color-adjust:none]',
+      ],
+    });
   });
 });
 
@@ -1173,11 +1213,13 @@ describe('pressed state', () => {
     );
     // The unselected segment is the one a press can change; it carries the
     // system's hover and pressed overlay.
-    expect(hasPressedArm(screen.getByRole('radio', {name: 'List'}))).toBe(true);
+    expectClassSet(screen.getByRole('radio', {name: 'List'}), {
+      includes: interactionOverlayBackgroundColorClassName.split(' '),
+    });
     // The selected segment keeps its raised surface as it is.
-    expect(hasPressedArm(screen.getByRole('radio', {name: 'Grid'}))).toBe(
-      false,
-    );
+    expectClassSet(screen.getByRole('radio', {name: 'Grid'}), {
+      excludes: interactionOverlayBackgroundColorClassName.split(' '),
+    });
   });
 
   it('does not press a disabled segment', () => {
@@ -1187,9 +1229,9 @@ describe('pressed state', () => {
         <SegmentedControlItem value="list" label="List" isDisabled />
       </SegmentedControl>,
     );
-    expect(hasPressedArm(screen.getByRole('radio', {name: 'List'}))).toBe(
-      false,
-    );
+    expectClassSet(screen.getByRole('radio', {name: 'List'}), {
+      excludes: interactionOverlayBackgroundColorClassName.split(' '),
+    });
   });
 });
 
@@ -1233,10 +1275,15 @@ describe('selection motion', () => {
         .getByRole('radiogroup')
         .style.getPropertyValue('--_segmented-lens-visibility'),
     ).toBe('');
-    expect(
-      getComputedStyle(screen.getByRole('radio', {name: 'List'}))
-        .transitionProperty,
-    ).toContain('background-color');
+    // The surface animates on the theme's duration and easing; the touch
+    // presentation below replaces that with no transition at all.
+    expectClassSet(screen.getByRole('radio', {name: 'List'}), {
+      includes: [
+        'transition-[color,background-color,box-shadow]',
+        'duration-[var(--duration-fast)]',
+      ],
+      excludes: ['transition-none'],
+    });
   });
 
   it('one touch model: a finger on any engine (no iOS check) gets the touch presentation, and a tap still selects', async () => {
@@ -1245,11 +1292,12 @@ describe('selection motion', () => {
       const onChange = vi.fn();
       renderControl(onChange);
       // The lens is the radiogroup's own pseudo-elements, so the touch
-      // presentation shows as its styles: no CSS transition on the segments.
-      expect(
-        getComputedStyle(screen.getByRole('radio', {name: 'List'}))
-          .transitionProperty,
-      ).toBe('none');
+      // presentation shows as its classes: no CSS transition on the segments,
+      // because the script slides the surface.
+      expectClassSet(screen.getByRole('radio', {name: 'List'}), {
+        includes: ['transition-none'],
+        excludes: ['transition-[color,background-color,box-shadow]'],
+      });
       await userEvent.setup().click(screen.getByRole('radio', {name: 'List'}));
       expect(onChange).toHaveBeenCalledWith('list');
     } finally {
@@ -1281,7 +1329,9 @@ describe('selection motion', () => {
       for (const name of ['List', 'Icon']) {
         const segment = screen.getByRole('radio', {name});
         expect(segment).toHaveAttribute('data-astryx-pressable');
-        expect(hasPressedArm(segment)).toBe(true);
+        expectClassSet(segment, {
+          includes: interactionOverlayBackgroundColorClassName.split(' '),
+        });
       }
       // The selected segment never paints a press.
       expect(screen.getByRole('radio', {name: 'Grid'})).not.toHaveAttribute(

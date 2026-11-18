@@ -32,12 +32,14 @@
  * - /packages/core/src/Layer/useLayerKeyboardClearance.ts
  * - /packages/core/src/Layer/layerViewportInset.test.ts
  * - /docs/specs/AST-059-layer-viewport-inset/spec.md
+ * @deprecated Internal geometry seam: it is not a public API and it
+ *   disappears when StyleX leaves the package.
  */
 
 import * as stylex from '@stylexjs/stylex';
 
 // `defineConsts` admits only static values, so the spacing token is named by
-// its custom property rather than through `spacingVars`; it is the same
+// its custom property rather than through `spacingVarNames`; it is the same
 // `--spacing-4` every other gutter in core reads.
 const SPACING = 'var(--spacing-4)';
 

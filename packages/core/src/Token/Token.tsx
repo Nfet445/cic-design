@@ -19,29 +19,29 @@
 
 import {use, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  radiusVars,
-  sizeVars,
-  durationVars,
-  easeVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import {Icon} from '../Icon';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import {useInteractiveRole} from '../hooks/useInteractiveRole';
 import {TokenLink} from './TokenLink';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   focusOwnerProps,
-  focusWithinOwner,
+  focusOwnerRingClassName,
 } from '../privateAttributes/focusOwner.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
+import {tw} from '../utils/tw';
+import {
+  tokenClassName,
+  tokenInvisibleButtonClassName,
+  tokenLabelClassName,
+  tokenLabelHiddenClassName,
+  tokenRemoveButtonClassName,
+} from './tokenClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {cancelNestedPress} from '../hooks/useClickableContainer';
 import type {TokenColorMap} from './index';
@@ -128,154 +128,6 @@ export interface TokenProps extends BaseProps<HTMLElement> {
 // Styles
 // =============================================================================
 
-const styles = stylex.create({
-  base: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    paddingBlock: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    borderRadius: radiusVars['--radius-inner'],
-    fontFamily: 'inherit',
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    whiteSpace: 'nowrap',
-    textDecoration: 'none',
-    maxWidth: '100%',
-    overflow: 'hidden',
-  },
-  label: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
-    unicodeBidi: 'isolate',
-  },
-  interactive: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    transitionProperty: 'background-image',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  disabled: {
-    cursor: 'default',
-    opacity: 0.5,
-    pointerEvents: 'none' as const,
-  },
-  labelHidden: {
-    position: 'absolute' as const,
-    width: '1px',
-    height: '1px',
-    padding: 0,
-    margin: '-1px',
-    overflow: 'hidden',
-    clipPath: 'inset(50%)',
-    whiteSpace: 'nowrap',
-    borderWidth: 0,
-  },
-  invisibleButton: {
-    cursor: {
-      default: 'inherit',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    color: 'inherit',
-    outline: 'none',
-    overflow: 'hidden',
-    minWidth: 0,
-  },
-  removeButton: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    padding: 0,
-    marginInlineEnd: `calc(-1 * ${spacingVars['--spacing-1']})`,
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-full'],
-    width: '16px',
-    height: '16px',
-    // A token cut by its width shrinks only its label, not the button.
-    flexShrink: 0,
-    color: 'inherit',
-    '::after': {
-      content: '""',
-      position: 'absolute',
-      inset: '-4px',
-    },
-  },
-});
-
-const sizeStyles = stylex.create({
-  sm: {
-    height: `calc(${sizeVars['--size-element-sm']} - 8px)`,
-    fontSize: typeScaleVars['--text-supporting-size'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  md: {
-    height: `calc(${sizeVars['--size-element-md']} - 8px)`,
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  lg: {
-    height: `calc(${sizeVars['--size-element-lg']} - 8px)`,
-    paddingInline: spacingVars['--spacing-2'],
-  },
-});
-
-const colorStyles = stylex.create({
-  default: {
-    backgroundColor: colorVars['--color-neutral'],
-    color: colorVars['--color-text-primary'],
-  },
-  red: {
-    backgroundColor: colorVars['--color-background-red'],
-    color: colorVars['--color-text-red'],
-  },
-  orange: {
-    backgroundColor: colorVars['--color-background-orange'],
-    color: colorVars['--color-text-orange'],
-  },
-  yellow: {
-    backgroundColor: colorVars['--color-background-yellow'],
-    color: colorVars['--color-text-yellow'],
-  },
-  green: {
-    backgroundColor: colorVars['--color-background-green'],
-    color: colorVars['--color-text-green'],
-  },
-  teal: {
-    backgroundColor: colorVars['--color-background-teal'],
-    color: colorVars['--color-text-teal'],
-  },
-  cyan: {
-    backgroundColor: colorVars['--color-background-cyan'],
-    color: colorVars['--color-text-cyan'],
-  },
-  blue: {
-    backgroundColor: colorVars['--color-background-blue'],
-    color: colorVars['--color-text-blue'],
-  },
-  purple: {
-    backgroundColor: colorVars['--color-background-purple'],
-    color: colorVars['--color-text-purple'],
-  },
-  pink: {
-    backgroundColor: colorVars['--color-background-pink'],
-    color: colorVars['--color-text-pink'],
-  },
-  gray: {
-    backgroundColor: colorVars['--color-background-gray'],
-    color: colorVars['--color-text-gray'],
-  },
-});
-
 // =============================================================================
 // Component
 // =============================================================================
@@ -331,6 +183,7 @@ export function Token({
   const LinkComponent = useLinkComponent();
   const role = useInteractiveRole({href, onClick, isDisabled});
   const naming = use(TokenNamingContext);
+  const xStyle = xstyleProps(xstyle);
 
   // When role is 'button' via context (no explicit onClick), treat as
   // if onClick was provided — the popover attaches its own handler.
@@ -350,7 +203,10 @@ export function Token({
       // Focusable while disabled (spec:AST-085 FR1), but inert (FR2).
       aria-disabled={isDisabled || undefined}
       {...(isDisabled ? disabledInteractionProps() : null)}
-      {...focusOutlineProps.focusVisible(styles.removeButton)}>
+      className={tw(
+        tokenRemoveButtonClassName,
+        focusOutlineFocusVisibleClassName,
+      )}>
       <Icon icon="close" size="xsm" color="inherit" />
     </button>
   );
@@ -360,7 +216,10 @@ export function Token({
       {icon}
       <span
         {...textDirectionProps(label)}
-        {...stylex.props(styles.label, isLabelHidden && styles.labelHidden)}>
+        className={tw(
+          tokenLabelClassName,
+          isLabelHidden && tokenLabelHiddenClassName,
+        )}>
         {label}
       </span>
       {endContent}
@@ -404,15 +263,17 @@ export function Token({
         tabIndex={0}
         {...mergeProps(
           themeProps('token', {color, size, disabled: 'disabled'}),
-          focusOutlineProps.focusVisible(
-            styles.base,
-            sizeStyles[size],
-            colorStyles[color],
-            styles.interactive,
-            styles.disabled,
-            xstyle,
+          xStyle,
+          tw(
+            tokenClassName({
+              size,
+              color,
+              isInteractive: true,
+              isDisabled: true,
+            }),
+            className,
+            focusOutlineFocusVisibleClassName,
           ),
-          className,
           style,
         )}
         {...rest}
@@ -438,17 +299,21 @@ export function Token({
               size,
               disabled: isDisabled ? 'disabled' : null,
             }),
-            focusOutlineProps.focusVisible(
-              styles.base,
-              sizeStyles[size],
-              colorStyles[color],
-              styles.interactive,
-              interactionOverlayStyles.backgroundImage,
-              isDisabled && styles.disabled,
-              xstyle,
+            // The strength and the release; the paint is a class below.
+            stylex.props(interactionOverlayStyles.pressedAlpha),
+            tw(
+              tokenClassName({
+                size,
+                color,
+                isInteractive: true,
+                isDisabled,
+              }),
+              xStyle.className,
+              className,
+              interactionOverlayBackgroundImageClassName,
+              focusOutlineFocusVisibleClassName,
             ),
-            className,
-            style,
+            {...xStyle.style, ...style},
           )}
           {...rest}
           {...labellingProps}
@@ -477,16 +342,16 @@ export function Token({
         endContent={endContent}
         removeButton={removeButton}
         linkStyleProps={{
-          ...stylex.props(styles.invisibleButton),
+          className: tokenInvisibleButtonClassName,
           ...focusOwnerProps,
         }}
         {...pressable}
         labelContent={
           <span
             {...textDirectionProps(label)}
-            {...stylex.props(
-              styles.label,
-              isLabelHidden && styles.labelHidden,
+            className={tw(
+              tokenLabelClassName,
+              isLabelHidden && tokenLabelHiddenClassName,
             )}>
             {label}
           </span>
@@ -499,18 +364,21 @@ export function Token({
           }),
           // Rings for the token's own button or link only; the remove button
           // rings itself.
-          stylex.props(
-            focusWithinOwner,
-            styles.base,
-            sizeStyles[size],
-            colorStyles[color],
-            styles.interactive,
-            interactionOverlayStyles.backgroundImage,
-            isDisabled && styles.disabled,
-            xstyle,
+          // The strength and the release; the paint is a class below.
+          stylex.props(interactionOverlayStyles.pressedAlpha),
+          tw(
+            tokenClassName({
+              size,
+              color,
+              isInteractive: true,
+              isDisabled,
+            }),
+            focusOwnerRingClassName,
+            interactionOverlayBackgroundImageClassName,
+            xStyle.className,
+            className,
           ),
-          className,
-          style,
+          {...xStyle.style, ...style},
         )}
         {...rest}
         {...labellingProps}
@@ -554,18 +422,21 @@ export function Token({
           }),
           // Rings for the token's own button or link only; the remove button
           // rings itself.
-          stylex.props(
-            focusWithinOwner,
-            styles.base,
-            sizeStyles[size],
-            colorStyles[color],
-            styles.interactive,
-            interactionOverlayStyles.backgroundImage,
-            isDisabled && styles.disabled,
-            xstyle,
+          // The strength and the release; the paint is a class below.
+          stylex.props(interactionOverlayStyles.pressedAlpha),
+          tw(
+            tokenClassName({
+              size,
+              color,
+              isInteractive: true,
+              isDisabled,
+            }),
+            focusOwnerRingClassName,
+            interactionOverlayBackgroundImageClassName,
+            xStyle.className,
+            className,
           ),
-          className,
-          style,
+          {...xStyle.style, ...style},
         )}
         {...rest}
         {...sharedProps}
@@ -581,12 +452,12 @@ export function Token({
           aria-disabled={isDisabled || undefined}
           {...(isDisabled ? disabledInteractionProps() : null)}
           {...focusOwnerProps}
-          {...stylex.props(styles.invisibleButton)}>
+          className={tokenInvisibleButtonClassName}>
           <span
             {...textDirectionProps(label)}
-            {...stylex.props(
-              styles.label,
-              isLabelHidden && styles.labelHidden,
+            className={tw(
+              tokenLabelClassName,
+              isLabelHidden && tokenLabelHiddenClassName,
             )}>
             {label}
           </span>
@@ -606,14 +477,16 @@ export function Token({
           size,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(
-          styles.base,
-          sizeStyles[size],
-          colorStyles[color],
-          isDisabled && styles.disabled,
-          xstyle,
+        xStyle,
+        tw(
+          tokenClassName({
+            size,
+            color,
+            isInteractive: false,
+            isDisabled,
+          }),
+          className,
         ),
-        className,
         style,
       )}
       {...rest}

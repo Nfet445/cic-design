@@ -24,7 +24,6 @@
  */
 
 import {useMemo, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {ButtonSize} from '../Button';
 import type {Elevation} from '../utils/types';
 import {SizeProvider, useSize} from '../SizeContext/SizeContext';
@@ -35,7 +34,7 @@ import {
   useGroupPressTracking,
 } from '../hooks/useGroupPressTracking';
 import {useTouchPresentation} from '../utils/touchPresentation';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerBelowChildrenClassName} from '../internal/touchHitAreaClasses';
 import {mergeProps, composeEventHandlers} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {ButtonGroupContext} from './ButtonGroupContext';
@@ -43,6 +42,7 @@ import type {ButtonGroupOrientation} from './ButtonGroupContext';
 import {buttonGroupClassName} from './buttonGroupClasses';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 // =============================================================================
@@ -191,12 +191,11 @@ export function ButtonGroup({
   const groupRef = useRef<HTMLDivElement>(null);
   const {hitAreaRef} = useGroupPressTracking(groupRef, tracksPress);
 
-  // The group's own layout comes from utility classes. The touch hit band is
-  // a shared StyleX module that has not migrated, so its class joins them.
+  // The group's own layout comes from utility classes; the touch hit band is
+  // one of them.
   const layoutClassName = tw(
     buttonGroupClassName({elevation, orientation, tracksPress}),
-    tracksPress &&
-      stylex.props(touchHitAreaStyles.layerBelowChildren).className,
+    tracksPress && touchHitAreaLayerBelowChildrenClassName,
   );
 
   return (
@@ -210,7 +209,7 @@ export function ButtonGroup({
               themeProps('button-group', {size, orientation, elevation}),
               {className: layoutClassName},
             ),
-            stylex.props(xstyle),
+            xstyleProps(xstyle),
             className,
             style,
           )}

@@ -29,7 +29,7 @@
 // of the DOM, so {@link pressGestureStep}'s cases are the state diagram.
 
 import {resolveTokenReferences} from '../theme/tokenReferences';
-import {durationDefaults} from '../theme/tokens.stylex';
+import {durationDefaults} from '../theme/tokenVars';
 
 /**
  * How long a finger must stay put before the surface believes it.

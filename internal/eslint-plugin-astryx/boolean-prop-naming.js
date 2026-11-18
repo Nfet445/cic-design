@@ -50,8 +50,8 @@ function isValidBooleanPropName(name) {
 // Props that are excluded from the naming convention check.
 // These are either native HTML attributes or standard React controlled-component patterns.
 const EXCLUDED_PROP_NAMES = new Set([
-  'value',          // Controlled component value (can be boolean for toggles)
-  'defaultValue',   // Uncontrolled default value
+  'value', // Controlled component value (can be boolean for toggles)
+  'defaultValue', // Uncontrolled default value
   'defaultChecked', // Native HTML uncontrolled checkbox default
 ]);
 
@@ -128,8 +128,7 @@ const booleanPropNamingRule = {
   meta: {
     type: 'suggestion',
     docs: {
-      description:
-        'Enforce boolean prop naming conventions (is/has prefix)',
+      description: 'Enforce boolean prop naming conventions (is/has prefix)',
       category: 'Best Practices',
       recommended: true,
     },

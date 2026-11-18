@@ -46,17 +46,26 @@ const styles = stylex.create({
   // the example escapes the card's padding, or takes its insets, widths or
   // height cap. These are the values that reset leaves out: a mirror of
   // Layout's internal `layoutReset` (component:Layout FR8), which Core's
-  // `./internal/*` rule keeps the docsite from importing.
+  // `./internal/*` rule keeps the docsite from importing. The reset is class
+  // text, so the mirror joins it in `className`.
   // example-layout-root.test.ts fails when the two differ.
   exampleRoot: {
     minWidth: 'fit-content',
-    '--layout-content-width': 'initial',
-    '--layout-alignment-width': 'initial',
-    '--_layout-flush-block-start': 'initial',
-    '--_layout-flush-block-end': 'initial',
-    '--container-max-height': 'initial',
   },
 });
+
+// The values `overlayPaddingReset` leaves out, spelled the way its class text
+// is: `exampleRoot` cannot declare a custom property Tailwind would have to
+// scan out of a `.tsx` file.
+const exampleRootResetClassName = [
+  '[--layout-content-width:initial]',
+  '[--layout-alignment-width:initial]',
+  '[--_layout-flush-block-start:initial]',
+  '[--_layout-flush-block-end:initial]',
+  '[--container-max-height:initial]',
+].join(' ');
+
+const exampleRootProps = stylex.props(styles.exampleRoot);
 
 /** Room for a focus ring inside the preview's scroll box, in px. */
 const FOCUS_RING_ROOM = 5;
@@ -71,7 +80,15 @@ function ExampleLayoutRoot({children}: {children: ReactNode}) {
   return (
     <LayoutAreaContext value={null}>
       <LayoutDividerContext value={null}>
-        <div {...stylex.props(overlayPaddingReset.reset, styles.exampleRoot)}>
+        <div
+          className={[
+            overlayPaddingReset.reset,
+            exampleRootResetClassName,
+            exampleRootProps.className,
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          style={exampleRootProps.style}>
           {children}
         </div>
       </LayoutDividerContext>

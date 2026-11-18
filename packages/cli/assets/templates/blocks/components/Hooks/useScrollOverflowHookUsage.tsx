@@ -3,37 +3,21 @@
 'use client';
 
 import {useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Button} from '@astryxdesign/core/Button';
 import {useScrollOverflow} from '@astryxdesign/core/hooks';
 import {HStack, VStack} from '@astryxdesign/core/Layout';
 import {Switch} from '@astryxdesign/core/Switch';
 import {Token} from '@astryxdesign/core/Token';
-import {spacingVars} from '@astryxdesign/core/theme/tokens.stylex';
-
-const FADE = spacingVars['--spacing-8'];
-const FADE_FROM_LEFT = `linear-gradient(to right, transparent, black ${FADE})`;
-const FADE_FROM_RIGHT = `linear-gradient(to left, transparent, black ${FADE})`;
-
-const styles = stylex.create({
-  strip: {
-    display: 'flex',
-    gap: spacingVars['--spacing-2'],
-    overflowX: 'auto',
-  },
-  filter: {
-    flexShrink: 0,
-  },
-  fadeLeft: {
-    maskImage: FADE_FROM_LEFT,
-  },
-  fadeRight: {
-    maskImage: FADE_FROM_RIGHT,
-  },
-  fadeBoth: {
-    maskImage: `linear-gradient(to right, transparent, black ${FADE}, black calc(100% - ${FADE}), transparent)`,
-  },
-});
+const styles = {
+  strip: 'flex gap-2 overflow-x-auto',
+  filter: 'shrink-0',
+  fadeLeft:
+    '[mask-image:linear-gradient(to_right,transparent,black_var(--spacing-8))]',
+  fadeRight:
+    '[mask-image:linear-gradient(to_left,transparent,black_var(--spacing-8))]',
+  fadeBoth:
+    '[mask-image:linear-gradient(to_right,transparent,black_var(--spacing-8),black_calc(100%_-_var(--spacing-8)),transparent)]',
+} as const;
 
 const FILTERS = [
   'Open now',
@@ -60,19 +44,20 @@ export default function UseScrollOverflowHookUsage() {
           ref={scrollRef}
           role="group"
           aria-label="Active filters"
-          {...stylex.props(
-            styles.strip,
+          className={`${styles.strip} ${
             overflowStart && overflowEnd
               ? styles.fadeBoth
               : overflowStart
                 ? fadeStart
-                : overflowEnd && fadeEnd,
-          )}>
+                : overflowEnd
+                  ? fadeEnd
+                  : ''
+          }`}>
           {filters.map(filter => (
             <Token
               key={filter}
               label={filter}
-              xstyle={styles.filter}
+              className={styles.filter}
               onRemove={() =>
                 setFilters(current => current.filter(item => item !== filter))
               }

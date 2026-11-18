@@ -39,7 +39,7 @@ import {
   type ThemeMotionConfig,
 } from './themeMotion';
 import {expandRadiusScale, type RadiusScaleConfig} from './expandRadiusScale';
-import {easeDefaults} from './tokens.stylex';
+import {easeDefaults} from './tokenVars';
 import {expandColorScale, type ColorScaleConfig} from './expandColorScale';
 import {deepMergeComponents, withoutUnsetComponents} from './mergeComponents';
 

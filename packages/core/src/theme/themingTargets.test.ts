@@ -1007,18 +1007,10 @@ describe('theming.targets matches the themeProps() call sites', () => {
  * the gap that blocks a target. Remove a gap entry when the axis reaches
  * themeProps(). A stale entry fails the guard.
  */
-const UNREFLECTED_STYLE_AXIS_EXCEPTIONS: ReadonlyMap<string, string> = new Map([
-  [
-    'ChatComposer.elevation',
-    'The composer body paints the elevation but has no target. How to expose ' +
-      'the body to themes is an open owner decision.',
-  ],
-  [
-    'Skeleton.radius',
-    'component:Skeleton FR2: radius is callsite geometry, like width and ' +
-      'height, and is not reflected.',
-  ],
-]);
+const UNREFLECTED_STYLE_AXIS_EXCEPTIONS: ReadonlyMap<string, string> = new Map<
+  string,
+  string
+>();
 
 describe('every painted prop axis reaches themeProps()', () => {
   const findings = participatingComponents.flatMap(

@@ -15,14 +15,18 @@
  */
 
 import {Suspense, useCallback, useMemo, useRef, useState} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '@astryxdesign/core';
 import {useLocale, type Locale} from '@astryxdesign/core/i18n';
-import {mergeProps, plainDateFromInstant} from '@astryxdesign/core/utils';
+import {
+  mergeProps,
+  plainDateFromInstant,
+  xstyleProps,
+} from '@astryxdesign/core/utils';
+import {tw} from '../tw';
+import {scheduleRootClassName} from './scheduleClasses';
 import {eventOverlapsRange, getBrowserTimezoneID, sortEvents} from './dateMath';
 import {ScheduleContext} from './context';
 import {defaultSchedulePlugins} from './plugins';
-import {styles} from './shared';
 import {
   TimeGridScrollMemoryContext,
   type TimeGridScrollMemory,
@@ -287,8 +291,8 @@ export function Schedule({
       {...rest}
       {...mergeProps(
         themeProps('schedule'),
-        stylex.props(styles.root, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(scheduleRootClassName, className),
         style,
       )}>
       <TimeGridScrollMemoryContext.Provider value={timeGridScrollMemory}>

@@ -20,11 +20,31 @@ import {
   vi,
 } from 'vitest';
 import {act, cleanup, fireEvent, render, screen} from '@testing-library/react';
-import {layerOnlyWhilePressed, rulesDeclaredFor} from '../__tests__/pressState';
+import {layerOnlyWhilePressed} from '../__tests__/pressState';
+import {
+  classesOf,
+  expectClassSet,
+  expectVariable,
+} from '../__tests__/classNameAssertions';
 import {swipeLayerLoaded} from './__tests__/swipeLayerLoaded';
 import userEvent from '@testing-library/user-event';
 import {LinkProvider} from '../Link/LinkProvider';
 import {Item} from './Item';
+import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {rowPressLayerStyles} from '../privateAttributes/press.stylex';
+import * as stylex from '@stylexjs/stylex';
+
+const mixedXstyleProbe = stylex.create({
+  root: {opacity: 0.5},
+  firstWidth: (width: string | undefined) => ({minWidth: width}),
+  secondWidth: (width: string | undefined) => ({minWidth: width}),
+  conflict: {
+    animationFillMode: {
+      default: null,
+      '[data-astryx-press="fading"]': 'forwards',
+    },
+  },
+});
 import {useClickableContainer} from '../hooks/useClickableContainer';
 import {createSwipe} from '../Swipe/createSwipe';
 import type {Swipe} from '../Swipe/swipeHost';
@@ -57,6 +77,69 @@ function DelegatingItem({onToggle}: {onToggle?: () => void}) {
 }
 
 describe('Item', () => {
+  it('keeps a dynamic StyleX variable when the next value is undefined', () => {
+    const first = mixedXstyleProbe.firstWidth('12rem');
+    const second = mixedXstyleProbe.secondWidth(undefined);
+    const runtimeProps = stylex.props;
+    const expected = runtimeProps(first, second).style;
+    const {container} = render(<Item label="Row" xstyle={[first, [second]]} />);
+    const root = container.firstElementChild as HTMLElement;
+    expect(Object.keys(expected ?? {}).length).toBeGreaterThan(0);
+    for (const [key, value] of Object.entries(expected ?? {})) {
+      expect(root.style.getPropertyValue(key)).toBe(value);
+    }
+  });
+
+  it('resolves mixed consumer StyleX after the interactive press styles', () => {
+    const {container} = render(
+      <Item
+        label="Row"
+        onClick={() => {}}
+        xstyle={[mixedXstyleProbe.conflict, 'consumer-item']}
+      />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    const internal = stylex.props(
+      interactionOverlayStyles.pressedAlpha,
+      rowPressLayerStyles.cell,
+    );
+    const expected = stylex.props(
+      interactionOverlayStyles.pressedAlpha,
+      rowPressLayerStyles.cell,
+      mixedXstyleProbe.conflict,
+    );
+    expect(root).toHaveClass('consumer-item');
+    for (const name of (expected.className ?? '').split(' ').filter(Boolean)) {
+      expect(root).toHaveClass(name);
+    }
+    const removed = (internal.className ?? '')
+      .split(' ')
+      .filter(
+        name => name && !(expected.className ?? '').split(' ').includes(name),
+      );
+    expect(removed.length).toBeGreaterThan(0);
+    for (const name of removed) {
+      expect(root).not.toHaveClass(name);
+    }
+  });
+
+  it('preserves a mixed list of StyleX, class, and inline xstyle', () => {
+    const {container} = render(
+      <Item
+        label="Row"
+        xstyle={[mixedXstyleProbe.root, 'consumer-item', {color: 'red'}]}
+      />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root).toHaveClass('consumer-item');
+    expect(root.style.color).toBe('red');
+    for (const className of (
+      stylex.props(mixedXstyleProbe.root).className ?? ''
+    ).split(' ')) {
+      expect(root).toHaveClass(className);
+    }
+  });
+
   // ===========================================================================
   // Basic rendering
   // ===========================================================================
@@ -925,17 +1008,6 @@ describe('Item', () => {
   });
 
   it('truncates the label and description to the lines it is given', () => {
-    // The clamp count reaches CSS through a custom property, so resolve it.
-    const lineClamp = (element: HTMLElement) => {
-      const value = getComputedStyle(element)
-        .getPropertyValue('-webkit-line-clamp')
-        .trim();
-      const variable = /^var\((--[^),]+)\)$/.exec(value)?.[1];
-      return variable == null
-        ? value
-        : getComputedStyle(element).getPropertyValue(variable).trim() ||
-            element.style.getPropertyValue(variable).trim();
-    };
     // A node label wraps by default, so one line comes from labelLines.
     const {rerender} = render(
       <Item
@@ -946,10 +1018,12 @@ describe('Item', () => {
       />,
     );
     for (const text of ['A long label', 'A long description']) {
-      const style = getComputedStyle(screen.getByText(text).parentElement!);
-      expect(style.overflow).toBe('hidden');
-      expect(style.textOverflow).toBe('ellipsis');
-      expect(style.whiteSpace).toBe('nowrap');
+      const line = screen.getByText(text).parentElement!;
+      expectClassSet(line, {
+        includes: ['overflow-hidden', 'text-ellipsis', 'whitespace-nowrap'],
+        excludes: ['[-webkit-line-clamp:var(--astryx-item-line-clamp)]'],
+      });
+      expectVariable(line, '--astryx-item-line-clamp', '');
     }
     rerender(
       <Item
@@ -962,13 +1036,19 @@ describe('Item', () => {
     const label = screen.getByText('A long label');
     const description = screen.getByText('A long description');
     for (const element of [label, description]) {
-      const style = getComputedStyle(element);
-      expect(style.overflow).toBe('hidden');
-      expect(style.display).toBe('-webkit-box');
-      expect(style.whiteSpace).not.toBe('nowrap');
+      expectClassSet(element, {
+        includes: [
+          'overflow-hidden',
+          '[display:-webkit-box]',
+          '[-webkit-box-orient:vertical]',
+          '[-webkit-line-clamp:var(--astryx-item-line-clamp)]',
+        ],
+        excludes: ['whitespace-nowrap'],
+      });
     }
-    expect(lineClamp(label)).toBe('3');
-    expect(lineClamp(description)).toBe('2');
+    // The clamp count is the variable the clamp class reads.
+    expectVariable(label, '--astryx-item-line-clamp', '3');
+    expectVariable(description, '--astryx-item-line-clamp', '2');
   });
 
   it('reflects highlighted, selected, and disabled on the item theme target', () => {
@@ -1011,15 +1091,15 @@ describe('Item', () => {
 
   it('aligns the row on first baselines only under first-line', () => {
     const {rerender} = render(<Item label="Item" data-testid="item" />);
-    const declares = (value: string) =>
-      rulesDeclaredFor(screen.getByTestId('item')).some(rule =>
-        rule.includes(`align-items: ${value}`),
-      );
-    expect(declares('baseline')).toBe(false);
+    const declares = (className: string) =>
+      classesOf(screen.getByTestId('item')).includes(className);
+    expect(declares('items-baseline')).toBe(false);
     rerender(<Item label="Item" align="start" data-testid="item" />);
-    expect(declares('baseline')).toBe(false);
+    expect(declares('items-baseline')).toBe(false);
+    expect(declares('items-start')).toBe(true);
     rerender(<Item label="Item" align="first-line" data-testid="item" />);
-    expect(declares('baseline')).toBe(true);
+    expect(declares('items-baseline')).toBe(true);
+    expect(declares('items-start')).toBe(false);
   });
 
   it('gives each first-line slot a strut with no accessible text', () => {
@@ -1033,10 +1113,11 @@ describe('Item', () => {
     );
     for (const id of ['start', 'end']) {
       const slot = screen.getByTestId(id).parentElement!;
-      const before = rulesDeclaredFor(slot).filter(rule =>
-        rule.slice(0, rule.indexOf('{')).includes('::before'),
+      const before = classesOf(slot).filter(className =>
+        className.startsWith('before:content-'),
       );
-      expect(before.some(rule => rule.includes('/ ""'))).toBe(true);
+      // A zero-width space, with `''` as its accessible alternative.
+      expect(before).toContain("before:content-['​'_/_'']");
     }
   });
 
@@ -1045,8 +1126,8 @@ describe('Item', () => {
       <Item label="Item" startContent={<span data-testid="start">S</span>} />,
     );
     const hasStrut = () =>
-      rulesDeclaredFor(screen.getByTestId('start').parentElement!).some(rule =>
-        rule.slice(0, rule.indexOf('{')).includes('::before'),
+      classesOf(screen.getByTestId('start').parentElement!).some(className =>
+        className.startsWith('before:'),
       );
     expect(hasStrut()).toBe(false);
     rerender(
@@ -1565,12 +1646,12 @@ describe('swipe', () => {
     ).toBe(panel);
     // The window clips to the row's resting box and takes no touch; the
     // track that paints sits beside it at rest, so nothing shows.
-    const windowRules = rulesDeclaredFor(panel).join(';');
-    expect(windowRules).toContain('overflow: clip');
-    expect(windowRules).toContain('pointer-events: none');
-    const trackRules = rulesDeclaredFor(trackOf(row, 'leading')).join(';');
-    expect(trackRules).toContain('inset-inline-end: 100%');
-    expect(trackRules).not.toContain('padding');
+    expect(classesOf(panel)).toContain('overflow-clip');
+    expect(classesOf(panel)).toContain('pointer-events-none');
+    // The track sits at the inline end, and paints no padding of its own.
+    const trackClasses = classesOf(trackOf(row, 'leading'));
+    expect(trackClasses).toContain('end-full');
+    expect(trackClasses.filter(c => /^p[xy]?-/.test(c))).toEqual([]);
     // Nothing moved: the root carries no translation of the swipe's.
     expect(row.style.getPropertyValue('translate')).toBe('');
   });
@@ -1597,33 +1678,47 @@ describe('swipe', () => {
     // wrapper. The gesture wrote that geometry on the window: 144 px of
     // entries. The outermost adds its slide by the full swipe's confirm. No
     // entry's opacity reads the confirm: a cover hides the others at once.
-    const travel = 'var(--_item-swipe-travel,0px)';
-    const confirm = 'var(--_item-swipe-confirm,0)';
-    const declared = (element: Element | null, property: string) =>
-      rulesDeclaredFor(element as HTMLElement)
-        .flatMap(rule =>
-          rule.slice(rule.indexOf('{') + 1, rule.lastIndexOf('}')).split(';'),
-        )
-        .map(declaration => declaration.replace(/\s+/g, ''))
-        .filter(declaration => declaration.startsWith(`${property}:`));
-    const pinned = `calc(var(--_item-swipe-pin,0px)-var(--_item-swipe-sign,1)*min(var(--_item-swipe-sign,1)*${travel},var(--_item-swipe-open,0px)))`;
-    expect(declared(row, 'transform')).toEqual([
-      `transform:translate3d(${travel},0,0)`,
-    ]);
-    expect(declared(panelOf(row, 'leading'), 'transform')).toEqual([
-      `transform:translate3d(calc(-1*${travel}),0,0)`,
-    ]);
-    expect(declared(trackOf(row, 'leading'), 'transform')).toEqual([
-      `transform:translate3d(${travel},0,0)`,
-    ]);
+    // Each part moves by a class that reads only the gesture's variables; the
+    // class names carry the values, so the assertions read them from there. The
+    // class map escapes the variable name's leading underscore for the build
+    // (`\_`), so the class the element carries spells it plainly.
+    const translations = (element: Element | null) =>
+      classesOf(element as Element).filter(c => c.includes('translate3d'));
+    const varsRead = (className: string) =>
+      new Set(Array.from(className.matchAll(/var\(([^,)]+)/g), m => m[1]));
     const [other, outermost] = entriesOf(row, 'leading');
-    expect(declared(other, 'transform')).toEqual([
-      `transform:translate3d(${pinned},0,0)`,
-    ]);
-    expect(declared(other, 'opacity')).toEqual([]);
-    expect(declared(outermost, 'transform')).toEqual([
-      `transform:translate3d(calc(${pinned}+var(--_item-swipe-slide,0px)*${confirm}),0,0)`,
-    ]);
+    expect(translations(row)).toEqual([]);
+    const [panelTransform] = translations(panelOf(row, 'leading'));
+    expect(panelTransform).toContain(
+      'translate3d(calc(-1*var(--_item-swipe-travel,0px)),0,0)',
+    );
+    const [trackTransform] = translations(trackOf(row, 'leading'));
+    expect(trackTransform).toContain(
+      'translate3d(var(--_item-swipe-travel,0px),0,0)',
+    );
+    const [entryTransform] = translations(other);
+    expect(varsRead(entryTransform)).toEqual(
+      new Set([
+        '--_item-swipe-pin',
+        '--_item-swipe-sign',
+        '--_item-swipe-travel',
+        '--_item-swipe-open',
+      ]),
+    );
+    // The outer entry adds the two the full swipe writes, and moves by the same
+    // travel as the others.
+    const [outerTransform] = translations(outermost).filter(c =>
+      c.includes('confirm'),
+    );
+    expect(varsRead(outerTransform)).toEqual(
+      new Set([
+        ...varsRead(entryTransform),
+        '--_item-swipe-slide',
+        '--_item-swipe-confirm',
+      ]),
+    );
+    // No entry's opacity reads the confirm: a cover hides the others at once.
+    expect(classesOf(other).filter(c => c.startsWith('opacity-'))).toEqual([]);
     const geometry = (panelOf(row, 'leading') as HTMLElement).style;
     expect(geometry.getPropertyValue('--_item-swipe-pin')).toBe('144px');
     expect(geometry.getPropertyValue('--_item-swipe-sign')).toBe('1');
@@ -2601,7 +2696,7 @@ describe('swipe', () => {
         openRow(row);
         const [other] = entriesOf(row, 'leading');
         const isHidden = (element: Element) =>
-          rulesDeclaredFor(element).some(rule => rule.includes('opacity: 0'));
+          element.classList.contains('opacity-0');
         const f = finger(row);
         f.down(10);
         f.move(20);
@@ -2641,11 +2736,9 @@ describe('swipe', () => {
 
       describe('the cover', () => {
         const isHidden = (element: Element) =>
-          rulesDeclaredFor(element).some(rule => rule.includes('opacity: 0'));
+          element.classList.contains('opacity-0');
         const isCovered = (row: HTMLElement) =>
-          rulesDeclaredFor(trackOf(row, 'leading')).some(
-            rule => rule.includes('::before') && rule.includes('opacity: 1'),
-          );
+          trackOf(row, 'leading').classList.contains('before:opacity-100');
 
         it('keeps the outermost entry over the panel from the confirm until the row is home, with no frame of the other', async () => {
           const outer = vi.fn();
@@ -2924,14 +3017,8 @@ describe('swipe', () => {
         // opacity stays free for the cover. A disabled outermost entry never
         // confirms, so the track's cover fill never shows.
         const [, outer] = entriesOf(row, 'trailing');
-        const rules = rulesDeclaredFor(outer);
-        expect(rules.some(r => /filter: opacity\(0?\.5\)/.test(r))).toBe(true);
-        expect(
-          rules.some(
-            r =>
-              r.includes('::after') && r.includes('background-color: inherit'),
-          ),
-        ).toBe(true);
+        expect(classesOf(outer)).toContain('[filter:opacity(0.5)]');
+        expect(classesOf(outer)).toContain('after:bg-[inherit]');
       });
     });
 
@@ -2953,16 +3040,8 @@ describe('swipe', () => {
       });
       const leading = trackOf(row, 'leading');
       const trailing = trackOf(row, 'trailing');
-      expect(
-        rulesDeclaredFor(leading).some(r =>
-          r.includes('flex-direction: row-reverse'),
-        ),
-      ).toBe(true);
-      expect(
-        rulesDeclaredFor(trailing).some(r =>
-          r.includes('flex-direction: row-reverse'),
-        ),
-      ).toBe(false);
+      expect(classesOf(leading)).toContain('flex-row-reverse');
+      expect(classesOf(trailing)).not.toContain('flex-row-reverse');
       // The outermost entry is the last one, at the outer end. Its colour is
       // painted beside it out to the outer edge (a pseudo-element, no element),
       // so a slide-out fills the row with it. At rest, the track's cover fill
@@ -2971,18 +3050,10 @@ describe('swipe', () => {
       const [archiveEntry, deleteEntry] = entriesOf(row, 'trailing');
       expect(deleteEntry).toHaveTextContent('Delete');
       const outerFill = (entry: HTMLElement) =>
-        rulesDeclaredFor(entry).some(
-          r => r.includes('::after') && r.includes('background-color: inherit'),
-        );
+        classesOf(entry).includes('after:bg-[inherit]');
       expect(outerFill(deleteEntry)).toBe(true);
       expect(outerFill(archiveEntry)).toBe(false);
-      expect(
-        rulesDeclaredFor(trailing).some(
-          r =>
-            r.includes('::before') &&
-            r.includes('background-color: var(--color-error'),
-        ),
-      ).toBe(true);
+      expect(classesOf(trailing)).toContain('before:bg-[var(--color-error)]');
     });
   });
 

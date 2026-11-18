@@ -1741,8 +1741,8 @@ function generateColorOverrides(
 
 /**
  * Map a Text `size` prop value to its raw font-size token.
- * Mirrors `sizeStyles` in `Text/text.stylex.ts` (note `xsm` → `--font-size-xs`).
- * <!-- SYNC: packages/core/src/Text/text.stylex.ts (sizeStyles) -->
+ * Mirrors `SIZE_CLASS` in `Text/textClasses.ts` (note `xsm` → `--font-size-xs`).
+ * <!-- SYNC: packages/core/src/Text/textClasses.ts (SIZE_CLASS) -->
  */
 const TEXT_SIZE_TOKEN_MAP: Record<string, string> = {
   '4xs': 'var(--font-size-4xs)',

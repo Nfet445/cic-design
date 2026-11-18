@@ -13,7 +13,7 @@
  */
 
 import type {IconName} from './globalIconRegistry';
-import type {IconSize} from './IconSize.stylex';
+import type {IconSize} from './IconSize';
 
 /**
  * Icon variant names an application uses. Astryx defines none: a theme lists

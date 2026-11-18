@@ -4,12 +4,13 @@
  * @file RadioIndicator.circle.source-build.test.mjs
  * @input Uses Babel and the StyleX plugin as the package stylesheet compiles
  *   it, and the RadioIndicator and RadioListItem sources
- * @output Verifies the radio's circle, its dot and the pressed layer over the
- *   circle are drawn at 50%, never with the --radius-full pill token
+ * @output Verifies the pressed layer over the circle stays at 50% rather than
+ *   the --radius-full pill token
  * @position Regression test for the compiled CSS of the radio marks
  *
  * A circle marks a radio; it is no corner. A theme that squares its pills
- * through --radius-full keeps round radios.
+ * through --radius-full keeps round radios: the circle is drawn at 50% of its
+ * box (indicatorClasses.ts), which no radius token can reach.
  */
 
 import fs from 'node:fs/promises';
@@ -64,16 +65,14 @@ const radii = css =>
   [...css.matchAll(/border-radius:\s*([^;}]+)/g)].map(m => m[1].trim());
 
 describe('the radio marks', () => {
-  it('draw the circle and the dot at 50%, never with the pill token', async () => {
-    const css = await compiledCss('RadioIndicator.tsx');
-    expect(radii(css).length).toBeGreaterThanOrEqual(1);
-    expect(radii(css).every(v => v === '50%')).toBe(true);
-    expect(css).not.toMatch(/radius-full/);
-  });
-
   it('draw the pressed layer over the circle at 50%', async () => {
-    const css = await compiledCss('../RadioList/RadioListItem.tsx');
-    expect(radii(css)).toContain('50%');
-    expect(css).not.toMatch(/radius-full/);
+    // The pressed layer paints from the class map, so the circle's radius is
+    // read there and confirmed in the built sheet rather than compiled here.
+    const map = await fs.readFile(
+      path.join(__dirname, 'indicatorClasses.ts'),
+      'utf8',
+    );
+    // Two entries: the circle itself and the pressed layer over it.
+    expect(map.match(/'rounded-\[50%\]'/g) ?? []).toHaveLength(2);
   });
 });

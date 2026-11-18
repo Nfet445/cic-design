@@ -77,8 +77,8 @@ const STRUCTURAL_VARS = new Set([
   '--layout-padding-own-outer-y',
   '--layout-content-width',
   '--appshell-header-height',
-  '--dialog-dir-x',
-  '--dialog-dir-y',
+  '--astryx-dialog-dir-x',
+  '--astryx-dialog-dir-y',
   '--indicator-color',
   '--indicator-width',
   '--table-resize-height',
@@ -143,6 +143,11 @@ const STRUCTURAL_VARS = new Set([
   '--_sheet-scrim-opacity',
   '--_sheet-scrim-duration',
   '--_sheet-scrim-easing',
+  // The caption's toggle place paints its generated lines through this
+  // content string: 240 no-break-space lines, written inline by Lightbox and
+  // read by the place's `::before`. Runtime plumbing, never authored by a
+  // theme.
+  '--_lightbox-caption-place-lines',
 ]);
 
 /**
@@ -288,11 +293,13 @@ const DIR_TO_REGISTRY_KEY: Record<string, string> = {
   HoverCard: 'hover-card',
   Icon: 'icon',
   Item: 'item',
+  Layout: 'layout',
   NumberInput: 'number-input',
   Popover: 'popover',
   ProgressBar: 'progress-bar-mark',
   Section: 'section',
   SegmentedControl: 'segmented-control',
+  Skeleton: 'skeleton',
   TextArea: 'text-area',
 };
 
@@ -330,7 +337,16 @@ const PRIVATE_SYSTEM_VARS = new Set([
   // publication beside container().
   '--_container-corner-block-start',
   '--_container-corner-block-end',
+  // The software keyboard's height, measured when the sheet opens and written
+  // inline on the panel. The space it takes is a device fact, not a design
+  // decision, so a theme cannot set it.
+  '--astryx-bottom-sheet-keyboard-inset',
 ]);
+
+// The shared focus ring publishes this offset; a component that needs the ring
+// inside its own box sets it per instance (`calc(-1 * var(--focus-outline-width))`)
+// without owning the name, so every component may inline it.
+const SHARED_RING_VARS = ['--focus-outline-offset'];
 
 const CROSS_COMPONENT_VARS: Record<string, string[]> = {
   Carousel: ['--_button-radius'],
@@ -368,17 +384,65 @@ const CROSS_COMPONENT_VARS: Record<string, string[]> = {
  */
 const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // No standard CSS property maps onto these — they are component behaviors.
+  // A per-instance minimum width: the `menuWidth` prop writes the variable and
+  // the width class reads it. No standard property maps the prop onto a theme.
+  '--astryx-context-menu-min-inline-size',
+  // Markdown's `contentWidth` prop writes both on each block and a class reads
+  // them, so no standard property is the theme's lever.
+  '--astryx-markdown-prose-width',
+  '--astryx-markdown-block-width',
+  // The `minWidth` prop writes it and each size class reads it with its own
+  // fallback, so no standard property is the theme's lever.
+  '--astryx-nav-heading-menu-min-inline-size',
+  // The menu surface's per-instance size: `menuWidth` and `menuMaxHeight` write
+  // the variables and the size classes read them, so no standard property is
+  // the theme's lever.
+  '--astryx-dropdown-menu-inline-size',
+  '--astryx-dropdown-menu-max-block-size',
   '--button-focus-offset',
   '--button-icon-only-aspect',
   '--_avatar-group-overlap',
   '--_field-status-overlap',
   '--_codeblock-gutter-width',
   '--_tab-indicator-bottom',
+  // The layer viewport fit writes these three on the anchored layer at render
+  // time; no theme author sets a popover's size cap or width.
+  '--astryx-popover-max-inline-size',
+  '--astryx-popover-max-block-size',
+  '--astryx-popover-width',
+  // A result list's per-instance geometry: `menuWidth` writes the width and the
+  // held block size comes from the measured list, so no standard property is
+  // the theme's lever for either.
+  '--astryx-typeahead-menu-width',
+  '--astryx-typeahead-held-block-size',
   // Hit-area outset on a ::after overlay, and whether that overlay is
   // generated at all — `inset` and `content` on a pseudo-element are not
   // properties a theme author sets on the component.
   '--_thumbnail-hit-inset',
   '--_power-search-sheet-hit-inset',
+  // The content width again, read by the gutter padding that aligns a region to
+  // the capped content. Both sides derive from one value, so no single standard
+  // property maps onto it: a theme sets the cap through maxWidth and
+  // `--astryx-layout-content-width`, which this follows.
+  '--astryx-layout-alignment-width',
+  // A wheel pane's block size: one geometry constant shared by TimeInput and
+  // the touch date wheels. No standard property maps onto it; a theme sizes
+  // the control through the field family, not through this.
+  '--astryx-time-wheels-block-size',
+  // A date wheel's geometry and per-row paint. The sizes are constants the
+  // wheel shares with its touch siblings; the colour and weight are read from
+  // the text tokens, so a theme changes those tokens, not these vars.
+  '--astryx-date-pane-block-size',
+  // The month scroller's measured geometry: where each pane sits, how wide it
+  // is, and the whole strip's width. All three are written from the scrollport
+  // the scroller measured, so no theme value stands behind them.
+  '--astryx-date-pane-inline-start',
+  '--astryx-date-pane-inline-size',
+  '--astryx-date-spacer-inline-size',
+  '--astryx-date-wheel-item-size',
+  '--astryx-date-wheel-row-offset',
+  '--astryx-date-wheel-row-color',
+  '--astryx-date-wheel-row-weight',
   // The border width a host draws where its touch hit layer reaches past,
   // such as a divided ListItem's divider (0 on the last row).
   // The ::after layer adds it to its offset, so the band starts past the
@@ -425,6 +489,10 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   '--tree-list-indent',
   '--_tree-indent',
   '--tree-list-row-gap',
+  // Published by TreeListBranches on each row's guide column: how far that
+  // branch's connector sits from the row's inline start. It is measured per
+  // depth from the indent above, so a theme sets the indent, not this.
+  '--astryx-tree-list-branch-offset',
   // Published by each treeitem while it has keyboard focus and read as its
   // row's z-index, so the focused row paints above the guide lines. Focus
   // state, not a value a theme author sets.
@@ -460,6 +528,21 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   // control — a theme reaches them by setting the vars directly.
   '--_item-label-color',
   '--_item-description-color',
+  // A line count, not a property value: Item sets it inline from the
+  // `labelLines`/`descriptionLines` prop and the clamp class reads it. A theme
+  // changes the line count through the prop, not through CSS.
+  '--astryx-item-line-clamp',
+  // A row height the caller sized (a virtualized body hands each row its own).
+  // BaseTable writes it inline per row and the fixed-height class reads it, so
+  // no standard property is the theme's lever.
+  '--astryx-table-row-height',
+  // The rail's geometry per page, and the caption toggle's measured width and
+  // line count: Lightbox writes all three on render and its own classes read
+  // them. No standard property maps a page's index or a measured toggle onto
+  // a theme.
+  '--astryx-lightbox-page-offset',
+  '--astryx-lightbox-caption-toggle-width',
+  '--astryx-lightbox-caption-toggle-lines',
 ]);
 
 // ---------------------------------------------------------------------------
@@ -470,7 +553,10 @@ describe('component CSS vars are documented and themeable', () => {
   const components = discoverComponents();
 
   for (const {dir, sourceVars, docVars, docDerived} of components) {
-    const crossVars = new Set(CROSS_COMPONENT_VARS[dir] || []);
+    const crossVars = new Set([
+      ...(CROSS_COMPONENT_VARS[dir] || []),
+      ...SHARED_RING_VARS,
+    ]);
 
     it(`${dir}: all source vars are in doc file`, () => {
       const undocumented = sourceVars.filter(

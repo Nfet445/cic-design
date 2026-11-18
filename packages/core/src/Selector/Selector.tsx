@@ -33,7 +33,6 @@ import React, {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useTooltip} from '../Tooltip';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import {useIndicator} from '../Indicator';
@@ -42,34 +41,44 @@ import type {IndicatorComponent, IndicatorMap} from '../Indicator/types';
 import type {IconName} from '../Icon';
 import {
   Field,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
 } from '../Field';
 import {Divider} from '../Divider';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
-import {reducedMotionFadeConsts} from '../motion/reducedMotion.stylex';
 import {useKeepLayerOpenProps, type LayerPlacement} from '../Layer/useLayer';
-import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import {InternalInputClearButton} from '../Field/InputClearButton';
 import {Spinner} from '../Spinner';
 import {PanelSearchInput} from '../Field/PanelSearchInput';
 import {useKeyboardHighlight} from '../hooks/useKeyboardHighlight';
 import {useAnnounce} from '../hooks/useAnnounce';
 import {useAnnounceRenderedText} from '../hooks/useAnnounceRenderedText';
+import {tw} from '../utils/tw';
+import {SELECTOR_TRIGGER_SIZE_CLASS} from './selectorOptionClasses';
 import {
-  colorVars,
-  sizeVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  typographyVars,
-  fontWeightVars,
-  typeScaleVars,
-  borderVars,
-  focusVars,
-} from '../theme/tokens.stylex';
+  SELECTOR_STATUS_BUTTON_CLASS,
+  SELECTOR_TRIGGER_BUTTON_IN_GROUP_CLASS,
+  SELECTOR_TRIGGER_ICON_CLASS,
+  SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+  SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+  SELECTOR_TRIGGER_LABEL_CLASS,
+  SELECTOR_TRIGGER_VALUE_CLASS,
+  SELECTOR_TRIGGER_VALUE_IN_GROUP_CLASS,
+  selectorDividerClassName,
+  selectorEmptyStateClassName,
+  selectorListboxClassName,
+  selectorListboxHiddenClassName,
+  selectorListboxInputInsetClassName,
+  selectorListboxTouchClassName,
+  selectorListboxTouchScrollClassName,
+  selectorPopoverClassName,
+  selectorSearchPanelClassName,
+  selectorSearchRowInsetClassName,
+  selectorSectionHeadingClassName,
+  selectorTriggerButtonClassName,
+  selectorTriggerClassName,
+} from './selectorClasses';
 import type {SelectorOptionType, SelectorOptionData} from './types';
 import {isOptionData, isDivider, isSection, normalizeOption} from './utils';
 import {getSelectableOptionEntries} from './selectableOptionEntries';
@@ -95,14 +104,17 @@ import {useInteractionModalityTracking} from '../utils/interactionModality';
 import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   focusOwnerProps,
-  focusWithinOwner,
+  focusOwnerRingClassName,
 } from '../privateAttributes/focusOwner.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {usePressFeedback} from '../hooks/usePressFeedback';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -110,6 +122,11 @@ import type {AdaptivePresentation} from '../hooks/useAdaptivePresentation';
 import {SelectorBottomSheet} from './SelectorBottomSheet';
 import {useSelectorPresentation} from './useSelectorPresentation';
 import {selectorPresentationStyles} from './selectorPresentation.stylex';
+import {
+  SELECTOR_ROW_CONTENT_CLASS,
+  SELECTOR_ROW_MARK_COLUMN_CLASS,
+  selectorOptionRowClassName,
+} from './selectorOptionClasses';
 import type {FieldStatusPlacement} from '../Field/fieldStatusPlacement';
 import {
   registerEnglishFallback,
@@ -129,482 +146,6 @@ const MOST_ROWS_THAT_FIT = 12;
 
 // Private runtime state. No app or theme sets it.
 const OVERLAY_MARGIN_PROPERTY = '--_selector-overlay-margin';
-
-/**
- * The trigger's own list is open. A press does not scale the box then, so the
- * list anchors to the box at rest.
- */
-const LAYER_OPEN: string = ':has([aria-expanded="true"])';
-
-const styles = stylex.create({
-  // Trigger container — the enhanced click target wrapping the combobox button and clear button as siblings
-  triggerContainer: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    fontFamily: typographyVars['--font-family-body'],
-    // The 16px floor is iOS-only: iOS Safari zooms the page when a focused
-    // control sits under 16px, and only iOS WebKit implements
-    // -webkit-touch-callout to key the coarse-pointer floor to it.
-    fontSize: {
-      default: typeScaleVars['--text-label-size'],
-      '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': `max(1rem, ${typeScaleVars['--text-label-size']})`,
-      },
-    },
-    // The line box is set per size in sizeStyles below, where it can be capped
-    // to what that size token holds.
-    color: colorVars['--color-text-primary'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // Trigger button — the actual combobox button, visually integrated with the container
-  trigger: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minWidth: 0,
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-    color: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    // The wrapper (inputWrapperStyles.base) renders the focus ring via
-    // :focus-within when this button is focused, matching TextInput/NumberInput.
-    // The button must not draw its own :focus-visible outline or the two stack
-    // into a doubled ring over the trigger.
-    outline: 'none',
-  },
-  triggerPlaceholder: {
-    color: colorVars['--color-text-secondary'],
-  },
-  triggerLabel: {
-    flexGrow: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    textAlign: 'start',
-  },
-  // Inside an InputGroup the group's own height is the row, and the trigger
-  // takes it: `height: 100%` from `groupStyles.inGroup` can only govern if the
-  // trigger stops asserting a floor of its own — otherwise a control sized
-  // above its group (`<InputGroup size="md"><Selector size="lg">`) grows the
-  // row it was supposed to sit in. The padding goes with it: the row is
-  // already the size token, and the value box is centred in it. The line box
-  // likewise stops reading the control's own size token (sizeStyles caps it
-  // there), so grouped triggers keep one line box whatever their `size`.
-  triggerInGroup: {
-    minHeight: 0,
-    paddingBlock: 0,
-    lineHeight: `max(${spacingVars['--spacing-5']}, 20px, 1rem)`,
-  },
-  // Wrapper for `renderValue` output. Takes the free width and clips
-  // horizontally so a long value ellipsizes rather than widening the trigger;
-  // vertically the content sizes the control, which the size styles below
-  // handle.
-  triggerValue: {
-    flexGrow: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textAlign: 'start',
-  },
-  // Inside an InputGroup the row height is the group's, so the trigger clamps
-  // its own value box to that row rather than asking the value to fit it: any
-  // node is cut off at the row's edge instead of bleeding through the border
-  // over whatever sits above and below the group. The rows the system draws
-  // itself never reach the cut — the row-layout context folds them onto one
-  // line first (SelectorRowLayoutContext).
-  //
-  // The clamp is a percentage, not the size token, because a group can be a
-  // different size than the control inside it; the row is whatever the group
-  // made it. That needs a definite height to resolve against, which is what
-  // stretching the button provides.
-  triggerButtonInGroup: {
-    alignSelf: 'stretch',
-  },
-  triggerValueInGroup: {
-    maxHeight: '100%',
-  },
-  // Only what Icon does not already provide: `size="sm"` gives the 16px box
-  // and `color` the token, but the glyph still must not shrink inside the flex
-  // trigger.
-  triggerIcon: {
-    flexShrink: 0,
-  },
-  // Rotation lives on the chevron glyph itself (passed through `xstyle`), not
-  // on the layout wrapper above, so the icon's `selector-indicator-icon` theme
-  // target and the open/closed transform sit on one element — a theme can
-  // restyle the mark and its rotation through a single selector. The wrapper
-  // keeps only layout. The status branch renders a different icon, so it never
-  // picks these up and needs no transition opt-out.
-  triggerIconRotation: {
-    transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    transformOrigin: 'center',
-  },
-  triggerIconOpen: {
-    transform: 'rotate(180deg)',
-  },
-  // Ghost has no borders, so its spacing row never overshoots the token; it
-  // keeps the uncapped line box from before the sizeStyles cap.
-  triggerGhost: {
-    width: 'auto',
-    borderWidth: 0,
-    lineHeight: `max(${spacingVars['--spacing-5']}, 20px, 1rem)`,
-    backgroundColor: 'transparent',
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': 'none',
-        },
-      ':focus-within': 'none',
-    },
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the list opens.
-      [LAYER_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transform: {
-      default: 'scale(1)',
-      // A mouse press; under a coarse pointer the touch press model writes
-      // `data-astryx-press` instead (see interactionOverlay.stylex.ts).
-      [`:active:not(${LAYER_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-      },
-      [`[data-astryx-press="on"]:not(${LAYER_OPEN})`]: 'scale(0.98)',
-    },
-  },
-  // Secondary is ghost's chrome with the resting fill of a secondary
-  // button (`--color-neutral`): no border, no shadow, content width, so a
-  // selector in a nav reads as the sibling of the secondary buttons and
-  // segmented controls beside it instead of as a form field. The hover and
-  // pressed answers still come from the shared interaction overlay, layered
-  // over the fill via backgroundImage.
-  triggerSecondary: {
-    width: 'auto',
-    borderWidth: 0,
-    lineHeight: `max(${spacingVars['--spacing-5']}, 20px, 1rem)`,
-    backgroundColor: colorVars['--color-neutral'],
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': 'none',
-        },
-      ':focus-within': 'none',
-    },
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the list opens.
-      [LAYER_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transform: {
-      default: 'scale(1)',
-      [`:active:not(${LAYER_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-      },
-      [`[data-astryx-press="on"]:not(${LAYER_OPEN})`]: 'scale(0.98)',
-    },
-  },
-  triggerGhostDisabled: {
-    backgroundImage: 'none',
-    transform: {
-      default: 'none',
-      ':active': 'none',
-      '[data-astryx-press="on"]': 'none',
-    },
-  },
-  triggerReadOnly: {
-    cursor: 'default',
-  },
-  triggerGhostReadOnly: {
-    backgroundImage: 'none',
-    transform: {
-      default: 'none',
-      ':active': 'none',
-      '[data-astryx-press="on"]': 'none',
-    },
-  },
-
-  // Clear button
-  statusButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-  },
-
-  // A panel with a search field, capped as a whole.
-  searchPanel: {
-    display: 'flex',
-    flexDirection: 'column',
-    // No taller than its layer's block-size cap, which folds in the software
-    // keyboard's. The search field's row keeps its height, and the list takes
-    // what is left.
-    maxHeight: stylex.firstThatWorks(
-      `calc(${layerViewportInset.maxBlockSize})`,
-      `calc(${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-  },
-
-  // Dropdown container
-  dropdown: {
-    boxSizing: 'border-box',
-    // In a search panel, the list shrinks below its content to fit the cap.
-    minHeight: 0,
-    // 300 px, and no taller than its layer's block-size cap, which folds in
-    // the software keyboard's: the list ends above the keyboard with the
-    // layer.
-    maxHeight: stylex.firstThatWorks(
-      `min(300px, ${layerViewportInset.maxBlockSize})`,
-      `min(300px, ${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-    overflowY: 'auto',
-    outline: 'none',
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-1'],
-    opacity: 1,
-    // Under Reduce Motion the list appears at once on a fine pointer, and
-    // takes the shared cross-fade on a coarse one.
-    transitionProperty: 'opacity',
-    transitionDuration: {
-      default: durationVars['--duration-fast'],
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-        reducedMotionFadeConsts.duration,
-      '@media (prefers-reduced-motion: reduce) and (not (pointer: coarse))':
-        '0s',
-    },
-    transitionTimingFunction: {
-      default: 'ease',
-      '@media (prefers-reduced-motion: reduce) and (pointer: coarse)':
-        reducedMotionFadeConsts.easing,
-    },
-  },
-  dropdownInput: {
-    // The input trigger's text inset includes its border. Mirror that extra
-    // pixel in the menu; the borderless secondary/ghost variants need no correction.
-    paddingInline: `calc(${spacingVars['--spacing-1']} + ${borderVars['--border-width']})`,
-  },
-  // Scroll ownership by the browser's own signal, as the menus declare it: a
-  // list whose options fit keeps every one-finger move, so a slide over the
-  // options stays a slide; one that scrolls lets the browser pan it vertically
-  // and cancel the press when it does. Both leave a two-finger pinch to the
-  // browser, so the page stays zoomable over an open list.
-  touchPinchZoom: {
-    touchAction: 'pinch-zoom',
-  },
-  touchPanYPinchZoom: {
-    touchAction: 'pan-y pinch-zoom',
-    overscrollBehavior: 'contain',
-  },
-  // Same correction for the search row's gutter, so the search field and the
-  // option rows share one left edge.
-  searchRowInput: {
-    paddingInline: `calc(${spacingVars['--spacing-1']} + ${borderVars['--border-width']})`,
-  },
-  dropdownHidden: {
-    opacity: 0,
-    // A longhand: the shorthand would lose to the list's longhands.
-    transitionProperty: 'none',
-  },
-
-  // Popover container (for anchor positioning)
-  popover: {
-    minWidth: 'anchor-size(width)',
-  },
-
-  // Empty state
-  emptyState: {
-    padding: spacingVars['--spacing-3'],
-    textAlign: 'center',
-    color: colorVars['--color-text-secondary'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-  },
-
-  // Section heading. Plain secondary text, no rules — the same treatment
-  // DropdownMenu and CommandPaletteGroup already use for a group heading in a
-  // panel list. A labeled Divider (line–text–line) reads as a separator, and
-  // next to the search row's own divider it stacked two rules a few pixels
-  // apart.
-  sectionHeading: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    userSelect: 'none',
-  },
-
-  // Divider
-  divider: {
-    marginBlock: spacingVars['--spacing-1'],
-  },
-
-  // Individual item
-  item: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    padding: spacingVars['--spacing-2'],
-    borderRadius: radiusVars['--radius-element'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    textAlign: 'start',
-    outlineStyle: 'none',
-  },
-  itemContent: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    flex: 1,
-    minWidth: 0,
-  },
-  // The wrapper keeps a visible mark at either logical position and lets a
-  // replacement indicator grow beyond the default 1rem minimum. When the
-  // resolved indicator draws nothing, `:empty` removes the wrapper from layout
-  // instead of reserving blank space. Selected and unselected labels may
-  // therefore shift or have different available width by design (AST-004).
-  itemMarkColumn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    minWidth: '1rem',
-    ':empty': {
-      display: 'none',
-    },
-  },
-  itemCheckmark: {
-    flexShrink: 0,
-    width: 16,
-    height: 16,
-    color: colorVars['--color-icon-primary'],
-  },
-  itemHighlighted: {
-    backgroundColor: colorVars['--color-overlay-hover'],
-  },
-  // The fill alone does not reach 3:1 against the listbox. After keyboard
-  // input, the active option also draws the standard focus ring, inside the
-  // row by its own width, as a focused menu row does.
-  itemKeyboardHighlighted: {
-    outlineWidth: focusVars['--focus-outline-width'],
-    outlineStyle: focusVars['--focus-outline-style'],
-    outlineColor: focusVars['--focus-outline-color'],
-    outlineOffset: `calc(-1 * ${focusVars['--focus-outline-width']})`,
-  },
-  itemSelected: {
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  itemDisabled: {
-    opacity: 0.5,
-    cursor: 'default',
-  },
-});
-
-// The trigger is sized by PADDING, not by a fixed height, so it is the size
-// token plus one text line for each extra line the value uses: 28/32/36 for
-// one line, 48/52/56 for two with the default tokens, where the token and a
-// text line are both multiples of 4 and the trigger lines up with the Buttons
-// and inputs beside it. No prop picks the height — the content does.
-//
-// The line box is `--spacing-5`, floored at the 20px clear control and 1rem
-// icons. When that row would not fit inside the size token's borders, it is
-// capped at what the token holds, so a spacing scale taller than the token
-// cannot push a one-line trigger past it. The cap never goes below 1.5em of
-// the trigger's own font — the type scale's loosest target leading, a
-// conservative bound above a label's glyph extent — so label text too large
-// for the token keeps room rather than being clipped. Line box and padding
-// read the same value; nothing changes wherever the row already fit. Ghost and
-// grouped triggers keep the uncapped line box. `renderValue` content inherits
-// this row like the built-in label; content that sets a larger font should set
-// its own line height, as it must at any spacing scale.
-// Keep these calculations inline: a consumer's Babel preset can lower a
-// module-scope helper to a function expression before StyleX evaluates this
-// object, and StyleX cannot constant-evaluate that transformed helper.
-
-const sizeStyles = stylex.create({
-  sm: {
-    minHeight: sizeVars['--size-element-sm'],
-    lineHeight: `max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-sm']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem)`,
-    paddingBlock: `calc((${sizeVars['--size-element-sm']} - max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-sm']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem) - 2 * ${borderVars['--border-width']}) / 2)`,
-  },
-  md: {
-    minHeight: sizeVars['--size-element-md'],
-    lineHeight: `max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-md']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem)`,
-    paddingBlock: `calc((${sizeVars['--size-element-md']} - max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-md']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem) - 2 * ${borderVars['--border-width']}) / 2)`,
-  },
-  lg: {
-    minHeight: sizeVars['--size-element-lg'],
-    lineHeight: `max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-lg']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem)`,
-    paddingBlock: `calc((${sizeVars['--size-element-lg']} - max(min(${spacingVars['--spacing-5']}, max(${sizeVars['--size-element-lg']} - 2 * ${borderVars['--border-width']}, 1.5em)), 20px, 1rem) - 2 * ${borderVars['--border-width']}) / 2)`,
-  },
-});
-
-/**
- * Size-specific overrides for dropdown list items.
- * Matches the pattern used by DropdownMenuItem so that
- * an `sm` selector renders compact list items, `md`/`lg` use
- * the base padding defined in `styles.item`.
- */
-const itemSizeStyles = stylex.create({
-  sm: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  md: {
-    paddingBlock: spacingVars['--spacing-1-5'],
-  },
-  lg: {},
-});
 
 const STATUS_ICON_MAP: Record<SelectorStatusType, IconName> = {
   warning: 'warning',
@@ -1016,7 +557,7 @@ const SelectorOptionRow = memo(function SelectorOptionRow({
    * in the row; the indicator owns what the mark looks like.
    */
   const mark = (
-    <span {...stylex.props(styles.itemMarkColumn)}>
+    <span className={SELECTOR_ROW_MARK_COLUMN_CLASS}>
       <SelectionMark
         state={isSelected ? 'checked' : 'unchecked'}
         size="sm"
@@ -1027,7 +568,7 @@ const SelectorOptionRow = memo(function SelectorOptionRow({
   );
 
   const optionContent = (
-    <span {...stylex.props(styles.itemContent)}>
+    <span className={SELECTOR_ROW_CONTENT_CLASS}>
       {renderOption ? renderOption(item) : <DefaultOption option={item} />}
     </span>
   );
@@ -1055,14 +596,15 @@ const SelectorOptionRow = memo(function SelectorOptionRow({
           selected: isSelected ? 'selected' : null,
           disabled: item.disabled ? 'disabled' : null,
         }),
-        stylex.props(
-          styles.item,
-          itemSizeStyles[size],
-          isHighlighted && styles.itemHighlighted,
-          isKeyboardHighlighted && styles.itemKeyboardHighlighted,
-          isSelected && styles.itemSelected,
-          item.disabled && styles.itemDisabled,
-        ),
+        // The third positional argument is a class string, not a props
+        // object: an object there is read as the inline style.
+        selectorOptionRowClassName({
+          isDisabled: item.disabled === true,
+          isHighlighted,
+          isKeyboardHighlighted,
+          isSelected,
+          size,
+        }),
       )}>
       {indicatorPosition === 'start' ? (
         <>
@@ -1444,7 +986,7 @@ export function Selector<T extends SelectorOptionType>(
       surfaceTarget: 'selector-popup',
       // The entrance runs on the surface: an anchored layer lays out again on
       // each frame its own style animates.
-      xstyle: layerAnimations[placement ?? 'below'],
+      className: layerAnimations[placement ?? 'below'],
       // The overlay margin moves the list after the show, so the overlay
       // writes the entrance's side once it has moved.
       writesEntranceSide: shouldOverlaySelectedItem,
@@ -1854,11 +1396,12 @@ export function Selector<T extends SelectorOptionType>(
           label: t('@astryx.selector.searchOptions'),
         })}
         {...themeProps('selector-search')}
-        xstyle={
+        className={tw(
+          themeProps('selector-search').className,
           surface.activePresentation === 'popover' &&
-          variant === 'input' &&
-          styles.searchRowInput
-        }
+            variant === 'input' &&
+            selectorSearchRowInsetClassName,
+        )}
         // When hasSearch is set, focus moves into this input on open, so it —
         // not the trigger — must be the combobox that reports the highlighted
         // option via aria-activedescendant (comboboxes-4). A bare searchbox
@@ -2004,7 +1547,8 @@ export function Selector<T extends SelectorOptionType>(
           role="presentation"
           {...mergeProps(
             themeProps('selector-empty-state'),
-            stylex.props(styles.emptyState),
+            undefined,
+            selectorEmptyStateClassName,
           )}>
           {isSearching ? emptySearchText : emptyText}
         </div>,
@@ -2031,7 +1575,7 @@ export function Selector<T extends SelectorOptionType>(
           <Divider
             key={`divider-${i}`}
             aria-hidden="true"
-            xstyle={styles.divider}
+            className={selectorDividerClassName}
           />,
         );
       } else if (isSection(option)) {
@@ -2061,7 +1605,8 @@ export function Selector<T extends SelectorOptionType>(
                 aria-hidden="true"
                 {...mergeProps(
                   themeProps('selector-section-heading'),
-                  stylex.props(styles.sectionHeading),
+                  undefined,
+                  selectorSectionHeadingClassName,
                 )}>
                 {option.title}
               </div>
@@ -2101,10 +1646,10 @@ export function Selector<T extends SelectorOptionType>(
 
   // Two lines cannot fit inside an InputGroup: the group pins the row height,
   // and the trigger clamps its value box to one line so nothing bleeds through
-  // its border (styles.triggerValueInGroup). The clamp holds for any node; the
-  // context is what lets the rows the system draws itself reflow into that one
-  // line — label and description side by side — instead of being cut off at
-  // it. Outside a group the caller's own row decides, and the trigger's
+  // its border (SELECTOR_TRIGGER_VALUE_IN_GROUP_CLASS). The clamp holds for any
+  // node; the context is what lets the rows the system draws itself reflow into
+  // that one line — label and description side by side — instead of being cut
+  // off at it. Outside a group the caller's own row decides, and the trigger's
   // padding sizes it to whatever that draws.
   const rowLayout = inputGroup ? 'inline' : 'stacked';
 
@@ -2116,9 +1661,9 @@ export function Selector<T extends SelectorOptionType>(
       <SelectorRowLayoutContext value={rowLayout}>
         <span
           id={valueTextId}
-          {...stylex.props(
-            styles.triggerValue,
-            inputGroup && styles.triggerValueInGroup,
+          className={tw(
+            SELECTOR_TRIGGER_VALUE_CLASS,
+            inputGroup && SELECTOR_TRIGGER_VALUE_IN_GROUP_CLASS,
           )}>
           {renderValue(selectedItem)}
         </span>
@@ -2128,7 +1673,7 @@ export function Selector<T extends SelectorOptionType>(
         {!startIcon &&
           selectedItem?.icon != null &&
           renderIconSlot(selectedItem.icon, {size: 'sm', color: 'secondary'})}
-        <span id={valueTextId} {...stylex.props(styles.triggerLabel)}>
+        <span id={valueTextId} className={SELECTOR_TRIGGER_LABEL_CLASS}>
           {selectedItem?.label ?? placeholder}
         </span>
       </>
@@ -2162,7 +1707,7 @@ export function Selector<T extends SelectorOptionType>(
     (selectedItem != null || placeholder != null);
 
   const panelContent = hasSearch ? (
-    <div {...stylex.props(styles.searchPanel)}>
+    <div className={selectorSearchPanelClassName}>
       {renderSearch()}
       <Divider />
       <div
@@ -2171,14 +1716,14 @@ export function Selector<T extends SelectorOptionType>(
         role="listbox"
         aria-label={label}
         {...listboxPress.menuProps}
-        {...stylex.props(
-          styles.dropdown,
+        className={tw(
+          selectorListboxClassName,
           listboxHasOverflow
-            ? styles.touchPanYPinchZoom
-            : styles.touchPinchZoom,
+            ? selectorListboxTouchScrollClassName
+            : selectorListboxTouchClassName,
           surface.activePresentation === 'popover' &&
             variant === 'input' &&
-            styles.dropdownInput,
+            selectorListboxInputInsetClassName,
         )}>
         {renderOptions()}
       </div>
@@ -2204,15 +1749,17 @@ export function Selector<T extends SelectorOptionType>(
           ? handleTriggerKeyDown
           : undefined
       }
-      {...stylex.props(
-        styles.dropdown,
-        listboxHasOverflow ? styles.touchPanYPinchZoom : styles.touchPinchZoom,
+      className={tw(
+        selectorListboxClassName,
+        listboxHasOverflow
+          ? selectorListboxTouchScrollClassName
+          : selectorListboxTouchClassName,
         surface.activePresentation === 'popover' &&
           variant === 'input' &&
-          styles.dropdownInput,
+          selectorListboxInputInsetClassName,
         surface.activePresentation === 'popover' &&
           !isPositioned &&
-          styles.dropdownHidden,
+          selectorListboxHiddenClassName,
       )}>
       {renderOptions()}
     </div>
@@ -2239,10 +1786,8 @@ export function Selector<T extends SelectorOptionType>(
       // The system's standard menu clearance, except in overlay mode:
       // there the measured negative margin owns the block geometry and
       // the menu is meant to sit on the trigger, not clear it.
-      offset: shouldOverlaySelectedItem
-        ? undefined
-        : spacingVars['--spacing-1'],
-      xstyle: styles.popover,
+      offset: shouldOverlaySelectedItem ? undefined : 'var(--spacing-1)',
+      className: selectorPopoverClassName,
       style: popoverOffsetStyle,
     });
   }
@@ -2288,10 +1833,9 @@ export function Selector<T extends SelectorOptionType>(
       surface.onTriggerFocus(event);
     },
     tabIndex: 0,
-    ...stylex.props(
-      styles.trigger,
-      isEffectivelyReadOnly && styles.triggerReadOnly,
-      inputGroup && styles.triggerButtonInGroup,
+    className: tw(
+      selectorTriggerButtonClassName({isReadOnly: isEffectivelyReadOnly}),
+      inputGroup && SELECTOR_TRIGGER_BUTTON_IN_GROUP_CLASS,
     ),
   };
 
@@ -2318,45 +1862,46 @@ export function Selector<T extends SelectorOptionType>(
             readonly: isEffectivelyReadOnly ? 'readonly' : null,
           }),
           stylex.props(
-            inputWrapperStyles.base,
-            styles.triggerContainer,
-            sizeStyles[size],
-            variant === 'ghost' && styles.triggerGhost,
-            variant === 'secondary' && styles.triggerSecondary,
-            variant !== 'input' && interactionOverlayStyles.backgroundImage,
+            variant !== 'input' && interactionOverlayStyles.pressedAlpha,
+            surface.isTriggerFocusRingSuppressed &&
+              selectorPresentationStyles.pointerRestoredFocus,
+          ),
+          tw(
+            selectorTriggerClassName({
+              variant,
+              hasValue: !!selectedItem,
+              isInert:
+                variant !== 'input' && (isDisabled || isEffectivelyReadOnly),
+              // Grouped secondary triggers keep their neutral fill but take the
+              // group's row height, connected edge radii, and focus stacking.
+              inGroup:
+                variant === 'input' && !!status && !isDisabled && !!inputGroup,
+            }),
+            variant !== 'ghost' && inputGroup && inputGroupMemberClassName,
+            fieldInputWrapperClassName({
+              status: variant === 'input' ? status?.type : undefined,
+            }),
+            isDisabled && fieldInputWrapperDisabledClassName,
+            variant === 'input' &&
+              isDisabled &&
+              !surface.isTriggerFocusRingSuppressed &&
+              fieldInputWrapperFocusScopeClassName.direct,
+            controlClassName,
+            // The hover and press paint; its strength and release stay the
+            // StyleX arm above.
+            variant !== 'input' && interactionOverlayBackgroundImageClassName,
+            // A grouped trigger takes the group's row height; its own size
+            // stops asserting one, as `triggerInGroup` did when both were
+            // StyleX declarations in one sheet.
+            !inputGroup && SELECTOR_TRIGGER_SIZE_CLASS[size],
             // Rings for the trigger button only. The clear and status
             // buttons ring themselves.
             variant !== 'input' &&
               !surface.isTriggerFocusRingSuppressed &&
-              focusWithinOwner,
-            surface.isTriggerFocusRingSuppressed &&
-              selectorPresentationStyles.pointerRestoredFocus,
-            isDisabled && inputWrapperStyles.disabled,
-            variant === 'input' &&
-              isDisabled &&
-              !surface.isTriggerFocusRingSuppressed &&
-              inputDisabledFocusStyles.ring,
-            isEffectivelyReadOnly && styles.triggerReadOnly,
-            variant !== 'input' && isDisabled && styles.triggerGhostDisabled,
-            variant !== 'input' &&
-              isEffectivelyReadOnly &&
-              styles.triggerGhostReadOnly,
-            !selectedItem && styles.triggerPlaceholder,
-            variant === 'input' &&
-              status &&
-              inputStatusBorderStyles[status.type],
-            variant === 'input' &&
-              status &&
-              !isDisabled &&
-              inputStatusHoverShadowStyles[status.type],
-            // Grouped secondary triggers keep their neutral fill but take the
-            // group's row height, connected edge radii, and focus stacking.
-            variant !== 'ghost' && inputGroup && groupStyles.inGroup,
-            inputGroup && styles.triggerInGroup,
-            controlXstyle,
+              focusOwnerRingClassName,
+            xstyleProps(controlXstyle).className,
           ),
-          controlClassName,
-          controlStyle,
+          {...xstyleProps(controlXstyle).style, ...controlStyle},
         )}>
         {startIcon &&
           renderIconSlot(startIcon, {size: 'sm', color: 'secondary'})}
@@ -2435,15 +1980,15 @@ export function Selector<T extends SelectorOptionType>(
               aria-describedby={statusTooltip.describedBy}
               {...keepOpenProps}
               onClick={e => e.stopPropagation()}
-              {...stylex.props(
-                focusOutlineStyles.focusVisible,
-                styles.statusButton,
+              {...mergeProps(
+                {className: SELECTOR_STATUS_BUTTON_CLASS},
+                tw(focusOutlineFocusVisibleClassName),
               )}>
               <Icon
                 icon={STATUS_ICON_MAP[status.type]}
                 size="sm"
                 color={STATUS_ICON_COLOR_MAP[status.type]}
-                xstyle={styles.triggerIcon}
+                className={SELECTOR_TRIGGER_ICON_CLASS}
               />
             </button>
           ) : (
@@ -2451,7 +1996,7 @@ export function Selector<T extends SelectorOptionType>(
               icon={STATUS_ICON_MAP[status.type]}
               size="sm"
               color={STATUS_ICON_COLOR_MAP[status.type]}
-              xstyle={styles.triggerIcon}
+              className={SELECTOR_TRIGGER_ICON_CLASS}
             />
           )
         ) : !isEffectivelyReadOnly ? (
@@ -2459,22 +2004,24 @@ export function Selector<T extends SelectorOptionType>(
             icon="chevronDown"
             size="sm"
             color="secondary"
-            // The rotation rides on the glyph, alongside the box and color
-            // the wrapper used to provide, so one element carries the mark,
-            // its open/closed transform, and the theme target.
-            xstyle={[
-              styles.triggerIcon,
-              styles.triggerIconRotation,
-              surface.isOpen && styles.triggerIconOpen,
-            ]}
-            // Stable theme target on the chevron glyph itself, so a theme can
-            // restyle just this icon (color, size, hover) — and its
-            // open/closed state — via `defineTheme`. Same-element rules in
-            // @layer astryx-theme win over the icon's own base color/size,
-            // which a button-level target could not reach.
-            {...themeProps('selector-indicator-icon', {
-              state: surface.isOpen ? 'expanded' : 'collapsed',
-            })}
+            {...mergeProps(
+              // The rotation rides on the glyph, alongside the box and color
+              // the wrapper used to provide, so one element carries the mark,
+              // its open/closed transform, and the theme target.
+              tw(
+                SELECTOR_TRIGGER_ICON_CLASS,
+                SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+                surface.isOpen && SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+              ),
+              // Stable theme target on the chevron glyph itself, so a theme can
+              // restyle just this icon (color, size, hover) — and its
+              // open/closed state — via `defineTheme`. Same-element rules in
+              // @layer astryx-theme win over the icon's own base color/size,
+              // which a button-level target could not reach.
+              themeProps('selector-indicator-icon', {
+                state: surface.isOpen ? 'expanded' : 'collapsed',
+              }),
+            )}
           />
         ) : null}
       </div>

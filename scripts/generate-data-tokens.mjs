@@ -3,7 +3,7 @@
 
 /**
  * @file generate-data-tokens.mjs
- * @input packages/core/src/theme/dataTokens.stylex.ts
+ * @input packages/core/src/theme/dataTokenVars.ts
  * @output packages/core/src/theme/domainTokens/dataTokens.ts
  * @position Keeps the non-StyleX token-resolution view derived from the public StyleX source
  *
@@ -17,7 +17,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SOURCE = path.join(ROOT, 'packages/core/src/theme/dataTokens.stylex.ts');
+const SOURCE = path.join(ROOT, 'packages/core/src/theme/dataTokenVars.ts');
 const OUTPUT = path.join(
   ROOT,
   'packages/core/src/theme/domainTokens/dataTokens.ts',
@@ -54,7 +54,7 @@ export function renderDataTokenDefaults(entries) {
     .map(([name, value]) => `  '${name}': '${value}',`)
     .join('\n');
 
-  return `// Copyright (c) Meta Platforms, Inc. and affiliates.\n\n/**\n * @file dataTokens.ts\n * @input dataTokens.stylex.ts (generated; do not edit)\n * @output dataTokenDefaults, DataTokenName\n * @position Plain compatibility view for theme validation and JavaScript token resolution\n *\n * Run \`pnpm generate:data-tokens\` after editing the canonical StyleX source.\n */\n\nexport const dataTokenDefaults = {\n${declarations}\n} as const;\n\nexport type DataTokenName = keyof typeof dataTokenDefaults;\n`;
+  return `// Copyright (c) Meta Platforms, Inc. and affiliates.\n\n/**\n * @file dataTokens.ts\n * @input dataTokenVars.ts (generated; do not edit)\n * @output dataTokenDefaults, DataTokenName\n * @position Plain compatibility view for theme validation and JavaScript token resolution\n *\n * Run \`pnpm generate:data-tokens\` after editing the canonical StyleX source.\n */\n\nexport const dataTokenDefaults = {\n${declarations}\n} as const;\n\nexport type DataTokenName = keyof typeof dataTokenDefaults;\n`;
 }
 
 export function generateDataTokenDefaults() {

@@ -4,7 +4,7 @@
 
 /**
  * @file InputGroup.tsx
- * @input Uses React, StyleX, theme tokens, InputGroupContext, Field
+ * @input Uses React, StyleX, class map, InputGroupContext, Field
  * @output Exports InputGroup component with group label/description ARIA wiring
  * @position Groups input with prefix/suffix addons; consumed by index.ts
  *
@@ -20,8 +20,6 @@
  */
 
 import {use, useId, useMemo, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import {sizeVars} from '../theme/tokens.stylex';
 import {Field, type InputStatus} from '../Field';
 import {SizeProvider, useSize} from '../SizeContext/SizeContext';
 import {mergeProps} from '../utils';
@@ -29,32 +27,15 @@ import type {BaseProps} from '../BaseProps';
 import {InputGroupContext} from './InputGroupContext';
 import {InputGroupInternalContext} from './InputGroupInternalContext';
 import {themeProps} from '../utils/themeProps';
+import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
+import {
+  inputGroupClassName,
+  inputGroupDisabledClassName,
+  inputGroupSizeClassName,
+} from './inputGroupClasses';
 
 export type InputGroupSize = 'sm' | 'md' | 'lg';
-
-const styles = stylex.create({
-  group: {
-    display: 'inline-flex',
-    alignItems: 'stretch',
-    backgroundColor: 'transparent',
-  },
-  disabled: {
-    cursor: 'default',
-    opacity: 0.5,
-  },
-});
-
-const sizeStyles = stylex.create({
-  sm: {
-    height: sizeVars['--size-element-sm'],
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
-  },
-});
 
 export interface InputGroupProps extends Omit<
   BaseProps<HTMLDivElement>,
@@ -216,13 +197,13 @@ export function InputGroup({
                   size,
                   status: status?.type ?? null,
                 }),
-                stylex.props(
-                  styles.group,
-                  sizeStyles[size],
-                  isDisabled && styles.disabled,
-                  xstyle,
+                xstyleProps(xstyle),
+                tw(
+                  inputGroupClassName,
+                  inputGroupSizeClassName[size],
+                  isDisabled && inputGroupDisabledClassName,
+                  className,
                 ),
-                className,
                 style,
               )}>
               {children}

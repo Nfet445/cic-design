@@ -7,34 +7,16 @@
  */
 
 import type {ReactElement, ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {DropdownMenuItem} from './DropdownMenuItem';
 import {DropdownMenuDivider} from './DropdownMenuDivider';
 import {DropdownMenuSubMenu} from './DropdownMenuSubMenu';
-import {
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-  colorVars,
-} from '../theme/tokens.stylex';
+import {dropdownMenuGroupHeadingClassName} from './dropdownMenuClasses';
 import {mergeProps, themeProps} from '../utils';
 import type {
   DropdownMenuItemData,
   DropdownMenuOption,
   DropdownMenuSection,
 } from './DropdownMenu';
-
-const styles = stylex.create({
-  sectionHeading: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    userSelect: 'none',
-  },
-});
 
 function getItemKey(item: DropdownMenuItemData, index: number): string {
   return `item-${item.id ?? index}`;
@@ -111,10 +93,9 @@ export function renderDropdownItems(items: DropdownMenuOption[]): ReactNode {
           {option.title && (
             <div
               aria-hidden="true"
-              {...mergeProps(
-                themeProps('dropdown-menu-section-heading'),
-                stylex.props(styles.sectionHeading),
-              )}>
+              {...mergeProps(themeProps('dropdown-menu-section-heading'), {
+                className: dropdownMenuGroupHeadingClassName,
+              })}>
               {option.title}
             </div>
           )}

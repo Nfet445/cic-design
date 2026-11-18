@@ -21,7 +21,7 @@
  * generateThemeRules, so they are not computed here.
  */
 
-import {colorDefaults} from './tokens.stylex';
+import {colorDefaults} from './tokenVars';
 import {
   composite,
   contrastRatio,

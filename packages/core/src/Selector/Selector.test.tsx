@@ -32,6 +32,10 @@ import * as stylex from '@stylexjs/stylex';
 import {Suspense, startTransition, use, useState} from 'react';
 import type {ReactNode} from 'react';
 import {Selector} from './Selector';
+import {
+  selectorListboxTouchClassName,
+  selectorListboxTouchScrollClassName,
+} from './selectorClasses';
 import {SelectorOption} from './SelectorOption';
 import {Item} from '../Item';
 import type {SelectorOptionData} from './types';
@@ -46,7 +50,19 @@ import {Theme} from '../theme/Theme';
 import {generateThemeCSS} from '../theme/generateThemeRules';
 import {colorVars, spacingVars} from '../theme/tokens.stylex';
 import {selectorPresentationStyles} from './selectorPresentation.stylex';
-import {groupStyles} from '../InputGroup/groupStyles';
+import {
+  SELECTOR_ROW_DISABLED_CLASS,
+  SELECTOR_ROW_MARK_COLUMN_CLASS,
+  SELECTOR_ROW_SELECTED_CLASS,
+  selectorOptionRowClassName,
+} from './selectorOptionClasses';
+import {
+  layerPlacementBlockEndClassName,
+  layerPlacementBlockStartClassName,
+} from '../Layer/layerClasses';
+import {LAYER_CLEARANCE_PROPERTY} from '../Layer/layerSlideRules';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {COMPACT_TOUCH_PRESENTATION_QUERY} from '../hooks/useAdaptivePresentation';
 
 /**
@@ -832,11 +848,14 @@ describe('Selector', () => {
       // placement="above" — and a position-try flip carries it to the other
       // side with the area, so the gap survives the flip (#4803).
       await waitFor(() => {
-        expect(popover.style.getPropertyValue('--x-marginBlockEnd')).toBe(
+        expect(popover.style.getPropertyValue(LAYER_CLEARANCE_PROPERTY)).toBe(
           spacingVars['--spacing-1'],
         );
       });
-      expect(popover.style.getPropertyValue('--x-marginBlockStart')).toBe('');
+      expect(classesOf(popover)).toContain(layerPlacementBlockEndClassName);
+      expect(classesOf(popover)).not.toContain(
+        layerPlacementBlockStartClassName,
+      );
     });
 
     it('clears the trigger in search mode', async () => {
@@ -857,10 +876,11 @@ describe('Selector', () => {
         .getByRole('listbox', {hidden: true})
         .closest('[popover]') as HTMLElement;
       await waitFor(() => {
-        expect(popover.style.getPropertyValue('--x-marginBlockStart')).toBe(
+        expect(popover.style.getPropertyValue(LAYER_CLEARANCE_PROPERTY)).toBe(
           spacingVars['--spacing-1'],
         );
       });
+      expect(classesOf(popover)).toContain(layerPlacementBlockStartClassName);
     });
 
     it('stays flush in the default selected-item overlay', async () => {
@@ -885,8 +905,15 @@ describe('Selector', () => {
             '--_selector-overlay-margin: min(-110px,',
           );
         });
-        expect(popover.style.getPropertyValue('--x-marginBlockStart')).toBe('');
-        expect(popover.style.getPropertyValue('--x-marginBlockEnd')).toBe('');
+        expect(popover.style.getPropertyValue(LAYER_CLEARANCE_PROPERTY)).toBe(
+          '',
+        );
+        expect(classesOf(popover)).not.toContain(
+          layerPlacementBlockStartClassName,
+        );
+        expect(classesOf(popover)).not.toContain(
+          layerPlacementBlockEndClassName,
+        );
       } finally {
         restoreRects();
       }
@@ -2787,9 +2814,7 @@ describe('Selector', () => {
     it.each(['input', 'secondary'] as const)(
       'gives a grouped %s trigger the connected group geometry in every position',
       variant => {
-        const groupClasses = stylex
-          .props(groupStyles.inGroup)
-          .className!.split(' ');
+        const groupClasses = inputGroupMemberClassName.split(' ');
         const selector = (label: string) => (
           <Selector
             label={label}
@@ -2832,9 +2857,7 @@ describe('Selector', () => {
     );
 
     it('keeps a standalone secondary trigger out of the group geometry', () => {
-      const groupClasses = stylex
-        .props(groupStyles.inGroup)
-        .className!.split(' ');
+      const groupClasses = inputGroupMemberClassName.split(' ');
       render(
         <Selector label="Channel" variant="secondary" options={OPTIONS} />,
       );
@@ -4031,7 +4054,7 @@ describe('Selector search affordances', () => {
     // The field is a rounded box inset from the panel edge, shaped like the
     // option rows under it — not a full-bleed header strip.
     expect(field).not.toBe(row);
-    expect(getComputedStyle(field).borderRadius).not.toBe('');
+    expectClassSet(field, {includes: ['rounded-[var(--radius-element)]']});
     // ...and a divider separates it from the options.
     const separator =
       container.ownerDocument.querySelector('[role="separator"]');
@@ -4408,9 +4431,13 @@ describe('Selector indicatorPosition', () => {
             ? row.firstElementChild
             : row.lastElementChild;
         expect(markColumn).not.toBeNull();
-        expect(markColumn).toHaveStyle({
-          display: isSelected ? 'inline-flex' : 'none',
+        // The column is a class, not a computed declaration. The unchecked
+        // mark draws nothing, so the column is empty and its own `:empty`
+        // class removes it from layout; a checked mark has a child to show.
+        expectClassSet(markColumn!, {
+          includes: SELECTOR_ROW_MARK_COLUMN_CLASS.split(' '),
         });
+        expect(markColumn!.childElementCount === 0).toBe(!isSelected);
       }
     },
   );
@@ -4442,7 +4469,9 @@ describe('Selector indicatorPosition', () => {
             : row.lastElementChild;
         const radio = row.querySelector('.astryx-radio-indicator');
         const content = row.querySelector('.astryx-selector-option');
-        expect(markColumn).toHaveStyle({display: 'inline-flex'});
+        expectClassSet(markColumn!, {
+          includes: SELECTOR_ROW_MARK_COLUMN_CLASS.split(' '),
+        });
         expect(radio).not.toBeNull();
         expect(content).not.toBeNull();
         expect(
@@ -5338,19 +5367,11 @@ describe('Selector press model', () => {
     render(<Selector label="Fruit" options={OPTIONS} onChange={() => {}} />);
     await user.click(screen.getByRole('combobox'));
     const listbox = screen.getByRole('listbox', h);
-    // jsdom does not compute `touch-action`; StyleX class names hash the
-    // declaration, so the same declaration yields the same class (the dev
-    // build prefixes a debug name; the hash is the last token).
-    const touchStyles = stylex.create({
-      none: {touchAction: 'none'},
-      pinchZoom: {touchAction: 'pinch-zoom'},
-      panYPinchZoom: {touchAction: 'pan-y pinch-zoom'},
+    expectClassSet(listbox, {
+      includes: ['touch-pinch-zoom'],
+      excludes: [selectorListboxTouchScrollClassName],
     });
-    const hash = (style: stylex.StyleXStyles) =>
-      stylex.props(style).className!.split(' ').pop()!;
-    expect(listbox).toHaveClass(hash(touchStyles.pinchZoom));
-    expect(listbox).not.toHaveClass(hash(touchStyles.none));
-    expect(listbox).not.toHaveClass(hash(touchStyles.panYPinchZoom));
+    expect(selectorListboxTouchClassName).toBe('touch-pinch-zoom');
   });
 
   it('a press held still after a key lights the pressed row', async () => {
@@ -5444,12 +5465,6 @@ describe('Selector press model', () => {
   it('a long list renders its scrolling touch-action from the first open, with no class swap after the open measure', async () => {
     const user = userEvent.setup();
     const many = Array.from({length: 249}, (_, i) => `Option ${i}`);
-    const touchStyles = stylex.create({
-      pinchZoom: {touchAction: 'pinch-zoom'},
-      panYPinchZoom: {touchAction: 'pan-y pinch-zoom'},
-    });
-    const hash = (style: stylex.StyleXStyles) =>
-      stylex.props(style).className!.split(' ').pop()!;
     // A 249-row list overflows its 300 px box.
     Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
       configurable: true,
@@ -5472,10 +5487,12 @@ describe('Selector press model', () => {
       const listbox = screen.getByRole('listbox', h);
       // The class is already the scrolling one while closed, so the open
       // never swaps it (a swap restyles every row a second time).
-      expect(listbox).toHaveClass(hash(touchStyles.panYPinchZoom));
+      expectClassSet(listbox, {
+        includes: ['overscroll-contain', 'touch-pan-y'],
+      });
       const swaps: string[] = [];
       const observer = new MutationObserver(() => {
-        if (listbox.classList.contains(hash(touchStyles.pinchZoom))) {
+        if (listbox.classList.contains('touch-pinch-zoom')) {
           swaps.push(listbox.className);
         }
       });
@@ -5483,7 +5500,9 @@ describe('Selector press model', () => {
       await user.click(screen.getByRole('combobox'));
       observer.disconnect();
       expect(swaps).toEqual([]);
-      expect(listbox).toHaveClass(hash(touchStyles.panYPinchZoom));
+      expectClassSet(listbox, {
+        includes: ['overscroll-contain', 'touch-pan-y'],
+      });
     } finally {
       // jsdom defines both on Element.prototype; drop the overrides.
       delete (HTMLElement.prototype as {scrollHeight?: number}).scrollHeight;
@@ -5496,14 +5515,12 @@ describe('Selector press model', () => {
     const many = Array.from({length: 20}, (_, i) => `Option ${i}`);
     render(<Selector label="Country" options={many} onChange={() => {}} />);
     await user.click(screen.getByRole('combobox'));
-    const touchStyles = stylex.create({
-      pinchZoom: {touchAction: 'pinch-zoom'},
-    });
     // jsdom measures every element at 0 px, so the measure says it fits and
     // corrects the guess.
-    expect(screen.getByRole('listbox', h)).toHaveClass(
-      stylex.props(touchStyles.pinchZoom).className!.split(' ').pop()!,
-    );
+    expectClassSet(screen.getByRole('listbox', h), {
+      includes: ['touch-pinch-zoom'],
+      excludes: [selectorListboxTouchScrollClassName],
+    });
   });
 
   it('marks the listbox as carrying the press model', async () => {
@@ -5527,7 +5544,7 @@ describe('Selector in a narrow row', () => {
       />,
     );
     const root = container.querySelector('.astryx-field')!;
-    expect(getComputedStyle(root).minWidth).toBe('0');
+    expectClassSet(root, {includes: ['min-w-0']});
   });
 
   it('keeps an explicit width alongside the reset', () => {
@@ -5542,7 +5559,7 @@ describe('Selector in a narrow row', () => {
     );
     const root = container.querySelector('.astryx-field')!;
     expect(root.getAttribute('style')).toContain('80');
-    expect(getComputedStyle(root).minWidth).toBe('0');
+    expectClassSet(root, {includes: ['min-w-0']});
   });
 
   it('lets a narrow list shrink an option so its label can ellipsize', () => {
@@ -5558,7 +5575,57 @@ describe('Selector in a narrow row', () => {
     const option = screen
       .getByRole('option', {hidden: true})
       .querySelector('.astryx-selector-option')!;
-    expect(getComputedStyle(option).minWidth).toBe('0');
+    expectClassSet(option, {includes: ['min-w-0']});
+  });
+});
+
+describe('Selector option row classes', () => {
+  it('states selection in weight and aria-selected together', () => {
+    render(
+      <Selector
+        label="Fruit"
+        options={OPTIONS}
+        value="Banana"
+        onChange={() => {}}
+        isDefaultOpen
+      />,
+    );
+
+    for (const row of screen.getAllByRole('option', h)) {
+      const isSelected = row.getAttribute('aria-selected') === 'true';
+      const expected = selectorOptionRowClassName({
+        isDisabled: false,
+        isHighlighted: false,
+        isKeyboardHighlighted: false,
+        isSelected,
+        size: 'md',
+      }).split(' ');
+      expectClassSet(row, {
+        includes: expected,
+        excludes: isSelected ? [] : [SELECTOR_ROW_SELECTED_CLASS],
+      });
+    }
+  });
+
+  it('dims an unavailable row on the class the mark reads', () => {
+    render(
+      <Selector
+        label="Fruit"
+        options={[
+          {value: 'Apple', label: 'Apple'},
+          {label: 'Banana', value: 'Banana', disabled: true},
+        ]}
+        value="Apple"
+        onChange={() => {}}
+        isDefaultOpen
+      />,
+    );
+
+    const disabledRow = screen
+      .getAllByRole('option', h)
+      .find(row => row.textContent === 'Banana')!;
+    expect(disabledRow).toHaveAttribute('aria-disabled', 'true');
+    expectClassSet(disabledRow, {includes: [SELECTOR_ROW_DISABLED_CLASS]});
   });
 });
 

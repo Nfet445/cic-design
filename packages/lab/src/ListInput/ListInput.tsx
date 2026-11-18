@@ -25,6 +25,7 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
+  type CSSProperties,
   type Key,
   type ReactNode,
 } from 'react';
@@ -50,14 +51,32 @@ import type {Reorderable} from '@astryxdesign/core';
 import {SizeProvider} from '@astryxdesign/core/SizeContext';
 import type {ColumnWidth} from '@astryxdesign/core/Table';
 import {useTheme} from '@astryxdesign/core/theme';
-import {
-  colorVars,
-  fontWeightVars,
-  sizeVars,
-  spacingVars,
-  typeScaleVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
 import {mergeProps, themeProps} from '@astryxdesign/core/utils';
+import {
+  LIST_INPUT_COLUMNS_VAR,
+  listInputActionContentClassName,
+  listInputActionRowClassName,
+  listInputCellContentClassName,
+  listInputColumnLabelClassName,
+  listInputContentBeforeOneControlClassName,
+  listInputContentOnlyClassName,
+  listInputControlCellClassName,
+  listInputEmptyItemClassName,
+  listInputFieldCellClassName,
+  listInputFieldsClassName,
+  listInputFieldsTemplateClassName,
+  listInputGroupClassName,
+  listInputItemClassName,
+  listInputItemStatusClassName,
+  listInputListClassName,
+  listInputRemoveControlCellClassName,
+  listInputRepeatedColumnLabelClassName,
+  listInputRowClassName,
+  listInputRowFieldsOnlyClassName,
+  listInputRowWithRemoveAndHandleClassName,
+  listInputRowWithRemoveClassName,
+} from './listInputClasses';
+import {tw} from '../tw';
 
 // Bundlers replace this value at build time. The declaration lets a product
 // without Node's types type-check this file.
@@ -192,152 +211,17 @@ interface PendingMutationMotion<T> {
   matchesValue: (nextValue: T[]) => boolean;
 }
 
-// Core List's reorder handle is 28 px wide for every pointer.
-const REORDER_HANDLE_SIZE = 28;
-
-const styles = stylex.create({
-  group: {
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-    overflowAnchor: 'none',
-    width: '100%',
-    containerType: 'inline-size',
-    containerName: 'list-input',
-  },
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: {
-      default: spacingVars['--spacing-2'],
-      '@container list-input (max-width: 640px)': spacingVars['--spacing-8'],
-    },
-    listStyleType: 'none',
-    margin: 0,
-    padding: 0,
-  },
-  item: {
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-    position: 'relative',
-  },
-  row: {
-    display: 'grid',
-    alignItems: 'end',
-    columnGap: spacingVars['--spacing-1'],
-    rowGap: {
-      default: 0,
-      '@container list-input (max-width: 640px)': spacingVars['--spacing-2'],
-    },
-    minWidth: 0,
-    // Core's reorder handle reaches into a ListItem row's inline inset. A
-    // record has no inset, so the handle and its focus ring end at its edge.
-    '--_item-inset-inline': '0px',
-  },
-  rowFieldsOnly: {
-    gridTemplateColumns: 'minmax(0, 1fr)',
-  },
-  rowWithRemove: {
-    gridTemplateColumns: `minmax(0, 1fr) ${sizeVars['--size-element-md']}`,
-  },
-  // Fields, then Remove and the reorder handle in one cell at the row's end
-  // (UIKit's reorder control is the trailing control of an editing row). The
-  // cell's track is fixed, so the Add row, which has no controls, keeps the
-  // fields' width.
-  rowWithRemoveAndHandle: {
-    gridTemplateColumns: `minmax(0, 1fr) calc(${sizeVars['--size-element-md']} + ${spacingVars['--spacing-1']} + ${REORDER_HANDLE_SIZE}px)`,
-  },
-  fields: {
-    display: {
-      default: 'grid',
-      '@container list-input (max-width: 640px)': 'contents',
-    },
-    alignItems: 'end',
-    gap: {
-      default: spacingVars['--spacing-1'],
-      '@container list-input (max-width: 640px)': spacingVars['--spacing-2'],
-    },
-    minWidth: 0,
-  },
-  fieldCell: {
-    gridColumn: {
-      default: 'auto',
-      '@container list-input (max-width: 640px)': '1',
-    },
-  },
-  contentOnly: {gridColumn: '1 / -1'},
-  contentBeforeOneControl: {gridColumn: '1 / -2'},
-  itemStatus: {
-    gridRow: {
-      default: '2',
-      '@container list-input (max-width: 640px)': 'auto',
-    },
-    marginBlockStart: {
-      default: spacingVars['--spacing-1'],
-      '@container list-input (max-width: 640px)': 0,
-    },
-    minWidth: 0,
-  },
-  actionRow: {
-    display: 'grid',
-    alignItems: 'center',
-    columnGap: spacingVars['--spacing-1'],
-    marginBlockStart: spacingVars['--spacing-2'],
-  },
-  actionContent: {
-    minWidth: 0,
-  },
-  columnLabel: {
-    display: 'block',
-    marginBlockEnd: {
-      default: spacingVars['--spacing-0-5'],
-      '@container list-input (max-width: 640px)': spacingVars['--spacing-1'],
-    },
-    color: colorVars['--color-text-primary'],
-    fontSize: typeScaleVars['--text-label-size'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  repeatedColumnLabel: {
-    display: {
-      default: 'none',
-      '@container list-input (max-width: 640px)': 'block',
-    },
-  },
-  cellContent: {minWidth: 0},
-  controlCell: {
-    display: 'flex',
-    alignItems: 'center',
-    alignSelf: 'end',
-    // Remove keeps its column in a record that has no reorder handle.
-    justifyContent: 'flex-start',
-    columnGap: spacingVars['--spacing-1'],
-    minHeight: sizeVars['--size-element-md'],
-  },
-  removeControlCell: {
-    gridColumn: {
-      default: 'auto',
-      '@container list-input (max-width: 640px)': '2',
-    },
-    gridRow: {
-      default: 'auto',
-      '@container list-input (max-width: 640px)': '1',
-    },
-  },
-  emptyItem: {
-    width: '100%',
-  },
-});
-
-const dynamicStyles = stylex.create({
-  fields: (gridTemplateColumns: string) => ({
-    gridTemplateColumns: {
-      default: gridTemplateColumns,
-      '@container list-input (max-width: 640px)': 'minmax(0, 1fr)',
-    },
-  }),
-});
+/**
+ * The column template is per instance: a private variable with a class
+ * reading it, never an inline declaration, so the narrow arm and a consumer's
+ * own CSS can both override it.
+ */
+function fieldsTemplateStyle(columns: string): CSSProperties {
+  const style: Record<`--${string}`, string> = {
+    [LIST_INPUT_COLUMNS_VAR]: columns,
+  };
+  return style;
+}
 
 function resolveColumnTrack(width?: ColumnWidth): string {
   if (width?.type === 'pixel') {
@@ -980,14 +864,14 @@ export function ListInput<T>({
     );
   };
 
-  const rowLayoutStyle = showReorderHandle
-    ? styles.rowWithRemoveAndHandle
+  const rowLayoutClassName = showReorderHandle
+    ? listInputRowWithRemoveAndHandleClassName
     : showRemoveColumn
-      ? styles.rowWithRemove
-      : styles.rowFieldsOnly;
-  const contentGridStyle = showRemoveColumn
-    ? styles.contentBeforeOneControl
-    : styles.contentOnly;
+      ? listInputRowWithRemoveClassName
+      : listInputRowFieldsOnlyClassName;
+  const contentGridClassName = showRemoveColumn
+    ? listInputContentBeforeOneControlClassName
+    : listInputContentOnlyClassName;
   return (
     <SizeProvider value="md">
       <Field
@@ -1022,7 +906,7 @@ export function ListInput<T>({
                   : undefined,
               reorderable: showReorderHandle ? 'true' : undefined,
             }),
-            stylex.props(styles.group),
+            {className: listInputGroupClassName},
           )}>
           <ListReorderScope reorder={reorderScope}>
             <ol
@@ -1030,15 +914,15 @@ export function ListInput<T>({
               role="list"
               aria-labelledby={labelID}
               aria-describedby={joinIDs(descriptionID, statusID)}
-              {...stylex.props(
-                styles.list,
+              {...mergeProps(
+                {className: listInputListClassName},
                 // The session's line marks where a dragged record would land.
-                reorderScope?.session.listStyle,
+                {className: reorderScope?.session.listClassName},
               )}>
               {value.length === 0 ? (
                 <li
                   data-list-input-motion-key="state:empty"
-                  {...stylex.props(styles.emptyItem)}>
+                  className={listInputEmptyItemClassName}>
                   <EmptyState
                     title={t('@astryx.listInput.emptyTitle', {itemName})}
                     description={t('@astryx.listInput.emptyDescription', {
@@ -1067,9 +951,13 @@ export function ListInput<T>({
                       aria-invalid={itemStatus?.type === 'error' || undefined}
                       aria-posinset={index + 1}
                       aria-setsize={value.length}
-                      {...stylex.props(
-                        styles.item,
-                        hasHandle && reorderScope?.session.rowStyle,
+                      {...mergeProps(
+                        {className: listInputItemClassName},
+                        {
+                          className: hasHandle
+                            ? reorderScope?.session.rowStyle
+                            : undefined,
+                        },
                       )}>
                       <div
                         ref={node => {
@@ -1080,14 +968,19 @@ export function ListInput<T>({
                           }
                         }}
                         data-list-input-row={itemKeyString}
-                        {...mergeProps(
-                          getContainerProps(),
-                          stylex.props(styles.row, rowLayoutStyle),
-                        )}>
+                        {...mergeProps(getContainerProps(), {
+                          className: tw(
+                            listInputRowClassName,
+                            rowLayoutClassName,
+                          ),
+                        })}>
                         <div
-                          {...stylex.props(
-                            styles.fields,
-                            dynamicStyles.fields(fieldGridTemplate),
+                          {...mergeProps(
+                            {className: listInputFieldsClassName},
+                            {
+                              className: listInputFieldsTemplateClassName,
+                              style: fieldsTemplateStyle(fieldGridTemplate),
+                            },
                           )}>
                           {columns.map((column, columnIndex) => {
                             const fieldStatus = getFieldStatus?.(
@@ -1128,23 +1021,23 @@ export function ListInput<T>({
                               <div
                                 key={column.key}
                                 data-list-input-cell={String(columnIndex)}
-                                {...stylex.props(
-                                  styles.cellContent,
-                                  styles.fieldCell,
+                                className={tw(
+                                  listInputCellContentClassName,
+                                  listInputFieldCellClassName,
                                 )}>
                                 <span
                                   aria-hidden="true"
                                   data-list-input-column-label={
                                     isRepeatedLabel ? 'responsive' : 'primary'
                                   }
-                                  {...stylex.props(
-                                    styles.columnLabel,
+                                  className={tw(
+                                    listInputColumnLabelClassName,
                                     isRepeatedLabel &&
-                                      styles.repeatedColumnLabel,
+                                      listInputRepeatedColumnLabelClassName,
                                   )}>
                                   {column.header}
                                 </span>
-                                <div {...stylex.props(styles.cellContent)}>
+                                <div className={listInputCellContentClassName}>
                                   {content}
                                 </div>
                               </div>
@@ -1158,10 +1051,12 @@ export function ListInput<T>({
                               // their places, so the fields never shift when
                               // they appear.
                               getContentRevealProps({isLayoutPreserved: true}),
-                              stylex.props(
-                                styles.controlCell,
-                                styles.removeControlCell,
-                              ),
+                              {
+                                className: tw(
+                                  listInputControlCellClassName,
+                                  listInputRemoveControlCellClassName,
+                                ),
+                              },
                             )}>
                             <IconButton
                               label={t('@astryx.listInput.removeItem', {
@@ -1205,7 +1100,10 @@ export function ListInput<T>({
                             message={itemStatus.message}
                             variant="detached"
                             data-list-input-item-status=""
-                            xstyle={[styles.itemStatus, contentGridStyle]}
+                            className={tw(
+                              listInputItemStatusClassName,
+                              contentGridClassName,
+                            )}
                           />
                         ) : null}
                       </div>
@@ -1218,10 +1116,13 @@ export function ListInput<T>({
           <div
             ref={addActionRef}
             data-list-input-motion-key="action:add"
-            {...stylex.props(styles.actionRow, rowLayoutStyle)}>
+            className={tw(listInputActionRowClassName, rowLayoutClassName)}>
             <div
               data-list-input-add-content=""
-              {...stylex.props(styles.actionContent, contentGridStyle)}>
+              className={tw(
+                listInputActionContentClassName,
+                contentGridClassName,
+              )}>
               <Button
                 ref={addButtonRef}
                 label={t('@astryx.listInput.addItem', {itemName})}

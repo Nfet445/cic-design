@@ -2,7 +2,8 @@
 
 /**
  * @file FieldStatus.tsx
- * @input Uses React, stylex, theme tokens, useFieldStatusAnnouncement, Icon
+ * @input Uses React, Tailwind classes, the entry animation, the field status
+ *   announcement and Icon
  * @output Exports FieldStatus component, FieldStatusProps
  * @position Core implementation; consumed by Field, Switch, CheckboxInput, and the FieldStatus entrypoint
  *
@@ -18,19 +19,21 @@
 'use client';
 
 import React from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils/mergeProps';
-import {
-  colorVars,
-  radiusVars,
-  spacingVars,
-  typographyVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
+import {tw} from '../utils/tw';
 import type {InputStatusType} from '../Field/types';
+import {
+  fieldStatusAttachedClassName,
+  fieldStatusBaseClassName,
+  fieldStatusColorClassName,
+  fieldStatusDetachedClassName,
+  fieldStatusDetachedContentClassName,
+  fieldStatusDetachedIconClassName,
+} from './fieldStatusClasses';
 import {useEntryAnimation} from '../hooks/useEntryAnimation';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {Icon} from '../Icon/Icon';
 import type {IconName} from '../Icon';
 import type {FieldStatusVariantMap} from './index';
@@ -46,77 +49,6 @@ const statusIconMap: Record<InputStatusType, IconName> = {
   error: 'error',
   success: 'success',
 };
-
-const ATTACHED_OVERLAP = `var(--_field-status-overlap, ${spacingVars['--spacing-1-5']})`;
-
-const styles = stylex.create({
-  base: {
-    // Forced colors replace status fills with Canvas; this boundary keeps the
-    // fill's shape visible (architecture:theme-tokens INV11).
-    outlineWidth: {default: null, '@media (forced-colors: active)': '1px'},
-    outlineStyle: {default: null, '@media (forced-colors: active)': 'solid'},
-    outlineColor: {
-      default: null,
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    outlineOffset: {default: null, '@media (forced-colors: active)': '-1px'},
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    // A validation message often echoes the value that failed (an address, a
-    // URL). Let such an unbroken token wrap inside the field instead of
-    // painting past its edges (WCAG 2.2 SC 1.4.10 Reflow).
-    overflowWrap: 'anywhere',
-    // Text inside keeps `anywhere` too (Text FR3).
-    '--_astryx-text-overflow-wrap': 'anywhere',
-  },
-  attached: {
-    marginTop: `calc(-1 * ${ATTACHED_OVERLAP})`,
-    paddingBlockStart: `calc(${ATTACHED_OVERLAP} + ${spacingVars['--spacing-2']})`,
-    paddingBlockEnd: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
-    borderEndStartRadius: radiusVars['--radius-element'],
-    borderEndEndRadius: radiusVars['--radius-element'],
-    // The overlap is visual only. Let pointer input reach the control beneath
-    // it instead of allowing the later-painted status box to steal the click.
-    pointerEvents: 'none',
-  },
-  detached: {
-    marginTop: spacingVars['--spacing-1'],
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
-    borderRadius: radiusVars['--radius-element'],
-  },
-  detachedContent: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: spacingVars['--spacing-1'],
-  },
-  detachedIcon: {
-    // Center the glyph within the first text-line box so it aligns to the
-    // first line of the message (rather than the top of the flex row) when the
-    // message wraps to multiple lines.
-    display: 'inline-flex',
-    alignItems: 'center',
-    height: `calc(${typeScaleVars['--text-supporting-size']} * ${typeScaleVars['--text-supporting-leading']})`,
-    flexShrink: 0,
-  },
-});
-
-const colorStyles = stylex.create({
-  warning: {
-    backgroundColor: colorVars['--color-warning-muted'],
-    color: colorVars['--color-on-warning-muted'],
-  },
-  error: {
-    backgroundColor: colorVars['--color-error-muted'],
-    color: colorVars['--color-on-error-muted'],
-  },
-  success: {
-    backgroundColor: colorVars['--color-success-muted'],
-    color: colorVars['--color-on-success-muted'],
-  },
-});
 
 /**
  * FieldStatus variant type. Extensible via module augmentation of FieldStatusVariantMap.
@@ -212,7 +144,7 @@ export function FieldStatus({
   style,
   ...rest
 }: FieldStatusProps) {
-  const entryStyle = useEntryAnimation('slideDown');
+  const entryClassName = useEntryAnimation('slideDown');
   // Announce-on-mount is intentional: callers conditionally mount FieldStatus
   // when a status appears (and whole forms can mount with a server-side
   // validation error already present), and both cases must be heard.
@@ -225,19 +157,21 @@ export function FieldStatus({
       {...rest}
       {...mergeProps(
         themeProps('field-status', {type, variant}),
-        stylex.props(
-          styles.base,
-          entryStyle,
-          variant === 'attached' ? styles.attached : styles.detached,
-          colorStyles[type],
-          xstyle,
+        xstyleProps(xstyle),
+        tw(
+          entryClassName,
+          fieldStatusBaseClassName,
+          variant === 'attached'
+            ? fieldStatusAttachedClassName
+            : fieldStatusDetachedClassName,
+          fieldStatusColorClassName[type],
+          className,
         ),
-        className,
         style,
       )}>
       {variant === 'detached' ? (
-        <span {...stylex.props(styles.detachedContent)}>
-          <span {...stylex.props(styles.detachedIcon)}>
+        <span className={fieldStatusDetachedContentClassName}>
+          <span className={fieldStatusDetachedIconClassName}>
             <Icon
               icon={statusIconMap[type]}
               size="sm"

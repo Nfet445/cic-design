@@ -23,27 +23,14 @@
  */
 
 import {StrictMode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {act, render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {Switch} from './Switch';
-import {
-  getAllInjectedCss,
-  getForcedColorsRules,
-} from '../__tests__/forcedColors';
-import {
-  hasPressedArm,
-  readsPressStrength,
-  releasesOnLayer,
-  rulesDeclaredFor,
-  rulesWithSelector,
-} from '../__tests__/pressState';
-import {PRESS_FADE_MS} from '../utils/pressGesture';
+import {classesOf, expectClassSet} from '../__tests__/classNameAssertions';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {InternationalizationProvider} from '../i18n';
 import {installPressFeedback} from '../utils/pressFeedback';
-import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 
 afterEach(() => {
   __resetLiveRegionsForTest();
@@ -339,10 +326,13 @@ describe('Switch', () => {
       />,
     );
     const row = screen.getByRole('switch').parentElement!.parentElement!;
-    expect(getComputedStyle(row).gap).toMatch(/^0(px)?$/);
+    // The gap is a class: jsdom resolves no declaration from the built sheet.
+    // `tw` keeps both gap classes when the row hides its label, and `gap-0`
+    // prints after `gap-2`, so its presence is the hidden state.
+    expect(classesOf(row)).toContain('gap-0');
 
     rerender(<Switch label="Toggle row" value={false} onChange={() => {}} />);
-    expect(getComputedStyle(row).gap).not.toMatch(/^0(px)?$/);
+    expect(classesOf(row)).not.toContain('gap-0');
   });
 
   // Retained: the shared contract binds a hidden-label state and a described
@@ -1023,54 +1013,35 @@ describe('Switch', () => {
   });
 
   describe('RTL thumb travel direction', () => {
-    // StyleX injects atomic rules into the document; scan them so we can assert
-    // the direction-aware transform without relying on jsdom to resolve the
-    // `:is([dir="rtl"] *)` descendant selector against computed style.
-    function injectedCss(): string {
-      let out = '';
-      for (const sheet of Array.from(document.styleSheets)) {
-        try {
-          for (const rule of Array.from(sheet.cssRules)) {
-            out += rule.cssText + '\n';
-          }
-        } catch {
-          // ignore cross-origin sheets
-        }
-      }
-      out += Array.from(document.querySelectorAll('style'))
-        .map(s => s.textContent || '')
-        .join('\n');
-      return out;
-    }
-
-    it('applies a distinct thumb style when on vs off (on-travel is wired)', () => {
+    // The travel is a class, not a computed transform: jsdom resolves neither
+    // a `@media` arm nor a `[dir]` descendant selector, and the built sheet is
+    // where the declaration is checked (tailwindStylesheet.source-build.test).
+    it('applies a distinct thumb box when on vs off', () => {
       const on = render(<Switch label="On" value={true} onChange={() => {}} />);
       const off = render(
         <Switch label="Off" value={false} onChange={() => {}} />,
       );
-      const onThumb = on.container.querySelector(
-        '[class*="thumbOnSizeStyles"]',
-      );
-      const offThumb = off.container.querySelector(
-        '[class*="thumbOffSizeStyles"]',
-      );
+      const onThumb = on.container.querySelector('.astryx-switch-thumb');
+      const offThumb = off.container.querySelector('.astryx-switch-thumb');
       expect(onThumb).not.toBeNull();
       expect(offThumb).not.toBeNull();
-      expect(onThumb!.getAttribute('class')).not.toBe(
-        offThumb!.getAttribute('class'),
-      );
+      expect(classesOf(onThumb!)).not.toEqual(classesOf(offThumb!));
     });
 
-    it('mirrors the on-state thumb travel under RTL (negative translateX)', () => {
-      render(<Switch label="Toggle" value={true} onChange={() => {}} />);
-      const css = injectedCss();
-      // LTR on-travel moves the thumb toward the physical right (positive px).
-      expect(css).toMatch(/transform:\s*translateX\(1[24]px\)/);
-      // RTL mirrors it: the on-thumb lands on the inline-end (physical left)
-      // side, so the travel flips sign, scoped to `[dir="rtl"]`.
-      expect(css).toMatch(
-        /:is\(\[dir="rtl"\][^)]*\)[^{]*\{\s*transform:\s*translateX\(-1[24]px\)/,
+    it('mirrors the on-state thumb travel under RTL', () => {
+      const {container} = render(
+        <Switch label="Toggle" value={true} onChange={() => {}} />,
       );
+      // LTR on-travel moves the thumb toward the physical right. RTL mirrors
+      // it: the on-thumb lands on the inline-end (physical left) side, so the
+      // travel flips sign. A finger moves the thumb by its insets instead.
+      expectClassSet(container.querySelector('.astryx-switch-thumb')!, {
+        includes: [
+          '[transform:translateX(14px)]',
+          'rtl:[transform:translateX(-14px)]',
+          'pointer-coarse:[transform:none]',
+        ],
+      });
     });
   });
 
@@ -1143,231 +1114,26 @@ describe('Switch', () => {
   });
 
   describe('pressed state', () => {
-    it('paints the pressed overlay on the track and the thumb while the row is pressed', () => {
-      const {container} = render(
+    it('paints the track and thumb while their own row is pressed', () => {
+      render(
         <Switch label="Notifications" value={false} onChange={() => {}} />,
       );
-      const track = container.querySelector('.astryx-switch');
-      const thumb = container.querySelector('.astryx-switch-thumb');
-      if (track == null || thumb == null) {
-        throw new Error('the switch has no track or thumb to press');
-      }
-      expect(hasPressedArm(track)).toBe(true);
-      expect(hasPressedArm(thumb)).toBe(true);
-    });
-
-    it("paints the touch press on the track's ::before and releases it on the compositor", () => {
-      const {container} = render(
-        <Switch label="Notifications" value={false} onChange={() => {}} />,
-      );
-      const track = container.querySelector('.astryx-switch');
-      const thumb = container.querySelector('.astryx-switch-thumb');
-      const row = track?.closest('[data-astryx-pressable]');
-      if (track == null || thumb == null || row == null) {
-        throw new Error('the switch has no pressable row, track or thumb');
-      }
-      const coarse = {
-        insideMedia: /\(pointer: coarse\)/,
-        outsideMedia: /prefers-reduced-motion/,
-      };
-      const selector = (rule: string) => rule.slice(0, rule.indexOf('{'));
-      const body = (rule: string) => rule.slice(rule.indexOf('{'));
-      // The controller writes the row. Under a finger the press is a layer on
-      // the track, under the thumb. It exists only while the row is pressed
-      // or releasing, with no element and no box at rest. It paints the
-      // pressed token, shows at once, and releases on the compositor. Track
-      // and thumb both paint it.
-      for (const part of [track, thumb]) {
-        const layer = rulesDeclaredFor(part).filter(rule =>
-          selector(rule).includes('::before'),
-        );
-        const creates = layer.filter(rule =>
-          /(^|[{;\s])content:/.test(body(rule)),
-        );
-        expect(creates.length).toBeGreaterThan(0);
-        for (const rule of creates) {
-          expect(selector(rule)).toMatch(/data-astryx-press="(on|fading)"/);
-        }
-        expect(
-          layer.some(rule =>
-            /background-color:[^;}]*--color-overlay-pressed/.test(rule),
-          ),
-        ).toBe(true);
-      }
-      const on = rulesWithSelector(track, '[data-astryx-press="on"]', coarse);
-      expect(on.some(rule => /opacity:\s*1\b/.test(rule))).toBe(true);
-      expect(on.some(rule => /animation-name:\s*(?!none)/.test(rule))).toBe(
-        false,
+      const input = screen.getByRole('switch');
+      const track = input.nextElementSibling!;
+      const thumb = track.firstElementChild!;
+      expect(input.closest('[data-astryx-switch-scope]')).toHaveClass(
+        'data-[astryx-press=fading]:pointer-coarse:[animation-name:none]!',
       );
       for (const part of [track, thumb]) {
-        expect(releasesOnLayer(part, '::before', PRESS_FADE_MS)).toBe(true);
+        expect(part).toHaveClass('astryx-switch-press-layer');
       }
-      // Nothing reads the strength under a finger, so its main-thread
-      // release stops there; any other pointer keeps it (the desktop rule).
-      expect(
-        rulesWithSelector(row, '[data-astryx-press="fading"]', coarse).some(
-          rule => /animation-name:\s*none/.test(rule),
-        ),
-      ).toBe(true);
-      const fine = {outsideMedia: /prefers-reduced-motion|\(pointer: coarse\)/};
-      expect(
-        rulesWithSelector(row, '[data-astryx-press="fading"]', fine).some(
-          rule => /animation-name:\s*(?!none)/.test(rule),
-        ),
-      ).toBe(true);
-      for (const part of [track, thumb]) {
-        expect(readsPressStrength(part, '[data-astryx-press="on"]')).toBe(
-          false,
-        );
-        expect(readsPressStrength(part)).toBe(false);
-      }
-    });
-
-    it('releases the touch press on the shared release’s clock and curve', () => {
-      render(
-        <>
-          <Switch label="Notifications" value={false} onChange={() => {}} />
-          <div
-            data-testid="shared-release"
-            {...stylex.props(interactionOverlayStyles.pressedAlpha)}
-          />
-        </>,
-      );
-      const track = document.querySelector('.astryx-switch');
-      if (track == null) {
-        throw new Error('the switch has no track');
-      }
-      const shared = screen.getByTestId('shared-release');
-      const fading = '[data-astryx-press="fading"]';
-      const reduced = /prefers-reduced-motion/;
-      const valuesOf = (rules: string[], property: string) => [
-        ...new Set(
-          rules.flatMap(rule => {
-            const match = rule.match(new RegExp(`${property}:\\s*([^;}]+)`));
-            // StyleX may write a time in s or ms: compare it in ms.
-            return match == null
-              ? []
-              : [
-                  match[1]
-                    .trim()
-                    .replace(
-                      /(\d*\.?\d+)(ms|s)\b/g,
-                      (_, n: string, unit: string) =>
-                        `${Number(n) * (unit === 's' ? 1000 : 1)}ms`,
-                    ),
-                ];
-          }),
-        ),
-      ];
-      const layer = (filter: {insideMedia?: RegExp; outsideMedia?: RegExp}) =>
-        rulesWithSelector(track, fading, filter).filter(rule =>
-          rule.slice(0, rule.indexOf('{')).includes('::before'),
-        );
-      const touch = layer({
-        insideMedia: /\(pointer: coarse\)/,
-        outsideMedia: reduced,
-      });
-      const own = rulesWithSelector(shared, fading, {outsideMedia: reduced});
-      for (const property of [
-        'animation-duration',
-        'animation-timing-function',
-      ]) {
-        expect(valuesOf(own, property)).toHaveLength(1);
-        expect(valuesOf(touch, property)).toEqual(valuesOf(own, property));
-      }
-      // Reduce Motion's arm nests one `@media` rule in another, which the
-      // test DOM drops: the browser proofs check it.
-    });
-  });
-
-  describe('the row that holds the touch press', () => {
-    const FADING = '[data-astryx-press="fading"]';
-    /** Rules under a coarse primary pointer, Reduce Motion's arms left out. */
-    const UNDER_COARSE = {
-      insideMedia: /\(pointer: coarse\)/,
-      outsideMedia: /prefers-reduced-motion/,
-    };
-    /** Rules for any other pointer, Reduce Motion's arms left out. */
-    const UNDER_FINE = {
-      outsideMedia: /prefers-reduced-motion|\(pointer: coarse\)/,
-    };
-    const selectorOf = (rule: string) => rule.slice(0, rule.indexOf('{'));
-    const fadingOnHost = (rules: string[]) =>
-      rules.filter(
-        rule =>
-          selectorOf(rule).includes(FADING) && !selectorOf(rule).includes('::'),
-      );
-    const valuesOf = (rules: string[], property: string) =>
-      rules
-        .flatMap(rule => {
-          const match = rule.match(new RegExp(`${property}:\\s*([^;}]+)`));
-          return match == null ? [] : [match[1].trim()];
-        })
-        .sort();
-    /** The switch's row, and an element with the shared press styles alone. */
-    function renderOwners(): {alpha: HTMLElement; row: Element} {
-      render(
-        <>
-          <Switch label="Notifications" value={false} onChange={() => {}} />
-          <div
-            data-testid="alpha"
-            {...stylex.props(interactionOverlayStyles.pressedAlpha)}
-          />
-        </>,
-      );
-      const row = document
-        .querySelector('.astryx-switch')
-        ?.closest('[data-astryx-pressable]');
-      if (row == null) {
-        throw new Error('the switch has no pressable row');
-      }
-      return {alpha: screen.getByTestId('alpha'), row};
-    }
-
-    it('declares the shared strength and paint for the track’s and thumb’s layers', () => {
-      const {alpha, row} = renderOwners();
-      const strengthAndPaint = (el: Element) =>
-        rulesDeclaredFor(el)
-          .filter(rule => /--astryx-press-alpha|--_press-paint/.test(rule))
-          .sort();
-      expect(strengthAndPaint(alpha).length).toBeGreaterThan(0);
-      expect(strengthAndPaint(row)).toEqual(strengthAndPaint(alpha));
-    });
-
-    it('with any pointer but a coarse primary one, keeps the shared release on the row', () => {
-      const {alpha, row} = renderOwners();
-      const release = (el: Element) =>
-        fadingOnHost(rulesDeclaredFor(el, UNDER_FINE));
-      expect(valuesOf(release(alpha), 'animation-name')).not.toEqual([]);
-      for (const property of [
-        'animation-name',
-        'animation-duration',
-        'animation-timing-function',
-      ]) {
-        expect(valuesOf(release(row), property)).toEqual(
-          valuesOf(release(alpha), property),
-        );
-      }
-    });
-
-    it('under a coarse primary pointer, drops the strength’s own release on the row', () => {
-      const {alpha, row} = renderOwners();
-      const names = (el: Element) =>
-        valuesOf(
-          fadingOnHost(rulesDeclaredFor(el, UNDER_COARSE)),
-          'animation-name',
-        );
-      // The shared styles keep the strength's release there; the row holds
-      // the strength, so the layers' fade is the one fade.
-      expect(names(alpha)).not.toContain('none');
-      expect(names(row)).toEqual(['none']);
     });
   });
 
   describe('mouse look', () => {
-    // jsdom applies no `@media (pointer: coarse)` rule, so these are the
-    // styles a mouse gets. The touch presentation must override none of
-    // them: a later style that names a property replaces all of it.
+    // The rest styles are classes, so these read the class set. jsdom applies
+    // no `@media (pointer: coarse)` rule: the coarse arms are asserted where
+    // their state is.
     const look = (container: HTMLElement) => {
       const track = container.querySelector<HTMLElement>('.astryx-switch');
       const thumb = container.querySelector<HTMLElement>(
@@ -1376,38 +1142,39 @@ describe('Switch', () => {
       if (track == null || thumb == null) {
         throw new Error('the switch has no track or thumb');
       }
-      const t = getComputedStyle(track);
-      const h = getComputedStyle(thumb);
-      return {
-        fill: t.backgroundColor,
-        padding: t.paddingTop,
-        fade: [t.transitionProperty, t.transitionDuration],
-        size: [h.width, h.height],
-        slide: [h.transitionProperty.replace(/\s/g, ''), h.transitionDuration],
-        travel: h.transform,
-      };
+      return {track, thumb};
     };
 
-    it('keeps the track fill, padding and colour fade, and the thumb size and slide', () => {
+    it('keeps the track fill and colour fade, and the thumb slide', () => {
       // A fine pointer: the desktop switch.
       expect(window.matchMedia('(pointer: coarse)').matches).toBe(false);
       const {container, rerender} = render(
         <Switch label="Wi-Fi" value={false} onChange={() => {}} />,
       );
       const off = look(container);
-      expect(off.fill).toContain('--color-background-gray');
-      expect(off.padding).toBe('4px');
-      expect(off.fade[0]).toBe('background-color');
-      expect(off.fade[1]).not.toMatch(/^(0s)?$/);
-      expect(off.size).toEqual(['16px', '16px']);
-      expect(off.slide[0]).toBe('transform,width,height');
-      expect(off.slide[1]).not.toMatch(/^(0s)?$/);
+      expectClassSet(off.track, {
+        includes: [
+          'bg-[var(--color-background-gray)]',
+          'transition-[background-color]',
+          'duration-[var(--duration-fast)]',
+          'p-1',
+        ],
+      });
+      expectClassSet(off.thumb, {
+        includes: [
+          'h-4',
+          'w-4',
+          'transition-[transform,width,height]',
+          'duration-[var(--duration-fast)]',
+        ],
+      });
 
       rerender(<Switch label="Wi-Fi" value onChange={() => {}} />);
       const on = look(container);
-      expect(on.fill).toContain('--color-accent');
-      expect(on.size).toEqual(['20px', '20px']);
-      expect(on.travel).toBe('translateX(14px)');
+      expectClassSet(on.track, {includes: ['bg-[var(--color-accent)]']});
+      expectClassSet(on.thumb, {
+        includes: ['h-5', 'w-5', '[transform:translateX(14px)]'],
+      });
     });
 
     it('adds no element: the thumb is the track’s only child, under a finger too', () => {
@@ -1428,8 +1195,8 @@ describe('Switch', () => {
         <Switch label="Wi-Fi" size="sm" value={false} onChange={() => {}} />,
       );
       const off = look(container);
-      expect(off.padding).toBe('2px');
-      expect(off.size).toEqual(['14px', '14px']);
+      expectClassSet(off.track, {includes: ['p-0.5']});
+      expectClassSet(off.thumb, {includes: ['h-3.5', 'w-3.5']});
     });
   });
 
@@ -1439,27 +1206,28 @@ describe('Switch', () => {
       ['sm', 'rtl'],
       ['md', 'ltr'],
       ['md', 'rtl'],
-    ] as const)(
-      'applies centerInline styling to native input (size: %s, dir: %s)',
-      (size, dir) => {
-        const {container} = render(
-          <div dir={dir}>
-            <Switch
-              label="Dark mode"
-              size={size}
-              value={false}
-              onChange={() => {}}
-            />
-          </div>,
-        );
+    ] as const)('centers the native input (size: %s, dir: %s)', (size, dir) => {
+      const {container} = render(
+        <div dir={dir}>
+          <Switch
+            label="Dark mode"
+            size={size}
+            value={false}
+            onChange={() => {}}
+          />
+        </div>,
+      );
 
-        const input = container.querySelector(
-          'input[type="checkbox"]',
-        ) as HTMLInputElement;
-        expect(input).toBeInTheDocument();
-        expect(input.className).toContain('centerInline');
-      },
-    );
+      const input = container.querySelector(
+        'input[type="checkbox"]',
+      ) as HTMLInputElement;
+      expect(input).toBeInTheDocument();
+      // The input's box owns the transform, so only the inline half of the
+      // centering shows here.
+      expectClassSet(input, {
+        includes: ['left-1/2', '[transform:translate(-50%,-50%)]'],
+      });
+    });
   });
 });
 
@@ -1780,19 +1548,41 @@ describe('hit area under a coarse pointer (Switch FR10)', () => {
 });
 
 describe('forced colors (WCAG 1.4.11)', () => {
-  it('compiles forced-colors overrides so on/off state survives Windows High Contrast', () => {
-    render(<Switch label="Notifications" value={true} onChange={() => {}} />);
-    const css = getForcedColorsRules();
-    // Track outline (backgrounds are stripped; the border keeps the bounds).
-    expect(css).toContain('border-color: canvastext;');
-    // Off track stays empty; on track uses the selection color.
-    expect(css).toContain('background-color: canvas;');
-    expect(css).toContain('background-color: highlight;');
-    // Thumb fill per state.
-    expect(css).toContain('background-color: canvastext;');
-    expect(css).toContain('background-color: highlighttext;');
-    // Disabled affordance (opacity dimming does not survive forcing).
-    expect(css).toContain('border-color: graytext;');
+  it('carries a system-colour track and thumb per state, so on/off survives Windows High Contrast', () => {
+    const {container, rerender} = render(
+      <Switch label="Notifications" value={false} onChange={() => {}} />,
+    );
+    const track = () => container.querySelector('.astryx-switch') as Element;
+    const thumb = () =>
+      container.querySelector('.astryx-switch-thumb') as Element;
+    // Backgrounds are stripped there; the border keeps the track's bounds
+    // (WCAG 1.4.11), and the states keep their own system colours so the
+    // thumb reads against the track it sits on.
+    expectClassSet(track(), {
+      includes: [
+        'forced-colors:border',
+        'forced-colors:border-[color:CanvasText]',
+        'forced-colors:bg-[color:Canvas]',
+      ],
+    });
+    expectClassSet(thumb(), {
+      includes: ['forced-colors:bg-[color:CanvasText]'],
+    });
+
+    rerender(<Switch label="Notifications" value onChange={() => {}} />);
+    expectClassSet(track(), {includes: ['forced-colors:bg-[color:Highlight]']});
+    expectClassSet(thumb(), {
+      includes: ['forced-colors:bg-[color:HighlightText]'],
+    });
+
+    rerender(
+      <Switch label="Notifications" value isDisabled onChange={() => {}} />,
+    );
+    // Opacity dimming does not survive forced colors; GrayText is the
+    // platform's disabled affordance there.
+    expectClassSet(track(), {
+      includes: ['opacity-50', 'forced-colors:border-[color:GrayText]'],
+    });
   });
 
   it('gates the hover tint out of forced colors so the thumb stays visible on hover', () => {
@@ -1801,11 +1591,9 @@ describe('forced colors (WCAG 1.4.11)', () => {
     // plain forced-colors track rule. It is gated behind `forced-colors: none`
     // so it cannot reassert on hover and flatten the Highlight track to white
     // under the HighlightText thumb (white-on-white).
-    expect(getAllInjectedCss()).toContain(
-      '(hover: hover) and (forced-colors: none)',
+    expect(screen.getByRole('switch').nextElementSibling).toHaveClass(
+      '[@media(hover:hover)_and_(forced-colors:none)]:[[data-astryx-switch-scope]:hover_&]:bg-[color:color-mix(in_srgb,var(--color-accent),var(--color-tint-hover)_15%)]',
     );
-    // And the tint never leaks into the forced-colors output.
-    expect(getForcedColorsRules()).not.toContain('color-mix');
   });
 });
 

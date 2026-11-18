@@ -2,6 +2,8 @@
 import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import * as stylex from '@stylexjs/stylex';
+import {avatarGroupStyles} from '../Avatar/avatarGroupRing.stylex';
 import {AvatarGroup} from './AvatarGroup';
 import {AvatarGroupOverflow} from './AvatarGroupOverflow';
 import {Avatar, AvatarStatusDot} from '../Avatar';
@@ -217,11 +219,22 @@ describe('AvatarGroup — roving focus + keyboard hint', () => {
 });
 
 describe('AvatarGroup — overlap', () => {
-  // jsdom cannot lay the row out, so these check the declarations that make
-  // it overlap: every item takes the negative overlap margin, and the group's
-  // start padding gives the first item that space back.
-  const overlapMargin = (el: HTMLElement) =>
-    getComputedStyle(el).getPropertyValue('margin-inline-start');
+  // jsdom cannot lay the row out, so these check what makes it overlap: the
+  // group publishes the negative offset as its own property, and every item
+  // keeps the margin class that reads it. The margin itself comes from the
+  // avatar's own StyleX rule, which the group's property feeds.
+  const groupOverlap = (group: HTMLElement) =>
+    group.style.getPropertyValue('--_avatar-group-overlap');
+  // An avatar takes the margin from its own StyleX rule; the overflow
+  // indicator takes the same margin from a utility class. Both read the
+  // property the group publishes, so the check is per kind.
+  const avatarOverlapClass = stylex.props(avatarGroupStyles.overlap).className;
+  const takesOverlapMargin = (el: HTMLElement) =>
+    (avatarOverlapClass != null &&
+      avatarOverlapClass
+        .split(' ')
+        .every(atom => el.classList.contains(atom))) ||
+    el.classList.contains('ms-[var(--_avatar-group-overlap)]');
 
   it('overlaps every avatar, including the first', () => {
     render(
@@ -233,16 +246,15 @@ describe('AvatarGroup — overlap', () => {
     );
 
     for (const id of ['alice', 'bob', 'overflow']) {
-      expect(overlapMargin(screen.getByTestId(id))).toBe(
-        'var(--_avatar-group-overlap)',
-      );
+      expect(takesOverlapMargin(screen.getByTestId(id))).toBe(true);
     }
     const group = screen.getByRole('group');
-    expect(
-      getComputedStyle(group).getPropertyValue('padding-inline-start'),
-    ).toBe('calc(-1 * var(--_avatar-group-overlap))');
+    // The class gives the first item back the space its own margin takes.
+    expect(group.className).toContain(
+      'ps-[calc(-1*var(--_avatar-group-overlap))]',
+    );
     // md = 36px; the overlap is a quarter of that, negated.
-    expect(group.getAttribute('style')).toContain('-9px');
+    expect(groupOverlap(group)).toBe('-9px');
   });
 
   it('keeps the overlap when avatars are wrapped in a HoverCard or Tooltip', () => {
@@ -266,18 +278,18 @@ describe('AvatarGroup — overlap', () => {
     for (const id of ['alice', 'bob', 'charlie']) {
       const avatar = screen.getByTestId(id);
       expect(avatar.parentElement).not.toBe(screen.getByRole('group'));
-      expect(overlapMargin(avatar)).toBe('var(--_avatar-group-overlap)');
+      expect(takesOverlapMargin(avatar)).toBe(true);
     }
   });
 
   it('adds no start padding to an empty group', () => {
     render(<AvatarGroup data-testid="empty">{[]}</AvatarGroup>);
 
-    expect(
-      getComputedStyle(screen.getByTestId('empty')).getPropertyValue(
-        'padding-inline-start',
-      ),
-    ).toMatch(/^0(px)?$/);
+    // The padding class is there for a populated row; `:empty` takes it back.
+    expect(screen.getByTestId('empty').className).toContain(
+      'ps-[calc(-1*var(--_avatar-group-overlap))]',
+    );
+    expect(screen.getByTestId('empty').className).toContain('empty:ps-0');
   });
 });
 

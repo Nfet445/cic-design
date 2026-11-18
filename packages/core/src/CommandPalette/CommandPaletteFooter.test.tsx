@@ -11,6 +11,7 @@ import {createRef, type ReactElement} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {describe, expect, it} from 'vitest';
 import {render, screen} from '@testing-library/react';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {declaredValue} from '../__tests__/stylexDeclarations';
 import {CommandPaletteFooter} from './CommandPaletteFooter';
 
@@ -70,7 +71,9 @@ describe('CommandPaletteFooter', () => {
   it('allows translated guidance groups to wrap on narrow surfaces', () => {
     const root = renderRoot(<CommandPaletteFooter />);
 
-    expect(declaredValue(root, 'flex-wrap')).toBe('wrap');
+    // The footer's own classes carry the wrap; jsdom cannot compute the
+    // built Tailwind sheet, so assert the class the map produced.
+    expect(classesOf(root)).toContain('flex-wrap');
   });
 
   it('appends a consumer className after generated classes', () => {

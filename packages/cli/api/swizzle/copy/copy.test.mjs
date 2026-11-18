@@ -30,7 +30,10 @@ vi.mock('../_adapter.mjs', async importOriginal => {
 });
 
 // api/swizzle/copy/ -> up 5 = repo root.
-const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../..');
+const REPO = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../../../..',
+);
 const OUT = 'tmp-swizzle-copy-test';
 const SLOW = 30_000;
 
@@ -46,50 +49,77 @@ describe('swizzle.copy — destination symlinks (spec:AST-017 FR1, FR5)', () => 
     ['out/Table/plugins', false],
     ['out/Table/plugins/nested.ts', false],
     ['out/Table/plugins/nested.ts', true],
-  ])('refuses %s (dangling: %s) linked outside the project before writing, with or without overwrite', async (linkPath, dangling) => {
-    fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'astryx-swizzle-symlink-'));
-    const cwd = path.join(fixture, 'project');
-    const source = path.join(cwd, 'node_modules/@astryxdesign/core/src/Table');
-    fs.mkdirSync(path.join(source, 'plugins'), {recursive: true});
-    // Table imports the nested file, so the copy writes it too.
-    fs.writeFileSync(
-      path.join(source, 'Table.tsx'),
-      "import {nested} from './plugins/nested';\nexport const Table = nested;",
-    );
-    fs.writeFileSync(path.join(source, 'plugins/nested.ts'), 'export const nested = 1;');
-    fs.writeFileSync(path.join(cwd, 'package.json'), '{"name":"consumer"}');
-    fs.writeFileSync(
-      path.join(cwd, 'node_modules/@astryxdesign/core/package.json'),
-      '{"name":"@astryxdesign/core","version":"0.0.0"}',
-    );
-    const outside = path.join(fixture, 'outside');
-    fs.mkdirSync(outside);
-    const target = linkPath.endsWith('.ts') ? path.join(outside, 'target.ts') : outside;
-    if (target !== outside && !dangling) fs.writeFileSync(target, '// consumer edit');
-    const link = path.join(cwd, linkPath);
-    fs.mkdirSync(path.dirname(link), {recursive: true});
-    fs.symlinkSync(target, link);
+  ])(
+    'refuses %s (dangling: %s) linked outside the project before writing, with or without overwrite',
+    async (linkPath, dangling) => {
+      fixture = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'astryx-swizzle-symlink-'),
+      );
+      const cwd = path.join(fixture, 'project');
+      const source = path.join(
+        cwd,
+        'node_modules/@astryxdesign/core/src/Table',
+      );
+      fs.mkdirSync(path.join(source, 'plugins'), {recursive: true});
+      // Table imports the nested file, so the copy writes it too.
+      fs.writeFileSync(
+        path.join(source, 'Table.tsx'),
+        "import {nested} from './plugins/nested';\nexport const Table = nested;",
+      );
+      fs.writeFileSync(
+        path.join(source, 'plugins/nested.ts'),
+        'export const nested = 1;',
+      );
+      fs.writeFileSync(path.join(cwd, 'package.json'), '{"name":"consumer"}');
+      fs.writeFileSync(
+        path.join(cwd, 'node_modules/@astryxdesign/core/package.json'),
+        '{"name":"@astryxdesign/core","version":"0.0.0"}',
+      );
+      const outside = path.join(fixture, 'outside');
+      fs.mkdirSync(outside);
+      const target = linkPath.endsWith('.ts')
+        ? path.join(outside, 'target.ts')
+        : outside;
+      if (target !== outside && !dangling)
+        fs.writeFileSync(target, '// consumer edit');
+      const link = path.join(cwd, linkPath);
+      fs.mkdirSync(path.dirname(link), {recursive: true});
+      fs.symlinkSync(target, link);
 
-    for (const overwrite of [false, true]) {
-      await expect(swizzle('Table', {cwd, output: './out', overwrite})).rejects.toMatchObject({
-        code: 'ERR_PATH_TRAVERSAL',
-      });
-      expect(fs.existsSync(path.join(cwd, 'out/Table/Table.tsx'))).toBe(false);
-      expect(fs.readdirSync(outside)).toEqual(target !== outside && !dangling ? ['target.ts'] : []);
-      if (target !== outside && !dangling) expect(fs.readFileSync(target, 'utf8')).toBe('// consumer edit');
-    }
-  });
+      for (const overwrite of [false, true]) {
+        await expect(
+          swizzle('Table', {cwd, output: './out', overwrite}),
+        ).rejects.toMatchObject({
+          code: 'ERR_PATH_TRAVERSAL',
+        });
+        expect(fs.existsSync(path.join(cwd, 'out/Table/Table.tsx'))).toBe(
+          false,
+        );
+        expect(fs.readdirSync(outside)).toEqual(
+          target !== outside && !dangling ? ['target.ts'] : [],
+        );
+        if (target !== outside && !dangling)
+          expect(fs.readFileSync(target, 'utf8')).toBe('// consumer edit');
+      }
+    },
+  );
 
   it('writes through a folder linked elsewhere inside the project, nested folders included', async () => {
     fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'astryx-swizzle-symlink-'));
-    const source = path.join(fixture, 'node_modules/@astryxdesign/core/src/Table');
+    const source = path.join(
+      fixture,
+      'node_modules/@astryxdesign/core/src/Table',
+    );
     fs.mkdirSync(path.join(source, 'plugins'), {recursive: true});
     // Table imports the nested file, so the copy writes it too.
     fs.writeFileSync(
       path.join(source, 'Table.tsx'),
       "import {nested} from './plugins/nested';\nexport const Table = nested;",
     );
-    fs.writeFileSync(path.join(source, 'plugins/nested.ts'), 'export const nested = 1;');
+    fs.writeFileSync(
+      path.join(source, 'plugins/nested.ts'),
+      'export const nested = 1;',
+    );
     fs.writeFileSync(path.join(fixture, 'package.json'), '{"name":"consumer"}');
     fs.writeFileSync(
       path.join(fixture, 'node_modules/@astryxdesign/core/package.json'),
@@ -97,12 +127,18 @@ describe('swizzle.copy — destination symlinks (spec:AST-017 FR1, FR5)', () => 
     );
     // `components` -> `src/components`, a common project layout.
     fs.mkdirSync(path.join(fixture, 'src/components'), {recursive: true});
-    fs.symlinkSync(path.join(fixture, 'src/components'), path.join(fixture, 'components'));
+    fs.symlinkSync(
+      path.join(fixture, 'src/components'),
+      path.join(fixture, 'components'),
+    );
 
     const r = await swizzle('Table', {cwd: fixture, output: './components'});
     expect(r.data.files).toEqual(['Table.tsx', 'plugins/nested.ts']);
     expect(
-      fs.readFileSync(path.join(fixture, 'src/components/Table/plugins/nested.ts'), 'utf8'),
+      fs.readFileSync(
+        path.join(fixture, 'src/components/Table/plugins/nested.ts'),
+        'utf8',
+      ),
     ).toBe('export const nested = 1;');
   });
 });
@@ -116,37 +152,63 @@ describe('swizzle.copy — path safety', () => {
     }
   });
 
-  it('rejects a component name that traverses out of the output base', async () => {
-    await expect(
-      swizzle('../src', {cwd: REPO, output: './' + OUT}),
-    ).rejects.toMatchObject({code: 'ERR_PATH_TRAVERSAL'});
-  }, SLOW);
+  it(
+    'rejects a component name that traverses out of the output base',
+    async () => {
+      await expect(
+        swizzle('../src', {cwd: REPO, output: './' + OUT}),
+      ).rejects.toMatchObject({code: 'ERR_PATH_TRAVERSAL'});
+    },
+    SLOW,
+  );
 
-  it('rejects a component name containing a path separator', async () => {
-    await expect(
-      swizzle('foo/bar', {cwd: REPO, output: './' + OUT}),
-    ).rejects.toMatchObject({code: 'ERR_PATH_TRAVERSAL'});
-  }, SLOW);
+  it(
+    'rejects a component name containing a path separator',
+    async () => {
+      await expect(
+        swizzle('foo/bar', {cwd: REPO, output: './' + OUT}),
+      ).rejects.toMatchObject({code: 'ERR_PATH_TRAVERSAL'});
+    },
+    SLOW,
+  );
 
-  it('rejects an --output that escapes cwd (relative and absolute)', async () => {
-    await expect(swizzle('Button', {cwd: REPO, output: '../evil'})).rejects.toMatchObject({
-      code: 'ERR_PATH_TRAVERSAL',
-    });
-    await expect(swizzle('Button', {cwd: REPO, output: '/tmp/evil'})).rejects.toMatchObject({
-      code: 'ERR_PATH_TRAVERSAL',
-    });
-  }, SLOW);
+  it(
+    'rejects an --output that escapes cwd (relative and absolute)',
+    async () => {
+      await expect(
+        swizzle('Button', {cwd: REPO, output: '../evil'}),
+      ).rejects.toMatchObject({
+        code: 'ERR_PATH_TRAVERSAL',
+      });
+      await expect(
+        swizzle('Button', {cwd: REPO, output: '/tmp/evil'}),
+      ).rejects.toMatchObject({
+        code: 'ERR_PATH_TRAVERSAL',
+      });
+    },
+    SLOW,
+  );
 
-  it('copies a real component, then refuses to clobber without overwrite', async () => {
-    const r = await swizzle('Button', {cwd: REPO, output: './' + OUT});
-    expect(r.type).toBe('swizzle.copy');
-    expect(r.data.filesCopied).toBeGreaterThan(0);
-    await expect(swizzle('Button', {cwd: REPO, output: './' + OUT})).rejects.toMatchObject({
-      code: 'ERR_FILE_EXISTS',
-    });
-    const r2 = await swizzle('Button', {cwd: REPO, output: './' + OUT, overwrite: true});
-    expect(r2.data.filesCopied).toBe(r.data.filesCopied);
-  }, SLOW);
+  it(
+    'copies a real component, then refuses to clobber without overwrite',
+    async () => {
+      const r = await swizzle('Button', {cwd: REPO, output: './' + OUT});
+      expect(r.type).toBe('swizzle.copy');
+      expect(r.data.filesCopied).toBeGreaterThan(0);
+      await expect(
+        swizzle('Button', {cwd: REPO, output: './' + OUT}),
+      ).rejects.toMatchObject({
+        code: 'ERR_FILE_EXISTS',
+      });
+      const r2 = await swizzle('Button', {
+        cwd: REPO,
+        output: './' + OUT,
+        overwrite: true,
+      });
+      expect(r2.data.filesCopied).toBe(r.data.filesCopied);
+    },
+    SLOW,
+  );
 });
 
 describe('swizzle.copy — the gh feedback line', () => {
@@ -306,7 +368,9 @@ describe('swizzle.copy — private attribute owner modules (spec:AST-110 FR4)', 
         output: './' + OWNER_OUT,
       });
       // The identical owner module is part of the second copy too.
-      expect(second.data.files).toContain('../privateAttributes/press.stylex.ts');
+      expect(second.data.files).toContain(
+        '../privateAttributes/press.stylex.ts',
+      );
       expect(second.data.filesCopied).toBe(second.data.files.length);
 
       const owner = path.join(out(), 'privateAttributes/press.stylex.ts');
@@ -356,22 +420,33 @@ describe('swizzle.copy — browser test harnesses', () => {
     fs.rmSync(path.join(REPO, OUT), {recursive: true, force: true});
   });
 
-  it('leaves out a component folder\'s *.spec.ts harnesses, which import dev-only packages', async () => {
-    const harness = path.join(
-      REPO,
-      'packages/core/src/Item/ItemMarkerColumns.a11y.chromium.spec.ts',
-    );
-    expect(fs.existsSync(harness)).toBe(true);
-    const r = await swizzle('Item', {cwd: REPO, output: './' + OUT});
-    expect(r.data.files.filter(f => /\.spec\.[cm]?[jt]sx?$/.test(f))).toEqual([]);
-    expect(
-      fs.existsSync(
-        path.join(REPO, OUT, 'Item', 'ItemMarkerColumns.a11y.chromium.spec.ts'),
-      ),
-    ).toBe(false);
-    // The component's own source still comes along.
-    expect(r.data.files).toContain('Item.tsx');
-  }, SLOW);
+  it(
+    "leaves out a component folder's *.spec.ts harnesses, which import dev-only packages",
+    async () => {
+      const harness = path.join(
+        REPO,
+        'packages/core/src/Item/ItemMarkerColumns.a11y.chromium.spec.ts',
+      );
+      expect(fs.existsSync(harness)).toBe(true);
+      const r = await swizzle('Item', {cwd: REPO, output: './' + OUT});
+      expect(r.data.files.filter(f => /\.spec\.[cm]?[jt]sx?$/.test(f))).toEqual(
+        [],
+      );
+      expect(
+        fs.existsSync(
+          path.join(
+            REPO,
+            OUT,
+            'Item',
+            'ItemMarkerColumns.a11y.chromium.spec.ts',
+          ),
+        ),
+      ).toBe(false);
+      // The component's own source still comes along.
+      expect(r.data.files).toContain('Item.tsx');
+    },
+    SLOW,
+  );
 });
 
 describe('swizzle.copy — the module graph (spec:AST-110 FR1, FR2)', () => {
@@ -426,8 +501,22 @@ describe('swizzle.copy — the module graph (spec:AST-110 FR1, FR2)', () => {
         .getSemanticDiagnostics(program.getSourceFile(file))
         .filter(d => RESOLUTION.has(d.code))
         // The product installs React, StyleX and Core's own dependencies.
-        .filter(d => !productInstalls.some(name => ts.flattenDiagnosticMessageText(d.messageText, ' ').includes(`'${name}'`) || ts.flattenDiagnosticMessageText(d.messageText, ' ').includes(`'${name}/`)))
-        .map(d => `${path.relative(out(), file)}: TS${d.code} ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}`),
+        .filter(
+          d =>
+            !productInstalls.some(
+              name =>
+                ts
+                  .flattenDiagnosticMessageText(d.messageText, ' ')
+                  .includes(`'${name}'`) ||
+                ts
+                  .flattenDiagnosticMessageText(d.messageText, ' ')
+                  .includes(`'${name}/`),
+            ),
+        )
+        .map(
+          d =>
+            `${path.relative(out(), file)}: TS${d.code} ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}`,
+        ),
     );
   };
 
@@ -445,13 +534,17 @@ describe('swizzle.copy — the module graph (spec:AST-110 FR1, FR2)', () => {
         '../InputGroup/InputGroupInternalContext.ts',
       );
       expect(r.data.filesCopied).toBe(r.data.files.length);
-      expect(r.data.files).not.toContain('../i18n/InternationalizationContext.ts');
+      expect(r.data.files).not.toContain(
+        '../i18n/InternationalizationContext.ts',
+      );
       const files = filesUnder(out())
         .filter(rel => /\.tsx?$/.test(rel) && !rel.startsWith('node_modules'))
         .map(rel => path.join(out(), rel));
       for (const file of files) {
         for (const {specifier} of importsOf(file)) {
-          expect(specifier, path.relative(out(), file)).not.toMatch(/^@astryxdesign\/core\/internal/);
+          expect(specifier, path.relative(out(), file)).not.toMatch(
+            /^@astryxdesign\/core\/internal/,
+          );
           if (specifier.startsWith('.')) {
             expect(
               path.resolve(path.dirname(file), specifier).startsWith(out()),
@@ -466,12 +559,22 @@ describe('swizzle.copy — the module graph (spec:AST-110 FR1, FR2)', () => {
   );
 
   it(
-    'imports a StyleX module by its own exported path',
+    'imports a StyleX module by its exported path, and a class map from its own module',
     async () => {
       await swizzle('Button', {cwd: REPO, output: './' + GRAPH_OUT});
-      const source = fs.readFileSync(path.join(out(), 'Button/Button.tsx'), 'utf-8');
-      expect(source).toContain("from '@astryxdesign/core/theme/tokens.stylex'");
-      expect(source).not.toMatch(/from '@astryxdesign\/core\/theme'/);
+      const source = fs.readFileSync(
+        path.join(out(), 'Button/Button.tsx'),
+        'utf-8',
+      );
+      // A StyleX module the copy still reads comes from its public subpath.
+      expect(source).toContain(
+        "from '@astryxdesign/core/Layout/edgeCompensation.stylex'",
+      );
+      // A class map stays relative: the deprecated StyleX shim re-exports the
+      // same name, and naming that subpath would give the copy a different
+      // value under the old name.
+      expect(source).toContain("from '../Icon/iconBoxClasses'");
+      expect(source).not.toContain('Icon/IconSize.stylex');
     },
     SLOW,
   );
@@ -515,7 +618,10 @@ describe('swizzle.copy — the module graph (spec:AST-110 FR1, FR2)', () => {
       const original = fs.readFileSync(helper, 'utf-8');
 
       // An identical helper is part of the next copy, unwritten.
-      const second = await swizzle('TextInput', {cwd: REPO, output: './' + GRAPH_OUT});
+      const second = await swizzle('TextInput', {
+        cwd: REPO,
+        output: './' + GRAPH_OUT,
+      });
       expect(second.data.files).toContain('../InputGroup/groupStyles.ts');
 
       // A changed helper stays as the product left it, even with --overwrite.
@@ -531,7 +637,9 @@ describe('swizzle.copy — the module graph (spec:AST-110 FR1, FR2)', () => {
       ).version;
       const suffixed = `../InputGroup/groupStyles.v${version}.ts`;
       expect(third.data.files).toContain(suffixed);
-      expect(fs.readFileSync(path.join(out(), 'Button', suffixed), 'utf-8')).toBe(original);
+      expect(
+        fs.readFileSync(path.join(out(), 'Button', suffixed), 'utf-8'),
+      ).toBe(original);
       // Only the new copy points at the suffixed helper.
       expect(
         fs.readFileSync(path.join(out(), 'Button/Button.tsx'), 'utf-8'),
@@ -626,7 +734,10 @@ describe('swizzle.copy — the npm packages a copy imports (spec:AST-110 FR1)', 
   let project;
   beforeEach(() => {
     project = fs.mkdtempSync(path.join(os.tmpdir(), 'astryx-swizzle-deps-'));
-    fs.writeFileSync(path.join(project, 'package.json'), JSON.stringify({name: 'consumer', version: '1.0.0'}));
+    fs.writeFileSync(
+      path.join(project, 'package.json'),
+      JSON.stringify({name: 'consumer', version: '1.0.0'}),
+    );
     const core = path.join(project, 'node_modules/@astryxdesign/core');
     fs.mkdirSync(path.join(core, 'src/Chart'), {recursive: true});
     fs.writeFileSync(
@@ -638,7 +749,10 @@ describe('swizzle.copy — the npm packages a copy imports (spec:AST-110 FR1)', 
         peerDependencies: {react: '^19.0.0'},
       }),
     );
-    fs.writeFileSync(path.join(core, 'src/Chart/index.ts'), "export {Chart} from './Chart';\n");
+    fs.writeFileSync(
+      path.join(core, 'src/Chart/index.ts'),
+      "export {Chart} from './Chart';\n",
+    );
     fs.writeFileSync(
       path.join(core, 'src/Chart/Chart.tsx'),
       [

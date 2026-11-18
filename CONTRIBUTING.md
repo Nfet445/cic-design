@@ -23,8 +23,10 @@ This file covers local development setup.
 ### Node.js
 
 The Node version lives in `.nvmrc` (currently the 24.x line). CI reads the same
-file via `node-version-file`, so local and CI never drift apart. Don't declare
-the version anywhere else.
+file via `node-version-file`. Select that version locally before running tests
+or typechecking. The root `pnpm test` and `pnpm typecheck` commands check it;
+package-specific commands and direct Vitest runs do not. Don't declare the
+version anywhere else.
 
 **Via nvm (recommended):**
 
@@ -32,6 +34,7 @@ the version anywhere else.
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 source ~/.zshrc
 nvm install   # no argument — reads .nvmrc
+nvm use       # select it in the current shell
 ```
 
 `fnm` and `mise` read `.nvmrc` too. `asdf` does not; its `.tool-versions` is

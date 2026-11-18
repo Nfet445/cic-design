@@ -35,6 +35,8 @@ import {InternationalizationProvider} from '../i18n';
 import type * as TokenModule from '../Token';
 import {Token} from '../Token/Token';
 import {FormLayout} from '../FormLayout/FormLayout';
+import {tokenizerTokenRowClassName} from './tokenizerClasses';
+import {classesOf} from '../__tests__/classNameAssertions';
 
 // Every Token render, in order, by label.
 //
@@ -3727,7 +3729,7 @@ describe('Tokenizer end-lane reserve', () => {
 
   const laneHost = (container: HTMLElement) =>
     container.querySelector<HTMLElement>(
-      '[style*="--_tokenizer-end-lane-reserve"]',
+      '[style*="--astryx-tokenizer-end-lane-reserve"]',
     );
 
   // The variable carries the whole reserve — the lane's inset plus its
@@ -3737,7 +3739,7 @@ describe('Tokenizer end-lane reserve', () => {
   // the lane.
   const reserveOf = (container: HTMLElement) =>
     laneHost(container)?.style.getPropertyValue(
-      '--_tokenizer-end-lane-reserve',
+      '--astryx-tokenizer-end-lane-reserve',
     );
 
   it('reserves the lane\u2019s untransformed width, not its on-screen width', () => {
@@ -3804,9 +3806,15 @@ describe('Tokenizer end-lane reserve', () => {
     );
     const field = laneHost(container);
     expect(field).not.toBeNull();
-    expect(getComputedStyle(field!).paddingInlineEnd).toContain(
-      '--_tokenizer-end-lane-reserve',
-    );
+    // jsdom resolves no sheet, so the class name is the padding evidence here;
+    // the geometry itself is proved in the browser spec.
+    const reserveClass = tokenizerTokenRowClassName
+      .split(' ')
+      .find(className =>
+        className.includes('--astryx-tokenizer-end-lane-reserve'),
+      );
+    expect(reserveClass).toBeDefined();
+    expect(classesOf(field!)).toContain(reserveClass);
   });
 
   it('does not pad the input on the collapsed paths', () => {
@@ -3829,7 +3837,7 @@ describe('Tokenizer end-lane reserve', () => {
     expect(reserveOf(container)).toBeTruthy();
     const input = screen.getByRole('combobox');
     expect(getComputedStyle(input).paddingInlineEnd).not.toContain(
-      '--_tokenizer-end-lane-reserve',
+      '--astryx-tokenizer-end-lane-reserve',
     );
   });
 

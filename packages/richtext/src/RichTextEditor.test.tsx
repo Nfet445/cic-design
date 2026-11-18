@@ -63,7 +63,7 @@ import {registerIcons, resetIcons} from '@astryxdesign/core/Icon';
 import {EDGE_COMP_ATTR} from '@astryxdesign/core/Layout';
 import type {BaseProps} from '@astryxdesign/core';
 import {Theme, defineTheme} from '@astryxdesign/core/theme';
-import {rtlStyles} from '@astryxdesign/core/utils';
+import {RTL_MIRROR_CLASS} from '@astryxdesign/core/utils';
 import {InternationalizationProvider} from '@astryxdesign/core/i18n';
 import {
   RichTextEditorAutoLinkPlugin,
@@ -340,6 +340,33 @@ describe('RichTextEditor', () => {
     expect(wrapper).toHaveAttribute('data-status', 'error');
   });
 
+  it.each([
+    {},
+    {status: {type: 'error' as const}},
+    {isDisabled: true},
+    {isReadOnly: true},
+  ])('applies xstyle to the editor root in state %#', state => {
+    const {container, rerender} = render(
+      <RichTextEditor label="Notes" {...state} xstyle="consumer-override" />,
+    );
+    expect(container.querySelector('.astryx-rich-text-editor')).toHaveClass(
+      'consumer-override',
+    );
+    rerender(
+      <RichTextEditor
+        label="Notes"
+        {...state}
+        xstyle={{backgroundColor: 'red', color: 'blue'}}
+        style={{color: 'green'}}
+      />,
+    );
+    const root = container.querySelector(
+      '.astryx-rich-text-editor',
+    ) as HTMLElement;
+    expect(root.style.backgroundColor).toBe('red');
+    expect(root.style.color).toBe('green');
+  });
+
   it('keeps TextArea-style input visuals alongside consumer props', () => {
     const {container} = render(
       <RichTextEditor
@@ -354,11 +381,11 @@ describe('RichTextEditor', () => {
     expect(wrapper).toHaveClass('custom-editor');
     expect(wrapper).toHaveAttribute('data-size', 'md');
     expect(wrapper).toHaveStyle({width: '42rem'});
-    expect(
-      [...(wrapper?.classList ?? [])].some(className =>
-        className.startsWith('x'),
-      ),
-    ).toBe(true);
+    // The shared field box, as TextArea wears it: border, fill and the fade.
+    expect(wrapper).toHaveClass('transition-[border-color,box-shadow]');
+    expect(wrapper).toHaveClass(
+      'border-[color:var(--color-border-emphasized)]',
+    );
   });
 
   it('renders a labelled editable textbox', () => {
@@ -377,21 +404,24 @@ describe('RichTextEditor', () => {
 
   it('applies minHeight only to the editable content surface', () => {
     const {container, rerender} = render(<RichTextEditor label="Notes" />);
-    const wrapper = container.querySelector('.astryx-rich-text-editor');
+    const wrapper = container.querySelector<HTMLElement>(
+      '.astryx-rich-text-editor',
+    );
 
+    const minHeightVariable = '--astryx-richtext-body-min-height';
     expect(
-      screen.getByRole('textbox').style.getPropertyValue('--x-minHeight'),
+      screen.getByRole('textbox').style.getPropertyValue(minHeightVariable),
     ).toBe('4.5rem');
-    expect(wrapper).not.toHaveStyle({'--x-minHeight': '4.5rem'});
+    expect(wrapper?.style.getPropertyValue(minHeightVariable)).toBe('');
 
     rerender(<RichTextEditor label="Notes" minHeight={180} />);
     expect(
-      screen.getByRole('textbox').style.getPropertyValue('--x-minHeight'),
+      screen.getByRole('textbox').style.getPropertyValue(minHeightVariable),
     ).toBe('180px');
 
     rerender(<RichTextEditor label="Notes" minHeight="12rem" />);
     expect(
-      screen.getByRole('textbox').style.getPropertyValue('--x-minHeight'),
+      screen.getByRole('textbox').style.getPropertyValue(minHeightVariable),
     ).toBe('12rem');
   });
 
@@ -490,7 +520,7 @@ describe('RichTextEditor', () => {
     const {container} = render(<RichTextEditor label="Notes" isDisabled />);
     const wrapper = container.querySelector('.astryx-rich-text-editor');
     expect(wrapper).not.toBeNull();
-    expect(getComputedStyle(wrapper as Element).opacity).toBe('0.5');
+    expect(wrapper).toHaveClass('opacity-50', 'cursor-default', 'shadow-none');
   });
 
   it('marks the textbox invalid on error status', () => {
@@ -1076,6 +1106,26 @@ describe('RichTextView', () => {
     expect(root?.classList.length).toBeGreaterThan(1);
   });
 
+  it.each([HELLO_STATE, '{ invalid'])(
+    'applies class and style xstyle for value %s',
+    value => {
+      const {container, rerender} = render(
+        <RichTextView value={value} xstyle="consumer-override" />,
+      );
+      expect(container.firstElementChild).toHaveClass('consumer-override');
+      rerender(
+        <RichTextView
+          value={value}
+          xstyle={{backgroundColor: 'red', color: 'blue'}}
+          style={{color: 'green'}}
+        />,
+      );
+      const root = container.firstElementChild as HTMLElement;
+      expect(root.style.backgroundColor).toBe('red');
+      expect(root.style.color).toBe('green');
+    },
+  );
+
   it('applies a consumer xstyle', () => {
     const overrides = stylex.create({custom: {opacity: 0.5}});
     const {container: withXstyle} = render(
@@ -1391,14 +1441,14 @@ describe('RichTextEditorToolbar', () => {
     // The compact gutter is emitted by StyleX; do not regress to a component
     // inline-style escape hatch. Browser coverage below owns the geometry.
     expect(toolbarRegion).not.toHaveAttribute('style');
-    // Vitest's JSDOM setup does not load compiled StyleX CSS. The WithToolbar
-    // story provides visual coverage for flush edges and preserved body inset;
-    // here we verify that the dedicated body receives its StyleX layout.
-    expect(
-      [...(editorBody?.classList ?? [])].some(className =>
-        className.startsWith('x'),
-      ),
-    ).toBe(true);
+    // JSDOM loads no stylesheet, so the class set is the proof that the
+    // dedicated body receives its own layout. The WithToolbar story carries
+    // the flush edges and the preserved body inset visually.
+    expect(editorBody).not.toBeNull();
+    expect(editorBody?.className).toContain('relative');
+    expect(editorBody?.className).toContain(
+      '[min-height:var(--astryx-richtext-body-min-height)]',
+    );
 
     // Block formatting is consolidated into a selector, while history and
     // inline formatting remain direct buttons.
@@ -1575,14 +1625,10 @@ describe('RichTextEditorToolbar', () => {
     const {container} = render(
       <RichTextEditor label="Notes" toolbar={<RichTextEditorToolbar />} />,
     );
-    // The atomic class only; dev builds add a debug name with a dot in it.
-    const mirrorClass = (stylex.props(rtlStyles.mirror).className ?? '')
-      .split(' ')
-      .find(name => !name.includes('__'));
-    expect(mirrorClass).toBeDefined();
-    const mirrored = [
-      ...container.getElementsByClassName(mirrorClass ?? ''),
-    ].map(element => element.closest('button')?.getAttribute('aria-label'));
+    const mirrorClass = RTL_MIRROR_CLASS;
+    const mirrored = [...container.getElementsByClassName(mirrorClass)].map(
+      element => element.closest('button')?.getAttribute('aria-label'),
+    );
     expect(mirrored).toEqual(['Undo', 'Redo']);
   });
 });
@@ -2296,7 +2342,7 @@ describe('isReadOnly + isDisabled combined', () => {
     expect(textbox).not.toHaveAttribute('tabindex', '0');
     const wrapper = container.querySelector('.astryx-rich-text-editor');
     expect(wrapper).not.toBeNull();
-    expect(getComputedStyle(wrapper as Element).opacity).toBe('0.5');
+    expect(wrapper?.className).toContain('opacity-50');
   });
 
   it('swaps disabled semantics for read-only semantics on rerender', () => {

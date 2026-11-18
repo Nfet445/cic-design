@@ -22,12 +22,22 @@ import * as stylex from '@stylexjs/stylex';
 import {DropdownMenu} from './DropdownMenu';
 import {DropdownMenuItem} from './DropdownMenuItem';
 import {DropdownMenuSubMenu} from './DropdownMenuSubMenu';
+import {
+  dropdownMenuSubMenuFlyoutClassName,
+  dropdownMenuSubMenuFlyoutViewportClassName,
+  dropdownMenuSubMenuScrollClassName,
+} from './dropdownMenuSubMenuClasses';
+import {
+  dropdownMenuPopoverFixedWidthClassName,
+  dropdownMenuPopoverViewportClassName,
+} from './dropdownMenuClasses';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 import {warmMenuBottomSheet} from './__tests__/warmMenuBottomSheet';
 import {IconButton} from '../IconButton';
 import {RadioList, RadioListItem} from '../RadioList';
 import {COMPACT_TOUCH_PRESENTATION_QUERY} from '../hooks/useAdaptivePresentation';
 import {Theme, defineTheme} from '../theme';
-import {rtlStyles} from '../utils';
+import {RTL_MIRROR_CLASS} from '../utils';
 import {TOUCH_QUERY} from '../utils/touchPresentation';
 
 beforeEach(() => {
@@ -115,21 +125,27 @@ describe('DropdownMenuSubMenu', () => {
 
     const flyout = screen.getByRole('menu', {name: /Move to/, hidden: true});
     const popover = flyout.closest('[popover]');
-    expect(popover?.className).toContain(
-      'DropdownMenuSubMenu__flyoutStyles.popoverViewport',
-    );
+    // jsdom cannot parse the built sheet, so the layer's cap and width are
+    // read as the classes it carries and the variable it sets.
+    expectClassSet(popover as HTMLElement, {
+      includes: dropdownMenuSubMenuFlyoutViewportClassName.split(' '),
+    });
     expect(popover).not.toHaveStyle(
       'margin-inline-start: max(var(--spacing-2),env(safe-area-inset-left,0px))',
     );
     expect(popover).not.toHaveStyle(
       'margin-inline-end: max(var(--spacing-2),env(safe-area-inset-right,0px))',
     );
-    expect(popover).toHaveStyle({minWidth: 'var(--x-minWidth)'});
-    expect(popover?.getAttribute('style')).toContain('min(640px, calc(100vw');
-    expect(flyout).toHaveStyle(
-      'max-height: min(300px,min(calc(100dvb - calc(max(var(--spacing-4), env(safe-area-inset-top, 0px)) + var(--astryx-layer-inset-block-start, 0px)) - calc(max(var(--spacing-4), env(safe-area-inset-bottom, 0px)) + var(--astryx-layer-inset-block-end, 0px))), var(--_layer-keyboard-max-block-size, 100dvb)))',
+    expect(popover?.getAttribute('style')).toContain(
+      // The width is the caller's, clamped by the runtime's inline cap.
+      '--astryx-dropdown-menu-inline-size: min(640px, calc(100vw',
     );
-    expect(flyout).not.toHaveStyle({overflowY: 'auto'});
+    // jsdom cannot parse the built sheet, so the flyout's own cap and its
+    // scroll are read as the classes it carries.
+    expectClassSet(flyout, {
+      includes: dropdownMenuSubMenuFlyoutClassName.split(' '),
+      excludes: [dropdownMenuSubMenuScrollClassName],
+    });
     expect(flyout).toHaveAttribute('tabindex', '-1');
 
     Object.defineProperties(flyout, {
@@ -139,7 +155,9 @@ describe('DropdownMenuSubMenu', () => {
     fireEvent(window, new Event('resize'));
 
     await waitFor(() => {
-      expect(flyout).toHaveStyle({overflowY: 'auto'});
+      expectClassSet(flyout, {
+        includes: dropdownMenuSubMenuScrollClassName.split(' '),
+      });
       expect(flyout).toHaveAttribute('tabindex', '0');
     });
   });
@@ -162,14 +180,15 @@ describe('DropdownMenuSubMenu', () => {
 
       const flyout = screen.getByRole('menu', {name: /Move to/, hidden: true});
       const popover = flyout.closest('[popover]');
-      expect(popover?.className).toContain(
-        'DropdownMenuSubMenu__flyoutStyles.popoverCustomIntrinsicWidth',
+      expectClassSet(popover as HTMLElement, {
+        includes: [
+          ...dropdownMenuSubMenuFlyoutViewportClassName.split(' '),
+          ...dropdownMenuPopoverFixedWidthClassName.split(' '),
+        ],
+      });
+      expect(popover?.getAttribute('style')).toContain(
+        `--astryx-dropdown-menu-inline-size: ${menuWidth}`,
       );
-      expect(popover?.getAttribute('style')).toContain(menuWidth);
-      expect(popover?.className).toContain(
-        'DropdownMenuSubMenu__flyoutStyles.popoverViewport',
-      );
-      expect(popover?.getAttribute('style')).not.toContain(`min(${menuWidth},`);
     },
   );
 
@@ -209,9 +228,7 @@ describe('DropdownMenuSubMenu', () => {
 
   it('mirrors its indicator and keyboard directions under RTL', async () => {
     const user = userEvent.setup();
-    const {className: mirrorClassName} = stylex.props(rtlStyles.mirror);
-    const mirrorClasses = mirrorClassName?.split(' ') ?? [];
-    expect(mirrorClasses.length).toBeGreaterThan(0);
+    const mirrorClasses = RTL_MIRROR_CLASS.split(' ');
     render(
       <div dir="rtl" style={{direction: 'rtl'}}>
         <MoveMenu />
@@ -2162,6 +2179,13 @@ describe('DropdownMenuSubMenu header and footer', () => {
     }
     return true;
   };
+  // The step aside is one stylesheet rule that reads the DOM: a view frame in
+  // the surface host that is not hidden sets the menu and the regions aside.
+  // jsdom parses no stylesheet, so the tests assert the shape the rule reads.
+  const stepsAside = (menu: HTMLElement) =>
+    menu.parentElement?.querySelector(
+      '[data-astryx-submenu-host] > [data-astryx-submenu-regions=view]:not([hidden])',
+    ) != null;
 
   function LabelsMenu({
     onCreate,
@@ -2647,8 +2671,8 @@ describe('DropdownMenuSubMenu header and footer', () => {
       // The view sits beside the root's menu, which steps aside with its own
       // header; the view leads with a Back row.
       expect(rootMenu).not.toContainElement(dialog);
-      expect(isShown(rootMenu)).toBe(false);
-      expect(isShown(rootField)).toBe(false);
+      expect(stepsAside(rootMenu)).toBe(true);
+      expect(isShown(rootField)).toBe(true);
       expect(dialog.closest('[popover]')).toBe(rootMenu.closest('[popover]'));
       const viewRows = Array.from(
         labelsMenu().querySelectorAll('[role="menuitem"]'),
@@ -2664,7 +2688,7 @@ describe('DropdownMenuSubMenu header and footer', () => {
       act(() => field().focus());
       fireEvent.keyDown(field(), {key: 'Escape'});
       await waitFor(() => expect(row).toHaveFocus());
-      expect(isShown(rootMenu)).toBe(true);
+      expect(stepsAside(rootMenu)).toBe(false);
       expect(isShown(rootField)).toBe(true);
     });
 
@@ -2697,7 +2721,7 @@ describe('DropdownMenuSubMenu header and footer', () => {
         detail: 1,
       });
       await screen.findByRole('dialog', {name: /Labels/, ...h});
-      expect(isShown(rootMenu)).toBe(false);
+      expect(stepsAside(rootMenu)).toBe(true);
       const toggle = screen.getByRole('button', {name: 'Toggle filter'});
       const bugIsShown = () =>
         isShown(screen.getByRole('menuitem', {name: 'Bug', ...h}));
@@ -2708,7 +2732,7 @@ describe('DropdownMenuSubMenu header and footer', () => {
       await waitFor(() =>
         expect(screen.queryByRole('dialog', {name: /Labels/, ...h})).toBeNull(),
       );
-      expect(isShown(rootMenu)).toBe(true);
+      expect(stepsAside(rootMenu)).toBe(false);
       expect(bugIsShown()).toBe(true);
 
       // It comes back: the view moves beside the root's menu, which steps
@@ -2719,13 +2743,17 @@ describe('DropdownMenuSubMenu header and footer', () => {
         ...h,
       });
       expect(isShown(dialog)).toBe(true);
-      expect(isShown(rootMenu)).toBe(false);
+      expect(stepsAside(rootMenu)).toBe(true);
       expect(bugIsShown()).toBe(true);
     });
 
     it("a drilled-in view with a header or footer caps at the root's menuMaxHeight, as the plain view does", async () => {
       const {dialog} = await openLabels({menuMaxHeight: 560});
-      expect(dialog.getAttribute('style')).toContain('min(560px');
+      // The view caps through the variable the root's cap reads, so it needs no
+      // rule of its own.
+      expectClassSet(dialog, {
+        includes: dropdownMenuPopoverViewportClassName.split(' '),
+      });
     });
 
     it('Tab in the drilled-in view wraps through its own regions', async () => {

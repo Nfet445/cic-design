@@ -4,7 +4,7 @@
 
 /**
  * @file CommentParts.tsx
- * @input Uses React, StyleX, theme tokens, and Astryx primitives (Avatar,
+ * @input Uses React, theme tokens, and Astryx primitives (Avatar,
  *   Badge, Banner, Blockquote, Button, Card, Dialog, EmptyState, Item, Link,
  *   Section, Skeleton, Text, Thumbnail, Timestamp, Tooltip), plus Lab's
  *   loading-message and shared status-announcement helpers
@@ -21,7 +21,6 @@ import {
   type ReactNode,
   type Ref,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Avatar} from '@astryxdesign/core/Avatar';
 import {Badge} from '@astryxdesign/core/Badge';
 import {Banner} from '@astryxdesign/core/Banner';
@@ -48,14 +47,32 @@ import {Timestamp} from '@astryxdesign/core/Timestamp';
 import {Tooltip} from '@astryxdesign/core/Tooltip';
 import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
 import {useTranslator} from '@astryxdesign/core/i18n';
+import {colorVarNames, spacingVarNames} from '@astryxdesign/core/theme';
+import {tw} from '../tw';
 import {
-  borderVars,
-  colorVars,
-  durationVars,
-  easeVars,
-  radiusVars,
-  spacingVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
+  commentPartsAgentLogoClassName,
+  commentPartsAvatarFrameAgentClassName,
+  commentPartsAvatarFrameClassName,
+  commentPartsAvatarFramePersonClassName,
+  commentPartsAvatarSpacerClassName,
+  commentPartsBodyClampedClassName,
+  commentPartsEventRowClassName,
+  commentPartsFullWidthClassName,
+  commentPartsLoadingComposerClassName,
+  commentPartsNoWrapClassName,
+  commentPartsProgressLabelClassName,
+  commentPartsQuoteRuleClassName,
+  commentPartsQuoteTextClassName,
+  commentPartsRailCollapsedClassName,
+  commentPartsRailClassName,
+  commentPartsRailFromAvatarClassName,
+  commentPartsRailFromRowClassName,
+  commentPartsRailToAvatarClassName,
+  commentPartsRailToRowClassName,
+  commentPartsSectionDividerOverlapClassName,
+  commentPartsThreadQuoteClassName,
+  commentPartsUnreadBadgeClassName,
+} from './commentPartsClasses';
 import {CommentIcon} from './icons';
 import {eventAnchorId, type AnyComment} from './utils';
 import type {
@@ -70,30 +87,7 @@ import {LoadingMessage} from '../LoadingMessage';
 import {useStatusAnnouncement} from '../useStatusAnnouncement';
 
 /** The 28px avatar column every comment row, reply, and event aligns to. */
-export const AVATAR_SIZE = `calc(${spacingVars['--spacing-6']} + ${spacingVars['--spacing-1']})`;
-// The gap between thread rows; a rail stretch reaches across it.
-const THREAD_ROW_GAP = spacingVars['--spacing-2'];
-// The rail stops this far short of every avatar it meets, so it reads as
-// segments between the avatars rather than one line behind them.
-const THREAD_RAIL_AVATAR_GAP = spacingVars['--spacing-1'];
-const THREAD_RAIL_BELOW_AVATAR = `calc(${AVATAR_SIZE} + ${THREAD_RAIL_AVATAR_GAP})`;
-const RAIL_INLINE_START = `calc(${spacingVars['--spacing-3']} + ${borderVars['--border-width']})`;
-
-// Holds for five seconds, then fades over the slow motion token. The badge
-// removes itself when the animation ends so header actions reclaim the trailing
-// edge; `visibility: hidden` keeps it out of the accessibility tree meanwhile.
-const unreadBadgeFade = stylex.keyframes({
-  from: {opacity: 1, visibility: 'visible'},
-  to: {opacity: 0, visibility: 'hidden'},
-});
-
-// Slides a gradient twice the label's width so its light band crosses the
-// label left to right.
-const progressShimmer = stylex.keyframes({
-  from: {backgroundPosition: '100% 0'},
-  to: {backgroundPosition: '0 0'},
-});
-
+export const AVATAR_SIZE = `calc(${spacingVarNames['--spacing-6']} + ${spacingVarNames['--spacing-1']})`;
 /**
  * A resolved thread's words step down to the secondary text color by
  * remapping the primary text token on their own elements (never on the
@@ -104,162 +98,8 @@ const progressShimmer = stylex.keyframes({
  */
 export const RESOLVED_TEXT_STYLE: CSSProperties &
   Record<`--${string}`, string> = {
-  '--color-text-primary': colorVars['--color-text-secondary'],
+  '--color-text-primary': colorVarNames['--color-text-secondary'],
 };
-
-export const partStyles = stylex.create({
-  avatarFrame: {
-    position: 'relative',
-    zIndex: 1,
-    overflow: 'hidden',
-    width: AVATAR_SIZE,
-    minWidth: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    // Avatars sit on an opaque card-surface disc in every state, including a
-    // selected thread's translucent fill, so nothing shows through them.
-    backgroundColor: colorVars['--color-background-card'],
-  },
-  avatarFramePerson: {
-    borderRadius: radiusVars['--radius-full'],
-  },
-  avatarFrameAgent: {
-    borderRadius: radiusVars['--radius-element'],
-  },
-  avatarSpacer: {
-    width: AVATAR_SIZE,
-    minWidth: AVATAR_SIZE,
-  },
-  agentLogo: {
-    width: AVATAR_SIZE,
-    minWidth: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-  },
-  noWrap: {
-    whiteSpace: 'nowrap',
-  },
-  bodyClamped: {
-    display: '-webkit-box',
-    WebkitBoxOrient: 'vertical',
-    WebkitLineClamp: 3,
-    overflow: 'hidden',
-  },
-  unreadBadge: {
-    animationName: unreadBadgeFade,
-    animationDelay: '5s',
-    animationDuration: {
-      default: durationVars['--duration-slow-max'],
-      '@media (prefers-reduced-motion: reduce)': '1ms',
-    },
-    animationTimingFunction: easeVars['--ease-standard'],
-    animationFillMode: 'forwards',
-  },
-  quoteText: {
-    fontStyle: 'italic',
-  },
-  // Doubles the comment column's gap around the quote so it reads as its own
-  // block between the author line and the body.
-  threadQuote: {
-    paddingBlock: spacingVars['--spacing-1'],
-  },
-  // The text is painted by its background, clipped to the glyphs, so it never
-  // drops below secondary-text contrast. Where the clip is unsupported, under
-  // reduced motion, and in forced colors, the label is plain secondary text.
-  progressLabel: {
-    color: {
-      default: colorVars['--color-text-secondary'],
-      '@supports (background-clip: text)': 'transparent',
-      '@media (prefers-reduced-motion: reduce)':
-        colorVars['--color-text-secondary'],
-      '@media (forced-colors: active)': 'CanvasText',
-    },
-    backgroundImage: {
-      default: 'none',
-      '@supports (background-clip: text)': `linear-gradient(90deg, ${colorVars['--color-text-secondary']} 40%, ${colorVars['--color-text-primary']} 50%, ${colorVars['--color-text-secondary']} 60%)`,
-      '@media (prefers-reduced-motion: reduce)': 'none',
-      '@media (forced-colors: active)': 'none',
-    },
-    backgroundSize: '250% 100%',
-    backgroundClip: 'text',
-    animationName: {
-      default: 'none',
-      '@supports (background-clip: text)': progressShimmer,
-      '@media (prefers-reduced-motion: reduce)': 'none',
-      '@media (forced-colors: active)': 'none',
-    },
-    animationDuration: `calc(${durationVars['--duration-slow-max']} * 2)`,
-    animationTimingFunction: 'linear',
-    animationIterationCount: 'infinite',
-  },
-  railRow: {
-    position: 'relative',
-  },
-  rail: {
-    position: 'absolute',
-    insetInlineStart: RAIL_INLINE_START,
-    width: spacingVars['--spacing-0-5'],
-    backgroundColor: colorVars['--color-border-emphasized'],
-    pointerEvents: 'none',
-  },
-  // Where a stretch starts: below its row's avatar, or at the top of a row
-  // without one; and where it ends: short of the next row's avatar, or at the
-  // top of a next row without one, which carries the rail on.
-  railFromAvatar: {
-    insetBlockStart: THREAD_RAIL_BELOW_AVATAR,
-  },
-  railFromRow: {
-    insetBlockStart: 0,
-  },
-  railToAvatar: {
-    insetBlockEnd: `calc(${THREAD_RAIL_AVATAR_GAP} - ${THREAD_ROW_GAP})`,
-  },
-  railToRow: {
-    insetBlockEnd: `calc(-1 * ${THREAD_ROW_GAP})`,
-  },
-  // A collapsed thread's rail fades out over the whole comment, down to its
-  // View replies link, so the hidden replies read as part of it.
-  railCollapsed: {
-    position: 'absolute',
-    insetBlockStart: THREAD_RAIL_BELOW_AVATAR,
-    insetBlockEnd: 0,
-    insetInlineStart: RAIL_INLINE_START,
-    width: spacingVars['--spacing-0-5'],
-    backgroundImage: `linear-gradient(to bottom, ${colorVars['--color-border-emphasized']}, transparent)`,
-    pointerEvents: 'none',
-    zIndex: -1,
-  },
-  eventRow: {
-    paddingInlineStart: spacingVars['--spacing-3'],
-  },
-  loadingComposer: {
-    borderRadius: radiusVars['--radius-container'],
-  },
-  fullWidth: {
-    width: '100%',
-  },
-  // Neighboring Sections each draw a top and a bottom divider. Overlapping
-  // them by one border width leaves a single 1px line between threads.
-  sectionDividerOverlap: {
-    marginBlockStart: {
-      default: `calc(-1 * ${borderVars['--border-width']})`,
-      ':first-child': '0',
-    },
-  },
-});
-
-/* A highlighted passage's quote rule, in the border token of the host's
-   highlight color. */
-const highlightRules = stylex.create({
-  blue: {borderInlineStartColor: colorVars['--color-border-blue']},
-  cyan: {borderInlineStartColor: colorVars['--color-border-cyan']},
-  gray: {borderInlineStartColor: colorVars['--color-border-gray']},
-  green: {borderInlineStartColor: colorVars['--color-border-green']},
-  orange: {borderInlineStartColor: colorVars['--color-border-orange']},
-  pink: {borderInlineStartColor: colorVars['--color-border-pink']},
-  purple: {borderInlineStartColor: colorVars['--color-border-purple']},
-  red: {borderInlineStartColor: colorVars['--color-border-red']},
-  teal: {borderInlineStartColor: colorVars['--color-border-teal']},
-  yellow: {borderInlineStartColor: colorVars['--color-border-yellow']},
-});
 
 /** A failed action as an error Banner with its one recovery action. */
 export type ErrorBannerContent = {
@@ -312,7 +152,7 @@ export function ErrorBanner({
       container="card"
       title={title}
       description={description}
-      xstyle={partStyles.fullWidth}
+      className={commentPartsFullWidthClassName}
       endContent={
         actionLabel != null && onAction != null ? (
           <Button
@@ -348,11 +188,15 @@ export function ThreadRailSegment({
 }) {
   return (
     <VStack
-      xstyle={[
-        partStyles.rail,
-        from === 'avatar' ? partStyles.railFromAvatar : partStyles.railFromRow,
-        to === 'avatar' ? partStyles.railToAvatar : partStyles.railToRow,
-      ]}
+      className={tw(
+        commentPartsRailClassName,
+        from === 'avatar'
+          ? commentPartsRailFromAvatarClassName
+          : commentPartsRailFromRowClassName,
+        to === 'avatar'
+          ? commentPartsRailToAvatarClassName
+          : commentPartsRailToRowClassName,
+      )}
       data-thread-rail-segment={`${from}-${to}`}
       aria-hidden="true">
       {null}
@@ -364,7 +208,7 @@ export function ThreadRailSegment({
 export function CollapsedThreadRail() {
   return (
     <VStack
-      xstyle={partStyles.railCollapsed}
+      className={commentPartsRailCollapsedClassName}
       data-thread-rail-segment="collapsed"
       aria-hidden="true">
       {null}
@@ -406,7 +250,7 @@ export function MetadataActionLink({
       label={accessibleLabel ?? label}
       type={textType}
       color="secondary"
-      xstyle={partStyles.noWrap}
+      className={commentPartsNoWrapClassName}
       data-metadata-action={actionRole}
       // Link keeps a disabled link in the tab order (spec:AST-085 FR1).
       isDisabled={isDisabled}
@@ -433,18 +277,26 @@ export function QuotedPassage({
   /** The highlight's color, or nothing for a neutral rule. */
   highlightColor?: CommentHighlightColor;
 }) {
+  const quoteRule: CSSProperties &
+    Partial<Record<'--_comment-quote-rule', string>> = {
+    '--_comment-quote-rule':
+      highlightColor != null
+        ? colorVarNames[`--color-border-${highlightColor}`]
+        : undefined,
+  };
   return (
     <Blockquote
-      xstyle={
-        highlightColor != null ? highlightRules[highlightColor] : undefined
+      className={
+        highlightColor != null ? commentPartsQuoteRuleClassName : undefined
       }
+      style={highlightColor != null ? quoteRule : undefined}
       data-quote-rule={highlightColor != null ? 'highlight' : 'neutral'}
       data-highlight-color={highlightColor}>
       <Text
         type="body"
         color="inherit"
         maxLines={2}
-        xstyle={partStyles.quoteText}>
+        className={commentPartsQuoteTextClassName}>
         {quote}
       </Text>
     </Blockquote>
@@ -469,7 +321,7 @@ export function CommentAnchorQuote({
       gap={2}
       align="center"
       width="100%"
-      xstyle={partStyles.threadQuote}
+      className={commentPartsThreadQuoteClassName}
       style={isResolved ? RESOLVED_TEXT_STYLE : undefined}
       data-comment-anchor={isOrphaned ? 'orphaned' : 'anchored'}>
       <StackItem size={isOrphaned ? undefined : 'fill'}>
@@ -508,7 +360,7 @@ export function CommentProgressStatus({progress}: {progress: CommentProgress}) {
         ref={labelRef}
         type="body"
         color="secondary"
-        xstyle={partStyles.progressLabel}>
+        className={commentPartsProgressLabelClassName}>
         {progress.label}
       </Text>
       {progress.link != null && (
@@ -533,7 +385,7 @@ export function ClampedBody({
   return (
     <VStack
       width="100%"
-      xstyle={isExpanded ? undefined : partStyles.bodyClamped}
+      className={isExpanded ? undefined : commentPartsBodyClampedClassName}
       style={isMuted ? RESOLVED_TEXT_STYLE : undefined}
       data-comment-body-clamp={isExpanded ? 'expanded' : '3'}>
       {children}
@@ -550,7 +402,7 @@ export function UnreadBadge() {
   return (
     <HStack
       align="center"
-      xstyle={partStyles.unreadBadge}
+      className={commentPartsUnreadBadgeClassName}
       data-comment-unread-badge="true"
       onAnimationEnd={event => {
         if (event.target === event.currentTarget) {
@@ -569,7 +421,7 @@ export function ResolvedLabel({resolvedBy}: {resolvedBy?: CommentUser}) {
     <Text
       type="body"
       color="secondary"
-      xstyle={partStyles.noWrap}
+      className={commentPartsNoWrapClassName}
       data-comment-resolved-label="true">
       {t('@astryx.comments.resolved')}
     </Text>
@@ -587,11 +439,12 @@ export function ResolvedLabel({resolvedBy}: {resolvedBy?: CommentUser}) {
 export function AuthorName({
   author,
   id,
-  xstyle,
+  className,
 }: {
   author: CommentUser;
   id?: string;
-  xstyle?: stylex.StyleXStyles;
+  /** The caller's layout class, such as the room the name may take. */
+  className?: string;
 }) {
   return (
     <Text
@@ -600,7 +453,7 @@ export function AuthorName({
       color="primary"
       weight="medium"
       maxLines={1}
-      xstyle={xstyle}
+      className={className}
       data-author-name={author.name}>
       {author.href != null ? (
         <Link href={author.href} type="inherit" color="inherit">
@@ -621,7 +474,7 @@ function CommentAvatar({user}: {user: CommentUser}) {
       <Thumbnail
         src={logo}
         alt={t('@astryx.comments.agentLogo', {name: user.name})}
-        xstyle={partStyles.agentLogo}
+        className={commentPartsAgentLogoClassName}
       />
     );
   }
@@ -630,7 +483,7 @@ function CommentAvatar({user}: {user: CommentUser}) {
       name={user.name}
       src={logo === '' ? undefined : logo}
       size={32}
-      xstyle={partStyles.agentLogo}
+      className={commentPartsAgentLogoClassName}
       // An agent without a logo keeps the agent's square-cornered frame.
       shape={user.kind === 'agent' ? 'rounded' : 'circle'}
       tooltip={false}
@@ -644,10 +497,12 @@ export function CommentAvatarFrame({user}: {user: CommentUser}) {
   const isAgent = user.kind === 'agent';
   return (
     <Center
-      xstyle={[
-        partStyles.avatarFrame,
-        isAgent ? partStyles.avatarFrameAgent : partStyles.avatarFramePerson,
-      ]}
+      className={tw(
+        commentPartsAvatarFrameClassName,
+        isAgent
+          ? commentPartsAvatarFrameAgentClassName
+          : commentPartsAvatarFramePersonClassName,
+      )}
       data-avatar-shape={isAgent ? 'agent' : 'person'}>
       <CommentAvatar user={user} />
     </Center>
@@ -665,7 +520,7 @@ function BusyStatus({isBusy, message}: {isBusy: boolean; message: string}) {
 /** The empty 28px avatar column, for rows without an avatar. */
 export function AvatarSpacer() {
   return (
-    <Center xstyle={partStyles.avatarSpacer} aria-hidden="true">
+    <Center className={commentPartsAvatarSpacerClassName} aria-hidden="true">
       {null}
     </Center>
   );
@@ -693,9 +548,11 @@ export function ActivityEventRow({
       data-comments-event-id={event.id}
       density="compact"
       align="start"
-      xstyle={partStyles.eventRow}
+      className={commentPartsEventRowClassName}
       startContent={
-        <Center xstyle={partStyles.avatarSpacer} aria-hidden="true">
+        <Center
+          className={commentPartsAvatarSpacerClassName}
+          aria-hidden="true">
           <CommentIcon name="event" size="md" />
         </Center>
       }
@@ -855,47 +712,47 @@ function LoadingCommentRow({
           <HStack gap={1} align="center" width="100%">
             <Skeleton
               width={index === 0 ? '38%' : '30%'}
-              height={spacingVars['--spacing-4']}
+              height={spacingVarNames['--spacing-4']}
               radius={1}
               index={index * 7 + 1}
             />
             <Skeleton
               width="18%"
-              height={spacingVars['--spacing-3']}
+              height={spacingVarNames['--spacing-3']}
               radius={1}
               index={index * 7 + 2}
             />
           </HStack>
           <Skeleton
             width="96%"
-            height={spacingVars['--spacing-4']}
+            height={spacingVarNames['--spacing-4']}
             radius={1}
             index={index * 7 + 3}
           />
           <Skeleton
             width={index === 0 ? '82%' : '68%'}
-            height={spacingVars['--spacing-4']}
+            height={spacingVarNames['--spacing-4']}
             radius={1}
             index={index * 7 + 4}
           />
           {index === 0 && (
             <Skeleton
               width="54%"
-              height={spacingVars['--spacing-4']}
+              height={spacingVarNames['--spacing-4']}
               radius={1}
               index={index * 7 + 5}
             />
           )}
           <HStack gap={1} align="center">
             <Skeleton
-              width={`calc(${spacingVars['--spacing-8']} + ${spacingVars['--spacing-4']})`}
-              height={spacingVars['--spacing-6']}
+              width={`calc(${spacingVarNames['--spacing-8']} + ${spacingVarNames['--spacing-4']})`}
+              height={spacingVarNames['--spacing-6']}
               radius={2}
               index={index * 7 + 5}
             />
             <Skeleton
-              width={spacingVars['--spacing-8']}
-              height={spacingVars['--spacing-6']}
+              width={spacingVarNames['--spacing-8']}
+              height={spacingVarNames['--spacing-6']}
               radius={2}
               index={index * 7 + 6}
             />
@@ -911,7 +768,7 @@ function LoadingCommentRow({
       dividers={['top', 'bottom']}
       padding={3}
       width="100%"
-      xstyle={partStyles.sectionDividerOverlap}>
+      className={commentPartsSectionDividerOverlapClassName}>
       {content}
     </Section>
   ) : (
@@ -947,19 +804,19 @@ export function CommentComposerLoadingSkeleton({
 }: {
   actionCount: number;
 }) {
-  const actionSize = spacingVars['--spacing-8'];
+  const actionSize = spacingVarNames['--spacing-8'];
   return (
     <Card
       variant="default"
       elevation="none"
       padding={2}
       width="100%"
-      xstyle={partStyles.loadingComposer}
+      className={commentPartsLoadingComposerClassName}
       data-comments-loading="composer">
       <VStack gap={2} width="100%">
         <Skeleton
           width="42%"
-          height={spacingVars['--spacing-4']}
+          height={spacingVarNames['--spacing-4']}
           radius={1}
           index={22}
         />

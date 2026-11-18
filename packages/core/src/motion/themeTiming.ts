@@ -23,7 +23,7 @@ import {cubicBezier} from './bezier';
 import {parseCssEasing, parseMotionRoleValue} from './roles';
 import type {MotionCurvePoints} from './roleValue';
 import {resolveTokenReferences} from '../theme/tokenReferences';
-import type {DurationVarName, EaseVarName} from '../theme/tokens.stylex';
+import type {DurationVarName, EaseVarName} from '../theme/tokenVars';
 
 /**
  * The value core declares for each timing token, as the token file declares

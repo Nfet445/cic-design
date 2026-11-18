@@ -16,6 +16,21 @@ import userEvent from '@testing-library/user-event';
 import {Collapsible} from './Collapsible';
 import {CollapsibleGroup} from './CollapsibleGroup';
 import {CollapsibleGroupContext} from './CollapsibleGroupContext';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+
+/**
+ * jsdom applies no Tailwind class, so the open state is read from the content
+ * region's class set. The region is the nearest ancestor carrying an id, which
+ * the trigger's `aria-controls` names.
+ */
+function expectContentVisible(text: string, isVisible: boolean): void {
+  const region = screen.getByText(text).closest('[id]') as HTMLElement;
+  if (isVisible) {
+    expectClassSet(region, {excludes: ['hidden']});
+  } else {
+    expectClassSet(region, {includes: ['hidden']});
+  }
+}
 
 // =============================================================================
 // Collapsible — standalone behavior
@@ -47,7 +62,7 @@ describe('Collapsible', () => {
 
     const trigger = screen.getByRole('button', {name: /Controlled/});
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByText('Controlled content')).toBeVisible();
+    expectContentVisible('Controlled content', true);
 
     // Click should call onOpenChange, not change internal state
     await user.click(trigger);
@@ -63,7 +78,7 @@ describe('Collapsible', () => {
       </Collapsible>,
     );
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.getByText('Controlled content')).not.toBeVisible();
+    expectContentVisible('Controlled content', false);
   });
 
   it('self-toggles in uncontrolled mode even when onOpenChange is supplied', async () => {
@@ -81,18 +96,18 @@ describe('Collapsible', () => {
     const trigger = screen.getByRole('button', {name: /Uncontrolled/});
     // Starts open (defaultIsOpen defaults to true).
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByText('Uncontrolled content')).toBeVisible();
+    expectContentVisible('Uncontrolled content', true);
 
     // Click collapses via internal state AND notifies.
     await user.click(trigger);
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.getByText('Uncontrolled content')).not.toBeVisible();
+    expectContentVisible('Uncontrolled content', false);
     expect(onOpenChange).toHaveBeenNthCalledWith(1, false);
 
     // Click again re-expands — proving the component isn't stuck.
     await user.click(trigger);
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByText('Uncontrolled content')).toBeVisible();
+    expectContentVisible('Uncontrolled content', true);
     expect(onOpenChange).toHaveBeenNthCalledWith(2, true);
   });
 
@@ -145,21 +160,21 @@ describe('CollapsibleGroup', () => {
       );
 
       // A starts open
-      expect(screen.getByText('Content A')).toBeVisible();
-      expect(screen.getByText('Content B')).not.toBeVisible();
-      expect(screen.getByText('Content C')).not.toBeVisible();
+      expectContentVisible('Content A', true);
+      expectContentVisible('Content B', false);
+      expectContentVisible('Content C', false);
 
       // Open B — A should close
       await user.click(screen.getByRole('button', {name: /Item B/}));
-      expect(screen.getByText('Content A')).not.toBeVisible();
-      expect(screen.getByText('Content B')).toBeVisible();
-      expect(screen.getByText('Content C')).not.toBeVisible();
+      expectContentVisible('Content A', false);
+      expectContentVisible('Content B', true);
+      expectContentVisible('Content C', false);
 
       // Open C — B should close
       await user.click(screen.getByRole('button', {name: /Item C/}));
-      expect(screen.getByText('Content A')).not.toBeVisible();
-      expect(screen.getByText('Content B')).not.toBeVisible();
-      expect(screen.getByText('Content C')).toBeVisible();
+      expectContentVisible('Content A', false);
+      expectContentVisible('Content B', false);
+      expectContentVisible('Content C', true);
     });
 
     it('closes the open item when clicking it again', async () => {
@@ -172,9 +187,9 @@ describe('CollapsibleGroup', () => {
         </CollapsibleGroup>,
       );
 
-      expect(screen.getByText('Content A')).toBeVisible();
+      expectContentVisible('Content A', true);
       await user.click(screen.getByRole('button', {name: /Item A/}));
-      expect(screen.getByText('Content A')).not.toBeVisible();
+      expectContentVisible('Content A', false);
     });
   });
 
@@ -192,18 +207,18 @@ describe('CollapsibleGroup', () => {
         </CollapsibleGroup>,
       );
 
-      expect(screen.getByText('Content A')).toBeVisible();
-      expect(screen.getByText('Content B')).not.toBeVisible();
+      expectContentVisible('Content A', true);
+      expectContentVisible('Content B', false);
 
       // Open B — A should stay open
       await user.click(screen.getByRole('button', {name: /Item B/}));
-      expect(screen.getByText('Content A')).toBeVisible();
-      expect(screen.getByText('Content B')).toBeVisible();
+      expectContentVisible('Content A', true);
+      expectContentVisible('Content B', true);
 
       // Close A — B should stay open
       await user.click(screen.getByRole('button', {name: /Item A/}));
-      expect(screen.getByText('Content A')).not.toBeVisible();
-      expect(screen.getByText('Content B')).toBeVisible();
+      expectContentVisible('Content A', false);
+      expectContentVisible('Content B', true);
     });
   });
 
@@ -223,8 +238,8 @@ describe('CollapsibleGroup', () => {
         </CollapsibleGroup>,
       );
 
-      expect(screen.getByText('Content A')).toBeVisible();
-      expect(screen.getByText('Content B')).not.toBeVisible();
+      expectContentVisible('Content A', true);
+      expectContentVisible('Content B', false);
 
       // Click B — should call onChange
       await user.click(screen.getByRole('button', {name: /Item B/}));
@@ -241,8 +256,8 @@ describe('CollapsibleGroup', () => {
           </Collapsible>
         </CollapsibleGroup>,
       );
-      expect(screen.getByText('Content A')).not.toBeVisible();
-      expect(screen.getByText('Content B')).toBeVisible();
+      expectContentVisible('Content A', false);
+      expectContentVisible('Content B', true);
     });
 
     it('preserves the context value on an unchanged controlled-string rerender', () => {
@@ -282,8 +297,8 @@ describe('CollapsibleGroup', () => {
         </CollapsibleGroup>,
       );
 
-      expect(screen.getByText('Content A')).not.toBeVisible();
-      expect(screen.getByText('Content B')).toBeVisible();
+      expectContentVisible('Content A', false);
+      expectContentVisible('Content B', true);
     });
 
     it('opens multiple items by default in multiple mode', () => {
@@ -301,9 +316,9 @@ describe('CollapsibleGroup', () => {
         </CollapsibleGroup>,
       );
 
-      expect(screen.getByText('Content A')).toBeVisible();
-      expect(screen.getByText('Content B')).not.toBeVisible();
-      expect(screen.getByText('Content C')).toBeVisible();
+      expectContentVisible('Content A', true);
+      expectContentVisible('Content B', false);
+      expectContentVisible('Content C', true);
     });
   });
 
@@ -323,8 +338,8 @@ describe('CollapsibleGroup', () => {
 
       // Opening B should close A (group coordinates)
       await user.click(screen.getByRole('button', {name: /Item B/}));
-      expect(screen.getByText('Content A')).not.toBeVisible();
-      expect(screen.getByText('Content B')).toBeVisible();
+      expectContentVisible('Content A', false);
+      expectContentVisible('Content B', true);
     });
 
     it('collapsible outside group manages its own state', async () => {
@@ -336,13 +351,13 @@ describe('CollapsibleGroup', () => {
       );
 
       const trigger = screen.getByRole('button', {name: /Standalone/});
-      expect(screen.getByText('Standalone content')).toBeVisible();
+      expectContentVisible('Standalone content', true);
 
       await user.click(trigger);
-      expect(screen.getByText('Standalone content')).not.toBeVisible();
+      expectContentVisible('Standalone content', false);
 
       await user.click(trigger);
-      expect(screen.getByText('Standalone content')).toBeVisible();
+      expectContentVisible('Standalone content', true);
     });
   });
 
@@ -500,10 +515,10 @@ describe('CollapsibleGroup', () => {
         </CollapsibleGroup>,
       );
 
-      expect(screen.getByText('Content A')).toBeVisible();
+      expectContentVisible('Content A', true);
       await user.click(screen.getByRole('button', {name: /Item B/}));
-      expect(screen.getByText('Content A')).not.toBeVisible();
-      expect(screen.getByText('Content B')).toBeVisible();
+      expectContentVisible('Content A', false);
+      expectContentVisible('Content B', true);
     });
 
     it('applies xstyle/className/style to the wrapper in divider mode', () => {
@@ -570,8 +585,8 @@ describe('CollapsibleGroup', () => {
       expect(getItem(/Item A/)).toHaveAttribute('data-density', 'balanced');
       expect(getItem(/Item B/)).toHaveAttribute('data-density', 'balanced');
       await user.click(screen.getByRole('button', {name: /Item B/}));
-      expect(screen.getByText('Content A')).not.toBeVisible();
-      expect(screen.getByText('Content B')).toBeVisible();
+      expectContentVisible('Content A', false);
+      expectContentVisible('Content B', true);
     });
 
     it('lets a nested group define its own chrome instead of inheriting', () => {
@@ -621,7 +636,7 @@ describe('CollapsibleGroup', () => {
       await user.click(screen.getByRole('button', {name: /Item B/}));
       expect(onChange).toHaveBeenCalledWith('b');
       // Controlled: nothing opens until the parent passes the new value
-      expect(screen.getByText('Content B')).not.toBeVisible();
+      expectContentVisible('Content B', false);
 
       rerender(
         <CollapsibleGroup
@@ -637,8 +652,8 @@ describe('CollapsibleGroup', () => {
           </Collapsible>
         </CollapsibleGroup>,
       );
-      expect(screen.getByText('Content A')).not.toBeVisible();
-      expect(screen.getByText('Content B')).toBeVisible();
+      expectContentVisible('Content A', false);
+      expectContentVisible('Content B', true);
     });
 
     it('renders standalone Collapsible without any group chrome', () => {

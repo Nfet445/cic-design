@@ -16,20 +16,26 @@ import {readFileSync} from 'node:fs';
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {
-  hasPressedArm,
-  hasReleaseFade,
-  readsPressStrength,
-  rulesDeclaredFor,
-  rulesWithSelector,
-} from '../__tests__/pressState';
+import {hasReleaseFade} from '../__tests__/pressState';
 import {CheckboxInput} from './CheckboxInput';
-import * as publicMarkers from '../Indicator/indicator.markers.stylex';
 import {Theme} from '../theme/Theme';
 import {defineTheme} from '../theme/defineTheme';
-import {getForcedColorsRules} from '../__tests__/forcedColors';
+import {expectClassSet} from '../__tests__/classNameAssertions';
+import {
+  rtlCenterInlineBlockOffsetClassName,
+  rtlCenterInlineClassName,
+} from '../utils/rtlClasses';
 import {__resetLiveRegionsForTest} from '../hooks/useAnnounce';
 import {FOCUS_OUTLINE_PARTS} from '../utils/focusOutline.stylex';
+import {
+  indicatorPressFillClassName,
+  indicatorPressImageClassName,
+} from '../Indicator/indicatorClasses';
+import {
+  checkboxInputPressContentClassName,
+  checkboxInputPressOverlayClassName,
+} from './checkboxInputClasses';
+import {indicatorPressPaintHandDownClassName} from '../privateAttributes/pressClasses';
 
 interface InjectedRule {
   selector: string;
@@ -877,27 +883,29 @@ describe('CheckboxInput', () => {
       ['sm', 'rtl'],
       ['md', 'ltr'],
       ['md', 'rtl'],
-    ] as const)(
-      'applies centerInline styling to native input (size: %s, dir: %s)',
-      (size, dir) => {
-        const {container} = render(
-          <div dir={dir}>
-            <CheckboxInput
-              label="Option"
-              size={size}
-              value={false}
-              onChange={() => {}}
-            />
-          </div>,
-        );
+    ] as const)('centers the native input (size: %s, dir: %s)', (size, dir) => {
+      const {container} = render(
+        <div dir={dir}>
+          <CheckboxInput
+            label="Option"
+            size={size}
+            value={false}
+            onChange={() => {}}
+          />
+        </div>,
+      );
 
-        const input = container.querySelector(
-          'input[type="checkbox"]',
-        ) as HTMLInputElement;
-        expect(input).toBeInTheDocument();
-        expect(input.className).toContain('centerInline');
-      },
-    );
+      const input = container.querySelector(
+        'input[type="checkbox"]',
+      ) as HTMLInputElement;
+      expect(input).toBeInTheDocument();
+      expectClassSet(input, {
+        includes: [
+          ...rtlCenterInlineClassName.split(' '),
+          rtlCenterInlineBlockOffsetClassName.half,
+        ],
+      });
+    });
   });
 });
 
@@ -905,21 +913,29 @@ describe('CheckboxInput', () => {
 // compiled output includes the forced-colors rule; visual behavior needs
 // manual verification under Windows High Contrast.
 describe('forced colors (WCAG 1.4.11)', () => {
-  it('compiles a forced-colors fill so the indeterminate mark survives Windows High Contrast', () => {
-    render(
+  it('carries a forced-colors fill so the indeterminate mark survives Windows High Contrast', () => {
+    const {container} = render(
       <CheckboxInput label="All" value="indeterminate" onChange={() => {}} />,
     );
     // The painted indeterminate bar would be stripped to Canvas (invisible);
-    // CanvasText keeps it perceivable.
-    expect(getForcedColorsRules()).toContain('background-color: canvastext;');
+    // the indicator's class map moves it to CanvasText there.
+    expectClassSet(
+      container.querySelector('.astryx-checkbox-indicator-dash') as Element,
+      {includes: ['forced-colors:bg-[color:CanvasText]']},
+    );
   });
 
-  it('compiles a forced-colors color so the checkmark survives Windows High Contrast', () => {
-    render(<CheckboxInput label="Accept" value={true} onChange={() => {}} />);
+  it('carries a forced-colors color so the checkmark survives Windows High Contrast', () => {
+    const {container} = render(
+      <CheckboxInput label="Accept" value={true} onChange={() => {}} />,
+    );
     // The check strokes with currentColor; forced colors leaves it the same
-    // white as the flattened box, so it needs its own CanvasText color to stay
-    // perceivable on the Canvas box.
-    expect(getForcedColorsRules()).toContain('color: canvastext;');
+    // white as the flattened box, so the indicator's class map moves the
+    // stroke to CanvasText to stay perceivable on the Canvas box.
+    expectClassSet(
+      container.querySelector('.astryx-checkbox-indicator-check') as Element,
+      {includes: ['forced-colors:text-[color:CanvasText]']},
+    );
   });
 });
 
@@ -1034,8 +1050,13 @@ describe('pressed state', () => {
       throw new Error('the checkbox has no indicator wrapper to press');
     }
     // The owner paints over the resolved indicator, so the treatment survives a
-    // theme replacement that does not forward style props.
-    expect(hasPressedArm(wrapper)).toBe(true);
+    // theme replacement that does not forward style props. The classes name
+    // the row's scope and press attributes as ancestors, so the fill is the
+    // mouse's press and the image the press the controller paints.
+    expect(wrapper.classList.contains(indicatorPressFillClassName)).toBe(true);
+    for (const name of indicatorPressImageClassName.split(' ')) {
+      expect(wrapper.classList.contains(name)).toBe(true);
+    }
   });
 
   it('does not expose a pressed arm on a disabled checkbox', () => {
@@ -1052,7 +1073,10 @@ describe('pressed state', () => {
     if (wrapper == null) {
       throw new Error('the checkbox has no indicator wrapper');
     }
-    expect(hasPressedArm(wrapper)).toBe(false);
+    expect(wrapper.classList.contains(indicatorPressFillClassName)).toBe(false);
+    for (const name of indicatorPressImageClassName.split(' ')) {
+      expect(wrapper.classList.contains(name)).toBe(false);
+    }
   });
 
   it('fades the touch press out from the row, with the overlay reading its strength', () => {
@@ -1069,19 +1093,29 @@ describe('pressed state', () => {
     // release, and the owner-drawn layer over the indicator paints the pressed
     // token at that strength on both touch arms.
     expect(hasReleaseFade(row)).toBe(true);
-    expect(readsPressStrength(wrapper, '[data-astryx-press="on"]')).toBe(true);
-    expect(readsPressStrength(wrapper)).toBe(true);
+    // The image arm names both the on and the fading state of the row, so the
+    // layer paints through the whole release at the strength the row runs.
+    for (const name of indicatorPressImageClassName.split(' ')) {
+      expect(wrapper.classList.contains(name)).toBe(true);
+    }
+    expect(indicatorPressImageClassName).toContain(
+      '[data-astryx-press=fading]',
+    );
   });
 });
 
 describe('an indicator that paints its own press', () => {
-  it('keeps its marker internal: no public entry exports it', () => {
-    expect(Object.keys(publicMarkers)).not.toContain('indicatorPressScope');
-    // The marker's module is under src/internal, which the API surface leaves
-    // out, and the package barrel does not name it.
+  it('keeps its attribute internal: no public entry exports it', () => {
+    // The attribute's module is under src/internal, which the API surface
+    // leaves out, and the package barrel does not name it. The one rule that
+    // reads the attribute is the press layer's `content`, which stays beside
+    // this component.
     expect(
-      readFileSync('packages/core/src/CheckboxInput/CheckboxInput.tsx', 'utf8'),
-    ).toContain("from '../internal/indicatorPress.stylex'");
+      readFileSync(
+        'packages/core/src/privateAttributes/indicatorPress.stylex.ts',
+        'utf8',
+      ),
+    ).toContain("'data-astryx-indicator-press'");
     expect(readFileSync('packages/core/src/index.ts', 'utf8')).not.toContain(
       'indicatorPress',
     );
@@ -1102,21 +1136,23 @@ describe('an indicator that paints its own press', () => {
       <CheckboxInput label="Accept terms" value={false} onChange={() => {}} />,
     );
     const {row} = partsOf(container);
-    const rules = rulesDeclaredFor(row).filter(rule =>
-      rule.includes('--_indicator-press-image'),
+    const handed = indicatorPressPaintHandDownClassName.split(' ');
+    expect(handed.length).toBeGreaterThan(0);
+    for (const name of handed) {
+      expect(row.classList.contains(name)).toBe(true);
+      // A pressed ancestor row hands nothing down: only the row's own states do.
+      expect(name).toMatch(/^\[&\[data-astryx-press=(on|fading)\]\]/);
+    }
+    const imageArms = handed.filter(name =>
+      name.includes('[--_indicator-press-image:var(--_press-paint-image)]'),
     );
-    const handing = rules.filter(rule =>
-      /--_indicator-press-image:\s*var\(--_press-paint-image\)/.test(rule),
-    );
-    expect(handing.length).toBeGreaterThan(0);
-    // A pressed ancestor row hands nothing down: only the row's own states do.
+    expect(imageArms.length).toBeGreaterThan(0);
+    // No default of its own: a default would print beside the arm and beat it.
     expect(
-      handing.every(rule => /\[data-astryx-press="(on|fading)"\]/.test(rule)),
-    ).toBe(true);
-    // No default of its own: a layered stylesheet ranks a default above arms.
-    expect(
-      rules.every(rule => /\[data-astryx-press="(on|fading)"\]/.test(rule)),
-    ).toBe(true);
+      row.className
+        .split(' ')
+        .filter(name => name.includes('--_indicator-press-image')),
+    ).toEqual(imageArms);
   });
 
   it('hands nothing down from a disabled checkbox', () => {
@@ -1129,11 +1165,10 @@ describe('an indicator that paints its own press', () => {
       />,
     );
     const {row} = partsOf(container);
-    expect(
-      rulesDeclaredFor(row).some(rule =>
-        rule.includes('--_indicator-press-image'),
-      ),
-    ).toBe(false);
+    for (const name of indicatorPressPaintHandDownClassName.split(' ')) {
+      expect(row.classList.contains(name)).toBe(false);
+    }
+    expect(row.className).not.toContain('--_indicator-press-image');
   });
 
   it('leaves its rounded-square press layer off over an indicator marked as painting its own press', () => {
@@ -1141,21 +1176,15 @@ describe('an indicator that paints its own press', () => {
       <CheckboxInput label="Accept terms" value={false} onChange={() => {}} />,
     );
     const {wrapper} = partsOf(container);
-    // The layer reads the marked indicator as a descendant (`:has()`).
-    const off = rulesWithSelector(wrapper, ':has(');
-    expect(
-      off.some(
-        rule => rule.includes('::after') && /content:\s*none/.test(rule),
-      ),
-    ).toBe(true);
-    // Without such an indicator the layer stays on.
-    expect(
-      rulesDeclaredFor(wrapper).some(
-        rule =>
-          rule.includes('::after') &&
-          !rule.includes(':has(') &&
-          /content:\s*("")/.test(rule),
-      ),
-    ).toBe(true);
+    // The layer's content turns off over an indicator marked as painting its
+    // own press (`:has()`), and the layer itself is on.
+    const content = checkboxInputPressContentClassName.split(' ');
+    expect(content.some(name => name.includes('has-[['))).toBe(true);
+    for (const name of content) {
+      expect(wrapper.classList.contains(name)).toBe(true);
+    }
+    for (const name of checkboxInputPressOverlayClassName.split(' ')) {
+      expect(wrapper.classList.contains(name)).toBe(true);
+    }
   });
 });

@@ -31,18 +31,16 @@ import React, {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {inputDisabledFocusStyles} from '../Field/inputDisabledFocus';
 import {useTooltip} from '../Tooltip';
 import {Icon, renderIconSlot, type IconType} from '../Icon';
 import type {IconName} from '../Icon';
 import {
   Field,
-  inputStatusBorderStyles,
-  inputStatusHoverShadowStyles,
-  inputWrapperStyles,
+  fieldInputWrapperClassName,
+  fieldInputWrapperDisabledClassName,
+  fieldInputWrapperFocusScopeClassName,
 } from '../Field';
 import {useKeepLayerOpenProps} from '../Layer/useLayer';
-import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import {InternalInputClearButton} from '../Field/InputClearButton';
 import {Divider} from '../Divider';
 import {Spinner} from '../Spinner';
@@ -50,18 +48,6 @@ import {PanelSearchInput} from '../Field/PanelSearchInput';
 import {CheckboxInput} from '../CheckboxInput';
 import type {IndicatorPosition} from '../Indicator';
 import {Badge} from '../Badge';
-import {
-  colorVars,
-  focusVars,
-  sizeVars,
-  spacingVars,
-  radiusVars,
-  durationVars,
-  easeVars,
-  typographyVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import type {
   MultiSelectorOptionType,
   MultiSelectorOptionData,
@@ -76,6 +62,29 @@ import {
 } from '../Selector/utils';
 import {useMultiCombobox} from './hooks';
 import {getInputARIA, isImeKeyEvent, mergeProps} from '../utils';
+import {tw} from '../utils/tw';
+import {MULTI_SELECTOR_TRIGGER_SIZE_CLASS} from './multiSelectorOptionClasses';
+import {
+  MULTI_SELECTOR_STATUS_BUTTON_CLASS,
+  MULTI_SELECTOR_TRIGGER_BADGES_CLASS,
+  MULTI_SELECTOR_TRIGGER_CONTENT_CLASS,
+  MULTI_SELECTOR_TRIGGER_ICON_CLASS,
+  MULTI_SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+  MULTI_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+  MULTI_SELECTOR_TRIGGER_OVERFLOW_CLASS,
+  MULTI_SELECTOR_TRIGGER_TEXT_CLASS,
+  multiSelectorListWrapperClassName,
+  multiSelectorOptionsClassName,
+  multiSelectorTriggerClassName,
+  multiSelectorTriggerContainerClassName,
+} from './multiSelectorClasses';
+import {
+  selectorDividerClassName,
+  selectorEmptyStateClassName,
+  selectorPopoverClassName,
+  selectorSearchPanelClassName,
+  selectorSectionHeadingClassName,
+} from '../Selector/selectorClasses';
 import {joinAriaIDs} from '../utils/inputAria';
 import {
   disabledInteractionProps,
@@ -101,10 +110,25 @@ import {useBusyAnnouncement} from '../hooks/useBusyAnnouncement';
 import type {SizeValue} from '../utils/types';
 import {useSize} from '../SizeContext/SizeContext';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {
+  focusOutlineFocusVisibleClassName,
+  focusOutlineWithinClassName,
+} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundImageClassName} from '../utils/interactionOverlayClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {usePressFeedback} from '../hooks/usePressFeedback';
-import {groupStyles, inputGroupItemProps} from '../InputGroup/groupStyles';
+import {
+  MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
+  MULTI_SELECTOR_ACTION_CELL_CLASS,
+  MULTI_SELECTOR_CHECKBOX_CLASS,
+  MULTI_SELECTOR_CHECKBOX_END_CLASS,
+  MULTI_SELECTOR_OPTION_CELL_CLASS,
+  MULTI_SELECTOR_ROW_LABEL_CLASS,
+  multiSelectorOptionRowClassName,
+} from './multiSelectorOptionClasses';
+import {inputGroupItemProps} from '../InputGroup/groupStyles';
+import {inputGroupMemberClassName} from '../InputGroup/inputGroupClasses';
 import {useInputGroup} from '../InputGroup/InputGroupContext';
 import {InputGroupInternalContext} from '../InputGroup/InputGroupInternalContext';
 import {VisuallyHidden} from '../VisuallyHidden';
@@ -135,422 +159,6 @@ const CREATE_VALUE_PREFIX = '__astryx_multi_selector_create__';
 function isCreateValue(value: string): boolean {
   return value.startsWith(CREATE_VALUE_PREFIX);
 }
-
-/**
- * The trigger's own list is open. A press does not scale the box then, so the
- * list anchors to the box at rest.
- */
-const LAYER_OPEN: string = ':has([aria-expanded="true"])';
-
-const styles = stylex.create({
-  // Trigger container — the enhanced click target wrapping the combobox button and clear button as siblings
-  triggerContainer: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    color: colorVars['--color-text-primary'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // Trigger button — the actual combobox button, visually integrated with the container
-  trigger: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minWidth: 0,
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    lineHeight: 'inherit',
-    color: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    // The wrapper (inputWrapperStyles.base) renders the focus ring via
-    // :focus-within when this button is focused, matching
-    // TextInput/NumberInput/Selector. The button must not draw its own
-    // :focus-visible outline or the two stack into a doubled ring over the
-    // trigger.
-    outline: 'none',
-    borderRadius: radiusVars['--radius-element'],
-  },
-  triggerPlaceholder: {
-    color: colorVars['--color-text-secondary'],
-  },
-  triggerContent: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 0,
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-  triggerText: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  triggerBadges: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: spacingVars['--spacing-1'],
-    alignItems: 'center',
-  },
-  triggerOverflow: {
-    flexShrink: 0,
-    fontSize: typeScaleVars['--text-label-size'],
-    color: colorVars['--color-text-secondary'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-  },
-  // Only what Icon does not already provide: `size="sm"` gives the 16px box
-  // and `color` the token, but the glyph still must not shrink inside the flex
-  // trigger.
-  triggerIcon: {
-    flexShrink: 0,
-  },
-  // Rotation lives on the chevron glyph itself (passed through `xstyle`), not
-  // on the layout wrapper above, so the icon's `multi-selector-indicator-icon`
-  // theme target and the open/closed transform sit on one element — a theme can
-  // restyle the mark and its rotation through a single selector. The wrapper
-  // keeps only layout. The status branch renders a different icon, so it never
-  // picks these up and needs no transition opt-out.
-  triggerIconRotation: {
-    transitionProperty: 'transform',
-    transitionDuration: durationVars['--duration-fast'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-    transformOrigin: 'center',
-  },
-  triggerIconOpen: {
-    transform: 'rotate(180deg)',
-  },
-  triggerGhost: {
-    width: 'auto',
-    borderWidth: 0,
-    backgroundColor: 'transparent',
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': 'none',
-        },
-      ':focus-within': 'none',
-    },
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the list opens.
-      [LAYER_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transform: {
-      default: 'scale(1)',
-      // A mouse press; under a coarse pointer the touch press model writes
-      // `data-astryx-press` instead (see interactionOverlay.stylex.ts).
-      [`:active:not(${LAYER_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-      },
-      [`[data-astryx-press="on"]:not(${LAYER_OPEN})`]: 'scale(0.98)',
-    },
-  },
-  // Keep the input-family width contract while reusing ghost's borderless paint
-  // and the neutral resting fill used by secondary buttons.
-  triggerSecondary: {
-    borderWidth: 0,
-    backgroundColor: colorVars['--color-neutral'],
-    boxShadow: {
-      default: 'none',
-      ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
-        {
-          '@media (hover: hover)': 'none',
-        },
-      ':focus-within': 'none',
-    },
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    transitionProperty: {
-      default: 'background-image, background-color, color, opacity, transform',
-      // The press scale goes at once as the list opens.
-      [LAYER_OPEN]: 'background-image, background-color, color, opacity',
-    },
-    transform: {
-      default: 'scale(1)',
-      [`:active:not(${LAYER_OPEN})`]: {
-        default: 'scale(0.98)',
-        '@media (pointer: coarse)': 'scale(1)',
-      },
-      [`[data-astryx-press="on"]:not(${LAYER_OPEN})`]: 'scale(0.98)',
-    },
-  },
-  triggerGhostDisabled: {
-    backgroundImage: 'none',
-    transform: {
-      default: 'none',
-      ':active': 'none',
-      '[data-astryx-press="on"]': 'none',
-    },
-  },
-  triggerReadOnly: {
-    cursor: 'default',
-  },
-  triggerGhostReadOnly: {
-    backgroundImage: 'none',
-    transform: {
-      default: 'none',
-      ':active': 'none',
-      '[data-astryx-press="on"]': 'none',
-    },
-  },
-
-  // Clear button
-  statusButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-    margin: 0,
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    color: 'inherit',
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-  },
-
-  // A panel with a search field, capped as a whole.
-  searchPanel: {
-    display: 'flex',
-    flexDirection: 'column',
-    // No taller than its layer's block-size cap, which folds in the software
-    // keyboard's. The search field's row keeps its height, and the list takes
-    // what is left.
-    maxHeight: stylex.firstThatWorks(
-      `calc(${layerViewportInset.maxBlockSize})`,
-      `calc(${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-  },
-
-  // Dropdown container
-  dropdown: {
-    boxSizing: 'border-box',
-    // In a search panel, the list shrinks below its content to fit the cap.
-    minHeight: 0,
-    // 300 px, and no taller than its layer's block-size cap, which folds in
-    // the software keyboard's: the list ends above the keyboard with the
-    // layer.
-    maxHeight: stylex.firstThatWorks(
-      `min(300px, ${layerViewportInset.maxBlockSize})`,
-      `min(300px, ${layerViewportInset.maxBlockSizeFallback})`,
-    ),
-    overflowY: 'auto',
-    padding: spacingVars['--spacing-1'],
-  },
-  listbox: {
-    outline: 'none',
-  },
-
-  // Popover container (for anchor positioning)
-  popover: {
-    minWidth: 'anchor-size(width)',
-  },
-
-  // Select-all wrapper
-  selectAllWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-
-  // Section heading. Plain secondary text, no rules — the same treatment
-  // DropdownMenu and CommandPaletteGroup already use for a group heading in a
-  // panel list. A labeled Divider (line–text–line) reads as a separator, and
-  // next to the search row's own divider it stacked two rules a few pixels
-  // apart.
-  sectionHeading: {
-    paddingBlock: spacingVars['--spacing-1'],
-    paddingInline: spacingVars['--spacing-2'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    userSelect: 'none',
-  },
-
-  // Divider
-  divider: {
-    marginBlock: spacingVars['--spacing-1'],
-  },
-
-  // Individual item
-  item: {
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    borderRadius: radiusVars['--radius-element'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    // Row typography lives here, not on the label span, so a theme override on
-    // the row target reaches both the fallback label and renderOption output
-    // (a declaration on the span would win over the inherited row value).
-    // Matches Selector, whose option row owns its typography the same way.
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-primary'],
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderStyle: 'none',
-    outline: 'none',
-  },
-  itemHighlighted: {
-    backgroundColor: colorVars['--color-overlay-hover'],
-  },
-  itemDisabled: {
-    opacity: 0.5,
-    color: colorVars['--color-text-disabled'],
-    cursor: 'default',
-  },
-
-  // Decorative checkbox (non-interactive, purely visual)
-  checkboxDecorative: {
-    pointerEvents: 'none',
-    display: 'flex',
-    flexShrink: 0,
-  },
-  // Pushed to the row's far edge rather than sitting against the label, which
-  // is what an end-positioned control means here. The row is not
-  // `space-between` (a truncating label plus a trailing control is what wants
-  // the auto margin), and `renderOption` content is not wrapped in a growing
-  // span, so the margin has to live on the checkbox itself.
-  checkboxDecorativeEnd: {
-    marginInlineStart: 'auto',
-  },
-
-  // Label text for items (rendered outside checkbox for correct click
-  // behavior). Typography is inherited from the row; this only handles
-  // truncation.
-  itemLabel: {
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-
-  // Grid rows (spec:AST-058): the row carries today's option chrome (padding,
-  // radius, highlight); its two cells split it into the option's click
-  // target and the action's slot. The action cell is a real cell for the
-  // active-descendant ring, drawn with the shared focus-outline parts because
-  // no element inside the popup has DOM focus.
-  gridRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-  },
-  optionCell: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    flexGrow: 1,
-    flexShrink: 1,
-    minWidth: 0,
-    alignSelf: 'stretch',
-  },
-  actionCell: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-    borderRadius: radiusVars['--radius-element'],
-  },
-  // The standard ring, from the focus tokens themselves: inside
-  // `stylex.create` StyleX resolves an imported `defineVars` group, and a
-  // plain object such as `FOCUS_OUTLINE_PARTS` compiles to variables nothing
-  // defines.
-  actionCellActive: {
-    outlineWidth: focusVars['--focus-outline-width'],
-    outlineStyle: focusVars['--focus-outline-style'],
-    outlineColor: focusVars['--focus-outline-color'],
-    outlineOffset: focusVars['--focus-outline-offset'],
-  },
-
-  // Empty state
-  emptyState: {
-    padding: spacingVars['--spacing-3'],
-    textAlign: 'center',
-    color: colorVars['--color-text-secondary'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-  },
-});
-
-const sizeStyles = stylex.create({
-  sm: {
-    height: sizeVars['--size-element-sm'],
-  },
-  md: {
-    height: sizeVars['--size-element-md'],
-  },
-  lg: {
-    height: sizeVars['--size-element-lg'],
-  },
-});
-
-const itemSizeStyles = stylex.create({
-  sm: {
-    padding: spacingVars['--spacing-1'],
-  },
-  md: {
-    paddingBlock: spacingVars['--spacing-1-5'],
-    paddingInline: spacingVars['--spacing-2'],
-  },
-  lg: {
-    padding: spacingVars['--spacing-2'],
-  },
-});
-
-const selectAllSizeStyles = stylex.create({
-  sm: {
-    paddingInline: spacingVars['--spacing-1'],
-    paddingBlock: spacingVars['--spacing-0-5'],
-  },
-  md: {
-    paddingInline: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-1'],
-  },
-  lg: {
-    paddingInline: spacingVars['--spacing-2'],
-    paddingBlock: spacingVars['--spacing-1'],
-  },
-});
 
 const RENDER_TRIGGER_PARTS_MESSAGE =
   '`container*` and `control*` styling props have no effect with `renderTrigger`: ' +
@@ -1951,13 +1559,15 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
 
   const renderTriggerContent = useCallback(() => {
     if (optimisticValue.length === 0) {
-      return <span {...stylex.props(styles.triggerText)}>{placeholder}</span>;
+      return (
+        <span className={MULTI_SELECTOR_TRIGGER_TEXT_CLASS}>{placeholder}</span>
+      );
     }
 
     switch (triggerDisplay) {
       case 'count':
         return (
-          <span {...stylex.props(styles.triggerText)}>
+          <span className={MULTI_SELECTOR_TRIGGER_TEXT_CLASS}>
             {formatValue?.(selectedItems) ??
               t('@astryx.multiSelector.selectedCount', {
                 count: optimisticValue.length,
@@ -1973,7 +1583,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             ? `${displayed.join(', ')}, +${remaining}`
             : displayed.join(', ');
         return (
-          <span {...stylex.props(styles.triggerText)}>
+          <span className={MULTI_SELECTOR_TRIGGER_TEXT_CLASS}>
             {formatValue?.(selectedItems) ?? text}
           </span>
         );
@@ -1983,12 +1593,12 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
         const displayed = selectedLabels.slice(0, maxBadges);
         const remaining = selectedLabels.length - displayed.length;
         return (
-          <span {...stylex.props(styles.triggerBadges)}>
+          <span className={MULTI_SELECTOR_TRIGGER_BADGES_CLASS}>
             {displayed.map(label => (
               <Badge key={label} label={label} variant="neutral" />
             ))}
             {remaining > 0 && (
-              <span {...stylex.props(styles.triggerOverflow)}>
+              <span className={MULTI_SELECTOR_TRIGGER_OVERFLOW_CLASS}>
                 +{remaining}
               </span>
             )}
@@ -2147,9 +1757,9 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
       const checkbox = isCreate ? null : (
         <div
           inert
-          {...stylex.props(
-            styles.checkboxDecorative,
-            indicatorPosition === 'end' && styles.checkboxDecorativeEnd,
+          className={tw(
+            MULTI_SELECTOR_CHECKBOX_CLASS,
+            indicatorPosition === 'end' && MULTI_SELECTOR_CHECKBOX_END_CLASS,
           )}>
           <CheckboxInput
             label=""
@@ -2168,7 +1778,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
           {renderOption && !isSelectAll && !isCreate ? (
             renderOption(item)
           ) : (
-            <span {...stylex.props(styles.itemLabel)}>
+            <span className={MULTI_SELECTOR_ROW_LABEL_CLASS}>
               {item.label ?? item.value}
             </span>
           )}
@@ -2221,14 +1831,13 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
               selected: isSelected ? 'selected' : null,
               disabled: item.disabled ? 'disabled' : null,
             }),
-            stylex.props(
-              styles.item,
-              isSelectAll ? selectAllSizeStyles[size] : itemSizeStyles[size],
-              isSelectAll && styles.selectAllWrapper,
-              isHighlighted && styles.itemHighlighted,
-              item.disabled && styles.itemDisabled,
-              isGrid && styles.gridRow,
-            ),
+            multiSelectorOptionRowClassName({
+              isDisabled: item.disabled === true,
+              isGrid,
+              isHighlighted,
+              isSelectAll,
+              size,
+            }),
           )}>
           {isGrid ? (
             <>
@@ -2237,7 +1846,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
                 id={`${getItemId(flatIndex)}-option`}
                 onClick={toggle}
                 onMouseEnter={() => onItemMouseEnter(item, flatIndex, 'option')}
-                {...stylex.props(styles.optionCell)}>
+                className={MULTI_SELECTOR_OPTION_CELL_CLASS}>
                 {content}
               </div>
               <div
@@ -2249,12 +1858,12 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
                     ? () => onItemMouseEnter(item, flatIndex, 'action')
                     : undefined
                 }
-                {...stylex.props(
-                  styles.actionCell,
+                className={tw(
+                  MULTI_SELECTOR_ACTION_CELL_CLASS,
                   isHighlighted &&
                     highlightedCell === 'action' &&
                     isKeyboardHighlight &&
-                    styles.actionCellActive,
+                    MULTI_SELECTOR_ACTION_CELL_ACTIVE_CLASS,
                 )}>
                 {isSelectAll || isCreate ? null : item.action}
               </div>
@@ -2325,7 +1934,8 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
           role="presentation"
           {...mergeProps(
             themeProps('multi-selector-empty-state'),
-            stylex.props(styles.emptyState),
+            undefined,
+            selectorEmptyStateClassName,
           )}>
           {searchQuery ? emptySearchText : emptyText}
         </div>,
@@ -2366,7 +1976,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             <Divider
               key={`divider-${i}`}
               aria-hidden="true"
-              xstyle={styles.divider}
+              className={selectorDividerClassName}
             />,
           );
         }
@@ -2400,7 +2010,8 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
                 aria-hidden="true"
                 {...mergeProps(
                   themeProps('multi-selector-section-heading'),
-                  stylex.props(styles.sectionHeading),
+                  undefined,
+                  selectorSectionHeadingClassName,
                 )}>
                 {option.title}
               </div>
@@ -2452,23 +2063,23 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
     surface.activePresentation === 'bottom-sheet' || hasExternalTrigger;
 
   const panelContent = hasSearch ? (
-    <div {...stylex.props(styles.searchPanel)}>
+    <div className={selectorSearchPanelClassName}>
       {renderSearch()}
       <Divider />
-      <div {...stylex.props(styles.dropdown)}>
+      <div className={multiSelectorListWrapperClassName}>
         <div
           ref={listboxRef}
           id={listboxId}
           role={isGrid ? 'grid' : 'listbox'}
           aria-multiselectable="true"
           {...listboxLabelProps}
-          {...stylex.props(styles.listbox)}>
+          className={multiSelectorOptionsClassName}>
           {renderOptions()}
         </div>
       </div>
     </div>
   ) : (
-    <div {...stylex.props(styles.dropdown)}>
+    <div className={multiSelectorListWrapperClassName}>
       <div
         ref={listboxRef}
         id={listboxId}
@@ -2485,7 +2096,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
         aria-activedescendant={activeDescendantId}
         tabIndex={listboxOwnsKeyboard ? 0 : undefined}
         onKeyDown={listboxOwnsKeyboard ? onKeyDown : undefined}
-        {...stylex.props(styles.listbox)}>
+        className={multiSelectorOptionsClassName}>
         {renderOptions()}
       </div>
     </div>
@@ -2509,8 +2120,8 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
     selectionSurface = popover.render(panelContent, {
       placement: 'below',
       alignment: 'start',
-      offset: spacingVars['--spacing-1'],
-      xstyle: styles.popover,
+      offset: 'var(--spacing-1)',
+      className: selectorPopoverClassName,
     });
   }
 
@@ -2546,10 +2157,9 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
         }
       : composeEventHandlers(handleTriggerButtonClick, onClick),
     tabIndex: 0,
-    ...stylex.props(
-      styles.trigger,
-      isEffectivelyReadOnly && styles.triggerReadOnly,
-    ),
+    className: multiSelectorTriggerClassName({
+      isReadOnly: isEffectivelyReadOnly,
+    }),
   };
 
   if (renderTrigger != null) {
@@ -2654,40 +2264,42 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             readonly: isEffectivelyReadOnly ? 'readonly' : null,
           }),
           stylex.props(
-            inputWrapperStyles.base,
-            styles.triggerContainer,
-            sizeStyles[size],
-            variant === 'secondary' && styles.triggerSecondary,
-            variant === 'ghost' && styles.triggerGhost,
-            variant !== 'input' && interactionOverlayStyles.backgroundImage,
-            variant !== 'input' && focusOutlineStyles.focusWithin,
+            variant !== 'input' && interactionOverlayStyles.pressedAlpha,
             surface.isTriggerFocusRingSuppressed &&
               selectorPresentationStyles.pointerRestoredFocus,
-            isDisabled && inputWrapperStyles.disabled,
+          ),
+          tw(
+            multiSelectorTriggerContainerClassName({
+              variant,
+              hasValue: optimisticValue.length > 0,
+              isInert: isDisabled || isEffectivelyReadOnly,
+            }),
+            variant !== 'ghost' && inputGroup && inputGroupMemberClassName,
+            fieldInputWrapperClassName({
+              status: variant === 'input' ? status?.type : undefined,
+            }),
+            isDisabled && fieldInputWrapperDisabledClassName,
             variant === 'input' &&
               isDisabled &&
               !surface.isTriggerFocusRingSuppressed &&
-              inputDisabledFocusStyles.ring,
-            isEffectivelyReadOnly && styles.triggerReadOnly,
-            variant !== 'input' && isDisabled && styles.triggerGhostDisabled,
-            variant !== 'input' &&
-              isEffectivelyReadOnly &&
-              styles.triggerGhostReadOnly,
-            optimisticValue.length === 0 && styles.triggerPlaceholder,
-            variant === 'input' &&
-              status &&
-              inputStatusBorderStyles[status.type],
-            variant === 'input' &&
-              status &&
-              !isDisabled &&
-              inputStatusHoverShadowStyles[status.type],
-            // Grouped secondary triggers keep their neutral fill but take the
-            // group's row height, connected edge radii, and focus stacking.
-            variant !== 'ghost' && inputGroup && groupStyles.inGroup,
-            controlXstyle,
+              fieldInputWrapperFocusScopeClassName.direct,
+            variant !== 'input' && focusOutlineWithinClassName,
+            controlClassName,
+            // The hover and press paint; its strength and release stay the
+            // StyleX arm above.
+            variant !== 'input' && interactionOverlayBackgroundImageClassName,
+            // The group's row is the height wherever `inputGroupMemberClassName`
+            // applies, as it was when both were StyleX declarations in one
+            // sheet.
+            !(inputGroup && variant !== 'ghost') &&
+              MULTI_SELECTOR_TRIGGER_SIZE_CLASS[size],
+            xstyleProps(
+              variant === 'input' && status && !isDisabled
+                ? controlXstyle
+                : undefined,
+            ).className,
           ),
-          controlClassName,
-          controlStyle,
+          {...xstyleProps(controlXstyle).style, ...controlStyle},
         )}>
         {startIcon &&
           renderIconSlot(startIcon, {size: 'sm', color: 'secondary'})}
@@ -2729,7 +2341,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
           // aria-disabled (`spec:AST-085` FR1); the isDisabled guards in
           // useMultiCombobox block every way of opening it.
           aria-disabled={isDisabled ? 'true' : undefined}>
-          <span {...stylex.props(styles.triggerContent)}>
+          <span className={MULTI_SELECTOR_TRIGGER_CONTENT_CLASS}>
             {renderTriggerContent()}
           </span>
         </button>
@@ -2765,15 +2377,15 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
               aria-describedby={statusTooltip.describedBy}
               {...keepOpenProps}
               onClick={e => e.stopPropagation()}
-              {...stylex.props(
-                focusOutlineStyles.focusVisible,
-                styles.statusButton,
+              className={tw(
+                MULTI_SELECTOR_STATUS_BUTTON_CLASS,
+                focusOutlineFocusVisibleClassName,
               )}>
               <Icon
                 icon={STATUS_ICON_MAP[status.type]}
                 size="sm"
                 color={STATUS_ICON_COLOR_MAP[status.type]}
-                xstyle={styles.triggerIcon}
+                className={MULTI_SELECTOR_TRIGGER_ICON_CLASS}
               />
             </button>
           ) : (
@@ -2781,7 +2393,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
               icon={STATUS_ICON_MAP[status.type]}
               size="sm"
               color={STATUS_ICON_COLOR_MAP[status.type]}
-              xstyle={styles.triggerIcon}
+              className={MULTI_SELECTOR_TRIGGER_ICON_CLASS}
             />
           )
         ) : !isEffectivelyReadOnly ? (
@@ -2792,19 +2404,16 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
             // The rotation rides on the glyph, alongside the box and color
             // the wrapper used to provide, so one element carries the mark,
             // its open/closed transform, and the theme target.
-            xstyle={[
-              styles.triggerIcon,
-              styles.triggerIconRotation,
-              surface.isOpen && styles.triggerIconOpen,
-            ]}
-            // Stable theme target on the chevron glyph itself, so a theme can
-            // restyle just this icon (color, size, hover) — and its
-            // open/closed state — via `defineTheme`. Same-element rules in
-            // @layer astryx-theme win over the icon's own base color/size,
-            // which a button-level target could not reach.
-            {...themeProps('multi-selector-indicator-icon', {
-              state: surface.isOpen ? 'expanded' : 'collapsed',
-            })}
+            {...mergeProps(
+              themeProps('multi-selector-indicator-icon', {
+                state: surface.isOpen ? 'expanded' : 'collapsed',
+              }),
+              tw(
+                MULTI_SELECTOR_TRIGGER_ICON_CLASS,
+                MULTI_SELECTOR_TRIGGER_ICON_ROTATION_CLASS,
+                surface.isOpen && MULTI_SELECTOR_TRIGGER_ICON_OPEN_CLASS,
+              ),
+            )}
           />
         ) : null}
       </div>

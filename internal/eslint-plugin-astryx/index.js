@@ -28,6 +28,7 @@
  * - no-raw-private-attribute: Flags a private data-astryx-* attribute written by hand outside its owner module in packages/<package>/src/privateAttributes (INV23 lists the public ones)
  * - no-comment-provenance: Flags record and claim ids, pull request and issue references, date stamps, and quoted MUST/SHALL text in source comments (the record links the code; `pnpm specs:for <path>` finds it)
  * - no-raw-color: Flags a raw colour value (hex, rgb(), hsl(), oklch(), …) anywhere in component source, including inside light-dark()/color-mix(), behind a const, in a template literal, or as a var() fallback — the shapes no-hardcoded-styles cannot see
+ * - no-invisible-class: Flags Tailwind class text the stylesheet scanner cannot read — an interpolated class, or class text outside a `*Classes.ts` map; the component applies a class no rule declares
  *
  * Philosophy: Strict for agents (CI), lenient for humans (local dev)
  * - "strict" config: All rules as errors - use in CI/agent environments
@@ -70,6 +71,7 @@ import i18nKeyFormatRule from './i18n-key-format.js';
 import requireTableSectionRule from './require-table-section.js';
 import noLightDarkOutsideThemeRule from './no-light-dark-outside-theme.js';
 import noRawColorRule from './no-raw-color.js';
+import noInvisibleClassRule from './no-invisible-class.js';
 import noRawPrivateAttributeRule from './no-raw-private-attribute.js';
 import noPreventDefaultInPassiveReactHandlerRule from './no-prevent-default-in-passive-react-handler.js';
 
@@ -377,6 +379,7 @@ const plugin = {
     'require-table-section': requireTableSectionRule,
     'no-light-dark-outside-theme': noLightDarkOutsideThemeRule,
     'no-raw-color': noRawColorRule,
+    'no-invisible-class': noInvisibleClassRule,
     'no-raw-private-attribute': noRawPrivateAttributeRule,
     'no-prevent-default-in-passive-react-handler':
       noPreventDefaultInPassiveReactHandlerRule,
@@ -470,6 +473,10 @@ plugin.configs.strict = {
     // README); promote to 'error' per package as each one reaches zero, the
     // same path no-physical-properties took.
     '@astryx/no-raw-color': 'warn',
+    // Class text the scanner cannot read is a class with no rule behind it:
+    // no type error, no failing test, no console warning. Error in both
+    // tiers, because the failure is silent and the fix is mechanical.
+    '@astryx/no-invisible-class': 'error',
   },
 };
 
@@ -544,6 +551,9 @@ plugin.configs.recommended = {
     // README); promote to 'error' per package as each one reaches zero, the
     // same path no-physical-properties took.
     '@astryx/no-raw-color': 'warn',
+    // The same silent failure as in the strict tier: class text the
+    // scanner cannot read applies a class no rule declares.
+    '@astryx/no-invisible-class': 'error',
   },
 };
 

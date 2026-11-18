@@ -15,7 +15,33 @@ import {
   loadKnowledgeIndex,
   resolveSpecsForFile,
   formatResult,
+  formatDiffResults,
 } from './specs-for-file.mjs';
+
+describe('compact diff output', () => {
+  it('groups identical routes without attributing them to other files', () => {
+    const result = (file, id) => ({
+      file,
+      exists: true,
+      concernClaims: [],
+      globalClaims: [{recordId: 'spec:AST-001', claimId: id}],
+      triggers: ['behavior'],
+      triggerSource: 'component',
+      records: [],
+      decisions: [],
+      decidingSpecs: [],
+    });
+    const output = formatDiffResults([
+      result('one.ts', 'FR1'),
+      result('two.ts', 'FR1'),
+      result('three.ts', 'FR2'),
+    ]);
+    expect(output.match(/spec:AST-001  FR1/g)).toHaveLength(1);
+    expect(output).toMatch(/one\.ts\n  two\.ts\n[\s\S]*?spec:AST-001  FR1/);
+    expect(output).toMatch(/three\.ts[\s\S]*?spec:AST-001  FR2/);
+    expect(output).toContain('--json');
+  });
+});
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const roots = [];

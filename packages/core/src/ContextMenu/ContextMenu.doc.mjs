@@ -71,6 +71,11 @@ export const docs = {
         private: true,
       },
       {
+        name: '--astryx-context-menu-min-inline-size',
+        description: 'Minimum inline size of the pointer menu surface',
+        default: '160px',
+      },
+      {
         name: '--_dropdown-menu-padding',
         description: 'Inner padding of the menu popup',
         default: 'var(--spacing-1)',
@@ -144,9 +149,15 @@ export const docs = {
     },
     {
       name: 'triggerXstyle',
-      type: 'StyleXStyles | StyleXStyles[]',
+      type: 'AstryxXStyle',
       description:
-        'Styles applied to the trigger wrapper. Accepts `stylex.create()` values, not inline style objects.',
+        'A class name, inline style object, StyleX value, or list of these for the trigger wrapper.',
+    },
+    {
+      name: 'triggerClassName',
+      type: 'string',
+      description:
+        'Class names applied to the trigger wrapper, after `triggerXstyle`.',
     },
     {
       name: 'triggerAs',

@@ -4,9 +4,9 @@
 
 /**
  * @file CircularProgress.tsx
- * @input Uses React (useId, refs, layout effects), stylex, SVG, Web
- *   Animations, color/spacing/duration/ease tokens, and Spinner's rotor
- *   (core internal/spinner-rotor) for the indeterminate ring
+ * @input Uses React (useId, refs, layout effects), stylex (the `xstyle`
+ *   prop only), SVG, Web Animations, this directory's class map, and
+ *   Spinner's rotor (core internal/spinner-rotor) for the indeterminate ring
  * @output Exports CircularProgress component, CircularProgressProps, CircularProgressSize, CircularProgressVariant types
  * @position Core implementation; consumed by index.ts
  *
@@ -15,27 +15,48 @@
  * - /packages/lab/src/CircularProgress/CircularProgress.test.tsx (tests for new/changed behavior)
  * - /packages/lab/src/CircularProgress/index.ts (exports if types change)
  * - /apps/storybook/stories/CircularProgress.stories.tsx (storybook stories)
+ * - /packages/lab/src/CircularProgress/circularProgressClasses.ts (the class
+ *   map this file reads; `FILL_BLEED` repeats there as `-m-[2px]`)
  */
 
 import {useId, useLayoutEffect, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 
 import {
-  colorVars,
-  durationVars,
-  easeVars,
-  fontWeightVars,
-  spacingVars,
-  typeScaleVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
-import {
   SPINNER_ARC_FRACTION,
-  spinnerRotorStyles,
+  spinnerRotorTurnClassName,
   syncRotationPhase,
 } from '@astryxdesign/core/internal/spinner-rotor';
-import {mergeProps} from '@astryxdesign/core/utils';
+import {mergeProps, xstyleProps} from '@astryxdesign/core/utils';
 import type {BaseProps} from '@astryxdesign/core';
 import {themeProps} from '@astryxdesign/core/utils';
+import {
+  circularProgressChildrenClassName,
+  circularProgressFillCapClassName,
+  circularProgressFillCapShapeClassName,
+  circularProgressFillClassName,
+  circularProgressFillClassNames,
+  circularProgressFillHalfClassName,
+  circularProgressFillHalfLeftClassName,
+  circularProgressFillHalfRightClassName,
+  circularProgressFillIndeterminateClassName,
+  circularProgressFillShapeClassName,
+  circularProgressFillTurnClassName,
+  circularProgressFillTurnLeftClassName,
+  circularProgressFillTurnRightClassName,
+  circularProgressLabelClassName,
+  circularProgressLabelDisabledClassName,
+  circularProgressRingClassName,
+  circularProgressRingIndeterminateClassName,
+  circularProgressRingWrapperClassName,
+  circularProgressRootClassName,
+  circularProgressRootWithLabelClassName,
+  circularProgressTrackClassName,
+  circularProgressTrackClassNames,
+  circularProgressValueLabelClassName,
+  circularProgressValueLabelDisabledClassName,
+  circularProgressVisuallyHiddenClassName,
+} from './circularProgressClasses';
+import {tw} from '../tw';
 
 /**
  * Extensible variant map for CircularProgress.
@@ -145,194 +166,21 @@ export interface CircularProgressProps extends BaseProps<HTMLDivElement> {
   'data-testid'?: string;
 }
 
-// =============================================================================
-// Styles
-// =============================================================================
-
-const styles = stylex.create({
-  root: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    flexShrink: 0,
-  },
-  rootWithLabel: {
-    flexDirection: 'column',
-    gap: spacingVars['--spacing-1'],
-  },
-  svg: {
-    display: 'block',
-    transform: 'rotate(-90deg)',
-  },
-  svgIndeterminate: {
-    display: 'block',
-  },
-  track: {
-    fill: 'none',
-    stroke: colorVars['--color-track'],
-  },
-  // The determinate fill moves on the compositor so a value change keeps
-  // moving while a script runs (a `stroke-dashoffset` transition repaints on
-  // the main thread every frame and stops). Two half-rings, each a static
-  // half-circle stroke in a layer turned by `transform` and clipped to its
-  // half of the box, draw the arc: the right half turns from 0 to 180deg over
-  // the first half of the value, the left half over the second. Two round
-  // caps close the arc's ends: one fixed at 12 o'clock, one turning with the
-  // value. The ring is drawn clockwise in either direction, as before.
-  //
-  // The theme's duration and easing still time a change: they are declared
-  // here and read back when the value changes (`transition-property: none`,
-  // so nothing transitions on its own), in every motion setting, as the
-  // stroke's transition did.
-  fill: {
-    position: 'absolute',
-    inset: 0,
-    // Clip to the ring's box, as the stroked circle's svg did.
-    overflow: 'hidden',
-    pointerEvents: 'none',
-    transitionProperty: 'none',
-    transitionDuration: durationVars['--duration-medium'],
-    transitionTimingFunction: easeVars['--ease-standard'],
-  },
-  fillHalf: {
-    position: 'absolute',
-    top: 0,
-    width: '50%',
-    height: '100%',
-    overflow: 'hidden',
-  },
-  fillHalfRight: {
-    left: '50%',
-  },
-  fillHalfLeft: {
-    left: 0,
-  },
-  // A layer the size of the ring inside its half, so it turns about the
-  // ring's center.
-  fillTurn: {
-    position: 'absolute',
-    top: 0,
-    width: '200%',
-    height: '100%',
-    willChange: 'transform, opacity',
-  },
-  fillTurnRight: {
-    left: '-100%',
-  },
-  fillTurnLeft: {
-    left: 0,
-  },
-  fillCap: {
-    position: 'absolute',
-    inset: 0,
-    willChange: 'transform, opacity',
-  },
-  // A turning layer's drawing reaches a little past the ring's box, so its
-  // antialiased outer edge is drawn whole before the layer turns (the box,
-  // not the drawing, then clips it).
-  fillShape: {
-    display: 'block',
-    fill: 'none',
-    margin: -FILL_BLEED,
-  },
-  fillCapShape: {
-    display: 'block',
-    fill: 'none',
-    strokeLinecap: 'round',
-  },
-  fillIndeterminate: {
-    fill: 'none',
-    strokeLinecap: 'round',
-  },
-  children: {
-    position: 'absolute',
-    inset: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    pointerEvents: 'none',
-  },
-  label: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontWeight: fontWeightVars['--font-weight-medium'],
-    color: colorVars['--color-text-secondary'],
-  },
-  labelDisabled: {
-    color: colorVars['--color-text-disabled'],
-  },
-  valueLabel: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    color: colorVars['--color-text-secondary'],
-  },
-  valueLabelDisabled: {
-    color: colorVars['--color-text-disabled'],
-  },
-  visuallyHidden: {
-    position: 'absolute',
-    width: '1px',
-    height: '1px',
-    padding: 0,
-    margin: '-1px',
-    overflow: 'hidden',
-    clip: 'rect(0, 0, 0, 0)',
-    whiteSpace: 'nowrap',
-    borderWidth: 0,
-  },
-  ringWrapper: {
-    position: 'relative',
-    display: 'inline-flex',
-  },
-});
-
-const variantStyles = stylex.create({
-  accent: {
-    stroke: colorVars['--color-accent'],
-  },
-  success: {
-    stroke: colorVars['--color-text-success'],
-  },
-  warning: {
-    stroke: colorVars['--color-text-warning'],
-  },
-  error: {
-    stroke: colorVars['--color-text-error'],
-  },
-  neutral: {
-    stroke: colorVars['--color-text-disabled'],
-  },
-  disabled: {
-    stroke: colorVars['--color-text-disabled'],
-  },
-});
-
-const trackVariantStyles = stylex.create({
-  accent: {
-    stroke: colorVars['--color-accent-muted'],
-  },
-  success: {
-    stroke: colorVars['--color-success-muted'],
-  },
-  warning: {
-    stroke: colorVars['--color-warning-muted'],
-  },
-  error: {
-    stroke: colorVars['--color-error-muted'],
-  },
-  neutral: {
-    stroke: colorVars['--color-track'],
-  },
-});
-
 function defaultFormatValueLabel(value: number, max: number): string {
   const pct = max > 0 ? Math.round((value / max) * 100) : 0;
   return `${pct}%`;
 }
 
 /**
+ * The arc moves on the compositor so a value change keeps moving while a
+ * script runs (a `stroke-dashoffset` transition repaints on the main thread
+ * every frame and stops). Two half-rings, each a static half-circle stroke in
+ * a layer turned by `transform` and clipped to its half of the box, draw the
+ * arc: the right half turns from 0 to 180deg over the first half of the value,
+ * the left half over the second. Two round caps close the arc's ends: one
+ * fixed at 12 o'clock, one turning with the value. The ring is drawn
+ * clockwise in either direction, as before.
+ *
  * Each half-ring's turn and the leading cap's for a filled share `p` (0–1),
  * and which parts show. A half-ring parked at the edge of its half (the right
  * one at 0, the left one until the value passes half) is hidden, so its
@@ -609,7 +457,7 @@ export function CircularProgress({
       width={diameter + 2 * FILL_BLEED}
       height={diameter + 2 * FILL_BLEED}
       viewBox={bleedBox}
-      {...stylex.props(styles.fillShape)}>
+      className={circularProgressFillShapeClassName}>
       <circle
         cx={center}
         cy={center}
@@ -628,22 +476,29 @@ export function CircularProgress({
       ref={ref}
       {...mergeProps(
         themeProps('circular-progress', {variant, size}),
-        stylex.props(styles.root, showLabel && styles.rootWithLabel, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(
+          circularProgressRootClassName,
+          showLabel && circularProgressRootWithLabelClassName,
+          className,
+        ),
         style,
       )}
       data-testid={dataTestId}
       {...rest}>
       <span
         id={labelId}
-        {...stylex.props(
-          showLabel ? styles.label : styles.visuallyHidden,
-          showLabel && isDisabled && styles.labelDisabled,
-        )}>
+        className={
+          showLabel
+            ? isDisabled
+              ? circularProgressLabelDisabledClassName
+              : circularProgressLabelClassName
+            : circularProgressVisuallyHiddenClassName
+        }>
         {label}
       </span>
 
-      <div {...stylex.props(styles.ringWrapper)}>
+      <div className={circularProgressRingWrapperClassName}>
         <svg
           role="progressbar"
           aria-labelledby={labelId}
@@ -655,14 +510,21 @@ export function CircularProgress({
           height={diameter}
           viewBox={`0 0 ${diameter} ${diameter}`}
           ref={isIndeterminate ? syncRotationPhase : undefined}
-          {...stylex.props(
-            isIndeterminate ? styles.svgIndeterminate : styles.svg,
-            isIndeterminate && spinnerRotorStyles.turn,
-          )}>
+          className={
+            isIndeterminate
+              ? tw(
+                  circularProgressRingIndeterminateClassName,
+                  spinnerRotorTurnClassName,
+                )
+              : circularProgressRingClassName
+          }>
           <circle
             {...mergeProps(
               themeProps('circular-progress-track'),
-              stylex.props(styles.track, trackVariantStyles[trackVariant]),
+              tw(
+                circularProgressTrackClassName,
+                circularProgressTrackClassNames[trackVariant],
+              ),
             )}
             cx={center}
             cy={center}
@@ -673,9 +535,9 @@ export function CircularProgress({
             <circle
               {...mergeProps(
                 themeProps('circular-progress-fill', {variant: fillVariant}),
-                stylex.props(
-                  styles.fillIndeterminate,
-                  variantStyles[fillVariant],
+                tw(
+                  circularProgressFillIndeterminateClassName,
+                  circularProgressFillClassNames[fillVariant],
                 ),
               )}
               cx={center}
@@ -691,19 +553,30 @@ export function CircularProgress({
         </svg>
 
         {isIndeterminate ? null : (
-          // The determinate fill (see `styles.fill`). Its stroke color is
-          // set on the theming target and inherited by every part.
+          // The determinate fill (see `circularProgressFillClassName`). Its
+          // stroke color is set on the theming target and inherited by every
+          // part.
           <span
             ref={fillRef}
             aria-hidden="true"
             {...mergeProps(
               themeProps('circular-progress-fill', {variant: fillVariant}),
-              stylex.props(styles.fill, variantStyles[fillVariant]),
+              tw(
+                circularProgressFillClassName,
+                circularProgressFillClassNames[fillVariant],
+              ),
             )}>
-            <span {...stylex.props(styles.fillHalf, styles.fillHalfRight)}>
+            <span
+              className={tw(
+                circularProgressFillHalfClassName,
+                circularProgressFillHalfRightClassName,
+              )}>
               <span
                 ref={rightRef}
-                {...stylex.props(styles.fillTurn, styles.fillTurnRight)}
+                className={tw(
+                  circularProgressFillTurnClassName,
+                  circularProgressFillTurnRightClassName,
+                )}
                 style={{
                   transform: `rotate(${turns.right}deg)`,
                   opacity: turns.rightShown,
@@ -711,10 +584,17 @@ export function CircularProgress({
                 {halfRing}
               </span>
             </span>
-            <span {...stylex.props(styles.fillHalf, styles.fillHalfLeft)}>
+            <span
+              className={tw(
+                circularProgressFillHalfClassName,
+                circularProgressFillHalfLeftClassName,
+              )}>
               <span
                 ref={leftRef}
-                {...stylex.props(styles.fillTurn, styles.fillTurnLeft)}
+                className={tw(
+                  circularProgressFillTurnClassName,
+                  circularProgressFillTurnLeftClassName,
+                )}
                 style={{
                   transform: `rotate(${turns.left}deg)`,
                   opacity: turns.leftShown,
@@ -726,7 +606,10 @@ export function CircularProgress({
               width={diameter}
               height={diameter}
               viewBox={`0 0 ${diameter} ${diameter}`}
-              {...stylex.props(styles.fillCap, styles.fillCapShape)}>
+              className={tw(
+                circularProgressFillCapClassName,
+                circularProgressFillCapShapeClassName,
+              )}>
               <path
                 ref={startRef}
                 d={capPath}
@@ -736,7 +619,7 @@ export function CircularProgress({
             </svg>
             <span
               ref={capRef}
-              {...stylex.props(styles.fillCap)}
+              className={circularProgressFillCapClassName}
               style={{
                 transform: `rotate(${turns.cap}deg)`,
                 opacity: turns.caps,
@@ -745,7 +628,10 @@ export function CircularProgress({
                 width={diameter + 2 * FILL_BLEED}
                 height={diameter + 2 * FILL_BLEED}
                 viewBox={bleedBox}
-                {...stylex.props(styles.fillCapShape, styles.fillShape)}>
+                className={tw(
+                  circularProgressFillCapShapeClassName,
+                  circularProgressFillShapeClassName,
+                )}>
                 <path d={capPath} strokeWidth={strokeWidth} />
               </svg>
             </span>
@@ -753,15 +639,16 @@ export function CircularProgress({
         )}
 
         {centerContent != null && (
-          <div {...stylex.props(styles.children)}>
+          <div className={circularProgressChildrenClassName}>
             {children != null ? (
               children
             ) : (
               <span
-                {...stylex.props(
-                  styles.valueLabel,
-                  isDisabled && styles.valueLabelDisabled,
-                )}>
+                className={
+                  isDisabled
+                    ? circularProgressValueLabelDisabledClassName
+                    : circularProgressValueLabelClassName
+                }>
                 {valueText}
               </span>
             )}

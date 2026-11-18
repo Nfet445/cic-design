@@ -9,11 +9,10 @@
  * compatibility check that Card passes through what the hook returns.
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {act, type ReactNode} from 'react';
 import {createRoot, type Root} from 'react-dom/client';
 import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
-import {focusOutlineStyles} from '@astryxdesign/core/utils';
+import {focusOutlineFocusVisibleClassName} from '@astryxdesign/core/utils';
 import UsePressFeedbackHookUsage from './usePressFeedbackHookUsage';
 
 // The docs-only card is not what this checks; stand it in with a plain
@@ -104,12 +103,10 @@ describe('usePressFeedback example', () => {
 
   it('paints the shared focus ring on the Card root for keyboard focus', () => {
     const card = renderCard();
-    const ringClasses = stylex
-      .props(focusOutlineStyles.focusVisible)
-      .className?.split(' ');
-    expect(ringClasses?.length).toBeGreaterThan(0);
+    const ringClasses = focusOutlineFocusVisibleClassName.split(' ');
+    expect(ringClasses.length).toBeGreaterThan(0);
     const cardClasses = card.className.split(' ');
-    for (const ringClass of ringClasses ?? []) {
+    for (const ringClass of ringClasses) {
       expect(cardClasses).toContain(ringClass);
     }
     act(() => card.focus());

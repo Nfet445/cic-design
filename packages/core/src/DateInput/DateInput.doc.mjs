@@ -245,6 +245,63 @@ export const docs = {
       },
       {className: 'astryx-date-input-toggle-icon', states: ['state']},
     ],
+    vars: [
+      {
+        name: '--astryx-date-pane-block-size',
+        description:
+          'Block size of one wheel pane, shared with the touch time wheels. A geometry constant, never a theme value',
+        default: 'six week rows of dateInputTouchSizes.daySize',
+        private: true,
+      },
+      {
+        name: '--astryx-date-pane-inline-start',
+        description:
+          'Inline start of one month pane inside the scroller, written per pane from the measured pane size',
+        default: '0px',
+        private: true,
+      },
+      {
+        name: '--astryx-date-pane-inline-size',
+        description:
+          'Inline size of one month pane, written per pane from the measured scrollport',
+        default: '0px',
+        private: true,
+      },
+      {
+        name: '--astryx-date-spacer-inline-size',
+        description:
+          'Inline size the month scroller spacer holds for every pane, written from the measured scrollport',
+        default: '0px',
+        private: true,
+      },
+      {
+        name: '--astryx-date-wheel-item-size',
+        description: 'Block size of one wheel row, a geometry constant',
+        default: 'dateInputTouchSizes.wheelItemSize',
+        private: true,
+      },
+      {
+        name: '--astryx-date-wheel-row-offset',
+        description:
+          'Inline start of a drawn row, written per row by the wheel as the scroll position moves',
+        default: '0px',
+        private: true,
+      },
+      {
+        name: '--astryx-date-wheel-row-color',
+        description:
+          'Row text colour by state: disabled, active, or primary. Read from the colour tokens, so a theme changes the tokens',
+        default: 'var(--color-text-primary)',
+        private: true,
+      },
+      {
+        name: '--astryx-date-wheel-row-weight',
+        description:
+          'Row text weight by state: semibold for the active row, normal otherwise. Read from the weight tokens',
+        default: 'var(--font-weight-normal)',
+        private: true,
+      },
+    ],
   },
   usage: {
     description:
@@ -630,6 +687,63 @@ export const docsZh = {
         states: ['disabled'],
       },
       {className: 'astryx-date-input-toggle-icon', states: ['state']},
+    ],
+    vars: [
+      {
+        name: '--astryx-date-pane-block-size',
+        description:
+          'Block size of one wheel pane, shared with the touch time wheels. A geometry constant, never a theme value',
+        default: 'six week rows of dateInputTouchSizes.daySize',
+        private: true,
+      },
+      {
+        name: '--astryx-date-pane-inline-start',
+        description:
+          'Inline start of one month pane inside the scroller, written per pane from the measured pane size',
+        default: '0px',
+        private: true,
+      },
+      {
+        name: '--astryx-date-pane-inline-size',
+        description:
+          'Inline size of one month pane, written per pane from the measured scrollport',
+        default: '0px',
+        private: true,
+      },
+      {
+        name: '--astryx-date-spacer-inline-size',
+        description:
+          'Inline size the month scroller spacer holds for every pane, written from the measured scrollport',
+        default: '0px',
+        private: true,
+      },
+      {
+        name: '--astryx-date-wheel-item-size',
+        description: 'Block size of one wheel row, a geometry constant',
+        default: 'dateInputTouchSizes.wheelItemSize',
+        private: true,
+      },
+      {
+        name: '--astryx-date-wheel-row-offset',
+        description:
+          'Inline start of a drawn row, written per row by the wheel as the scroll position moves',
+        default: '0px',
+        private: true,
+      },
+      {
+        name: '--astryx-date-wheel-row-color',
+        description:
+          'Row text colour by state: disabled, active, or primary. Read from the colour tokens, so a theme changes the tokens',
+        default: 'var(--color-text-primary)',
+        private: true,
+      },
+      {
+        name: '--astryx-date-wheel-row-weight',
+        description:
+          'Row text weight by state: semibold for the active row, normal otherwise. Read from the weight tokens',
+        default: 'var(--font-weight-normal)',
+        private: true,
+      },
     ],
   },
 };

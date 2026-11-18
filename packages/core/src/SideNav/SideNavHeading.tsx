@@ -4,8 +4,8 @@
 
 /**
  * @file SideNavHeading.tsx
- * @input Uses React, useRef, useCallback, ReactNode, StyleX, usePopover,
- *        useMenuHover
+ * @input Uses React, useRef, useCallback, ReactNode, StyleX, Tailwind classes,
+ *        usePopover, useMenuHover
  * @output Exports SideNavHeading component and SideNavHeadingProps
  * @position Core implementation; used inside SideNav header slot
  *
@@ -22,13 +22,6 @@
 
 import {useMemo, useRef, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {
-  colorVars,
-  spacingVars,
-  fontWeightVars,
-  radiusVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 // TODO(#264): Lazy-load usePopover so the popover/layer bundle is not
 // eagerly imported when `menu` is not provided. See Text for an example
 // of lazy loading layer resources.
@@ -36,21 +29,26 @@ import {usePopoverInternal} from '../Popover/usePopover';
 import {Link} from '../Link';
 import {Icon} from '../Icon';
 import {Tooltip} from '../Tooltip';
-import {navItemStyles} from '../NavItem/navItemStyles.stylex';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {navItemClassName} from '../NavItem/navItemClasses';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {useSideNavCollapse} from './SideNavCollapseContext';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
 import {mergeProps} from '../utils';
+import {xstyleProps} from '../utils/xstyle';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import type {BaseProps} from '../BaseProps';
 import {useMenuHover} from '../hooks/useMenuHover';
 import {useMenuPress} from '../hooks/useMenuPress';
 import {pressOnItemsOnly} from '../hooks/menuPressOnItems';
-import {menuTouchActionStyles} from '../DropdownMenu/menuTouchAction.stylex';
 import {useMenuOverflow} from '../DropdownMenu/useMenuOverflow';
+import {
+  dropdownMenuSubMenuTouchClassName,
+  dropdownMenuSubMenuTouchPinchClassName,
+} from '../DropdownMenu/dropdownMenuSubMenuClasses';
 import {
   NavHeadingCloseContext,
   NavHeadingDismissContext,
@@ -62,232 +60,18 @@ import {
 } from '../i18n/useComponentTranslator';
 import english from '../i18n/generated-english/SideNav/SideNavHeading.generated';
 import {isRenderable} from '../utils/isRenderable';
+import {tw} from '../utils/tw';
+import {sideNavHeadingClassName} from './sideNavHeadingClasses';
 
 registerEnglishFallback(english);
 
 // =============================================================================
-// Styles
+// Constants
 // =============================================================================
 
 /** The rows a press can act on in the heading's menu. */
 const HEADING_MENU_ITEM_SELECTOR =
   '[role="menuitem"]:not([aria-disabled="true"])';
-
-const styles = stylex.create({
-  root: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    minHeight: spacingVars['--spacing-8'],
-    paddingInlineStart: {
-      default: spacingVars['--spacing-2'],
-      ':has(.astryx-nav-icon)': 0,
-    },
-    paddingInlineEnd: spacingVars['--spacing-2'],
-    paddingBlock: 0,
-    boxSizing: 'border-box',
-    textDecoration: 'none',
-    color: 'inherit',
-    cursor: 'default',
-  },
-  rootCollapsed: {
-    justifyContent: 'center',
-    paddingInline: 0,
-  },
-  interactive: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    textAlign: 'start',
-    ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-      '@media (hover: hover)': {
-        backgroundColor: colorVars['--color-overlay-hover'],
-      },
-    },
-  },
-  // Menu trigger: like interactive but no hover background.
-  // Only cursor:pointer signals interactivity; the popover provides context.
-  menuTrigger: {
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-    borderRadius: radiusVars['--radius-element'],
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    fontWeight: fontWeightVars['--font-weight-normal'],
-    textAlign: 'start',
-  },
-  interactiveCollapsed: {
-    backgroundColor: {
-      default: 'transparent',
-      ':hover:where(:not(:disabled,[aria-disabled="true"]))': {
-        '@media (hover: hover)': 'transparent',
-      },
-    },
-  },
-  icon: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minWidth: 0,
-  },
-  superheading: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    textDecoration: 'none',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  heading: {
-    fontSize: typeScaleVars['--text-large-size'],
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-    lineHeight: typeScaleVars['--text-large-leading'],
-    color: colorVars['--color-text-primary'],
-    textDecoration: 'none',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  // When super/sub headings are present, keep same size but allow compact layout
-  headingCompact: {
-    fontWeight: fontWeightVars['--font-weight-semibold'],
-  },
-  subheading: {
-    fontSize: typeScaleVars['--text-supporting-size'],
-    lineHeight: typeScaleVars['--text-supporting-leading'],
-    color: colorVars['--color-text-secondary'],
-    textDecoration: 'none',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  headingRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-1'],
-  },
-  headingLink: {
-    textDecoration: 'none',
-    color: 'inherit',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  chevron: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: spacingVars['--spacing-7'],
-    minHeight: spacingVars['--spacing-7'],
-    color: colorVars['--color-icon-secondary'],
-    // 28px is the hit/alignment box, not the glyph. Icon sizes its own span
-    // with a matching font-size (the registry chevron is a 1em SVG), so pin
-    // font-size back to inherit to keep the glyph at the 14px it renders at
-    // today. The 28px min box still wins over Icon's width/height.
-    fontSize: 'inherit',
-  },
-  // The link part of a whole-heading link row that also has end content.
-  linkBesideEndContent: {
-    display: 'flex',
-    alignItems: 'center',
-    alignSelf: 'stretch',
-    gap: spacingVars['--spacing-2'],
-    flexGrow: 1,
-    minWidth: 0,
-    textDecoration: 'none',
-    color: 'inherit',
-  },
-  headerEndContent: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    marginInlineStart: 'auto',
-  },
-  popoverContent: {
-    padding: spacingVars['--spacing-1'],
-    overflow: 'hidden',
-  },
-  // Static heading replica inside the popover — matches inline heading layout.
-  // Clickable to close the popover.
-  popoverHeading: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacingVars['--spacing-2'],
-    width: '100%',
-    borderWidth: 0,
-    borderStyle: 'none',
-    backgroundColor: 'transparent',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    color: 'inherit',
-    textAlign: 'start',
-    minHeight: spacingVars['--spacing-8'],
-    paddingInlineStart: {
-      default: spacingVars['--spacing-2'],
-      ':has(.astryx-nav-icon)': 0,
-    },
-    paddingInlineEnd: spacingVars['--spacing-2'],
-    paddingBlock: 0,
-    marginBlockStart: spacingVars['--spacing-1'],
-    marginBlockEnd: spacingVars['--spacing-2'],
-    marginInline: spacingVars['--spacing-1'],
-    cursor: {
-      default: 'pointer',
-      ':is(:disabled,[aria-disabled="true"])': 'default',
-    },
-  },
-  // Chevron inside the popover heading — same as chevron but rotated up
-  popoverChevron: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: spacingVars['--spacing-7'],
-    minHeight: spacingVars['--spacing-7'],
-    color: colorVars['--color-icon-secondary'],
-    // See `chevron` — keep the glyph on the inherited font-size.
-    fontSize: 'inherit',
-    transform: 'rotate(180deg)',
-  },
-  // Glyph inside a chevron *trigger* (the button already carries the 28px box
-  // and the color, so the Icon only has to avoid resizing itself).
-  chevronGlyph: {
-    fontSize: 'inherit',
-  },
-  popover: {
-    minWidth: 'anchor-size(width)',
-    marginBlockStart: spacingVars['--spacing-1'],
-  },
-  // Overlap variant: popover covers the trigger so heading appears "in place".
-  // Add 4px padding inside, then widen and shift to compensate so the
-  // heading text inside the popover still aligns with the inline heading.
-  popoverOverlap: {
-    minWidth: 'calc(anchor-size(width) + 16px)',
-    marginBlockStart: 'calc(-1 * anchor-size(height) - 8px)',
-    marginInlineStart: '-8px',
-  },
-});
 
 // =============================================================================
 // Types
@@ -453,11 +237,13 @@ export function SideNavHeading({
     HEADING_MENU_ITEM_SELECTOR,
   );
   const dismissCtx = useMemo(() => ({dismiss: closeMenu}), [closeMenu]);
-  const headingMenuTouch = stylex.props(
-    useMenuOverflow(headingMenuRef, menu, popover.isOpen)
-      ? menuTouchActionStyles.scrolls
-      : menuTouchActionStyles.fits,
-  );
+  const headingMenuTouchClassName = useMenuOverflow(
+    headingMenuRef,
+    menu,
+    popover.isOpen,
+  )
+    ? dropdownMenuSubMenuTouchClassName
+    : dropdownMenuSubMenuTouchPinchClassName;
 
   const closeMenuCtx = useMemo(() => ({closeMenu}), [closeMenu]);
 
@@ -484,7 +270,9 @@ export function SideNavHeading({
     return null;
   }
   if (isCollapsed) {
-    const collapsedIcon = <span {...stylex.props(styles.icon)}>{icon}</span>;
+    const collapsedIcon = (
+      <span className={sideNavHeadingClassName.icon}>{icon}</span>
+    );
 
     let collapsedElement: ReactNode;
 
@@ -498,14 +286,19 @@ export function SideNavHeading({
           data-testid={testId}
           {...mergeProps(
             themeProps('side-nav-heading'),
-            focusOutlineProps.focusVisible(
-              navItemStyles.item,
-              interactionOverlayStyles.backgroundColor,
-              styles.rootCollapsed,
-              xstyle,
+            stylex.props(
+              // The strength and the release; the colour is a class below.
+              interactionOverlayStyles.pressedAlpha,
             ),
-            className,
-            style,
+            tw(
+              navItemClassName(),
+              sideNavHeadingClassName.collapsedRoot,
+              className,
+              interactionOverlayBackgroundColorClassName,
+              focusOutlineFocusVisibleClassName,
+              xstyleProps(xstyle).className,
+            ),
+            {...xstyleProps(xstyle).style, ...style},
           )}>
           {collapsedIcon}
         </LinkComponent>
@@ -523,54 +316,58 @@ export function SideNavHeading({
             {...triggerProps}
             {...mergeProps(
               themeProps('side-nav-heading'),
-              focusOutlineProps.focusVisible(
-                navItemStyles.item,
-                interactionOverlayStyles.backgroundColor,
-                styles.rootCollapsed,
-                styles.menuTrigger,
-                xstyle,
+              stylex.props(
+                // The strength and the release; the colour is a class below.
+                interactionOverlayStyles.pressedAlpha,
               ),
-              className,
-              style,
+              tw(
+                navItemClassName(),
+                sideNavHeadingClassName.collapsedRoot,
+                sideNavHeadingClassName.menuTrigger,
+                className,
+                interactionOverlayBackgroundColorClassName,
+                focusOutlineFocusVisibleClassName,
+                xstyleProps(xstyle).className,
+              ),
+              {...xstyleProps(xstyle).style, ...style},
             )}>
             {collapsedIcon}
           </button>
           {popover.render(
             <div
               ref={menuRef}
-              {...stylex.props(styles.popoverContent)}
+              className={sideNavHeadingClassName.popoverContent}
               {...contentProps}>
               <button
                 type="button"
-                {...focusOutlineProps.focusVisible(styles.popoverHeading)}
+                className={tw(
+                  sideNavHeadingClassName.popoverHeading,
+                  focusOutlineFocusVisibleClassName,
+                )}
                 // A close affordance, not the trigger: dismiss only.
                 onClick={closeMenu}>
                 {isRenderable(icon) && (
-                  <span {...stylex.props(styles.icon)}>{icon}</span>
+                  <span className={sideNavHeadingClassName.icon}>{icon}</span>
                 )}
-                <span {...stylex.props(styles.textContainer)}>
+                <span className={sideNavHeadingClassName.textContainer}>
                   {superheading && (
-                    <span {...stylex.props(styles.superheading)}>
+                    <span className={sideNavHeadingClassName.supportingLine}>
                       {superheading}
                     </span>
                   )}
-                  <span {...stylex.props(styles.headingRow)}>
-                    <span
-                      {...stylex.props(
-                        styles.heading,
-                        !!(superheading || subheading) && styles.headingCompact,
-                      )}>
+                  <span className={sideNavHeadingClassName.headingRow}>
+                    <span className={sideNavHeadingClassName.heading}>
                       {heading}
                     </span>
                     <Icon
                       icon="chevronDown"
                       size="sm"
                       color="secondary"
-                      xstyle={styles.popoverChevron}
+                      className={sideNavHeadingClassName.popoverChevron}
                     />
                   </span>
                   {subheading && (
-                    <span {...stylex.props(styles.subheading)}>
+                    <span className={sideNavHeadingClassName.supportingLine}>
                       {subheading}
                     </span>
                   )}
@@ -585,13 +382,17 @@ export function SideNavHeading({
                 aria-label={heading}
                 {...headingMenuPress.menuProps}
                 onPointerDown={headingMenuPointerDown}
-                {...headingMenuTouch}>
+                className={headingMenuTouchClassName}>
                 <NavHeadingCloseContext value={closeMenuCtx}>
                   {menu}
                 </NavHeadingCloseContext>
               </div>
             </div>,
-            {placement: 'below', alignment: 'start', xstyle: styles.popover},
+            {
+              placement: 'below',
+              alignment: 'start',
+              className: sideNavHeadingClassName.popover,
+            },
           )}
         </>
       );
@@ -602,8 +403,8 @@ export function SideNavHeading({
           data-testid={testId}
           {...mergeProps(
             themeProps('side-nav-heading'),
-            stylex.props(styles.root, styles.rootCollapsed, xstyle),
-            className,
+            xstyleProps(xstyle),
+            tw(sideNavHeadingClassName.collapsedRoot, className),
             style,
           )}
           {...props}>
@@ -626,7 +427,6 @@ export function SideNavHeading({
 
   const showChevron = !!menu;
   const hasAnyHref = !!(headingHref || superheadingHref || subheadingHref);
-  const hasCompactHeading = !!(superheading || subheading);
 
   // Determine interaction mode
   const isWholeHeadingTrigger = !!menu && !hasAnyHref;
@@ -635,27 +435,30 @@ export function SideNavHeading({
 
   // Render text content with optional inline chevron
   const renderTextContent = (inlineChevron?: ReactNode) => (
-    <span {...stylex.props(styles.textContainer)}>
+    <span className={sideNavHeadingClassName.textContainer}>
       {superheading &&
         (hasAnyHref && superheadingHref && menu ? (
           <Link href={superheadingHref} color="secondary" size="xsm">
             {superheading}
           </Link>
         ) : (
-          <span {...stylex.props(styles.superheading)}>{superheading}</span>
+          <span className={sideNavHeadingClassName.supportingLine}>
+            {superheading}
+          </span>
         ))}
-      <span {...stylex.props(styles.headingRow)}>
+      <span className={sideNavHeadingClassName.headingRow}>
         {hasAnyHref && headingHref && menu ? (
           <LinkComponent
             href={headingHref}
-            {...focusOutlineProps.focusVisible(
-              styles.heading,
-              styles.headingLink,
+            className={tw(
+              sideNavHeadingClassName.heading,
+              sideNavHeadingClassName.headingLink,
+              focusOutlineFocusVisibleClassName,
             )}>
             {heading}
           </LinkComponent>
         ) : (
-          <span {...stylex.props(styles.heading)}>{heading}</span>
+          <span className={sideNavHeadingClassName.heading}>{heading}</span>
         )}
         {inlineChevron}
       </span>
@@ -665,7 +468,9 @@ export function SideNavHeading({
             {subheading}
           </Link>
         ) : (
-          <span {...stylex.props(styles.subheading)}>{subheading}</span>
+          <span className={sideNavHeadingClassName.supportingLine}>
+            {subheading}
+          </span>
         ))}
     </span>
   );
@@ -675,12 +480,14 @@ export function SideNavHeading({
       icon="chevronDown"
       size="sm"
       color="secondary"
-      xstyle={styles.chevron}
+      className={sideNavHeadingClassName.chevron}
     />
   );
 
   const headerEndContentElement = isRenderable(headerEndContent) && (
-    <span {...stylex.props(styles.headerEndContent)}>{headerEndContent}</span>
+    <span className={sideNavHeadingClassName.headerEndContent}>
+      {headerEndContent}
+    </span>
   );
 
   // Shared popover heading content — uses renderTextContent for consistent
@@ -688,16 +495,21 @@ export function SideNavHeading({
   const popoverHeadingContent = (
     <button
       type="button"
-      {...focusOutlineProps.focusVisible(styles.popoverHeading)}
+      className={tw(
+        sideNavHeadingClassName.popoverHeading,
+        focusOutlineFocusVisibleClassName,
+      )}
       // A close affordance, not the trigger: dismiss only.
       onClick={closeMenu}>
-      {isRenderable(icon) && <span {...stylex.props(styles.icon)}>{icon}</span>}
+      {isRenderable(icon) && (
+        <span className={sideNavHeadingClassName.icon}>{icon}</span>
+      )}
       {renderTextContent(
         <Icon
           icon="chevronDown"
           size="sm"
           color="secondary"
-          xstyle={styles.popoverChevron}
+          className={sideNavHeadingClassName.popoverChevron}
         />,
       )}
     </button>
@@ -714,19 +526,20 @@ export function SideNavHeading({
         data-testid={testId}
         {...mergeProps(
           themeProps('side-nav-heading'),
-          stylex.props(styles.root, xstyle),
-          className,
+          xstyleProps(xstyle),
+          tw(sideNavHeadingClassName.root, className),
           style,
         )}>
         <LinkComponent
           href={headingHref}
-          {...focusOutlineProps.focusVisible(
-            styles.linkBesideEndContent,
-            styles.menuTrigger,
+          className={tw(
+            sideNavHeadingClassName.linkBesideEndContent,
+            sideNavHeadingClassName.menuTrigger,
+            focusOutlineFocusVisibleClassName,
           )}
           {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
           {isRenderable(icon) && (
-            <span {...stylex.props(styles.icon)}>{icon}</span>
+            <span className={sideNavHeadingClassName.icon}>{icon}</span>
           )}
           {renderTextContent()}
         </LinkComponent>
@@ -744,17 +557,18 @@ export function SideNavHeading({
         data-testid={testId}
         {...mergeProps(
           themeProps('side-nav-heading'),
-          focusOutlineProps.focusVisible(
-            styles.root,
-            styles.menuTrigger,
-            xstyle,
+          xstyleProps(xstyle),
+          tw(
+            sideNavHeadingClassName.root,
+            sideNavHeadingClassName.menuTrigger,
+            className,
+            focusOutlineFocusVisibleClassName,
           ),
-          className,
           style,
         )}
         {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
         {isRenderable(icon) && (
-          <span {...stylex.props(styles.icon)}>{icon}</span>
+          <span className={sideNavHeadingClassName.icon}>{icon}</span>
         )}
         {renderTextContent()}
         {headerEndContentElement}
@@ -773,12 +587,16 @@ export function SideNavHeading({
           {...triggerProps}
           {...mergeProps(
             themeProps('side-nav-heading'),
-            stylex.props(styles.root, styles.menuTrigger, xstyle),
-            className,
+            xstyleProps(xstyle),
+            tw(
+              sideNavHeadingClassName.root,
+              sideNavHeadingClassName.menuTrigger,
+              className,
+            ),
             style,
           )}>
           {isRenderable(icon) && (
-            <span {...stylex.props(styles.icon)}>{icon}</span>
+            <span className={sideNavHeadingClassName.icon}>{icon}</span>
           )}
           {renderTextContent(
             <button
@@ -790,15 +608,16 @@ export function SideNavHeading({
                 triggerProps.onClick();
               }}
               {...popover.triggerProps}
-              {...focusOutlineProps.focusVisible(
-                styles.chevron,
-                styles.interactive,
+              className={tw(
+                sideNavHeadingClassName.chevron,
+                sideNavHeadingClassName.interactive,
+                focusOutlineFocusVisibleClassName,
               )}>
               <Icon
                 icon="chevronDown"
                 size="sm"
                 color="inherit"
-                xstyle={styles.chevronGlyph}
+                className={sideNavHeadingClassName.chevronGlyph}
               />
             </button>,
           )}
@@ -807,7 +626,7 @@ export function SideNavHeading({
         {popover.render(
           <div
             ref={menuRef}
-            {...stylex.props(styles.popoverContent)}
+            className={sideNavHeadingClassName.popoverContent}
             {...contentProps}>
             {popoverHeadingContent}
             {/* The menu role is scoped to the actual menu items so the
@@ -819,7 +638,7 @@ export function SideNavHeading({
               aria-label={heading}
               {...headingMenuPress.menuProps}
               onPointerDown={headingMenuPointerDown}
-              {...headingMenuTouch}>
+              className={headingMenuTouchClassName}>
               <NavHeadingDismissContext value={dismissCtx}>
                 {menu}
               </NavHeadingDismissContext>
@@ -828,7 +647,7 @@ export function SideNavHeading({
           {
             placement: 'below',
             alignment: 'start',
-            xstyle: styles.popoverOverlap,
+            className: sideNavHeadingClassName.popoverOverlap,
           },
         )}
       </>
@@ -847,8 +666,8 @@ export function SideNavHeading({
           {...triggerProps}
           {...mergeProps(
             themeProps('side-nav-heading'),
-            stylex.props(styles.root, xstyle),
-            className,
+            xstyleProps(xstyle),
+            tw(sideNavHeadingClassName.root, className),
             style,
           )}>
           {isRenderable(icon) &&
@@ -856,11 +675,14 @@ export function SideNavHeading({
               <LinkComponent
                 href={headingHref}
                 aria-label={heading}
-                {...focusOutlineProps.focusVisible(styles.icon)}>
+                className={tw(
+                  sideNavHeadingClassName.icon,
+                  focusOutlineFocusVisibleClassName,
+                )}>
                 {icon}
               </LinkComponent>
             ) : (
-              <span {...stylex.props(styles.icon)}>{icon}</span>
+              <span className={sideNavHeadingClassName.icon}>{icon}</span>
             ))}
           {renderTextContent(
             showChevron ? (
@@ -873,15 +695,16 @@ export function SideNavHeading({
                   triggerProps.onClick();
                 }}
                 {...popover.triggerProps}
-                {...focusOutlineProps.focusVisible(
-                  styles.chevron,
-                  styles.interactive,
+                className={tw(
+                  sideNavHeadingClassName.chevron,
+                  sideNavHeadingClassName.interactive,
+                  focusOutlineFocusVisibleClassName,
                 )}>
                 <Icon
                   icon="chevronDown"
                   size="sm"
                   color="inherit"
-                  xstyle={styles.chevronGlyph}
+                  className={sideNavHeadingClassName.chevronGlyph}
                 />
               </button>
             ) : undefined,
@@ -891,7 +714,7 @@ export function SideNavHeading({
         {popover.render(
           <div
             ref={menuRef}
-            {...stylex.props(styles.popoverContent)}
+            className={sideNavHeadingClassName.popoverContent}
             {...contentProps}>
             {popoverHeadingContent}
             {/* The menu role is scoped to the actual menu items so the
@@ -903,7 +726,7 @@ export function SideNavHeading({
               aria-label={heading}
               {...headingMenuPress.menuProps}
               onPointerDown={headingMenuPointerDown}
-              {...headingMenuTouch}>
+              className={headingMenuTouchClassName}>
               <NavHeadingDismissContext value={dismissCtx}>
                 {menu}
               </NavHeadingDismissContext>
@@ -912,7 +735,7 @@ export function SideNavHeading({
           {
             placement: 'below',
             alignment: 'start',
-            xstyle: styles.popoverOverlap,
+            className: sideNavHeadingClassName.popoverOverlap,
           },
         )}
       </>
@@ -927,8 +750,8 @@ export function SideNavHeading({
         data-testid={testId}
         {...mergeProps(
           themeProps('side-nav-heading'),
-          stylex.props(styles.root, xstyle),
-          className,
+          xstyleProps(xstyle),
+          tw(sideNavHeadingClassName.root, className),
           style,
         )}
         {...props}>
@@ -937,33 +760,32 @@ export function SideNavHeading({
             <LinkComponent
               href={headingHref}
               aria-label={heading}
-              {...focusOutlineProps.focusVisible(styles.icon)}>
+              className={tw(
+                sideNavHeadingClassName.icon,
+                focusOutlineFocusVisibleClassName,
+              )}>
               {icon}
             </LinkComponent>
           ) : (
-            <span {...stylex.props(styles.icon)}>{icon}</span>
+            <span className={sideNavHeadingClassName.icon}>{icon}</span>
           ))}
-        <span {...stylex.props(styles.textContainer)}>
+        <span className={sideNavHeadingClassName.textContainer}>
           {superheading &&
             (superheadingHref ? (
               <Link href={superheadingHref} color="secondary" size="xsm">
                 {superheading}
               </Link>
             ) : (
-              <span {...stylex.props(styles.superheading)}>{superheading}</span>
+              <span className={sideNavHeadingClassName.supportingLine}>
+                {superheading}
+              </span>
             ))}
           {headingHref ? (
             <Link href={headingHref} color="primary" weight="semibold">
               {heading}
             </Link>
           ) : (
-            <span
-              {...stylex.props(
-                styles.heading,
-                hasCompactHeading && styles.headingCompact,
-              )}>
-              {heading}
-            </span>
+            <span className={sideNavHeadingClassName.heading}>{heading}</span>
           )}
           {subheading &&
             (subheadingHref ? (
@@ -971,7 +793,9 @@ export function SideNavHeading({
                 {subheading}
               </Link>
             ) : (
-              <span {...stylex.props(styles.subheading)}>{subheading}</span>
+              <span className={sideNavHeadingClassName.supportingLine}>
+                {subheading}
+              </span>
             ))}
         </span>
         {headerEndContentElement}
@@ -987,12 +811,14 @@ export function SideNavHeading({
       data-testid={testId}
       {...mergeProps(
         themeProps('side-nav-heading'),
-        stylex.props(styles.root, xstyle),
-        className,
+        xstyleProps(xstyle),
+        tw(sideNavHeadingClassName.root, className),
         style,
       )}
       {...props}>
-      {isRenderable(icon) && <span {...stylex.props(styles.icon)}>{icon}</span>}
+      {isRenderable(icon) && (
+        <span className={sideNavHeadingClassName.icon}>{icon}</span>
+      )}
       {renderTextContent()}
       {headerEndContentElement}
       {chevronElement}

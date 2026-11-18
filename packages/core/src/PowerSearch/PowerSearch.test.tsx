@@ -1032,8 +1032,13 @@ describe('field menu sizing', () => {
     // Clamped to the layer runtime's viewport cap, never to the room beside
     // the field (spec:AST-059 FR2, FR7).
     expect(
-      (popover as HTMLElement).style.getPropertyValue('--x-width'),
+      (popover as HTMLElement).style.getPropertyValue(
+        '--astryx-typeahead-menu-width',
+      ),
     ).toMatch(/^min\(480px, calc\(100vw - /);
+    expect(popover?.className).toContain(
+      '[width:var(--astryx-typeahead-menu-width)]',
+    );
   });
 });
 

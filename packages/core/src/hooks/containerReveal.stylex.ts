@@ -15,12 +15,20 @@
  * cascade, with one static style block for any number of containers.
  *
  * SYNC: When the block shape changes, update useContainerReveal.ts.
+ *
+ * WHY THE BLOCKS STAY STYX: the hook hands two blocks to one `stylex.props`
+ * call per element (useContainerReveal.ts: `styles.container` with the delay and
+ * the forced state, `reveal`/`conceal` with the forced visibility). The later
+ * block replaces the earlier one per property AND per condition, which is how
+ * `stateInactive`/`stateActive` outrank `container`'s own `:hover` arm and
+ * `contentShown`/`contentHidden` outrank `reveal`'s `opacity`. Two classes of
+ * equal specificity would leave that decision to the sheet's order, so the
+ * blocks stay here until the hook can carry its own doubled selectors.
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {durationVars, easeVars} from '../theme/tokens.stylex';
 
-const REST_DELAY = '0s, ' + durationVars['--duration-fast'];
+const REST_DELAY = '0s, ' + 'var(--duration-fast)';
 
 // The hover-intent gate: how long the pointer must dwell before the hover
 // branch takes effect. Declared on every container so a nested one never
@@ -203,10 +211,10 @@ export const styles = stylex.create({
   reveal: {
     transitionProperty: 'opacity, position',
     transitionDuration: {
-      default: durationVars['--duration-fast'] + ', 0s',
+      default: 'var(--duration-fast)' + ', 0s',
       '@media (prefers-reduced-motion: reduce)': '0s, 0s',
     },
-    transitionTimingFunction: easeVars['--ease-standard'],
+    transitionTimingFunction: 'var(--ease-standard)',
     transitionBehavior: 'allow-discrete',
     transitionDelay: {
       default: 'var(--_reveal-delay, 0s, 0s)',
@@ -219,30 +227,30 @@ export const styles = stylex.create({
   revealLayoutPreserved: {
     transitionProperty: 'opacity',
     transitionDuration: {
-      default: durationVars['--duration-fast'],
+      default: 'var(--duration-fast)',
       '@media (prefers-reduced-motion: reduce)': '0s',
     },
-    transitionTimingFunction: easeVars['--ease-standard'],
+    transitionTimingFunction: 'var(--ease-standard)',
     transitionDelay: 'var(--_fade-delay, 0s)',
     opacity: 'var(--_reveal-opacity, 1)',
   },
   conceal: {
     transitionProperty: 'opacity',
     transitionDuration: {
-      default: durationVars['--duration-fast'],
+      default: 'var(--duration-fast)',
       '@media (prefers-reduced-motion: reduce)': '0s',
     },
-    transitionTimingFunction: easeVars['--ease-standard'],
+    transitionTimingFunction: 'var(--ease-standard)',
     transitionDelay: 'var(--_fade-delay, 0s)',
     opacity: 'var(--_conceal-opacity, 1)',
   },
   concealLayoutPreserved: {
     transitionProperty: 'opacity',
     transitionDuration: {
-      default: durationVars['--duration-fast'],
+      default: 'var(--duration-fast)',
       '@media (prefers-reduced-motion: reduce)': '0s',
     },
-    transitionTimingFunction: easeVars['--ease-standard'],
+    transitionTimingFunction: 'var(--ease-standard)',
     transitionDelay: 'var(--_fade-delay, 0s)',
     opacity: 'var(--_conceal-opacity, 1)',
   },

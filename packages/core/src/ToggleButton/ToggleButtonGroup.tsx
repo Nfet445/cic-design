@@ -29,19 +29,19 @@ import {
   type Ref,
 } from 'react';
 import {createLayerScopedContext} from '../Layer/layerScopedContext';
-import * as stylex from '@stylexjs/stylex';
 import type {ButtonSize} from '../Button';
 import type {BaseProps} from '../BaseProps';
 import {PressGroupContext} from '../hooks/pressGroupContext';
 import {useTouchPresentation} from '../utils/touchPresentation';
 import {useGroupPressTracking} from '../hooks/useGroupPressTracking';
 import {useMergedRefs} from '../hooks/useMergedRefs';
-import {touchHitAreaStyles} from '../internal/touchHitArea.stylex';
+import {touchHitAreaLayerBelowChildrenClassName} from '../internal/touchHitAreaClasses';
 import {toggleButtonGroupClassName} from './toggleButtonGroupClasses';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
-import type {StyleXStyles} from '@stylexjs/stylex';
+import type {AstryxXStyle} from '../utils/xstyle';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 
 // =============================================================================
 // Context
@@ -117,16 +117,16 @@ interface ToggleButtonGroupBaseProps extends Omit<
   isDisabled?: boolean;
 
   /**
-   * StyleX styles for layout customization (margins, positioning, sizing).
-   * Must be a `stylex.create()` value — not an inline style object.
+   * The consumer's own override for layout (margins, positioning, sizing), as
+   * a class or an inline style object.
    *
    * @example
    * ```
-   * const styles = stylex.create({ wrapper: { marginTop: 8 } });
-   * <ToggleButtonGroup xstyle={styles.wrapper} />
+   * <ToggleButtonGroup xstyle="my-app-group" />
+   * <ToggleButtonGroup xstyle={{marginTop: 8}} />
    * ```
    */
-  xstyle?: StyleXStyles;
+  xstyle?: AstryxXStyle;
 
   /** Test ID for testing frameworks. */
   'data-testid'?: string;
@@ -255,12 +255,11 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): ReactNode {
   ).ref;
   const mergedRef = useMergedRefs(callerRef, groupRef, hitAreaRef);
 
-  // The group's own layout comes from utility classes. The touch hit band is a
-  // shared StyleX module that has not migrated, so its class joins them.
+  // The group's own layout comes from utility classes; the touch hit band is
+  // one of them.
   const layoutClassName = tw(
     toggleButtonGroupClassName({orientation, tracksPress}),
-    tracksPress &&
-      stylex.props(touchHitAreaStyles.layerBelowChildren).className,
+    tracksPress && touchHitAreaLayerBelowChildrenClassName,
   );
 
   return (
@@ -275,7 +274,7 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): ReactNode {
           mergeProps(themeProps('toggle-button-group'), {
             className: layoutClassName,
           }),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           className,
           style,
         )}>
