@@ -410,6 +410,11 @@ const VARS_WITHOUT_DERIVED_MAPPING = new Set([
   '--astryx-popover-max-inline-size',
   '--astryx-popover-max-block-size',
   '--astryx-popover-width',
+  // A result list's per-instance geometry: `menuWidth` writes the width and the
+  // held block size comes from the measured list, so no standard property is
+  // the theme's lever for either.
+  '--astryx-typeahead-menu-width',
+  '--astryx-typeahead-held-block-size',
   // Hit-area outset on a ::after overlay, and whether that overlay is
   // generated at all — `inset` and `content` on a pseudo-element are not
   // properties a theme author sets on the component.

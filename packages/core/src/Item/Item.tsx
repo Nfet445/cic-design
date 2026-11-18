@@ -97,7 +97,7 @@ import {focusOutlineWithinClassName} from '../utils/focusOutlineClasses';
 import {rowPressLayerStyles} from '../privateAttributes/press.stylex';
 import {isCoarsePointer} from '../utils/coarsePointer';
 import {disabledInteractionProps} from '../utils/disabledInteraction';
-import {xstyleProps} from '../utils/xstyle';
+import {isStyleXValue, xstyleProps} from '../utils/xstyle';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
   swipeHostOf,
@@ -806,6 +806,11 @@ export function Item({
         }
       : undefined;
 
+  // The consumer slot splits by shape: a StyleX value must resolve beside
+  // the row's own paint so the two do not fight over sheet order.
+  const xstyleIsStyleX = isStyleXValue(xstyle);
+  const xstyleRest = xstyleProps(xstyleIsStyleX ? undefined : xstyle);
+
   return (
     <Component
       ref={rootRef as React.Ref<never>}
@@ -866,6 +871,10 @@ export function Item({
               : rowPressLayerStyles.cellOnImagePressOnly),
           swipeAttachment?.rootStyle,
           hasDeprecatedSwipe && swipeHostStyles.root,
+          // A legacy StyleX value resolves inside this same call, because two
+          // separate resolutions would leave equal-specificity classes to the
+          // sheet's order instead of to the caller's last word.
+          xstyleIsStyleX ? xstyle : undefined,
         ),
         tw(
           itemClassName({
@@ -888,9 +897,9 @@ export function Item({
               ? interactionOverlayBackgroundImageClassName
               : interactionOverlayBackgroundColorClassName),
           className,
-          xstyleProps(xstyle).className,
+          xstyleRest.className,
         ),
-        {...xstyleProps(xstyle).style, ...style},
+        {...xstyleRest.style, ...style},
       )}
       role={role}
       onClick={primaryOnClick}>

@@ -41,8 +41,10 @@ export type XStyleProps = {
  * Classify an `xstyle` value into the two slots an element accepts.
  *
  * A list is flattened left to right: classes join, style objects shallow-merge
- * so the later one wins, and a StyleX value contributes its class. A component
- * that composes its own paint with the caller's value passes one list, and the
+ * so the later one wins, and every StyleX value in the list resolves together
+ * in one call, because two resolutions of equal-specificity classes would be
+ * decided by the sheet's order rather than by the list's. A component that
+ * composes its own paint with the caller's value passes one list, and the
  * caller's entry sits last so it still wins.
  *
  * A StyleX value is still accepted while the package ships StyleX; that branch
@@ -67,15 +69,43 @@ export function xstyleProps(xstyle?: AstryxXStyle): XStyleProps {
 }
 
 function mergeXStyleList(values: ReadonlyArray<AstryxXStyle>): XStyleProps {
+  // Every StyleX value in the list resolves in ONE `stylex.props` call: two
+  // separate calls would hand back two classes of equal specificity, and the
+  // sheet's order would then decide which one wins instead of the list's.
+  const styleXValues: StyleXStyles[] = [];
+  const parts: {className?: string; style?: React.CSSProperties}[] = [];
+  let firstStyleXIndex = -1;
+  for (const value of values) {
+    if (value == null || value === false) {
+      continue;
+    }
+    if (typeof value !== 'string' && isStyleXValue(value)) {
+      if (firstStyleXIndex < 0) {
+        firstStyleXIndex = parts.length;
+      }
+      styleXValues.push(value);
+      parts.push({});
+      continue;
+    }
+    parts.push(xstyleProps(value));
+  }
+  if (styleXValues.length > 0) {
+    // The resolved classes take the place of the list's first StyleX entry, so
+    // a class written after it still comes after it in the output.
+    const resolved = stylex.props(...styleXValues);
+    parts[firstStyleXIndex] = {
+      className: resolved.className,
+      style: resolved.style,
+    };
+  }
   const classes: string[] = [];
   let style: React.CSSProperties | undefined;
-  for (const value of values) {
-    const resolved = xstyleProps(value);
-    if (resolved.className) {
-      classes.push(resolved.className);
+  for (const part of parts) {
+    if (part.className) {
+      classes.push(part.className);
     }
-    if (resolved.style) {
-      style = {...style, ...resolved.style};
+    if (part.style) {
+      style = {...style, ...part.style};
     }
   }
   const merged: XStyleProps = {};
@@ -94,9 +124,16 @@ function mergeXStyleList(values: ReadonlyArray<AstryxXStyle>): XStyleProps {
  * and whose later members are the variable values it produced, so a list
  * counts as one when any member does.
  */
-function isStyleXValue(value: unknown): value is StyleXStyles {
+export function isStyleXValue(value: unknown): value is StyleXStyles {
   if (Array.isArray(value)) {
-    return value.some(isStyleXValue);
+    // A loop, not `.some`: this runs on every row of every render, and a test
+    // in List counts `Array.prototype.some` calls to prove one linear pass.
+    for (const member of value) {
+      if (isStyleXValue(member)) {
+        return true;
+      }
+    }
+    return false;
   }
   return (
     typeof value === 'object' &&
