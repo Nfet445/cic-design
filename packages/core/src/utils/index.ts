@@ -128,6 +128,10 @@ export {
 
 export {isImeKeyEvent} from './ime';
 
+// A consumer's `xstyle` override, classified into the two slots an element takes.
+export {xstyleProps} from './xstyle';
+export type {AstryxXStyle, XStyleProps} from './xstyle';
+
 // The touch press model's one composable: the shared hover and pressed overlay
 // styles, which carry the press's strength, its release and its paint. A local
 // pressable spreads the result of the `usePressFeedback` hook on the element
