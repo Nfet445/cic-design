@@ -2,7 +2,7 @@
 
 /**
  * @file Carousel.focusRing.test.tsx
- * @input Uses Carousel, focusOutlineStyles and the focus-owner module
+ * @input Uses Carousel, the focus-ring class map and the focus-owner module
  * @output Tests that the Carousel root paints its scroller's shared focus ring
  * @position Colocated test; the painted ring is checked in
  *   CarouselFocusRing.a11y.chromium.spec.ts
@@ -13,11 +13,10 @@
  * edge-fade mask would erase it, and the root carries the owner overlay.
  */
 
-import * as stylex from '@stylexjs/stylex';
 import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {Carousel} from './Carousel';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineSuppressedClassName} from '../utils/focusOutlineClasses';
 import {
   focusOwnerOverlayRingClassName,
   focusOwnerProps,
@@ -41,9 +40,7 @@ describe("Carousel: the root paints the scroller's shared focus ring", () => {
     for (const attribute of Object.keys(focusOwnerProps)) {
       expect(scroller!.hasAttribute(attribute)).toBe(true);
     }
-    for (const c of atoms(
-      stylex.props(focusOutlineStyles.suppressed).className,
-    )) {
+    for (const c of atoms(focusOutlineSuppressedClassName)) {
       expect(scroller!.className.split(' ')).toContain(c);
     }
     for (const c of atoms(focusOwnerOverlayRingClassName)) {

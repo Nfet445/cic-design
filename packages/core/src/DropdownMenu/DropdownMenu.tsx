@@ -135,10 +135,8 @@ import {
   getInteractionModality,
   useInteractionModalityTracking,
 } from '../utils/interactionModality';
-import {
-  focusOutlineFocusVisibleClassName,
-  focusOutlineSuppressedClassName,
-} from '../utils/focusOutlineClasses';
+import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -673,11 +671,13 @@ function DropdownMenuBottomSheet({
         <Button
           {...button}
           ref={triggerRef}
-          className={tw(
-            isOpen && dropdownMenuTriggerOpenClassName,
-            isFocusRingSuppressed && focusOutlineSuppressedClassName,
-          )}
-          xstyle={button.xstyle}
+          className={tw(isOpen && dropdownMenuTriggerOpenClassName)}
+          // The Button paints its ring from a class. Only an unlayered
+          // declaration outranks it, so the suppression stays StyleX.
+          xstyle={[
+            button.xstyle,
+            isFocusRingSuppressed && focusOutlineStyles.suppressed,
+          ]}
           tooltip={isOpen ? undefined : button.tooltip}
           endContent={resolvedEndContent}
           onPointerDown={event => {
@@ -1659,9 +1659,13 @@ function DropdownMenuPopover({
           className={tw(
             dropdownMenuTriggerPressableClassName,
             isOpen && dropdownMenuTriggerOpenClassName,
-            isFocusRingSuppressed && focusOutlineSuppressedClassName,
           )}
-          xstyle={button.xstyle}
+          // The Button paints its ring from a class. Only an unlayered
+          // declaration outranks it, so the suppression stays StyleX.
+          xstyle={[
+            button.xstyle,
+            isFocusRingSuppressed && focusOutlineStyles.suppressed,
+          ]}
           tooltip={isOpen ? undefined : button.tooltip}
           endContent={resolvedEndContent}
           onClick={handleButtonClick}

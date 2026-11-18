@@ -50,6 +50,7 @@ import {
   dropdownMenuSubMenuTouchPinchClassName,
 } from './dropdownMenuSubMenuClasses';
 import {__resetInteractionModalityForTest} from '../utils/interactionModality';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {spacingVars} from '../theme/tokens.stylex';
 import {COMPACT_TOUCH_PRESENTATION_QUERY} from '../hooks/useAdaptivePresentation';
@@ -4910,9 +4911,8 @@ describe('DropdownMenu header and footer', () => {
   it('a pointer open draws no focus ring on the menu; keyboard focus on it does', async () => {
     const {menu} = await open();
     // Opened with a pointer: the menu is focused but must not ring.
-    const ringClasses = stylex
-      .props(focusOutlineStyles.focusVisible)
-      .className!.split(' ')
+    const ringClasses = focusOutlineFocusVisibleClassName
+      .split(' ')
       .filter(Boolean);
     const hasRing = () => ringClasses.every(c => menu.classList.contains(c));
     expect(menu).toHaveFocus();
