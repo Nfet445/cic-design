@@ -717,8 +717,9 @@ export function Dialog({
         {...inlineSafeProps}
         {...mergeProps(
           themeProps('dialog', {variant}),
-          stylex.props(overlayPaddingReset.reset, xstyle),
+          stylex.props(xstyle),
           tw(
+            overlayPaddingReset.reset,
             dialogInlineClassName({isFullscreen}),
             layerTextResetClassName,
             layerStructureResetClassName,
@@ -745,8 +746,9 @@ export function Dialog({
       {...safeProps}
       {...mergeProps(
         themeProps('dialog', {variant}),
-        focusOutlineProps.focusVisible(overlayPaddingReset.reset, xstyle),
+        focusOutlineProps.focusVisible(undefined, xstyle),
         tw(
+          overlayPaddingReset.reset,
           rootClassName,
           layerTextResetClassName,
           layerStructureResetClassName,

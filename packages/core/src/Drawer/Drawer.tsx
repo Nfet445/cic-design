@@ -413,8 +413,9 @@ export function Drawer({
       ref={mergedDialogRef}
       {...mergeProps(
         themeProps('drawer', {side: anchoredSide}),
-        stylex.props(overlayPaddingReset.reset, xstyle),
+        stylex.props(xstyle),
         tw(
+          overlayPaddingReset.reset,
           panelClassName,
           layerTextResetClassName,
           layerStructureResetClassName,

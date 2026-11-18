@@ -554,8 +554,9 @@ export function MobileNav({
       id={dialogId}
       {...mergeProps(
         themeProps('mobile-nav', {side: resolvedSide}),
-        stylex.props(overlayPaddingReset.reset, xstyle),
+        stylex.props(xstyle),
         tw(
+          overlayPaddingReset.reset,
           mobileNavDialogClassName({isPresentationHeld, isOpen}),
           layerTextResetClassName,
           layerStructureResetClassName,

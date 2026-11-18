@@ -12,7 +12,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import {render, screen} from '@testing-library/react';
-import * as stylex from '@stylexjs/stylex';
 import {describe, expect, it} from 'vitest';
 import {layoutReset} from './layoutReset';
 import {Section} from '../Section/Section';
@@ -22,7 +21,7 @@ const SRC = path.resolve(__dirname, '..');
 /** The directories whose components publish layout custom properties. */
 const WRITERS = ['Layout', 'Section'];
 
-/** Every layout custom property written as a style key in a writer's source. */
+/** Every layout custom property a writer sets, as a style key or class text. */
 function writtenLayoutProperties(): string[] {
   const names = new Set<string>();
   for (const dir of WRITERS) {
@@ -32,10 +31,12 @@ function writtenLayoutProperties(): string[] {
         continue;
       }
       const source = fs.readFileSync(path.join(SRC, dir, name), 'utf8');
+      // A StyleX style keys the property (`'--layout-content-width': value`);
+      // a class spells it inside brackets (`[--layout-content-width:initial]`).
       for (const match of source.matchAll(
-        /['"](--(?:layout|_layout|container|_section)[\w-]*)['"]\s*:/g,
+        /['"](--(?:layout|_layout|container|_section)[\w-]*)['"]\s*:|\[(--(?:layout|_layout|container|_section)[\w-]*):/g,
       )) {
-        names.add(match[1]);
+        names.add(match[1] ?? match[2]);
       }
     }
   }
@@ -81,16 +82,14 @@ describe('layoutReset (component:Layout FR8)', () => {
   it('stops each of them at the element it is applied to', () => {
     render(
       <Section padding={10}>
-        <div data-testid="root" {...stylex.props(layoutReset)} />
+        <div data-testid="root" className={layoutReset} />
       </Section>,
     );
-    const computed = getComputedStyle(screen.getByTestId('root'));
-    for (const name of RESET_VALUES['0px']) {
-      expect(computed.getPropertyValue(name), name).toBe('0px');
-    }
-    for (const name of RESET_VALUES.initial) {
-      // An empty value would mean the reset declares nothing.
-      expect(computed.getPropertyValue(name), name).toBe('initial');
+    const classes = screen.getByTestId('root').className;
+    for (const [value, names] of Object.entries(RESET_VALUES)) {
+      for (const name of names) {
+        expect(classes, name).toContain(`[${name}:${value}]`);
+      }
     }
   });
 });

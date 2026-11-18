@@ -10,6 +10,7 @@ import {typeScaleVars} from '../theme/tokens.stylex';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {describe, it, expect, vi} from 'vitest';
 import {Heading} from './Heading';
+import {expectClassSet} from '../__tests__/classNameAssertions';
 // Loaded up front, so the truncation tooltip's lazy import resolves at once.
 import '../Tooltip/Tooltip';
 
@@ -305,11 +306,10 @@ function countScrollWidthReads(run: () => void): number {
   return reads;
 }
 
-// jsdom does not resolve var(); the browser spec checks the resolved value.
-// Untruncated text reads the private container override, else break-word.
-const DEFAULT_WRAP = 'var(--_astryx-text-overflow-wrap,break-word)';
-const wrapOf = (element: Element) =>
-  getComputedStyle(element).overflowWrap.replace(/\s/g, '');
+// Untruncated text reads the private container override, else break-word; the
+// class carries the declaration, because jsdom resolves no cascade.
+const DEFAULT_WRAP_CLASS =
+  '[overflow-wrap:var(--_astryx-text-overflow-wrap,break-word)]';
 
 // Heading FR3 (spec:AST-020 FR1, WCAG 2.2 1.4.10): a token longer than its
 // line wraps in a heading that is not truncated; truncation is unchanged.
@@ -319,7 +319,7 @@ describe('Heading long unbroken tokens', () => {
 
   it('wraps them when the heading is not truncated', () => {
     render(<Heading level={1}>{token}</Heading>);
-    expect(wrapOf(screen.getByText(token))).toBe(DEFAULT_WRAP);
+    expectClassSet(screen.getByText(token), {includes: [DEFAULT_WRAP_CLASS]});
   });
 
   it('leaves single-line truncation clipping on one line', () => {
@@ -328,10 +328,10 @@ describe('Heading long unbroken tokens', () => {
         {token}
       </Heading>,
     );
-    const style = getComputedStyle(screen.getByText(token));
-    expect(style.whiteSpace).toBe('nowrap');
-    expect(style.textOverflow).toBe('ellipsis');
-    expect(style.overflowWrap).not.toBe('break-word');
+    expectClassSet(screen.getByText(token), {
+      includes: ['whitespace-nowrap', 'text-ellipsis', 'overflow-hidden'],
+      excludes: [DEFAULT_WRAP_CLASS],
+    });
   });
 });
 

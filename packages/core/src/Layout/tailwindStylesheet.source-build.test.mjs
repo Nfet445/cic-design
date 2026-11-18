@@ -822,6 +822,7 @@ import {
   sortButtonClassName,
 } from '../Table/plugins/sortable/sortClasses';
 import {
+  headingClassName,
   textClassName,
   truncationTooltipContentClassName,
 } from '../Text/textClasses';
@@ -1407,6 +1408,28 @@ function familyClassNames() {
     }),
   );
   add(truncationTooltipContentClassName);
+
+  // A heading answers the same axes plus its level or display type.
+  for (const level of [1, 2, 3, 4, 5, 6]) {
+    add(headingClassName({...textBase, level}));
+  }
+  for (const type of ['display-1', 'display-2', 'display-3']) {
+    add(headingClassName({...textBase, level: 1, type}));
+  }
+  add(headingClassName({...textBase, level: 2, weight: 'bold'}).trim());
+  for (const maxLines of [1, 3]) {
+    for (const wordBreak of ['break-word', 'break-all']) {
+      add(headingClassName({...textBase, level: 1, maxLines, wordBreak}));
+    }
+  }
+  add(
+    headingClassName({
+      ...textBase,
+      level: 4,
+      hasCapsize: true,
+      hasStrikethrough: true,
+    }),
+  );
 
   for (const direction of ['horizontal', 'vertical']) {
     for (const wrap of ['nowrap', 'wrap', 'wrap-reverse']) {
@@ -3861,9 +3884,11 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // utilities; with the disabled dimming and the hidden control they took
     // the sheet to 1974. The avatar's three shape radii added 1977, and the
     // hint's anchored surface and its keyboard row added 1982. The RadioList
-    // row's own press paint added its mouse and coarse arms, and this branch
-    // measured 2015. The ceiling keeps its headroom above that.
-    expect(stylesheet.rules.size).toBeLessThan(2020);
+    // row's own press paint added its mouse and coarse arms. Ticket 54 then
+    // moved the heading level scale to class text — its eighteen size, leading
+    // and weight rules — and the stack's own flex utilities out of StyleX, and
+    // this branch measured 2094. The ceiling keeps its headroom above that.
+    expect(stylesheet.rules.size).toBeLessThan(2100);
   });
 
   it('prints a RadioList row’s coarse press arm after its mouse arm', () => {

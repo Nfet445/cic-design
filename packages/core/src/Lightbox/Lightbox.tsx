@@ -1619,8 +1619,9 @@ export function Lightbox({
       }
       {...mergeProps(
         themeProps('lightbox'),
-        stylex.props(overlayPaddingReset.reset, xstyle),
+        stylex.props(xstyle),
         tw(
+          overlayPaddingReset.reset,
           lightboxDialogClassName,
           layerTextResetClassName,
           layerStructureResetClassName,
