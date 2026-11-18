@@ -14,10 +14,10 @@
 
 import * as stylex from '@stylexjs/stylex';
 import {
-  colorVars,
-  sizeVars,
-  typeScaleVars,
-} from '@astryxdesign/core/theme/tokens.stylex';
+  colorVarNames,
+  sizeVarNames,
+  typeScaleVarNames,
+} from '@astryxdesign/core/theme';
 
 /**
  * A text-link treatment, but the hit target still has to clear the WCAG 2.5.8
@@ -29,11 +29,11 @@ import {
 export const transferListHeaderActionStyles = stylex.create({
   base: {
     height: 'auto',
-    minBlockSize: sizeVars['--size-element-sm'],
+    minBlockSize: 'var(--size-element-sm)',
     paddingBlock: 0,
     paddingInline: 0,
     borderRadius: 0,
-    color: colorVars['--color-text-accent'],
+    color: 'var(--color-text-accent)',
     backgroundImage: {
       default: 'none',
       ':hover:where(:not(:disabled,[aria-disabled="true"]))': 'none',
@@ -43,9 +43,9 @@ export const transferListHeaderActionStyles = stylex.create({
       default: 'none',
       ':hover:where(:not(:disabled,[aria-disabled="true"]))': 'underline',
     },
-    fontSize: typeScaleVars['--text-body-size'],
-    fontWeight: typeScaleVars['--text-body-weight'],
-    lineHeight: typeScaleVars['--text-body-leading'],
+    fontSize: 'var(--text-body-size)',
+    fontWeight: 'var(--text-body-weight)',
+    lineHeight: 'var(--text-body-leading)',
   },
 });
 
