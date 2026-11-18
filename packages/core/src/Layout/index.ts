@@ -29,8 +29,8 @@ export {
   layoutPaddingResetClassName,
 } from './layoutClasses';
 
-// Edge compensation utility
-export {edgeCompSlot, EDGE_COMP_ATTR} from './edgeCompensation.stylex';
+// Edge compensation attribute
+export {EDGE_COMP_ATTR} from './edgeCompensation.stylex';
 
 // Stack utilities (re-exported from Stack module)
 export {stack} from '../Stack/stack.stylex';

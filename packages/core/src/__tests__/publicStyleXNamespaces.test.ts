@@ -38,14 +38,6 @@ import * as interactionOverlay from '@astryxdesign/core/utils/interactionOverlay
 /** The style namespaces that a component's `xstyle` accepts. */
 type XstyleNamespaces = {
   iconSizeStyles: typeof iconSize.iconSizeStyles;
-  edgeCompSlot: typeof edgeCompensation.edgeCompSlot;
-  paddingBlockEndStyles: typeof padding.paddingBlockEndStyles;
-  paddingBlockStartStyles: typeof padding.paddingBlockStartStyles;
-  paddingBlockStyles: typeof padding.paddingBlockStyles;
-  paddingInlineEndStyles: typeof padding.paddingInlineEndStyles;
-  paddingInlineStartStyles: typeof padding.paddingInlineStartStyles;
-  paddingInlineStyles: typeof padding.paddingInlineStyles;
-  paddingStyles: typeof padding.paddingStyles;
   navItemStyles: typeof navItemStyles.navItemStyles;
   selectorPresentationStyles: typeof selectorPresentation.selectorPresentationStyles;
   truncationTooltipStyles: typeof text.truncationTooltipStyles;
@@ -61,14 +53,6 @@ type XstyleNamespaces = {
  * pseudo-element.
  */
 type PropsOnlyNamespaces = {
-  containerPaddingBlockEndVarStyles: typeof padding.containerPaddingBlockEndVarStyles;
-  containerPaddingBlockStartVarStyles: typeof padding.containerPaddingBlockStartVarStyles;
-  containerPaddingInlineEndVarStyles: typeof padding.containerPaddingInlineEndVarStyles;
-  containerPaddingInlineStartVarStyles: typeof padding.containerPaddingInlineStartVarStyles;
-  containerPaddingInlineVarStyles: typeof padding.containerPaddingInlineVarStyles;
-  layoutPaddingOuterXVarStyles: typeof padding.layoutPaddingOuterXVarStyles;
-  layoutPaddingOuterYVarStyles: typeof padding.layoutPaddingOuterYVarStyles;
-  sectionPaddingPropagationStyles: typeof padding.sectionPaddingPropagationStyles;
   touchHitAreaStyles: typeof touchHitArea.touchHitAreaStyles;
   focusOutlineStylesPublishedVars: Pick<
     typeof focusOutline.focusOutlineStyles,
@@ -131,24 +115,8 @@ const styleNamespacesBySubpath = {
   './Layer/layerTextReset.stylex': [],
   './Layer/layerViewportInset.stylex': [],
   './Layout/container.stylex': [],
-  './Layout/edgeCompensation.stylex': ['edgeCompSlot'],
-  './Layout/padding.stylex': [
-    'containerPaddingBlockEndVarStyles',
-    'containerPaddingBlockStartVarStyles',
-    'containerPaddingInlineEndVarStyles',
-    'containerPaddingInlineStartVarStyles',
-    'containerPaddingInlineVarStyles',
-    'layoutPaddingOuterXVarStyles',
-    'layoutPaddingOuterYVarStyles',
-    'paddingBlockEndStyles',
-    'paddingBlockStartStyles',
-    'paddingBlockStyles',
-    'paddingInlineEndStyles',
-    'paddingInlineStartStyles',
-    'paddingInlineStyles',
-    'paddingStyles',
-    'sectionPaddingPropagationStyles',
-  ],
+  './Layout/edgeCompensation.stylex': [],
+  './Layout/padding.stylex': [],
   './NavItem/navItemStyles.stylex': ['navItemStyles'],
   './Selector/selectorPresentation.stylex': ['selectorPresentationStyles'],
   './Stack/stack.stylex': [],

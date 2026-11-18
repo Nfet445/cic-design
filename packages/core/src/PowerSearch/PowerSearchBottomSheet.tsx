@@ -53,7 +53,6 @@ import React, {
   type SVGProps,
 } from 'react';
 import {flushSync} from 'react-dom';
-import * as stylex from '@stylexjs/stylex';
 import {BottomSheet} from '../BottomSheet/BottomSheet';
 import {Button} from '../Button/Button';
 import {EmptyState} from '../EmptyState/EmptyState';
@@ -61,7 +60,7 @@ import {Heading} from '../Heading/Heading';
 import {Icon} from '../Icon/Icon';
 import {IconButton} from '../IconButton/IconButton';
 import {isRenderable} from '../utils/isRenderable';
-import {containerPaddingInlineVarStyles} from '../Layout/padding.stylex';
+import {containerPaddingByEdgeClassName} from '../Layout/paddingClasses';
 import {List} from '../List/List';
 import {ListItem} from '../List/ListItem';
 import {RadioList} from '../RadioList/RadioList';
@@ -1768,13 +1767,15 @@ export function PowerSearchBottomSheet({
       : t('@astryx.powersearch.sheet.addFilter'));
 
   // Every sheet body: padded, and publishing that padding to its lists.
+  const sheetBodyPaddingClassName = containerPaddingByEdgeClassName({
+    paddingInlineStart: 4,
+    paddingInlineEnd: 4,
+  });
   const bodyProps = mergeProps(
-    powerSearchSheetBodyClassName,
-    stylex.props(containerPaddingInlineVarStyles[4]),
+    tw(powerSearchSheetBodyClassName, sheetBodyPaddingClassName),
   );
   const scrollContentProps = mergeProps(
-    powerSearchSheetScrollContentClassName,
-    stylex.props(containerPaddingInlineVarStyles[4]),
+    tw(powerSearchSheetScrollContentClassName, sheetBodyPaddingClassName),
   );
   const controlSectionProps = {
     className: powerSearchSheetControlSectionClassName,

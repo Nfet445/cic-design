@@ -24,14 +24,10 @@ import {LayoutSlotsContext} from './LayoutSlotsContext';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useScrollRegionProps} from '../hooks/useScrollRegionProps';
 import {mergeProps} from '../utils/mergeProps';
+import {tw} from '../utils/tw';
 import type {SpacingStep} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
-import {
-  paddingStyles,
-  containerPaddingInlineVarStyles,
-  containerPaddingBlockStartVarStyles,
-  containerPaddingBlockEndVarStyles,
-} from './padding.stylex';
+import {containerPaddingByEdgeClassName} from './paddingClasses';
 
 export interface LayoutContentProps extends BaseProps<HTMLDivElement> {
   ref?: React.Ref<HTMLDivElement>;
@@ -130,22 +126,26 @@ export function LayoutContent({
       aria-label={region['aria-label']}
       {...mergeProps(
         mergeProps(themeProps('layout-content'), {
-          className: layoutContentClassName({
-            hasFooter,
-            hasHeader,
-            hasStart,
-            hasEnd,
-            isScrollable,
-            isZeroPadding,
-          }),
+          className: tw(
+            layoutContentClassName({
+              hasFooter,
+              hasHeader,
+              hasStart,
+              hasEnd,
+              isScrollable,
+              isZeroPadding,
+            }),
+            padding != null &&
+              padding !== 0 &&
+              containerPaddingByEdgeClassName({
+                paddingBlockEnd: padding,
+                paddingBlockStart: padding,
+                paddingInlineEnd: padding,
+                paddingInlineStart: padding,
+              }),
+          ),
         }),
-        stylex.props(
-          padding != null && paddingStyles[padding],
-          padding != null && containerPaddingInlineVarStyles[padding],
-          padding != null && containerPaddingBlockStartVarStyles[padding],
-          padding != null && containerPaddingBlockEndVarStyles[padding],
-          xstyle,
-        ),
+        stylex.props(xstyle),
         className,
         style,
       )}

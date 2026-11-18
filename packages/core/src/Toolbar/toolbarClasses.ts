@@ -75,6 +75,16 @@ const LANE_BASIS_CLASSES = tw(
   '[&:has(>_[data-astryx-edge-comp]:first-child):has(>_[data-astryx-edge-comp]:last-child)]:[flex-basis:calc(2*var(--astryx-toolbar-lane-inset))]',
 );
 
+/**
+ * The negative margin a lane takes when its first or last child is
+ * edge-compensated. It reads the same `--astryx-toolbar-lane-inset` the
+ * compensated basis does, so the pull and the basis never disagree.
+ */
+export const toolbarLaneCompensationClassName = tw(
+  '[&:has(>_[data-astryx-edge-comp]:first-child)]:ms-[calc(-1*var(--astryx-toolbar-lane-inset))]',
+  '[&:has(>_[data-astryx-edge-comp]:last-child)]:me-[calc(-1*var(--astryx-toolbar-lane-inset))]',
+);
+
 /** The row's minimum height, which keeps it on one element line. */
 const MIN_HEIGHT_CLASSES = 'min-h-[var(--size-element-sm)]';
 

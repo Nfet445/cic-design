@@ -26,6 +26,8 @@
 import type {CSSProperties} from 'react';
 
 import {tw} from '../utils/tw';
+import {containerPaddingByEdgeClassName} from './paddingClasses';
+import type {SpacingStep} from '../utils/types';
 
 /**
  * A region's own size and the layout's frame are values, not variants: the
@@ -73,8 +75,6 @@ export const layoutInnerClassName = tw(
   '[--astryx-layout-content-width:initial]',
   '[--layout-alignment-width:var(--astryx-layout-alignment-width,100cqi)]',
   '[--layout-content-width:var(--astryx-layout-content-width,none)]',
-  '[--layout-padding-own-outer-x:initial]',
-  '[--layout-padding-own-outer-y:initial]',
   '[--_layout-flush-block-start:initial]',
   '[--_layout-flush-block-end:initial]',
 );
@@ -186,13 +186,13 @@ export const layoutSingleEndPanelClassName =
   '[&:has(>_div>_.astryx-layout-content)]:[padding-inline-end:max(0px,calc((100%_-_var(--layout-content-width))_/_2))]';
 
 /**
- * `padding={0}`: this Layout's regions touch the container's edges. The value
- * lands on the own-outer pair, not the outer pair, so a nested Layout without
- * `padding` keeps the nearest padding container's inset.
+ * A Layout without its own `padding` takes the nearest frame's inset, so the
+ * own-outer pair an enclosing Layout wrote must not reach it. One class decides
+ * the pair, so it never competes with the class that publishes a value.
  */
-export const layoutFullBleedClassName = tw(
-  '[--layout-padding-own-outer-x:0px]',
-  '[--layout-padding-own-outer-y:0px]',
+export const layoutOwnOuterResetClassName = tw(
+  '[--layout-padding-own-outer-x:initial]',
+  '[--layout-padding-own-outer-y:initial]',
 );
 
 /**
@@ -358,6 +358,8 @@ export interface LayoutPanelClassNameOptions {
   isScrollable: boolean;
   /** At width 0 the padding box is 0 too, so the clip hides every child. */
   isZeroWidth: boolean;
+  /** The panel's own padding, which replaces the frame's inset on every edge. */
+  padding?: SpacingStep;
 }
 
 /** A side panel: the inner inset, the outer inset against a container edge. */
@@ -368,19 +370,29 @@ export function layoutPanelClassName({
   isEnd,
   isScrollable,
   isZeroWidth,
+  padding,
 }: LayoutPanelClassNameOptions): string {
   return tw(
     'box-border shrink-0',
     isScrollable ? 'overflow-auto' : 'overflow-clip',
     paddingFromVar,
-    containerPaddingByEdge.inlineStart[
-      isZeroWidth ? 'zero' : isStart ? 'outer' : 'inner'
-    ],
-    containerPaddingByEdge.inlineEnd[
-      isZeroWidth ? 'zero' : isEnd ? 'outer' : 'inner'
-    ],
-    containerPaddingByEdge.blockStart[hasHeader ? 'inner' : 'outer'],
-    containerPaddingByEdge.blockEnd[hasFooter ? 'inner' : 'outer'],
+    padding != null
+      ? containerPaddingByEdgeClassName({
+          paddingBlockEnd: padding,
+          paddingBlockStart: padding,
+          paddingInlineEnd: padding,
+          paddingInlineStart: padding,
+        })
+      : tw(
+          containerPaddingByEdge.inlineStart[
+            isZeroWidth ? 'zero' : isStart ? 'outer' : 'inner'
+          ],
+          containerPaddingByEdge.inlineEnd[
+            isZeroWidth ? 'zero' : isEnd ? 'outer' : 'inner'
+          ],
+          containerPaddingByEdge.blockStart[hasHeader ? 'inner' : 'outer'],
+          containerPaddingByEdge.blockEnd[hasFooter ? 'inner' : 'outer'],
+        ),
   );
 }
 

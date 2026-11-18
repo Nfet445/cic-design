@@ -215,12 +215,11 @@ describe('Section', () => {
     // boundary while keeping the theme's (see overlayPaddingReset).
     const outerInner = container.firstElementChild!
       .firstElementChild! as HTMLElement;
-    expect(
-      getComputedStyle(outerInner).getPropertyValue(
-        '--_section-padding-propagated',
-      ),
-      // jsdom does not resolve the token reference to its 24px value.
-    ).toBe('var(--spacing-6)');
+    // jsdom does not resolve the token reference to its 24px value, so assert
+    // the class that declares it.
+    expectClassSet(outerInner, {
+      includes: ['[--_section-padding-propagated:var(--spacing-6)]'],
+    });
     expect(
       getComputedStyle(outerInner).getPropertyValue('--astryx-section-padding'),
     ).toBe('');

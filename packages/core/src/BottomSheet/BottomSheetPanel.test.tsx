@@ -1008,10 +1008,13 @@ describe('BottomSheetPanel', () => {
               .replace(/\s+/g, ''),
             edge,
           ).toBe(published.replace(/\s+/g, ''));
+          // Every other edge applies what it published.
           expect(
             computed.getPropertyValue(property).replace(/\s+/g, ''),
             edge,
-          ).toBe(edge === 'block-start' ? BAND : expected.replace(/\s+/g, ''));
+          ).toBe(
+            edge === 'block-start' ? BAND : `var(--container-padding-${edge})`,
+          );
         }
         expect(computed.getPropertyValue('--layout-padding-inner-x')).toBe(
           expected,

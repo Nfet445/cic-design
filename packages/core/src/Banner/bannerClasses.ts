@@ -80,6 +80,10 @@ export const bannerEndAreaClassName = tw(
   // The block margin cancels the header's row gap, so a wrapped end area reads
   // as one step of spacing.
   'my-[calc(-1*(var(--spacing-3)-var(--spacing-2)))]',
+  // A flat control at either end carries no visual padding of its own, so the
+  // end area pulls into the header's edge by one step of spacing.
+  '[&:has(>_[data-astryx-edge-comp]:first-child)]:ms-[calc(-1*var(--spacing-2))]',
+  '[&:has(>_[data-astryx-edge-comp]:last-child)]:me-[calc(-1*var(--spacing-2))]',
 );
 
 export const bannerContentAreaClassName = tw(

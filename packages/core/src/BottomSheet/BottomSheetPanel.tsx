@@ -62,10 +62,7 @@ import {LayerContentBoundary} from '../Layer/layerScopedContext';
 import {container} from '../Layout/container.stylex';
 import type {SpacingToken} from '../Layout/container.stylex';
 import {
-  containerPaddingBlockEndVarStyles,
-  containerPaddingInlineVarStyles,
   overlayPaddingReset,
-  paddingStyles,
   spacingStepToToken,
 } from '../Layout/padding.stylex';
 import {subscribeInput} from '../utils/inputStream';
@@ -1072,19 +1069,10 @@ export function BottomSheetPanel({
                             paddingOuterY: paddingToken,
                           },
                     ),
-                    !usesThemePadding &&
-                      effectivePadding !== 4 &&
-                      paddingStyles[effectivePadding],
-                    !usesThemePadding &&
-                      effectivePadding !== 4 &&
-                      containerPaddingInlineVarStyles[effectivePadding],
                     // An explicit padding publishes what reaches past the grab
                     // bar's band, like the theme default (Layout/container.stylex.ts).
                     !usesThemePadding &&
                       bottomSheetPastGrabBarStyles[effectivePadding],
-                    !usesThemePadding &&
-                      effectivePadding !== 4 &&
-                      containerPaddingBlockEndVarStyles[effectivePadding],
                     // The band under the grab bar, on top of the published
                     // padding past it: max(padding, the bar) in all.
                     bottomSheetClearsGrabBarStyles.clearsGrabBar,

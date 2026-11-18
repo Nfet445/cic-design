@@ -38,7 +38,7 @@ import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {mergeProps} from '../utils/mergeProps';
 import {isFocusDetached} from '../utils/isFocusDetached';
 import {themeProps} from '../utils/themeProps';
-import {paddingStyles} from '../Layout/paddingStyles.stylex';
+import {paddingClassName} from '../Layout/paddingClasses';
 import type {SpacingStep} from '../utils/types';
 import {stableClassName} from '../naming';
 import {tw} from '../utils/tw';
@@ -637,6 +637,7 @@ function usePopoverImplementation(
           : undefined,
         popoverContentWrapperClassName,
         hasSurface && popoverSurfaceClassName,
+        padding != null && paddingClassName(padding),
       );
 
       return layer.render(
@@ -651,10 +652,7 @@ function usePopoverImplementation(
             tabIndex={role === 'dialog' ? -1 : undefined}
             {...mergeProps(
               {...surfaceProps, className: surfaceClassName},
-              focusOutlineProps.focusVisible(
-                padding != null && paddingStyles[padding],
-                xstyle,
-              ),
+              focusOutlineProps.focusVisible(xstyle),
               className,
               style,
             )}>

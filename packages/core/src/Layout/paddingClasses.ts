@@ -232,6 +232,13 @@ const sectionPropagationClasses: Record<SpacingStep, string> = {
   10: '[--_section-padding-propagated:var(--spacing-10)]',
 };
 /**
+ * The padding a Section announces to its nested Sections. It uses the theme
+ * default when the Section itself does not set one.
+ */
+export function sectionPaddingClassName(padding: SpacingStep): string {
+  return sectionPropagationClasses[padding];
+}
+/**
  * The padding a container announces to its descendants, for every edge it
  * sets. A per-edge prop resolves into the same call, so an override moves the
  * variable with the padding: a bleed child compensates against the padding
