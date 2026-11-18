@@ -19,8 +19,12 @@
 
 export function getLocaleDirection(locale: string): 'ltr' | 'rtl' {
   try {
-    const loc = new Intl.Locale(locale);
-    // @ts-expect-error — older engines expose accessor form `.textInfo`
+    // Node 20 types carry neither `getTextInfo` nor `textInfo`, so the shape
+    // is declared here instead of depending on the reader's ICU typings.
+    const loc = new Intl.Locale(locale) as Intl.Locale & {
+      getTextInfo?: () => {direction?: string};
+      textInfo?: {direction?: string};
+    };
     const info =
       typeof loc.getTextInfo === 'function' ? loc.getTextInfo() : loc.textInfo;
     return info?.direction === 'rtl' ? 'rtl' : 'ltr';

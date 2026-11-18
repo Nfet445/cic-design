@@ -742,7 +742,7 @@ export function AppShell({
     hasTopNav || hasBanner ? (
       <LayoutHeader padding={0} hasDivider={navHasDividers && hasTopNav}>
         {hasBanner && (
-          <div {...mergeProps(APP_SHELL_BANNER_CLASS, navAreaClassName)}>
+          <div {...mergeProps(tw(APP_SHELL_BANNER_CLASS, navAreaClassName))}>
             {banner}
           </div>
         )}
@@ -1165,8 +1165,10 @@ export function AppShell({
                 href={`#${mainContentId}`}
                 onClick={handleSkipLinkClick}
                 {...mergeProps(
-                  APP_SHELL_SKIP_LINK_CLASS,
-                  focusOutlineFocusVisibleClassName,
+                  tw(
+                    APP_SHELL_SKIP_LINK_CLASS,
+                    focusOutlineFocusVisibleClassName,
+                  ),
                 )}
                 data-testid="skip-to-content">
                 {t('@astryx.appShell.skipToContent')}

@@ -936,8 +936,7 @@ export function ChatComposerTokenElement(props: ChatComposerTokenElementProps) {
       ref={ref}
       {...mergeProps(
         tw(chatComposerTokenSpanClassName, xstyleProps(xstyle).className),
-        className,
-        style,
+        {className, style},
       )}
       {...rest}
       data-astryx-token=""

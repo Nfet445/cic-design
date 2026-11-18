@@ -300,7 +300,7 @@ export function Spinner({
       data-testid={hasLabel ? undefined : testId}
       {...(hasLabel ? {} : restProps)}
       {...mergeProps(
-        hasLabel ? '' : themeProps('spinner', {size, shade}),
+        hasLabel ? {} : themeProps('spinner', {size, shade}),
         {
           className: tw(
             spinnerClassName,

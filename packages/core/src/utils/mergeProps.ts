@@ -60,6 +60,20 @@ function mergeTwoProps(base: PropsObject, overrides: PropsObject): PropsObject {
 }
 
 export function mergeProps(
+  xdsClass: string,
+  stylexResult?: PropsObject,
+  className?: string,
+  style?: React.CSSProperties,
+  ...extra: never[]
+): PropsObject;
+export function mergeProps(
+  base: PropsObject,
+  overrides?: PropsObject | string,
+  classNameOrStyle?: string | React.CSSProperties,
+  style?: React.CSSProperties,
+  ...extra: never[]
+): PropsObject;
+export function mergeProps(
   xdsClassOrStylexResult: string | PropsObject,
   stylexResultOrClassName?: PropsObject | string,
   classNameOrStyle?: string | React.CSSProperties,
