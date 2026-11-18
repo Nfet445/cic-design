@@ -26,7 +26,10 @@
 import type {CSSProperties} from 'react';
 
 import {tw} from '../utils/tw';
-import {containerPaddingByEdgeClassName} from './paddingClasses';
+import {
+  containerPaddingByEdgeClassName,
+  containerPaddingReadClassName,
+} from './paddingClasses';
 import type {SpacingStep} from '../utils/types';
 
 /**
@@ -196,18 +199,6 @@ export const layoutOwnOuterResetClassName = tw(
 );
 
 /**
- * Reads the padding each edge published: one class per edge on the right side of
- * the `--container-padding-*` variable, so the publishing class above owns every
- * inset value.
- */
-const paddingFromVar = tw(
-  '[padding-inline-start:var(--container-padding-inline-start)]',
-  '[padding-inline-end:var(--container-padding-inline-end)]',
-  '[padding-block-start:var(--container-padding-block-start)]',
-  '[padding-block-end:var(--container-padding-block-end)]',
-);
-
-/**
  * Half of the difference between the query box and the alignment width, never
  * less than the inset the edge already has. A one-panel row's query box leaves
  * out the panel-side gutter, so its opposite edge takes the whole difference.
@@ -268,7 +259,7 @@ const containerPaddingByEdge = {
 /** The header's inner wrapper: the content-width frame, inset on outer edges. */
 export const layoutHeaderInnerClassName = tw(
   'box-border mx-auto max-w-[var(--layout-content-width,none)]',
-  paddingFromVar,
+  containerPaddingReadClassName,
   containerPaddingByEdge.inlineStart.outer,
   containerPaddingByEdge.inlineEnd.outer,
   containerPaddingByEdge.blockStart.outer,
@@ -281,7 +272,7 @@ export const layoutHeaderDividerClassName =
 /** The footer's inner wrapper: the content-width frame, inset on outer edges. */
 export const layoutFooterInnerClassName = tw(
   'box-border mx-auto max-w-[var(--layout-content-width,none)]',
-  paddingFromVar,
+  containerPaddingReadClassName,
   containerPaddingByEdge.inlineStart.outer,
   containerPaddingByEdge.inlineEnd.outer,
   containerPaddingByEdge.blockStart.inner,
@@ -328,7 +319,7 @@ export function layoutContentClassName({
   return tw(
     'box-border h-full flex-1 min-h-0',
     isScrollable ? 'overflow-auto' : 'overflow-clip',
-    paddingFromVar,
+    containerPaddingReadClassName,
     containerPaddingByEdge.inlineStart[
       isZeroPadding ? 'zero' : hasStart ? 'inner' : 'outer'
     ],
@@ -375,7 +366,7 @@ export function layoutPanelClassName({
   return tw(
     'box-border shrink-0',
     isScrollable ? 'overflow-auto' : 'overflow-clip',
-    paddingFromVar,
+    containerPaddingReadClassName,
     padding != null
       ? containerPaddingByEdgeClassName({
           paddingBlockEnd: padding,

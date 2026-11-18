@@ -7,11 +7,11 @@
  *   indicator
  * @position Exception inside Drawer: the one rule a Tailwind class cannot carry
  *
- * The drawer's content area is its container, so its padding comes from the
- * layout container rules. Those rules are unlayered, and an unlayered
- * declaration beats any `@layer astryx-base` class, so the safe-area
- * composition that has to win on the block-end edge stays here beside them. The
- * panel, its scrim and its open transform are classes in `drawerClasses.ts`.
+ * The drawer's content area is its container, so its padding is a class in
+ * `astryx-base`. A StyleX rule is unlayered and beats any class in that layer,
+ * so the safe-area composition that has to win on the block-end edge stays
+ * here beside it. The panel, its scrim and its open transform are classes in
+ * `drawerClasses.ts`.
  */
 
 import * as stylex from '@stylexjs/stylex';

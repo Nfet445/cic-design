@@ -7,10 +7,10 @@
  *   strings its test compares against
  * @position Exception inside Dialog: the one rule a Tailwind class cannot carry
  *
- * `container()` applies the theme's padding to this same element from an
- * unlayered rule. An unlayered declaration wins over every utility in
- * `astryx-base`, so this padding stays here: a class would lose to the plain
- * padding the container already set. The rest of the dialog is a class in
+ * `container()` applies the theme's padding to this same element from a class
+ * in `astryx-base`. A StyleX rule is unlayered and wins over that layer, so
+ * this padding stays here: a class would only tie with the plain padding the
+ * container already set. The rest of the dialog is a class in
  * `dialogClasses.ts`.
  */
 

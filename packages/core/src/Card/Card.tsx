@@ -15,9 +15,9 @@
 
 import type {ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {container} from '../Layout/container.stylex';
-import {containerCornerStyles} from '../Layout/containerCorners.stylex';
-import type {SpacingToken} from '../Layout/container.stylex';
+import {container} from '../Layout/containerClasses';
+import {containerCornerClassName} from '../Layout/containerCornersClasses';
+import type {SpacingToken} from '../Layout/containerClasses';
 import {spacingStepToToken} from '../Layout/padding.stylex';
 import type {Elevation, SizeValue, SpacingStep} from '../utils/types';
 import {mergeProps} from '../utils';
@@ -219,24 +219,25 @@ export function Card({
             cardOverflowClassName({hasFixedHeight}),
             cardSizingClassName({width, height, maxWidth, minHeight}),
             cardCornersClassName,
+            containerCornerClassName,
+            container(
+              paddingToken == null
+                ? {useThemeDefault: 'card'}
+                : {
+                    paddingInnerX: paddingToken,
+                    paddingInnerY: paddingToken,
+                    paddingOuterX: paddingToken,
+                    paddingOuterY: paddingToken,
+                  },
+            ),
             variant === 'default' && cardBorderClassName,
           ),
           style: sizingVars,
         }),
         stylex.props(
-          ...container(
-            paddingToken == null
-              ? {useThemeDefault: 'card'}
-              : {
-                  paddingInnerX: paddingToken,
-                  paddingInnerY: paddingToken,
-                  paddingOuterX: paddingToken,
-                  paddingOuterY: paddingToken,
-                },
-          ),
-          containerCornerStyles.publish,
           // The border-inset padding reads the --container-padding-* vars the
-          // container set above, and it stays a StyleX rule because they are.
+          // container class above publishes. It stays a StyleX rule so it
+          // outranks them.
           variant === 'default' && cardBorderStyles.padding,
           xstyle,
         ),

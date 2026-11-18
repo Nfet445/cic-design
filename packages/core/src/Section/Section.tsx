@@ -16,13 +16,16 @@
 import type {ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
-import {container} from '../Layout/container.stylex';
-import type {SpacingToken} from '../Layout/container.stylex';
+import {
+  containerBaseClassName,
+  containerThemeDefaultPaddingClassName,
+} from '../Layout/containerClasses';
 import {
   containerPaddingByEdgeClassName,
+  containerVariableClassName,
   sectionPaddingClassName,
 } from '../Layout/paddingClasses';
-import {spacingStepToToken} from '../Layout/padding.stylex';
+import type {ContainerVariable} from '../Layout/paddingClasses';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
@@ -221,7 +224,6 @@ export function Section({
   // When no explicit padding prop, use theme default (set via container tokens)
   const useThemeDefault = padding == null;
   const effectivePadding = padding ?? 4;
-  const paddingToken = spacingStepToToken[effectivePadding] as SpacingToken;
   // One value per edge: an axis prop covers its two edges, a per-edge prop
   // wins over it, and `padding` covers what none of them set.
   const paddingEdges = {
@@ -242,6 +244,48 @@ export function Section({
       paddingInline ??
       (useThemeDefault ? undefined : effectivePadding),
   };
+  // One class decides each variable: an edge a prop names takes that step, and
+  // an edge none names keeps the theme's chain. `paddingEdges` has already
+  // resolved which edges the props cover.
+  const themeDefaultPadding = containerThemeDefaultPaddingClassName.section;
+  const edgePaddingClassName = (
+    variable: ContainerVariable,
+    step: SpacingStep | undefined,
+  ) =>
+    step == null
+      ? themeDefaultPadding[variable]
+      : containerVariableClassName(variable, step);
+  const containerPadding = useThemeDefault
+    ? tw(
+        edgePaddingClassName(
+          'containerPaddingInlineStart',
+          paddingEdges.paddingInlineStart,
+        ),
+        edgePaddingClassName(
+          'containerPaddingInlineEnd',
+          paddingEdges.paddingInlineEnd,
+        ),
+        edgePaddingClassName(
+          'containerPaddingBlockStart',
+          paddingEdges.paddingBlockStart,
+        ),
+        edgePaddingClassName(
+          'containerPaddingBlockEnd',
+          paddingEdges.paddingBlockEnd,
+        ),
+        themeDefaultPadding.layoutPaddingOuterX,
+        themeDefaultPadding.layoutPaddingOuterY,
+        themeDefaultPadding.layoutPaddingInnerX,
+        themeDefaultPadding.layoutPaddingInnerY,
+      )
+    : tw(
+        containerPaddingByEdgeClassName(paddingEdges),
+        containerVariableClassName('layoutPaddingOuterX', effectivePadding),
+        containerVariableClassName('layoutPaddingOuterY', effectivePadding),
+        containerVariableClassName('layoutPaddingInnerX', effectivePadding),
+        containerVariableClassName('layoutPaddingInnerY', effectivePadding),
+      );
+
   const xstyleProps = stylex.props(xstyle);
   const outerInlineStyle: React.CSSProperties = {
     ...xstyleProps.style,
@@ -261,27 +305,14 @@ export function Section({
       style={style ? {...outerInlineStyle, ...style} : outerInlineStyle}
       {...props}>
       <div
-        {...mergeProps(
-          mergeProps(themeProps('section', {variant}), {
-            className: tw(
-              sectionInnerClassName({dividers, variant}),
-              !useThemeDefault && sectionPaddingClassName(effectivePadding),
-              containerPaddingByEdgeClassName(paddingEdges),
-            ),
-          }),
-          stylex.props(
-            ...container(
-              useThemeDefault
-                ? {useThemeDefault: 'section'}
-                : {
-                    paddingInnerX: paddingToken,
-                    paddingInnerY: paddingToken,
-                    paddingOuterX: paddingToken,
-                    paddingOuterY: paddingToken,
-                  },
-            ),
+        {...mergeProps(themeProps('section', {variant}), {
+          className: tw(
+            sectionInnerClassName({dividers, variant}),
+            containerBaseClassName,
+            !useThemeDefault && sectionPaddingClassName(effectivePadding),
+            containerPadding,
           ),
-        )}>
+        })}>
         {children}
       </div>
     </div>

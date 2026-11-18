@@ -61,3 +61,16 @@ Left: `Layout/padding.stylex.ts` still builds 14 maps (the container variables, 
 number), plus `paddingStyles.stylex.ts` and `edgeCompensation.stylex.ts` (1 each). The steps in
 `paddingClasses.ts` already exist; the work is making every numeric caller use them and teaching the
 container variables the same class-plus-inline-property shape.
+
+## Comments — window 2
+
+Landed `refactor(layout): отдать числовые отступы классам` (36 files): `padding.stylex.ts`,
+`paddingStyles.stylex.ts` and `edgeCompensation.stylex.ts` are gone; every numeric caller (Layout region
+components, Section, Banner, Toolbar, ScrollableArea, Popover, Dialog, Drawer, BottomSheet, PowerSearch)
+takes the step class from `paddingClasses.ts`. Suites: 50 files / 1405 tests, then 88 files / 2351 on the
+integration branch, with only the pre-existing Chinese-calendar failure.
+
+Left: `Layout/container.stylex.ts` (15 maps) and `Layout/containerCorners.stylex.ts` (1). `container()` is
+the seam every padded surface calls (Card, Section, Dialog, Drawer, BottomSheet, Popover, Banner, Toolbar,
+ScrollableArea), so its maps carry the step, the edge compensation and the published corner variables at
+once; each needs the class-per-step treatment plus the corner variables as inline custom properties.

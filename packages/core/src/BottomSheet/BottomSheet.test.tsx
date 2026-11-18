@@ -5098,11 +5098,9 @@ describe('BottomSheet', () => {
         </BottomSheet>,
       );
       const box = screen.getByTestId('sheet-child').parentElement!;
-      expect(
-        getComputedStyle(box).getPropertyValue(
-          '--container-padding-inline-start',
-        ),
-      ).toBe('var(--spacing-0)');
+      expect(classesOf(box)).toContain(
+        '[--container-padding-inline-start:var(--spacing-0)]',
+      );
       expect(getSheet().hasAttribute('padding')).toBe(false);
     });
 
@@ -5117,11 +5115,9 @@ describe('BottomSheet', () => {
         </BottomSheetSwitcher>,
       );
       const box = screen.getByTestId('switcher-child').parentElement!;
-      expect(
-        getComputedStyle(box).getPropertyValue(
-          '--container-padding-inline-start',
-        ),
-      ).toBe('var(--spacing-2)');
+      expect(classesOf(box)).toContain(
+        '[--container-padding-inline-start:var(--spacing-2)]',
+      );
     });
   });
 });

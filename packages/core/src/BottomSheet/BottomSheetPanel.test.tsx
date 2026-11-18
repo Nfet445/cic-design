@@ -916,16 +916,29 @@ describe('BottomSheetPanel', () => {
   });
 
   describe('container padding', () => {
-    // StyleX lowers the block edges to their physical properties.
-    const EDGES = [
-      ['inline-start', 'padding-inline-start'],
-      ['inline-end', 'padding-inline-end'],
-      ['block-start', 'padding-top'],
-      ['block-end', 'padding-bottom'],
-    ] as const;
+    // Tailwind spells the two half steps as their own variables.
+    const STEP_CLASS: Record<0 | 2, string> = {
+      0: 'var(--spacing-0)',
+      2: 'var(--spacing-2)',
+    };
+    const SHEET = 'var(--astryx-bottom-sheet-padding,var(--spacing-4))';
+    // The chain each edge publishes when no padding prop names a step.
+    const THEME_CHAIN: Record<string, string> = {
+      'inline-start': `var(--astryx-bottom-sheet-padding-inline-start,var(--astryx-bottom-sheet-padding-inline,${SHEET}))`,
+      'inline-end': `var(--astryx-bottom-sheet-padding-inline-end,var(--astryx-bottom-sheet-padding-inline,${SHEET}))`,
+      'block-start': `var(--astryx-bottom-sheet-padding-block-start,${SHEET})`,
+      'block-end': `var(--astryx-bottom-sheet-padding-block-end,${SHEET})`,
+    };
     // The block-start inset never drops below the grab bar's height, so
     // resting content starts below the bar. The block start publishes only the
     // padding past that band; the other edges publish what they apply.
+    const pastBand = (chain: string) =>
+      `max(calc(${chain}_-_var(--spacing-6)),0px)`;
+    // The band under the grab bar is applied on top of the published
+    // block-start: a lone Section escapes that and still starts below the bar
+    // (component:BottomSheet, Content area inset).
+    const BAND =
+      'calc(var(--container-padding-block-start,0px)+var(--spacing-6))';
 
     function renderWithPadding(padding?: 0 | 2) {
       render(
@@ -941,84 +954,85 @@ describe('BottomSheetPanel', () => {
       );
       // The content box is the child's parent: the observed box inside the
       // scrolling body, not the body itself.
-      return getComputedStyle(screen.getByTestId('sheet-child').parentElement!);
+      return screen.getByTestId('sheet-child').parentElement as HTMLElement;
     }
 
-    // The band under the grab bar is applied on top of the published
-    // block-start, which is only the padding past the band: a lone Section
-    // escapes that and still starts below the bar (component:BottomSheet,
-    // Content area inset).
-    const BAND =
-      'calc(var(--container-padding-block-start,0px)+var(--spacing-6))';
+    /** The class that publishes one container edge on the content box. */
+    function publishedClass(content: HTMLElement, edge: string): string {
+      const className = classesOf(content).find(candidate =>
+        candidate.startsWith(`[--container-padding-${edge}:`),
+      );
+      expect(className, edge).toBeDefined();
+      return className as string;
+    }
 
     it("pads by Dialog's default chain and publishes the inset it applies", () => {
-      const computed = renderWithPadding();
-      for (const [edge, property] of EDGES) {
-        const published = computed
-          .getPropertyValue(`--container-padding-${edge}`)
-          .replace(/\s+/g, '');
-        expect(published, edge).toContain(
-          `var(--astryx-bottom-sheet-padding-${edge}`,
-        );
-        expect(published, edge).toContain(
-          'var(--astryx-bottom-sheet-padding,var(--spacing-4))',
+      const content = renderWithPadding();
+      for (const edge of Object.keys(THEME_CHAIN)) {
+        const published =
+          edge === 'block-start'
+            ? pastBand(THEME_CHAIN[edge])
+            : THEME_CHAIN[edge];
+        expect(publishedClass(content, edge), edge).toBe(
+          `[--container-padding-${edge}:${published}]`,
         );
         if (edge === 'block-start') {
-          expect(published, edge).toMatch(
-            /^max\(calc\(.*-var\(--spacing-6\)\),0px\)$/,
-          );
+          // The applied edge keeps the band on top of the published inset.
           expect(
-            computed.getPropertyValue(property).replace(/\s+/g, ''),
+            getComputedStyle(content)
+              .getPropertyValue('padding-top')
+              .replace(/\s+/g, ''),
             edge,
           ).toBe(BAND);
           continue;
         }
         // Applied padding reads the published value, so bleed children
         // subtract exactly the inset they sit in.
-        expect(computed.getPropertyValue(property), edge).toBe(
-          `var(--container-padding-${edge})`,
+        expect(classesOf(content), edge).toContain(
+          `[padding-${edge}:var(--container-padding-${edge})]`,
         );
       }
-      for (const name of [
-        '--layout-padding-outer-x',
-        '--layout-padding-outer-y',
-        '--layout-padding-inner-x',
-        '--layout-padding-inner-y',
-      ]) {
-        expect(
-          computed.getPropertyValue(name).replace(/\s+/g, ''),
-          name,
-        ).toContain('var(--astryx-bottom-sheet-padding,var(--spacing-4))');
+      for (const [name, chain] of [
+        ['outer-x', THEME_CHAIN['inline-start']],
+        ['outer-y', pastBand(THEME_CHAIN['block-start'])],
+        ['inner-x', THEME_CHAIN['inline-start']],
+        ['inner-y', pastBand(THEME_CHAIN['block-start'])],
+      ] as const) {
+        expect(classesOf(content), name).toContain(
+          `[--layout-padding-${name}:${chain}]`,
+        );
       }
     });
 
     it.each([0, 2] as const)(
       'applies and publishes an explicit padding step (%s)',
       padding => {
-        const computed = renderWithPadding(padding);
-        const expected = `var(--spacing-${padding})`;
-        for (const [edge, property] of EDGES) {
-          const published =
-            edge === 'block-start'
-              ? `max(calc(${expected} - var(--spacing-6)), 0px)`
-              : expected;
-          expect(
-            computed
-              .getPropertyValue(`--container-padding-${edge}`)
-              .replace(/\s+/g, ''),
-            edge,
-          ).toBe(published.replace(/\s+/g, ''));
-          // Every other edge applies what it published.
-          expect(
-            computed.getPropertyValue(property).replace(/\s+/g, ''),
-            edge,
-          ).toBe(
-            edge === 'block-start' ? BAND : `var(--container-padding-${edge})`,
+        const content = renderWithPadding(padding);
+        const expected = STEP_CLASS[padding];
+        for (const edge of Object.keys(THEME_CHAIN)) {
+          expect(publishedClass(content, edge), edge).toBe(
+            `[--container-padding-${edge}:${expected}]`,
+          );
+          // Every other edge applies what it published; the block start keeps
+          // the band the panel's own StyleX rule adds on top.
+          if (edge === 'block-start') {
+            expect(
+              getComputedStyle(content)
+                .getPropertyValue('padding-top')
+                .replace(/\s+/g, ''),
+              edge,
+            ).toBe(BAND);
+            continue;
+          }
+          expect(classesOf(content), edge).toContain(
+            `[padding-${edge}:var(--container-padding-${edge})]`,
           );
         }
-        expect(computed.getPropertyValue('--layout-padding-inner-x')).toBe(
-          expected,
-        );
+        for (const name of ['outer-x', 'outer-y', 'inner-x', 'inner-y']) {
+          expect(classesOf(content), name).toContain(
+            `[--layout-padding-${name}:${expected}]`,
+          );
+        }
       },
     );
 

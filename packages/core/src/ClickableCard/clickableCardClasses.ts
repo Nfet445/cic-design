@@ -12,8 +12,8 @@
  * - /packages/core/src/Layout/tailwindStylesheet.source-build.test.mjs
  *
  * The bordered variant's border-inset padding stays in
- * `clickableCardBorder.stylex.ts`: `container()` also sets `padding`, as an
- * unlayered StyleX rule that outranks any class in `astryx-base`.
+ * `clickableCardBorder.stylex.ts`: `container()` applies `padding` from a
+ * class in `astryx-base`, and only an unlayered rule outranks that layer.
  */
 
 import {tw} from '../utils/tw';

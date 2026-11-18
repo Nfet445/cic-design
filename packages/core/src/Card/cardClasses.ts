@@ -15,9 +15,9 @@
  * property, so a consumer class can still override them; an inline `width`
  * would beat every class a consumer passes.
  *
- * The border-inset padding stays in `cardBorder.stylex.ts`: `container()` also
- * sets `padding`, as an unlayered StyleX rule that outranks any class in
- * `astryx-base`.
+ * The border-inset padding stays in `cardBorder.stylex.ts`: `container()`
+ * applies `padding` from a class in `astryx-base`, and only an unlayered rule
+ * outranks that layer.
  */
 
 import {tw} from '../utils/tw';
