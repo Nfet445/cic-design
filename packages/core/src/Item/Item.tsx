@@ -90,6 +90,10 @@ import {
   focusOwnerRingClassName,
 } from '../privateAttributes/focusOwner.stylex';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {
+  interactionOverlayBackgroundColorClassName,
+  interactionOverlayBackgroundImageClassName,
+} from '../utils/interactionOverlayClasses';
 import {rowPressLayerStyles} from '../privateAttributes/press.stylex';
 import {isCoarsePointer} from '../utils/coarsePointer';
 import {disabledInteractionProps} from '../utils/disabledInteraction';
@@ -848,12 +852,9 @@ export function Item({
         // rings for the nested control. Other controls ring themselves.
         stylex.props(
           isDelegate ? focusOutlineStyles.focusWithin : null,
-          // A row with a state fill keeps the fill as its background colour.
-          // Its overlay paints as an image layer over the fill.
-          isInteractive &&
-            (hasStateFill
-              ? interactionOverlayStyles.backgroundImage
-              : interactionOverlayStyles.backgroundColor),
+          // The strength, the release and the paint variable; the colour and
+          // the image themselves are classes below.
+          isInteractive && interactionOverlayStyles.pressedAlpha,
           // The touch press on a compositor layer (after the overlay, whose
           // own touch paint it turns off): the release keeps fading while
           // script runs.
@@ -881,6 +882,12 @@ export function Item({
             isLinkRoot,
           }),
           !isDelegate && focusOwnerRingClassName,
+          // A row with a state fill keeps the fill as its background colour,
+          // so its hover and press paint as an image over the fill.
+          isInteractive &&
+            (hasStateFill
+              ? interactionOverlayBackgroundImageClassName
+              : interactionOverlayBackgroundColorClassName),
           className,
         ),
         style,
