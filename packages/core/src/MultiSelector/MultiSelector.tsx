@@ -48,13 +48,6 @@ import {PanelSearchInput} from '../Field/PanelSearchInput';
 import {CheckboxInput} from '../CheckboxInput';
 import type {IndicatorPosition} from '../Indicator';
 import {Badge} from '../Badge';
-import {
-  colorVars,
-  spacingVars,
-  typographyVars,
-  fontWeightVars,
-  typeScaleVars,
-} from '../theme/tokens.stylex';
 import type {
   MultiSelectorOptionType,
   MultiSelectorOptionData,
@@ -184,21 +177,21 @@ const styles = stylex.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: spacingVars['--spacing-2'],
+    gap: 'var(--spacing-2)',
     width: '100%',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-3'],
-    fontFamily: typographyVars['--font-family-body'],
-    fontSize: typeScaleVars['--text-label-size'],
-    lineHeight: typeScaleVars['--text-label-leading'],
-    color: colorVars['--color-text-primary'],
+    paddingBlock: 'var(--spacing-2)',
+    paddingInline: 'var(--spacing-3)',
+    fontFamily: 'var(--font-family-body)',
+    fontSize: 'var(--text-label-size)',
+    lineHeight: 'var(--text-label-leading)',
+    color: 'var(--color-text-primary)',
     cursor: {
       default: 'pointer',
       ':is(:disabled,[aria-disabled="true"])': 'default',
     },
   },
   triggerPlaceholder: {
-    color: colorVars['--color-text-secondary'],
+    color: 'var(--color-text-secondary)',
   },
   triggerGhost: {
     width: 'auto',
@@ -212,7 +205,7 @@ const styles = stylex.create({
         },
       ':focus-within': 'none',
     },
-    fontWeight: fontWeightVars['--font-weight-medium'],
+    fontWeight: 'var(--font-weight-medium)',
     transitionProperty: {
       default: 'background-image, background-color, color, opacity, transform',
       // The press scale goes at once as the list opens.
@@ -233,7 +226,7 @@ const styles = stylex.create({
   // and the neutral resting fill used by secondary buttons.
   triggerSecondary: {
     borderWidth: 0,
-    backgroundColor: colorVars['--color-neutral'],
+    backgroundColor: 'var(--color-neutral)',
     boxShadow: {
       default: 'none',
       ':hover:not(:focus-within):where(:not(:disabled,[aria-disabled="true"]))':
@@ -242,7 +235,7 @@ const styles = stylex.create({
         },
       ':focus-within': 'none',
     },
-    fontWeight: fontWeightVars['--font-weight-medium'],
+    fontWeight: 'var(--font-weight-medium)',
     transitionProperty: {
       default: 'background-image, background-color, color, opacity, transform',
       // The press scale goes at once as the list opens.
@@ -2257,7 +2250,7 @@ export function MultiSelector<T extends MultiSelectorOptionType>({
     selectionSurface = popover.render(panelContent, {
       placement: 'below',
       alignment: 'start',
-      offset: spacingVars['--spacing-1'],
+      offset: 'var(--spacing-1)',
       xstyle: styles.popover,
     });
   }
