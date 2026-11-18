@@ -27,6 +27,7 @@ import {useCommandPaletteContext} from './CommandPaletteContext';
 import {useDialogContext} from '../Dialog/DialogContext';
 import {themeProps} from '../utils/themeProps';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {interactionOverlayBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
@@ -175,7 +176,7 @@ export function CommandPaletteItem({
           disabled: isDisabled ? 'disabled' : null,
         }),
         stylex.props(
-          !isDisabled && interactionOverlayStyles.backgroundColor,
+          !isDisabled && interactionOverlayStyles.pressedAlpha,
           xstyle,
         ),
         tw(
@@ -183,6 +184,9 @@ export function CommandPaletteItem({
           isHighlighted && commandPaletteItemHighlightedClassName,
           isSelected && commandPaletteItemSelectedClassName,
           isDisabled && commandPaletteItemDisabledClassName,
+          // The hover and press colour; its strength and release stay the
+          // StyleX arm above.
+          !isDisabled && interactionOverlayBackgroundColorClassName,
           className,
         ),
         style,
