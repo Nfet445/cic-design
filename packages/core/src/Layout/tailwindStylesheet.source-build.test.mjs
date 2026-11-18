@@ -779,6 +779,13 @@ import {
   filterTriggerClassName,
 } from '../Table/plugins/filtering/filterClasses';
 import {
+  stickyColumnBodyCellClassName,
+  stickyColumnCellClassName,
+  stickyColumnHeaderCellClassName,
+  stickyColumnShadowEndClassName,
+  stickyColumnShadowStartClassName,
+} from '../Table/plugins/stickyColumns/stickyColumnClasses';
+import {
   paginationActivePageClassName,
   paginationCompactFirstClassName,
   paginationCompactLastClassName,
@@ -3828,6 +3835,14 @@ function familyClassNames() {
       add(tablePaginationWrapperClassName({side, align}));
     }
   }
+
+  // The sticky-column plugin: the pinned cell with its divider layer, the two
+  // z-index arms, and the start/end scroll shadow with its RTL flip.
+  add(stickyColumnCellClassName);
+  add(stickyColumnHeaderCellClassName);
+  add(stickyColumnBodyCellClassName);
+  add(stickyColumnShadowStartClassName);
+  add(stickyColumnShadowEndClassName);
 
   // The grouped-rows header: its row, spanning cell, inner row in both pin
   // states, the chevron in both pin states, and the glyph in both rotations.
