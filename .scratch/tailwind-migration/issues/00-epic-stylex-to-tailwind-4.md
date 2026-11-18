@@ -130,6 +130,7 @@ buttons) that landed before the tickets were written.
 - [x] `65-focus-return-regression`
       — table seams, motion and safe-area modules, the one-map leaves
 - [ ] `66-typeahead-test-isolation`
+- [ ] `67-marker-ancestors`
 - [ ] `36-remove-stylex` — `@stylexjs` leaves the repository
 
 ## Done when
