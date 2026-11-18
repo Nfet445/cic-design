@@ -14,7 +14,6 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {borderVars, colorVars} from '../../../theme/tokens.stylex';
 import {tableRowMarker} from '../../table.stylex';
 
 /**
@@ -38,18 +37,18 @@ export const rowExpansionOverrideStyles = stylex.create({
   panelCell: {
     // The width this divider draws, for its stand-in during a glide.
     '--_table-row-divider-width': {
-      default: `var(--_table-panel-divider-width, ${borderVars['--border-width']})`,
+      default: `var(--_table-panel-divider-width, var(--border-width))`,
       [stylex.when.ancestor(':last-child', tableRowMarker)]: '0px',
     },
     borderBottomWidth: {
-      default: `var(--_table-panel-divider-width, ${borderVars['--border-width']})`,
+      default: `var(--_table-panel-divider-width, var(--border-width))`,
       // Same rule TableCell uses: no trailing line under the last row of the
       // table. Scoped to the marker so <tbody>, also a :last-child, does not
       // match and suppress every panel's border.
       [stylex.when.ancestor(':last-child', tableRowMarker)]: '0',
     },
     borderBottomStyle: 'var(--_table-panel-divider-style, solid)',
-    borderBottomColor: `var(--_table-panel-divider-color, ${colorVars['--color-border']})`,
+    borderBottomColor: `var(--_table-panel-divider-color, var(--color-border))`,
   },
   // The header cell holds only a visually hidden label, so it drops both
   // inline insets; the body cell drops the start inset only.
