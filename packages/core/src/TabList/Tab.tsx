@@ -18,6 +18,7 @@
  */
 
 import React, {useCallback, type ReactNode} from 'react';
+import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {useTabListContext} from './TabListContext';
 import type {TabListSize} from './TabListContext';
@@ -42,7 +43,7 @@ import {useDevWarning} from '../hooks/useDevWarning';
 import {withholdCallerHandlers} from '../utils/disabledInteraction';
 import {EDGE_COMP_ATTR} from '../Layout/edgeCompensation.stylex';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {isRenderable} from '../utils/isRenderable';
 
 export interface TabProps extends BaseProps<HTMLButtonElement> {
@@ -230,13 +231,17 @@ export function Tab({
       themeProps('tab', {
         selected: isSelected ? 'selected' : null,
       }),
-      focusOutlineProps.focusVisible(
+      stylex.props(
         // The touch press's strength and release live on the tab the
         // controller writes to; the hover layer inherits and paints it.
         !isDisabled && interactionOverlayStyles.pressedAlpha,
         xstyle,
       ),
-      tw(tabClassName({size, isSelected, isFill}), className),
+      tw(
+        tabClassName({size, isSelected, isFill}),
+        className,
+        focusOutlineFocusVisibleClassName,
+      ),
       style,
     ),
   };
