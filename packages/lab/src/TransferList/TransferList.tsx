@@ -48,7 +48,7 @@ import {VisuallyHidden} from '@astryxdesign/core/VisuallyHidden';
 import {useAnnounce} from '@astryxdesign/core/hooks';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {
-  focusOutlineStyles,
+  focusOutlineFocusVisibleClassName,
   mergeProps,
   mergeRefs,
   themeProps,
@@ -697,8 +697,7 @@ export function TransferList<T extends string = string>({
           tabIndex={-1}
           {...mergeProps(
             themeProps('transfer-list-panel', {side: 'selected'}),
-            stylex.props(focusOutlineStyles.focusVisible),
-            transferListPanelClassName,
+            tw(focusOutlineFocusVisibleClassName, transferListPanelClassName),
           )}>
           <div className={transferListPanelHeaderClassName}>
             <Text id={selectedHeadingId} type="label" color="secondary">
@@ -752,8 +751,11 @@ export function TransferList<T extends string = string>({
           tabIndex={-1}
           {...mergeProps(
             themeProps('transfer-list-panel', {side: 'available'}),
-            stylex.props(focusOutlineStyles.focusVisible),
-            tw(transferListPanelClassName, transferListPanelDividerClassName),
+            tw(
+              focusOutlineFocusVisibleClassName,
+              transferListPanelClassName,
+              transferListPanelDividerClassName,
+            ),
           )}>
           <div className={transferListPanelHeaderClassName}>
             <Text id={availableHeadingId} type="label" color="secondary">
