@@ -235,3 +235,19 @@ Measured: the lab sheet builds at 103.7 kB raw and passes the gate, `Comments`,
 `TransferList` and the sheet suite are green (9 files, 151 tests), and the
 sheet stayed under the ceiling only after the Progress animation folded into one
 `animate-[…]` shorthand — three separate longhand classes put it 9 B over.
+
+### AppShell, closed by the parent
+
+`packages/core/src/AppShell/AppShell.tsx` holds no map any more. Four entries moved to
+`appShellClasses.ts`:
+
+- `APP_SHELL_MAIN_FOCUS_TARGET_CLASS = '[&:focus]:outline-none'` — main is a keyboard stop only
+  while it scrolls, so a click focus paints no ring while `:focus-visible` still does.
+- `APP_SHELL_MAIN_ELEVATED_CORNER_CLASS = '[&:focus-visible]:[border-start-start-radius:var(--radius-page)]'`.
+- `APP_SHELL_MAIN_SAFE_AREA_END_CLASS` — `[&.astryx-layout-content]:[padding-block-end:calc(var(--container-padding-block-end,0px)+env(safe-area-inset-bottom,0px))]`.
+  The self-qualifier repeats LayoutContent's own theme class, so this padding beats the published
+  one by specificity rather than by sheet order.
+- `APP_SHELL_PANEL_AUTO_FILL_CLASS = 'flex-1 overflow-auto'`.
+
+`AppShellSafeArea.test.tsx` lost its whole `insertRule` recorder, because it no longer has a rule
+to read: it asserts class text now.
