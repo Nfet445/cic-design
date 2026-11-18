@@ -70,7 +70,7 @@ import type {LayerAlignment, LayerPlacement} from '../Layer/useLayer';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
 import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import {clampInlineSize, isIntrinsicInlineSize} from '../Layer/clampInlineSize';
-import {spacingVars} from '../theme/tokens.stylex';
+import {spacingVarNames} from '../theme/tokenVars';
 import {InteractiveRoleContext} from '../InteractiveRoleContext/InteractiveRoleContext';
 import type {SpacingStep} from '../utils/types';
 import {tw} from '../utils/tw';
@@ -1039,7 +1039,7 @@ export function Popover({
     : popover.render(anchoredContent, {
         placement,
         alignment,
-        offset: spacingVars['--spacing-1'],
+        offset: spacingVarNames['--spacing-1'],
         xstyle,
         className:
           explicitWidth == null
