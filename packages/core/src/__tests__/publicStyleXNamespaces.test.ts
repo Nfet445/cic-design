@@ -68,7 +68,6 @@ type PropsOnlyNamespaces = {
   containerPaddingInlineVarStyles: typeof padding.containerPaddingInlineVarStyles;
   layoutPaddingOuterXVarStyles: typeof padding.layoutPaddingOuterXVarStyles;
   layoutPaddingOuterYVarStyles: typeof padding.layoutPaddingOuterYVarStyles;
-  overlayPaddingReset: typeof padding.overlayPaddingReset;
   sectionPaddingPropagationStyles: typeof padding.sectionPaddingPropagationStyles;
   touchHitAreaStyles: typeof touchHitArea.touchHitAreaStyles;
   focusOutlineStylesPublishedVars: Pick<
@@ -141,7 +140,6 @@ const styleNamespacesBySubpath = {
     'containerPaddingInlineVarStyles',
     'layoutPaddingOuterXVarStyles',
     'layoutPaddingOuterYVarStyles',
-    'overlayPaddingReset',
     'paddingBlockEndStyles',
     'paddingBlockStartStyles',
     'paddingBlockStyles',

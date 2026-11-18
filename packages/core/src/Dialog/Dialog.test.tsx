@@ -33,7 +33,11 @@ import {
 } from './Dialog';
 import {DialogHeader} from './DialogHeader';
 import {getFocusableElements, useFocusTrap} from '../hooks/useFocusTrap';
-import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
+import {
+  classesOf,
+  expectClassSet,
+  expectVariable,
+} from '../__tests__/classNameAssertions';
 import {useDialogContext} from './DialogContext';
 import {defineTheme, generateThemeCSS} from '../theme';
 import {
@@ -2089,19 +2093,13 @@ describe('Dialog', () => {
           Content
         </Dialog>,
       );
-      const dialog = screen.getByRole('dialog');
-      const computed = window.getComputedStyle(dialog);
-      expect(
-        computed.getPropertyValue('--container-padding-inline-start'),
-      ).toBe('0px');
-      expect(computed.getPropertyValue('--container-padding-inline-end')).toBe(
-        '0px',
-      );
-      expect(computed.getPropertyValue('--container-padding-block-start')).toBe(
-        '0px',
-      );
-      expect(computed.getPropertyValue('--container-padding-block-end')).toBe(
-        '0px',
+      expect(classesOf(screen.getByRole('dialog'))).toEqual(
+        expect.arrayContaining([
+          '[--container-padding-inline-start:0px]',
+          '[--container-padding-inline-end:0px]',
+          '[--container-padding-block-start:0px]',
+          '[--container-padding-block-end:0px]',
+        ]),
       );
     });
   });

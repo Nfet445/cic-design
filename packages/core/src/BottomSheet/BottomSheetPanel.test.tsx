@@ -15,6 +15,7 @@ import {renderToString} from 'react-dom/server';
 import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {classesOf} from '../__tests__/classNameAssertions';
 import {
   BottomSheetPanel,
   type BottomSheetPanelMotion,
@@ -1022,11 +1023,9 @@ describe('BottomSheetPanel', () => {
       renderWithPadding(2);
       const panel = getPanel();
       expect(panel.hasAttribute('padding')).toBe(false);
-      expect(
-        getComputedStyle(panel).getPropertyValue(
-          '--container-padding-inline-start',
-        ),
-      ).toBe('0px');
+      expect(classesOf(panel)).toContain(
+        '[--container-padding-inline-start:0px]',
+      );
     });
   });
 });

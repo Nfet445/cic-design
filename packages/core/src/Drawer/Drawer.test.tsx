@@ -28,7 +28,11 @@ import {ButtonGroup} from '../ButtonGroup';
 import {Tooltip} from '../Tooltip/Tooltip';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
-import {expectClassSet, expectVariable} from '../__tests__/classNameAssertions';
+import {
+  classesOf,
+  expectClassSet,
+  expectVariable,
+} from '../__tests__/classNameAssertions';
 
 // Mock dialog methods since they're not fully implemented in jsdom
 beforeEach(() => {
@@ -1292,18 +1296,13 @@ describe('Drawer', () => {
         </Drawer>,
       );
       const dialog = screen.getByRole('dialog');
-      const computed = window.getComputedStyle(dialog);
-      expect(
-        computed.getPropertyValue('--container-padding-inline-start'),
-      ).toBe('0px');
-      expect(computed.getPropertyValue('--container-padding-inline-end')).toBe(
-        '0px',
-      );
-      expect(computed.getPropertyValue('--container-padding-block-start')).toBe(
-        '0px',
-      );
-      expect(computed.getPropertyValue('--container-padding-block-end')).toBe(
-        '0px',
+      expect(classesOf(dialog)).toEqual(
+        expect.arrayContaining([
+          '[--container-padding-inline-start:0px]',
+          '[--container-padding-inline-end:0px]',
+          '[--container-padding-block-start:0px]',
+          '[--container-padding-block-end:0px]',
+        ]),
       );
     });
   });
@@ -1411,11 +1410,9 @@ describe('Drawer', () => {
       renderWithPadding(2);
       const dialog = screen.getByRole('dialog');
       expect(dialog.hasAttribute('padding')).toBe(false);
-      expect(
-        getComputedStyle(dialog).getPropertyValue(
-          '--container-padding-inline-start',
-        ),
-      ).toBe('0px');
+      expect(classesOf(dialog)).toContain(
+        '[--container-padding-inline-start:0px]',
+      );
     });
   });
 });

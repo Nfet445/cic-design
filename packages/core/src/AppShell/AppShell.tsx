@@ -1245,13 +1245,11 @@ export function AppShell({
         data-testid={dataTestId}
         {...mergeProps(
           themeProps('app-shell', {variant}),
-          stylex.props(
+          stylex.props(xstyle),
+          tw(
             // A layout root (FR18): nothing an ancestor Layout, Card or
             // Section publishes reaches the shell (component:Layout FR8).
             layoutReset,
-            xstyle,
-          ),
-          tw(
             APP_SHELL_ROOT_CLASS,
             appShellVariantClassName({variant}),
             appShellHeightClassName({height}),
