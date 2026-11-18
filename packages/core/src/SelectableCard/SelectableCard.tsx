@@ -59,8 +59,8 @@ import {
   selectableCardInteractiveClassName,
   selectableCardOverlayClassName,
   selectableCardRingClassName,
+  selectableCardSelectedBorderClassName,
 } from './selectableCardClasses';
-import {selectableCardSelectionStyles} from './selectableCardSelection.stylex';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {SelectableCardInputContext} from './selectableCardInput';
@@ -96,21 +96,6 @@ const selectedKeyForVariant = (variant: CardVariant): string => {
     default:
       return 'unknown';
   }
-};
-
-const selectedBorderColor: Record<string, string> = {
-  accent: 'var(--color-accent)',
-  blue: 'var(--color-border-blue)',
-  cyan: 'var(--color-border-cyan)',
-  gray: 'var(--color-border-gray)',
-  green: 'var(--color-border-green)',
-  orange: 'var(--color-border-orange)',
-  pink: 'var(--color-border-pink)',
-  purple: 'var(--color-border-purple)',
-  red: 'var(--color-border-red)',
-  teal: 'var(--color-border-teal)',
-  yellow: 'var(--color-border-yellow)',
-  unknown: 'var(--selectable-card-ring-color)',
 };
 
 // =============================================================================
@@ -374,16 +359,13 @@ export function SelectableCard({
       className={tw(
         selectableCardInteractiveClassName,
         isSelected && selectableCardRingClassName[selectedKey],
+        isSelected && selectableCardSelectedBorderClassName[selectedKey],
         !isDisabled && selectableCardOverlayClassName,
         isDisabled && selectableCardDisabledClassName,
         focusOutlineWithinClassName,
         classNameProp,
       )}
       xstyle={[
-        isSelected &&
-          selectableCardSelectionStyles.selected(
-            selectedBorderColor[selectedKey],
-          ),
         // The touch press's strength and release, on the element the
         // controller writes to; the `::after` above paints off it.
         !isDisabled && interactionOverlayStyles.pressedAlpha,

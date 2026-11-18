@@ -4,7 +4,7 @@
  * @file selectableCardClasses.ts
  * @input The card's variant, selection, and pointer capabilities
  * @output The interactive surface, its hover and press layer, the selection
- *   ring, the disabled dimming, and the hidden checkbox
+ *   ring and border, the disabled dimming, and the hidden checkbox
  * @position Internal to SelectableCard; the Tailwind build scans it for class
  *   names
  *
@@ -111,4 +111,28 @@ export const selectableCardRingClassName: Record<string, string> = {
   teal: '[--_card-ring:inset_0_0_0_2px_var(--color-border-teal)]',
   yellow: '[--_card-ring:inset_0_0_0_2px_var(--color-border-yellow)]',
   unknown: '[--_card-ring:inset_0_0_0_2px_var(--selectable-card-ring-color)]',
+};
+
+/**
+ * The selected card's border colour. The card draws it with its own
+ * `border-[color:…]` utility in `astryx-base`, so the class names
+ * `astryx-selectable-card` twice and wins on specificity, not on sheet order.
+ */
+export const selectableCardSelectedBorderClassName: Record<string, string> = {
+  accent: '[&.astryx-selectable-card]:[border-color:var(--color-accent)]',
+  blue: '[&.astryx-selectable-card]:[border-color:var(--color-border-blue)]',
+  cyan: '[&.astryx-selectable-card]:[border-color:var(--color-border-cyan)]',
+  gray: '[&.astryx-selectable-card]:[border-color:var(--color-border-gray)]',
+  green: '[&.astryx-selectable-card]:[border-color:var(--color-border-green)]',
+  orange:
+    '[&.astryx-selectable-card]:[border-color:var(--color-border-orange)]',
+  pink: '[&.astryx-selectable-card]:[border-color:var(--color-border-pink)]',
+  purple:
+    '[&.astryx-selectable-card]:[border-color:var(--color-border-purple)]',
+  red: '[&.astryx-selectable-card]:[border-color:var(--color-border-red)]',
+  teal: '[&.astryx-selectable-card]:[border-color:var(--color-border-teal)]',
+  yellow:
+    '[&.astryx-selectable-card]:[border-color:var(--color-border-yellow)]',
+  unknown:
+    '[&.astryx-selectable-card]:[border-color:var(--selectable-card-ring-color)]',
 };

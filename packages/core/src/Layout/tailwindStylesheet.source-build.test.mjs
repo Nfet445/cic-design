@@ -1138,6 +1138,7 @@ import {
   clickableCardOverlayClassName,
   clickableCardSrOnlyClassName,
 } from '../ClickableCard/clickableCardClasses';
+import {selectableCardSelectedBorderClassName} from '../SelectableCard/selectableCardClasses';
 import {
   dividerClassName,
   dividerFullBleedClassName,
@@ -3028,6 +3029,11 @@ function familyClassNames() {
   add(clickableCardBorderlessClassName);
   add(clickableCardDisabledClassName);
   add(clickableCardSrOnlyClassName);
+  // SelectableCard: one class per variant group for the selected border, which
+  // names the card class twice so it outranks the card's own border colour.
+  for (const value of Object.values(selectableCardSelectedBorderClassName)) {
+    add(value);
+  }
   // Divider: one row per orientation, one line per orientation and variant,
   // the label, and the full-bleed arms that read the container padding.
   for (const value of Object.values(dividerClassName)) {
