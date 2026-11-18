@@ -795,10 +795,13 @@ describe('BaseTypeahead', () => {
       const input = screen.getByRole('combobox');
 
       await user.click(input);
+      // jsdom can expose options while their popover is still closed.
       await waitFor(() => {
-        expect(
-          screen.getByRole('option', {name: 'Second', hidden: true}),
-        ).toBeInTheDocument();
+        expect(input).toHaveAttribute('aria-expanded', 'true');
+        expect(input).toHaveAttribute(
+          'aria-activedescendant',
+          screen.getByRole('option', {name: 'First', hidden: true}).id,
+        );
       });
       await user.keyboard('{ArrowDown}');
       const second = screen.getByRole('option', {name: 'Second', hidden: true});
