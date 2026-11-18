@@ -742,7 +742,6 @@ import {
 import {
   TYPEAHEAD_INPUT_HIDDEN_CLASS,
   TYPEAHEAD_MENU_WIDTH_CLASS,
-  TYPEAHEAD_INPUT_HIDDEN_CLASS,
   TYPEAHEAD_TOKEN_OVERLAY_CLASS,
   TYPEAHEAD_WRAPPER_CLASS,
   TYPEAHEAD_DEFAULT_ITEM_CLASS,
@@ -4158,7 +4157,10 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // rows took it to 2228, and its menu slots to 2229, and the focus ring's
     // seven class arms took it to 2230. The ceiling keeps its headroom above
     // that.
-    expect(stylesheet.rules.size).toBeLessThan(2320);
+    // The tokenizer's disabled-sheet token and the list's doubled ring classes
+    // took it to 2320, so the ceiling keeps its headroom rather than matching
+    // the measurement.
+    expect(stylesheet.rules.size).toBeLessThan(2380);
   });
 
   it('prints a RadioList row’s coarse press arm after its mouse arm', () => {
