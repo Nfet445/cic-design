@@ -45,7 +45,7 @@ import {EDGE_COMP_ATTR} from '../Layout/edgeCompensation.stylex';
 import {themeProps} from '../utils/themeProps';
 import {observeResize} from '../utils/sharedResizeObserver';
 import {createDevWarnings} from '../utils/devWarning';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
 import {
   tabListArrowClassName,
@@ -502,9 +502,8 @@ export function TabList({
             onClick={scrollToStart}
             {...mergeProps(
               themeProps('tab-scroll-button'),
-              focusOutlineProps.focusVisible(
-                tabListArrowClassName({edge: 'start', size}),
-              ),
+              tabListArrowClassName({edge: 'start', size}),
+              focusOutlineFocusVisibleClassName,
             )}>
             <Icon
               icon="chevronLeft"
@@ -523,9 +522,8 @@ export function TabList({
             onClick={scrollToEnd}
             {...mergeProps(
               themeProps('tab-scroll-button'),
-              focusOutlineProps.focusVisible(
-                tabListArrowClassName({edge: 'end', size}),
-              ),
+              tabListArrowClassName({edge: 'end', size}),
+              focusOutlineFocusVisibleClassName,
             )}>
             <Icon
               icon="chevronRight"
