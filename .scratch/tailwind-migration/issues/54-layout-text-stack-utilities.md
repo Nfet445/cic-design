@@ -1,7 +1,7 @@
 # layout, text and stack utilities
 
-Status: ready-for-agent
-Blocked by: —
+Status: blocked — the last StyleX rule is the lab LineClamp tooltip read
+Blocked by: 30 (its `lab` LineClamp still reads `Text/text.stylex`)
 Wave: 10
 Ticket: 54
 Parent: `00-epic-stylex-to-tailwind-4`
@@ -74,3 +74,32 @@ Left: `Layout/container.stylex.ts` (15 maps) and `Layout/containerCorners.stylex
 the seam every padded surface calls (Card, Section, Dialog, Drawer, BottomSheet, Popover, Banner, Toolbar,
 ScrollableArea), so its maps carry the step, the edge compensation and the published corner variables at
 once; each needs the class-per-step treatment plus the corner variables as inline custom properties.
+
+## Comments — window 3
+
+The container landed before this window (`refactor(layout): вернуть container как класс вместо карты
+StyleX`, `refactor(layout): отдать углы контейнера классам`): `Layout/container.stylex.ts` is a re-export
+shim, `containerCornersClasses.ts` carries the corners, `overlayPaddingReset.stylex.ts` keeps only the
+reset that must outrank a layer utility. Step 2's grep over `Layout`, `Text`, `Stack`, `Section` and
+`Toolbar` returns one production hit, `Text/truncationTooltip.stylex.ts:18`; the other hits are a test
+fixture and the `*stylex.create()*` prose in `.doc.mjs` files.
+
+Landed `refactor(text): оставить StyleX только правило подсказки переноса`: `Text/text.stylex.ts` is a
+shim again — it re-exports the class builders and the one remaining StyleX value, whose map moved to
+`Text/truncationTooltip.stylex.ts` with its reason. The declarations the map holds were already literal
+classes: `truncationTooltipContentClassName` (`max-w-[300px]`, `[word-break:break-word]`) in
+`textClasses.ts` from the first window, so the sheet gains no class: it measured 2215 on this branch
+before the merge and 2224 after it, still under the 2230 ceiling.
+
+Stays StyleX: `truncationTooltipStyles`, because `packages/lab` LineClamp passes it to `stylex.props`
+(`packages/lab/src/LineClamp/LineClamp.tsx:548`). A class string in that position becomes an inline style
+and no `className` — `stylex.props('max-w-[300px]')` returns `{style: {0:'m',1:'a',2:'x',…}}` — so the
+tooltip would silently lose both declarations. `Text` and `Heading` already paint the tooltip from the
+class.
+
+Left: that one lab call, in ticket 30's files, which this ticket's standing rules put out of reach.
+`<span {...stylex.props(truncationTooltipStyles.content)}>` becomes
+`<span className={truncationTooltipContentClassName}>`; then `Text/truncationTooltip.stylex.ts` can be
+deleted with the `./Text/text.stylex` export entry and its `['truncationTooltipStyles']` line in
+`__tests__/publicStyleXNamespaces.test.ts`. Status stays blocked on that call, so the epic box stays
+unticked.
