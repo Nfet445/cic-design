@@ -76,9 +76,9 @@ import {useBackdropPress} from '../Layer/useBackdropPress';
 import {useFocusRegionContainment} from '../hooks/useFocusTrap';
 import {useModalOutlet} from '../Layer/modalOutlet';
 import {spacingVars} from '../theme/tokens.stylex';
-import {container} from '../Layout/container.stylex';
+import {container, containerVars} from '../Layout/containerClasses';
 import {containerCornerClassName} from '../Layout/containerCornersClasses';
-import type {SpacingToken} from '../Layout/container.stylex';
+import type {SpacingToken} from '../Layout/containerClasses';
 import {
   spacingStepToToken,
   overlayPaddingReset,
@@ -623,25 +623,26 @@ export function Dialog({
       ref={outletRef}
       {...mergeProps(
         stylex.props(
-          ...container(
-            useThemeDefault
-              ? {
-                  useThemeDefault: 'dialog',
-                  maxHeight: standardSizing?.maxHeight,
-                }
-              : {
-                  paddingInnerX: paddingToken,
-                  paddingInnerY: paddingToken,
-                  paddingOuterX: paddingToken,
-                  paddingOuterY: paddingToken,
-                  maxHeight: standardSizing?.maxHeight,
-                },
-          ),
           isFullscreen &&
             useThemeDefault &&
             dialogFullscreenSafeAreaStyles.fullscreenSafeArea,
         ),
-        {className: tw(dialogInnerClassName, containerCornerClassName)},
+        {
+          className: tw(
+            dialogInnerClassName,
+            containerCornerClassName,
+            container(
+              useThemeDefault
+                ? {useThemeDefault: 'dialog'}
+                : {
+                    paddingInnerX: paddingToken,
+                    paddingInnerY: paddingToken,
+                    paddingOuterX: paddingToken,
+                    paddingOuterY: paddingToken,
+                  },
+            ),
+          ),
+        },
       )}>
       <DialogContext value={dialogContextValue}>{children}</DialogContext>
     </div>
@@ -668,6 +669,9 @@ export function Dialog({
           [dialogWidthVar]: standardSizing.width,
           [dialogMaxWidthVar]: standardSizing.maxWidth,
           [dialogMaxHeightVar]: standardSizing.maxHeight,
+          // The inner content area reads it: `layoutFillClassName` bounds a
+          // fill layout with it.
+          [containerVars.maxHeight]: standardSizing.maxHeight,
         }
       : undefined),
     ...(positionOffsets

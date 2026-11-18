@@ -23,10 +23,7 @@
 import {useState, useCallback, useMemo, type ReactNode} from 'react';
 import {Dialog, type DialogProps} from './Dialog';
 
-type DialogOptions = Omit<
-  DialogProps,
-  'isOpen' | 'onOpenChange' | 'children'
->;
+type DialogOptions = Omit<DialogProps, 'isOpen' | 'onOpenChange' | 'children'>;
 
 export interface ImperativeDialogReturn {
   /** Show the dialog with the given content. */

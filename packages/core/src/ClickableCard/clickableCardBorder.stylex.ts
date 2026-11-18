@@ -8,8 +8,9 @@
  * @position Exception inside ClickableCard: the one rule a Tailwind class
  *   cannot carry.
  *
- * `container()` sets `padding` from its variables as a StyleX rule, so a
- * padding class would only tie with it and let the sheet order decide. The
+ * `container()` applies the padding from a class in `astryx-base`, and a
+ * StyleX rule is unlayered and wins over that layer, so a padding class would
+ * only tie with the container's own and let the sheet order decide. The
  * border-inset `calc()` therefore stays here; the rest of the bordered
  * variant — its border colour, its hover colour and its transition — is in
  * `clickableCardClasses.ts`.

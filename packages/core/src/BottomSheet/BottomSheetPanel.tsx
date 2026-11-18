@@ -59,8 +59,8 @@ import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
 import {layerStructureResetClassName} from '../Layer/layerStructureResetClasses';
 import {LayerContentBoundary} from '../Layer/layerScopedContext';
-import {container} from '../Layout/container.stylex';
-import type {SpacingToken} from '../Layout/container.stylex';
+import {container} from '../Layout/containerClasses';
+import type {SpacingToken} from '../Layout/containerClasses';
 import {
   overlayPaddingReset,
   spacingStepToToken,
@@ -1059,7 +1059,20 @@ export function BottomSheetPanel({
               scrollElementProps(
                 mergeProps(
                   stylex.props(
-                    ...container(
+                    // An explicit padding publishes what reaches past the grab
+                    // bar's band, like the theme default (Layout/containerClasses.ts).
+                    !usesThemePadding &&
+                      bottomSheetPastGrabBarStyles[effectivePadding],
+                    // The band under the grab bar, on top of the published
+                    // padding past it: max(padding, the bar) in all.
+                    bottomSheetClearsGrabBarStyles.clearsGrabBar,
+                  ),
+                  tw(
+                    bottomSheetContentClassName({
+                      isTall: height === 'tall',
+                      hasKeyboardInset: height === 'tall' && keyboardInset > 0,
+                    }),
+                    container(
                       usesThemePadding
                         ? {useThemeDefault: 'bottom-sheet'}
                         : {
@@ -1069,18 +1082,7 @@ export function BottomSheetPanel({
                             paddingOuterY: paddingToken,
                           },
                     ),
-                    // An explicit padding publishes what reaches past the grab
-                    // bar's band, like the theme default (Layout/container.stylex.ts).
-                    !usesThemePadding &&
-                      bottomSheetPastGrabBarStyles[effectivePadding],
-                    // The band under the grab bar, on top of the published
-                    // padding past it: max(padding, the bar) in all.
-                    bottomSheetClearsGrabBarStyles.clearsGrabBar,
                   ),
-                  bottomSheetContentClassName({
-                    isTall: height === 'tall',
-                    hasKeyboardInset: height === 'tall' && keyboardInset > 0,
-                  }),
                   height === 'tall' && keyboardInset > 0
                     ? ({
                         '--astryx-bottom-sheet-keyboard-inset': `${keyboardInset}px`,

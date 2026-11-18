@@ -243,12 +243,10 @@ describe('public StyleX namespaces', () => {
   });
 
   it('build styles that fit their use', () => {
+    // Moved ahead of StyleX: these build class names now.
     expectTypeOf<
-      ReturnType<typeof container.container> extends StylexPropsArgument
-        ? true
-        : false
+      ReturnType<typeof container.container> extends string ? true : false
     >().toEqualTypeOf<true>();
-    // Moved ahead of StyleX: these two build class names now.
     expectTypeOf<
       ReturnType<typeof stack.stack> extends string ? true : false
     >().toEqualTypeOf<true>();

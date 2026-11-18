@@ -956,6 +956,15 @@ export const ThemedLayout: Story = {
   ),
 };
 
+/** A demo box: its own styles, plus the container padding this story varies. */
+function containerDemo(padding: 'spacing0' | 'spacing4' | 'spacing7') {
+  const props = stylex.props(styles.demoContainer, styles.demoSize);
+  return {
+    ...props,
+    className: `${props.className} ${container({paddingOuterX: padding, paddingOuterY: padding})}`,
+  };
+}
+
 export const OuterPaddingDemo: Story = {
   name: 'Outer Padding Demonstration',
   render: () => (
@@ -969,15 +978,7 @@ export const OuterPaddingDemo: Story = {
       <HStack gap={4} wrap="wrap">
         <VStack gap={2}>
           <p {...stylex.props(styles.subheading)}>paddingOuterX/Y = spacing0</p>
-          <div
-            {...stylex.props(
-              ...container({
-                paddingOuterX: 'spacing0',
-                paddingOuterY: 'spacing0',
-              }),
-              styles.demoContainer,
-              styles.demoSize,
-            )}>
+          <div {...containerDemo('spacing0')}>
             <Layout
               header={
                 <LayoutHeader hasDivider>
@@ -1002,15 +1003,7 @@ export const OuterPaddingDemo: Story = {
 
         <VStack gap={2}>
           <p {...stylex.props(styles.subheading)}>paddingOuterX/Y = spacing4</p>
-          <div
-            {...stylex.props(
-              ...container({
-                paddingOuterX: 'spacing4',
-                paddingOuterY: 'spacing4',
-              }),
-              styles.demoContainer,
-              styles.demoSize,
-            )}>
+          <div {...containerDemo('spacing4')}>
             <Layout
               header={
                 <LayoutHeader hasDivider>
@@ -1035,15 +1028,7 @@ export const OuterPaddingDemo: Story = {
 
         <VStack gap={2}>
           <p {...stylex.props(styles.subheading)}>paddingOuterX/Y = spacing7</p>
-          <div
-            {...stylex.props(
-              ...container({
-                paddingOuterX: 'spacing7',
-                paddingOuterY: 'spacing7',
-              }),
-              styles.demoContainer,
-              styles.demoSize,
-            )}>
+          <div {...containerDemo('spacing7')}>
             <Layout
               header={
                 <LayoutHeader hasDivider>

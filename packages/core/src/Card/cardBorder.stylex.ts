@@ -6,11 +6,12 @@
  * @output One StyleX rule that insets the card padding by the border width
  * @position Exception inside Card: the one rule a Tailwind class cannot carry.
  *
- * `container()` sets `padding` from its variables as an unlayered StyleX rule.
- * An unlayered rule wins over every utility in `astryx-base`, so the
- * border-inset `calc()` stays here: a class would lose to the plain padding
- * container already set. Only the subtracted padding lives here; the border
- * itself is a class in `cardClasses.ts`.
+ * `container()` applies the padding from a class in `astryx-base`. A StyleX
+ * rule is unlayered and wins over every utility in that layer, so the
+ * border-inset `calc()` stays here: a class would only tie with the plain
+ * padding container already set and let the sheet order decide. Only the
+ * subtracted padding lives here; the border itself is a class in
+ * `cardClasses.ts`.
  */
 
 import * as stylex from '@stylexjs/stylex';

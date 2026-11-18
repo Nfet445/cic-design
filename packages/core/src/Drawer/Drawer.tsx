@@ -455,20 +455,22 @@ export function Drawer({
               ref={outletRef}
               tabIndex={-1}
               {...mergeProps(
-                stylex.props(
-                  ...container(
-                    usesThemePadding
-                      ? {useThemeDefault: 'drawer'}
-                      : {
-                          paddingInnerX: paddingToken,
-                          paddingInnerY: paddingToken,
-                          paddingOuterX: paddingToken,
-                          paddingOuterY: paddingToken,
-                        },
+                stylex.props(drawerContentSafeAreaStyles.contentSafeArea),
+                {
+                  className: tw(
+                    drawerContentClassName,
+                    container(
+                      usesThemePadding
+                        ? {useThemeDefault: 'drawer'}
+                        : {
+                            paddingInnerX: paddingToken,
+                            paddingInnerY: paddingToken,
+                            paddingOuterX: paddingToken,
+                            paddingOuterY: paddingToken,
+                          },
+                    ),
                   ),
-                  drawerContentSafeAreaStyles.contentSafeArea,
-                ),
-                {className: drawerContentClassName},
+                },
               )}>
               {children}
             </div>

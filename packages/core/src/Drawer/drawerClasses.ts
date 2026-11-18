@@ -154,8 +154,8 @@ export function drawerRootClassName({
 // The scrolling area paints the surface itself, covering the panel's whole
 // inner box: a theme that packs an inset ring into --shadow-high would
 // otherwise show it only in the gap below where opaque content ends. Its
-// container padding comes from the layout container rules, which are
-// unlayered and therefore outrank this layer.
+// container padding is a class in this same layer, so the safe-area rule in
+// drawerContentSafeArea.stylex.ts adds the home indicator on top of it.
 const CONTENT = tw(
   'grow',
   'min-h-0',
