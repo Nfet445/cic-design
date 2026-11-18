@@ -83,7 +83,6 @@ import {
 } from '../hooks/useClickableContainer';
 import {useDevWarning} from '../hooks/useDevWarning';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import {
   focusOwnerGroupProps,
   focusOwnerProps,
@@ -94,6 +93,7 @@ import {
   interactionOverlayBackgroundColorClassName,
   interactionOverlayBackgroundImageClassName,
 } from '../utils/interactionOverlayClasses';
+import {focusOutlineWithinClassName} from '../utils/focusOutlineClasses';
 import {rowPressLayerStyles} from '../privateAttributes/press.stylex';
 import {isCoarsePointer} from '../utils/coarsePointer';
 import {disabledInteractionProps} from '../utils/disabledInteraction';
@@ -848,10 +848,7 @@ export function Item({
           selected: isSelected ? 'selected' : null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        // The row rings only for its own button or link. In delegation mode it
-        // rings for the nested control. Other controls ring themselves.
         stylex.props(
-          isDelegate ? focusOutlineStyles.focusWithin : null,
           // The strength, the release and the paint variable; the colour and
           // the image themselves are classes below.
           isInteractive && interactionOverlayStyles.pressedAlpha,
@@ -881,7 +878,9 @@ export function Item({
             hasParentRole,
             isLinkRoot,
           }),
-          !isDelegate && focusOwnerRingClassName,
+          // The row rings only for its own button or link. In delegation mode it
+          // rings for the nested control. Other controls ring themselves.
+          isDelegate ? focusOutlineWithinClassName : focusOwnerRingClassName,
           // A row with a state fill keeps the fill as its background colour,
           // so its hover and press paint as an image over the fill.
           isInteractive &&
