@@ -40,7 +40,7 @@ import type {BaseProps, SizeValue} from '@astryxdesign/core';
 import {useGridFocus} from '@astryxdesign/core/hooks';
 import {useTranslator} from '@astryxdesign/core/i18n';
 import {
-  focusOutlineStyles,
+  focusOutlineFocusVisibleClassName,
   isImeKeyEvent,
   mergeProps,
   themeProps,
@@ -61,6 +61,7 @@ import {
   emojiPickerRowClassName,
 } from './emojiPickerClasses';
 import {useStatusAnnouncement} from '../useStatusAnnouncement';
+import {tw} from '../tw';
 
 export interface EmojiOption {
   /** The emoji character, e.g. "🎉". */
@@ -403,8 +404,8 @@ export function EmojiPicker({
                     <button
                       type="button"
                       aria-label={option.name}
-                      {...mergeProps(
-                        stylex.props(focusOutlineStyles.focusVisible),
+                      className={tw(
+                        focusOutlineFocusVisibleClassName,
                         emojiPickerCellClassName,
                       )}
                       onClick={() => pick(option)}
