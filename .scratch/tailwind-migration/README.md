@@ -198,3 +198,7 @@ them worse and must not fix them; a change in that count is a finding.
   unlayered StyleX rule at any order, so a rest state that writes `outline-width: 0` to keep a
   wrapper's ring off while its child rings itself has to stay StyleX until the ring application
   itself is a class; `!important` would beat the theme instead. Ticket 53 records the cases.
+- A StyleX rule that must beat a utility wins by selector, not by order: StyleX emits
+  `:not(#\#)`, which outranks any plain utility inside the same layer. So an exception module
+  (`Comment`/`Schedule`/`transferList` overrides in `packages/lab`) can stay StyleX and still
+  win — write down the exact utility it beats, not "because it is unlayered".
