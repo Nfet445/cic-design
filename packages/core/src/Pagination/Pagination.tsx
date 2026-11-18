@@ -36,7 +36,7 @@ import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import type {LinkComponentType} from '../Link/types';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
 import {
   paginationActivePageClassName,
@@ -708,13 +708,13 @@ export function Pagination({
                       active: isActive ? 'active' : null,
                       size,
                     }),
-                    focusOutlineProps.focusVisible(),
-                  )}
-                  className={tw(
-                    paginationDotClassName,
-                    isSm && paginationDotSmClassName,
-                    isActive && paginationDotActiveClassName,
-                    isDisabled && paginationDotDisabledClassName,
+                    tw(
+                      paginationDotClassName,
+                      isSm && paginationDotSmClassName,
+                      isActive && paginationDotActiveClassName,
+                      isDisabled && paginationDotDisabledClassName,
+                      focusOutlineFocusVisibleClassName,
+                    ),
                   )}
                 />
               );

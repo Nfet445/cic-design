@@ -4,7 +4,8 @@
  * @file typeaheadClasses.ts
  * @input Uses the theme's spacing, radius, typography, type-scale, colour and
  *   border variables, and the row's size and runtime state
- * @output The utility class strings a typeahead result row, its content slot
+ * @output The utility class strings for the field's size floor, a typeahead
+ *   result row, its content slot
  *   and the default `TypeaheadItem` label, description and icon carry, plus
  *   the field's text entry, its disabled cursor and the two lanes around it
  * @position Internal to BaseTypeahead and TypeaheadItem; the Tailwind build
@@ -42,6 +43,41 @@ const ROW_PADDING_CLASS: Record<TypeaheadRowSize, string> = {
     '[padding-inline:var(--spacing-2)]',
   ),
 };
+
+/** The field's size floor, the same one the shared input box takes. */
+export const typeaheadWrapperSizeClassName: Record<TypeaheadRowSize, string> = {
+  sm: 'min-h-[var(--size-element-sm)]',
+  md: 'min-h-[var(--size-element-md)]',
+  lg: 'min-h-[var(--size-element-lg)]',
+};
+
+/** A group's heading above its rows: no target of its own, so no row paint. */
+export const typeaheadGroupHeadingClassName = tw(
+  'px-[var(--spacing-2)]',
+  'pt-[var(--spacing-2)]',
+  'pb-[var(--spacing-1)]',
+  '[font-size:var(--text-supporting-size)]',
+  '[line-height:var(--text-supporting-leading)]',
+  'text-[color:var(--color-text-secondary)]',
+  'select-none',
+);
+
+/** The row the menu shows when a search found nothing. */
+export const typeaheadEmptyStateClassName = tw(
+  'p-3',
+  'text-center',
+  '[font-size:var(--text-supporting-size)]',
+  'text-[color:var(--color-text-secondary)]',
+);
+
+/** The spinner a direct caller gets, in flow beside its field. */
+export const typeaheadLoadingStatusClassName = tw(
+  'inline-flex',
+  'shrink-0',
+  'items-center',
+  'justify-center',
+  'p-[var(--spacing-1)]',
+);
 
 /** The fill a highlighted row draws over the base row's transparent one. */
 export const TYPEAHEAD_ROW_HIGHLIGHT_CLASS =

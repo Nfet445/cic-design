@@ -107,6 +107,7 @@ import {
   tokenizerGroupedTrackFadeStartClassName,
   tokenizerIdleSpinnerClassName,
   tokenizerLayerClassName,
+  tokenizerFieldSizeClassName,
   tokenizerOverflowTextClassName,
   tokenizerSheetFieldClassName,
   tokenizerSheetTriggerClassName,
@@ -557,12 +558,6 @@ const styles = stylex.create({
       '@media (forced-colors: active)': 'GrayText',
     },
   },
-});
-
-const sizeStyles = stylex.create({
-  sm: {minHeight: sizeVars['--size-element-sm']},
-  md: {minHeight: sizeVars['--size-element-md']},
-  lg: {minHeight: sizeVars['--size-element-lg']},
 });
 
 const truncatedSizeStyles = stylex.create({
@@ -1688,7 +1683,7 @@ export function Tokenizer<T extends SearchableItem>({
     ? joinAriaIDs(groupLabelledBy, ariaLabelledByProp)
     : fieldLabelledBy;
 
-  const sizeStyle = sizeStyles[size];
+  const sizeClassName = tokenizerFieldSizeClassName[size];
 
   // Render tokens
   const tokens = value.map(item => {
@@ -1786,13 +1781,15 @@ export function Tokenizer<T extends SearchableItem>({
         stylex.props(
           styles.wrapper,
           value.length > 0 && styles.wrapperWithTokens,
-          isTruncated ? truncatedSizeStyles[size] : sizeStyle,
+          isTruncated && truncatedSizeStyles[size],
           isTruncated && styles.truncatedWrapper,
           localStatus && !isDisabled && isInGroupRow && styles.inGroupWrapper,
           controlXstyle,
         ),
         tw(
           isInGroupRow && inputGroupMemberClassName,
+          // The size floor leaves when truncation pins an exact height.
+          !isTruncated && sizeClassName,
           fieldInputWrapperClassName({status: localStatus?.type}),
           isDisabled && fieldInputWrapperDisabledClassName,
           isDisabled && fieldInputWrapperFocusScopeClassName.nested,
@@ -2045,11 +2042,11 @@ export function Tokenizer<T extends SearchableItem>({
               // The field keeps the inline field's height for its size step,
               // as Selector's bottom-sheet trigger does; the sheet's own rows
               // and search field carry the touch-sized targets.
-              sizeStyles[size],
               value.length > 0 && styles.wrapperWithTokens,
               status && !isDisabled && controlXstyle,
             ),
             tw(
+              tokenizerFieldSizeClassName[size],
               fieldInputWrapperClassName({status: status?.type}),
               isDisabled && fieldInputWrapperDisabledClassName,
               tokenizerSheetFieldClassName(isDisabled),

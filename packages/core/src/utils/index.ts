@@ -116,7 +116,15 @@ export {
 export {focusOutlineStyles, focusOutlineProps} from './focusOutline.stylex';
 
 // The same ring as a class arm, for a composer that draws it without StyleX.
-export {focusOutlineFocusVisibleClassName} from './focusOutlineClasses';
+export {
+  focusOutlineFocusVisibleClassName,
+  focusOutlinePublishVarsClassName,
+  focusOutlineSuppressedClassName,
+  focusOutlineWithinClassName,
+  focusOutlineWithinComboboxClassName,
+  focusOutlineWithinFirstChildClassName,
+  focusOutlineWithinOrPublishedClassName,
+} from './focusOutlineClasses';
 
 export {isImeKeyEvent} from './ime';
 

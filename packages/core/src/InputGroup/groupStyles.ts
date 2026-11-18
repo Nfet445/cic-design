@@ -2,19 +2,14 @@
 
 /**
  * @file groupStyles.ts
- * @input Uses StyleX, theme tokens, and layer-aware group end-cap selectors
- * @output Exports the Button addon's group-aware styles and the member marker
- * @position Shared styles consumed by InputGroup-compatible controls and addons
+ * @input Nothing; it declares the marker every group member sets
+ * @output Exports the marker props a member spreads on its element
+ * @position Shared by InputGroup-compatible controls and Button addons
  *
- * The member's own row rules (flex, radii, overlap, focus rank) are the class
- * set `inputGroupMemberClassName` in `inputGroupClasses.ts`. This file keeps
- * what a Button addon needs and cannot express with a class: the corner reset
- * and the focused member's z-index both key on selectors over the group's
- * children.
+ * The member's row rules, the corner reset and the focused member's rank are
+ * class text in `inputGroupClasses.ts`. This module keeps only the marker the
+ * group's edge selectors name members by.
  */
-
-import * as stylex from '@stylexjs/stylex';
-import {radiusVars, borderVars} from '../theme/tokens.stylex';
 
 /**
  * The internal marker every InputGroup member sets on the element that carries
@@ -25,57 +20,3 @@ import {radiusVars, borderVars} from '../theme/tokens.stylex';
 export const inputGroupItemProps = {
   'data-astryx-input-group-item': '',
 } as const;
-const MEMBER = '[data-astryx-input-group-item]';
-
-// Anything a caller places after a member (a wrapped Button, a custom element)
-// still counts as following it, so the trailing edge keeps today's rule over
-// any sibling; only context-layer infrastructure (popovers, inert markers,
-// native dialog surfaces) is skipped. Followers are not always members, so
-// this rule cannot name them by the marker.
-//
-// `:nth-last-child(1 of S)`, not `:not(:has(~ S))`: the stylesheet is global,
-// and WebKit re-evaluates a sibling-relative `:has()` against every earlier
-// sibling on each insertion, so filling any container became quadratic
-// (ButtonGroup FR3). A member always matches S, so being the last of S is the
-// same as having no following S.
-const IS_LAST_ITEM =
-  ':nth-last-child(1 of :not([popover]):not(template):not(dialog))';
-const FOLLOWED = `:not(${IS_LAST_ITEM})`;
-
-// Button consumes InputGroup context anywhere below the group, including buttons
-// inside an input's own implementation. Keep the visual adaptation on direct
-// children so internal clear, calendar, and disclosure actions stay unchanged.
-const DIRECT_INPUT_GROUP_ADDON = `:where(.astryx-input-group > ${MEMBER})`;
-const DIRECT_INPUT_GROUP_ADDON_FOCUS_VISIBLE = `${DIRECT_INPUT_GROUP_ADDON}:focus-visible`;
-const DIRECT_INPUT_GROUP_ADDON_NOT_FIRST = `${DIRECT_INPUT_GROUP_ADDON}:not(:first-child)`;
-const DIRECT_INPUT_GROUP_ADDON_WITH_MEMBER_AFTER = `${DIRECT_INPUT_GROUP_ADDON}${FOLLOWED}`;
-
-export const groupStyles = stylex.create({
-  buttonAddon: {
-    borderStartStartRadius: {
-      default: null,
-      [DIRECT_INPUT_GROUP_ADDON_NOT_FIRST]: 0,
-    },
-    borderEndStartRadius: {
-      default: null,
-      [DIRECT_INPUT_GROUP_ADDON_NOT_FIRST]: 0,
-    },
-    borderStartEndRadius: {
-      default: null,
-      [DIRECT_INPUT_GROUP_ADDON_WITH_MEMBER_AFTER]: 0,
-    },
-    borderEndEndRadius: {
-      default: null,
-      [DIRECT_INPUT_GROUP_ADDON_WITH_MEMBER_AFTER]: 0,
-    },
-    height: {
-      default: null,
-      [DIRECT_INPUT_GROUP_ADDON]: '100%',
-    },
-    // Keep the keyboard ring above the adjacent group member at the shared edge.
-    zIndex: {
-      default: null,
-      [DIRECT_INPUT_GROUP_ADDON_FOCUS_VISIBLE]: 2,
-    },
-  },
-});
