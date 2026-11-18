@@ -4,7 +4,7 @@
 
 /**
  * @file TableHeaderCell.tsx
- * @input React, StyleX, TableContext, tableHeaderCellClasses
+ * @input React, TableContext, tableHeaderCellClasses
  * @output Exports TableHeaderCell component, TableHeaderCellProps
  * @position Sub-component; used inside Table for header cells
  *
