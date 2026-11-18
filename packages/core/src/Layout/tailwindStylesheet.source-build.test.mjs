@@ -2877,6 +2877,7 @@ function familyClassNames() {
   add(sideNavClassName.drawerFooter);
   add(sideNavClassName.drawerFooterIcons);
   add(sideNavClassName.resizableContainer);
+  add(sideNavClassName.resizableHandle);
   add(sideNavClassName.topbar);
   add(sideNavClassName.topbarIcons);
   for (const value of Object.values(sideNavItemClassName)) {

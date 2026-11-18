@@ -35,7 +35,6 @@ import {
 import type {BaseProps} from '../BaseProps';
 import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '@stylexjs/stylex';
-import {focusVars} from '../theme/tokens.stylex';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {sideNavClassName} from './sideNavClasses';
@@ -227,22 +226,6 @@ function resolveRegionCollapseConfig(
 // =============================================================================
 // Styles
 // =============================================================================
-
-const leftoverStyles = stylex.create({
-  // The shared ring's offset has to beat `focusOutlineStyles.focusVisible`,
-  // which ResizeHandle applies unlayered; a utility inside `@layer
-  // astryx-base` loses at any order, and an inline style cannot express the
-  // `:focus-visible` pair. The ring stays inside the clipping wrapper.
-  resizableHandle: {
-    // Keep the shared ring inside the clipping boundary. The wrapper cannot
-    // use overflow-clip-margin: that paint allowance also contributes the
-    // overlay's half-pixel spill to AppShell's scrollable overflow.
-    outlineOffset: {
-      default: '0',
-      ':focus-visible': `calc(0px - ${focusVars['--focus-outline-width']})`,
-    },
-  },
-});
 
 /**
  * Cascaded to the icon rows through `SizeContext` so the built-in collapse
@@ -922,7 +905,7 @@ export function SideNav({
           position="overlay"
           pillPlacement="end"
           isAlwaysVisible={false}
-          xstyle={leftoverStyles.resizableHandle}
+          className={sideNavClassName.resizableHandle}
           resizable={ownerRegion ?? resizableHook.props}
           label={t('@astryx.sideNav.resizeSidebar')}
           aria-controls={navId}
