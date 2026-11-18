@@ -12,12 +12,12 @@
  */
 
 import React, {type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {SearchableItem} from './types';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   TYPEAHEAD_ITEM_CONTENT_CLASS,
   TYPEAHEAD_ITEM_DESCRIPTION_CLASS,
@@ -116,7 +116,7 @@ export function TypeaheadItem<T extends SearchableItem>({
       ref={ref}
       {...mergeProps(
         themeProps('typeahead-item'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           TYPEAHEAD_ITEM_FRAME_CLASS,
           isDisabled && TYPEAHEAD_ITEM_DISABLED_CLASS,

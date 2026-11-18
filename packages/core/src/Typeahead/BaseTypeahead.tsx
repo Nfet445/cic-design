@@ -66,6 +66,7 @@ import {
   mergeProps,
 } from '../utils';
 import {warnOnce} from '../utils/devWarning';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import type {SearchContext, SearchableItem, SearchSource} from './types';
 import {themeProps} from '../utils/themeProps';
@@ -2294,6 +2295,7 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
     });
   }
 
+  const xstyleSlots = xstyleProps(xstyle);
   const content = (
     <>
       <input
@@ -2364,13 +2366,14 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
           hasAutoCorrect: false,
         })}
         {...mergeProps(
-          stylex.props(inputXStyle, xstyle),
+          stylex.props(inputXStyle),
           tw(
             typeaheadInputClassName,
             isDisabled && typeaheadInputDisabledClassName,
+            xstyleSlots.className,
             className,
           ),
-          style,
+          {...xstyleSlots.style, ...style},
         )}
       />
       {isLoading && busyLane == null && (
