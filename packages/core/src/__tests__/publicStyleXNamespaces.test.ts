@@ -39,7 +39,6 @@ type XstyleNamespaces = {
   iconSizeStyles: typeof iconSize.iconSizeStyles;
   navItemStyles: typeof navItemStyles.navItemStyles;
   selectorPresentationStyles: typeof selectorPresentation.selectorPresentationStyles;
-  truncationTooltipStyles: typeof text.truncationTooltipStyles;
   focusOutlineStyles: typeof focusOutline.focusOutlineStyles;
   interactionOverlayStyles: typeof interactionOverlay.interactionOverlayStyles;
 };
@@ -119,7 +118,7 @@ const styleNamespacesBySubpath = {
   './Selector/selectorPresentation.stylex': ['selectorPresentationStyles'],
   './Stack/stack.stylex': [],
   './Stack/stackItem.stylex': [],
-  './Text/text.stylex': ['truncationTooltipStyles'],
+  './Text/text.stylex': [],
   './internal/touchHitArea.stylex': ['touchHitAreaStyles'],
   './theme/dataTokens.stylex': [],
   './theme/tokens.stylex': [],
