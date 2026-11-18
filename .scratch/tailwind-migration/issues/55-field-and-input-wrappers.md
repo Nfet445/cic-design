@@ -40,3 +40,16 @@ utilities lose to it at any order — that tie is the reason the wrappers below 
 - Follow `.scratch/tailwind-migration/README.md`. The 16px floor is the class
   `pointer-coarse:[@supports(-webkit-touch-callout:none)]:text-[length:max(1rem,var(--text-body-size))]`
   and `inputFontFloor.test.ts` must point at the class map, not the component.
+
+## Comments — window 1
+
+Landed: `ComplexSelector` publishes its content seam (`contentClassName` and an inline style path), which
+unblocks `packages/lab/src/TransferList/TransferListSelector.tsx`; and the field wrapper's own paint moved
+to `Field/inputClasses.ts` for the properties a class can hold.
+
+Left: `Field/inputStyles.stylex.ts` still builds 5 maps (`inputWrapperStyles`, `inputStatusBorderStyles`,
+`inputStatusHoverShadowStyles`, `inputStatusFocusWithinStyles`, `inputStatusFocusStyles`), `inputDisabledFocus.ts`
+1, `InputGroup/groupStyles.ts` 1, and the wrapper maps in `NumberInput`, `MultiSelector`, `Selector`,
+`Typeahead`, `BaseTypeahead`, `Tokenizer` (4). Those status maps key on `:hover`, `:focus-within` and
+`:focus` together with a theme variable per status, so each needs the variant-per-state treatment and a
+test that reads classes rather than declarations.

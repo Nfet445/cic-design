@@ -46,3 +46,18 @@ They are what keeps the StyleX runtime in the package after the components thems
 - Follow `.scratch/tailwind-migration/README.md`: literal class text only, a per-instance value is a
   class plus an inline `--astryx-*` property, and a rule that must beat a layer utility stays in its
   own module with a reason.
+
+## Comments — window 1
+
+Landed: `Stack` and `StackItem` (`stackClasses.ts`, `stackItemClasses.ts` now the only map), the `Text`
+scale, the padding boundary as `layoutPaddingResetClassName` in `Layout/layoutClasses.ts` (published
+through `Layout/padding.stylex` as `overlayPaddingReset.reset`, now a class string), and the overlay
+roots that read it (Dialog, Drawer, BottomSheet panel, Lightbox, MobileNav, AppShell, Layer). The seven
+tests that read the reset's custom properties from `getComputedStyle` now read the class set, because a
+utility's custom property never resolves in jsdom.
+
+Left: `Layout/padding.stylex.ts` still builds 14 maps (the container variables, `paddingInlineStyles`,
+`paddingBlockStyles`, `paddingInlineStartStyles`, …, which carry the numeric steps for callers that pass a
+number), plus `paddingStyles.stylex.ts` and `edgeCompensation.stylex.ts` (1 each). The steps in
+`paddingClasses.ts` already exist; the work is making every numeric caller use them and teaching the
+container variables the same class-plus-inline-property shape.
