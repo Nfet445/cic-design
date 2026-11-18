@@ -20,12 +20,6 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {
-  borderVars,
-  colorVars,
-  sizeVars,
-  spacingVars,
-} from '../theme/tokens.stylex';
 
 const COARSE_TARGET = '24px';
 
@@ -55,8 +49,8 @@ export const markdownTablePartStyles = stylex.create({
     maxWidth: 'none',
     overflow: 'visible',
     overflowWrap: 'break-word',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
+    paddingBlock: 'var(--spacing-2)',
+    paddingInline: 'var(--spacing-2)',
     wordBreak: 'normal',
   },
   headerCell: {
@@ -64,8 +58,8 @@ export const markdownTablePartStyles = stylex.create({
     maxWidth: 'none',
     overflow: 'visible',
     overflowWrap: 'break-word',
-    paddingBlock: spacingVars['--spacing-2'],
-    paddingInline: spacingVars['--spacing-2'],
+    paddingBlock: 'var(--spacing-2)',
+    paddingInline: 'var(--spacing-2)',
     textOverflow: 'clip',
     whiteSpace: 'normal',
     wordBreak: 'normal',
@@ -82,11 +76,11 @@ export const markdownTablePartStyles = stylex.create({
   ruleOnTableEnd: {
     borderInlineEndWidth: 0,
     borderInlineStartWidth: {
-      default: borderVars['--border-width'],
+      default: 'var(--border-width)',
       ':last-child': '0',
     },
     borderInlineStartStyle: 'solid',
-    borderInlineStartColor: colorVars['--color-border'],
+    borderInlineStartColor: 'var(--color-border)',
   },
   // The grid's outer edge. `dividers="grid"` draws the lines *between* cells
   // and stops at the table's rim, so without this the top, bottom, and sides
@@ -94,9 +88,9 @@ export const markdownTablePartStyles = stylex.create({
   // wrapper, so `border-collapse: collapse` merges it with the cell lines
   // into one 1px rule rather than doubling up at the edge.
   tableOuterEdge: {
-    borderWidth: borderVars['--border-width'],
+    borderWidth: 'var(--border-width)',
     borderStyle: 'solid',
-    borderColor: colorVars['--color-border'],
+    borderColor: 'var(--color-border)',
   },
   alignStart: {textAlign: 'start'},
   alignCenter: {textAlign: 'center'},
@@ -122,11 +116,11 @@ export const markdownHeadingLinksCopyButtonStyles = stylex.create({
     position: 'absolute',
     insetBlockStart: '50%',
     inlineSize: {
-      default: sizeVars['--size-element-sm'],
+      default: 'var(--size-element-sm)',
       '@media (any-pointer: coarse)': COARSE_TARGET,
     },
     blockSize: {
-      default: sizeVars['--size-element-sm'],
+      default: 'var(--size-element-sm)',
       '@media (any-pointer: coarse)': COARSE_TARGET,
     },
     paddingBlock: 0,
