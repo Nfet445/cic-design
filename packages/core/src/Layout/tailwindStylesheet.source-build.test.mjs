@@ -727,6 +727,7 @@ import {
   multiSelectorListWrapperClassName,
   multiSelectorOptionsClassName,
   multiSelectorTriggerClassName,
+  multiSelectorTriggerContainerClassName,
 } from '../MultiSelector/multiSelectorClasses';
 import {
   TYPEAHEAD_INPUT_HIDDEN_CLASS,
@@ -2445,6 +2446,17 @@ function familyClassNames() {
   // the chip row with its overflow tail, the status button and the chevron.
   for (const isReadOnly of [false, true]) {
     add(multiSelectorTriggerClassName({isReadOnly}));
+  }
+  // The trigger's box and the chrome of its two borderless variants, in every
+  // state their arms split on.
+  for (const variant of ['input', 'secondary', 'ghost']) {
+    for (const hasValue of [false, true]) {
+      for (const isInert of [false, true]) {
+        add(
+          multiSelectorTriggerContainerClassName({variant, hasValue, isInert}),
+        );
+      }
+    }
   }
   add(MULTI_SELECTOR_TRIGGER_CONTENT_CLASS);
   add(MULTI_SELECTOR_TRIGGER_TEXT_CLASS);
