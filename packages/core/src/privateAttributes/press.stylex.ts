@@ -19,8 +19,12 @@
  * cannot hold. It also sets the same properties as the overlay utility
  * (utils/interactionOverlay.stylex.ts) on the same element, and StyleX wins
  * over a class on a property both set (privateAttributes/travellingClasses.ts
- * relies on that). privateAttributes/pressClasses.ts holds the rest,
- * including the RadioList row's own mouse press paint.
+ * relies on that). The two rules that name the survivor: this `cell`'s
+ * `animation-name`/`animation-duration` under `[data-astryx-press="fading"]`
+ * against `interactionOverlayStyles.pressedAlpha`'s own, and its `background-*`
+ * arms against `interactionOverlayStyles.backgroundImage`. privateAttributes/
+ * pressClasses.ts holds the rest, including the RadioList row's own mouse press
+ * paint.
  */
 
 import * as stylex from '@stylexjs/stylex';

@@ -10,8 +10,12 @@
 import * as stylex from '@stylexjs/stylex';
 
 /**
- * The ring's own offset is unlayered StyleX, so this override has to be
- * unlayered too: a Tailwind utility would lose to it whatever the class order.
+ * The rule this loses to is `focusOutlineStyles.focusVisible`'s
+ * `outlineOffset`, in utils/focusOutline.stylex.ts: the ring is still unlayered
+ * StyleX, so this override has to be unlayered too, and the two resolve in one
+ * `stylex.props` call (hooks/useInputStatusIcon.tsx), where the later block
+ * wins per property. A Tailwind utility would lose to the ring whatever the
+ * class order, so this module waits for the ring to become a class.
  *
  * Not the shared offset: this button sits inside the field, and measured at the
  * standard 3px its ring crosses the field border.

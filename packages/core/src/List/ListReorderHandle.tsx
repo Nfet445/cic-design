@@ -46,9 +46,9 @@ import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
 import {mergeProps} from '../utils/mergeProps';
 import {
-  ownRingContainerStyles,
   ownRingProps,
-} from '../privateAttributes/ownRing.stylex';
+  ownRingRowClassName,
+} from '../privateAttributes/ownRingClasses';
 import {listReorderHandleProps} from '../privateAttributes/listReorder.stylex';
 import {reorderingHandleCursorClassName} from '../privateAttributes/reordering.stylex';
 import {useTouchHitArea} from '../utils/touchHitArea';
@@ -77,7 +77,7 @@ registerEnglishFallback(english);
  * The style of a row that ends with a handle, which ListItem applies. Its
  * ring on focus within stays off for the handle, which rings itself.
  */
-export const reorderRowStyle = ownRingContainerStyles.focusWithin;
+export const reorderRowStyle = ownRingRowClassName;
 
 /** The insertion line's thickness, px (the engine centres it on a gap). */
 export const INSERTION_LINE_THICKNESS = 2;

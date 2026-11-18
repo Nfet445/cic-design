@@ -624,6 +624,7 @@ import {
 } from '../Indicator/indicatorClasses';
 import {reorderLineClassName} from '../privateAttributes/reorderLineClasses';
 import {reorderingHandleCursorClassName} from '../privateAttributes/reorderingClasses';
+import {ownRingRowClassName} from '../privateAttributes/ownRingClasses';
 import {
   travellingRaisedSwipeRowClassName,
   travellingRowClassName,
@@ -2562,6 +2563,7 @@ function familyClassNames() {
   add(indicatorPressImageClassName);
   add(reorderLineClassName);
   add(reorderingHandleCursorClassName);
+  add(ownRingRowClassName);
   add(travellingRowClassName);
   add(travellingRaisedSwipeRowClassName);
   for (const placement of ['above', 'below', 'start', 'end']) {
@@ -4566,6 +4568,27 @@ describe('dist/astryx-tailwind.css declarations', () => {
     );
     expect(marked).toContain('display:block;');
     expect(marked).not.toContain('content');
+  });
+
+  it('rings a reorderable row without stacking a ring on its handle', () => {
+    // Two arms, one element: the row rings for any focused descendant but the
+    // handle, and goes dark for the handle, which rings itself. Each arm names
+    // the whole `:has()` argument, so it carries one compound more than the
+    // shared `:has(:focus-visible)` ring it has to outrank — the reset arm
+    // included, which a plain `[outline-width:0]` could not do.
+    const ring = stylesheet.blockOf(
+      '[&:has(:focus-visible:not([data-astryx-own-ring]))]:[outline-width:var(--focus-outline-width)]',
+    );
+    expect(ring).toContain(
+      '&:has(:focus-visible:not([data-astryx-own-ring])){outline-width:var(--focus-outline-width);}',
+    );
+    expect(
+      stylesheet.blockOf(
+        '[&:has([data-astryx-own-ring]:focus-visible)]:[outline-style:none]',
+      ),
+    ).toContain(
+      '&:has([data-astryx-own-ring]:focus-visible){outline-style:none;}',
+    );
   });
 
   it('clips the list inline, so a row dragged aside paints no further', () => {
