@@ -35,6 +35,8 @@ import {InternationalizationProvider} from '../i18n';
 import type * as TokenModule from '../Token';
 import {Token} from '../Token/Token';
 import {FormLayout} from '../FormLayout/FormLayout';
+import {tokenizerTokenRowClassName} from './tokenizerClasses';
+import {classesOf} from '../__tests__/classNameAssertions';
 
 // Every Token render, in order, by label.
 //
@@ -3804,9 +3806,15 @@ describe('Tokenizer end-lane reserve', () => {
     );
     const field = laneHost(container);
     expect(field).not.toBeNull();
-    expect(getComputedStyle(field!).paddingInlineEnd).toContain(
-      '--astryx-tokenizer-end-lane-reserve',
-    );
+    // jsdom resolves no sheet, so the class name is the padding evidence here;
+    // the geometry itself is proved in the browser spec.
+    const reserveClass = tokenizerTokenRowClassName
+      .split(' ')
+      .find(className =>
+        className.includes('--astryx-tokenizer-end-lane-reserve'),
+      );
+    expect(reserveClass).toBeDefined();
+    expect(classesOf(field!)).toContain(reserveClass);
   });
 
   it('does not pad the input on the collapsed paths', () => {
