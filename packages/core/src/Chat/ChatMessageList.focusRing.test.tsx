@@ -2,7 +2,7 @@
 
 /**
  * @file ChatMessageList.focusRing.test.tsx
- * @input Uses ChatMessageList, Tooltip, HoverCard, focusOutlineStyles
+ * @input Uses ChatMessageList, Tooltip, HoverCard
  * @output Tests that the chat log and the text-only Tooltip and HoverCard
  *   trigger spans draw the shared focus ring
  * @position Colocated test; the ring's geometry is checked in a real browser
@@ -13,8 +13,7 @@
 
 import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
-import * as stylex from '@stylexjs/stylex';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {expectClassSet} from '../__tests__/classNameAssertions';
 import {chatFocusRingInsetClassName} from './chatClasses';
 import {ChatMessageList} from './ChatMessageList';
@@ -41,7 +40,7 @@ describe('Astryx-made tab stops draw the shared focus ring', () => {
     );
     expectAtoms(
       screen.getByRole('log'),
-      atoms(stylex.props(focusOutlineStyles.focusVisible).className),
+      focusOutlineFocusVisibleClassName.split(' '),
     );
     // The inset is a Tailwind class, so it is asserted by name rather than
     // compiled from a StyleX map here.
@@ -54,7 +53,7 @@ describe('Astryx-made tab stops draw the shared focus ring', () => {
     render(<Tooltip content="More about it">plain text</Tooltip>);
     expectAtoms(
       screen.getByText('plain text'),
-      atoms(stylex.props(focusOutlineStyles.focusVisible).className),
+      focusOutlineFocusVisibleClassName.split(' '),
     );
   });
 
@@ -62,7 +61,7 @@ describe('Astryx-made tab stops draw the shared focus ring', () => {
     render(<HoverCard content={<p>Card</p>}>plain text</HoverCard>);
     expectAtoms(
       screen.getByText('plain text'),
-      atoms(stylex.props(focusOutlineStyles.focusVisible).className),
+      focusOutlineFocusVisibleClassName.split(' '),
     );
   });
 });

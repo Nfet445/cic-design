@@ -29,12 +29,12 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {
   colorVars,
-  focusVars,
   fontWeightVars,
   radiusVars,
   spacingVars,
@@ -91,10 +91,7 @@ import type {AppShellMobileContextValue} from './AppShellMobileContext';
 import type {SpacingStep} from '../utils/types';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps, isRenderable} from '../utils';
-import {
-  focusOutlineProps,
-  focusOutlineStyles,
-} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {useMediaQuery} from '../hooks/useMediaQuery';
 import {matchesMediaQuery} from '../utils/coarsePointer';
 import {observeResize} from '../utils/sharedResizeObserver';
@@ -330,8 +327,16 @@ export interface AppShellProps extends BaseProps<HTMLDivElement> {
 // What stays off the class map: the area fills and the main focus-target keys
 // travel through `LayoutPanel`'s and `LayoutContent`'s `xstyle` prop, which
 // takes StyleX styles only; `mainSafeAreaEnd` and `panelAutoFill` ride the same
-// props. The skip link keeps its `:focus` arms here because
-// `focusOutlineProps.focusVisible` takes a StyleX style.
+// props. The skip link keeps its whole box here, and takes the shared ring as
+// a class like any other element.
+type InsetRingStyle = CSSProperties & {'--focus-outline-offset'?: string};
+
+// Main scrolls its overflowing content and is a keyboard stop there; its ring
+// is inset by its own width, so the shell's clipping cannot hide it.
+const MAIN_SCROLL_INSET_RING_STYLE: InsetRingStyle = {
+  '--focus-outline-offset': 'calc(-1 * var(--focus-outline-width))',
+};
+
 const styles = stylex.create({
   skipLink: {
     // Visually hidden by default, visible on focus (keyboard navigation)
@@ -406,16 +411,6 @@ const styles = stylex.create({
       ':focus-visible': radiusVars['--radius-page'],
     },
   },
-  // While main scrolls its overflowing content it is a keyboard stop, and
-  // keyboard focus on it draws the standard ring, inset so the shell's own
-  // clipping cannot hide it.
-  mainScrollRegionInset: {
-    outlineOffset: {
-      default: '0',
-      ':focus-visible': `calc(-1 * ${focusVars['--focus-outline-width']})`,
-    },
-  },
-
   contentBgSurface: {
     backgroundColor: colorVars['--color-background-surface'],
   },
@@ -1161,11 +1156,13 @@ export function AppShell({
         drawsMainFocusRing &&
           shouldElevateWithCorner &&
           styles.mainElevatedCorner,
-        drawsMainFocusRing
-          ? [focusOutlineStyles.focusVisible, styles.mainScrollRegionInset]
-          : styles.mainFocusTarget,
+        !drawsMainFocusRing && styles.mainFocusTarget,
         styles.mainSafeAreaEnd,
-      ]}>
+      ]}
+      className={
+        drawsMainFocusRing ? focusOutlineFocusVisibleClassName : undefined
+      }
+      style={drawsMainFocusRing ? MAIN_SCROLL_INSET_RING_STYLE : undefined}>
       <AppShellNestingContext value={true}>{children}</AppShellNestingContext>
     </LayoutContent>
   );
@@ -1266,7 +1263,10 @@ export function AppShell({
               <a
                 href={`#${mainContentId}`}
                 onClick={handleSkipLinkClick}
-                {...focusOutlineProps.focusVisible(styles.skipLink)}
+                {...mergeProps(
+                  stylex.props(styles.skipLink),
+                  focusOutlineFocusVisibleClassName,
+                )}
                 data-testid="skip-to-content">
                 {t('@astryx.appShell.skipToContent')}
               </a>

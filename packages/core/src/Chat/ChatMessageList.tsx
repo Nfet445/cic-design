@@ -26,7 +26,7 @@
 
 import {type ReactNode, useEffect, useMemo, useRef, useTransition} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
 import {
   chatFocusRingInsetClassName,
@@ -231,10 +231,10 @@ export function ChatMessageList({
           mergeProps(
             tw(
               chatMessageListColumnClassName,
+              focusOutlineFocusVisibleClassName,
               chatFocusRingInsetClassName,
               xstyle && stylex.props(xstyle).className,
             ),
-            stylex.props(focusOutlineStyles.focusVisible),
           ),
           className,
           style,

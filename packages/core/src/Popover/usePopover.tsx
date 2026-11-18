@@ -22,6 +22,7 @@ import {useLayerInternal, type ContextRenderProps} from '../Layer/useLayer';
 import {watchOutsidePans} from '../Layer/outsidePanClaim';
 import {useFocusTrapInternal} from '../hooks/useFocusTrap';
 import {LayerDepthProvider} from '../Layer/LayerDepthContext';
+import * as stylex from '@stylexjs/stylex';
 import type {StyleXStyles} from '@stylexjs/stylex';
 import {Button} from '../Button';
 import {
@@ -34,7 +35,7 @@ import {
   rtlCenterInlineClassName,
 } from '../utils/rtlClasses';
 import {useDevWarning} from '../hooks/useDevWarning';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {mergeProps} from '../utils/mergeProps';
 import {isFocusDetached} from '../utils/isFocusDetached';
 import {themeProps} from '../utils/themeProps';
@@ -652,8 +653,8 @@ function usePopoverImplementation(
             tabIndex={role === 'dialog' ? -1 : undefined}
             {...mergeProps(
               {...surfaceProps, className: surfaceClassName},
-              focusOutlineProps.focusVisible(xstyle),
-              className,
+              stylex.props(xstyle),
+              tw(className, focusOutlineFocusVisibleClassName),
               style,
             )}>
             {children}

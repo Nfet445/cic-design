@@ -1,6 +1,6 @@
 # focus ring, press layers and the override modules
 
-Status: ready-for-agent
+Status: in-progress
 Blocked by: 54
 Wave: 10
 Ticket: 56
@@ -117,3 +117,45 @@ Left for stage D:
   handed INTO the ring). It needs `interactionOverlayProps` to take and return
   classes first, so it waits for the stage D decision on
   `utils/interactionOverlay.stylex.ts`.
+
+## Comments — stage B and C so far
+
+Stage A landed `focusOutlineFocusVisibleClassName` and its six siblings in
+`packages/core/src/utils/focusOutlineClasses.ts`, re-exported from
+`packages/core/src/utils/index.ts`, with `.changeset/focus-ring-class-arms.md`.
+
+Stage B proved the swap on real call sites and is done: `Pagination` dot,
+`Token` remove button, `HoverCard`, `SwipeActionsLayer`, `Tooltip`,
+`CommandPaletteInput`, `SideNavHeading` close button, `TabMenu` item,
+`TopNavMenu` item, `ChatToolCalls` row and group header, `CodeBlock` header,
+`AvatarGroupOverflow`.
+
+### An inset ring needs no second class
+
+`focusOutlineProps.focusVisible(insetStyles)` set `outlineOffset` at
+`:focus-visible`. As a class that would be a second utility for
+`outline-offset` at the same (0,2,0) specificity as the shared ring's own
+`focus-visible:[outline-offset:var(--focus-outline-offset)]`, so the sheet order
+would decide. The shared ring already reads `var(--focus-outline-offset)`, so an
+inset is a per-instance value on the element's inline style:
+
+```ts
+type InsetRingStyle = React.CSSProperties & {
+  '--focus-outline-offset'?: string;
+};
+```
+
+with `'--focus-outline-offset': 'calc(-1 * var(--focus-outline-width))'`.
+
+Stage C converts the remaining call sites in two windows: core actions and
+disclosure, and overlays/chrome with the lab.
+
+### Stage C, second window
+
+`ChatComposerDrawer`, `Lightbox`, `Dialog`, `Popover`, `AppShell`, `CodeBlock`,
+`Calendar`, `ResizeHandle`, `ListReorderHandle`, `listReorderEngine` and lab's
+`CommentPin` are done; insets became
+`'--focus-outline-offset': 'calc(-1 * var(--focus-outline-width))'` on the
+element's inline style (`ZOOM_INSET_RING_STYLE`, `MAIN_SCROLL_INSET_RING_STYLE`,
+`VIEWPORT_INSET_RING_STYLE`). A third window carries the action and disclosure
+group, and a fourth carries the interaction overlay.

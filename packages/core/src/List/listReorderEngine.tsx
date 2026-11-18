@@ -89,8 +89,10 @@ import {useLayerDismissal} from '../Layer/useLayerDismissal';
 import {Kbd} from '../Kbd/Kbd';
 import {renderAnchoredHint} from '../hooks/anchoredHint';
 import {anchoredHintKeysClassName} from '../hooks/anchoredHintClasses';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import * as stylex from '@stylexjs/stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
+import {mergeProps} from '../utils/mergeProps';
 import type {LongPressGestureRecognizer} from '../gestures/LongPressGestureRecognizer';
 import {VelocityTracker} from '../gestures/VelocityTracker';
 import {inertClone, paintedBackground} from '../motion/inertClone';
@@ -2479,8 +2481,13 @@ function HintButton({
       onPointerDown={event => event.preventDefault()}
       onMouseDown={event => event.preventDefault()}
       onClick={onPress}
-      {...focusOutlineProps.focusVisible(touchHitAreaStyles.layer)}
-      className={tw(listReorderHintButtonClassName({isText}))}>
+      {...mergeProps(
+        stylex.props(touchHitAreaStyles.layer),
+        tw(
+          listReorderHintButtonClassName({isText}),
+          focusOutlineFocusVisibleClassName,
+        ),
+      )}>
       {children}
     </button>
   );

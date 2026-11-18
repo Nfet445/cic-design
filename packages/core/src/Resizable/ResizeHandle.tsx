@@ -23,7 +23,7 @@ import {
   radiusVars,
   spacingVars,
 } from '../theme/tokens.stylex';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {
@@ -685,7 +685,7 @@ export function ResizeHandle({
       data-resizing={isDragging || undefined}
       {...mergeProps(
         themeProps('resize-handle'),
-        focusOutlineProps.focusVisible(
+        stylex.props(
           styles.handle,
           isOverlay && styles.overlay,
           isOverlay &&
@@ -710,7 +710,7 @@ export function ResizeHandle({
           isDisabled && styles.disabled,
           xstyle,
         ),
-        className,
+        tw(className, focusOutlineFocusVisibleClassName),
       )}
       {...props}
       // Keyboard resizing must fire from the focusable separator, not a child:
