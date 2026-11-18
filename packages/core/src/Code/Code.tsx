@@ -2,8 +2,8 @@
 
 /**
  * @file Code.tsx
- * @input Uses React, the code class map, and stylex for the consumer's
- *   `xstyle`
+ * @input Uses React, the code class map, and the xstyle adapter for the
+ *   consumer's `xstyle`
  * @output Exports Code component for inline code styling
  * @position Core implementation; lives in own Code/ dir, re-exported by CodeBlock/
  *
@@ -16,7 +16,6 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   codeClassName,
   codeColorClassName,
@@ -26,6 +25,7 @@ import {mergeProps} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 /** Text color for {@link Code}, mirroring the primary/secondary/inherit subset of Text. */
 export type CodeColor = 'primary' | 'secondary' | 'inherit';
@@ -84,7 +84,7 @@ export function Code({
             codeClassName,
             codeColorClassName[color],
             size && codeInheritSizeClassName,
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
           ),
         },
         className,

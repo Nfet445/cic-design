@@ -19,7 +19,6 @@
 import type {AriaRole, ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import {use, useCallback, useRef, useState, useSyncExternalStore} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   layoutPanelClassName,
   layoutPanelCollapseEndClassName,
@@ -51,6 +50,7 @@ import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {moveFocusLeftBehind, noteFocusWithin} from '../utils/focusReturn';
 import {useFocusLeavingChange} from '../utils/useFocusLeavingChange';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 
 const returnFalse = () => false;
 
@@ -322,7 +322,7 @@ export function LayoutPanel({
             shouldCollapseSpacing && collapseClassName,
           ),
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         {...style, ...widthStyle},
       )}

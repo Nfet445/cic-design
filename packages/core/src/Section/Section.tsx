@@ -14,7 +14,6 @@
  */
 
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {
   containerBaseClassName,
@@ -30,6 +29,7 @@ import type {SizeValue, SpacingStep} from '../utils/types';
 import {mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   sectionInnerClassName,
   sectionOuterClassName,
@@ -286,9 +286,9 @@ export function Section({
         containerVariableClassName('layoutPaddingInnerY', effectivePadding),
       );
 
-  const xstyleProps = stylex.props(xstyle);
+  const xStyle = xstyleProps(xstyle);
   const outerInlineStyle: React.CSSProperties = {
-    ...xstyleProps.style,
+    ...xStyle.style,
     ...sectionSizeStyle({height, maxWidth, minHeight, width}),
   };
 
@@ -298,7 +298,7 @@ export function Section({
       className={
         tw(
           sectionOuterClassName({height, maxWidth, minHeight, width}),
-          xstyleProps.className,
+          xStyle.className,
           className,
         ) || undefined
       }

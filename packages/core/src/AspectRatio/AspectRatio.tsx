@@ -2,7 +2,7 @@
 
 /**
  * @file AspectRatio.tsx
- * @input Uses React, stylex (for consumer `xstyle` only), the class map
+ * @input Uses React, the xstyle adapter, the class map
  * @output Exports AspectRatio component, AspectRatioProps, AspectRatioShape, AspectRatioFit
  * @position AspectRatio component; maintains a specific aspect ratio for its children
  *
@@ -14,11 +14,11 @@
  */
 
 import type {CSSProperties, ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {
   ASPECT_RATIO_VAR,
   aspectRatioChildCenterClassName,
@@ -207,7 +207,7 @@ export function AspectRatio({
             aspectRatioRatioClassName,
             shape === 'ellipse' && aspectRatioEllipseClassName,
             className,
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
           ),
         },
         {...ratioStyle(ratio), ...style},

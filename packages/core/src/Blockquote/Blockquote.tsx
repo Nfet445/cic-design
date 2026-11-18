@@ -2,8 +2,8 @@
 
 /**
  * @file Blockquote.tsx
- * @input Uses React, the blockquote class map, and stylex for the consumer's
- *   `xstyle`
+ * @input Uses React, the blockquote class map, and the xstyle adapter for the
+ *   consumer's `xstyle`
  * @output Exports Blockquote component and BlockquoteProps
  * @position Blockquote component; renders styled quotations with optional attribution
  *
@@ -16,7 +16,6 @@
 
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {
   blockquoteCiteClassName,
   blockquoteClassName,
@@ -24,6 +23,7 @@ import {
 import {isRenderable, mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 export interface BlockquoteProps extends BaseProps<HTMLQuoteElement> {
   /** Ref forwarded to the root <blockquote> element */
@@ -63,10 +63,7 @@ export function Blockquote({
       {...mergeProps(
         themeProps('blockquote'),
         {
-          className: tw(
-            blockquoteClassName,
-            xstyle && stylex.props(xstyle).className,
-          ),
+          className: tw(blockquoteClassName, xstyleProps(xstyle).className),
         },
         className,
         style,

@@ -14,7 +14,6 @@
 
 import {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 import type {CSSProperties, HTMLAttributes, ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {
@@ -58,6 +57,7 @@ import {useCommittedRef} from '../hooks/useCommittedRef';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
+import {xstyleProps} from '../utils/xstyle';
 import {
   registerEnglishFallback,
   useComponentTranslator,
@@ -443,7 +443,7 @@ export function ResizeHandle({
       data-resizing={isDragging || undefined}
       {...mergeProps(
         themeProps('resize-handle'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           resizeHandleClassName({
             isHorizontal,

@@ -28,7 +28,6 @@
  */
 
 import React, {useCallback, useMemo, useState, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   CollapsibleGroupContext,
   CollapsibleGroupPresentationContext,
@@ -42,6 +41,7 @@ import type {
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {collapsibleGroupWrapperClassName} from './collapsibleClasses';
 
@@ -257,7 +257,7 @@ export function CollapsibleGroup({
         themeProps('collapsible-group', {
           density: resolvedDensity ?? undefined,
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(collapsibleGroupWrapperClassName, className),
         style,
       )}

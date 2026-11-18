@@ -17,7 +17,6 @@
  */
 
 import {use, useRef, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {
   TextType,
   BuiltinTextType,
@@ -48,6 +47,7 @@ import {mergeProps} from '../utils/mergeProps';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {TextClampContext} from './textClampContext';
 
 export type {TextType, TextSize};
@@ -311,7 +311,7 @@ export function Text({
               hasTabularNumbers,
             }),
           }),
-          stylex.props(xstyle),
+          xstyleProps(xstyle),
           className,
           {...style, ...clampStyle},
         )}

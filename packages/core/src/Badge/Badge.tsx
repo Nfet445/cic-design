@@ -2,8 +2,8 @@
 
 /**
  * @file Badge.tsx
- * @input Uses React, HTMLAttributes, the badge class map, and stylex for the
- *   consumer's `xstyle`
+ * @input Uses React, HTMLAttributes, the badge class map, and the xstyle
+ *   adapter for the consumer's `xstyle`
  * @output Exports Badge component, BadgeProps, BadgeVariant types
  * @position Core implementation; consumed by index.ts
  *
@@ -17,7 +17,6 @@
 
 import type {ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {
   badgeClassName,
   badgeGrowsClassName,
@@ -29,6 +28,7 @@ import {themeProps} from '../utils/themeProps';
 import {isRenderable} from '../utils/isRenderable';
 import {textDirectionProps} from '../utils/textDirection';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import type {BadgeVariantMap} from './index';
 
 /**
@@ -114,7 +114,7 @@ export function Badge({
             badgeClassName,
             hasLabel && badgeGrowsClassName,
             badgeVariantClassName[variant],
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
           ),
         },
         className,

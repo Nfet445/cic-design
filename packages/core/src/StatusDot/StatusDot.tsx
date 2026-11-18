@@ -4,8 +4,8 @@
 
 /**
  * @file StatusDot.tsx
- * @input Uses React, the status-dot class map, and stylex for the consumer's
- *   `xstyle`
+ * @input Uses React, the status-dot class map, and the xstyle adapter for
+ *   the consumer's `xstyle`
  * @output Exports StatusDot component, StatusDotProps, StatusDotVariant types
  * @position Core implementation; consumed by index.ts
  *
@@ -19,12 +19,12 @@
 
 import type {ReactNode} from 'react';
 
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {Tooltip} from '../Tooltip/Tooltip';
 import {isRenderable, mergeProps} from '../utils';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   statusDotClassName,
   statusDotIconClassName,
@@ -132,7 +132,7 @@ export function StatusDot({
             statusDotClassName,
             statusDotVariantClassName[variant],
             isPulsing && statusDotPulsingClassName,
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
           ),
         },
         className,

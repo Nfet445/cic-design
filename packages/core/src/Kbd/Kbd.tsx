@@ -14,13 +14,13 @@
  */
 
 import React, {useSyncExternalStore} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
 import {tw} from '../utils/tw';
 import {kbdKeyClassName, kbdWrapperClassName} from './kbdClasses';
 import {isApplePlatform} from '../utils/isApplePlatform';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import type {TranslatorFn} from '../i18n';
 import {
   registerEnglishFallback,
@@ -191,7 +191,7 @@ export function Kbd({keys, ref, xstyle, className, style, ...rest}: KbdProps) {
       aria-label={accessibleName}
       {...mergeProps(
         themeProps('kbd'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(kbdWrapperClassName, className),
         style,
       )}>

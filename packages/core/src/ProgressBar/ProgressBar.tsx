@@ -26,6 +26,7 @@ import {tw} from '../utils/tw';
 import {focusOutlineStyles} from '../utils/focusOutline.stylex';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {VisuallyHidden} from '../VisuallyHidden';
 import type {ProgressBarVariantMap} from './index';
 import {useProgressBarTouch} from './ProgressBarTouch';
@@ -318,7 +319,7 @@ export function ProgressBar({
         mergeProps(themeProps('progress-bar', {variant}), {
           className: progressBarClassName,
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         style,
       )}

@@ -69,6 +69,7 @@ import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {interactionOverlayPressedBackgroundColorClassName} from '../utils/interactionOverlayClasses';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   collapsibleChevronClassName,
   collapsibleChevronClosedClassName,
@@ -400,7 +401,7 @@ export function Collapsible({
           density: density ?? undefined,
           divided: isDivided ? 'divided' : null,
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           collapsibleRootClassName,
           isDivided && collapsibleDividedClassName,

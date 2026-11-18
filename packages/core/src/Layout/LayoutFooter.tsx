@@ -18,7 +18,6 @@
 import type {AriaRole, ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
 import {use} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {LayoutDividerContext} from './LayoutDividerContext';
 import {
   layoutFooterDividerClassName,
@@ -30,6 +29,7 @@ import {mergeProps} from '../utils/mergeProps';
 import {tw} from '../utils/tw';
 import type {SizeValue, SpacingStep} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {containerPaddingByEdgeClassName} from './paddingClasses';
 
 export interface LayoutFooterProps extends BaseProps<HTMLDivElement> {
@@ -129,7 +129,7 @@ export function LayoutFooter({
             resolvedHasDivider && layoutFooterDividerClassName,
           ),
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         className,
         {...style, ...sizingStyle},
       )}

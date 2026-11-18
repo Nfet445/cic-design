@@ -17,7 +17,6 @@
  */
 
 import {Children, useId, useMemo, useState, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {
   MetadataListContext,
   type MetadataListLabelConfig,
@@ -27,6 +26,7 @@ import {mergeProps} from '../utils';
 import {isRenderable} from '../utils/isRenderable';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   metadataListClassName,
   metadataListColumnsClassName,
@@ -241,10 +241,7 @@ export function MetadataList({
             orientation,
           }),
           {
-            className: tw(
-              metadataListClassName,
-              xstyle && stylex.props(xstyle).className,
-            ),
+            className: tw(metadataListClassName, xstyleProps(xstyle).className),
           },
           className,
           style,

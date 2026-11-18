@@ -18,7 +18,6 @@
  */
 
 import {useEffect, useOptimistic, useRef, useState, useTransition} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {sizeVarNames, spacingVarNames} from '../theme/tokenVars';
 import {Button} from '../Button';
 import {isModifiedClick} from '../DropdownMenu/menuItemRoles';
@@ -38,6 +37,7 @@ import type {LinkComponentType} from '../Link/types';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   paginationActivePageClassName,
   paginationCompactFirstClassName,
@@ -804,7 +804,7 @@ export function Pagination({
       ref={ref}
       {...mergeProps(
         themeProps('pagination', {variant, size}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(paginationRootClassName, className),
         style,
       )}

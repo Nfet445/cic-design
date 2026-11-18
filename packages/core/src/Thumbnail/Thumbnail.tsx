@@ -54,6 +54,7 @@ import {
 } from './thumbnailClasses';
 import {thumbnailRemoveButtonStyles} from './thumbnailRemoveButtonOverrides.stylex';
 import {focusOutlineWithinClassName} from '../utils/focusOutlineClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
@@ -312,7 +313,7 @@ export function Thumbnail({
       aria-label={accessibleName}
       {...mergeProps(
         themeProps('thumbnail'),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           thumbnailRootClassName,
           isDisabled && thumbnailDisabledClassName,

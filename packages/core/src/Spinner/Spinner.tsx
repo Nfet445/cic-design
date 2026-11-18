@@ -19,7 +19,6 @@
 
 import {use, useId, useMemo, useRef, type ReactNode} from 'react';
 import {SpinnerOwnerContext} from './SpinnerOwnerContext';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {Text} from '../Text/Text';
 import {mergeProps} from '../utils/mergeProps';
@@ -33,6 +32,7 @@ import {
 import english from '../i18n/generated-english/Spinner/Spinner.generated';
 import {spinnerRotorTurnClassName, syncRotationPhase} from './spinnerRotor';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 import {
   spinnerArcClassName,
   spinnerCircleClassName,
@@ -311,7 +311,7 @@ export function Spinner({
             // default it is trying to replace.
             !hasLabel && spinnerSizeClassName[size],
             !hasLabel && spinnerShadeClassName[shade],
-            hasLabel ? null : xstyle && stylex.props(xstyle).className,
+            hasLabel ? null : xstyleProps(xstyle).className,
           ),
         },
         hasLabel ? undefined : className,
@@ -388,7 +388,7 @@ export function Spinner({
             spinnerWrapperClassName,
             spinnerSizeClassName[size],
             spinnerShadeClassName[shade],
-            xstyle && stylex.props(xstyle).className,
+            xstyleProps(xstyle).className,
           ),
         },
         className,

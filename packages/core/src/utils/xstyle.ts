@@ -51,8 +51,16 @@ export function xstyleProps(xstyle?: AstryxXStyle): XStyleProps {
   return {style: xstyle as React.CSSProperties};
 }
 
-/** A StyleX value is marked by `$$css`; a style object is not. */
+/**
+ * A StyleX value is marked by `$$css`; a style object is not. A dynamic
+ * `stylex.create` entry arrives as a list whose first member carries `$$css`
+ * and whose later members are the variable values it produced, so a list
+ * counts as one when any member does.
+ */
 function isStyleXValue(value: unknown): value is StyleXStyles {
+  if (Array.isArray(value)) {
+    return value.some(isStyleXValue);
+  }
   return (
     typeof value === 'object' &&
     value !== null &&

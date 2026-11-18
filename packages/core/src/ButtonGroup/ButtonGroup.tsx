@@ -43,6 +43,7 @@ import type {ButtonGroupOrientation} from './ButtonGroupContext';
 import {buttonGroupClassName} from './buttonGroupClasses';
 import {themeProps} from '../utils/themeProps';
 import {tw} from '../utils/tw';
+import {xstyleProps} from '../utils/xstyle';
 
 import {useMergedRefs} from '../hooks/useMergedRefs';
 // =============================================================================
@@ -210,7 +211,7 @@ export function ButtonGroup({
               themeProps('button-group', {size, orientation, elevation}),
               {className: layoutClassName},
             ),
-            stylex.props(xstyle),
+            xstyleProps(xstyle),
             className,
             style,
           )}

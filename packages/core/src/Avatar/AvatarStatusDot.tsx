@@ -18,12 +18,12 @@
 
 import React, {use, useCallback, useMemo, type ReactNode} from 'react';
 import type {BaseProps} from '../BaseProps';
-import * as stylex from '@stylexjs/stylex';
 import {AvatarSizeContext} from './AvatarSizeContext';
 import {AvatarStatusLabelContext} from './AvatarStatusLabelContext';
 import {isRenderable, mergeProps, mergeRefs} from '../utils';
 import {tw} from '../utils/tw';
 import {themeProps} from '../utils/themeProps';
+import {xstyleProps} from '../utils/xstyle';
 import {
   avatarStatusDotClassName,
   avatarStatusDotIconClassName,
@@ -311,7 +311,7 @@ export function AvatarStatusDot({
       {...(label ? {role: 'img', 'aria-label': label} : undefined)}
       {...mergeProps(
         themeProps('avatar-status-dot', {variant}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           avatarStatusDotClassName,
           avatarStatusDotVariantClassName[variant],

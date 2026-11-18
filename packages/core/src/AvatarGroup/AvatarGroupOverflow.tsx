@@ -26,6 +26,7 @@ import {avatarShapeClassName} from '../Avatar/avatarClasses';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
+import {xstyleProps} from '../utils/xstyle';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
@@ -168,7 +169,7 @@ export function AvatarGroupOverflow({
       aria-label={label}
       {...mergeProps(
         themeProps('avatar-group-overflow', {size, shape}),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(
           avatarGroupOverflowClassName.base,
           avatarGroupOverflowClassName.overlap,
