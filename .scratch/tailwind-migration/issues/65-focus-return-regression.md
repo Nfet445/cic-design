@@ -1,6 +1,6 @@
 # the trigger never regains focus after a pointer pick
 
-Status: ready-for-agent
+Status: done
 Wave: 9
 Ticket: 65
 Parent: `00-epic-stylex-to-tailwind-4`
@@ -92,3 +92,13 @@ older than this window (`postinstall`, `ComplexSelector` and two `Selector` clea
 Commits: `13291f9ec` (the fix), `54af64522` (the Popover assertions), plus this note.
 
 Left: nothing in the four cases. The `Selector`/`ComplexSelector` clearance failures are theirs to fix.
+
+## Comments — closed
+
+Root cause: `DropdownMenu`'s deferred open-focus frame outlived the close, so a
+close that won the frame had focus pulled back into the closed `role="menu"`.
+`openFocusFrameRef` now holds that frame and `handleLayerHide` cancels it at the
+top of the close path, clearing `focusLastOnOpenRef` with it.
+
+Five stale `Popover` gutter assertions moved to `expectClassSet` over
+`Layer/layerClasses.ts` in the same window. `DropdownMenu.test.tsx` 243/243.

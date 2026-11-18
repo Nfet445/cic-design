@@ -1,6 +1,6 @@
 # point xstyle at the Tailwind adapter
 
-Status: ready-for-agent
+Status: done
 Blocked by: 61
 Wave: 9
 Ticket: 62
@@ -102,3 +102,17 @@ Still open, and the reason the type stays `StyleXStyles` for now:
   `layerXstyle` one each. Each becomes `AstryxXStyle` and each call site passes it through `xstyleProps`.
 - `packages/core/src/utils/focusOutline.stylex.ts` and `utils/interactionOverlay.stylex.ts` still export
   StyleX values that callers compose, so those two modules leave with ticket 61.
+
+## Comments — closed
+
+`xstyle` now takes `AstryxXStyle = string | React.CSSProperties | StyleXStyles | list`,
+`BaseProps.xstyle` is narrowed to it, and every component reads it through
+`xstyleProps`. A list resolves left to right; every StyleX value in it resolves in
+ONE `stylex.props` call, because two resolutions of equal-specificity classes leave
+the winner to the sheet's order. `Item` splits its consumer slot by shape for the
+same reason: a legacy StyleX value must resolve beside the row's own paint.
+
+Known limit, carried out of this ticket: `triggerXstyle`, `inputXStyle`,
+`fieldXstyle` and `contentXstyle` still take a StyleX value, because their
+declarations and call sites sit in `Popover`, `DropdownMenu`, `Typeahead`,
+`Selector` and `PanelSearchInput`.

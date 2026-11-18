@@ -1,6 +1,6 @@
 # the maps that wait on the xstyle adapter
 
-Status: ready-for-agent
+Status: done
 Blocked by: 62
 Wave: 9
 Ticket: 64
@@ -36,3 +36,15 @@ The eighteen files above, plus the `*.stylex.ts` modules they leave behind and t
 - `node packages/core/scripts/build-css-tailwind.mjs`
 - `pnpm exec vitest run packages/core/src packages/lab/src`
 - `cd packages/core && pnpm exec tsc --noEmit -p tsconfig.json`
+
+## Comments — closed
+
+Eighteen files converted across five windows; the last one (`BreadcrumbItem`,
+`breadcrumbItemClasses`) landed from a timeout salvage. Two per-instance
+variables appeared on the way and are documented with `private: true` and
+classified in `VARS_WITHOUT_DERIVED_MAPPING`: `--astryx-typeahead-menu-width`
+and `--astryx-typeahead-held-block-size`.
+
+Verified: `Selector`, `MultiSelector`, `ComplexSelector`, `Typeahead`,
+`Tokenizer`, `Breadcrumbs` plus the sheet test — 1 398 passed; the whole core
+suite at 23 791 tests with only the known ICU/Temporal failures.

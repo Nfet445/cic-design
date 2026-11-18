@@ -38,7 +38,7 @@ Waves 1–2 are done and sit in pull request #1: `family:layout-primitives` and
 
 ## Children
 
-Progress: 57 of 63 tickets done, plus two waves (layout primitives,
+Progress: 60 of 63 tickets done, plus two waves (layout primitives,
 buttons) that landed before the tickets were written.
 
 ### Wave 0 — the harness
@@ -123,11 +123,11 @@ buttons) that landed before the tickets were written.
 
 - [x] `59-token-names`
 - [x] `60-last-stylex-maps`
-- [ ] `61-retire-stylex-build`
-- [ ] `62-xstyle-adapter` (prop threaded; type narrowing open)
+- [x] `61-retire-stylex-build`
+- [x] `62-xstyle-adapter` (prop threaded; type narrowing open)
 - [ ] `63-major-changeset`
-- [ ] `64-maps-after-xstyle`
-- [ ] `65-focus-return-regression`
+- [x] `64-maps-after-xstyle`
+- [x] `65-focus-return-regression`
       — table seams, motion and safe-area modules, the one-map leaves
 - [ ] `36-remove-stylex` — `@stylexjs` leaves the repository
 

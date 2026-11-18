@@ -1,6 +1,6 @@
 # retire the StyleX build
 
-Status: ready-for-agent
+Status: done
 Blocked by: 60
 Wave: 9
 Ticket: 61
@@ -29,3 +29,17 @@ Delete that half, keep the generated-sheet path (`GENERATED_SHEETS`, `readExtraC
 - `pnpm build`
 - `node packages/core/scripts/build-css-tailwind.mjs`
 - `pnpm exec vitest run packages/core/src/Layout packages/build scripts`
+
+## Comments — closed
+
+The StyleX pass is optional and nothing in the emitted sheet depends on it:
+`writePackageStylesheet` reads the generated sheets first, so a target with zero
+rules still writes the layer order plus its token sheets, and the strict default
+now covers only the case that is a mistake (no rules, no sheet, no
+`--allow-empty`). `processRules` and the undefined-variable check run only when
+rules exist. Guard: `scripts/build-css.zero-rules.test.mjs` builds a package with
+one plain `.ts` file, a `tokens.css` and a `reset.css`, and asserts the layer
+statement, the `:root` token block and the reset, plus disk equality.
+
+Validated with `node scripts/build-css.mjs --package core` (677 rules, 65.5 KB)
+and `--package richtext --allow-empty` (a live zero-rule package).
