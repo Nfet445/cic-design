@@ -6,12 +6,13 @@
  * @output StyleX styles for a grouped face's ring and step
  * @position Avatar internals; consumed by Avatar.tsx
  *
- * These two stay StyleX rather than joining `avatarClasses.ts`. A member
- * receives its caller's `className` after our own, so a `border-0`, `border-*`
- * or `ms-*` utility there would win a sheet-order tie against a class-based
- * ring or step; an unlayered StyleX rule answers the same utility. The step is
- * also a declaration AvatarGroup reads back per member, and that family pads
- * its start edge by exactly this offset.
+ * These two stay StyleX rather than joining `avatarClasses.ts`. The rule they
+ * beat is the caller's own `border-0`, `border-*` or `ms-*` utility, and that
+ * utility sits in the consumer's `utilities` layer, above `astryx-base`. A
+ * layer outranks specificity, so a class that repeats `astryx-avatar` loses
+ * there however often it names the element; only this unlayered rule wins.
+ * The step is also a declaration AvatarGroup reads back per member, and that
+ * family pads its start edge by exactly this offset.
  */
 
 import * as stylex from '@stylexjs/stylex';
