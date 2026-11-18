@@ -114,7 +114,8 @@ const styles = stylex.create({
     fontSize: {
       default: 'var(--text-label-size)',
       '@media (pointer: coarse)': {
-        '@supports (-webkit-touch-callout: none)': 'max(1rem, var(--text-label-size))',
+        '@supports (-webkit-touch-callout: none)':
+          'max(1rem, var(--text-label-size))',
       },
     },
     lineHeight: 'var(--text-label-leading)',

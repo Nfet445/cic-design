@@ -968,7 +968,7 @@ describe('the release', () => {
       "const PRESS_RELEASE_DURATION = 'var(--duration-exit)';",
     );
     expect(source).toContain(
-      "`min(var(--duration-exit), ${reducedMotionFadeConsts.duration})`",
+      '`min(var(--duration-exit), ${reducedMotionFadeConsts.duration})`',
     );
     expect(source).toContain("const RELEASE_EASE = 'var(--ease-exit)';");
     expect(source).toMatch(
