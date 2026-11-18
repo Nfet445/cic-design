@@ -72,6 +72,7 @@ import {pressHoldsDragProps} from '../privateAttributes/pressHoldsDrag.stylex';
 import {useSwitchTouch, type SwitchTouchParts} from './useSwitchTouch';
 import {useIsomorphicLayoutEffect} from '../hooks/useIsomorphicLayoutEffect';
 import {watchHitArea, writeHitInsets} from '../utils/hitArea';
+import {xstyleProps} from '../utils/xstyle';
 
 /**
  * The track box of each size, px (width × height), for the touch
@@ -485,7 +486,7 @@ export function Switch({
           labelPosition: labelPosition !== 'end' ? labelPosition : undefined,
           labelSpacing: labelSpacing !== 'hug' ? labelSpacing : undefined,
         }),
-        stylex.props(xstyle),
+        xstyleProps(xstyle),
         tw(switchClassName({width}), className),
         {...switchSizeStyle(width), ...style},
       )}
