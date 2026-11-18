@@ -4,7 +4,7 @@
 
 /**
  * @file ChatComposerDrawer.tsx
- * @input Uses React, StyleX, Tailwind classes from chatClasses
+ * @input Uses React, Tailwind classes from chatClasses
  * @output Exports ChatComposerDrawer component
  * @position Collapsible drawer panel for ChatComposer.
  *   Supports expanded (full content) and collapsed (default or caller-composed
