@@ -39,7 +39,7 @@
 import * as stylex from '@stylexjs/stylex';
 
 // `defineConsts` admits only static values, so the spacing token is named by
-// its custom property rather than through `spacingVars`; it is the same
+// its custom property rather than through `spacingVarNames`; it is the same
 // `--spacing-4` every other gutter in core reads.
 const SPACING = 'var(--spacing-4)';
 
