@@ -30,7 +30,7 @@ Both tables below are generated: `node scripts/migration-map.mjs --write`.
 | 6    | Navigation: links, rows, tabs, side nav, top nav                                                          | 18–21, 44, 48–50            | 8 done                     |
 | 7    | Overlays: portals, layers, `::backdrop`, anchored placement — and `family:action-groups`                  | 07, 22–25, 41               | 6 done                     |
 | 8    | Data surfaces: `family:data-tables` (record first), charts, richtext, lab                                 | 26–30, 37, 42, 46, 47       | 9 done                     |
-| 9    | Themes, consumer surfaces, deprecation, removal of StyleX                                                 | 31–36, 38, 45, 51–53, 58–67 | 16 done, 1 blocked, 4 open |
+| 9    | Themes, consumer surfaces, deprecation, removal of StyleX                                                 | 31–36, 38, 45, 51–53, 58–67 | 15 done, 1 blocked, 5 open |
 | 10   | The last interaction paint, and the modules that only exist to outrank a layer utility                    | 54–57                       | 4 done                     |
 
 ## Tickets
@@ -99,7 +99,7 @@ Both tables below are generated: `node scripts/migration-map.mjs --write`.
 | 59  | `59-token-names`                    | 9    | —                                | —          | done    |
 | 60  | `60-last-stylex-maps`               | 9    | —                                | 56, 57, 59 | done    |
 | 61  | `61-retire-stylex-build`            | 9    | —                                | 60         | done    |
-| 62  | `62-xstyle-adapter`                 | 9    | —                                | 61         | done    |
+| 62  | `62-xstyle-adapter`                 | 9    | —                                | 61         | open    |
 | 63  | `63-major-changeset`                | 9    | —                                | 62         | open    |
 | 64  | `64-maps-after-xstyle`              | 9    | —                                | 62         | done    |
 | 65  | `65-focus-return-regression`        | 9    | —                                | —          | done    |
