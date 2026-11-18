@@ -33,8 +33,9 @@ import {
 import {Icon, type IconSize} from '@astryxdesign/core/Icon';
 import {StatusDot} from '@astryxdesign/core/StatusDot';
 import {useTooltip} from '@astryxdesign/core/Tooltip';
+import * as stylex from '@stylexjs/stylex';
 import {
-  focusOutlineProps,
+  focusOutlineFocusVisibleClassName,
   interactionOverlayStyles,
   mergeProps,
   themeProps,
@@ -344,10 +345,7 @@ export function CommentPin({
           resolved: isResolved ? 'resolved' : null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        focusOutlineProps.focusVisible(
-          interactionOverlayStyles.backgroundImage,
-          xstyle,
-        ),
+        stylex.props(interactionOverlayStyles.backgroundImage, xstyle),
         tw(
           commentPinRootClassName,
           commentPinSizeClassNames[resolvedSize],
@@ -360,6 +358,7 @@ export function CommentPin({
           isDisabled
             ? commentPinDisabledOpacityClassName
             : isDimmed && !isSelected && commentPinDimmedOpacityClassName,
+          focusOutlineFocusVisibleClassName,
           className,
         ),
         style,
