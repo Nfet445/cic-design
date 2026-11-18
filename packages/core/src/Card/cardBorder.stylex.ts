@@ -15,16 +15,15 @@
  */
 
 import * as stylex from '@stylexjs/stylex';
-import {borderVars} from '../theme/tokens.stylex';
 
 const styles = stylex.create({
   // The border is drawn inside the padding — its width is subtracted from each
   // side — so the total inset (border + padding) equals the padding token.
   padding: {
-    paddingInlineStart: `calc(var(--container-padding-inline-start) - ${borderVars['--border-width']})`,
-    paddingInlineEnd: `calc(var(--container-padding-inline-end) - ${borderVars['--border-width']})`,
-    paddingBlockStart: `calc(var(--container-padding-block-start) - ${borderVars['--border-width']})`,
-    paddingBlockEnd: `calc(var(--container-padding-block-end) - ${borderVars['--border-width']})`,
+    paddingInlineStart: `calc(var(--container-padding-inline-start) - var(--border-width))`,
+    paddingInlineEnd: `calc(var(--container-padding-inline-end) - var(--border-width))`,
+    paddingBlockStart: `calc(var(--container-padding-block-start) - var(--border-width))`,
+    paddingBlockEnd: `calc(var(--container-padding-block-end) - var(--border-width))`,
   },
 });
 
