@@ -42,3 +42,28 @@ handful of one-map leaves.
 
 - Follow `.scratch/tailwind-migration/README.md`; the sheet test always conflicts, so keep both sides
   at statement level and raise the ceiling only against a measured count.
+
+## Comments — window 1 salvage
+
+`b30582f49` removed the dead cell maps, `90ed8943c` moved the breadcrumb menu
+surface to classes, and the window's uncommitted slice became
+`ac28ec67d refactor(scrollable-area): отдать переполнение осям через переменные`
+(the hook writes `--astryx-scrollable-overflow-x` / `-y` and the viewport reads
+them through `[overflow-x:var(…)]`; the utility form `overflow-x-[var(…)]`
+emitted no rule at all, which is now a recorded trap).
+
+Already done before this ticket: the Table context-menu trigger is a class
+(`packages/core/src/Table/TableCell.tsx:108` `triggerClassName`,
+`packages/core/src/Table/tableContextMenu.tsx:109`), because
+`ContextMenu` has carried `triggerClassName` since it was migrated.
+
+Left: `Table/plugins/stickyColumns/useTableStickyColumns.tsx` (2 maps),
+`Table/glidingDivider.ts` (3 maps, attribute-descendant arms),
+`Table/table.stylex.ts` (markers only), `DropdownMenu/DropdownMenuSubMenu.tsx`
+`triggerStyles.caret` (a `className`-only wrapper, which
+`@astryx/no-style-only-wrapper` rejects), and the motion/safe-area modules
+(`BottomSheet/bottomSheetPanelMotion.stylex.ts`,
+`bottomSheetStackMotion.stylex.ts`, `AlertDialog/alertDialogTouchMotion.stylex.ts`,
+`Drawer/drawerContentSafeArea.stylex.ts`, `Dialog/dialogFullscreenSafeArea.stylex.ts`,
+`ProgressBar/progressBarFill.stylex.ts`,
+`Thumbnail/thumbnailRemoveButtonOverrides.stylex.ts`).

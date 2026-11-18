@@ -38,11 +38,10 @@ import {
   type ReactNode,
 } from 'react';
 import {spacingVars} from '../../../theme/tokens.stylex';
-import {focusOutlineProps} from '../../../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../../../utils/focusOutlineClasses';
 import {Icon} from '../../../Icon';
 import {mergeProps, mergeRefs} from '../../../utils';
 import {tw} from '../../../utils/tw';
-import {treeExpanderFocusStyles} from './treeExpanderFocus.stylex';
 import {
   TREE_CELL_CLASS,
   TREE_CELL_INDENT_CLASS,
@@ -291,12 +290,8 @@ function TreeExpander({
   return (
     <button
       type="button"
-      {...mergeProps(
-        focusOutlineProps.focusVisible(
-          isCompact && treeExpanderFocusStyles.expanderFocusInset,
-        ),
-        TREE_EXPANDER_CLASS,
-      )}
+      className={tw(TREE_EXPANDER_CLASS, focusOutlineFocusVisibleClassName)}
+      style={isCompact ? TREE_EXPANDER_INSET_RING_STYLE : undefined}
       onClick={e => {
         e.stopPropagation();
         onToggle();
@@ -342,12 +337,8 @@ function TreeExpandAllToggle({
   return (
     <button
       type="button"
-      {...mergeProps(
-        focusOutlineProps.focusVisible(
-          isCompact && treeExpanderFocusStyles.expanderFocusInset,
-        ),
-        TREE_EXPANDER_CLASS,
-      )}
+      className={tw(TREE_EXPANDER_CLASS, focusOutlineFocusVisibleClassName)}
+      style={isCompact ? TREE_EXPANDER_INSET_RING_STYLE : undefined}
       onClick={e => {
         e.stopPropagation();
         if (allExpanded) {
@@ -442,6 +433,11 @@ function TreeCellContentInner<T extends Record<string, unknown>>({
 // =============================================================================
 // Hook
 // =============================================================================
+
+/** A compact row's expander draws the shared ring inside its own box. */
+const TREE_EXPANDER_INSET_RING_STYLE = {
+  '--focus-outline-offset': 'calc(-1 * var(--focus-outline-width))',
+} as React.CSSProperties;
 
 export function useTableTreeData<T extends Record<string, unknown>>(
   config: UseTableTreeDataConfig<T>,

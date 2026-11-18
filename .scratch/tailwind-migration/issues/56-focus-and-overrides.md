@@ -149,3 +149,13 @@ with `'--focus-outline-offset': 'calc(-1 * var(--focus-outline-width))'`.
 
 Stage C converts the remaining call sites in two windows: core actions and
 disclosure, and overlays/chrome with the lab.
+
+### Stage C, second window
+
+`ChatComposerDrawer`, `Lightbox`, `Dialog`, `Popover`, `AppShell`, `CodeBlock`,
+`Calendar`, `ResizeHandle`, `ListReorderHandle`, `listReorderEngine` and lab's
+`CommentPin` are done; insets became
+`'--focus-outline-offset': 'calc(-1 * var(--focus-outline-width))'` on the
+element's inline style (`ZOOM_INSET_RING_STYLE`, `MAIN_SCROLL_INSET_RING_STYLE`,
+`VIEWPORT_INSET_RING_STYLE`). A third window carries the action and disclosure
+group, and a fourth carries the interaction overlay.

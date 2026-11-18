@@ -765,6 +765,11 @@ import {
 } from '../Table/tableHeaderCellClasses';
 import {tableRowClassName} from '../Table/tableRowClasses';
 import {
+  glidingDividerCellClassName,
+  glidingDividerPanelCellClassName,
+  glidingDividerRowClassName,
+} from '../Table/tableGlideClasses';
+import {
   FILTER_INLINE_SLOT_CLASS,
   FILTER_POPOVER_ACTIONS_CLASS,
   FILTER_POPOVER_ACTIONS_SPACER_CLASS,
@@ -2027,6 +2032,9 @@ function familyClassNames() {
     for (const hasKnownPosition of [false, true]) {
       for (const isStriped of [false, true]) {
         add(tableRowClassName({hasHover, hasKnownPosition, isStriped}));
+        add(glidingDividerCellClassName);
+        add(glidingDividerPanelCellClassName);
+        add(glidingDividerRowClassName);
       }
     }
   }

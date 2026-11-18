@@ -64,7 +64,7 @@ import {Icon} from '../Icon';
 import {mergeProps} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {tw} from '../utils/tw';
@@ -429,7 +429,7 @@ export function Collapsible({
             open: isOpen ? 'open' : null,
             disabled: isDisabled ? 'disabled' : null,
           }),
-          focusOutlineProps.focusVisible(
+          stylex.props(
             // The system's pressed overlay on the disclosure row. The trigger
             // has no hover surface of its own, so this is the one background
             // it paints, and only while it is pressed.
@@ -439,6 +439,7 @@ export function Collapsible({
             collapsibleTriggerClassName,
             density != null && collapsibleTriggerDensityClassName[density],
             isDisabled && collapsibleTriggerDisabledClassName,
+            focusOutlineFocusVisibleClassName,
           ),
         )}>
         {isChevronAtStart && chevron}

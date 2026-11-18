@@ -54,7 +54,11 @@ import type {BaseProps} from '../BaseProps';
 import {useTooltip} from '../Tooltip';
 import {navItemStyles, type NavItemSize} from '../NavItem/navItemStyles.stylex';
 import {SizeProvider} from '../SizeContext/SizeContext';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {
+  focusOutlineFocusVisibleClassName,
+  focusOutlineSuppressedClassName,
+  focusOutlineWithinFirstChildClassName,
+} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
@@ -521,7 +525,7 @@ export function SideNavItem({
           selected: isSelected ? 'selected' : null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        focusOutlineProps.focusVisible(
+        stylex.props(
           navItemStyles.item,
           interactionOverlayStyles.backgroundColor,
           navItemStyles[size],
@@ -532,7 +536,11 @@ export function SideNavItem({
           isDisabled && navItemStyles.disabled,
         ),
         // Spread after `rest`, so keep the caller's class beside these.
-        tw(sideNavItemClassName.collapsedItem, rest.className),
+        tw(
+          sideNavItemClassName.collapsedItem,
+          rest.className,
+          focusOutlineFocusVisibleClassName,
+        ),
       ),
       ...pressable,
     };
@@ -691,17 +699,17 @@ export function SideNavItem({
   const focusableRowProps = {
     ...mergeProps(
       itemThemeProps,
-      mergeProps(
-        focusOutlineProps.focusVisible(...itemStyleArgs, rowIndent),
-        callerStyle,
-      ),
+      stylex.props(...itemStyleArgs, rowIndent),
+      tw(callerStyle.className, focusOutlineFocusVisibleClassName),
+      callerStyle.style,
     ),
     ...pressable,
   };
   const actionsRowProps = {
     ...mergeProps(
       itemThemeProps,
-      focusOutlineProps.focusWithinFirstChild(...itemStyleArgs),
+      stylex.props(...itemStyleArgs),
+      focusOutlineWithinFirstChildClassName,
     ),
     ...pressable,
   };
@@ -741,12 +749,16 @@ export function SideNavItem({
           {...rest}
           {...rowPrimaryAriaProps}
           {...mergeProps(
-            hasActions
-              ? // The wrapper rings for this element; suppressing here is what
-                // keeps the UA's own ring from painting inside that one.
-                focusOutlineProps.suppressed(primaryIndent)
-              : focusOutlineProps.focusVisible(primaryIndent),
-            tw(sideNavItemClassName.splitAction, callerStyle.className),
+            stylex.props(primaryIndent),
+            tw(
+              sideNavItemClassName.splitAction,
+              callerStyle.className,
+              // The wrapper rings for this element; suppressing here is what
+              // keeps the UA's own ring from painting inside that one.
+              hasActions
+                ? focusOutlineSuppressedClassName
+                : focusOutlineFocusVisibleClassName,
+            ),
             callerStyle.style,
           )}>
           {itemContent}
@@ -764,10 +776,11 @@ export function SideNavItem({
             aria-controls={`${id}-children`}
             {...mergeProps(
               pressable,
-              focusOutlineProps.focusVisible(
-                interactionOverlayStyles.backgroundColor,
+              stylex.props(interactionOverlayStyles.backgroundColor),
+              tw(
+                sideNavItemClassName.toggle,
+                focusOutlineFocusVisibleClassName,
               ),
-              sideNavItemClassName.toggle,
             )}>
             <Icon
               icon="chevronDown"

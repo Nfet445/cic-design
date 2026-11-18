@@ -15,7 +15,7 @@
  */
 
 import {useId, useRef, useMemo, type ReactNode} from 'react';
-import {focusOutlineProps} from '../../../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../../../utils/focusOutlineClasses';
 import {tw} from '../../../utils/tw';
 import {
   sortButtonClassName,
@@ -235,16 +235,14 @@ function SortHeaderButton<T extends Record<string, unknown>>({
     }
   };
 
-  // The ring is still a shared StyleX module; the button's own layout is a
-  // class set, so the two merge on the same element.
-  const ring = focusOutlineProps.focusVisible();
-
   return (
     <>
       <button
         type="button"
-        {...ring}
-        className={tw(ring.className, sortButtonClassName(column.align))}
+        className={tw(
+          sortButtonClassName(column.align),
+          focusOutlineFocusVisibleClassName,
+        )}
         aria-describedby={rank != null ? priorityId : undefined}
         onClick={handleClick}>
         <span>{children}</span>

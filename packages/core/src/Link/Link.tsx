@@ -17,6 +17,7 @@
  */
 
 import {use, type ReactNode} from 'react';
+import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 
 import {Icon} from '../Icon';
@@ -44,7 +45,7 @@ import {
 import {computeTargetAndRel} from './computeTargetAndRel';
 import {useInteractiveRole} from '../hooks/useInteractiveRole';
 import {themeDataAttributes, themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {disabledInteractionProps} from '../utils/disabledInteraction';
@@ -341,14 +342,14 @@ export function Link({
         aria-label={label || undefined}
         {...mergeProps(
           themeProps('link', {color}),
-          focusOutlineProps.focusVisible(
+          stylex.props(
             // The system's pressed overlay behind the text; the hover stays
             // the colour change above, so a press is the one background it
             // paints.
             !isDisabled && interactionOverlayStyles.pressedBackgroundColor,
             xstyle,
           ),
-          tw(rootClassName, className),
+          tw(rootClassName, className, focusOutlineFocusVisibleClassName),
           style,
         )}
         {...props}
@@ -371,8 +372,8 @@ export function Link({
         tabIndex={0}
         {...mergeProps(
           themeProps('link', {color}),
-          focusOutlineProps.focusVisible(xstyle),
-          tw(rootClassName, className),
+          stylex.props(xstyle),
+          tw(rootClassName, className, focusOutlineFocusVisibleClassName),
           style,
         )}
         {...props}
@@ -395,11 +396,11 @@ export function Link({
         tabIndex={isDisabled ? -1 : undefined}
         {...mergeProps(
           themeProps('link', {color}),
-          focusOutlineProps.focusVisible(
+          stylex.props(
             !isDisabled && interactionOverlayStyles.pressedBackgroundColor,
             xstyle,
           ),
-          tw(rootClassName, className),
+          tw(rootClassName, className, focusOutlineFocusVisibleClassName),
           style,
         )}
         {...props}

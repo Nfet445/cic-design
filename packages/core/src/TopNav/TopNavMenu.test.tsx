@@ -13,8 +13,7 @@ import {createRef} from 'react';
 import {beforeEach, describe, it, expect, vi} from 'vitest';
 import {render, screen, fireEvent, act} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import * as stylex from '@stylexjs/stylex';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {TopNavRenderContext} from './TopNavRenderContext';
 import {TopNavMenu} from './TopNavMenu';
 import {__resetMenuPressForTest} from '../hooks/useMenuPress';
@@ -217,9 +216,7 @@ describe('keyboard navigation (APG menu pattern)', () => {
 // the browser's own outline.
 // =============================================================================
 
-const sharedFocusRingClasses = stylex
-  .props(focusOutlineStyles.focusVisible)
-  .className!.split(' ');
+const sharedFocusRingClasses = focusOutlineFocusVisibleClassName.split(' ');
 
 function expectSharedFocusRing(el: Element) {
   const classes = el.className.split(' ');

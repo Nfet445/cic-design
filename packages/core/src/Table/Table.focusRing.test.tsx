@@ -2,7 +2,7 @@
 
 /**
  * @file Table.focusRing.test.tsx
- * @input Uses Table, useTableTreeState, useTableTreeData, focusOutlineStyles
+ * @input Uses Table, useTableTreeState, useTableTreeData, focusOutlineFocusVisibleClassName
  * @output Tests that Table's own tab stops (the scroll wrapper, the tree
  *   expander, the expand-all toggle) draw the shared focus ring
  * @position Colocated test; the ring's geometry is checked in a real browser
@@ -13,16 +13,13 @@
 
 import {describe, it, expect} from 'vitest';
 import {render, screen, within} from '@testing-library/react';
-import * as stylex from '@stylexjs/stylex';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {Table} from './Table';
 import type {TableColumn} from './types';
 import {useTableTreeData} from './plugins/tree/useTableTreeData';
 import {useTableTreeState} from './plugins/tree/useTableTreeState';
 
-const sharedFocusRingClasses = stylex
-  .props(focusOutlineStyles.focusVisible)
-  .className!.split(' ');
+const sharedFocusRingClasses = focusOutlineFocusVisibleClassName.split(' ');
 
 // The scroll wrapper keeps the shared ring but sits it inside its own box,
 // because it bleeds to a clipping container's edges. The inset is a class in

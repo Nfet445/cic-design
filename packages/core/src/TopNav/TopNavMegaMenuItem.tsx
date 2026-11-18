@@ -18,6 +18,7 @@
  */
 
 import React, {type ReactNode} from 'react';
+import * as stylex from '@stylexjs/stylex';
 import {navItemStyles} from '../NavItem/navItemStyles.stylex';
 import {useLinkComponent} from '../Link/useLinkComponent';
 import type {LinkComponentType} from '../Link/types';
@@ -26,7 +27,7 @@ import {mergeProps} from '../utils';
 import type {BaseProps} from '../BaseProps';
 import {useCloseMobileDrawerOnActivate} from '../AppShell/useCloseMobileDrawerOnActivate';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {isRenderable} from '../utils/isRenderable';
@@ -138,12 +139,16 @@ export function TopNavMegaMenuItem({
         {...elementProps}
         {...mergeProps(
           themeProps('top-nav-mega-menu-item', {mode: 'drawer'}),
-          focusOutlineProps.focusVisible(
+          stylex.props(
             navItemStyles.item,
             interactionOverlayStyles.backgroundColor,
             xstyle,
           ),
-          tw(topNavMegaMenuItemDrawerClassName(), className),
+          tw(
+            topNavMegaMenuItemDrawerClassName(),
+            className,
+            focusOutlineFocusVisibleClassName,
+          ),
           style,
         )}>
         {isRenderable(icon) && (
@@ -176,11 +181,12 @@ export function TopNavMegaMenuItem({
       tabIndex={tabIndex}
       {...mergeProps(
         themeProps('top-nav-mega-menu-item'),
-        focusOutlineProps.focusVisible(
-          interactionOverlayStyles.backgroundColor,
-          xstyle,
+        stylex.props(interactionOverlayStyles.backgroundColor, xstyle),
+        tw(
+          topNavMegaMenuItemClassName(),
+          className,
+          focusOutlineFocusVisibleClassName,
         ),
-        tw(topNavMegaMenuItemClassName(), className),
         style,
       )}>
       {isRenderable(icon) && (

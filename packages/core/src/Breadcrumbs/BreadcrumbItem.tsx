@@ -55,7 +55,7 @@ import {
 } from './breadcrumbItemClasses';
 import type {BaseProps} from '../BaseProps';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {Icon} from '../Icon';
 import {usePopoverInternal} from '../Popover/usePopover';
 import {useListFocus} from '../hooks/useListFocus';
@@ -378,8 +378,11 @@ export function BreadcrumbItem({
           ref={contentRef}
           href={href}
           onClick={handleActivate}
-          {...focusOutlineProps.focusVisible()}
-          className={tw(breadcrumbLinkClassName, breadcrumbLinkColorClassName)}>
+          className={tw(
+            breadcrumbLinkClassName,
+            breadcrumbLinkColorClassName,
+            focusOutlineFocusVisibleClassName,
+          )}>
           {content}
         </LinkComponent>
       ) : onClick != null ? (
@@ -387,11 +390,11 @@ export function BreadcrumbItem({
           ref={contentRef as React.RefObject<HTMLButtonElement | null>}
           type="button"
           onClick={handleActivate}
-          {...focusOutlineProps.focusVisible()}
           className={tw(
             breadcrumbLinkClassName,
             breadcrumbButtonResetClassName,
             breadcrumbLinkColorClassName,
+            focusOutlineFocusVisibleClassName,
           )}>
           {content}
         </button>
@@ -594,11 +597,11 @@ function BreadcrumbMenuTrigger({
           // spread replaces the className themeProps() built, which is how the
           // documented breadcrumb-item-menu-trigger target came to render on
           // nothing.
-          focusOutlineProps.focusVisible(),
           tw(
             breadcrumbLinkClassName,
             breadcrumbButtonResetClassName,
             breadcrumbLinkColorClassName,
+            focusOutlineFocusVisibleClassName,
           ),
         )}>
         {children}

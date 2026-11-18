@@ -17,9 +17,9 @@
  */
 
 import React, {useCallback, useId, useRef, type ReactNode} from 'react';
+import * as stylex from '@stylexjs/stylex';
 import {Icon} from '../Icon';
 import {renderIconSlot, type IconType} from '../Icon';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {usePopoverInternal} from '../Popover/usePopover';
 import {MENU_ITEM_SELECTOR} from '../DropdownMenu/menuItemRoles';
@@ -209,8 +209,12 @@ export function TabMenu({
         onClick={composeEventHandlers(handleToggle, onClick)}
         {...mergeProps(
           themeProps('tab-menu'),
-          focusOutlineProps.focusVisible(xstyle),
-          tw(tabMenuTriggerClassName({size, hasSelectedOption}), className),
+          stylex.props(xstyle),
+          tw(
+            tabMenuTriggerClassName({size, hasSelectedOption}),
+            className,
+            focusOutlineFocusVisibleClassName,
+          ),
           style,
         )}>
         <span aria-hidden="true" className={tabMenuHoverLayerClassName(size)} />

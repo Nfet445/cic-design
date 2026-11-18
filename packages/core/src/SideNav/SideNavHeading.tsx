@@ -30,7 +30,6 @@ import {Link} from '../Link';
 import {Icon} from '../Icon';
 import {Tooltip} from '../Tooltip';
 import {navItemStyles} from '../NavItem/navItemStyles.stylex';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
@@ -285,12 +284,16 @@ export function SideNavHeading({
           data-testid={testId}
           {...mergeProps(
             themeProps('side-nav-heading'),
-            focusOutlineProps.focusVisible(
+            stylex.props(
               navItemStyles.item,
               interactionOverlayStyles.backgroundColor,
               xstyle,
             ),
-            tw(sideNavHeadingClassName.collapsedRoot, className),
+            tw(
+              sideNavHeadingClassName.collapsedRoot,
+              className,
+              focusOutlineFocusVisibleClassName,
+            ),
             style,
           )}>
           {collapsedIcon}
@@ -309,7 +312,7 @@ export function SideNavHeading({
             {...triggerProps}
             {...mergeProps(
               themeProps('side-nav-heading'),
-              focusOutlineProps.focusVisible(
+              stylex.props(
                 navItemStyles.item,
                 interactionOverlayStyles.backgroundColor,
                 xstyle,
@@ -318,6 +321,7 @@ export function SideNavHeading({
                 sideNavHeadingClassName.collapsedRoot,
                 sideNavHeadingClassName.menuTrigger,
                 className,
+                focusOutlineFocusVisibleClassName,
               ),
               style,
             )}>
@@ -440,12 +444,10 @@ export function SideNavHeading({
         {hasAnyHref && headingHref && menu ? (
           <LinkComponent
             href={headingHref}
-            {...mergeProps(
-              focusOutlineProps.focusVisible(),
-              tw(
-                sideNavHeadingClassName.heading,
-                sideNavHeadingClassName.headingLink,
-              ),
+            className={tw(
+              sideNavHeadingClassName.heading,
+              sideNavHeadingClassName.headingLink,
+              focusOutlineFocusVisibleClassName,
             )}>
             {heading}
           </LinkComponent>
@@ -487,9 +489,9 @@ export function SideNavHeading({
   const popoverHeadingContent = (
     <button
       type="button"
-      {...mergeProps(
-        focusOutlineProps.focusVisible(),
+      className={tw(
         sideNavHeadingClassName.popoverHeading,
+        focusOutlineFocusVisibleClassName,
       )}
       // A close affordance, not the trigger: dismiss only.
       onClick={closeMenu}>
@@ -524,12 +526,10 @@ export function SideNavHeading({
         )}>
         <LinkComponent
           href={headingHref}
-          {...mergeProps(
-            focusOutlineProps.focusVisible(),
-            tw(
-              sideNavHeadingClassName.linkBesideEndContent,
-              sideNavHeadingClassName.menuTrigger,
-            ),
+          className={tw(
+            sideNavHeadingClassName.linkBesideEndContent,
+            sideNavHeadingClassName.menuTrigger,
+            focusOutlineFocusVisibleClassName,
           )}
           {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
           {isRenderable(icon) && (
@@ -551,11 +551,12 @@ export function SideNavHeading({
         data-testid={testId}
         {...mergeProps(
           themeProps('side-nav-heading'),
-          focusOutlineProps.focusVisible(xstyle),
+          stylex.props(xstyle),
           tw(
             sideNavHeadingClassName.root,
             sideNavHeadingClassName.menuTrigger,
             className,
+            focusOutlineFocusVisibleClassName,
           ),
           style,
         )}
@@ -601,12 +602,10 @@ export function SideNavHeading({
                 triggerProps.onClick();
               }}
               {...popover.triggerProps}
-              {...mergeProps(
-                focusOutlineProps.focusVisible(),
-                tw(
-                  sideNavHeadingClassName.chevron,
-                  sideNavHeadingClassName.interactive,
-                ),
+              className={tw(
+                sideNavHeadingClassName.chevron,
+                sideNavHeadingClassName.interactive,
+                focusOutlineFocusVisibleClassName,
               )}>
               <Icon
                 icon="chevronDown"
@@ -670,9 +669,9 @@ export function SideNavHeading({
               <LinkComponent
                 href={headingHref}
                 aria-label={heading}
-                {...mergeProps(
-                  focusOutlineProps.focusVisible(),
+                className={tw(
                   sideNavHeadingClassName.icon,
+                  focusOutlineFocusVisibleClassName,
                 )}>
                 {icon}
               </LinkComponent>
@@ -690,12 +689,10 @@ export function SideNavHeading({
                   triggerProps.onClick();
                 }}
                 {...popover.triggerProps}
-                {...mergeProps(
-                  focusOutlineProps.focusVisible(),
-                  tw(
-                    sideNavHeadingClassName.chevron,
-                    sideNavHeadingClassName.interactive,
-                  ),
+                className={tw(
+                  sideNavHeadingClassName.chevron,
+                  sideNavHeadingClassName.interactive,
+                  focusOutlineFocusVisibleClassName,
                 )}>
                 <Icon
                   icon="chevronDown"
@@ -757,9 +754,9 @@ export function SideNavHeading({
             <LinkComponent
               href={headingHref}
               aria-label={heading}
-              {...mergeProps(
-                focusOutlineProps.focusVisible(),
+              className={tw(
                 sideNavHeadingClassName.icon,
+                focusOutlineFocusVisibleClassName,
               )}>
               {icon}
             </LinkComponent>
