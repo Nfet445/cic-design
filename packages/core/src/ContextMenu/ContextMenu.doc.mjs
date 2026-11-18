@@ -149,9 +149,9 @@ export const docs = {
     },
     {
       name: 'triggerXstyle',
-      type: 'StyleXStyles | StyleXStyles[]',
+      type: 'AstryxXStyle',
       description:
-        'Styles applied to the trigger wrapper. Accepts `stylex.create()` values, not inline style objects.',
+        'A class name, inline style object, StyleX value, or list of these for the trigger wrapper.',
     },
     {
       name: 'triggerClassName',

@@ -340,6 +340,33 @@ describe('RichTextEditor', () => {
     expect(wrapper).toHaveAttribute('data-status', 'error');
   });
 
+  it.each([
+    {},
+    {status: {type: 'error' as const}},
+    {isDisabled: true},
+    {isReadOnly: true},
+  ])('applies xstyle to the editor root in state %#', state => {
+    const {container, rerender} = render(
+      <RichTextEditor label="Notes" {...state} xstyle="consumer-override" />,
+    );
+    expect(container.querySelector('.astryx-rich-text-editor')).toHaveClass(
+      'consumer-override',
+    );
+    rerender(
+      <RichTextEditor
+        label="Notes"
+        {...state}
+        xstyle={{backgroundColor: 'red', color: 'blue'}}
+        style={{color: 'green'}}
+      />,
+    );
+    const root = container.querySelector(
+      '.astryx-rich-text-editor',
+    ) as HTMLElement;
+    expect(root.style.backgroundColor).toBe('red');
+    expect(root.style.color).toBe('green');
+  });
+
   it('keeps TextArea-style input visuals alongside consumer props', () => {
     const {container} = render(
       <RichTextEditor
@@ -1076,6 +1103,26 @@ describe('RichTextView', () => {
     expect(root).toHaveClass('consumer-class');
     expect(root?.classList.length).toBeGreaterThan(1);
   });
+
+  it.each([HELLO_STATE, '{ invalid'])(
+    'applies class and style xstyle for value %s',
+    value => {
+      const {container, rerender} = render(
+        <RichTextView value={value} xstyle="consumer-override" />,
+      );
+      expect(container.firstElementChild).toHaveClass('consumer-override');
+      rerender(
+        <RichTextView
+          value={value}
+          xstyle={{backgroundColor: 'red', color: 'blue'}}
+          style={{color: 'green'}}
+        />,
+      );
+      const root = container.firstElementChild as HTMLElement;
+      expect(root.style.backgroundColor).toBe('red');
+      expect(root.style.color).toBe('green');
+    },
+  );
 
   it('applies a consumer xstyle', () => {
     const overrides = stylex.create({custom: {opacity: 0.5}});

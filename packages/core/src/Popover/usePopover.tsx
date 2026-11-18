@@ -22,7 +22,6 @@ import {useLayerInternal, type ContextRenderProps} from '../Layer/useLayer';
 import {watchOutsidePans} from '../Layer/outsidePanClaim';
 import {useFocusTrapInternal} from '../hooks/useFocusTrap';
 import {LayerDepthProvider} from '../Layer/LayerDepthContext';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import {Button} from '../Button';
 import {
   FOCUSABLE_SELECTOR,
@@ -36,7 +35,7 @@ import {
 import {useDevWarning} from '../hooks/useDevWarning';
 import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {mergeProps} from '../utils/mergeProps';
-import {xstyleProps} from '../utils/xstyle';
+import {xstyleProps, type AstryxXStyle} from '../utils/xstyle';
 import {isFocusDetached} from '../utils/isFocusDetached';
 import {themeProps} from '../utils/themeProps';
 import {paddingClassName} from '../Layout/paddingClasses';
@@ -109,14 +108,14 @@ export interface UsePopoverOptions {
   onHide?: () => void;
 
   /**
-   * StyleX styles applied to the popover's content wrapper.
+   * Consumer styles applied to the popover's content wrapper.
    * Merges after the surface styles (when hasSurface is true), so these
    * can override background, radius, etc.
    *
    * For styles on the layer's positioned element (e.g., animations using
    * `:popover-open`), pass `xstyle` via the `render()` call's props instead.
    */
-  xstyle?: StyleXStyles;
+  xstyle?: AstryxXStyle;
 
   /**
    * Additional class name applied to the painted popover surface.

@@ -1,5 +1,6 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
+import * as stylex from '@stylexjs/stylex';
 import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {ChatUnreadDivider} from './ChatUnreadDivider';
@@ -8,6 +9,8 @@ import {
   chatUnreadDividerRootClassName,
   chatUnreadDividerRuleClassName,
 } from './chatUnreadDividerClasses';
+
+const legacyStyles = stylex.create({root: {color: 'red'}});
 
 describe('ChatUnreadDivider', () => {
   it('renders a separator', () => {
@@ -38,6 +41,26 @@ describe('ChatUnreadDivider', () => {
       'astryx-chat-unread-divider',
       ...chatUnreadDividerRootClassName.split(' '),
     ]);
+  });
+
+  it('applies a consumer class and inline overrides', () => {
+    const {rerender} = render(<ChatUnreadDivider xstyle="consumer-class" />);
+    expect(screen.getByRole('separator')).toHaveClass('consumer-class');
+
+    rerender(
+      <ChatUnreadDivider
+        xstyle={{color: 'red', padding: 4}}
+        style={{color: 'blue'}}
+      />,
+    );
+    expect(screen.getByRole('separator')).toHaveStyle({
+      color: 'rgb(0, 0, 255)',
+      padding: '4px',
+    });
+
+    rerender(<ChatUnreadDivider xstyle={legacyStyles.root} />);
+    const legacyClass = stylex.props(legacyStyles.root).className;
+    expect(screen.getByRole('separator').className).toContain(legacyClass);
   });
 
   it('styles the rule and the label apart', () => {

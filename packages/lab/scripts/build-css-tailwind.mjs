@@ -34,6 +34,7 @@ function count(number, one, many) {
 
 const css = await buildTailwindStylesheet({
   root: ROOT,
+  compact: true,
   input: INPUT,
   banner: BANNER,
   onCacheReport: ({hits, misses, reused}) =>

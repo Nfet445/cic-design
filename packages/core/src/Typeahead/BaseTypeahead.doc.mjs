@@ -218,14 +218,15 @@ export const docs = {
     },
     {
       name: 'inputXStyle',
-      type: 'StyleXStyles',
-      description: 'Additional StyleX styles for the input element.',
+      type: 'AstryxXStyle',
+      description:
+        'A class name, inline style object, StyleX value, or list for the input element.',
     },
     {
       name: 'xstyle',
-      type: 'StyleXStyles',
+      type: 'AstryxXStyle',
       description:
-        'Standard BaseProps StyleX styles applied to the input. Must be a stylex.create() value, not an inline style object.',
+        'A class name, inline style object, StyleX value, or list applied to the input after inputXStyle.',
     },
     {
       name: 'inputTabIndex',
@@ -511,8 +512,8 @@ export const docsDense = {
     debounceMs: 'Search debounce ms. 0 for sync.',
     size: 'Dropdown option padding size.',
     anchorRef: 'Anchor for dropdown positioning. Defaults to input.',
-    inputXStyle: 'Additional StyleX styles for input.',
-    xstyle: 'Standard BaseProps StyleX styles for input.',
+    inputXStyle: 'Class name, inline styles, StyleX, or a list for the input.',
+    xstyle: 'Consumer styling for the input after inputXStyle.',
     inputTabIndex:
       'Legacy tabIndex alias; defined alias wins, otherwise native tabIndex passes through.',
     onKeyDown:

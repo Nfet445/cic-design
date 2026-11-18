@@ -30,6 +30,21 @@ import {swipeLayerLoaded} from './__tests__/swipeLayerLoaded';
 import userEvent from '@testing-library/user-event';
 import {LinkProvider} from '../Link/LinkProvider';
 import {Item} from './Item';
+import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
+import {rowPressLayerStyles} from '../privateAttributes/press.stylex';
+import * as stylex from '@stylexjs/stylex';
+
+const mixedXstyleProbe = stylex.create({
+  root: {opacity: 0.5},
+  firstWidth: (width: string | undefined) => ({minWidth: width}),
+  secondWidth: (width: string | undefined) => ({minWidth: width}),
+  conflict: {
+    animationFillMode: {
+      default: null,
+      '[data-astryx-press="fading"]': 'forwards',
+    },
+  },
+});
 import {useClickableContainer} from '../hooks/useClickableContainer';
 import {createSwipe} from '../Swipe/createSwipe';
 import type {Swipe} from '../Swipe/swipeHost';
@@ -62,6 +77,69 @@ function DelegatingItem({onToggle}: {onToggle?: () => void}) {
 }
 
 describe('Item', () => {
+  it('keeps a dynamic StyleX variable when the next value is undefined', () => {
+    const first = mixedXstyleProbe.firstWidth('12rem');
+    const second = mixedXstyleProbe.secondWidth(undefined);
+    const runtimeProps = stylex.props;
+    const expected = runtimeProps(first, second).style;
+    const {container} = render(<Item label="Row" xstyle={[first, [second]]} />);
+    const root = container.firstElementChild as HTMLElement;
+    expect(Object.keys(expected ?? {}).length).toBeGreaterThan(0);
+    for (const [key, value] of Object.entries(expected ?? {})) {
+      expect(root.style.getPropertyValue(key)).toBe(value);
+    }
+  });
+
+  it('resolves mixed consumer StyleX after the interactive press styles', () => {
+    const {container} = render(
+      <Item
+        label="Row"
+        onClick={() => {}}
+        xstyle={[mixedXstyleProbe.conflict, 'consumer-item']}
+      />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    const internal = stylex.props(
+      interactionOverlayStyles.pressedAlpha,
+      rowPressLayerStyles.cell,
+    );
+    const expected = stylex.props(
+      interactionOverlayStyles.pressedAlpha,
+      rowPressLayerStyles.cell,
+      mixedXstyleProbe.conflict,
+    );
+    expect(root).toHaveClass('consumer-item');
+    for (const name of (expected.className ?? '').split(' ').filter(Boolean)) {
+      expect(root).toHaveClass(name);
+    }
+    const removed = (internal.className ?? '')
+      .split(' ')
+      .filter(
+        name => name && !(expected.className ?? '').split(' ').includes(name),
+      );
+    expect(removed.length).toBeGreaterThan(0);
+    for (const name of removed) {
+      expect(root).not.toHaveClass(name);
+    }
+  });
+
+  it('preserves a mixed list of StyleX, class, and inline xstyle', () => {
+    const {container} = render(
+      <Item
+        label="Row"
+        xstyle={[mixedXstyleProbe.root, 'consumer-item', {color: 'red'}]}
+      />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root).toHaveClass('consumer-item');
+    expect(root.style.color).toBe('red');
+    for (const className of (
+      stylex.props(mixedXstyleProbe.root).className ?? ''
+    ).split(' ')) {
+      expect(root).toHaveClass(className);
+    }
+  });
+
   // ===========================================================================
   // Basic rendering
   // ===========================================================================

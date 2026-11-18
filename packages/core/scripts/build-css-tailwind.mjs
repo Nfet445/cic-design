@@ -40,6 +40,8 @@ import {fileURLToPath} from 'node:url';
 import tailwind from '@tailwindcss/postcss';
 import postcss from 'postcss';
 
+import {compactTailwindFormatting} from '../../build/src/tailwind-stylesheet.mjs';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const INPUT = path.resolve(ROOT, 'tailwind/astryx.input.css');
 const OUTPUT = path.resolve(ROOT, 'dist/astryx-tailwind.css');
@@ -79,6 +81,7 @@ const intoLayer = {
     if (layer.nodes.length > 0) {
       root.append(layer);
     }
+    compactTailwindFormatting(root);
   },
 };
 
@@ -86,7 +89,7 @@ const intoLayer = {
  * Bumped when a change to this file changes the sheet it compiles. The value
  * is part of the cache key, because the key cannot see the code that reads it.
  */
-const CACHE_VERSION = '1';
+const CACHE_VERSION = '2';
 
 /** The compiled sheet, and the entries the key that names it was built from. */
 const SHEET = 'sheet.css';

@@ -123,6 +123,24 @@ function openMenu() {
 }
 
 describe('ContextMenu', () => {
+  it('applies class and inline triggerXstyle to the trigger', () => {
+    const {rerender} = render(
+      <ContextMenu items={[{label: 'Item'}]} triggerXstyle="consumer-trigger">
+        <span>Target</span>
+      </ContextMenu>,
+    );
+    const trigger = screen.getByText('Target').parentElement as HTMLElement;
+    expect(trigger).toHaveClass('consumer-trigger');
+    rerender(
+      <ContextMenu
+        items={[{label: 'Item'}]}
+        triggerXstyle={{backgroundColor: 'red'}}>
+        <span>Target</span>
+      </ContextMenu>,
+    );
+    expect(trigger.style.backgroundColor).toBe('red');
+  });
+
   it('renders trigger children', () => {
     render(
       <ContextMenu items={[{label: 'Item 1'}]}>

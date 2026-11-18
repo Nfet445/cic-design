@@ -17,7 +17,7 @@
  */
 
 import type {ReactNode} from 'react';
-import type * as stylex from '@stylexjs/stylex';
+import type {AstryxXStyle} from '../utils/xstyle';
 import {Button} from '../Button/Button';
 import {BUTTON_HIT_AREA, ButtonHitAreaContext} from '../Button/buttonHitArea';
 import {clampedHitInsets, type HitInsets, type HitRect} from '../utils/hitArea';
@@ -92,7 +92,7 @@ export interface InputClearButtonProps {
    */
   label: string;
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  xstyle?: stylex.StyleXStyles;
+  xstyle?: AstryxXStyle;
   /** Extra class names merged onto the clear glyph beside its canonical target. */
   iconClassName?: string;
 }

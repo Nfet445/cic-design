@@ -42,8 +42,7 @@ import {
   type BaseProps,
 } from '@astryxdesign/core';
 import {useMergedRefs} from '@astryxdesign/core/hooks';
-import {mergeProps} from '@astryxdesign/core/utils';
-import * as stylex from '@stylexjs/stylex';
+import {mergeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {
   chartAreaClassName,
   chartContainerClassName,
@@ -351,10 +350,12 @@ export function Chart({
     return (
       <div
         ref={mergedContainerRef}
-        {...mergeProps(stylex.props(xstyle), {
-          className: tw(chartContainerClassName, className),
-          style: {height: safeHeight, ...style},
-        })}
+        {...mergeProps(
+          {className: chartContainerClassName, style: {height: safeHeight}},
+          xstyleProps(xstyle),
+          className,
+          style,
+        )}
         {...rest}
       />
     );
@@ -363,10 +364,12 @@ export function Chart({
   return (
     <div
       ref={mergedContainerRef}
-      {...mergeProps(stylex.props(xstyle), {
-        className: tw(chartContainerClassName, className),
+      {...mergeProps(
+        {className: chartContainerClassName},
+        xstyleProps(xstyle),
+        className,
         style,
-      })}
+      )}
       {...rest}>
       {(title || subtitle) && (
         <div className={chartTitleClassName}>

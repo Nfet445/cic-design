@@ -94,3 +94,48 @@
     visibility: hidden;
   }
 }
+
+@utility astryx-tab-feedback {
+  outline-style: none;
+
+  [data-tab-bar-value]:focus-visible > & {
+    outline-style: var(--focus-outline-style);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: var(--color-overlay-pressed);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--duration-exit) var(--ease-exit);
+    @media (prefers-reduced-motion: reduce) {
+      transition-duration: min(var(--duration-exit), 200ms);
+    }
+  }
+
+  [data-tab-bar-value][data-tab-bar-pressed] > &::before {
+    opacity: 1;
+    transition-duration: 0s;
+  }
+}
+
+@utility astryx-schedule-focus-ring {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  outline: none;
+  outline-offset: calc(-1 * var(--focus-outline-width));
+
+  [data-scroll-axis]:focus-visible + & {
+    outline: var(--focus-outline-width) var(--focus-outline-style)
+      var(--focus-outline-color);
+  }
+}
+
+@utility astryx-schedule-popover-size {
+  max-block-size: calc(100vh - 2 * var(--spacing-4) - 2 * var(--spacing-3));
+  max-block-size: calc(100dvb - 2 * var(--spacing-4) - 2 * var(--spacing-3));
+}

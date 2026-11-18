@@ -4,6 +4,17 @@ import {describe, expect, it, vi} from 'vitest';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {CommentPin} from './CommentPin';
+import * as stylex from '@stylexjs/stylex';
+import {interactionOverlayStyles} from '@astryxdesign/core/utils';
+
+const legacyOverride = stylex.create({
+  root: {
+    animationFillMode: {
+      default: null,
+      '[data-astryx-press="fading"]': 'forwards',
+    },
+  },
+});
 import {
   commentPinDisabledUnselectedClassName,
   commentPinSelectedClassName,
@@ -22,6 +33,58 @@ const NOAH = {id: 'noah', name: 'Noah Williams'};
 const SAM = {id: 'sam', name: 'Sam Rivera'};
 
 describe('CommentPin', () => {
+  it('composes a legacy StyleX override with the internal press styles', () => {
+    render(
+      <CommentPin
+        label="Open"
+        participants={[ADA]}
+        xstyle={legacyOverride.root}
+      />,
+    );
+    const pin = screen.getByRole('button', {name: 'Open'});
+    const expected = stylex.props(
+      interactionOverlayStyles.pressedAlpha,
+      legacyOverride.root,
+    );
+    expect(expected.className).toBeTruthy();
+    for (const className of (expected.className ?? '').split(' ')) {
+      expect(pin).toHaveClass(className);
+    }
+  });
+
+  it('applies consumer xstyle and preserves style precedence', () => {
+    const {rerender} = render(
+      <CommentPin
+        label="Open"
+        participants={[ADA]}
+        xstyle="consumer-override"
+      />,
+    );
+    expect(screen.getByRole('button', {name: 'Open'})).toHaveClass(
+      'consumer-override',
+    );
+    rerender(
+      <CommentPin
+        label="Open"
+        participants={[ADA]}
+        xstyle={{backgroundColor: 'red', color: 'blue'}}
+        style={{color: 'green'}}
+      />,
+    );
+    const pin = screen.getByRole('button', {name: 'Open'});
+    expect(pin.style.backgroundColor).toBe('red');
+    expect(pin.style.color).toBe('green');
+    rerender(
+      <CommentPin
+        label="Open"
+        participants={[ADA]}
+        xstyle={[legacyOverride.root, 'mixed-override', {color: 'red'}]}
+      />,
+    );
+    expect(pin).toHaveClass('mixed-override');
+    expect(pin.style.color).toBe('red');
+  });
+
   it('renders one labelled button and one representative for a single thread', () => {
     const {container} = render(
       <CommentPin label="Open annotation from Ada" participants={[ADA]} />,

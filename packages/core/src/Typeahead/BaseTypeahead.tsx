@@ -34,7 +34,6 @@ import React, {
   type ReactNode,
   type RefObject,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {BaseTypeaheadFocusContext} from './BaseTypeaheadFocusContext';
 import {useBusyIndicatorLane} from './busyIndicatorLane';
 import {useTrailingKeyDown} from './trailingKeyDown';
@@ -42,7 +41,6 @@ import {
   CommittedChoicesKeyContext,
   useCommittedChoices,
 } from './committedChoicesKey';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import {usePopoverInternal} from '../Popover/usePopover';
 import {useAnnounce} from '../hooks/useAnnounce';
 import {useAnnounceRenderedText} from '../hooks/useAnnounceRenderedText';
@@ -67,7 +65,7 @@ import {
   mergeProps,
 } from '../utils';
 import {warnOnce} from '../utils/devWarning';
-import {xstyleProps} from '../utils/xstyle';
+import {xstyleProps, type AstryxXStyle} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import type {SearchContext, SearchableItem, SearchSource} from './types';
 import {themeProps} from '../utils/themeProps';
@@ -327,9 +325,9 @@ export interface BaseTypeaheadProps<T extends SearchableItem> extends Omit<
   ariaLabelledBy?: string;
 
   /**
-   * Additional StyleX styles for the input element.
+   * Additional styles for the input element.
    */
-  inputXStyle?: StyleXStyles;
+  inputXStyle?: AstryxXStyle;
 
   /**
    * Legacy input-specific alias for native `tabIndex`. When provided, this
@@ -2272,7 +2270,7 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
     });
   }
 
-  const xstyleSlots = xstyleProps(xstyle);
+  const xstyleSlots = xstyleProps([inputXStyle, xstyle]);
   const content = (
     <>
       <input
@@ -2343,14 +2341,15 @@ export const BaseTypeahead = function BaseTypeahead<T extends SearchableItem>({
           hasAutoCorrect: false,
         })}
         {...mergeProps(
-          stylex.props(inputXStyle),
-          tw(
-            typeaheadInputClassName,
-            isDisabled && typeaheadInputDisabledClassName,
-            xstyleSlots.className,
-            className,
-          ),
-          {...xstyleSlots.style, ...style},
+          {
+            className: tw(
+              typeaheadInputClassName,
+              isDisabled && typeaheadInputDisabledClassName,
+            ),
+          },
+          xstyleSlots,
+          className,
+          style,
         )}
       />
       {isLoading && busyLane == null && (

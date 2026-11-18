@@ -22,7 +22,6 @@
  */
 
 import {useId, useState, type ReactNode} from 'react';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import {Badge} from '../Badge';
 import {mergeProps} from '../utils';
 import {xstyleProps} from '../utils/xstyle';
@@ -86,19 +85,6 @@ export interface ChatComposerDrawerProps extends BaseProps<HTMLDivElement> {
    */
   onCollapsedChange?: (isCollapsed: boolean) => void;
 
-  /**
-   * StyleX styles for layout customization (margins, positioning, sizing).
-   * Must be a `stylex.create()` value — not an inline style object.
-   *
-   * @example
-   * ```
-   * const styles = stylex.create({ wrapper: { marginTop: 8 } });
-   * <ChatComposerDrawer xstyle={styles.wrapper}>
-   *   <AttachmentThumbnail />
-   * </ChatComposerDrawer>
-   * ```
-   */
-  xstyle?: StyleXStyles;
   className?: string;
   style?: React.CSSProperties;
   'data-testid'?: string;
@@ -164,7 +150,7 @@ export function ChatComposerDrawer({
         }),
         tw(chatComposerDrawerClassName, xstyleProps(xstyle).className),
         className,
-        style,
+        {...xstyleProps(xstyle).style, ...style},
       )}
       {...htmlProps}>
       {canCollapse && (

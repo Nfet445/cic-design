@@ -20,8 +20,7 @@
 
 import type {BaseProps} from '@astryxdesign/core';
 import {mergeProps} from '@astryxdesign/core/utils';
-import {themeProps} from '@astryxdesign/core/utils';
-import {tw} from '../tw';
+import {themeProps, xstyleProps} from '@astryxdesign/core/utils';
 import {
   chatUnreadDividerLabelClassName,
   chatUnreadDividerRootClassName,
@@ -70,8 +69,10 @@ export function ChatUnreadDivider({
       aria-label={`${label} messages below`}
       data-testid={testId}
       {...mergeProps(
-        themeProps('chat-unread-divider'),
-        {className: tw(chatUnreadDividerRootClassName, xstyle)},
+        mergeProps(themeProps('chat-unread-divider'), {
+          className: chatUnreadDividerRootClassName,
+        }),
+        xstyleProps(xstyle),
         className,
         styleProp,
       )}>

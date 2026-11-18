@@ -19,10 +19,9 @@
  */
 
 import {useEffect, useRef, useState, type ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {sharedEditorTheme} from './editorThemeClasses';
 import type {BaseProps} from '@astryxdesign/core';
-import {mergeProps} from '@astryxdesign/core/utils';
+import {mergeProps, xstyleProps} from '@astryxdesign/core/utils';
 
 import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -266,8 +265,8 @@ export function RichTextView({
     return (
       <div
         {...mergeProps(
-          stylex.props(xstyle),
           {className: richTextViewRootClassName},
+          xstyleProps(xstyle),
           className,
           style,
         )}
@@ -296,8 +295,8 @@ export function RichTextView({
   return (
     <div
       {...mergeProps(
-        stylex.props(xstyle),
         {className: richTextViewRootClassName},
+        xstyleProps(xstyle),
         className,
         style,
       )}

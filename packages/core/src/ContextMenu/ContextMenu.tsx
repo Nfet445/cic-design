@@ -50,7 +50,6 @@ import React, {
   useState,
 } from 'react';
 import type {ReactNode} from 'react';
-import * as stylex from '@stylexjs/stylex';
 import {Button} from '../Button';
 import {Heading} from '../Heading';
 import {Icon} from '../Icon';
@@ -99,9 +98,8 @@ import {useTypeahead} from '../hooks/useTypeahead';
 import {useLongPress} from '../hooks/useLongPress';
 import {layerAnimations} from '../Layer/layerAnimations.stylex';
 import {mergeProps, RTL_MIRROR_CLASS} from '../utils';
-import {xstyleProps} from '../utils/xstyle';
+import {xstyleProps, type AstryxXStyle} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
-import type {StyleXStyles} from '../theme/types';
 import {themeProps} from '../utils/themeProps';
 import type {
   DropdownMenuOption,
@@ -170,7 +168,7 @@ interface ContextMenuBaseProps extends BaseProps {
    * fill style (e.g. `width/height: 100%`) when the whole parent area should
    * be right-clickable (as the Table does for full-cell context menus).
    */
-  triggerXstyle?: StyleXStyles | StyleXStyles[];
+  triggerXstyle?: AstryxXStyle;
   /**
    * Class names applied to the trigger wrapper element, after
    * `triggerXstyle`, so a caller can style the trigger with utilities.
@@ -829,13 +827,7 @@ export function ContextMenu({
         data-testid={testId}
         {...mergeProps(
           contextMenuTriggerClassName,
-          stylex.props(
-            ...(triggerXstyle
-              ? Array.isArray(triggerXstyle)
-                ? triggerXstyle
-                : [triggerXstyle]
-              : []),
-          ),
+          xstyleProps(triggerXstyle),
           triggerClassName,
         )}>
         {children}

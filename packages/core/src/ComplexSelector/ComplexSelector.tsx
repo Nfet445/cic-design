@@ -27,7 +27,6 @@ import React, {
   type ReactNode,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import {
   useFieldInputStyling,
   type FieldInputBaseProps,
@@ -72,7 +71,7 @@ import {tw} from '../utils/tw';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import type {SizeValue} from '../utils/types';
 import {themeProps} from '../utils/themeProps';
-import {xstyleProps} from '../utils/xstyle';
+import {xstyleProps, type AstryxXStyle} from '../utils/xstyle';
 import {layerViewportInset} from '../Layer/layerViewportInset.stylex';
 import type {FieldStatusPlacement} from '../Field/fieldStatusPlacement';
 import {
@@ -338,7 +337,7 @@ export interface ComplexSelectorProps<Value> extends Omit<
    */
   onOpenChange?: (isOpen: boolean) => void;
   /** StyleX styles for the popup content container. */
-  contentXstyle?: StyleXStyles;
+  contentXstyle?: AstryxXStyle;
   /**
    * Class name for the popup content container. A width the content computes
    * for itself reaches the box as `contentStyle` beside this class.
@@ -669,7 +668,7 @@ export function ComplexSelector<Value>({
       id={contentId}
       {...mergeProps(
         COMPLEX_SELECTOR_CONTENT_CLASS,
-        stylex.props(contentXstyle),
+        xstyleProps(contentXstyle),
         contentClassName,
         contentStyle,
       )}>

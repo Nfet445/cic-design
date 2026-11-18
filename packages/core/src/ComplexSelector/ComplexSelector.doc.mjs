@@ -211,8 +211,9 @@ export const docs = {
         },
         {
           name: 'contentXstyle',
-          type: 'StyleXStyles',
-          description: 'StyleX styles for the popup content container.',
+          type: 'AstryxXStyle',
+          description:
+            'A class name, inline style object, StyleX value, or list of these for the popup content container.',
         },
         {
           name: 'contentClassName',
@@ -427,7 +428,8 @@ export const docsDense = {
       'StyleX styles for the visual control box (border, background, icons); not the trigger button.',
     controlClassName: 'Class name for the visual control box.',
     controlStyle: 'Inline styles for the visual control box.',
-    contentXstyle: 'StyleX styles for the popup content container.',
+    contentXstyle:
+      'Class name, inline style object, StyleX value, or list for the popup content container.',
     contentClassName: 'Class name for the popup content container.',
     contentStyle: 'Inline styles for the popup content container.',
     statusVariant:

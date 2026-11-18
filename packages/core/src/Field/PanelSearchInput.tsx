@@ -40,15 +40,13 @@
  */
 
 import {useCallback, useState, type Ref} from 'react';
-import * as stylex from '@stylexjs/stylex';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import {Icon} from '../Icon/Icon';
 import {InputClearButton} from './InputClearButton';
 import {mergeProps} from '../utils/mergeProps';
 import {useInteractionModalityTracking} from '../utils/interactionModality';
 import {useMergedRefs} from '../hooks/useMergedRefs';
 import {tw} from '../utils/tw';
-import {xstyleProps} from '../utils/xstyle';
+import {xstyleProps, type AstryxXStyle} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {textEntryTraitAttributes} from './textEntryTraits';
 import {
@@ -111,7 +109,7 @@ export interface PanelSearchInputProps extends Omit<
    * whose rows are taller than a dropdown's — a touch sheet — uses it to grow
    * the field to the same height as its rows.
    */
-  fieldXstyle?: StyleXStyles;
+  fieldXstyle?: AstryxXStyle;
   /**
    * Draw the field as the shared input box — the input border, accent while
    * focused, surface and radius — instead of the borderless panel row. A
@@ -206,14 +204,16 @@ export function PanelSearchInput({
       <div
         data-keyboard-focus={isKeyboardFocus ? 'true' : undefined}
         {...mergeProps(
-          stylex.props(fieldXstyle),
-          tw(
-            hasInputBox && fieldInputWrapperClassName(),
-            hasInputBox
-              ? panelSearchInputBoxedFieldClassName
-              : panelSearchInputFieldClassName,
-            isKeyboardFocus && panelSearchInputKeyboardFocusClassName,
-          ),
+          {
+            className: tw(
+              hasInputBox && fieldInputWrapperClassName(),
+              hasInputBox
+                ? panelSearchInputBoxedFieldClassName
+                : panelSearchInputFieldClassName,
+              isKeyboardFocus && panelSearchInputKeyboardFocusClassName,
+            ),
+          },
+          xstyleProps(fieldXstyle),
         )}>
         <Icon
           icon="search"

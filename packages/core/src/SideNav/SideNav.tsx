@@ -33,7 +33,6 @@ import {
   type ReactNode,
 } from 'react';
 import type {BaseProps} from '../BaseProps';
-import type {StyleXStyles} from '@stylexjs/stylex';
 import {mergeProps} from '../utils';
 import {xstyleProps} from '../utils/xstyle';
 import {tw} from '../utils/tw';
@@ -272,17 +271,6 @@ export interface SideNavProps extends BaseProps<HTMLElement> {
    * Footer icon bar (e.g., help, notifications, avatar).
    */
   footerIcons?: ReactNode;
-  /**
-   * StyleX styles created via `stylex.create()`. Merged with the component's
-   * base styles inside a single `stylex.props()` call for optimal deduplication.
-   *
-   * @example
-   * ```
-   * const overrides = stylex.create({ root: { marginBottom: 8 } });
-   * <Component xstyle={overrides.root} />
-   * ```
-   */
-  xstyle?: StyleXStyles;
   /**
    * CSS class name(s) appended to the root element.
    * If you're using StyleX, prefer `xstyle` for optimal style deduplication.

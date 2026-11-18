@@ -29,9 +29,9 @@ export const docs = {
     },
     {
       name: 'xstyle',
-      type: 'StyleXStyles',
+      type: 'AstryxXStyle',
       description:
-        'StyleX styles applied to the popover content wrapper, after the default surface styles.',
+        'A class name, inline style object, StyleX value, or list applied to the popover content wrapper.',
     },
     {
       name: 'hasLightDismiss',
@@ -206,7 +206,7 @@ export const docsDense = {
   paramDescriptions: {
     onShow: 'fires when popover becomes visible.',
     onHide: 'fires when popover hides; use to return focus when needed.',
-    xstyle: 'StyleX styles for content wrapper, after default surface.',
+    xstyle: 'Consumer styling for the content wrapper, after default surface.',
     hasLightDismiss: 'whether outside click dismisses popover.',
     hasEscapeDismiss:
       'whether Escape dismisses; full effect only w/ hasLightDismiss false.',

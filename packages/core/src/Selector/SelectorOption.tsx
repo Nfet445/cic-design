@@ -11,7 +11,7 @@
  */
 
 import type {ReactNode} from 'react';
-import type {StyleXStyles} from '@stylexjs/stylex';
+import type {AstryxXStyle} from '../utils/xstyle';
 import {renderIconSlot, type IconType} from '../Icon';
 import {Item} from '../Item';
 import {useSelectorRowLayout} from './SelectorRowLayoutContext';
@@ -55,17 +55,8 @@ export interface SelectorOptionProps {
    */
   endContent?: ReactNode;
 
-  /**
-   * StyleX styles created via `stylex.create()`. Merged with the component's
-   * base styles inside a single `stylex.props()` call for optimal deduplication.
-   *
-   * @example
-   * ```
-   * const overrides = stylex.create({ root: { marginBottom: 8 } });
-   * <Component xstyle={overrides.root} />
-   * ```
-   */
-  xstyle?: StyleXStyles;
+  /** Consumer styling for the root element. */
+  xstyle?: AstryxXStyle;
   /**
    * CSS class name(s) appended to the root element.
    * If you're using StyleX, prefer `xstyle` for optimal style deduplication.

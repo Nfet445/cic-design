@@ -580,6 +580,35 @@ describe('ComplexSelector popup theme target', () => {
     expect(layer.contains(popup)).toBe(true);
   });
 
+  it('applies class and style contentXstyle to popup content', async () => {
+    const user = userEvent.setup();
+    const {rerender} = render(
+      <ComplexSelector
+        label="Fruit blend"
+        value="Apple"
+        triggerLabel="Apple"
+        contentXstyle="consumer-content">
+        {() => <button type="button">Done</button>}
+      </ComplexSelector>,
+    );
+    await user.click(screen.getByRole('combobox', {name: 'Fruit blend'}));
+    const content = screen.getByRole('button', {name: 'Done', ...h})
+      .parentElement as HTMLElement;
+    expect(content).toHaveClass('consumer-content');
+    rerender(
+      <ComplexSelector
+        label="Fruit blend"
+        value="Apple"
+        triggerLabel="Apple"
+        contentXstyle={{backgroundColor: 'red', color: 'blue'}}
+        contentStyle={{color: 'green'}}>
+        {() => <button type="button">Done</button>}
+      </ComplexSelector>,
+    );
+    expect(content.style.backgroundColor).toBe('red');
+    expect(content.style.color).toBe('green');
+  });
+
   it('keeps the target when the consumer also passes contentXstyle', async () => {
     const user = userEvent.setup();
     render(

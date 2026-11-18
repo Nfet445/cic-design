@@ -41,7 +41,6 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
-import * as stylex from '@stylexjs/stylex';
 import type {BaseProps} from '../BaseProps';
 import {tw} from '../utils/tw';
 import {
@@ -97,7 +96,7 @@ import {focusOutlineWithinClassName} from '../utils/focusOutlineClasses';
 import {rowPressLayerStyles} from '../privateAttributes/press.stylex';
 import {isCoarsePointer} from '../utils/coarsePointer';
 import {disabledInteractionProps} from '../utils/disabledInteraction';
-import {isStyleXValue, xstyleProps} from '../utils/xstyle';
+import {composeXstyle} from '../utils/xstyle';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 import {
   swipeHostOf,
@@ -806,10 +805,20 @@ export function Item({
         }
       : undefined;
 
-  // The consumer slot splits by shape: a StyleX value must resolve beside
-  // the row's own paint so the two do not fight over sheet order.
-  const xstyleIsStyleX = isStyleXValue(xstyle);
-  const xstyleRest = xstyleProps(xstyleIsStyleX ? undefined : xstyle);
+  const itemStyles = composeXstyle(
+    [
+      isInteractive ? interactionOverlayStyles.pressedAlpha : undefined,
+      isInteractive ? rowPressLayerStyles.cell : undefined,
+      isInteractive && hasStateFill
+        ? isSelected
+          ? rowPressLayerStyles.cellOnImage
+          : rowPressLayerStyles.cellOnImagePressOnly
+        : undefined,
+      swipeAttachment?.rootStyle,
+      hasDeprecatedSwipe ? swipeHostStyles.root : undefined,
+    ],
+    xstyle,
+  );
 
   return (
     <Component
@@ -854,52 +863,36 @@ export function Item({
           selected: isSelected ? 'selected' : null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(
-          // The strength, the release and the paint variable; the colour and
-          // the image themselves are classes below.
-          isInteractive && interactionOverlayStyles.pressedAlpha,
-          // The touch press on a compositor layer (after the overlay, whose
-          // own touch paint it turns off): the release keeps fading while
-          // script runs.
-          isInteractive && rowPressLayerStyles.cell,
-          // A highlighted row's fill is already the hover tone, so it shows
-          // only its press. A selected row also shows its hover.
-          isInteractive &&
-            hasStateFill &&
-            (isSelected
-              ? rowPressLayerStyles.cellOnImage
-              : rowPressLayerStyles.cellOnImagePressOnly),
-          swipeAttachment?.rootStyle,
-          hasDeprecatedSwipe && swipeHostStyles.root,
-          // A legacy StyleX value resolves inside this same call, because two
-          // separate resolutions would leave equal-specificity classes to the
-          // sheet's order instead of to the caller's last word.
-          xstyleIsStyleX ? xstyle : undefined,
+        mergeProps(
+          {
+            className: tw(
+              itemClassName({
+                align,
+                density,
+                isInteractive,
+                isHighlighted,
+                isSelected,
+                isDisabled,
+                hasParentRole,
+                isLinkRoot,
+              }),
+              // The row rings only for its own button or link. In delegation mode it
+              // rings for the nested control. Other controls ring themselves.
+              isDelegate
+                ? focusOutlineWithinClassName
+                : focusOwnerRingClassName,
+              // A row with a state fill keeps the fill as its background colour,
+              // so its hover and press paint as an image over the fill.
+              isInteractive &&
+                (hasStateFill
+                  ? interactionOverlayBackgroundImageClassName
+                  : interactionOverlayBackgroundColorClassName),
+            ),
+          },
+          itemStyles,
         ),
-        tw(
-          itemClassName({
-            align,
-            density,
-            isInteractive,
-            isHighlighted,
-            isSelected,
-            isDisabled,
-            hasParentRole,
-            isLinkRoot,
-          }),
-          // The row rings only for its own button or link. In delegation mode it
-          // rings for the nested control. Other controls ring themselves.
-          isDelegate ? focusOutlineWithinClassName : focusOwnerRingClassName,
-          // A row with a state fill keeps the fill as its background colour,
-          // so its hover and press paint as an image over the fill.
-          isInteractive &&
-            (hasStateFill
-              ? interactionOverlayBackgroundImageClassName
-              : interactionOverlayBackgroundColorClassName),
-          className,
-          xstyleRest.className,
-        ),
-        {...xstyleRest.style, ...style},
+        className,
+        style,
       )}
       role={role}
       onClick={primaryOnClick}>

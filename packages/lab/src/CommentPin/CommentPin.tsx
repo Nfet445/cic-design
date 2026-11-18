@@ -33,13 +33,13 @@ import {
 import {Icon, type IconSize} from '@astryxdesign/core/Icon';
 import {StatusDot} from '@astryxdesign/core/StatusDot';
 import {useTooltip} from '@astryxdesign/core/Tooltip';
-import * as stylex from '@stylexjs/stylex';
 import {
   focusOutlineFocusVisibleClassName,
   interactionOverlayBackgroundImageClassName,
   interactionOverlayStyles,
   mergeProps,
   themeProps,
+  xstyleProps,
 } from '@astryxdesign/core/utils';
 import {
   commentPinAvatarRailClassName,
@@ -300,6 +300,11 @@ export function CommentPin({
       ? visibleParticipants
       : [{id: '__anonymous__', name: '', avatarSrc: undefined}];
 
+  const consumerXstyle = xstyleProps([
+    interactionOverlayStyles.pressedAlpha,
+    xstyle,
+  ]);
+
   const marker = (
     <button
       {...rest}
@@ -346,11 +351,7 @@ export function CommentPin({
           resolved: isResolved ? 'resolved' : null,
           disabled: isDisabled ? 'disabled' : null,
         }),
-        stylex.props(
-          // The strength and the release; the paint is a class below.
-          interactionOverlayStyles.pressedAlpha,
-          xstyle,
-        ),
+        {},
         tw(
           commentPinRootClassName,
           commentPinSizeClassNames[resolvedSize],
@@ -365,9 +366,10 @@ export function CommentPin({
             : isDimmed && !isSelected && commentPinDimmedOpacityClassName,
           focusOutlineFocusVisibleClassName,
           interactionOverlayBackgroundImageClassName,
+          consumerXstyle.className,
           className,
         ),
-        style,
+        {...consumerXstyle.style, ...style},
       )}>
       <span
         aria-hidden="true"
