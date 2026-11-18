@@ -36,7 +36,7 @@ import {
   isValidElement,
 } from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineSuppressedClassName} from '../utils/focusOutlineClasses';
 import {
   carouselItemClassName,
   carouselOverlayClassName,
@@ -627,16 +627,16 @@ export function Carousel({
             snap: hasSnap ? 'snap' : null,
             edgeFade: hasEdgeFade ? 'edge-fade' : null,
           }),
-          stylex.props(
+          tw(
+            carouselScrollerClassName({
+              gap,
+              padding,
+              hasSnap: Boolean(hasSnap),
+              fade,
+            }),
             // A tab stop whose shared ring the root paints.
-            focusOutlineStyles.suppressed,
+            focusOutlineSuppressedClassName,
           ),
-          carouselScrollerClassName({
-            gap,
-            padding,
-            hasSnap: Boolean(hasSnap),
-            fade,
-          }),
         )}>
         {slides.map((child, index) => (
           // APG carousel pattern: each slide container is a group with
