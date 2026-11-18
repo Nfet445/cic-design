@@ -11,7 +11,7 @@
 
 import {createRef, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {focusOutlineStyles} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {describe, it, expect, vi, beforeAll, afterAll, afterEach} from 'vitest';
 import {render, screen, act, fireEvent, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -918,9 +918,7 @@ describe('TopNavMegaMenuItem', () => {
 // the browser's own outline.
 // =============================================================================
 
-const sharedFocusRingClasses = stylex
-  .props(focusOutlineStyles.focusVisible)
-  .className!.split(' ');
+const sharedFocusRingClasses = focusOutlineFocusVisibleClassName.split(' ');
 
 function expectSharedFocusRing(el: Element) {
   const classes = el.className.split(' ');

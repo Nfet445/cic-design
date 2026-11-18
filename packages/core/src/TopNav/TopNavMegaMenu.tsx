@@ -40,6 +40,7 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
+import * as stylex from '@stylexjs/stylex';
 import {isRenderable} from '../utils/isRenderable';
 import {usePopover} from '../Popover/usePopover';
 import {useMenuHover} from '../hooks/useMenuHover';
@@ -51,7 +52,7 @@ import {navItemStyles} from '../NavItem/navItemStyles.stylex';
 import {useTopNavSlot} from './TopNavContext';
 import {useTopNavRenderMode} from './TopNavRenderContext';
 import {themeProps} from '../utils/themeProps';
-import {focusOutlineProps} from '../utils/focusOutline.stylex';
+import {focusOutlineFocusVisibleClassName} from '../utils/focusOutlineClasses';
 import {interactionOverlayStyles} from '../utils/interactionOverlay.stylex';
 import {usePressFeedback} from '../hooks/usePressFeedback';
 
@@ -311,11 +312,12 @@ function DefaultMegaMenu({
         )}
         {...mergeProps(
           themeProps('top-nav-mega-menu'),
-          focusOutlineProps.focusVisible(xstyle),
+          stylex.props(xstyle),
           tw(
             topNavMegaMenuTriggerClassName(),
             popover.isOpen && topNavMegaMenuTriggerOpenClassName(),
             className,
+            focusOutlineFocusVisibleClassName,
           ),
           style,
         )}>
@@ -407,12 +409,16 @@ function DrawerMegaMenu({
         {...pressable}
         {...mergeProps(
           themeProps('top-nav-mega-menu', {mode: 'drawer'}),
-          focusOutlineProps.focusVisible(
+          stylex.props(
             navItemStyles.item,
             interactionOverlayStyles.backgroundColor,
             xstyle,
           ),
-          tw(topNavMegaMenuDrawerHeaderClassName(), className),
+          tw(
+            topNavMegaMenuDrawerHeaderClassName(),
+            className,
+            focusOutlineFocusVisibleClassName,
+          ),
           style,
         )}>
         {label}
