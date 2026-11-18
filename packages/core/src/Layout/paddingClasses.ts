@@ -5,8 +5,8 @@
  * @input Accepts a spacing step for one padding edge, or for a container
  *   variable that announces the padding it applies
  * @output Tailwind utility class names for that logical padding edge, the
- *   `--container-padding-*` variables, the Layout outer inset and Section
- *   padding propagation
+ *   `--container-padding-*` and `--layout-padding-*` variables, the padding
+ *   read that applies what they announce, and Section padding propagation
  * @position Layout utility; used by Stack, Center, the Layout regions, Section
  *   and the container components
  *
@@ -183,7 +183,7 @@ const containerBlockEndVarClasses: Record<SpacingStep, string> = {
  * inherited `--layout-padding-outer-x` a padding container publishes, so one
  * Layout's padding never reaches a nested Layout's regions.
  */
-const layoutOuterXVarClasses: Record<SpacingStep, string> = {
+const layoutOwnOuterXVarClasses: Record<SpacingStep, string> = {
   0: '[--layout-padding-own-outer-x:var(--spacing-0)]',
   0.5: '[--layout-padding-own-outer-x:var(--spacing-0-5)]',
   1: '[--layout-padding-own-outer-x:var(--spacing-1)]',
@@ -197,8 +197,8 @@ const layoutOuterXVarClasses: Record<SpacingStep, string> = {
   10: '[--layout-padding-own-outer-x:var(--spacing-10)]',
 };
 
-/** The block-axis counterpart of {@link layoutOuterXVarClasses}. */
-const layoutOuterYVarClasses: Record<SpacingStep, string> = {
+/** The block-axis counterpart of {@link layoutOwnOuterXVarClasses}. */
+const layoutOwnOuterYVarClasses: Record<SpacingStep, string> = {
   0: '[--layout-padding-own-outer-y:var(--spacing-0)]',
   0.5: '[--layout-padding-own-outer-y:var(--spacing-0-5)]',
   1: '[--layout-padding-own-outer-y:var(--spacing-1)]',
@@ -211,6 +211,114 @@ const layoutOuterYVarClasses: Record<SpacingStep, string> = {
   8: '[--layout-padding-own-outer-y:var(--spacing-8)]',
   10: '[--layout-padding-own-outer-y:var(--spacing-10)]',
 };
+
+/** The outer inset a padding container publishes to Layouts inside it. */
+const layoutOuterXVarClasses: Record<SpacingStep, string> = {
+  0: '[--layout-padding-outer-x:var(--spacing-0)]',
+  0.5: '[--layout-padding-outer-x:var(--spacing-0-5)]',
+  1: '[--layout-padding-outer-x:var(--spacing-1)]',
+  1.5: '[--layout-padding-outer-x:var(--spacing-1-5)]',
+  2: '[--layout-padding-outer-x:var(--spacing-2)]',
+  3: '[--layout-padding-outer-x:var(--spacing-3)]',
+  4: '[--layout-padding-outer-x:var(--spacing-4)]',
+  5: '[--layout-padding-outer-x:var(--spacing-5)]',
+  6: '[--layout-padding-outer-x:var(--spacing-6)]',
+  8: '[--layout-padding-outer-x:var(--spacing-8)]',
+  10: '[--layout-padding-outer-x:var(--spacing-10)]',
+};
+
+/** The block-axis counterpart of {@link layoutOuterXVarClasses}. */
+const layoutOuterYVarClasses: Record<SpacingStep, string> = {
+  0: '[--layout-padding-outer-y:var(--spacing-0)]',
+  0.5: '[--layout-padding-outer-y:var(--spacing-0-5)]',
+  1: '[--layout-padding-outer-y:var(--spacing-1)]',
+  1.5: '[--layout-padding-outer-y:var(--spacing-1-5)]',
+  2: '[--layout-padding-outer-y:var(--spacing-2)]',
+  3: '[--layout-padding-outer-y:var(--spacing-3)]',
+  4: '[--layout-padding-outer-y:var(--spacing-4)]',
+  5: '[--layout-padding-outer-y:var(--spacing-5)]',
+  6: '[--layout-padding-outer-y:var(--spacing-6)]',
+  8: '[--layout-padding-outer-y:var(--spacing-8)]',
+  10: '[--layout-padding-outer-y:var(--spacing-10)]',
+};
+
+/** The inline inset a padding container publishes to Layouts inside it. */
+const layoutInnerXVarClasses: Record<SpacingStep, string> = {
+  0: '[--layout-padding-inner-x:var(--spacing-0)]',
+  0.5: '[--layout-padding-inner-x:var(--spacing-0-5)]',
+  1: '[--layout-padding-inner-x:var(--spacing-1)]',
+  1.5: '[--layout-padding-inner-x:var(--spacing-1-5)]',
+  2: '[--layout-padding-inner-x:var(--spacing-2)]',
+  3: '[--layout-padding-inner-x:var(--spacing-3)]',
+  4: '[--layout-padding-inner-x:var(--spacing-4)]',
+  5: '[--layout-padding-inner-x:var(--spacing-5)]',
+  6: '[--layout-padding-inner-x:var(--spacing-6)]',
+  8: '[--layout-padding-inner-x:var(--spacing-8)]',
+  10: '[--layout-padding-inner-x:var(--spacing-10)]',
+};
+
+/** The block-axis counterpart of {@link layoutInnerXVarClasses}. */
+const layoutInnerYVarClasses: Record<SpacingStep, string> = {
+  0: '[--layout-padding-inner-y:var(--spacing-0)]',
+  0.5: '[--layout-padding-inner-y:var(--spacing-0-5)]',
+  1: '[--layout-padding-inner-y:var(--spacing-1)]',
+  1.5: '[--layout-padding-inner-y:var(--spacing-1-5)]',
+  2: '[--layout-padding-inner-y:var(--spacing-2)]',
+  3: '[--layout-padding-inner-y:var(--spacing-3)]',
+  4: '[--layout-padding-inner-y:var(--spacing-4)]',
+  5: '[--layout-padding-inner-y:var(--spacing-5)]',
+  6: '[--layout-padding-inner-y:var(--spacing-6)]',
+  8: '[--layout-padding-inner-y:var(--spacing-8)]',
+  10: '[--layout-padding-inner-y:var(--spacing-10)]',
+};
+
+/**
+ * The variables a padding container publishes: the four padding edges it
+ * applies and the two inset pairs a Layout inside it reads.
+ */
+export type ContainerVariable =
+  | 'containerPaddingInlineStart'
+  | 'containerPaddingInlineEnd'
+  | 'containerPaddingBlockStart'
+  | 'containerPaddingBlockEnd'
+  | 'layoutPaddingOuterX'
+  | 'layoutPaddingOuterY'
+  | 'layoutPaddingInnerX'
+  | 'layoutPaddingInnerY';
+
+const containerVariableClasses: Record<
+  ContainerVariable,
+  Record<SpacingStep, string>
+> = {
+  containerPaddingInlineStart: containerInlineStartVarClasses,
+  containerPaddingInlineEnd: containerInlineEndVarClasses,
+  containerPaddingBlockStart: containerBlockStartVarClasses,
+  containerPaddingBlockEnd: containerBlockEndVarClasses,
+  layoutPaddingOuterX: layoutOuterXVarClasses,
+  layoutPaddingOuterY: layoutOuterYVarClasses,
+  layoutPaddingInnerX: layoutInnerXVarClasses,
+  layoutPaddingInnerY: layoutInnerYVarClasses,
+};
+
+/** One container variable, set from a spacing step. */
+export function containerVariableClassName(
+  variable: ContainerVariable,
+  step: SpacingStep,
+): string {
+  return containerVariableClasses[variable][step];
+}
+
+/**
+ * Reads the padding each edge published: one class per edge on the right side
+ * of the `--container-padding-*` variable, so the publishing class owns every
+ * inset value.
+ */
+export const containerPaddingReadClassName = tw(
+  '[padding-inline-start:var(--container-padding-inline-start)]',
+  '[padding-inline-end:var(--container-padding-inline-end)]',
+  '[padding-block-start:var(--container-padding-block-start)]',
+  '[padding-block-end:var(--container-padding-block-end)]',
+);
 
 /**
  * Propagates one Section's explicit padding to nested Sections that use the
@@ -269,7 +377,7 @@ export function layoutPaddingClassName({
   paddingOuterY?: SpacingStep;
 }): string {
   return tw(
-    paddingOuterX != null && layoutOuterXVarClasses[paddingOuterX],
-    paddingOuterY != null && layoutOuterYVarClasses[paddingOuterY],
+    paddingOuterX != null && layoutOwnOuterXVarClasses[paddingOuterX],
+    paddingOuterY != null && layoutOwnOuterYVarClasses[paddingOuterY],
   );
 }

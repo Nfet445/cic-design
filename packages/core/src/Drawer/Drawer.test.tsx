@@ -1310,14 +1310,23 @@ describe('Drawer', () => {
   describe('container padding', () => {
     // StyleX lowers the block edges to their physical properties. block-end is
     // asserted separately: its applied edge composes the safe-area inset.
-    const EDGES = [
-      ['inline-start', 'padding-inline-start'],
-      ['inline-end', 'padding-inline-end'],
-      ['block-start', 'padding-top'],
-    ] as const;
+    const EDGES = ['inline-start', 'inline-end', 'block-start'] as const;
     // StyleX strips the space after the var() fallback comma.
     const SAFE_AREA_BLOCK_END =
       'calc(var(--container-padding-block-end,0px) + env(safe-area-inset-bottom,0px))';
+    const DRAWER = 'var(--astryx-drawer-padding,var(--spacing-4))';
+    // The chain each edge publishes when no padding prop names a step.
+    const THEME_CHAIN: Record<string, string> = {
+      'inline-start': `var(--astryx-drawer-padding-inline-start,var(--astryx-drawer-padding-inline,${DRAWER}))`,
+      'inline-end': `var(--astryx-drawer-padding-inline-end,var(--astryx-drawer-padding-inline,${DRAWER}))`,
+      'block-start': `var(--astryx-drawer-padding-block-start,${DRAWER})`,
+      'block-end': `var(--astryx-drawer-padding-block-end,${DRAWER})`,
+    };
+    // Tailwind spells the two half steps as their own variables.
+    const STEP_CLASS: Record<0 | 2, string> = {
+      0: 'var(--spacing-0)',
+      2: 'var(--spacing-2)',
+    };
 
     function renderWithPadding(padding?: 0 | 2) {
       render(
@@ -1331,53 +1340,48 @@ describe('Drawer', () => {
       );
       // The content area is the child's parent: the scrolling box inside the
       // panel, not the panel itself.
-      return getComputedStyle(
-        screen.getByTestId('drawer-child').parentElement!,
-      );
+      return screen.getByTestId('drawer-child').parentElement as HTMLElement;
     }
 
-    it("defaults to Dialog's --spacing-4 inset and publishes the theme chain", () => {
-      const computed = renderWithPadding();
-      for (const [edge, property] of EDGES) {
-        const published = computed
-          .getPropertyValue(`--container-padding-${edge}`)
-          .replace(/\s+/g, '');
-        expect(published, edge).toContain(
-          `var(--astryx-drawer-padding-${edge}`,
-        );
-        // No theme padding resolves to --spacing-4, as in Dialog.
-        expect(published, edge).toContain(
-          'var(--astryx-drawer-padding,var(--spacing-4))',
+    /** The class that publishes one container edge on the content area. */
+    function publishedClass(content: HTMLElement, edge: string): string {
+      const className = classesOf(content).find(candidate =>
+        candidate.startsWith(`[--container-padding-${edge}:`),
+      );
+      expect(className, edge).toBeDefined();
+      return className as string;
+    }
+
+    /** The applied padding class: it reads back what the container published. */
+    function appliedClass(edge: string): string {
+      return `[padding-${edge}:var(--container-padding-${edge})]`;
+    }
+
+    it("defaults to Drawer's --spacing-4 inset and publishes the theme chain", () => {
+      const content = renderWithPadding();
+      for (const edge of [...EDGES, 'block-end']) {
+        expect(publishedClass(content, edge), edge).toBe(
+          `[--container-padding-${edge}:${THEME_CHAIN[edge]}]`,
         );
         // Applied padding reads the published value, so bleed children
         // subtract exactly the inset they sit in.
-        expect(computed.getPropertyValue(property), edge).toBe(
-          `var(--container-padding-${edge})`,
-        );
+        expect(classesOf(content), edge).toContain(appliedClass(edge));
       }
       // block-end publishes the same chain, while the APPLIED edge adds the
       // home-indicator safe area on top of the container inset.
-      const publishedEnd = computed
-        .getPropertyValue('--container-padding-block-end')
-        .replace(/\s+/g, '');
-      expect(publishedEnd).toContain('var(--astryx-drawer-padding-block-end');
-      expect(publishedEnd).toContain(
-        'var(--astryx-drawer-padding,var(--spacing-4))',
-      );
-      expect(computed.getPropertyValue('padding-bottom')).toBe(
+      expect(getComputedStyle(content).getPropertyValue('padding-bottom')).toBe(
         SAFE_AREA_BLOCK_END,
       );
       // The Layout insets read the same chain, so a Layout inside the drawer
       // lines its regions up on the drawer's inset, as in Dialog.
-      for (const name of [
-        '--layout-padding-outer-x',
-        '--layout-padding-outer-y',
-        '--layout-padding-inner-x',
-        '--layout-padding-inner-y',
-      ]) {
-        const value = computed.getPropertyValue(name).replace(/\s+/g, '');
-        expect(value, name).toContain(
-          'var(--astryx-drawer-padding,var(--spacing-4))',
+      for (const [name, chain] of [
+        ['outer-x', THEME_CHAIN['inline-start']],
+        ['outer-y', THEME_CHAIN['block-start']],
+        ['inner-x', THEME_CHAIN['inline-start']],
+        ['inner-y', THEME_CHAIN['block-start']],
+      ] as const) {
+        expect(classesOf(content), name).toContain(
+          `[--layout-padding-${name}:${chain}]`,
         );
       }
     });
@@ -1385,28 +1389,24 @@ describe('Drawer', () => {
     it.each([0, 2] as const)(
       'applies and publishes an explicit padding step (%s)',
       padding => {
-        const computed = renderWithPadding(padding);
-        const expected = `var(--spacing-${padding})`;
-        for (const [edge, property] of EDGES) {
-          expect(
-            computed.getPropertyValue(`--container-padding-${edge}`),
-            edge,
-          ).toBe(expected);
+        const content = renderWithPadding(padding);
+        const expected = STEP_CLASS[padding];
+        for (const edge of [...EDGES, 'block-end']) {
+          expect(publishedClass(content, edge), edge).toBe(
+            `[--container-padding-${edge}:${expected}]`,
+          );
           // The applied edge reads what was published, so a bleed child
           // subtracts exactly the inset it sits in.
-          expect(computed.getPropertyValue(property), edge).toBe(
-            `var(--container-padding-${edge})`,
+          expect(classesOf(content), edge).toContain(appliedClass(edge));
+        }
+        expect(
+          getComputedStyle(content).getPropertyValue('padding-bottom'),
+        ).toBe(SAFE_AREA_BLOCK_END);
+        for (const name of ['outer-x', 'outer-y', 'inner-x', 'inner-y']) {
+          expect(classesOf(content), name).toContain(
+            `[--layout-padding-${name}:${expected}]`,
           );
         }
-        expect(computed.getPropertyValue('--container-padding-block-end')).toBe(
-          expected,
-        );
-        expect(computed.getPropertyValue('padding-bottom')).toBe(
-          SAFE_AREA_BLOCK_END,
-        );
-        expect(computed.getPropertyValue('--layout-padding-inner-x')).toBe(
-          expected,
-        );
       },
     );
 

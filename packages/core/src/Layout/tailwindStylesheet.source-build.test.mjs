@@ -539,6 +539,12 @@ import {
   layoutSinglePanelMiddleClassName,
   layoutSingleStartPanelClassName,
 } from '../Layout/layoutClasses';
+import {containerCornerClassName} from '../Layout/containerCornersClasses';
+import {
+  container,
+  containerBaseClassName,
+  containerThemeDefaultPaddingClassName,
+} from '../Layout/containerClasses';
 import {paddingEdgeClassName} from '../Layout/paddingClasses';
 import {layerAnimations} from '../Layer/layerAnimationsClasses';
 import {layerTextResetClassName} from '../Layer/layerTextResetClasses';
@@ -1853,8 +1859,39 @@ function familyClassNames() {
     layoutPanelDividerStartClassName,
     layoutPanelCollapseEndClassName,
     layoutPanelCollapseStartClassName,
+    containerCornerClassName,
   ]) {
     add(className);
+  }
+
+  // A container publishes what it applies: the theme default of each
+  // component, and one class per spacing token for the explicit padding props.
+  add(containerBaseClassName);
+  for (const component of Object.values(
+    containerThemeDefaultPaddingClassName,
+  )) {
+    for (const className of Object.values(component)) {
+      add(className);
+    }
+  }
+  for (const padding of [
+    'spacing0',
+    'spacing0_5',
+    'spacing1',
+    'spacing1_5',
+    'spacing2',
+    'spacing3',
+    'spacing4',
+    'spacing5',
+    'spacing6',
+    'spacing7',
+    'spacing8',
+    'spacing9',
+    'spacing10',
+    'spacing11',
+    'spacing12',
+  ]) {
+    add(container({padding}));
   }
   for (const hasHeader of [false, true]) {
     for (const hasFooter of [false, true]) {
@@ -3886,8 +3923,12 @@ describe('dist/astryx-tailwind.css declarations', () => {
     // row's own press paint added its mouse and coarse arms. Ticket 54 then
     // moved the heading level scale to class text — its eighteen size, leading
     // and weight rules — and the stack's own flex utilities out of StyleX, and
-    // this branch measured 2094. The ceiling keeps its headroom above that.
-    expect(stylesheet.rules.size).toBeLessThan(2100);
+    // this branch measured 2094. The container's own padding then moved out of
+    // StyleX too: each component's theme chain and each spacing token a padding
+    // prop accepts now prints its own class, and the Layout outer insets it
+    // publishes took the sheet to 2215. The ceiling keeps its headroom above
+    // that.
+    expect(stylesheet.rules.size).toBeLessThan(2230);
   });
 
   it('prints a RadioList row’s coarse press arm after its mouse arm', () => {
