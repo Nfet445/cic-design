@@ -122,10 +122,11 @@ buttons) that landed before the tickets were written.
 ### Wave 9 — removing StyleX
 
 - [x] `59-token-names`
-- [ ] `60-last-stylex-maps`
+- [x] `60-last-stylex-maps`
 - [ ] `61-retire-stylex-build`
 - [ ] `62-xstyle-adapter`
 - [ ] `63-major-changeset`
+- [ ] `64-maps-after-xstyle`
       — table seams, motion and safe-area modules, the one-map leaves
 - [ ] `36-remove-stylex` — `@stylexjs` leaves the repository
 

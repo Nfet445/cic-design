@@ -1,6 +1,6 @@
 # delete the last StyleX maps and their subpaths
 
-Status: ready-for-agent
+Status: done
 Blocked by: 56, 57, 59
 Wave: 9
 Ticket: 60
@@ -106,3 +106,26 @@ and `packages/lab/src/TransferList` — all green except
 `BaseTypeahead.test.tsx > committed values change > does not reload or move the
 highlight when only the source is rebuilt`, which fails the same way on the
 branch point with the working tree stashed; `tsc --noEmit` clean.
+
+## Closing note — what is left is not this ticket's
+
+Step 1 landed whole: the three component-owned token modules are gone, the picker geometry is plain
+constants in `packages/core/src/DateInput/dateInputGeometry.ts`, and no file reads a token name through
+StyleX except the modules stage 61 retires.
+
+The layer chain landed: `packages/core/src/Layer/layerClasses.ts` and `Layer/layerResetClasses.ts` carry the
+reset, and `useLayer.tsx` lost its map.
+
+Step 2 converted `Tokenizer`, `Resizable/ResizeHandle` (its arms were a last-wins selection and are now one
+class per outcome), `Selector`'s trigger, `Typeahead`'s value overlay and the typeahead fields.
+
+Twenty-one files still hold a map (~23 real ones, four are JSDoc examples), and every one of them waits on
+the same thing: an argument that only accepts a StyleX value — `xstyle`, `inputXStyle`,
+`ContextMenu.triggerXstyle`, `usePopover`'s `xstyle` — or a `stylex.firstThatWorks` chain. Ticket 62
+replaces those props; ticket 64 then finishes the maps. Remaining files, measured:
+`SideNav/SideNav.tsx`, `SideNav/SideNavItem.tsx`, `Selector/SelectorOption.tsx`,
+`Selector/Selector.tsx`, `MultiSelector/MultiSelector.tsx`, `ComplexSelector/ComplexSelector.tsx`,
+`Typeahead/Typeahead.tsx`, `Typeahead/BaseTypeahead.tsx`, `Tokenizer/Tokenizer.tsx`,
+`Tokenizer/TokenizerBottomSheet.tsx`, `Table/TableCell.tsx`, `Table/TableHeaderCell.tsx`,
+`Table/TableRow.tsx`, `Breadcrumbs/BreadcrumbItem.tsx`, `hooks/anchoredHint.tsx`, `AppShell/AppShell.tsx`,
+`DropdownMenu/DropdownMenuSubMenu.tsx`, `Chat/ChatComposerDrawer.tsx`, `packages/lab/src/TransferList/TransferListSelector.tsx`.
