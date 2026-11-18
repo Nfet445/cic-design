@@ -43,8 +43,11 @@ import {tw} from '../tw';
 const DEFAULT_SELECTOR_WIDTH = 'min(41rem, calc(100vw - 32px))';
 
 /**
- * A dynamic StyleX style, not a class: ComplexSelector's `contentXstyle` is the
- * only seam that reaches the popup's own box, and it takes StyleX values.
+ * A dynamic StyleX style, not a class: the popup's own box must outrank the
+ * content utilities `ComplexSelector` sets (`p-[var(--spacing-3)]`,
+ * `overflow-auto`, its 480px max-height chain), and the two sheets share
+ * `astryx-base`, where a class of ours would be decided by the later one.
+ * `contentXstyle` is the seam that reaches that box.
  */
 const styles = stylex.create({
   // Width tracks the `width` prop, so the field and its popup are one
