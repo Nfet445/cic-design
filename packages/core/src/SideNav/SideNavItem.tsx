@@ -52,7 +52,13 @@ import {mergeProps} from '../utils';
 import {xstyleProps} from '../utils/xstyle';
 import type {BaseProps} from '../BaseProps';
 import {useTooltip} from '../Tooltip';
-import {navItemStyles, type NavItemSize} from '../NavItem/navItemStyles.stylex';
+import {
+  navItemClassName,
+  navItemDisabledClassName,
+  navItemSelectedClassName,
+  navItemSizeClassName,
+  type NavItemSize,
+} from '../NavItem/navItemClasses';
 import {SizeProvider} from '../SizeContext/SizeContext';
 import {
   focusOutlineFocusVisibleClassName,
@@ -84,56 +90,36 @@ import english from '../i18n/generated-english/SideNav/SideNavItem.generated';
 import {isRenderable} from '../utils/isRenderable';
 import {createSharedContext} from '../utils/sharedContext';
 import {tw} from '../utils/tw';
-import {sideNavItemClassName} from './sideNavItemClasses';
+import {
+  SIDE_NAV_INDENT_VAR,
+  sideNavItemClassName,
+  sideNavItemCollapsedSquareClassName,
+  sideNavItemIndentClassName,
+  sideNavItemPrimaryIndentClassName,
+} from './sideNavItemClasses';
 
 registerEnglishFallback(english);
 // =============================================================================
 // Styles
 // =============================================================================
 
-// Two declarations cannot be utilities: `navItemStyles` is another family's
-// file and stays an unlayered StyleX rule, so the box it paints on a collapsed
-// rail row (`width: 100%`, the size padding) and the nesting indent that
-// replaces its `padding-inline-start` beat any rule inside `@layer
-// astryx-base` at every order. Both keep StyleX's last-wins composition until
-// `navItemStyles` migrates too.
-const leftoverStyles = stylex.create({
-  // A collapsed rail row holds only its icon, so it keeps a fixed square.
-  collapsedItem: {
-    width: 'var(--size-element-md)',
-    height: 'var(--size-element-md)',
-    paddingInline: 0,
-  },
-  collapsedSm: {
-    width: 'var(--size-element-sm)',
-    height: 'var(--size-element-sm)',
-  },
-  collapsedLg: {
-    width: 'var(--size-element-lg)',
-    height: 'var(--size-element-lg)',
-  },
-});
-
 // Nesting indent, drawn inside the row: one `--spacing-6` step per nesting
 // level. The row itself stays full width, so its hover and selected fill
-// matches a top-level row's.
-// - `sm` / `md` — the ordinary row, where the row element is the link or
+// matches a top-level row's. The depth is unbounded, so it reaches the element
+// as an inline count and the class computes the padding from it.
+// - the row class — the ordinary row, where the row element is the link or
 //   button: its own inline-start padding plus the steps.
-//   SYNC: the base padding matches navItemStyles.sm / .md / .lg.
-// - `primary` — the row-wrapper path: the wrapper keeps its base padding and
-//   the steps go on the primary link or button, so the whole indent is part
-//   of the click target rather than dead space that still shows feedback.
-const indentStyles = stylex.create({
-  sm: (depth: number) => ({
-    paddingInlineStart: `calc(var(--spacing-1) + ${depth} * var(--spacing-6))`,
-  }),
-  md: (depth: number) => ({
-    paddingInlineStart: `calc(var(--spacing-2) + ${depth} * var(--spacing-6))`,
-  }),
-  primary: (depth: number) => ({
-    paddingInlineStart: `calc(${depth} * var(--spacing-6))`,
-  }),
-});
+// - the primary class — the row-wrapper path: the wrapper keeps its base
+//   padding and the steps go on the primary link or button, so the whole
+//   indent is part of the click target rather than dead space that still shows
+//   feedback.
+type IndentStyle = React.CSSProperties &
+  Partial<Record<typeof SIDE_NAV_INDENT_VAR, string>>;
+
+/** The indent's depth as the inline value its class reads. */
+function indentStyle(depth: number): IndentStyle {
+  return {[SIDE_NAV_INDENT_VAR]: String(depth)};
+}
 
 /**
  * How many SideNavItems deep the current item sits: 0 at the top level,
@@ -527,19 +513,16 @@ export function SideNavItem({
           disabled: isDisabled ? 'disabled' : null,
         }),
         stylex.props(
-          navItemStyles.item,
           // The strength and the release; the colour is a class below.
           interactionOverlayStyles.pressedAlpha,
-          navItemStyles[size],
-          leftoverStyles.collapsedItem,
-          size === 'sm' && leftoverStyles.collapsedSm,
-          size === 'lg' && leftoverStyles.collapsedLg,
-          isSelected && navItemStyles.selected,
-          isDisabled && navItemStyles.disabled,
         ),
         // Spread after `rest`, so keep the caller's class beside these.
         tw(
+          navItemClassName(),
+          sideNavItemCollapsedSquareClassName(size),
           sideNavItemClassName.collapsedItem,
+          isSelected && navItemSelectedClassName(),
+          isDisabled && navItemDisabledClassName(),
           rest.className,
           interactionOverlayBackgroundColorClassName,
           focusOutlineFocusVisibleClassName,
@@ -596,7 +579,7 @@ export function SideNavItem({
     // Items without children: icon-only link or button, its label in a
     // tooltip. The control is the trigger, so the element that takes focus is
     // the one described. A disabled control takes no pointer
-    // (`navItemStyles.disabled`), so its row listens for the tooltip instead;
+    // (`navItemDisabledClassName`), so its row listens for the tooltip instead;
     // the control still takes focus (focusin reaches the row) and stays the
     // element described (spec:AST-085 FR5).
     const isRowTrigger = isDisabled;
@@ -671,22 +654,22 @@ export function SideNavItem({
   });
 
   const itemStyleArgs = [
-    navItemStyles.item,
     // The strength and the release; the colour is a class below.
     interactionOverlayStyles.pressedAlpha,
-    navItemStyles[size],
-    isSelected && navItemStyles.selected,
-    isDisabled && navItemStyles.disabled,
   ] as const;
   const rowIndent =
-    depth > 0 && indentStyles[size === 'sm' ? 'sm' : 'md'](depth);
-  const primaryIndent = depth > 0 && indentStyles.primary(depth);
+    depth > 0 && sideNavItemIndentClassName(size === 'sm' ? 'sm' : 'md');
+  const primaryIndent = depth > 0 && sideNavItemPrimaryIndentClassName();
 
   // The indent is a runtime value, so it reaches the element as an inline
-  // style. These props are spread after `rest`, so fold the caller's `style`
-  // back in (caller wins) rather than letting the indent replace it, and the
-  // caller's `className` beside the row's own classes.
+  // custom property. These props are spread after `rest`, so fold the caller's
+  // `style` back in (caller wins) rather than letting the indent replace it,
+  // and the caller's `className` beside the row's own classes.
   const callerStyle = {className: rest.className, style: rest.style};
+  const rowIndentStyle = depth > 0 ? indentStyle(depth) : undefined;
+  const indentedStyle = rowIndentStyle
+    ? {...rowIndentStyle, ...callerStyle.style}
+    : callerStyle.style;
 
   // Three shapes of the same row appearance:
   // - `rowProps` — split-action path (toggle, no actions): presentational
@@ -700,20 +683,31 @@ export function SideNavItem({
     ...mergeProps(
       itemThemeProps,
       stylex.props(...itemStyleArgs),
-      interactionOverlayBackgroundColorClassName,
+      tw(
+        navItemClassName(),
+        navItemSizeClassName(size),
+        isSelected && navItemSelectedClassName(),
+        isDisabled && navItemDisabledClassName(),
+        interactionOverlayBackgroundColorClassName,
+      ),
     ),
     ...pressable,
   };
   const focusableRowProps = {
     ...mergeProps(
       itemThemeProps,
-      stylex.props(...itemStyleArgs, rowIndent),
+      stylex.props(...itemStyleArgs),
       tw(
+        navItemClassName(),
+        navItemSizeClassName(size),
+        isSelected && navItemSelectedClassName(),
+        isDisabled && navItemDisabledClassName(),
+        rowIndent,
         callerStyle.className,
         interactionOverlayBackgroundColorClassName,
         focusOutlineFocusVisibleClassName,
       ),
-      callerStyle.style,
+      indentedStyle,
     ),
     ...pressable,
   };
@@ -722,6 +716,10 @@ export function SideNavItem({
       itemThemeProps,
       stylex.props(...itemStyleArgs),
       tw(
+        navItemClassName(),
+        navItemSizeClassName(size),
+        isSelected && navItemSelectedClassName(),
+        isDisabled && navItemDisabledClassName(),
         interactionOverlayBackgroundColorClassName,
         focusOutlineWithinFirstChildClassName,
       ),
@@ -764,8 +762,8 @@ export function SideNavItem({
           {...rest}
           {...rowPrimaryAriaProps}
           {...mergeProps(
-            stylex.props(primaryIndent),
             tw(
+              primaryIndent,
               sideNavItemClassName.splitAction,
               callerStyle.className,
               // The wrapper rings for this element; suppressing here is what
@@ -774,7 +772,8 @@ export function SideNavItem({
                 ? focusOutlineSuppressedClassName
                 : focusOutlineFocusVisibleClassName,
             ),
-            callerStyle.style,
+            // Second argument is a props object, so the style rides in one.
+            indentedStyle ? {style: indentedStyle} : {},
           )}>
           {itemContent}
         </NavItemElement>

@@ -120,11 +120,6 @@
       "types": "./dist/Layout/padding.stylex.d.ts",
       "default": "./dist/Layout/padding.stylex.js"
     },
-    "./NavItem/navItemStyles.stylex": {
-      "source": "./src/NavItem/navItemStyles.stylex.ts",
-      "types": "./dist/NavItem/navItemStyles.stylex.d.ts",
-      "default": "./dist/NavItem/navItemStyles.stylex.js"
-    },
     "./Selector/selectorPresentation.stylex": {
       "source": "./src/Selector/selectorPresentation.stylex.ts",
       "types": "./dist/Selector/selectorPresentation.stylex.d.ts",
